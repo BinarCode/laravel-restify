@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Services;
 use Binaryk\LaravelRestify\Repositories\Contracts\RestifyRepositoryInterface;
 
 /**
- * @package Binaryk\LaravelRestify\Services;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RestifyService
