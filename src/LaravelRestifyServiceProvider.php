@@ -54,7 +54,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
 
         // Register the main class to use with the facade
         $this->app->singleton('laravel-restify', function () {
-            return new LaravelRestify;
+            return new Restable;
         });
     }
 }

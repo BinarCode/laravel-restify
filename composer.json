@@ -1,6 +1,6 @@
 {
     "name": "binaryk/laravel-restify",
-    "description": "REST API helpers for Laravel",
+    "description": "Laravel REST API helpers",
     "keywords": [
         "binaryk",
         "laravel-restify"
@@ -17,7 +17,7 @@
     ],
     "require": {
         "php": "^7.1",
-        "illuminate/support": "5.8.*"
+        "illuminate/support": "^5.8|^6.0"
     },
     "require-dev": {
         "orchestra/testbench": "3.8.*",

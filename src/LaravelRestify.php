@@ -2,7 +2,20 @@
 
 namespace Binaryk\LaravelRestify;
 
-class LaravelRestify
+use Illuminate\Support\Facades\Facade;
+
+/**
+ * @see \Binaryk\LaravelRestify\Skeleton\SkeletonClass
+ */
+class LaravelRestify extends Facade
 {
-    // Build your next great package.
+    /**
+     * Get the registered name of the component.
+     *
+     * @return string
+     */
+    protected static function getFacadeAccessor()
+    {
+        return 'laravel-restify';
+    }
 }
