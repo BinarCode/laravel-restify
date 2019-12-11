@@ -13,9 +13,10 @@ use Illuminate\Http\JsonResponse;
  * @method RestResponse created
  * @method RestResponse deleted
  * @method RestResponse blank
- * @method RestResponse error
+ * @method RestResponse error 500
  * @method RestResponse invalid
- * @method RestResponse forbidden
+ * @method RestResponse unauthorized 401 - don't have correct password/email
+ * @method RestResponse forbidden 403 - don't have enough permissions
  * @method RestResponse missing
  * @method RestResponse success
  * @method RestResponse unavailable
@@ -35,6 +36,7 @@ class RestResponse
     const REST_RESPONSE_BLANK_CODE = 204;
     const REST_RESPONSE_ERROR_CODE = 500;
     const REST_RESPONSE_INVALID_CODE = 400;
+    const REST_RESPONSE_UNAUTHORIZED_CODE = 401;
     const REST_RESPONSE_FORBIDDEN_CODE = 403;
     const REST_RESPONSE_MISSING_CODE = 404;
     const REST_RESPONSE_SUCCESS_CODE = 200;
