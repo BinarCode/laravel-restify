@@ -7,22 +7,21 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 /**
- * RestifyRepository class to communicate with data sources of different kinds
+ * RestifyRepository class to communicate with data sources of different kinds.
  *
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 abstract class RestifyRepository implements RestifyRepositoryInterface
 {
     /**
-     * Holds injected model
+     * Holds injected model.
      *
      * @var EloquentModel
      */
     protected $model;
 
-
     /**
-     * Class construct
+     * Class construct.
      *
      * Injected models should be an instance of Model\Model
      *
@@ -34,7 +33,7 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
     }
 
     /**
-     * Grabs any uncaught method calls
+     * Grabs any uncaught method calls.
      *
      * @param string $methodName
      * @param array $params
@@ -46,7 +45,7 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
     }
 
     /**
-     * Static magic implementation
+     * Static magic implementation.
      *
      * @param string $methodName
      * @param array $arguments
@@ -56,7 +55,7 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
     {
         $class = get_called_class();
 
-        return call_user_func($class . '::' . $methodName, $arguments);
+        return call_user_func($class.'::'.$methodName, $arguments);
     }
 
     /**
@@ -66,5 +65,4 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
     {
         return $this->model->query();
     }
-
 }

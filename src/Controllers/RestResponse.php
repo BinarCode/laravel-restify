@@ -6,7 +6,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\JsonResponse;
 
 /**
- * Class RestResponse
+ * Class RestResponse.
  *
  * @method RestResponse auth
  * @method RestResponse refresh
@@ -20,13 +20,12 @@ use Illuminate\Http\JsonResponse;
  * @method RestResponse success
  * @method RestResponse unavailable
  *
- * @package App\Controller
  * @author lupacescueduard <eduard.lupacescu@binarcode.com>
  */
 class RestResponse
 {
     /**
-     * Response Codes
+     * Response Codes.
      */
     const REST_RESPONSE_AUTH_CODE = 401;
     const REST_RESPONSE_REFRESH_CODE = 103;
@@ -47,14 +46,14 @@ class RestResponse
     protected $code = self::REST_RESPONSE_SUCCESS_CODE;
 
     /**
-     * Attributes to be appended to response at root level
+     * Attributes to be appended to response at root level.
      *
      * @var array
      */
     protected $attributes = [];
 
     /**
-     * Set response resource total
+     * Set response resource total.
      *
      * @param int $total
      * @return $this|int
@@ -62,7 +61,7 @@ class RestResponse
     public function total($total = null)
     {
         if (func_num_args()) {
-            $this->total = (int)$total;
+            $this->total = (int) $total;
 
             return $this;
         }
@@ -71,7 +70,7 @@ class RestResponse
     }
 
     /**
-     * Set response resource current page
+     * Set response resource current page.
      *
      * @param int $currentPage
      * @param int $lastPage
@@ -80,15 +79,15 @@ class RestResponse
     public function paginate($currentPage = 0, $lastPage = 0)
     {
         if (func_num_args()) {
-            $this->currentPage = (int)$currentPage;
-            $this->lastPage = (int)$lastPage;
+            $this->currentPage = (int) $currentPage;
+            $this->lastPage = (int) $lastPage;
         }
 
         return $this;
     }
 
     /**
-     * Set response resource last page
+     * Set response resource last page.
      *
      * @param int $total
      * @return $this|int
@@ -96,7 +95,7 @@ class RestResponse
     public function lastPage($total = null)
     {
         if (func_num_args()) {
-            $this->total = (int)$total;
+            $this->total = (int) $total;
 
             return $this;
         }
@@ -105,7 +104,7 @@ class RestResponse
     }
 
     /**
-     * Set response data
+     * Set response data.
      *
      * @param mixed $data
      * @return $this|mixed
@@ -122,7 +121,7 @@ class RestResponse
     }
 
     /**
-     * Set response aggregations
+     * Set response aggregations.
      *
      * @param mixed $data
      *
@@ -131,11 +130,12 @@ class RestResponse
     public function aggregations(array $aggregations = null)
     {
         $this->aggregations = $aggregations;
+
         return $this;
     }
 
     /**
-     * Set response errors
+     * Set response errors.
      *
      * @param array $errors
      * @return $this|null
@@ -152,14 +152,14 @@ class RestResponse
     }
 
     /**
-     * Add error to response errors
+     * Add error to response errors.
      *
      * @param mixed $message
      * @return $this
      */
     public function addError($message)
     {
-        if (!isset($this->errors)) {
+        if (! isset($this->errors)) {
             $this->errors = [];
         }
 
@@ -169,7 +169,7 @@ class RestResponse
     }
 
     /**
-     * Set response http code
+     * Set response http code.
      *
      * @param int $code
      * @return $this|int
@@ -186,7 +186,7 @@ class RestResponse
     }
 
     /**
-     * Magic to get response code constants
+     * Magic to get response code constants.
      *
      * @param string $key
      * @return mixed|null
@@ -197,15 +197,14 @@ class RestResponse
             return $this->$key;
         }
 
-        $code = 'static::REST_RESPONSE_' . strtoupper($key) . '_CODE';
+        $code = 'static::REST_RESPONSE_'.strtoupper($key).'_CODE';
 
         return defined($code) ? constant($code) : null;
     }
 
-
     /**
      * Magic to allow setting the response
-     * code in method chaining
+     * code in method chaining.
      *
      * @param $func
      * @param $args
@@ -213,7 +212,7 @@ class RestResponse
      */
     public function __call($func, $args)
     {
-        $code = 'static::REST_RESPONSE_' . strtoupper($func) . '_CODE';
+        $code = 'static::REST_RESPONSE_'.strtoupper($func).'_CODE';
 
         if (defined($code)) {
             return $this->code(constant($code));
@@ -222,9 +221,8 @@ class RestResponse
         return call_user_func_array($func, $args);
     }
 
-
     /**
-     * Build a new response with our response data
+     * Build a new response with our response data.
      *
      * @param mixed $response
      *
@@ -232,7 +230,7 @@ class RestResponse
      */
     public function respond($response = null)
     {
-        if (!func_num_args()) {
+        if (! func_num_args()) {
             $response = new \stdClass();
 
             foreach (['total', 'data', 'aggregations', 'errors', 'lastPage', 'currentPage'] as $property) {
@@ -256,7 +254,7 @@ class RestResponse
     }
 
     /**
-     * Set a root attribute on response object
+     * Set a root attribute on response object.
      *
      * @param $name
      * @param $value
@@ -269,9 +267,8 @@ class RestResponse
         return $this;
     }
 
-
     /**
-     * Set message on response
+     * Set message on response.
      * @param $message
      * @return RestResponse
      */
@@ -281,7 +278,7 @@ class RestResponse
     }
 
     /**
-     * Get a response object root attribute
+     * Get a response object root attribute.
      *
      * @param $name
      * @return mixed
