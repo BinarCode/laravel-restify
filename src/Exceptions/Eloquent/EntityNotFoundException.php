@@ -15,6 +15,7 @@ class EntityNotFoundException extends \Exception
     {
         if (env('APP_DEBUG') && $entity && $id) {
             parent::__construct("[{$entity}] with provided ID [{$id}] not found.");
+
             return;
         }
 
