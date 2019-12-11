@@ -20,7 +20,6 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 
 /**
- * @package Binaryk\Restable\Exceptions;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RestifyHandler extends ExceptionHandler
@@ -93,11 +92,12 @@ class RestifyHandler extends ExceptionHandler
             default:
                 if (app()->environment('development') || app()->environment('local')) {
                     $response->addError($exception->getMessage());
+
                     return parent::render($request, $exception);
                 } else {
                     $response->addError(
                         app('translator')->get('messages.error_retrieving_records')
-                        . ' [' . date('Y-m-d H:i:s') . ']'
+                        .' ['.date('Y-m-d H:i:s').']'
                     );
                 }
 
@@ -106,5 +106,4 @@ class RestifyHandler extends ExceptionHandler
 
         return $response->respond();
     }
-
 }

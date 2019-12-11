@@ -28,5 +28,4 @@ class RestifyLoginRequest extends FormRequest
             'password' => 'required|min:6',
         ];
     }
-
 }
