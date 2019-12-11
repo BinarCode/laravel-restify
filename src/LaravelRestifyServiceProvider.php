@@ -2,10 +2,19 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Repositories\Contracts\RestifyRepositoryInterface;
+use Binaryk\LaravelRestify\Repositories\RestifyRepository;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
 {
+    /**
+     * @var array
+     */
+    public $bindings = [
+        RestifyRepositoryInterface::class => RestifyRepository::class,
+    ];
+
     /**
      * Bootstrap the application services.
      */

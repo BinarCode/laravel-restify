@@ -13,7 +13,7 @@ use Illuminate\Http\JsonResponse;
  * @method RestResponse created
  * @method RestResponse deleted
  * @method RestResponse blank
- * @method RestResponse error
+ * @method RestResponse error 500
  * @method RestResponse invalid
  * @method RestResponse forbidden
  * @method RestResponse missing
