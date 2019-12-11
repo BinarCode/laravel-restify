@@ -18,13 +18,12 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
 
 /**
- * Abstract Class RestController
+ * Abstract Class RestController.
  *
  * This class provides reusable, high-level RESTful
  * functionality that subclasses can take advantage
  * of.
  *
- * @package App\Http
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 abstract class RestController extends BaseController
@@ -83,7 +82,7 @@ abstract class RestController extends BaseController
     }
 
     /**
-     * Returns a generic response to the client
+     * Returns a generic response to the client.
      *
      * @param mixed $data
      * @param int $httpCode
@@ -98,9 +97,8 @@ abstract class RestController extends BaseController
         return response()->json($response, $httpCode);
     }
 
-
     /**
-     * Get Response object
+     * Get Response object.
      *
      * @return RestResponse
      */
@@ -155,8 +153,5 @@ abstract class RestController extends BaseController
         if ($this->guard->check()) {
             return $this->guard->user();
         }
-
-        return null;
     }
-
 }
