@@ -20,7 +20,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
 /**
- * @package App\Services;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class AuthService extends RestifyService
@@ -41,18 +40,17 @@ class AuthService extends RestifyService
     {
         $token = null;
 
-
         if (Auth::attempt($credentials) === false) {
             throw new CredentialsDoesntMatch("Credentials doesn't match");
         }
 
         /**
-         * @var Authenticatable $user
+         * @var Authenticatable
          */
         $user = Auth::user();
 
         if ($user instanceof MustVerifyEmail && $user->hasVerifiedEmail() === false) {
-            throw new UnverifiedUser("The email is not verified");
+            throw new UnverifiedUser('The email is not verified');
         }
 
         if ($user instanceof Passportable) {
@@ -76,7 +74,7 @@ class AuthService extends RestifyService
         }
 
         /**
-         * @var Authenticatable $user
+         * @var Authenticatable
          */
         $user = $this->repository->query()->create($payload);
 
@@ -92,14 +90,13 @@ class AuthService extends RestifyService
     public function verify($id, $hash = null)
     {
         /**
-         * @var Authenticatable $user
+         * @var Authenticatable
          */
         $user = $this->repository->query()->find($id);
 
         if ($user instanceof Passportable && ! hash_equals((string) $hash, sha1($user->getEmail()))) {
             throw new AuthorizationException;
         }
-
 
         if ($user instanceof MustVerifyEmail && $user->markEmailAsVerified()) {
             event(new Verified($user));
@@ -114,7 +111,7 @@ class AuthService extends RestifyService
      */
     public function resetPassword($user, $password)
     {
-        /**
+        /*
          * @var Authenticatable $user
          */
         $user->password = Hash::make($password);
