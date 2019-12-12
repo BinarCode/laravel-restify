@@ -3,8 +3,8 @@
 namespace Binaryk\LaravelRestify\Events;
 
 use Illuminate\Database\Eloquent\Model;
-use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Queue\SerializesModels;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class UserLoggedIn
