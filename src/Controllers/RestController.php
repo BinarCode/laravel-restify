@@ -164,4 +164,13 @@ abstract class RestController extends BaseController
     {
         return Password::broker();
     }
+
+    /**
+     * @param $msg
+     * @return JsonResponse
+     */
+    public function message($msg)
+    {
+        return $this->response()->data()->message($msg)->respond();
+    }
 }
