@@ -20,7 +20,7 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
      *
      * @var EloquentModel
      */
-    protected $model;
+    protected $builderModel;
 
     /**
      * Class construct.
@@ -31,7 +31,7 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
      */
     public function __construct(EloquentModel $model)
     {
-        $this->model = $model;
+        $this->builderModel = $model;
     }
 
     /**
@@ -43,7 +43,7 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
      */
     public function __call($methodName, $params)
     {
-        return call_user_func_array([$this->model, $methodName], $params);
+        return call_user_func_array([$this->model(), $methodName], $params);
     }
 
     /**
@@ -65,7 +65,7 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
      */
     public function query(): Builder
     {
-        return $this->model->query();
+        return $this->model()->query();
     }
 
     /**
@@ -87,5 +87,13 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
     public function find($id, $columns = ['*'])
     {
         return $this->find($id, $columns);
+    }
+
+    /**
+     * @return EloquentModel
+     */
+    public function model()
+    {
+        return $this->builderModel;
     }
 }

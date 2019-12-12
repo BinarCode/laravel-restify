@@ -20,6 +20,7 @@ use Illuminate\Http\JsonResponse;
  * @method RestResponse missing
  * @method RestResponse success
  * @method RestResponse unavailable
+ * @method RestResponse throttle 429 - too many attempts
  *
  * @author lupacescueduard <eduard.lupacescu@binarcode.com>
  */
@@ -39,6 +40,7 @@ class RestResponse
     const REST_RESPONSE_UNAUTHORIZED_CODE = 401;
     const REST_RESPONSE_FORBIDDEN_CODE = 403;
     const REST_RESPONSE_MISSING_CODE = 404;
+    const REST_RESPONSE_THROTTLE_CODE = 429;
     const REST_RESPONSE_SUCCESS_CODE = 200;
     const REST_RESPONSE_UNAVAILABLE_CODE = 503;
 

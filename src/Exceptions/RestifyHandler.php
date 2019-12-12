@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -86,6 +87,7 @@ class RestifyHandler extends ExceptionHandler
                 break;
 
             case $exception instanceof AccessDeniedHttpException:
+            case $exception instanceof InvalidSignatureException:
                 $response->addError($exception->getMessage())->forbidden();
                 break;
 

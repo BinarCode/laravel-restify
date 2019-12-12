@@ -27,4 +27,10 @@ interface RestifyRepositoryInterface
      * @return Model|Collection|static[]|static|null
      */
     public function find($id, $columns = ['*']);
+
+    /**
+     * @return Model
+     */
+    public function model();
+
 }

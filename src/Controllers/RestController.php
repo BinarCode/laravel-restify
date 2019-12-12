@@ -9,6 +9,7 @@ use Illuminate\Config\Repository as Config;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
@@ -16,6 +17,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Facades\Password;
 
 /**
  * Abstract Class RestController.
@@ -153,5 +155,13 @@ abstract class RestController extends BaseController
         if ($this->guard->check()) {
             return $this->guard->user();
         }
+    }
+
+    /**
+     * @return PasswordBroker
+     */
+    protected function broker()
+    {
+        return Password::broker();
     }
 }

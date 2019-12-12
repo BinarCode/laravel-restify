@@ -12,7 +12,7 @@ class RestifyService
     /**
      * @var RestifyRepositoryInterface
      */
-    protected $repository;
+    public $repository;
 
     public function __construct(RestifyRepositoryInterface $repository = null)
     {
