@@ -2,32 +2,23 @@
 
 namespace Binaryk\LaravelRestify\Events;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Queue\SerializesModels;
-use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\RequestStack;
 
 class UserLoggedIn
 {
     use SerializesModels;
 
     /**
-     * @var Model
+     * @var Authenticatable
      */
-    public $authenticated;
+    public $user;
 
     /**
-     * @var Request
+     * @param Authenticatable $user
      */
-    public $request;
-
-    /**
-     * @param Model $authenticated
-     * @param RequestStack $request
-     */
-    public function __construct(Model $authenticated, RequestStack $request)
+    public function __construct($user)
     {
-        $this->authenticated = $authenticated;
-        $this->request = $request->getCurrentRequest();
+        $this->user = $user;
     }
 }

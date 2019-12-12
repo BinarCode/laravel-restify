@@ -5,11 +5,14 @@ namespace Binaryk\LaravelRestify\Exceptions;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException as EntityNotFoundExceptionEloquent;
 use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
+use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
 use Exception;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Validation\UnauthorizedException;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
@@ -64,10 +67,6 @@ class RestifyHandler extends ExceptionHandler
                 $response->addError($exception->getMessage())->missing();
                 break;
 
-            case $exception instanceof LocaleActiveException:
-                $response->addError($exception->getMessage())->invalid();
-                break;
-
             case $exception instanceof ValidationException:
                 $response->errors($exception->errors())->invalid();
                 break;
@@ -81,11 +80,14 @@ class RestifyHandler extends ExceptionHandler
 
             case $exception instanceof UnauthorizedException:
             case $exception instanceof UnauthorizedHttpException:
+            case $exception instanceof UnauthenticateException:
             case $exception instanceof GatePolicy:
+            case $exception instanceof AuthenticationException:
                 $response->addError($exception->getMessage())->auth();
                 break;
 
             case $exception instanceof AccessDeniedHttpException:
+            case $exception instanceof InvalidSignatureException:
                 $response->addError($exception->getMessage())->forbidden();
                 break;
 
