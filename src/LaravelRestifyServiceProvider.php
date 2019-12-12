@@ -50,7 +50,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
             ], 'lang');*/
 
             // Registering package commands.
-             $this->commands([
+            $this->commands([
                  CheckPassport::class,
              ]);
         }

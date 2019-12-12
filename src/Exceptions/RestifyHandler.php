@@ -99,7 +99,7 @@ class RestifyHandler extends ExceptionHandler
                 } else {
                     $response->addError(
                         app('translator')->get('messages.error_retrieving_records')
-                        . ' [' . date('Y-m-d H:i:s') . ']'
+                        .' ['.date('Y-m-d H:i:s').']'
                     );
                 }
 
