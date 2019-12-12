@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\Events;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Request;
 use Illuminate\Queue\SerializesModels;
 use Symfony\Component\HttpFoundation\RequestStack;
 
