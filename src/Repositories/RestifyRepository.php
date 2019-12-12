@@ -4,6 +4,8 @@ namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Repositories\Contracts\RestifyRepositoryInterface;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Model as EloquentModel;
 
 /**
@@ -65,4 +67,27 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
     {
         return $this->model->query();
     }
+
+
+    /**
+     * @param array $payload
+     * @return Model
+     */
+    public function store(array $payload)
+    {
+        return $this->query()->create($payload);
+    }
+
+    /**
+     * Find a model by its primary key.
+     *
+     * @param mixed $id
+     * @param array $columns
+     * @return Model|Collection|static[]|static|null
+     */
+    public function find($id, $columns = ['*'])
+    {
+        return $this->find($id, $columns);
+    }
+
 }
