@@ -32,5 +32,4 @@ interface RestifyRepositoryInterface
      * @return Model
      */
     public function model();
-
 }
