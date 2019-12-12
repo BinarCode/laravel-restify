@@ -68,7 +68,6 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
         return $this->model->query();
     }
 
-
     /**
      * @param array $payload
      * @return Model
@@ -89,5 +88,4 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
     {
         return $this->find($id, $columns);
     }
-
 }
