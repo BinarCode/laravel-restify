@@ -96,10 +96,6 @@ class AuthService extends RestifyService
          */
         $user = $this->repository->query()->find($id);
 
-        if ($user instanceof MustVerifyEmail) {
-            throw new AuthorizationException;
-        }
-
         if ($user instanceof Passportable && ! hash_equals((string) $hash, sha1($user->getEmail()))) {
             throw new AuthorizationException;
         }
