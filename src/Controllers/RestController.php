@@ -123,7 +123,7 @@ abstract class RestController extends BaseController
      * @throws GatePolicy
      * @throws BindingResolutionException
      */
-    protected function gate($policy, ...$objects)
+    public function gate($policy, ...$objects)
     {
         foreach ($objects as $object) {
             if ($object === null) {
@@ -136,7 +136,7 @@ abstract class RestController extends BaseController
         }
 
         if ($this->gate->check($policy, $objects) === false) {
-            throw new GatePolicy('No access for this model.');
+            throw new GatePolicy(__('messages.no_model_access'));
         }
 
         return true;
@@ -146,7 +146,7 @@ abstract class RestController extends BaseController
      * @return Authenticatable|null
      * @throws BindingResolutionException
      */
-    protected function user()
+    public function user()
     {
         if (($this->guard instanceof Guard) === false) {
             $this->guard = app()->make(Guard::class);
@@ -160,7 +160,7 @@ abstract class RestController extends BaseController
     /**
      * @return PasswordBroker
      */
-    protected function broker()
+    public function broker()
     {
         return Password::broker();
     }
