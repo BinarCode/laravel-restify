@@ -9,13 +9,12 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class AuthServiceRegisterTest extends IntegrationTest
 {
     /**
-     * @var AuthService $authService
+     * @var AuthService
      */
     protected $authService;
 
@@ -30,7 +29,6 @@ class AuthServiceRegisterTest extends IntegrationTest
         parent::getEnvironmentSetUp($app);
         $app['config']->set('auth.providers.users.model', User::class);
     }
-
 
     public function test_register_throw_user_not_authenticatable()
     {
@@ -51,6 +49,7 @@ class AuthServiceRegisterTest extends IntegrationTest
 
         Event::assertDispatched(Registered::class, function ($e) use ($user) {
             $this->assertEquals($e->user->email, $user['email']);
+
             return $e->user instanceof \Binaryk\LaravelRestify\Tests\Fixtures\User;
         });
 

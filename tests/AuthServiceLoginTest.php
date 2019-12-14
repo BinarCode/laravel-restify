@@ -16,13 +16,12 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class AuthServiceLoginTest extends IntegrationTest
 {
     /**
-     * @var AuthService $authService
+     * @var AuthService
      */
     protected $authService;
 
@@ -80,7 +79,7 @@ class AuthServiceLoginTest extends IntegrationTest
 
         $userMustVerify->fill([
             'email' => 'test@mail.com',
-            'email_verified_at' => Carbon::now()
+            'email_verified_at' => Carbon::now(),
         ]);
 
         Auth::shouldReceive('attempt')
@@ -103,7 +102,7 @@ class AuthServiceLoginTest extends IntegrationTest
 
         $user->fill([
             'email' => 'test@mail.com',
-            'email_verified_at' => Carbon::now()
+            'email_verified_at' => Carbon::now(),
         ]);
 
         Auth::shouldReceive('attempt')
@@ -117,6 +116,7 @@ class AuthServiceLoginTest extends IntegrationTest
 
         Event::assertDispatched(UserLoggedIn::class, function ($e) use ($user) {
             $this->assertEquals($e->user->email, $user->email);
+
             return $e->user instanceof User;
         });
     }
