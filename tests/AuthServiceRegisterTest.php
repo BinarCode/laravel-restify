@@ -107,6 +107,7 @@ class AuthServiceRegisterTest extends IntegrationTest
         $this->assertNotNull($lastUser->email_verified_at);
         Event::assertDispatched(Verified::class, function ($e) use ($user) {
             $this->assertEquals($e->user->email, $user['email']);
+
             return $e->user instanceof \Binaryk\LaravelRestify\Tests\Fixtures\User;
         });
     }
