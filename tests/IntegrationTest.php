@@ -3,6 +3,8 @@
 namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
+use Binaryk\LaravelRestify\Tests\Fixtures\User;
+use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Facades\Hash;
 use Orchestra\Testbench\TestCase;
 
@@ -22,7 +24,7 @@ abstract class IntegrationTest extends TestCase
         Hash::driver('bcrypt')->setRounds(4);
         $this->repositoryMock();
         $this->loadMigrations();
-        $this->withFactories(__DIR__.'/Factories');
+        $this->withFactories(__DIR__ . '/Factories');
         $this->injectTranslator();
     }
 
@@ -36,6 +38,7 @@ abstract class IntegrationTest extends TestCase
     protected function getEnvironmentSetUp($app)
     {
         $app['config']->set('database.default', 'sqlite');
+        $app['config']->set('auth.providers.users.model', User::class);
 
         $app['config']->set('database.connections.sqlite', [
             'driver' => 'sqlite',
@@ -53,7 +56,7 @@ abstract class IntegrationTest extends TestCase
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--realpath' => realpath(__DIR__.'/Migrations'),
+            '--realpath' => realpath(__DIR__ . '/Migrations'),
         ]);
     }
 
@@ -63,11 +66,47 @@ abstract class IntegrationTest extends TestCase
 
     public function injectTranslator()
     {
-        $this->app->instance('translator', new class {
-            public function getFromJson($key)
+        $this->instance('translator', (new class implements Translator {
+
+            /**
+             * @inheritDoc
+             */
+            public function trans($key, array $replace = [], $locale = null)
             {
                 return $key;
             }
-        });
+
+            /**
+             * @inheritDoc
+             */
+            public function getFromJson($key, array $replace = [], $locale = null)
+            {
+                return $key;
+            }
+
+            /**
+             * @inheritDoc
+             */
+            public function transChoice($key, $number, array $replace = [], $locale = null)
+            {
+                return $key;
+            }
+
+            /**
+             * @inheritDoc
+             */
+            public function getLocale()
+            {
+                return 'en';
+            }
+
+            /**
+             * @inheritDoc
+             */
+            public function setLocale($locale)
+            {
+
+            }
+        }));
     }
 }

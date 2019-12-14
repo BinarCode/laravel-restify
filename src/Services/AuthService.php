@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Exceptions\PassportUserException;
 use Binaryk\LaravelRestify\Exceptions\PasswordResetException;
 use Binaryk\LaravelRestify\Exceptions\PasswordResetInvalidTokenException;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
+use Binaryk\LaravelRestify\Requests\ResetPasswordRequest;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -21,12 +22,13 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Psr\Container\NotFoundExceptionInterface;
 
 /**
@@ -133,39 +135,49 @@ class AuthService extends RestifyService
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
-        return $this->broker()->sendResetLink($email);
+        return $this->broker()->sendResetLink(compact('email'));
     }
 
     /**
-     * @param Request $request
-     * @param ResetPasswordService $passwordService
+     * @param array $credentials
      * @return JsonResponse
      * @throws PasswordResetException
      * @throws PasswordResetInvalidTokenException
+     * @throws ValidationException
+     * @throws EntityNotFoundException
      */
-    public function resetPassword(Request $request, ResetPasswordService $passwordService = null)
+    public function resetPassword(array $credentials = [])
     {
+        $validator = Validator::make($credentials, (new ResetPasswordRequest())->rules(), (new ResetPasswordRequest())->messages());
+        if ($validator->fails()) {
+            // this is manually thrown for readability
+            throw new ValidationException($validator);
+        }
+
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.
-        if (is_null($passwordService)) {
-            $passwordService = resolve(ResetPasswordService::class);
-            $request->validate($passwordService->rules(), $passwordService->messages());
-        }
-
         $response = $this->broker()->reset(
-            $request->only('email', 'password', 'password_confirmation', 'token'), function ($user, $password) {
-                $user->password = Hash::make($password);
+            $credentials, function ($user, $password) {
+            $user->password = Hash::make($password);
 
-                $user->setRememberToken(Str::random(60));
+            $user->setRememberToken(Str::random(60));
 
-                $user->save();
+            $user->save();
 
-                event(new PasswordReset($user));
-            });
+            event(new PasswordReset($user));
+        });
 
         if ($response === PasswordBroker::INVALID_TOKEN) {
             throw new PasswordResetInvalidTokenException(__('Invalid token.'));
+        }
+
+        if ($response === PasswordBroker::INVALID_USER) {
+            throw new EntityNotFoundException(__("User with provided email doesn't exists."));
+        }
+
+        if ($response === PasswordBroker::INVALID_PASSWORD) {
+            throw new PasswordResetException(__("Invalid password."));
         }
 
         if ($response !== PasswordBroker::PASSWORD_RESET) {
