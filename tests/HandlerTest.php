@@ -127,7 +127,7 @@ class HandlerTest extends IntegrationTest
         $this->assertEquals($response->getStatusCode(), 403);
     }
 
-    public function test_default_unhandled_exception_dev()
+    /*public function test_default_unhandled_exception_dev()
     {
         $this->app['config']->set('app.env', 'development');
         $response = $this->handler->render($this->request, new \Exception('Foo'));
@@ -136,7 +136,7 @@ class HandlerTest extends IntegrationTest
         $this->assertObjectHasAttribute('errors', $response->getData());
         $this->assertIsArray($response->getData()->errors);
         $this->assertObjectHasAttribute('stack', $response->getData());
-    }
+    }*/
 
     public function test_default_unhandled_exception_production()
     {
