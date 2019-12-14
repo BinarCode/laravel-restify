@@ -8,16 +8,16 @@ use Illuminate\Http\JsonResponse;
 /**
  * Class RestResponse.
  *
- * @method RestResponse auth
+ * @method RestResponse auth 401
  * @method RestResponse refresh
  * @method RestResponse created
  * @method RestResponse deleted
  * @method RestResponse blank
  * @method RestResponse error 500
- * @method RestResponse invalid
+ * @method RestResponse invalid 400
  * @method RestResponse unauthorized 401 - don't have correct password/email
  * @method RestResponse forbidden 403 - don't have enough permissions
- * @method RestResponse missing
+ * @method RestResponse missing 404
  * @method RestResponse success
  * @method RestResponse unavailable
  * @method RestResponse throttle 429 - too many attempts
@@ -26,6 +26,18 @@ use Illuminate\Http\JsonResponse;
  */
 class RestResponse
 {
+    static $RESPONSE_KEYS = [
+        'line',
+        'file',
+        'stack',
+        'total',
+        'data',
+        'aggregations',
+        'errors',
+        'lastPage',
+        'currentPage'
+    ];
+
     /**
      * Response Codes.
      */
@@ -48,6 +60,10 @@ class RestResponse
      * @var int
      */
     protected $code = self::REST_RESPONSE_SUCCESS_CODE;
+    /**
+     * @var int
+     */
+    protected $line;
 
     /**
      * Attributes to be appended to response at root level.
@@ -55,6 +71,14 @@ class RestResponse
      * @var array
      */
     protected $attributes = [];
+    /**
+     * @var string
+     */
+    private $file;
+    /**
+     * @var string|null
+     */
+    private $stack;
 
     /**
      * Set response resource total.
@@ -163,7 +187,7 @@ class RestResponse
      */
     public function addError($message)
     {
-        if (! isset($this->errors)) {
+        if ( ! isset($this->errors)) {
             $this->errors = [];
         }
 
@@ -190,6 +214,53 @@ class RestResponse
     }
 
     /**
+     * Set response http code.
+     *
+     * @param int $line
+     * @return $this|int
+     */
+    public function line($line = null)
+    {
+        if (func_num_args()) {
+            $this->line = $line;
+
+            return $this;
+        }
+
+        return $this->line;
+    }
+
+    /**
+     * @param string $file
+     * @return $this|int
+     */
+    public function file(string $file = null)
+    {
+        if (func_num_args()) {
+            $this->file = $file;
+
+            return $this;
+        }
+
+        return $this->line;
+    }
+
+    /**
+     * @param string|null $stack
+     * @return $this|int
+     */
+    public function stack(string $stack = null)
+    {
+        if (func_num_args()) {
+            $this->stack = $stack;
+
+            return $this;
+        }
+
+        return $this->line;
+    }
+
+    /**
      * Magic to get response code constants.
      *
      * @param string $key
@@ -201,7 +272,7 @@ class RestResponse
             return $this->$key;
         }
 
-        $code = 'static::REST_RESPONSE_'.strtoupper($key).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($key) . '_CODE';
 
         return defined($code) ? constant($code) : null;
     }
@@ -216,7 +287,7 @@ class RestResponse
      */
     public function __call($func, $args)
     {
-        $code = 'static::REST_RESPONSE_'.strtoupper($func).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($func) . '_CODE';
 
         if (defined($code)) {
             return $this->code(constant($code));
@@ -234,10 +305,10 @@ class RestResponse
      */
     public function respond($response = null)
     {
-        if (! func_num_args()) {
+        if ( ! func_num_args()) {
             $response = new \stdClass();
 
-            foreach (['total', 'data', 'aggregations', 'errors', 'lastPage', 'currentPage'] as $property) {
+            foreach ($this->fillable() as $property) {
                 if (isset($this->{$property})) {
                     $response->{$property} = $this->{$property};
                 }
@@ -290,5 +361,13 @@ class RestResponse
     public function getAttribute($name)
     {
         return $this->attributes[$name];
+    }
+
+    /**
+     * @return array
+     */
+    public function fillable(): array
+    {
+        return static::$RESPONSE_KEYS;
     }
 }

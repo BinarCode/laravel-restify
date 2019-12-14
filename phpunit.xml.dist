@@ -17,6 +17,9 @@
     <filter>
         <whitelist>
             <directory suffix=".php">src/</directory>
+            <exclude>
+                <directory suffix="CheckPassport.php">src/Commands</directory>
+            </exclude>
         </whitelist>
     </filter>
     <logging>
