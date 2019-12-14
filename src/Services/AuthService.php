@@ -70,7 +70,6 @@ class AuthService extends RestifyService
             event(new UserLoggedIn($user));
         }
 
-
         return $token;
     }
 
