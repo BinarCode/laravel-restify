@@ -150,14 +150,14 @@ class AuthService extends RestifyService
 
         $response = $this->broker()->reset(
             $request->only('email', 'password', 'password_confirmation', 'token'), function ($user, $password) {
-            $user->password = Hash::make($password);
+                $user->password = Hash::make($password);
 
-            $user->setRememberToken(Str::random(60));
+                $user->setRememberToken(Str::random(60));
 
-            $user->save();
+                $user->save();
 
-            event(new PasswordReset($user));
-        });
+                event(new PasswordReset($user));
+            });
 
         if ($response === PasswordBroker::INVALID_TOKEN) {
             throw new PasswordResetInvalidTokenException(__('Invalid token.'));
