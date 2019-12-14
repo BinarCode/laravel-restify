@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Exceptions\PasswordResetException;
 use Binaryk\LaravelRestify\Exceptions\PasswordResetInvalidTokenException;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
 use Binaryk\LaravelRestify\Requests\ResetPasswordRequest;
+use Binaryk\LaravelRestify\Requests\RestifyPasswordEmailRequest;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -129,13 +130,25 @@ class AuthService extends RestifyService
     /**
      * @param $email
      * @return string
+     * @throws EntityNotFoundException
+     * @throws PasswordResetException
+     * @throws PasswordResetInvalidTokenException
+     * @throws ValidationException
      */
     public function sendResetPasswordLinkEmail($email)
     {
+        $validator = Validator::make(compact('email'), (new RestifyPasswordEmailRequest)->rules(), (new RestifyPasswordEmailRequest)->messages());
+        if ($validator->fails()) {
+            // this is manually thrown for readability
+            throw new ValidationException($validator);
+        }
         // We will send the password reset link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
-        return $this->broker()->sendResetLink(compact('email'));
+        $response = $this->broker()->sendResetLink(compact('email'));
+        $this->resolveBrokerResponse($response);
+
+        return $response;
     }
 
     /**
@@ -168,21 +181,7 @@ class AuthService extends RestifyService
             event(new PasswordReset($user));
         });
 
-        if ($response === PasswordBroker::INVALID_TOKEN) {
-            throw new PasswordResetInvalidTokenException(__('Invalid token.'));
-        }
-
-        if ($response === PasswordBroker::INVALID_USER) {
-            throw new EntityNotFoundException(__("User with provided email doesn't exists."));
-        }
-
-        if ($response === PasswordBroker::INVALID_PASSWORD) {
-            throw new PasswordResetException(__("Invalid password."));
-        }
-
-        if ($response !== PasswordBroker::PASSWORD_RESET) {
-            throw new PasswordResetException($response);
-        }
+        $this->resolveBrokerResponse($response);
 
         return $response;
     }
@@ -226,6 +225,27 @@ class AuthService extends RestifyService
     {
         if (false === $userInstance instanceof Passportable) {
             throw new PassportUserException(__("User is not implementing Binaryk\LaravelRestify\Contracts\Passportable contract. User can use 'Laravel\Passport\HasApiTokens' trait"));
+        }
+    }
+
+    /**
+     * @param $response
+     * @throws EntityNotFoundException
+     * @throws PasswordResetException
+     * @throws PasswordResetInvalidTokenException
+     */
+    protected function resolveBrokerResponse($response)
+    {
+        if ($response === PasswordBroker::INVALID_TOKEN) {
+            throw new PasswordResetInvalidTokenException(__('Invalid token.'));
+        }
+
+        if ($response === PasswordBroker::INVALID_USER) {
+            throw new EntityNotFoundException(__("User with provided email doesn't exists."));
+        }
+
+        if ($response === PasswordBroker::INVALID_PASSWORD) {
+            throw new PasswordResetException(__("Invalid password."));
         }
     }
 }
