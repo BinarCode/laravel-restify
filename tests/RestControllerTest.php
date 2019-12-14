@@ -69,12 +69,6 @@ class RestControllerTest extends IntegrationTest
         $this->expectException(GatePolicy::class);
         $this->expectExceptionMessage(__('messages.no_model_access'));
         $this->controller->show($user->id);
-
-        Gate::shouldReceive('check')
-            ->andReturnTrue();
-
-        $response = $this->controller->show($user->id);
-        $this->assertEquals($user->email, data_get($response->getData(), 'data.email'));
     }
 
     public function test_gate_allow_access()
@@ -84,6 +78,8 @@ class RestControllerTest extends IntegrationTest
             ->andReturnTrue();
 
         $this->assertTrue($this->controller->gate('access', $user));
+        $response = $this->controller->show($user->id);
+        $this->assertEquals($user->email, data_get($response->getData(), 'data.email'));
     }
 
     public function test_making_custom_response()
