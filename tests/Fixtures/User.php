@@ -8,13 +8,11 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
 /**
- * @package Binaryk\LaravelRestify\Tests\Fixtures;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class User extends Authenticatable implements Passportable, MustVerifyEmail
 {
     use \Illuminate\Auth\MustVerifyEmail;
-
     use Notifiable;
 
     /**
@@ -43,7 +41,6 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
-
 
     public function getEmail()
     {
