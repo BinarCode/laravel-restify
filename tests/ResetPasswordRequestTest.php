@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Requests\ResetPasswordRequest;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class ResetPasswordRequestTest extends IntegrationTest
@@ -35,5 +34,4 @@ class ResetPasswordRequestTest extends IntegrationTest
     {
         $this->assertTrue($this->subject->authorize());
     }
-
 }
