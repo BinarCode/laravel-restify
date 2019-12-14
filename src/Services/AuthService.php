@@ -64,9 +64,12 @@ class AuthService extends RestifyService
         }
 
         $this->validateUserModel($user);
-        $token = $user->createToken('Login')->accessToken;
 
-        event(new UserLoggedIn($user));
+        if ($user instanceof Passportable) {
+            $token = $user->createToken('Login')->accessToken;
+            event(new UserLoggedIn($user));
+        }
+
 
         return $token;
     }
@@ -90,7 +93,9 @@ class AuthService extends RestifyService
          */
         $user = $builder->query()->create($payload);
 
-        event(new Registered($user));
+        if ($user instanceof Authenticatable) {
+            event(new Registered($user));
+        }
     }
 
     /**
