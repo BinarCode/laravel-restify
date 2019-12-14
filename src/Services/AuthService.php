@@ -244,7 +244,7 @@ class AuthService extends RestifyService
         }
 
         if ($response === PasswordBroker::INVALID_PASSWORD) {
-            throw new PasswordResetException(__("Invalid password."));
+            throw new PasswordResetException(__('Invalid password.'));
         }
     }
 }

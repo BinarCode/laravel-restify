@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Requests\RestifyLoginRequest;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RestifyLoginRequestTest extends IntegrationTest
@@ -34,5 +33,4 @@ class RestifyLoginRequestTest extends IntegrationTest
     {
         $this->assertTrue($this->subject->authorize());
     }
-
 }
