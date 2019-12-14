@@ -7,7 +7,6 @@ use Illuminate\Support\Facades\Hash;
 use Orchestra\Testbench\TestCase;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 abstract class IntegrationTest extends TestCase
@@ -23,7 +22,7 @@ abstract class IntegrationTest extends TestCase
         Hash::driver('bcrypt')->setRounds(4);
         $this->repositoryMock();
         $this->loadMigrations();
-        $this->withFactories(__DIR__ . '/Factories');
+        $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
     }
 
@@ -54,14 +53,12 @@ abstract class IntegrationTest extends TestCase
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--realpath' => realpath(__DIR__ . '/Migrations'),
+            '--realpath' => realpath(__DIR__.'/Migrations'),
         ]);
     }
 
-
     public function repositoryMock()
     {
-
     }
 
     public function injectTranslator()

@@ -15,13 +15,11 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Contracts\Container\Container as ContainerContract;
-use Illuminate\Container\Container;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -57,7 +55,7 @@ class AuthService extends RestifyService
         }
 
         /**
-         * @var Authenticatable|Passportable $user
+         * @var Authenticatable|Passportable
          */
         $user = Auth::user();
 
@@ -88,7 +86,7 @@ class AuthService extends RestifyService
         }
 
         /**
-         * @var Authenticatable $user
+         * @var Authenticatable
          */
         $user = $builder->query()->create($payload);
 
@@ -179,7 +177,7 @@ class AuthService extends RestifyService
     }
 
     /**
-     * Returns query for User model and validate if it exists
+     * Returns query for User model and validate if it exists.
      *
      * @throws EntityNotFoundException
      * @throws PassportUserException
