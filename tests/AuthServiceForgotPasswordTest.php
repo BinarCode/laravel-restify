@@ -140,16 +140,18 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
 
         Event::assertDispatched(PasswordReset::class, function ($e) use ($user) {
             $this->assertEquals($e->user->email, $user->email);
+
             return $e->user instanceof User;
         });
 
         $this->authService->login([
             'email' => $user->email,
-            'password' => $password
+            'password' => $password,
         ]);
 
         Event::assertDispatched(UserLoggedIn::class, function ($e) use ($user) {
             $this->assertEquals($e->user->email, $user->email);
+
             return $e->user instanceof User;
         });
     }
@@ -175,5 +177,4 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
 
         return User::query()->get()->last();
     }
-
 }
