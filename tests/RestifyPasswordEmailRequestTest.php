@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Requests\RestifyPasswordEmailRequest;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RestifyPasswordEmailRequestTest extends IntegrationTest
@@ -33,5 +32,4 @@ class RestifyPasswordEmailRequestTest extends IntegrationTest
     {
         $this->assertTrue($this->subject->authorize());
     }
-
 }
