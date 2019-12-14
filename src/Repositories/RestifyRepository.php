@@ -29,7 +29,7 @@ abstract class RestifyRepository implements RestifyRepositoryInterface
      *
      * @param EloquentModel $model
      */
-    public function __construct(EloquentModel $model)
+    public function __construct(EloquentModel $model = null)
     {
         $this->builderModel = $model;
     }

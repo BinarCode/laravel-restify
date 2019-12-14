@@ -6,11 +6,11 @@ use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
 use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch;
+use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\PassportUserException;
 use Binaryk\LaravelRestify\Exceptions\PasswordResetException;
 use Binaryk\LaravelRestify\Exceptions\PasswordResetInvalidTokenException;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
-use Binaryk\LaravelRestify\Repositories\Contracts\RestifyRepositoryInterface;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -18,20 +18,27 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Container\Container as ContainerContract;
+use Illuminate\Container\Container;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
+use Psr\Container\NotFoundExceptionInterface;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class AuthService extends RestifyService
 {
-    public function __construct(RestifyRepositoryInterface $repository)
+    public function __construct()
     {
-        parent::__construct($repository);
+        parent::__construct();
     }
 
     /**
@@ -50,7 +57,7 @@ class AuthService extends RestifyService
         }
 
         /**
-         * @var Authenticatable
+         * @var Authenticatable|Passportable $user
          */
         $user = Auth::user();
 
@@ -58,12 +65,10 @@ class AuthService extends RestifyService
             throw new UnverifiedUser('The email is not verified');
         }
 
-        if ($user instanceof Passportable) {
-            $token = $user->createToken('Login')->accessToken;
-            event(new UserLoggedIn($user));
-        } else {
-            throw new PassportUserException(__("User is not implementing Binaryk\LaravelRestify\Contracts\Passportable contract. User can use 'Laravel\Passport\HasApiTokens' trait"));
-        }
+        $this->validateUserModel($user);
+        $token = $user->createToken('Login')->accessToken;
+
+        event(new UserLoggedIn($user));
 
         return $token;
     }
@@ -71,17 +76,21 @@ class AuthService extends RestifyService
     /**
      * @param array $payload
      * @throws AuthenticatableUserException
+     * @throws EntityNotFoundException
+     * @throws PassportUserException
      */
     public function register(array $payload)
     {
-        if (false === $this->repository->model() instanceof Authenticatable) {
+        $builder = $this->userQuery();
+
+        if (false === $builder instanceof Authenticatable) {
             throw new AuthenticatableUserException(__("Repository model should be an instance of \Illuminate\Contracts\Auth\Authenticatable"));
         }
 
         /**
-         * @var Authenticatable
+         * @var Authenticatable $user
          */
-        $user = $this->repository->query()->create($payload);
+        $user = $builder->query()->create($payload);
 
         event(new Registered($user));
     }
@@ -164,8 +173,42 @@ class AuthService extends RestifyService
     /**
      * @return PasswordBroker
      */
-    protected function broker()
+    public function broker()
     {
         return Password::broker();
+    }
+
+    /**
+     * Returns query for User model and validate if it exists
+     *
+     * @throws EntityNotFoundException
+     * @throws PassportUserException
+     * @return Model
+     */
+    public function userQuery()
+    {
+        $userClass = Config::get('auth.providers.users.model');
+        try {
+            $container = Container::getInstance();
+            $userInstance = $container->make($userClass);
+            $this->validateUserModel($userInstance);
+
+            return $userInstance;
+        } catch (NotFoundExceptionInterface $e) {
+            throw new EntityNotFoundException("The model from the follow configuration -> 'auth.providers.users.model' doesn't exists.");
+        } catch (BindingResolutionException $e) {
+            throw new EntityNotFoundException("The model from the follow configuration -> 'auth.providers.users.model' doesn't exists.");
+        }
+    }
+
+    /**
+     * @param $userInstance
+     * @throws PassportUserException
+     */
+    public function validateUserModel($userInstance)
+    {
+        if (false === $userInstance instanceof Passportable) {
+            throw new PassportUserException(__("User is not implementing Binaryk\LaravelRestify\Contracts\Passportable contract. User can use 'Laravel\Passport\HasApiTokens' trait"));
+        }
     }
 }
