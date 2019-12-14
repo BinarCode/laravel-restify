@@ -98,18 +98,20 @@ class AuthService extends RestifyService
     /**
      * @param $id
      * @param null $hash
-     * @return Authenticatable
+     * @return Builder|Builder[]|\Illuminate\Database\Eloquent\Collection|Model|null
      * @throws AuthorizationException
+     * @throws EntityNotFoundException
+     * @throws PassportUserException
      */
     public function verify($id, $hash = null)
     {
         /**
          * @var Authenticatable
          */
-        $user = $this->repository->query()->find($id);
+        $user = $this->userQuery()->query()->find($id);
 
         if ($user instanceof Passportable && ! hash_equals((string) $hash, sha1($user->getEmail()))) {
-            throw new AuthorizationException;
+            throw new AuthorizationException('Invalid hash');
         }
 
         if ($user instanceof MustVerifyEmail && $user->markEmailAsVerified()) {
