@@ -26,7 +26,6 @@ use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class HandlerTest extends IntegrationTest
@@ -51,12 +50,12 @@ class HandlerTest extends IntegrationTest
 
     public function test_404_by_generated_by_framework()
     {
-        $response = $this->handler->render($this->request, new NotFoundHttpException("This message is not visible"));
+        $response = $this->handler->render($this->request, new NotFoundHttpException('This message is not visible'));
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals($response->getData()->errors[0], __('messages.not_found'));
         $this->assertEquals($response->getStatusCode(), 404);
 
-        $response = $this->handler->render($this->request, new ModelNotFoundException("This message is not visible"));
+        $response = $this->handler->render($this->request, new ModelNotFoundException('This message is not visible'));
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals($response->getData()->errors[0], __('messages.not_found'));
         $this->assertEquals($response->getStatusCode(), 404);
@@ -64,20 +63,20 @@ class HandlerTest extends IntegrationTest
 
     public function test_404_by_generated_by_developer()
     {
-        $response = $this->handler->render($this->request, new EntityNotFoundExceptionEloquent("This message is visible"));
+        $response = $this->handler->render($this->request, new EntityNotFoundExceptionEloquent('This message is visible'));
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals($response->getData()->errors[0], 'This message is visible');
         $this->assertEquals($response->getStatusCode(), 404);
 
-        $response = $this->handler->render($this->request, new EntityNotFoundException("User"));
+        $response = $this->handler->render($this->request, new EntityNotFoundException('User'));
         $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals($response->getData()->errors[0], "Guard entity with policy [User] not found.");
+        $this->assertEquals($response->getData()->errors[0], 'Guard entity with policy [User] not found.');
         $this->assertEquals($response->getStatusCode(), 404);
     }
 
     public function test_400_form_request_validation()
     {
-        $validator = Validator::make([], ['email' => 'required',], ['email.required' => 'Email should be fill',]);
+        $validator = Validator::make([], ['email' => 'required'], ['email.required' => 'Email should be fill']);
         $response = $this->handler->render($this->request, new ValidationException($validator));
         $this->assertInstanceOf(JsonResponse::class, $response);
         $this->assertEquals(end($response->getData()->errors->email), 'Email should be fill');
@@ -151,5 +150,4 @@ class HandlerTest extends IntegrationTest
         $this->assertObjectHasAttribute('errors', $response->getData());
         $this->assertEquals($response->getData()->errors[0], __('messages.something_went_wrong'));
     }
-
 }

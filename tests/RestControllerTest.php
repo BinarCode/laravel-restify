@@ -20,7 +20,7 @@ use Mockery;
 class RestControllerTest extends IntegrationTest
 {
     /**
-     * @var UserController $controller
+     * @var UserController
      */
     protected $controller;
 
@@ -85,6 +85,7 @@ class RestControllerTest extends IntegrationTest
 
         $this->assertTrue($this->controller->gate('access', $user));
     }
+
     public function test_making_custom_response()
     {
         $user = factory(User::class)->create();
