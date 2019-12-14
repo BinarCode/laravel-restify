@@ -8,19 +8,19 @@ use Illuminate\Http\JsonResponse;
 /**
  * Class RestResponse.
  *
- * @method RestResponse auth 401
- * @method RestResponse refresh
- * @method RestResponse created
- * @method RestResponse deleted
- * @method RestResponse blank
- * @method RestResponse error 500
- * @method RestResponse invalid 400
- * @method RestResponse unauthorized 401 - don't have correct password/email
- * @method RestResponse forbidden 403 - don't have enough permissions
- * @method RestResponse missing 404
- * @method RestResponse success
- * @method RestResponse unavailable
- * @method RestResponse throttle 429 - too many attempts
+ * @method RestResponse auth() 401
+ * @method RestResponse refresh()
+ * @method RestResponse created()
+ * @method RestResponse deleted()
+ * @method RestResponse blank()
+ * @method RestResponse error() 500
+ * @method RestResponse invalid() 400
+ * @method RestResponse unauthorized() 401 - don't have correct password/email
+ * @method RestResponse forbidden() 403 - don't have enough permissions
+ * @method RestResponse missing() 404
+ * @method RestResponse success()
+ * @method RestResponse unavailable()
+ * @method RestResponse throttle() 429 - too many attempts
  *
  * @author lupacescueduard <eduard.lupacescu@binarcode.com>
  */
