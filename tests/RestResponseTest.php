@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RestResponseTest extends IntegrationTest
@@ -20,5 +19,4 @@ class RestResponseTest extends IntegrationTest
         parent::setUp();
         $this->restResponse = new RestResponse();
     }
-
 }

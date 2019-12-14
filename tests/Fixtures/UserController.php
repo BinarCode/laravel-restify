@@ -50,7 +50,6 @@ class UserController extends RestController
         $this->gate('access', $user);
 
         return $this->respond($user);
-
     }
 
     /**
@@ -64,14 +63,14 @@ class UserController extends RestController
     {
         try {
             /**
-             * @var User $user
+             * @var User
              */
             $user = User::find($id);
             $user->fill($request->only($user->getFillable()));
             $this->gate('access', $user);
 
             return $this->respond($user);
-        } catch (EntityNotFoundException|GatePolicy|BindingResolutionException $e) {
+        } catch (EntityNotFoundException | GatePolicy | BindingResolutionException $e) {
             return $this->response()
                 ->addError('Entity not found.')
                 ->missing()
@@ -94,6 +93,6 @@ class UserController extends RestController
         $this->gate('access', $user);
         $user->delete();
 
-        return $this->message("User deleted.");
+        return $this->message('User deleted.');
     }
 }
