@@ -7,9 +7,8 @@ use Swift_Events_EventListener;
 use Swift_Message;
 
 /**
- * Trait MailTracking
+ * Trait MailTracking.
  * @method bool assertEmpty
- * @package Tests\Fixtures
  */
 trait MailTracking
 {
@@ -20,7 +19,6 @@ trait MailTracking
 
     /**
      * Register a listener for new emails.
-     *
      */
     public function setUpMailTracking()
     {
@@ -55,7 +53,7 @@ trait MailTracking
     /**
      * Assert that the given number of emails were sent.
      *
-     * @param integer $count
+     * @param int $count
      * @return MailTracking
      */
     protected function assertEmailsSent($count)
@@ -81,7 +79,7 @@ trait MailTracking
     {
         $this->assertEquals(
             $body, $this->getEmail($message)->getBody(),
-            "No email with the provided body was sent."
+            'No email with the provided body was sent.'
         );
 
         return $this;
@@ -98,7 +96,7 @@ trait MailTracking
     {
         $this->assertContains(
             $excerpt, $this->getEmail($message)->getBody(),
-            "No email containing the provided body was found."
+            'No email containing the provided body was found.'
         );
 
         return $this;
@@ -190,7 +188,7 @@ trait MailTracking
 class TestingMailEventListener implements Swift_Events_EventListener
 {
     /**
-     * @var MailTracking $test
+     * @var MailTracking
      */
     protected $test;
 
