@@ -2,11 +2,17 @@
 
 namespace Binaryk\LaravelRestify\Tests;
 
+use Binaryk\LaravelRestify\Contracts\Passportable;
+use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
+use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
+use Binaryk\LaravelRestify\Models\LaravelRestifyModel;
 use Binaryk\LaravelRestify\Services\AuthService;
+use Binaryk\LaravelRestify\Tests\Fixtures\SimpleUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Events\Verified;
+use Illuminate\Foundation\Testing\Concerns\InteractsWithContainer;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 
@@ -15,6 +21,7 @@ use Illuminate\Support\Str;
  */
 class AuthServiceRegisterTest extends IntegrationTest
 {
+    use InteractsWithContainer;
     /**
      * @var AuthService
      */
@@ -26,13 +33,37 @@ class AuthServiceRegisterTest extends IntegrationTest
         $this->authService = resolve(AuthService::class);
     }
 
-    protected function getEnvironmentSetUp($app)
+    public function test_register_throw_user_not_authenticatable()
     {
-        parent::getEnvironmentSetUp($app);
-        $app['config']->set('auth.providers.users.model', User::class);
+        $this->app->instance(User::class, (new class extends SimpleUser implements Passportable {
+        }));
+
+        $user = [
+            'name' => 'Eduard Lupacescu',
+            'email' => 'eduard.lupacescu@binarcode.com',
+            'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm',
+            'remember_token' => Str::random(10),
+        ];
+
+        $this->expectException(AuthenticatableUserException::class);
+        $this->authService->register($user);
     }
 
-    public function test_register_throw_user_not_authenticatable()
+    public function test_user_query_throw_container_does_not_have_model_reflection_exception()
+    {
+        $this->app['config']->set('auth.providers.users.model', null);
+        $this->expectException(EntityNotFoundException::class);
+        $this->authService->userQuery();
+    }
+
+    public function test_user_query_throw_container_cannot_instantiate_abstract_model()
+    {
+        $this->app['config']->set('auth.providers.users.model', LaravelRestifyModel::class);
+        $this->expectException(EntityNotFoundException::class);
+        $this->authService->userQuery();
+    }
+
+    public function test_register_successfully()
     {
         Event::fake([
             Registered::class,

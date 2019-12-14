@@ -30,6 +30,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Psr\Container\NotFoundExceptionInterface;
+use ReflectionException;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -71,7 +72,6 @@ class AuthService extends RestifyService
             $token = $user->createToken('Login')->accessToken;
             event(new UserLoggedIn($user));
         }
-
 
         return $token;
     }
@@ -211,10 +211,10 @@ class AuthService extends RestifyService
             $this->validateUserModel($userInstance);
 
             return $userInstance;
-        } catch (NotFoundExceptionInterface $e) {
-            throw new EntityNotFoundException("The model from the follow configuration -> 'auth.providers.users.model' doesn't exists.");
         } catch (BindingResolutionException $e) {
-            throw new EntityNotFoundException("The model from the follow configuration -> 'auth.providers.users.model' doesn't exists.");
+            throw new EntityNotFoundException("The model $userClass from he follow configuration -> 'auth.providers.users.model' cannot be instantiated (may be an abstract class).", $e->getCode(), $e);
+        } catch (ReflectionException $e) {
+            throw new EntityNotFoundException("The model from the follow configuration -> 'auth.providers.users.model' doesn't exists.", $e->getCode(), $e);
         }
     }
 
