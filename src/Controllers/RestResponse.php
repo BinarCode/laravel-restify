@@ -316,7 +316,8 @@ class RestResponse
      * @return ResponseFactory
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    protected function response() {
+    protected function response()
+    {
         return app()->make(ResponseFactory::class);
     }
 }
