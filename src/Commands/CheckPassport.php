@@ -70,7 +70,7 @@ class CheckPassport extends Command
             return;
         }
 
-        if (false === $this->passportClient($userClass)) {
+        if (false === $this->passportClient()) {
             return;
         }
 

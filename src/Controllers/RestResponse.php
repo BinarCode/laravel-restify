@@ -259,9 +259,11 @@ class RestResponse
                 $response->{$attribute} = $value;
             }
 
-            foreach ($response as $property => $value) {
-                if ($value instanceof Arrayable) {
-                    $response->{$property} = $value->toArray();
+            if (is_iterable($response)) {
+                foreach ($response as $property => $value) {
+                    if ($value instanceof Arrayable) {
+                        $response->{$property} = $value->toArray();
+                    }
                 }
             }
         }
