@@ -20,6 +20,7 @@
         "illuminate/support": "^5.8|^6.0"
     },
     "require-dev": {
+        "mockery/mockery": "^1.3",
         "orchestra/testbench": "3.8.*",
         "phpunit/phpunit": "^7.0"
     },
