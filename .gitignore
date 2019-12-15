@@ -1,8 +1,10 @@
 build
 composer.lock
-docs
 vendor
 coverage
 .idea
 html
 output
+docs/node_modules
+docs/.vuepress/dist
+

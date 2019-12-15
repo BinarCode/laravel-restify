@@ -9,3 +9,5 @@
 /.scrutinizer.yml   export-ignore
 /tests              export-ignore
 /.editorconfig      export-ignore
+/docs               export-ignore
+/deploy.sh          export-ignore

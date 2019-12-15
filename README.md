@@ -17,9 +17,7 @@ composer require binaryk/laravel-restify
 
 ## Usage
 
-``` php
-// Usage description here
-```
+See the [official documentation](https://binaryk.github.io/laravel-restify/).
 
 ### Testing
 
