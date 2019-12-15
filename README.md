@@ -3,6 +3,7 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/binaryk/laravel-restify.svg?style=flat-square)](https://packagist.org/packages/binaryk/laravel-restify)
 [![Build Status](https://img.shields.io/travis/binaryk/laravel-restify/master.svg?style=flat-square)](https://travis-ci.org/binaryk/laravel-restify)
 [![Quality Score](https://img.shields.io/scrutinizer/g/binaryk/laravel-restify.svg?style=flat-square)](https://scrutinizer-ci.com/g/binaryk/laravel-restify)
+[![Test Coverage](https://img.shields.io/scrutinizer/coverage/g/binaryk/laravel-restify.svg?style=flat-square)](https://scrutinizer-ci.com/g/binaryk/laravel-restify)
 [![Total Downloads](https://img.shields.io/packagist/dt/binaryk/laravel-restify.svg?style=flat-square)](https://packagist.org/packages/binaryk/laravel-restify)
 
 No description 
