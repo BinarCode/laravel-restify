@@ -1,0 +1,20 @@
+{
+    "name": "Laravel Restify",
+    "short_name": "Laravel Restify",
+    "icons": [
+        {
+            "src": "/android-chrome-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/android-chrome-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ],
+    "start_url": "/docs/installation.html",
+    "display": "standalone",
+    "background_color": "#ddd",
+    "theme_color": "#7e8ea1"
+}
