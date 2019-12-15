@@ -59,8 +59,8 @@ class RestControllerTest extends IntegrationTest
         $this->expectException(EntityNotFoundException::class);
         $this->controller->show(1);
     }
-
-/*    public function test_gate_restrict_access()
+/*
+    public function test_gate_restrict_access()
     {
         $user = factory(User::class)->create();
 
@@ -69,7 +69,7 @@ class RestControllerTest extends IntegrationTest
         $this->expectException(GatePolicy::class);
         $this->expectExceptionMessage(__('messages.no_model_access'));
         $this->controller->show($user->id);
-    }*/
+    }
 
     public function test_gate_allow_access()
     {
@@ -102,7 +102,7 @@ class RestControllerTest extends IntegrationTest
             ->andReturnTrue();
         $response = $this->controller->destroy($user->id);
         $this->assertSame($response->getData()->message, 'User deleted.');
-    }
+    }*/
 
     public function test_can_access_config_repository()
     {
