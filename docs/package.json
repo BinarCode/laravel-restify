@@ -1,9 +1,14 @@
 {
-  "dependencies": {
-    "@vue/cli": "^4.1.1",
-    "global": "^4.4.0"
-  },
-  "devDependencies": {
-    "@vuepress/plugin-pwa": "^1.2.0"
-  }
+    "scripts": {
+        "start": "npm run docs:dev",
+        "docs:build": "vuepress build",
+        "docs:dev": "vuepress dev"
+    },
+    "dependencies": {
+        "@vuepress/plugin-pwa": "^1.2.0",
+        "vuepress": "^1.0.3"
+    },
+    "resolutions": {
+        "webpack-dev-middleware": "3.6.0"
+    }
 }

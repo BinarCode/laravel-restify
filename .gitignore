@@ -6,4 +6,5 @@ coverage
 html
 output
 docs/node_modules
+docs/.vuepress/dist
 
