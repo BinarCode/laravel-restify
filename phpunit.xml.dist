@@ -17,6 +17,9 @@
     <filter>
         <whitelist>
             <directory suffix=".php">src/</directory>
+            <exclude>
+                <directory suffix="CheckPassport.php">src/Commands</directory>
+            </exclude>
         </whitelist>
     </filter>
     <logging>
@@ -26,4 +29,8 @@
         <log type="coverage-text" target="build/coverage.txt"/>
         <log type="coverage-clover" target="build/logs/clover.xml"/>
     </logging>
+    <php>
+        <env name="APP_KEY" value="base64:la8jDWcqBHfGO6PR+OA9FAZqdi0XQKuhnzqc5tUATZs="/>
+        <env name="MAIL_DRIVER" value="log"/>
+    </php>
 </phpunit>
