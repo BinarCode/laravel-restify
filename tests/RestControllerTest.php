@@ -70,7 +70,6 @@ class RestControllerTest extends IntegrationTest
         $this->expectExceptionMessage(__('messages.no_model_access'));
         $this->controller->show($user->id);
     }
-/*
 
     public function test_gate_allow_access()
     {
@@ -103,7 +102,7 @@ class RestControllerTest extends IntegrationTest
             ->andReturnTrue();
         $response = $this->controller->destroy($user->id);
         $this->assertSame($response->getData()->message, 'User deleted.');
-    }*/
+    }
 
     public function test_can_access_config_repository()
     {
