@@ -30,12 +30,8 @@ class RestResponse
         'line',
         'file',
         'stack',
-        'total',
         'data',
-        'aggregations',
         'errors',
-        'lastPage',
-        'currentPage',
     ];
 
     /**
@@ -79,57 +75,14 @@ class RestResponse
      * @var string|null
      */
     private $stack;
-
     /**
-     * Set response resource total.
-     *
-     * @param int $total
-     * @return $this|int
+     * @var array|null
      */
-    public function total($total = null)
-    {
-        if (func_num_args()) {
-            $this->total = (int) $total;
-
-            return $this;
-        }
-
-        return $this->total;
-    }
-
+    private $errors = [];
     /**
-     * Set response resource current page.
-     *
-     * @param int $currentPage
-     * @param int $lastPage
-     * @return $this|int
+     * @var array|null
      */
-    public function paginate($currentPage = 0, $lastPage = 0)
-    {
-        if (func_num_args()) {
-            $this->currentPage = (int) $currentPage;
-            $this->lastPage = (int) $lastPage;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Set response resource last page.
-     *
-     * @param int $total
-     * @return $this|int
-     */
-    public function lastPage($total = null)
-    {
-        if (func_num_args()) {
-            $this->total = (int) $total;
-
-            return $this;
-        }
-
-        return $this->total;
-    }
+    private $data;
 
     /**
      * Set response data.
@@ -144,20 +97,6 @@ class RestResponse
 
             return $this;
         }
-
-        return $this;
-    }
-
-    /**
-     * Set response aggregations.
-     *
-     * @param mixed $data
-     *
-     * @return $this
-     */
-    public function aggregations(array $aggregations = null)
-    {
-        $this->aggregations = $aggregations;
 
         return $this;
     }
@@ -325,7 +264,7 @@ class RestResponse
             }
         }
 
-        return response()->json($response, $this->code());
+        return response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
     }
 
     /**
