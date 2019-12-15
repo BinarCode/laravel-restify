@@ -33,9 +33,9 @@ abstract class RestController extends BaseController
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     /**
-     * @var null
+     * @var RestResponse
      */
-    protected $response = null;
+    protected $response;
 
     /**
      * @var Gate
@@ -96,7 +96,7 @@ abstract class RestController extends BaseController
         $response = new \stdClass();
         $response->data = $data;
 
-        return response()->json($response, $httpCode);
+        return $this->response()->data($data)->code($httpCode)->respond();
     }
 
     /**
