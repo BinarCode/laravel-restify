@@ -1,7 +1,7 @@
 filter:
     excluded_paths: [tests/*]
 
-checks:
+checks:t pu
     php:
         remove_extra_empty_lines: true
         remove_php_closing_tag: true
