@@ -6,3 +6,6 @@ coverage
 .idea
 html
 output
+docs/.vuepress/dist
+docs/node_modules
+
