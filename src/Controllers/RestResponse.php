@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Controllers;
 
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\JsonResponse;
 
@@ -241,6 +242,7 @@ class RestResponse
      * @param mixed $response
      *
      * @return JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function respond($response = null)
     {
@@ -264,7 +266,7 @@ class RestResponse
             }
         }
 
-        return response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
+        return $this->response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
     }
 
     /**
@@ -308,5 +310,13 @@ class RestResponse
     public function fillable(): array
     {
         return static::$RESPONSE_KEYS;
+    }
+
+    /**
+     * @return ResponseFactory
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    protected function response() {
+        return app()->make(ResponseFactory::class);
     }
 }
