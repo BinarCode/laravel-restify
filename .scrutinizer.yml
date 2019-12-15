@@ -17,13 +17,11 @@ checks:
         fix_identation_4spaces: true
         fix_doc_comments: true
 
-build:
-    nodes:
-        coverage:
-            tests:
-                override:
-                    - command: ./vendor/bin/phpunit
-                      coverage:
-                          file: build/logs/clover.xml   # <- Set this to where we find the coverage data.
-                          #    The path is relative to the current directory.
-                          format: clover
+coverage:
+    tests:
+        override:
+            - command: ./vendor/bin/phpunit
+              coverage:
+                  file: build/logs/clover.xml   # <- Set this to where we find the coverage data.
+                  #    The path is relative to the current directory.
+                  format: clover

@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify;
 use Binaryk\LaravelRestify\Commands\CheckPassport;
 use Binaryk\LaravelRestify\Repositories\Contracts\RestifyRepositoryInterface;
 use Binaryk\LaravelRestify\Repositories\RestifyRepository;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
@@ -21,6 +22,15 @@ class LaravelRestifyServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Route::get('email/verify/{id}/{hash}', 'AuthController@verify')->name('register.verify')->middleware([
+            'signed',
+            'throttle:6,1',
+        ]);
+
+        Route::post('password/reset', function () {
+            // Validate token
+        })->name('password.reset');
+
         /*
          * Optional methods to load your package assets
          */

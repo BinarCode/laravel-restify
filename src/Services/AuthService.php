@@ -91,7 +91,7 @@ class AuthService extends RestifyService
         }
 
         /**
-         * @var Authenticatable
+         * @var Authenticatable $user
          */
         $user = $builder->query()->create($payload);
 
