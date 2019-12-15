@@ -132,7 +132,7 @@ class CheckPassport extends Command
     /**
      * @return bool
      */
-    public function passportClient($userClass = null): bool
+    public function passportClient(): bool
     {
         try {
             /**
