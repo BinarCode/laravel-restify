@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en-US">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Installation | Laravel Restify</title>
+    <meta name="description" content="A package to start the REST API">
+    <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon.png">
+    
+    <link rel="preload" href="/assets/css/0.styles.d4d1289e.css" as="style"><link rel="preload" href="/assets/js/app.dd891528.js" as="script"><link rel="preload" href="/assets/js/2.486038c3.js" as="script"><link rel="preload" href="/assets/js/6.949981aa.js" as="script"><link rel="prefetch" href="/assets/js/3.7160ba29.js"><link rel="prefetch" href="/assets/js/4.33a5a451.js"><link rel="prefetch" href="/assets/js/5.4bd06524.js"><link rel="prefetch" href="/assets/js/7.8151f8ed.js">
+    <link rel="stylesheet" href="/assets/css/0.styles.d4d1289e.css">
+  </head>
+  <body>
+    <div id="app" data-server-rendered="true"><div class="theme-container no-sidebar"><header class="navbar"><div class="sidebar-button"><svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img" viewBox="0 0 448 512" class="icon"><path fill="currentColor" d="M436 124H12c-6.627 0-12-5.373-12-12V80c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12zm0 160H12c-6.627 0-12-5.373-12-12v-32c0-6.627 5.373-12 12-12h424c6.627 0 12 5.373 12 12v32c0 6.627-5.373 12-12 12z"></path></svg></div> <a href="/" class="home-link router-link-active"><img src="/assets/img/logo.svg" alt="Laravel Restify" class="logo"> <span class="site-name can-hide">Laravel Restify</span></a> <div class="links"><div class="search-box"><input aria-label="Search" autocomplete="off" spellcheck="false" value=""> <!----></div> <nav class="nav-links can-hide"><div class="nav-item"><a href="/" class="nav-link">Home</a></div><div class="nav-item"><a href="/docs/" class="nav-link router-link-exact-active router-link-active">Guide</a></div><div class="nav-item"><a href="https://binarcode.com" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  About us
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div> <!----></nav></div></header> <div class="sidebar-mask"></div> <aside class="sidebar"><nav class="nav-links"><div class="nav-item"><a href="/" class="nav-link">Home</a></div><div class="nav-item"><a href="/docs/" class="nav-link router-link-exact-active router-link-active">Guide</a></div><div class="nav-item"><a href="https://binarcode.com" target="_blank" rel="noopener noreferrer" class="nav-link external">
+  About us
+  <svg xmlns="http://www.w3.org/2000/svg" aria-hidden="true" x="0px" y="0px" viewBox="0 0 100 100" width="15" height="15" class="icon outbound"><path fill="currentColor" d="M18.8,85.1h56l0,0c2.2,0,4-1.8,4-4v-32h-8v28h-48v-48h28v-8h-32l0,0c-2.2,0-4,1.8-4,4v56C14.8,83.3,16.6,85.1,18.8,85.1z"></path> <polygon fill="currentColor" points="45.7,48.7 51.3,54.3 77.2,28.5 77.2,37.2 85.2,37.2 85.2,14.9 62.8,14.9 62.8,22.9 71.5,22.9"></polygon></svg></a></div> <!----></nav>  <!----> </aside> <main class="page"> <div class="theme-default-content content__default"><h1 id="installation"><a href="#installation" class="header-anchor">#</a> Installation</h1> <p></p><div class="table-of-contents"><ul><li><a href="#requirements">Requirements</a></li><li><a href="#installing-laravel-restify">Installing Laravel Restify</a></li><li><a href="#authentication-service">Authentication service</a></li></ul></div><p></p> <h2 id="requirements"><a href="#requirements" class="header-anchor">#</a> Requirements</h2> <p>Laravel Restify has a few requirements you should be aware of before installing:</p> <ul><li>Composer</li> <li>Laravel Framework 5.8+</li></ul> <h2 id="installing-laravel-restify"><a href="#installing-laravel-restify" class="header-anchor">#</a> Installing Laravel Restify</h2> <div class="language-bash extra-class"><pre class="language-bash"><code>composer require binaryk/laravel-restify
+</code></pre></div><div class="custom-block tip"><p class="custom-block-title">Package Stability</p> <p>If you are not able to install Nova into your application because of your <code>minimum-stability</code> setting, consider setting your <code>minimum-stability</code> option to <code>dev</code> and your <code>prefer-stable</code> option to <code>true</code>. This will allow you to install Laravel restify while still preferring stable package releases for your application.</p></div> <p>That's it! Next, you may extend the <code>Binaryk\LaravelRestify\Controllers\RestController</code> and use its helpers:</p> <div class="language-php extra-class"><pre class="language-php"><code><span class="token keyword">class</span> <span class="token class-name">UserController</span> <span class="token keyword">extends</span> <span class="token class-name">RestController</span> 
+<span class="token punctuation">{</span>
+    <span class="token comment">/**
+     * Display a listing of the resource.
+     *
+     * @return JsonResponse
+     */</span>
+    <span class="token keyword">public</span> <span class="token keyword">function</span> <span class="token function">index</span><span class="token punctuation">(</span><span class="token punctuation">)</span>
+    <span class="token punctuation">{</span>
+        <span class="token variable">$users</span> <span class="token operator">=</span> User<span class="token punctuation">:</span><span class="token punctuation">:</span><span class="token function">all</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+
+        <span class="token keyword">return</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">respond</span><span class="token punctuation">(</span><span class="token variable">$users</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div><h2 id="authentication-service"><a href="#authentication-service" class="header-anchor">#</a> Authentication service</h2> <p>For each API we have to implement the auth module from scratch. With Laravel Restify this is not a pain anymore:</p> <div class="language-php extra-class"><pre class="language-php"><code><span class="token keyword">class</span> <span class="token class-name">AuthController</span> <span class="token keyword">extends</span> <span class="token class-name">Binaryk<span class="token punctuation">\</span>LaravelRestify<span class="token punctuation">\</span>Controllers<span class="token punctuation">\</span>RestController</span>
+<span class="token punctuation">{</span>
+    <span class="token comment">/**
+         * @var Binaryk\LaravelRestify\Services\AuthService
+         */</span>
+        <span class="token keyword">protected</span> <span class="token variable">$authService</span><span class="token punctuation">;</span>
+    
+        <span class="token keyword">public</span> <span class="token keyword">function</span> <span class="token function">__construct</span><span class="token punctuation">(</span>Binaryk\<span class="token package">LaravelRestify<span class="token punctuation">\</span>Services<span class="token punctuation">\</span>AuthService</span> <span class="token variable">$authService</span><span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token property">authService</span> <span class="token operator">=</span> <span class="token variable">$authService</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+    
+        <span class="token comment">/**
+        * @param RestifyLoginRequest $request
+        * @return Illuminate\Http\JsonResponse|string|void
+        * @throws \Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch
+        * @throws \Binaryk\LaravelRestify\Exceptions\PassportUserException
+        * @throws \Binaryk\LaravelRestify\Exceptions\UnverifiedUser
+        */</span>
+        <span class="token keyword">public</span> <span class="token keyword">function</span> <span class="token function">login</span><span class="token punctuation">(</span>RestifyLoginRequest <span class="token variable">$request</span><span class="token punctuation">)</span>
+        <span class="token punctuation">{</span>
+            <span class="token variable">$credentials</span> <span class="token operator">=</span> <span class="token variable">$request</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">only</span><span class="token punctuation">(</span><span class="token single-quoted-string string">'email'</span><span class="token punctuation">,</span> <span class="token single-quoted-string string">'password'</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token variable">$response</span> <span class="token operator">=</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">response</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+            <span class="token keyword">try</span> <span class="token punctuation">{</span>
+                <span class="token variable">$token</span> <span class="token operator">=</span> <span class="token variable">$this</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token property">authService</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">login</span><span class="token punctuation">(</span><span class="token variable">$credentials</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    
+                <span class="token variable">$response</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">data</span><span class="token punctuation">(</span><span class="token punctuation">[</span><span class="token single-quoted-string string">'token'</span> <span class="token operator">=</span><span class="token operator">&gt;</span> <span class="token variable">$token</span><span class="token punctuation">]</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">message</span><span class="token punctuation">(</span><span class="token function">__</span><span class="token punctuation">(</span><span class="token single-quoted-string string">'Authentication with success'</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span> <span class="token keyword">catch</span> <span class="token punctuation">(</span>CredentialsDoesntMatch <span class="token operator">|</span> UnverifiedUser <span class="token operator">|</span> PassportUserException <span class="token variable">$e</span><span class="token punctuation">)</span> <span class="token punctuation">{</span>
+                <span class="token variable">$response</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">addError</span><span class="token punctuation">(</span><span class="token variable">$e</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">getMessage</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">auth</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+            <span class="token punctuation">}</span>
+    
+            <span class="token keyword">return</span> <span class="token variable">$response</span><span class="token operator">-</span><span class="token operator">&gt;</span><span class="token function">respond</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre></div></div> <footer class="page-edit"><!----> <!----></footer> <!----> </main></div><div class="global-ui"></div></div>
+    <script src="/assets/js/app.dd891528.js" defer></script><script src="/assets/js/2.486038c3.js" defer></script><script src="/assets/js/6.949981aa.js" defer></script>
+  </body>
+</html>

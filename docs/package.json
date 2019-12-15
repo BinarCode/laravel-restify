@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@vue/cli": "^4.1.1",
+    "global": "^4.4.0"
+  },
+  "devDependencies": {
+    "@vuepress/plugin-pwa": "^1.2.0"
+  }
+}
