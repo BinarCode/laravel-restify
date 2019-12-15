@@ -60,16 +60,16 @@ class RestControllerTest extends IntegrationTest
         $this->controller->show(1);
     }
 
-/*    public function test_gate_restrict_access()
-    {
-        $user = factory(User::class)->create();
-
-        Gate::shouldReceive('check')
-            ->andReturnFalse();
-        $this->expectException(GatePolicy::class);
-        $this->expectExceptionMessage(__('messages.no_model_access'));
-        $this->controller->show($user->id);
-    }*/
+    /*    public function test_gate_restrict_access()
+        {
+            $user = factory(User::class)->create();
+    
+            Gate::shouldReceive('check')
+                ->andReturnFalse();
+            $this->expectException(GatePolicy::class);
+            $this->expectExceptionMessage(__('messages.no_model_access'));
+            $this->controller->show($user->id);
+        }*/
 
     public function test_gate_allow_access()
     {
