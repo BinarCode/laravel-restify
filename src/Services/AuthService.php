@@ -13,6 +13,8 @@ use Binaryk\LaravelRestify\Exceptions\PasswordResetInvalidTokenException;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
 use Binaryk\LaravelRestify\Requests\ResetPasswordRequest;
 use Binaryk\LaravelRestify\Requests\RestifyPasswordEmailRequest;
+use Binaryk\LaravelRestify\Requests\RestifyRegisterRequest;
+use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -37,6 +39,13 @@ use ReflectionException;
  */
 class AuthService extends RestifyService
 {
+    /**
+     * The callback that should be used to create the registered user
+     *
+     * @var Closure|null
+     */
+    public static $creating;
+
     public function __construct()
     {
         parent::__construct();
@@ -78,12 +87,20 @@ class AuthService extends RestifyService
 
     /**
      * @param array $payload
+     * @return \Illuminate\Database\Eloquent\Builder|Model|mixed
      * @throws AuthenticatableUserException
      * @throws EntityNotFoundException
      * @throws PassportUserException
+     * @throws ValidationException
      */
     public function register(array $payload)
     {
+        $validator = Validator::make($payload, (new RestifyRegisterRequest)->rules(), (new RestifyRegisterRequest)->messages());
+        if ($validator->fails()) {
+            // this is manually thrown for readability
+            throw new ValidationException($validator);
+        }
+
         $builder = $this->userQuery();
 
         if (false === $builder instanceof Authenticatable) {
@@ -93,11 +110,15 @@ class AuthService extends RestifyService
         /**
          * @var Authenticatable
          */
-        $user = $builder->query()->create($payload);
+        $user = $builder->query()->create(array_merge($payload, [
+            'password' => Hash::make(data_get($payload, 'password'))
+        ]));
 
         if ($user instanceof Authenticatable) {
             event(new Registered($user));
         }
+
+        return $user;
     }
 
     /**
@@ -171,14 +192,14 @@ class AuthService extends RestifyService
         // database. Otherwise we will parse the error and return the response.
         $response = $this->broker()->reset(
             $credentials, function ($user, $password) {
-                $user->password = Hash::make($password);
+            $user->password = Hash::make($password);
 
-                $user->setRememberToken(Str::random(60));
+            $user->setRememberToken(Str::random(60));
 
-                $user->save();
+            $user->save();
 
-                event(new PasswordReset($user));
-            });
+            event(new PasswordReset($user));
+        });
 
         $this->resolveBrokerResponse($response);
 
