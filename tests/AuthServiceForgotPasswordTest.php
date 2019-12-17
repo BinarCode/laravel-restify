@@ -35,6 +35,7 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
     {
         parent::setUp();
         $this->setUpMailTracking();
+        AuthService::$registerFormRequest = null;
         $this->authService = resolve(AuthService::class);
     }
 
@@ -161,7 +162,6 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
             'remember_token' => Str::random(10),
         ];
 
-        AuthService::$registerFormRequest = null;
         $this->authService->register($user);
 
         return User::query()->get()->last();

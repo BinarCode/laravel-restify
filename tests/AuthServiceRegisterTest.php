@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Models\LaravelRestifyModel;
+use Binaryk\LaravelRestify\Requests\RestifyRegisterRequest;
 use Binaryk\LaravelRestify\Services\AuthService;
 use Binaryk\LaravelRestify\Tests\Fixtures\SimpleUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
@@ -157,8 +158,10 @@ class AuthServiceRegisterTest extends IntegrationTest
             'remember_token' => Str::random(10),
         ];
 
+        AuthService::$registerFormRequest = RestifyRegisterRequest::class;
         $this->expectException(ValidationException::class);
-        $this->authService->register($user);
+        $this->authService->validateRegister($user);
+        AuthService::$registerFormRequest = null;
     }
 
     public function test_register_payload_is_validated_on_register()
