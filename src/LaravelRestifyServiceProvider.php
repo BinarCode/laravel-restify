@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify;
 use Binaryk\LaravelRestify\Commands\CheckPassport;
 use Binaryk\LaravelRestify\Repositories\Contracts\RestifyRepositoryInterface;
 use Binaryk\LaravelRestify\Repositories\RestifyRepository;
-use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
