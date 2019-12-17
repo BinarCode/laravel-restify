@@ -40,6 +40,11 @@ use ReflectionException;
 class AuthService extends RestifyService
 {
     /**
+     * @var string
+     */
+    static $registerFormRequest = RestifyRegisterRequest::class;
+
+    /**
      * The callback that should be used to create the registered user
      *
      * @var Closure|null
@@ -95,11 +100,7 @@ class AuthService extends RestifyService
      */
     public function register(array $payload)
     {
-        $validator = Validator::make($payload, (new RestifyRegisterRequest)->rules(), (new RestifyRegisterRequest)->messages());
-        if ($validator->fails()) {
-            // this is manually thrown for readability
-            throw new ValidationException($validator);
-        }
+        $this->validateRegister($payload);
 
         $builder = $this->userQuery();
 
@@ -266,6 +267,24 @@ class AuthService extends RestifyService
 
         if ($response === PasswordBroker::INVALID_PASSWORD) {
             throw new PasswordResetException(__('Invalid password.'));
+        }
+    }
+
+    /**
+     * @param array $payload
+     * @throws ValidationException
+     */
+    public function validateRegister(array $payload)
+    {
+        try {
+            if (class_exists(static::$registerFormRequest) && (new \ReflectionClass(static::$registerFormRequest))->isAbstract() === false) {
+                $validator = Validator::make($payload, (new static::$registerFormRequest)->rules(), (new static::$registerFormRequest)->messages());
+                if ($validator->fails()) {
+                    throw new ValidationException($validator);
+                }
+            }
+        } catch (ReflectionException $e) {
+            // Silence is golden
         }
     }
 }
