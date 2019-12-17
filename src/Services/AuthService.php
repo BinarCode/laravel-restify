@@ -274,18 +274,20 @@ class AuthService extends RestifyService
      * @param array $payload
      * @return bool
      * @throws ValidationException
+     * @throws BindingResolutionException
      */
     public function validateRegister(array $payload)
     {
         try {
-            if (class_exists(static::$registerFormRequest) && (new \ReflectionClass(static::$registerFormRequest))->isAbstract() === false) {
+            if (class_exists(static::$registerFormRequest) && (new \ReflectionClass(static::$registerFormRequest))->isInstantiable()) {
                 $validator = Validator::make($payload, (new static::$registerFormRequest)->rules(), (new static::$registerFormRequest)->messages());
                 if ($validator->fails()) {
                     throw new ValidationException($validator);
                 }
             }
         } catch (ReflectionException $e) {
-            // Silence is golden
+            $concrete = static::$registerFormRequest;
+            throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
         }
 
         return true;
