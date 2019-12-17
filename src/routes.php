@@ -1,6 +1,6 @@
 <?php
 
-Route::get('email/verify/{id}/{hash}', function($request) {
+Route::get('email/verify/{id}/{hash}', function ($request) {
     //Silence is golden
 })
     ->name('register.verify')->middleware([
