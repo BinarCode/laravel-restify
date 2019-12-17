@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Controllers;
 
+use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Http\JsonResponse;
 
@@ -30,12 +31,8 @@ class RestResponse
         'line',
         'file',
         'stack',
-        'total',
         'data',
-        'aggregations',
         'errors',
-        'lastPage',
-        'currentPage',
     ];
 
     /**
@@ -79,57 +76,14 @@ class RestResponse
      * @var string|null
      */
     private $stack;
-
     /**
-     * Set response resource total.
-     *
-     * @param int $total
-     * @return $this|int
+     * @var array|null
      */
-    public function total($total = null)
-    {
-        if (func_num_args()) {
-            $this->total = (int) $total;
-
-            return $this;
-        }
-
-        return $this->total;
-    }
-
+    private $errors = [];
     /**
-     * Set response resource current page.
-     *
-     * @param int $currentPage
-     * @param int $lastPage
-     * @return $this|int
+     * @var array|null
      */
-    public function paginate($currentPage = 0, $lastPage = 0)
-    {
-        if (func_num_args()) {
-            $this->currentPage = (int) $currentPage;
-            $this->lastPage = (int) $lastPage;
-        }
-
-        return $this;
-    }
-
-    /**
-     * Set response resource last page.
-     *
-     * @param int $total
-     * @return $this|int
-     */
-    public function lastPage($total = null)
-    {
-        if (func_num_args()) {
-            $this->total = (int) $total;
-
-            return $this;
-        }
-
-        return $this->total;
-    }
+    private $data;
 
     /**
      * Set response data.
@@ -144,20 +98,6 @@ class RestResponse
 
             return $this;
         }
-
-        return $this;
-    }
-
-    /**
-     * Set response aggregations.
-     *
-     * @param mixed $data
-     *
-     * @return $this
-     */
-    public function aggregations(array $aggregations = null)
-    {
-        $this->aggregations = $aggregations;
 
         return $this;
     }
@@ -302,6 +242,7 @@ class RestResponse
      * @param mixed $response
      *
      * @return JsonResponse
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function respond($response = null)
     {
@@ -318,14 +259,16 @@ class RestResponse
                 $response->{$attribute} = $value;
             }
 
-            foreach ($response as $property => $value) {
-                if ($value instanceof Arrayable) {
-                    $response->{$property} = $value->toArray();
+            if (is_iterable($response)) {
+                foreach ($response as $property => $value) {
+                    if ($value instanceof Arrayable) {
+                        $response->{$property} = $value->toArray();
+                    }
                 }
             }
         }
 
-        return response()->json($response, $this->code());
+        return $this->response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
     }
 
     /**
@@ -369,5 +312,14 @@ class RestResponse
     public function fillable(): array
     {
         return static::$RESPONSE_KEYS;
+    }
+
+    /**
+     * @return ResponseFactory
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    protected function response()
+    {
+        return app()->make(ResponseFactory::class);
     }
 }

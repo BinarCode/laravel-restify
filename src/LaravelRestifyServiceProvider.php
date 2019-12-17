@@ -10,8 +10,7 @@ use Illuminate\Support\ServiceProvider;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
 {
-    /**
-     * @var array
+    /** * @var array
      */
     public $bindings = [
         RestifyRepositoryInterface::class => RestifyRepository::class,
@@ -41,7 +40,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('laravel-restify.php'),
+                __DIR__.'/../config/config.php' => config_path('restify.php'),
             ], 'config');
 
             // Publishing the views.

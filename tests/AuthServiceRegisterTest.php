@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Models\LaravelRestifyModel;
+use Binaryk\LaravelRestify\Requests\RestifyRegisterRequest;
 use Binaryk\LaravelRestify\Services\AuthService;
 use Binaryk\LaravelRestify\Tests\Fixtures\SimpleUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
@@ -15,6 +16,7 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithContainer;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -41,7 +43,8 @@ class AuthServiceRegisterTest extends IntegrationTest
         $user = [
             'name' => 'Eduard Lupacescu',
             'email' => 'eduard.lupacescu@binarcode.com',
-            'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm',
+            'password' => 'password',
+            'password_confirmation' => 'password',
             'remember_token' => Str::random(10),
         ];
 
@@ -74,7 +77,8 @@ class AuthServiceRegisterTest extends IntegrationTest
         $user = [
             'name' => 'Eduard Lupacescu',
             'email' => 'eduard.lupacescu@binarcode.com',
-            'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm',
+            'password' => 'password',
+            'password_confirmation' => 'password',
             'remember_token' => Str::random(10),
         ];
 
@@ -102,7 +106,8 @@ class AuthServiceRegisterTest extends IntegrationTest
         $user = [
             'name' => 'Eduard Lupacescu',
             'email' => 'eduard.lupacescu@binarcode.com',
-            'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm',
+            'password' => 'password',
+            'password_confirmation' => 'password',
             'remember_token' => Str::random(10),
         ];
 
@@ -125,7 +130,8 @@ class AuthServiceRegisterTest extends IntegrationTest
         $user = [
             'name' => 'Eduard Lupacescu',
             'email' => 'eduard.lupacescu@binarcode.com',
-            'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm',
+            'password' => 'password',
+            'password_confirmation' => 'password',
             'remember_token' => Str::random(10),
         ];
 
@@ -141,5 +147,47 @@ class AuthServiceRegisterTest extends IntegrationTest
 
             return $e->user instanceof \Binaryk\LaravelRestify\Tests\Fixtures\User;
         });
+    }
+
+    public function test_register_invalid_payload_is_validated_on_register()
+    {
+        $user = [
+            'name' => 'Eduard Lupacescu',
+            'email' => 'eduard.lupacescu@binarcode.com',
+            'password' => 'password',
+            'remember_token' => Str::random(10),
+        ];
+
+        AuthService::$registerFormRequest = RestifyRegisterRequest::class;
+        $this->expectException(ValidationException::class);
+        $this->authService->validateRegister($user);
+        AuthService::$registerFormRequest = null;
+    }
+
+    public function test_register_payload_is_validated_on_register()
+    {
+        $user = [
+            'name' => 'Eduard Lupacescu',
+            'email' => 'eduard.lupacescu@binarcode.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+            'remember_token' => Str::random(10),
+        ];
+
+        $this->assertTrue($this->authService->validateRegister($user));
+    }
+
+    public function test_invalid_payload_not_validated_because_validation_disabled()
+    {
+        AuthService::$registerFormRequest = null;
+
+        $user = [
+            'name' => 'Eduard Lupacescu',
+            'email' => 'eduard.lupacescu@binarcode.com',
+            'password' => 'password',
+            'remember_token' => Str::random(10),
+        ];
+
+        $this->assertTrue($this->authService->validateRegister($user));
     }
 }

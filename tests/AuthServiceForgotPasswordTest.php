@@ -35,6 +35,7 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
     {
         parent::setUp();
         $this->setUpMailTracking();
+        AuthService::$registerFormRequest = null;
         $this->authService = resolve(AuthService::class);
     }
 

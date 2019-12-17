@@ -8,7 +8,6 @@ class EntityNotFoundException extends \Exception
      * Create a new exception instance.
      *
      * @param  string  $type
-     * @return void
      */
     public function __construct($type)
     {

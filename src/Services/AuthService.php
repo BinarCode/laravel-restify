@@ -13,6 +13,8 @@ use Binaryk\LaravelRestify\Exceptions\PasswordResetInvalidTokenException;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
 use Binaryk\LaravelRestify\Requests\ResetPasswordRequest;
 use Binaryk\LaravelRestify\Requests\RestifyPasswordEmailRequest;
+use Binaryk\LaravelRestify\Requests\RestifyRegisterRequest;
+use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -37,6 +39,18 @@ use ReflectionException;
  */
 class AuthService extends RestifyService
 {
+    /**
+     * @var string
+     */
+    public static $registerFormRequest = RestifyRegisterRequest::class;
+
+    /**
+     * The callback that should be used to create the registered user.
+     *
+     * @var Closure|null
+     */
+    public static $creating;
+
     public function __construct()
     {
         parent::__construct();
@@ -78,12 +92,16 @@ class AuthService extends RestifyService
 
     /**
      * @param array $payload
+     * @return \Illuminate\Database\Eloquent\Builder|Model|mixed
      * @throws AuthenticatableUserException
      * @throws EntityNotFoundException
      * @throws PassportUserException
+     * @throws ValidationException
      */
     public function register(array $payload)
     {
+        $this->validateRegister($payload);
+
         $builder = $this->userQuery();
 
         if (false === $builder instanceof Authenticatable) {
@@ -93,11 +111,15 @@ class AuthService extends RestifyService
         /**
          * @var Authenticatable
          */
-        $user = $builder->query()->create($payload);
+        $user = $builder->query()->create(array_merge($payload, [
+            'password' => Hash::make(data_get($payload, 'password')),
+        ]));
 
         if ($user instanceof Authenticatable) {
             event(new Registered($user));
         }
+
+        return $user;
     }
 
     /**
@@ -130,9 +152,9 @@ class AuthService extends RestifyService
      * @param $email
      * @return string
      * @throws EntityNotFoundException
-     * @throws PasswordResetException
      * @throws PasswordResetInvalidTokenException
      * @throws ValidationException
+     * @throws PasswordResetException
      */
     public function sendResetPasswordLinkEmail($email)
     {
@@ -145,7 +167,7 @@ class AuthService extends RestifyService
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
         $response = $this->broker()->sendResetLink(compact('email'));
-        $this->resolveBrokerResponse($response);
+        $this->resolveBrokerResponse($response, PasswordBroker::RESET_LINK_SENT, PasswordBroker::PASSWORD_RESET);
 
         return $response;
     }
@@ -153,10 +175,10 @@ class AuthService extends RestifyService
     /**
      * @param array $credentials
      * @return JsonResponse
-     * @throws PasswordResetException
      * @throws PasswordResetInvalidTokenException
      * @throws ValidationException
      * @throws EntityNotFoundException
+     * @throws PasswordResetException
      */
     public function resetPassword(array $credentials = [])
     {
@@ -180,7 +202,7 @@ class AuthService extends RestifyService
                 event(new PasswordReset($user));
             });
 
-        $this->resolveBrokerResponse($response);
+        $this->resolveBrokerResponse($response, PasswordBroker::PASSWORD_RESET);
 
         return $response;
     }
@@ -229,11 +251,12 @@ class AuthService extends RestifyService
 
     /**
      * @param $response
+     * @param null $case
      * @throws EntityNotFoundException
      * @throws PasswordResetException
      * @throws PasswordResetInvalidTokenException
      */
-    protected function resolveBrokerResponse($response)
+    protected function resolveBrokerResponse($response, $case = null)
     {
         if ($response === PasswordBroker::INVALID_TOKEN) {
             throw new PasswordResetInvalidTokenException(__('Invalid token.'));
@@ -242,9 +265,29 @@ class AuthService extends RestifyService
         if ($response === PasswordBroker::INVALID_USER) {
             throw new EntityNotFoundException(__("User with provided email doesn't exists."));
         }
-
-        if ($response === PasswordBroker::INVALID_PASSWORD) {
-            throw new PasswordResetException(__('Invalid password.'));
+        if ($case && $response !== $case) {
+            throw new PasswordResetException($response);
         }
+    }
+
+    /**
+     * @param array $payload
+     * @return bool
+     * @throws ValidationException
+     */
+    public function validateRegister(array $payload)
+    {
+        try {
+            if (class_exists(static::$registerFormRequest) && (new \ReflectionClass(static::$registerFormRequest))->isAbstract() === false) {
+                $validator = Validator::make($payload, (new static::$registerFormRequest)->rules(), (new static::$registerFormRequest)->messages());
+                if ($validator->fails()) {
+                    throw new ValidationException($validator);
+                }
+            }
+        } catch (ReflectionException $e) {
+            // Silence is golden
+        }
+
+        return true;
     }
 }
