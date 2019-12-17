@@ -272,6 +272,7 @@ class AuthService extends RestifyService
 
     /**
      * @param array $payload
+     * @return bool
      * @throws ValidationException
      */
     public function validateRegister(array $payload)
@@ -286,5 +287,7 @@ class AuthService extends RestifyService
         } catch (ReflectionException $e) {
             // Silence is golden
         }
+
+        return true;
     }
 }
