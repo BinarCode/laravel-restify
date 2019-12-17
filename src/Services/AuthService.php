@@ -42,10 +42,10 @@ class AuthService extends RestifyService
     /**
      * @var string
      */
-    static $registerFormRequest = RestifyRegisterRequest::class;
+    public static $registerFormRequest = RestifyRegisterRequest::class;
 
     /**
-     * The callback that should be used to create the registered user
+     * The callback that should be used to create the registered user.
      *
      * @var Closure|null
      */
@@ -112,7 +112,7 @@ class AuthService extends RestifyService
          * @var Authenticatable
          */
         $user = $builder->query()->create(array_merge($payload, [
-            'password' => Hash::make(data_get($payload, 'password'))
+            'password' => Hash::make(data_get($payload, 'password')),
         ]));
 
         if ($user instanceof Authenticatable) {
@@ -193,14 +193,14 @@ class AuthService extends RestifyService
         // database. Otherwise we will parse the error and return the response.
         $response = $this->broker()->reset(
             $credentials, function ($user, $password) {
-            $user->password = Hash::make($password);
+                $user->password = Hash::make($password);
 
-            $user->setRememberToken(Str::random(60));
+                $user->setRememberToken(Str::random(60));
 
-            $user->save();
+                $user->save();
 
-            event(new PasswordReset($user));
-        });
+                event(new PasswordReset($user));
+            });
 
         $this->resolveBrokerResponse($response, PasswordBroker::PASSWORD_RESET);
 
