@@ -194,14 +194,14 @@ class AuthService extends RestifyService
         // database. Otherwise we will parse the error and return the response.
         $response = $this->broker()->reset(
             $credentials, function ($user, $password) {
-            $user->password = Hash::make($password);
+                $user->password = Hash::make($password);
 
-            $user->setRememberToken(Str::random(60));
+                $user->setRememberToken(Str::random(60));
 
-            $user->save();
+                $user->save();
 
-            event(new PasswordReset($user));
-        });
+                event(new PasswordReset($user));
+            });
 
         $this->resolveBrokerResponse($response, PasswordBroker::PASSWORD_RESET);
 

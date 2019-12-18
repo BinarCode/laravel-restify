@@ -13,6 +13,5 @@ class Restify
      */
     public static function routes($callback = null, array $options = [])
     {
-
     }
 }
