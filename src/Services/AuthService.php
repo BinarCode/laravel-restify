@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Services;
 
 use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
+use Binaryk\LaravelRestify\Events\UserLogout;
 use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
@@ -193,14 +194,14 @@ class AuthService extends RestifyService
         // database. Otherwise we will parse the error and return the response.
         $response = $this->broker()->reset(
             $credentials, function ($user, $password) {
-                $user->password = Hash::make($password);
+            $user->password = Hash::make($password);
 
-                $user->setRememberToken(Str::random(60));
+            $user->setRememberToken(Str::random(60));
 
-                $user->save();
+            $user->save();
 
-                event(new PasswordReset($user));
-            });
+            event(new PasswordReset($user));
+        });
 
         $this->resolveBrokerResponse($response, PasswordBroker::PASSWORD_RESET);
 
@@ -291,5 +292,15 @@ class AuthService extends RestifyService
         }
 
         return true;
+    }
+
+    /** * Revoke tokens for user */
+    public function logout()
+    {
+        $user = Auth::user();
+        if (method_exists($user, 'tokens')) {
+            $user->tokens()->get()->each->revoke();
+            event(new UserLogout($user));
+        }
     }
 }

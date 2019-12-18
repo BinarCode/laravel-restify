@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
+use Binaryk\LaravelRestify\Events\UserLogout;
 use Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch;
 use Binaryk\LaravelRestify\Exceptions\PassportUserException;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
@@ -12,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\SimpleUser as User;
 use Carbon\Carbon;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Event;
 
@@ -119,5 +121,32 @@ class AuthServiceLoginTest extends IntegrationTest
 
             return $e->user instanceof User;
         });
+    }
+
+    public function test_logout_success()
+    {
+        Event::fake();
+        $user = (new class extends \Binaryk\LaravelRestify\Tests\Fixtures\User {
+            public function tokens()
+            {
+                $builder = \Mockery::mock(Builder::class);
+                $tokens = [(new class {
+                    public function revoke()
+                    {
+                        return true;
+                    }
+                })];
+
+                $builder->shouldReceive('get')->andReturn(collect($tokens));
+                return $builder;
+            }
+        });
+
+        Auth::shouldReceive('user')
+            ->andReturn($user);
+
+        $this->authService->logout();
+
+        Event::assertDispatched(UserLogout::class);
     }
 }
