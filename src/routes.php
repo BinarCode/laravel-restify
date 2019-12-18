@@ -3,14 +3,14 @@
 Route::post('login', function ($request) {
     // AuthService->login
 });
-Route::post('register', function ($request ) {
+Route::post('register', function ($request) {
     // AuthService -> register
 });
 Route::get('email/verify/{id}/{hash}', function ($request) {
     // AuthService -> verify
 })->name('register.verify')->middleware([
     'signed',
-    'throttle:6,1'
+    'throttle:6,1',
 ]);
 Route::post('password/email', function ($request) {
     // AuthService -> sendResetPasswordLinkEmail
