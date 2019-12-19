@@ -31,7 +31,5 @@ class SimpleUser extends LaravelRestifyModel
     public function tokens()
     {
         return Mockery::mock(Builder::class);
-
     }
-
 }

@@ -151,6 +151,7 @@ class AuthServiceLoginTest extends IntegrationTest
 
         Event::assertDispatched(UserLogout::class);
     }
+
     public function test_logout_unauthenticated()
     {
         Auth::shouldReceive('user')
