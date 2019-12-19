@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Services;
 
 use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
+use Binaryk\LaravelRestify\Events\UserLogout;
 use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
@@ -14,6 +15,7 @@ use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
 use Binaryk\LaravelRestify\Requests\ResetPasswordRequest;
 use Binaryk\LaravelRestify\Requests\RestifyPasswordEmailRequest;
 use Binaryk\LaravelRestify\Requests\RestifyRegisterRequest;
+use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\PasswordReset;
@@ -291,5 +293,24 @@ class AuthService extends RestifyService
         }
 
         return true;
+    }
+
+    /**
+     * Revoke tokens for user.
+     *
+     * @throws AuthenticatableUserException
+     */
+    public function logout()
+    {
+        /**
+         * @var User
+         */
+        $user = Auth::user();
+        if ($user instanceof Authenticatable && $user instanceof Passportable) {
+            $user->tokens()->get()->each->revoke();
+            event(new UserLogout($user));
+        } else {
+            throw new AuthenticatableUserException(__('User is not authenticated.'));
+        }
     }
 }

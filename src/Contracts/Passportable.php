@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Contracts;
 
+use Illuminate\Database\Query\Builder;
+
 interface Passportable
 {
     /**
@@ -17,4 +19,9 @@ interface Passportable
      * @return string
      */
     public function getEmail();
+
+    /**
+     * @return Builder
+     */
+    public function tokens();
 }

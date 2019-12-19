@@ -4,8 +4,10 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures;
 
 use Binaryk\LaravelRestify\Contracts\Passportable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Mockery;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -52,5 +54,13 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail
         return new class {
             public $accessToken = 'token';
         };
+    }
+
+    /**
+     * @return Builder
+     */
+    public function tokens()
+    {
+        return Mockery::mock(Builder::class);
     }
 }

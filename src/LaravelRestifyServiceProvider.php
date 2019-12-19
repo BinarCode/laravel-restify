@@ -22,6 +22,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     {
         /*
          * Optional methods to load your package assets
+
          */
         // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-restify');
         // $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-restify');
@@ -34,7 +35,8 @@ class LaravelRestifyServiceProvider extends ServiceProvider
             ], 'config');
 
             // Publishing the views.
-            /*$this->publishes([
+            /*$this->publishes(
+
                 __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-restify'),
             ], 'views');*/
 
@@ -50,8 +52,8 @@ class LaravelRestifyServiceProvider extends ServiceProvider
 
             // Registering package commands.
             $this->commands([
-                 CheckPassport::class,
-             ]);
+                CheckPassport::class,
+            ]);
         }
     }
 
@@ -65,7 +67,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
 
         // Register the main class to use with the facade
         $this->app->singleton('laravel-restify', function () {
-            return new Restable;
+            return new Restify;
         });
     }
 }
