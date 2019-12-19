@@ -139,6 +139,7 @@ class AuthServiceLoginTest extends IntegrationTest
                 })];
 
                 $builder->shouldReceive('get')->andReturn(collect($tokens));
+
                 return $builder;
             }
         });
