@@ -295,7 +295,11 @@ class AuthService extends RestifyService
         return true;
     }
 
-    /** * Revoke tokens for user */
+    /**
+     * Revoke tokens for user
+     *
+     * @throws AuthenticatableUserException
+     */
     public function logout()
     {
         /**
@@ -305,6 +309,8 @@ class AuthService extends RestifyService
         if ($user instanceof Authenticatable && $user instanceof Passportable) {
             $user->tokens()->get()->each->revoke();
             event(new UserLogout($user));
+        } else {
+            throw new AuthenticatableUserException(__('User is not authenticated.'));
         }
     }
 }

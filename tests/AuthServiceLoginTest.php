@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
 use Binaryk\LaravelRestify\Events\UserLogout;
+use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch;
 use Binaryk\LaravelRestify\Exceptions\PassportUserException;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
@@ -148,5 +149,13 @@ class AuthServiceLoginTest extends IntegrationTest
         $this->authService->logout();
 
         Event::assertDispatched(UserLogout::class);
+    }
+    public function test_logout_unauthenticated()
+    {
+        Auth::shouldReceive('user')
+            ->andReturn(null);
+
+        $this->expectException(AuthenticatableUserException::class);
+        $this->authService->logout();
     }
 }
