@@ -296,14 +296,14 @@ class AuthService extends RestifyService
     }
 
     /**
-     * Revoke tokens for user
+     * Revoke tokens for user.
      *
      * @throws AuthenticatableUserException
      */
     public function logout()
     {
         /**
-         * @var User $user
+         * @var User
          */
         $user = Auth::user();
         if ($user instanceof Authenticatable && $user instanceof Passportable) {

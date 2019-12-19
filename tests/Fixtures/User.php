@@ -62,6 +62,5 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail
     public function tokens()
     {
         return Mockery::mock(Builder::class);
-
     }
 }
