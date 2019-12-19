@@ -27,7 +27,7 @@ use Illuminate\Http\JsonResponse;
  */
 class RestResponse
 {
-    public static $RESPONSE_KEYS = [
+    public static $RESPONSE_DEFAULT_ATTRIBUTES = [
         'line',
         'file',
         'stack',
@@ -54,7 +54,7 @@ class RestResponse
     const REST_RESPONSE_UNAVAILABLE_CODE = 503;
 
     /**
-     * @var int
+     * @var int $code
      */
     protected $code = self::REST_RESPONSE_SUCCESS_CODE;
     /**
@@ -84,6 +84,24 @@ class RestResponse
      * @var array|null
      */
     private $data;
+
+    /**
+     * @var array $headers
+     */
+    protected $headers;
+
+    /**
+     * RestResponse constructor.
+     * @param mixed $content
+     * @param int $status
+     * @param array $headers
+     */
+    public function __construct($content = null, $status = 200, array $headers = [])
+    {
+        $this->data = $content;
+        $this->code = $status;
+        $this->headers = $headers;
+    }
 
     /**
      * Set response data.
@@ -127,7 +145,7 @@ class RestResponse
      */
     public function addError($message)
     {
-        if (! isset($this->errors)) {
+        if ( ! isset($this->errors)) {
             $this->errors = [];
         }
 
@@ -137,7 +155,7 @@ class RestResponse
     }
 
     /**
-     * Set response http code.
+     * Set response Http code.
      *
      * @param int $code
      * @return $this|int
@@ -154,7 +172,7 @@ class RestResponse
     }
 
     /**
-     * Set response http code.
+     * Set response Http code.
      *
      * @param int $line
      * @return $this|int
@@ -212,7 +230,7 @@ class RestResponse
             return $this->$key;
         }
 
-        $code = 'static::REST_RESPONSE_'.strtoupper($key).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($key) . '_CODE';
 
         return defined($code) ? constant($code) : null;
     }
@@ -227,7 +245,7 @@ class RestResponse
      */
     public function __call($func, $args)
     {
-        $code = 'static::REST_RESPONSE_'.strtoupper($func).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($func) . '_CODE';
 
         if (defined($code)) {
             return $this->code(constant($code));
@@ -246,7 +264,7 @@ class RestResponse
      */
     public function respond($response = null)
     {
-        if (! func_num_args()) {
+        if ( ! func_num_args()) {
             $response = new \stdClass();
 
             foreach ($this->fillable() as $property) {
@@ -268,7 +286,7 @@ class RestResponse
             }
         }
 
-        return $this->response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
+        return $this->response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE, $this->headers);
     }
 
     /**
@@ -311,7 +329,7 @@ class RestResponse
      */
     public function fillable(): array
     {
-        return static::$RESPONSE_KEYS;
+        return static::$RESPONSE_DEFAULT_ATTRIBUTES;
     }
 
     /**

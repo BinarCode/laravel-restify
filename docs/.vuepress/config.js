@@ -13,6 +13,29 @@ module.exports = {
             { text: 'Guide', link: '/docs/' },
             { text: 'About us', link: 'https://binarcode.com', target: '_blank' }
         ],
+
+        sidebar: [
+            {
+                title: 'Quick Start',
+                path: '/docs/'
+            },
+            {
+                title: 'REST methods',
+                path: '/docs/rest-methods/rest-methods',
+            },
+            {
+                title: 'Error handler',
+                path: '/docs/exception-handler/exception-handler',
+            },
+            {
+                title: 'Auth service',
+                path: '/docs/auth/auth',
+            },
+            {
+                title: 'Repository',
+                path: '/docs/repository-pattern/repository-pattern',
+            },
+        ]
     },
     plugins: [
         '@vuepress/pwa',
