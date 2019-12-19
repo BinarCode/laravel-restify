@@ -15,6 +15,7 @@ use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
 use Binaryk\LaravelRestify\Requests\ResetPasswordRequest;
 use Binaryk\LaravelRestify\Requests\RestifyPasswordEmailRequest;
 use Binaryk\LaravelRestify\Requests\RestifyRegisterRequest;
+use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\PasswordReset;
@@ -297,8 +298,11 @@ class AuthService extends RestifyService
     /** * Revoke tokens for user */
     public function logout()
     {
+        /**
+         * @var User $user
+         */
         $user = Auth::user();
-        if (method_exists($user, 'tokens')) {
+        if ($user instanceof Authenticatable && $user instanceof Passportable) {
             $user->tokens()->get()->each->revoke();
             event(new UserLogout($user));
         }
