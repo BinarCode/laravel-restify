@@ -1,7 +1,8 @@
 <?php
 
-namespace Binaryk\LaravelRestify;
+namespace Binaryk\LaravelRestify\Repositories;
 
+use Binaryk\LaravelRestify\Traits\AuthorizableModels;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -11,9 +12,9 @@ use Illuminate\Support\Str;
  * @package Binaryk\LaravelRestify;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-abstract class Resource
+abstract class Repository
 {
-    use Authorizable;
+    use AuthorizableModels;
 
     /**
      * @var Model

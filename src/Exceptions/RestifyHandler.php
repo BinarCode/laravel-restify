@@ -6,6 +6,8 @@ use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException as EntityNotFoundExceptionEloquent;
 use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
+use Binaryk\LaravelRestify\Restify;
+use Closure;
 use Exception;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -49,13 +51,20 @@ class RestifyHandler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param Request $request
-     * @param \Exception $exception
+     * @param  Request  $request
+     * @param  \Exception  $exception
      *
      * @return Response|\Symfony\Component\HttpFoundation\Response
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function render($request, Exception $exception)
     {
+        with(Restify::$renderCallback, function ($handler) use ($request, $exception) {
+            if ($handler instanceof Closure || is_callable($handler)) {
+                return call_user_func($handler, $request, $exception);
+            }
+        });
+
         $response = new RestResponse();
 
         switch (true) {
@@ -82,6 +91,7 @@ class RestifyHandler extends ExceptionHandler
             case $exception instanceof UnauthorizedException:
             case $exception instanceof UnauthorizedHttpException:
             case $exception instanceof UnauthenticateException:
+            case $exception instanceof \Binaryk\LaravelRestify\Exceptions\UnauthorizedException:
             case $exception instanceof GatePolicy:
             case $exception instanceof AuthenticationException:
                 $response->addError($exception->getMessage())->auth();
@@ -105,5 +115,24 @@ class RestifyHandler extends ExceptionHandler
         }
 
         return $response->respond();
+    }
+
+    /**
+     * Report or log an exception.
+     *
+     * @param  \Exception  $e
+     * @return mixed
+     *
+     * @throws \Exception
+     */
+    public function report(\Exception $e)
+    {
+        return with(Restify::$reportCallback, function ($handler) use ($e) {
+            if (is_callable($handler) || $handler instanceof Closure) {
+                return call_user_func($handler, $e);
+            }
+
+            return parent::report($e);
+        });
     }
 }

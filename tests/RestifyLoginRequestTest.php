@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests;
 
-use Binaryk\LaravelRestify\Requests\RestifyLoginRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyLoginRequest;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>

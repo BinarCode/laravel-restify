@@ -1,9 +1,9 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Requests;
+namespace Binaryk\LaravelRestify\Http\Requests;
 
 /**
- * @package Binaryk\LaravelRestify\Requests;
+ * @package Binaryk\LaravelRestify\Http\Requests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class ResourceIndexRequest extends RestifyRequest

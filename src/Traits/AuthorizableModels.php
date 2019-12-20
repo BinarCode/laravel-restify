@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify;
+namespace Binaryk\LaravelRestify\Traits;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Gate;
  * @package Binaryk\LaravelRestify;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-trait Authorizable
+trait AuthorizableModels
 {
     /**
      * Determine if the given resource is authorizable.
@@ -20,8 +20,6 @@ trait Authorizable
     {
         return ! is_null(Gate::getPolicyFor(static::newModel()));
     }
-
-
 
     /**
      * Determine if the resource should be available for the given request.

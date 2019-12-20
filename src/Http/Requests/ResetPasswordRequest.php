@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Requests;
+namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 

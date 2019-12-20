@@ -2,14 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures;
 
-use Binaryk\LaravelRestify\Resource;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
 
 /**
  * @package Binaryk\LaravelRestify\Tests\Fixtures;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class UserResource extends Resource
+class UserRepository extends Repository
 {
 
     public static $model = User::class;

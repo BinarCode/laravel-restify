@@ -47,7 +47,7 @@
                 "Binaryk\\LaravelRestify\\LaravelRestifyServiceProvider"
             ],
             "aliases": {
-                "LaravelRestify": "Binaryk\\LaravelRestify\\LaravelRestifyFacade"
+                "Restify": "Binaryk\\LaravelRestify\\RestifyFacade"
             }
         }
     }

@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Middleware;
+namespace Binaryk\LaravelRestify\Http\Middleware;
 
 use Illuminate\Support\Facades\Auth;
 

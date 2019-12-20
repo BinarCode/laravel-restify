@@ -3,62 +3,31 @@
 namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Commands\CheckPassport;
-use Binaryk\LaravelRestify\Repositories\Contracts\RestifyRepositoryInterface;
-use Binaryk\LaravelRestify\Repositories\RestifyRepository;
-use Illuminate\Support\Facades\Route;
+use Binaryk\LaravelRestify\Commands\RepositoryCommand;
+use Binaryk\LaravelRestify\Http\Middleware\ServeRestify;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
 {
-    /** * @var array
-     */
-    public $bindings = [
-        RestifyRepositoryInterface::class => RestifyRepository::class,
-    ];
-
     /**
      * Bootstrap the application services.
-     * @throws \ReflectionException
      */
     public function boot()
     {
-        /*
-         * Optional methods to load your package assets
-
-         */
-        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-restify');
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-restify');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->registerRoutes();
-
         if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__ . '/../config/config.php' => config_path('restify.php'),
-            ], 'config');
+            $this->commands([CheckPassport::class,]);
+            $this->registerPublishing();
 
-            // Publishing the views.
-            /*$this->publishes(
-
-                __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-restify'),
-            ], 'views');*/
-
-            // Publishing assets.
-            /*$this->publishes([
-                __DIR__.'/../resources/assets' => public_path('vendor/laravel-restify'),
-            ], 'assets');*/
-
-            // Publishing the translation files.
-            /*$this->publishes([
-                __DIR__.'/../resources/lang' => resource_path('lang/vendor/laravel-restify'),
-            ], 'lang');*/
-
-            // Registering package commands.
-            $this->commands([
-                CheckPassport::class,
-            ]);
+            $this->app->register(RestifyServiceProvider::class);
         }
 
-//        $this->resources();
+        /**
+         * This will push the ServeRestify middleware at the end of the middleware stack.
+         * This way we could check if the request is really restify related (starts with `config->path for example`)
+         * We will load routes and maybe other related resources.
+         */
+        $this->app->make(HttpKernel::class)->pushMiddleware(ServeRestify::class);
     }
 
     /**
@@ -66,41 +35,30 @@ class LaravelRestifyServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'laravel-restify');
-
         // Register the main class to use with the facade
         $this->app->singleton('laravel-restify', function () {
             return new Restify;
         });
+
+        $this->commands([
+            RepositoryCommand::class,
+        ]);
     }
 
-    /**
-     * Register the application's Rest resources.
-     *
-     * @return void
-     * @throws \ReflectionException
-     */
-    protected function resources()
-    {
-        Restify::resourcesFrom(app_path('Restify'));
-    }
 
-    /**
-     * Register the package routes.
-     *
-     * @return void
-     */
-    protected function registerRoutes()
+    protected function registerPublishing()
     {
-        $config = [
-            'namespace' => 'Binaryk\LaravelRestify\Http\Controllers',
-            'as' => 'restify.api.',
-            'prefix' => 'restify-api',
-        ];
+        $this->publishes([
+            __DIR__ . '/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
+        ], 'restify-provider');
 
-        Route::group($config, function () {
-            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
-        });
+        $this->publishes([
+            __DIR__ . '/../config/config.php' => config_path('restify.php'),
+        ], 'restify-config');
+
+
+        if ( ! $this->app->configurationIsCached()) {
+            $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'laravel-restify');
+        }
     }
 }

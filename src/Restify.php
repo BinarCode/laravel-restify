@@ -2,85 +2,116 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Events\RestifyServing;
+use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use ReflectionClass;
 use Symfony\Component\Finder\Finder;
 
 class Restify
 {
-
+    use AuthorizesRequests;
     /**
-     * The registered resource names.
+     * The registered repository names.
      *
      * @var array
      */
-    public static $resources = [];
+    public static $repositories = [];
 
     /**
-     * Get the resource class name for a given key.
+     * The callback used to report Restify's exceptions.
+     *
+     * @var \Closure
+     */
+    public static $reportCallback;
+
+    /**
+     * The callback used to render Restify's exceptions.
+     *
+     * @var \Closure
+     */
+    public static $renderCallback;
+
+    /**
+     * Get the repository class name for a given key.
      *
      * @param  string  $key
      * @return string
      */
-    public static function resourceForKey($key)
+    public static function repositoryForKey($key)
     {
-        return collect(static::$resources)->first(function ($value) use ($key) {
+        return collect(static::$repositories)->first(function ($value) use ($key) {
             return $value::uriKey() === $key;
         });
     }
 
     /**
-     * Register the given resources.
+     * Register the given repositories.
      *
-     * @param  array  $resources
+     * @param  array  $repositories
      * @return static
      */
-    public static function resources(array $resources)
+    public static function repositories(array $repositories)
     {
-        static::$resources = array_unique(
-            array_merge(static::$resources, $resources)
+        static::$repositories = array_unique(
+            array_merge(static::$repositories, $repositories)
         );
 
         return new static;
     }
 
     /**
-     * Register all of the resource classes in the given directory.
+     * Register all of the repository classes in the given directory.
      *
      * @param  string  $directory
      * @return void
      * @throws \ReflectionException
      */
-    public static function resourcesFrom($directory)
+    public static function repositoriesFrom($directory)
     {
         $namespace = app()->getNamespace();
 
-        $resources = [];
+        $repositories = [];
 
-        foreach ((new Finder)->in($directory)->files() as $resource) {
-            $resource = $namespace . str_replace(
+        foreach ((new Finder)->in($directory)->files() as $repository) {
+            $repository = $namespace . str_replace(
                     ['/', '.php'],
                     ['\\', ''],
-                    Str::after($resource->getPathname(), app_path() . DIRECTORY_SEPARATOR)
+                    Str::after($repository->getPathname(), app_path() . DIRECTORY_SEPARATOR)
                 );
 
-            if (is_subclass_of($resource, Resource::class) && (new ReflectionClass($resource))->isInstantiable()) {
-                $resources[] = $resource;
+            if (is_subclass_of($repository, Repository::class) && (new ReflectionClass($repository))->isInstantiable()) {
+                $repositories[] = $repository;
             }
         }
 
-        static::resources(
-            collect($resources)->sort()->all()
+        static::repositories(
+            collect($repositories)->sort()->all()
         );
     }
 
     /**
-     * Get the URI path prefix utilized by Nova.
+     * Get the URI path prefix utilized by Restify.
      *
      * @return string
      */
     public static function path()
     {
-        return config('restify.base', '/restify');
+        return config('restify.base', '/restify-api');
+    }
+
+    /**
+     * Register an event listener for the Restify "serving" event.
+     *
+     * This listener is added in the RestifyApplicationServiceProvider
+     *
+     * @param  \Closure|string  $callback
+     * @return void
+     */
+    public static function serving($callback)
+    {
+        Event::listen(RestifyServing::class, $callback);
     }
 }
