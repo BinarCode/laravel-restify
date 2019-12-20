@@ -8,4 +8,6 @@ return [
         //Table with authenticatable resource
         'table' => 'users',
     ],
+
+    'base' => '/restify',
 ];

@@ -3,7 +3,9 @@
 namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\UserResource;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Facades\Hash;
 use Orchestra\Testbench\TestCase;
@@ -26,6 +28,10 @@ abstract class IntegrationTest extends TestCase
         $this->loadMigrations();
         $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
+
+        Restify::resources([
+            UserResource::class,
+        ]);
     }
 
     protected function getPackageProviders($app)

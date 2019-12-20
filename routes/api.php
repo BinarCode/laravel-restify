@@ -1,5 +1,7 @@
 <?php
 
+Route::get('/{resource}', 'ResourceIndexController@handle');
+
 Route::post('login', function () {
     // AuthService->login
 });
@@ -18,3 +20,4 @@ Route::post('password/email', function () {
 Route::post('password/reset', function () {
     // AuthPassport -> resetPassword
 })->name('password.reset');
+

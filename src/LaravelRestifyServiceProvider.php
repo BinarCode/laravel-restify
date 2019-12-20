@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify;
 use Binaryk\LaravelRestify\Commands\CheckPassport;
 use Binaryk\LaravelRestify\Repositories\Contracts\RestifyRepositoryInterface;
 use Binaryk\LaravelRestify\Repositories\RestifyRepository;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
@@ -17,6 +18,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap the application services.
+     * @throws \ReflectionException
      */
     public function boot()
     {
@@ -27,11 +29,11 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-restify');
         // $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-restify');
         // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadRoutesFrom(__DIR__.'/routes.php');
+        $this->registerRoutes();
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('restify.php'),
+                __DIR__ . '/../config/config.php' => config_path('restify.php'),
             ], 'config');
 
             // Publishing the views.
@@ -55,6 +57,8 @@ class LaravelRestifyServiceProvider extends ServiceProvider
                 CheckPassport::class,
             ]);
         }
+
+//        $this->resources();
     }
 
     /**
@@ -63,11 +67,40 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     public function register()
     {
         // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-restify');
+        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'laravel-restify');
 
         // Register the main class to use with the facade
         $this->app->singleton('laravel-restify', function () {
             return new Restify;
+        });
+    }
+
+    /**
+     * Register the application's Rest resources.
+     *
+     * @return void
+     * @throws \ReflectionException
+     */
+    protected function resources()
+    {
+        Restify::resourcesFrom(app_path('Restify'));
+    }
+
+    /**
+     * Register the package routes.
+     *
+     * @return void
+     */
+    protected function registerRoutes()
+    {
+        $config = [
+            'namespace' => 'Binaryk\LaravelRestify\Http\Controllers',
+            'as' => 'restify.api.',
+            'prefix' => 'restify-api',
+        ];
+
+        Route::group($config, function () {
+            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
         });
     }
 }
