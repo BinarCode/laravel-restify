@@ -27,7 +27,7 @@ use Illuminate\Http\JsonResponse;
  */
 class RestResponse
 {
-    public static $RESPONSE_KEYS = [
+    public static $RESPONSE_DEFAULT_ATTRIBUTES = [
         'line',
         'file',
         'stack',
@@ -86,6 +86,24 @@ class RestResponse
     private $data;
 
     /**
+     * @var array
+     */
+    protected $headers;
+
+    /**
+     * RestResponse constructor.
+     * @param mixed $content
+     * @param int $status
+     * @param array $headers
+     */
+    public function __construct($content = null, $status = 200, array $headers = [])
+    {
+        $this->data = $content;
+        $this->code = $status;
+        $this->headers = $headers;
+    }
+
+    /**
      * Set response data.
      *
      * @param mixed $data
@@ -137,7 +155,7 @@ class RestResponse
     }
 
     /**
-     * Set response http code.
+     * Set response Http code.
      *
      * @param int $code
      * @return $this|int
@@ -154,7 +172,7 @@ class RestResponse
     }
 
     /**
-     * Set response http code.
+     * Set response Http code.
      *
      * @param int $line
      * @return $this|int
@@ -268,7 +286,7 @@ class RestResponse
             }
         }
 
-        return $this->response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
+        return $this->response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE, $this->headers);
     }
 
     /**
@@ -311,7 +329,7 @@ class RestResponse
      */
     public function fillable(): array
     {
-        return static::$RESPONSE_KEYS;
+        return static::$RESPONSE_DEFAULT_ATTRIBUTES;
     }
 
     /**

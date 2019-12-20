@@ -7,7 +7,7 @@
 Laravel Restify has a few requirements you should be aware of before installing:
 
 - Composer
-- Laravel Framework 5.8+
+- Laravel Framework 5.5+
 
 ## Installing Laravel Restify
 
@@ -17,10 +17,12 @@ composer require binaryk/laravel-restify
 
 :::tip Package Stability
 
-If you are not able to install Nova into your application because of your `minimum-stability` setting, consider setting your `minimum-stability` option to `dev` and your `prefer-stable` option to `true`. This will allow you to install Laravel restify while still preferring stable package releases for your application.
+If you are not able to install Restify into your application because of your `minimum-stability` setting, consider setting your `minimum-stability` option to `dev` and your `prefer-stable` option to `true`. This will allow you to install Laravel restify while still preferring stable package releases for your application.
 :::
 
-That's it! Next, you may extend the `Binaryk\LaravelRestify\Controllers\RestController` and use its helpers:
+That's it! 
+
+Next, you may extend the `Binaryk\LaravelRestify\Controllers\RestController` and use its helpers:
 
 ```php
 class UserController extends RestController 

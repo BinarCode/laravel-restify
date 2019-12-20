@@ -102,12 +102,15 @@ abstract class RestController extends BaseController
     /**
      * Get Response object.
      *
+     * @param null $data
+     * @param int $status
+     * @param array $headers
      * @return RestResponse
      */
-    protected function response()
+    protected function response($data = null, $status = 200, array $headers = [])
     {
         if (empty($this->response)) {
-            $this->response = new RestResponse();
+            $this->response = new RestResponse($data, $status, $headers);
         }
 
         return $this->response;
@@ -166,11 +169,27 @@ abstract class RestController extends BaseController
     }
 
     /**
+     * Returns with a message.
      * @param $msg
      * @return JsonResponse
      */
     public function message($msg)
     {
-        return $this->response()->data()->message($msg)->respond();
+        return $this->response()
+            ->message($msg)
+            ->respond();
+    }
+
+    /**
+     * Returns with a list of errors.
+     *
+     * @return JsonResponse
+     */
+    protected function errors(array $errors)
+    {
+        return $this->response()
+            ->invalid()
+            ->errors($errors)
+            ->respond();
     }
 }
