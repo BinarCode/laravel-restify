@@ -53,11 +53,6 @@ class AuthService extends RestifyService
      */
     public static $creating;
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      * @param array $credentials
      * @return string|null

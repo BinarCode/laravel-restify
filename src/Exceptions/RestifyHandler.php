@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException as EntityNotFoundExceptionEloquent;
 use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException as ActionUnauthorizedException;
 use Binaryk\LaravelRestify\Restify;
 use Closure;
 use Exception;
@@ -91,7 +92,7 @@ class RestifyHandler extends ExceptionHandler
             case $exception instanceof UnauthorizedException:
             case $exception instanceof UnauthorizedHttpException:
             case $exception instanceof UnauthenticateException:
-            case $exception instanceof \Binaryk\LaravelRestify\Exceptions\UnauthorizedException:
+            case $exception instanceof ActionUnauthorizedException:
             case $exception instanceof GatePolicy:
             case $exception instanceof AuthenticationException:
                 $response->addError($exception->getMessage())->auth();

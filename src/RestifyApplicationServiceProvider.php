@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Events\RestifyServing;
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
@@ -15,22 +14,15 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        /*
-         * At the end of the middleware stacks from the config, we dispatch the RestifyServing
-         * event, and this is the callback happening after the last middleware passed.
-         */
-        Restify::serving(function (RestifyServing $event) {
-            $this->authorization();
-            $this->registerExceptionHandler();
-            $this->repositories();
-        });
+        $this->authorization();
+        $this->registerExceptionHandler();
+        $this->repositories();
     }
 
     /**
      * Register the application's Rest resources.
      *
      * @return void
-     * @throws \ReflectionException
      */
     protected function repositories()
     {
@@ -71,7 +63,8 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      *
      * This gate determines who can access Restify in non-local environments.
      *
-     * This gate is checked in `authorization` method above
+     * This gate is checked in `authorization` method above and it should be overrided in the child
+     * service provider
      *
      * @return void
      */

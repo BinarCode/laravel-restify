@@ -24,7 +24,6 @@ abstract class Repository
      * Create a new resource instance.
      *
      * @param  \Illuminate\Database\Eloquent\Model  $resource
-     * @return void
      */
     public function __construct($resource)
     {
