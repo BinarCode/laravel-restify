@@ -36,6 +36,6 @@ return [
     'middleware' => [
         'api',
         DispatchRestifyServingEvent::class,
-        AuthorizeRestify::class
-    ]
+        AuthorizeRestify::class,
+    ],
 ];

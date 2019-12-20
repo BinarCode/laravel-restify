@@ -11,7 +11,6 @@ use Closure;
  *
  * This middleware is put manually into the middlewares list in the config
  *
- * @package Binaryk\LaravelRestify\Middleware;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class DispatchRestifyServingEvent

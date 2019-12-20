@@ -6,16 +6,14 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
 
 /**
- * @package Binaryk\LaravelRestify\Tests\Fixtures;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class UserRepository extends Repository
 {
-
     public static $model = User::class;
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function fields(Request $request)
     {

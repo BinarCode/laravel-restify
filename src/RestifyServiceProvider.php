@@ -30,8 +30,7 @@ class RestifyServiceProvider extends ServiceProvider
         ];
 
         Route::group($config, function () {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
         });
     }
-
 }
