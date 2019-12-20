@@ -16,13 +16,13 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     public function boot()
     {
         if ($this->app->runningInConsole()) {
-            $this->commands([CheckPassport::class,]);
+            $this->commands([CheckPassport::class]);
             $this->registerPublishing();
 
             $this->app->register(RestifyServiceProvider::class);
         }
 
-        /**
+        /*
          * This will push the ServeRestify middleware at the end of the middleware stack.
          * This way we could check if the request is really restify related (starts with `config->path for example`)
          * We will load routes and maybe other related resources.
@@ -45,20 +45,18 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         ]);
     }
 
-
     protected function registerPublishing()
     {
         $this->publishes([
-            __DIR__ . '/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
+            __DIR__.'/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
         ], 'restify-provider');
 
         $this->publishes([
-            __DIR__ . '/../config/config.php' => config_path('restify.php'),
+            __DIR__.'/../config/config.php' => config_path('restify.php'),
         ], 'restify-config');
 
-
-        if ( ! $this->app->configurationIsCached()) {
-            $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'laravel-restify');
+        if (! $this->app->configurationIsCached()) {
+            $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-restify');
         }
     }
 }

@@ -8,7 +8,6 @@ use Binaryk\LaravelRestify\Restify;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * @package Binaryk\LaravelRestify\Http\Requests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RestifyRequest extends FormRequest
@@ -21,9 +20,8 @@ class RestifyRequest extends FormRequest
     public function repository()
     {
         return tap(Restify::repositoryForKey($this->route('repository')), function ($repository) {
-
             if (is_null($repository)) {
-                throw new EntityNotFoundException(__("Repository :name not found.", [
+                throw new EntityNotFoundException(__('Repository :name not found.', [
                     'name' => $repository,
                 ]), 404);
             }
@@ -47,5 +45,4 @@ class RestifyRequest extends FormRequest
             //
         ];
     }
-
 }

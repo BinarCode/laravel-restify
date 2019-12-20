@@ -8,8 +8,8 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Facades\Hash;
-use Orchestra\Testbench\TestCase;
 use Illuminate\Support\Facades\Route;
+use Orchestra\Testbench\TestCase;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>

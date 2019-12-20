@@ -7,7 +7,6 @@ use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
 
 /**
- * @package Binaryk\LaravelRestify\Commands;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RepositoryCommand extends GeneratorCommand
@@ -98,5 +97,4 @@ class RepositoryCommand extends GeneratorCommand
             ['model', 'm', InputOption::VALUE_REQUIRED, 'The model class being represented.'],
         ];
     }
-
 }

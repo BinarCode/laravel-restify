@@ -15,7 +15,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        /**
+        /*
          * At the end of the middleware stacks from the config, we dispatch the RestifyServing
          * event, and this is the callback happening after the last middleware passed.
          */
@@ -47,7 +47,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
     }
 
-
     /**
      * Configure the Restify authorization services.
      *
@@ -57,7 +56,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     {
         $this->gate();
 
-        /**
+        /*
          * Adding an auth callback. This callback will be verified in the AuthorizeRestify middleware,
          * which is the last middleware in the middleware list from the configuration.
          */

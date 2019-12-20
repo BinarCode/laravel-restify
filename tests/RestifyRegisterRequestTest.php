@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests;
 
-
 use Binaryk\LaravelRestify\Http\Requests\RestifyRegisterRequest;
 
 /**

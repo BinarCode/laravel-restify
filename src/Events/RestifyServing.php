@@ -6,7 +6,6 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Http\Request;
 
 /**
- * @package Binaryk\LaravelRestify\Events;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RestifyServing

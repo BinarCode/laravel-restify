@@ -8,7 +8,6 @@ use Binaryk\LaravelRestify\RestifyServiceProvider;
 use Closure;
 
 /**
- * @package Binaryk\LaravelRestify\Http\Middleware;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class ServeRestify
