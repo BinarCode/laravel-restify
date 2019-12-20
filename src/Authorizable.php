@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 /**
- * @package Binaryk\LaravelRestify;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait Authorizable
@@ -21,8 +20,6 @@ trait Authorizable
         return ! is_null(Gate::getPolicyFor(static::newModel()));
     }
 
-
-
     /**
      * Determine if the resource should be available for the given request.
      *
@@ -31,7 +28,7 @@ trait Authorizable
      */
     public static function authorizedToViewAny(Request $request)
     {
-        if ( ! static::authorizable()) {
+        if (! static::authorizable()) {
             return true;
         }
 
@@ -39,5 +36,4 @@ trait Authorizable
             ? Gate::check('viewAny', get_class(static::newModel()))
             : true;
     }
-
 }

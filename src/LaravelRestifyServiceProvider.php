@@ -33,7 +33,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
 
         if ($this->app->runningInConsole()) {
             $this->publishes([
-                __DIR__ . '/../config/config.php' => config_path('restify.php'),
+                __DIR__.'/../config/config.php' => config_path('restify.php'),
             ], 'config');
 
             // Publishing the views.
@@ -67,7 +67,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     public function register()
     {
         // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'laravel-restify');
+        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-restify');
 
         // Register the main class to use with the facade
         $this->app->singleton('laravel-restify', function () {

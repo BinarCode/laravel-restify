@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Restify;
 use Illuminate\Foundation\Http\FormRequest;
 
 /**
- * @package Binaryk\LaravelRestify\Requests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RestifyRequest extends FormRequest
@@ -35,5 +34,4 @@ class RestifyRequest extends FormRequest
             //
         ];
     }
-
 }

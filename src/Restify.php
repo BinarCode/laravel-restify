@@ -8,7 +8,6 @@ use Symfony\Component\Finder\Finder;
 
 class Restify
 {
-
     /**
      * The registered resource names.
      *
@@ -58,10 +57,10 @@ class Restify
         $resources = [];
 
         foreach ((new Finder)->in($directory)->files() as $resource) {
-            $resource = $namespace . str_replace(
+            $resource = $namespace.str_replace(
                     ['/', '.php'],
                     ['\\', ''],
-                    Str::after($resource->getPathname(), app_path() . DIRECTORY_SEPARATOR)
+                    Str::after($resource->getPathname(), app_path().DIRECTORY_SEPARATOR)
                 );
 
             if (is_subclass_of($resource, Resource::class) && (new ReflectionClass($resource))->isInstantiable()) {

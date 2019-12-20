@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 /**
- * @package Binaryk\LaravelRestify\Tests\Controllers;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class ResourceIndexControllerTest extends IntegrationTest
@@ -22,5 +21,4 @@ class ResourceIndexControllerTest extends IntegrationTest
 
         dd($response);
     }
-
 }

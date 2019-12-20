@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Middleware;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * @package Binaryk\LaravelRestify\Middleware;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RedirectIfAuthenticated

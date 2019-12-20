@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 /**
- * @package Binaryk\LaravelRestify;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 abstract class Resource
@@ -74,7 +73,8 @@ abstract class Resource
     /**
      * @return Builder
      */
-    public static function query() {
+    public static function query()
+    {
         return static::newModel()->query();
     }
 }

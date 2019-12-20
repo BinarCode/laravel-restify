@@ -20,4 +20,3 @@ Route::post('password/email', function () {
 Route::post('password/reset', function () {
     // AuthPassport -> resetPassword
 })->name('password.reset');
-
