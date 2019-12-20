@@ -169,7 +169,7 @@ abstract class RestController extends BaseController
     }
 
     /**
-     * Returns with a message
+     * Returns with a message.
      * @param $msg
      * @return JsonResponse
      */
@@ -181,7 +181,7 @@ abstract class RestController extends BaseController
     }
 
     /**
-     * Returns with a list of errors
+     * Returns with a list of errors.
      *
      * @return JsonResponse
      */
