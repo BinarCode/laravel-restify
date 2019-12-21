@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait InteractWithModels
@@ -14,12 +13,11 @@ trait InteractWithModels
     {
         $users = collect([]);
         $i = 0;
-        while($i < $count) {
+        while ($i < $count) {
             $users->push(factory(User::class)->create());
             $i++;
         }
 
         return $users;
     }
-
 }
