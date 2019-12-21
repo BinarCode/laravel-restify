@@ -4,10 +4,7 @@ namespace Binaryk\LaravelRestify;
 
 use Illuminate\Support\Facades\Facade;
 
-/**
- * @see \Binaryk\LaravelRestify\Skeleton\SkeletonClass
- */
-class LaravelRestify extends Facade
+class RestifyFacade extends Facade
 {
     /**
      * Get the registered name of the component.

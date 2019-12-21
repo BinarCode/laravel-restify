@@ -3,9 +3,12 @@
 namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase;
 
 /**
@@ -24,8 +27,13 @@ abstract class IntegrationTest extends TestCase
         Hash::driver('bcrypt')->setRounds(4);
         $this->repositoryMock();
         $this->loadMigrations();
+        $this->loadRoutes();
         $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
+
+        Restify::repositories([
+            UserRepository::class,
+        ]);
     }
 
     protected function getPackageProviders($app)
@@ -106,5 +114,27 @@ abstract class IntegrationTest extends TestCase
             {
             }
         }));
+    }
+
+    public function loadRoutes()
+    {
+        Route::post('login', function () {
+            // AuthService->login
+        });
+        Route::post('register', function () {
+            // AuthService -> register
+        });
+        Route::get('email/verify/{id}/{hash}', function () {
+            // AuthService -> verify
+        })->name('verification.verify')->middleware([
+            'signed',
+            'throttle:6,1',
+        ]);
+        Route::post('password/email', function () {
+            // AuthService -> sendResetPasswordLinkEmail
+        });
+        Route::post('password/reset', function () {
+            // AuthPassport -> resetPassword
+        })->name('password.reset');
     }
 }

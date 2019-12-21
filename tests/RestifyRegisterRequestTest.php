@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests;
 
-use Binaryk\LaravelRestify\Requests\RestifyRegisterRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRegisterRequest;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>

@@ -3,58 +3,31 @@
 namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Commands\CheckPassport;
-use Binaryk\LaravelRestify\Repositories\Contracts\RestifyRepositoryInterface;
-use Binaryk\LaravelRestify\Repositories\RestifyRepository;
+use Binaryk\LaravelRestify\Commands\RepositoryCommand;
+use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
 {
-    /** * @var array
-     */
-    public $bindings = [
-        RestifyRepositoryInterface::class => RestifyRepository::class,
-    ];
-
     /**
      * Bootstrap the application services.
      */
     public function boot()
     {
-        /*
-         * Optional methods to load your package assets
-
-         */
-        // $this->loadTranslationsFrom(__DIR__.'/../resources/lang', 'laravel-restify');
-        // $this->loadViewsFrom(__DIR__.'/../resources/views', 'laravel-restify');
-        // $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
-        $this->loadRoutesFrom(__DIR__.'/routes.php');
-
         if ($this->app->runningInConsole()) {
-            $this->publishes([
-                __DIR__.'/../config/config.php' => config_path('restify.php'),
-            ], 'config');
+            $this->commands([CheckPassport::class]);
+            $this->registerPublishing();
 
-            // Publishing the views.
-            /*$this->publishes(
-
-                __DIR__.'/../resources/views' => resource_path('views/vendor/laravel-restify'),
-            ], 'views');*/
-
-            // Publishing assets.
-            /*$this->publishes([
-                __DIR__.'/../resources/assets' => public_path('vendor/laravel-restify'),
-            ], 'assets');*/
-
-            // Publishing the translation files.
-            /*$this->publishes([
-                __DIR__.'/../resources/lang' => resource_path('lang/vendor/laravel-restify'),
-            ], 'lang');*/
-
-            // Registering package commands.
-            $this->commands([
-                CheckPassport::class,
-            ]);
+            $this->app->register(RestifyServiceProvider::class);
         }
+
+        /*
+         * This will push the RestifyInjector middleware at the end of the middleware stack.
+         * This way we could check if the request is really restify related (starts with `config->path for example`)
+         * We will load routes and maybe other related resources.
+         */
+        $this->app->make(HttpKernel::class)->pushMiddleware(RestifyInjector::class);
     }
 
     /**
@@ -62,12 +35,28 @@ class LaravelRestifyServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        // Automatically apply the package configuration
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-restify');
-
         // Register the main class to use with the facade
         $this->app->singleton('laravel-restify', function () {
             return new Restify;
         });
+
+        $this->commands([
+            RepositoryCommand::class,
+        ]);
+    }
+
+    protected function registerPublishing()
+    {
+        $this->publishes([
+            __DIR__.'/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
+        ], 'restify-provider');
+
+        $this->publishes([
+            __DIR__.'/../config/config.php' => config_path('restify.php'),
+        ], 'restify-config');
+
+        if (! $this->app->configurationIsCached()) {
+            $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-restify');
+        }
     }
 }

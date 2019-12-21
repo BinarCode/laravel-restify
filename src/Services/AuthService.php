@@ -12,9 +12,9 @@ use Binaryk\LaravelRestify\Exceptions\PassportUserException;
 use Binaryk\LaravelRestify\Exceptions\PasswordResetException;
 use Binaryk\LaravelRestify\Exceptions\PasswordResetInvalidTokenException;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
-use Binaryk\LaravelRestify\Requests\ResetPasswordRequest;
-use Binaryk\LaravelRestify\Requests\RestifyPasswordEmailRequest;
-use Binaryk\LaravelRestify\Requests\RestifyRegisterRequest;
+use Binaryk\LaravelRestify\Http\Requests\ResetPasswordRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyPasswordEmailRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRegisterRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -53,11 +53,6 @@ class AuthService extends RestifyService
      */
     public static $creating;
 
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     /**
      * @param array $credentials
      * @return string|null
@@ -93,12 +88,13 @@ class AuthService extends RestifyService
     }
 
     /**
-     * @param array $payload
+     * @param  array  $payload
      * @return \Illuminate\Database\Eloquent\Builder|Model|mixed
      * @throws AuthenticatableUserException
      * @throws EntityNotFoundException
      * @throws PassportUserException
      * @throws ValidationException
+     * @throws BindingResolutionException
      */
     public function register(array $payload)
     {

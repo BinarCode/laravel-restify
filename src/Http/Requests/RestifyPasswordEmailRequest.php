@@ -1,11 +1,10 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Requests;
+namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Facades\Config;
 
-class RestifyRegisterRequest extends FormRequest
+class RestifyPasswordEmailRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -25,8 +24,7 @@ class RestifyRegisterRequest extends FormRequest
     public function rules()
     {
         return [
-            'email' => 'required|email|max:255|unique:'.Config::get('config.auth.table', 'users'),
-            'password' => 'required|confirmed|min:6',
+            'email' => 'required|email',
         ];
     }
 }
