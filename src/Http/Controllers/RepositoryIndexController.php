@@ -13,8 +13,10 @@ class RepositoryIndexController extends RepositoryController
     {
         $resource = $request->repository();
 
-        $data = $resource::query()->get();
+        $paginator = $resource::query()
+            ->where('id', '>', 10)
+            ->simplePaginate();
 
-        return $this->respond($data);
+        return $this->respond($paginator);
     }
 }

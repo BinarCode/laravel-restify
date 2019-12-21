@@ -2,20 +2,25 @@
 
 namespace Binaryk\LaravelRestify\Controllers;
 
+use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
+use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Illuminate\Config\Repository;
 use Illuminate\Config\Repository as Config;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Password;
 
@@ -86,8 +91,8 @@ abstract class RestController extends BaseController
     /**
      * Returns a generic response to the client.
      *
-     * @param mixed $data
-     * @param int $httpCode
+     * @param  mixed  $data
+     * @param  int  $httpCode
      *
      * @return JsonResponse
      */
@@ -102,9 +107,9 @@ abstract class RestController extends BaseController
     /**
      * Get Response object.
      *
-     * @param null $data
-     * @param int $status
-     * @param array $headers
+     * @param  null  $data
+     * @param  int  $status
+     * @param  array  $headers
      * @return RestResponse
      */
     protected function response($data = null, $status = 200, array $headers = [])
@@ -115,6 +120,39 @@ abstract class RestController extends BaseController
 
         return $this->response;
     }
+
+
+    /**
+     * @param $modelClass
+     * @param  array  $filters
+     * @return array
+     * @throws BindingResolutionException
+     */
+    public function search($modelClass, $filters = [])
+    {
+        $container = Container::getInstance();
+
+        /** * @var SearchService $searchService */
+        $searchService = $container->make(SearchService::class);
+        $results = $searchService
+            ->setPredefinedFilters($filters)
+            ->search($this->request(), ($modelClass instanceof Model ? $modelClass : $container->make($modelClass)));
+
+        $paginator = $results->paginate($this->request()->get('perPage') ?? ($modelClass::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
+        $items = $paginator->getCollection()->map->serializeForIndex($this->request());
+
+        return array_merge($paginator->toArray(), [
+            'data' => $items,
+        ]);
+    }
+
+    public function index(Request $request, $model = null)
+    {
+        $data = $this->paginator($model)->getCollection()->map->serializeForIndex($this->request());
+
+        return $this->respond($data);
+    }
+
 
     /**
      * @param $policy

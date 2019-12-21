@@ -3,6 +3,8 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures;
 
 use Binaryk\LaravelRestify\Contracts\Passportable;
+use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -12,10 +14,17 @@ use Mockery;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class User extends Authenticatable implements Passportable, MustVerifyEmail
+class User extends Authenticatable implements Passportable, MustVerifyEmail, RestifySearchable
 {
     use \Illuminate\Auth\MustVerifyEmail;
-    use Notifiable;
+    use Notifiable,
+        InteractWithSearch;
+
+
+    public static $search = ['id'];
+    public static $match = [
+        'id' => 'int',
+    ];
 
     /**
      * The attributes that are mass assignable.
