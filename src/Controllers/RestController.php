@@ -20,7 +20,6 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Password;
 
@@ -121,7 +120,6 @@ abstract class RestController extends BaseController
         return $this->response;
     }
 
-
     /**
      * @param $modelClass
      * @param  array  $filters
@@ -152,7 +150,6 @@ abstract class RestController extends BaseController
 
         return $this->respond($data);
     }
-
 
     /**
      * @param $policy

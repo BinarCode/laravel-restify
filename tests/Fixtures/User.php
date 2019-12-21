@@ -20,7 +20,6 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail, Res
     use Notifiable,
         InteractWithSearch;
 
-
     public static $search = ['id'];
     public static $match = [
         'id' => 'int',

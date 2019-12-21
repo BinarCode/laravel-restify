@@ -5,14 +5,13 @@ namespace Binaryk\LaravelRestify\Traits;
 use Illuminate\Http\Request;
 
 /**
- * @package Binaryk\LaravelRestify\Traits;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait InteractWithSearch
 {
     use AuthorizableModels;
 
-    static $defaultPerPage = 15;
+    public static $defaultPerPage = 15;
 
     /**
      * @return array
@@ -45,6 +44,7 @@ trait InteractWithSearch
     {
         return static::$match ?? [];
     }
+
     /**
      * @return array
      */
