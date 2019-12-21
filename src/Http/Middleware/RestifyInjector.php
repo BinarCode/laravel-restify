@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Middleware;
 
+use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyServiceProviderRegistered;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\RestifyServiceProvider;
@@ -10,7 +11,7 @@ use Closure;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class ServeRestify
+class RestifyInjector
 {
     /**
      * Handle an incoming request.
@@ -24,10 +25,11 @@ class ServeRestify
         $path = trim(Restify::path(), '/') ?: '/';
 
         $isRestify = $request->is($path) ||
-            $request->is(trim($path.'/*', '/')) ||
+            $request->is(trim($path . '/*', '/')) ||
             $request->is('restify-api/*');
 
-        if ($isRestify || true) {
+        if ($isRestify) {
+            RestifyBeforeEach::dispatch($request);
             app()->register(RestifyServiceProvider::class);
             RestifyServiceProviderRegistered::dispatch();
         }

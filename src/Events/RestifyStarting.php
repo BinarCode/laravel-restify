@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class RestifyServing
+class RestifyStarting
 {
     use Dispatchable;
 

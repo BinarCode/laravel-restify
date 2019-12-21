@@ -1,7 +1,7 @@
 <?php
 
 use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
-use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyServingEvent;
+use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
 
 return [
     'auth' => [
@@ -35,7 +35,7 @@ return [
 
     'middleware' => [
         'api',
-        DispatchRestifyServingEvent::class,
+        DispatchRestifyStartingEvent::class,
         AuthorizeRestify::class,
     ],
 ];

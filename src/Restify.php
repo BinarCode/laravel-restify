@@ -2,7 +2,8 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Events\RestifyServing;
+use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
+use Binaryk\LaravelRestify\Events\RestifyStarting;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
 use Illuminate\Support\Facades\Event;
@@ -110,8 +111,16 @@ class Restify
      * @param  \Closure|string  $callback
      * @return void
      */
-    public static function serving($callback)
+    public static function starting($callback)
     {
-        Event::listen(RestifyServing::class, $callback);
+        Event::listen(RestifyStarting::class, $callback);
+    }
+
+    /**
+     * @param \Closure|string $callback
+     */
+    public static function beforeEach($callback)
+    {
+        Event::listen(RestifyBeforeEach::class, $callback);
     }
 }

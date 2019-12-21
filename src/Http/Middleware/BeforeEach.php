@@ -2,18 +2,16 @@
 
 namespace Binaryk\LaravelRestify\Http\Middleware;
 
-use Binaryk\LaravelRestify\Events\RestifyServing;
+use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
+use Binaryk\LaravelRestify\Events\RestifyServiceProviderRegistered;
+use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\RestifyServiceProvider;
 use Closure;
 
 /**
- * One of the most important middleware, because at the RestifyServing
- * callback we load routes, add gate for seeing restify, add exception handler.
- *
- * This middleware is put manually into the middlewares list in the config
- *
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class DispatchRestifyServingEvent
+class BeforeEach
 {
     /**
      * Handle an incoming request.
@@ -24,8 +22,7 @@ class DispatchRestifyServingEvent
      */
     public function handle($request, Closure $next)
     {
-        RestifyServing::dispatch($request);
-
+        RestifyBeforeEach::dispatch($request);
         return $next($request);
     }
 }
