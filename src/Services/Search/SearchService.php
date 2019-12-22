@@ -185,11 +185,11 @@ class SearchService extends Searchable
     {
         $relations = null;
 
-        if (isset($this->fixedInput['relations']) === true) {
-            $relations = $this->fixedInput['relations'];
+        if (isset($this->fixedInput['with']) === true) {
+            $relations = $this->fixedInput['with'];
         }
 
-        if (isset($this->fixedInput['relations']) === false) {
+        if (isset($this->fixedInput['with']) === false) {
             $relations = $this->request->get('with', null);
         }
 
