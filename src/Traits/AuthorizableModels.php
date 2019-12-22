@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Traits;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -41,7 +42,7 @@ trait AuthorizableModels
      */
     public function authorizeToViewAny(Request $request)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return;
         }
 
@@ -58,7 +59,7 @@ trait AuthorizableModels
      */
     public static function authorizedToViewAny(Request $request)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return true;
         }
 
@@ -198,11 +199,11 @@ trait AuthorizableModels
      */
     public function authorizedToAdd(Request $request, $model)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return true;
         }
 
-        $method = 'add'.class_basename($model);
+        $method = 'add' . class_basename($model);
 
         return method_exists(Gate::getPolicyFor($this->model()), $method)
             ? Gate::check($method, $this->model())
@@ -218,11 +219,11 @@ trait AuthorizableModels
      */
     public function authorizedToAttachAny(Request $request, $model)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return true;
         }
 
-        $method = 'attachAny'.Str::singular(class_basename($model));
+        $method = 'attachAny' . Str::singular(class_basename($model));
 
         return method_exists(Gate::getPolicyFor($this->model()), $method)
             ? Gate::check($method, [$this->model()])
@@ -238,11 +239,11 @@ trait AuthorizableModels
      */
     public function authorizedToAttach(Request $request, $model)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return true;
         }
 
-        $method = 'attach'.Str::singular(class_basename($model));
+        $method = 'attach' . Str::singular(class_basename($model));
 
         return method_exists(Gate::getPolicyFor($this->model()), $method)
             ? Gate::check($method, [$this->model(), $model])
@@ -259,11 +260,11 @@ trait AuthorizableModels
      */
     public function authorizedToDetach(Request $request, $model, $relationship)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return true;
         }
 
-        $method = 'detach'.Str::singular(class_basename($model));
+        $method = 'detach' . Str::singular(class_basename($model));
 
         return method_exists(Gate::getPolicyFor($this->model()), $method)
             ? Gate::check($method, [$this->model(), $model])
@@ -299,9 +300,14 @@ trait AuthorizableModels
 
     /**
      * @return AuthorizableModels|Model|mixed
+     * @throws \Throwable
      */
     public function determineModel()
     {
-        return $this instanceof Model ? $this : $this->modelInstance;
+        $model = $this instanceof Model ? $this : ($this->modelInstance ?? null);
+
+        throw_if(is_null($model), new ModelNotFoundException(__('Model does not declared in :class', ['class' => self::class,])));
+
+        return $model;
     }
 }
