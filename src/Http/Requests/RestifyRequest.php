@@ -10,5 +10,4 @@ use Illuminate\Foundation\Http\FormRequest;
 class RestifyRequest extends FormRequest
 {
     use InteractWithRepositories;
-
 }

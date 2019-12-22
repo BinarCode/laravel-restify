@@ -125,7 +125,6 @@ abstract class RestController extends BaseController
         return $this->response;
     }
 
-
     /**
      * @param $modelClass
      * @param  array  $filters
@@ -143,7 +142,6 @@ abstract class RestController extends BaseController
 
         $paginator = $results->paginate($this->request()->get('perPage') ?? ($modelClass::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
         $items = $paginator->getCollection()->map->serializeForIndex($this->request());
-
 
         return array_merge($paginator->toArray(), [
             'data' => $items,

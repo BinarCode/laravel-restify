@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 /**
- * Could be used as a trait in a model class and in a repository class
- * 
+ * Could be used as a trait in a model class and in a repository class.
+ *
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait AuthorizableModels

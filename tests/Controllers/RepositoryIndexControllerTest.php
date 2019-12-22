@@ -13,7 +13,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 class RepositoryIndexControllerTest extends IntegrationTest
 {
     public function test_list_resource()
-   {
+    {
         factory(User::class)->create();
         factory(User::class)->create();
         factory(User::class)->create();
@@ -23,7 +23,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $response->assertJsonCount(3, 'data.data');
     }
-
 
     public function test_the_rest_controller_can_paginate()
     {
@@ -80,12 +79,12 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 'data' => [
                     'data' => [$expected],
                     'current_page' => 1,
-                    'first_page_url' => "http://localhost/restify-api/users?page=1",
+                    'first_page_url' => 'http://localhost/restify-api/users?page=1',
                     'from' => 1,
                     'last_page' => 1,
-                    'last_page_url' => "http://localhost/restify-api/users?page=1",
+                    'last_page_url' => 'http://localhost/restify-api/users?page=1',
                     'next_page_url' => null,
-                    'path' => "http://localhost/restify-api/users",
+                    'path' => 'http://localhost/restify-api/users',
                     'per_page' => 15,
                     'prev_page_url' => null,
                     'to' => 1,
@@ -101,12 +100,12 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 'data' => [
                     'data' => [],
                     'current_page' => 1,
-                    'first_page_url' => "http://localhost/restify-api/users?page=1",
+                    'first_page_url' => 'http://localhost/restify-api/users?page=1',
                     'from' => 1,
                     'last_page' => 1,
-                    'last_page_url' => "http://localhost/restify-api/users?page=1",
+                    'last_page_url' => 'http://localhost/restify-api/users?page=1',
                     'next_page_url' => null,
-                    'path' => "http://localhost/restify-api/users",
+                    'path' => 'http://localhost/restify-api/users',
                     'per_page' => 15,
                     'prev_page_url' => null,
                     'to' => 1,
@@ -125,8 +124,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->assertSame($response->data['data'][0]['id'], 10);
         $this->assertSame($response->data['data'][9]['id'], 1);
-
-
     }
 
     public function test_that_asc_sort_query_param_works()
@@ -173,12 +170,12 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 'data' => [
                     'data' => [$expected],
                     'current_page' => 1,
-                    'first_page_url' => "http://localhost/restify-api/users?page=1",
+                    'first_page_url' => 'http://localhost/restify-api/users?page=1',
                     'from' => 1,
                     'last_page' => 1,
-                    'last_page_url' => "http://localhost/restify-api/users?page=1",
+                    'last_page_url' => 'http://localhost/restify-api/users?page=1',
                     'next_page_url' => null,
-                    'path' => "http://localhost/restify-api/users",
+                    'path' => 'http://localhost/restify-api/users',
                     'per_page' => 15,
                     'prev_page_url' => null,
                     'to' => 1,

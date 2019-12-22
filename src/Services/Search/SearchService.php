@@ -32,7 +32,7 @@ class SearchService extends Searchable
     }
 
     /**
-     * Will prepare the eloquent array to return
+     * Will prepare the eloquent array to return.
      *
      * @return array
      */
@@ -54,7 +54,7 @@ class SearchService extends Searchable
     }
 
     /**
-     * Prepare eloquent exact fields
+     * Prepare eloquent exact fields.
      *
      * @param $fields
      *
@@ -100,7 +100,7 @@ class SearchService extends Searchable
     }
 
     /**
-     * Prepare eloquent exact fields
+     * Prepare eloquent exact fields.
      *
      * @param $fields
      *
@@ -117,16 +117,16 @@ class SearchService extends Searchable
                 foreach ($values as $field => $value) {
                     $qualifiedField = $this->model->qualifyColumn($field);
                     switch ($key) {
-                        case "gte":
+                        case 'gte':
                             $this->builder->where($qualifiedField, '>=', $value);
                             break;
-                        case "gt":
+                        case 'gt':
                             $this->builder->where($qualifiedField, '>', $value);
                             break;
-                        case "lte":
+                        case 'lte':
                             $this->builder->where($qualifiedField, '<=', $value);
                             break;
-                        case "lt":
+                        case 'lt':
                             $this->builder->where($qualifiedField, '<', $value);
                             break;
                     }
@@ -138,7 +138,7 @@ class SearchService extends Searchable
     }
 
     /**
-     * Prepare eloquent exact fields
+     * Prepare eloquent exact fields.
      *
      * @param $fields
      *
@@ -146,7 +146,7 @@ class SearchService extends Searchable
      */
     protected function prepareMatchFields()
     {
-        foreach($this->model::getMatchByFields() as $key => $type) {
+        foreach ($this->model::getMatchByFields() as $key => $type) {
             if (! $this->request->has($key) && ! data_get($this->fixedInput, "match.$key")) {
                 continue;
             }
@@ -186,7 +186,7 @@ class SearchService extends Searchable
     }
 
     /**
-     * Prepare eloquent order by
+     * Prepare eloquent order by.
      *
      * @param $sort
      *
@@ -214,7 +214,7 @@ class SearchService extends Searchable
     }
 
     /**
-     * Prepare relations
+     * Prepare relations.
      *
      * @return $this
      */
@@ -243,7 +243,7 @@ class SearchService extends Searchable
     }
 
     /**
-     * Prepare search
+     * Prepare search.
      *
      * @param $search
      * @return $this
@@ -252,7 +252,7 @@ class SearchService extends Searchable
     {
         $this->builder->where(function (Builder $query) use ($search) {
             /**
-             * @var RestifySearchable|Model $model
+             * @var RestifySearchable|Model
              */
             $model = $query->getModel();
 
@@ -263,7 +263,6 @@ class SearchService extends Searchable
                 ($connectionType != 'pgsql' || $search <= PHP_INT_MAX) &&
                 in_array($query->getModel()->getKeyName(), $model::getSearchableFields());
 
-
             if ($canSearchPrimaryKey) {
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
             }
@@ -271,7 +270,7 @@ class SearchService extends Searchable
             $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
             foreach ($this->model::getSearchableFields() as $column) {
-                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
+                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
             }
         });
 
@@ -279,7 +278,7 @@ class SearchService extends Searchable
     }
 
     /**
-     * Set order
+     * Set order.
      *
      * @param $param
      *
@@ -289,6 +288,7 @@ class SearchService extends Searchable
     {
         if ($param === 'random') {
             $this->builder->inRandomOrder();
+
             return $this;
         }
 
