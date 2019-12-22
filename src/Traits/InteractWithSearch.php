@@ -50,7 +50,7 @@ trait InteractWithSearch
      */
     public static function getOrderByFields()
     {
-        return static::$order ?? [];
+        return static::$sort ?? [];
     }
 
     /**

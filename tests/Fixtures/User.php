@@ -20,10 +20,11 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail, Res
     use Notifiable,
         InteractWithSearch;
 
-    public static $search = ['id'];
-    public static $match = [
-        'id' => 'int',
-    ];
+    public static $search = ['id', 'email'];
+    public static $sort = ['id',];
+    public static $match = ['id' => 'int', 'email' => 'string',];
+    public static $in = ['id' => 'int',];
+    public static $withs = ['posts'];
 
     /**
      * The attributes that are mass assignable.
@@ -70,5 +71,10 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail, Res
     public function tokens()
     {
         return Mockery::mock(Builder::class);
+    }
+
+    public function posts()
+    {
+        return $this->hasMany(Post::class);
     }
 }

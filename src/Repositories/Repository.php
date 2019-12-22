@@ -31,14 +31,6 @@ abstract class Repository
     }
 
     /**
-     * Get the fields displayed by the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    abstract public function fields(Request $request);
-
-    /**
      * Get the underlying model instance for the resource.
      *
      * @return \Illuminate\Database\Eloquent\Model

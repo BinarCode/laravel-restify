@@ -39,7 +39,7 @@ class SearchService extends Searchable
     protected function prepare()
     {
         $this->prepareSearchFields($this->request->get('search', data_get($this->fixedInput, 'search', '')))
-            ->prepareMatchFields($this->request->get('match', []))
+            ->prepareMatchFields()
             ->prepareIn($this->request->get('in', []))
             ->prepareOperator($this->request->get('operator', []))
             ->prepareOrders($this->request->get('sort', ''))
@@ -78,6 +78,7 @@ class SearchService extends Searchable
                     foreach ($value as $val) {
                         switch ($this->model::getInFields()[$key]) {
                             case 'integer':
+                            case 'int':
                             default:
                                 $this->builder->whereIn($this->model->qualifyColumn($field), explode(',', $val));
                                 break;
@@ -86,6 +87,7 @@ class SearchService extends Searchable
                 } elseif (is_array($value) === false && isset($this->model::getInFields()[$key]) === true) {
                     switch ($this->model::getInFields()[$key]) {
                         case 'integer':
+                        case 'int':
                         default:
                             $this->builder->whereIn($this->model->qualifyColumn($field), explode(',', $value));
                             break;
@@ -142,44 +144,40 @@ class SearchService extends Searchable
      *
      * @return $this
      */
-    protected function prepareMatchFields($fields)
+    protected function prepareMatchFields()
     {
-        if (isset($this->fixedInput['match']) === true) {
-            if (is_array($fields) === false) {
-                $fields = $this->fixedInput['match'];
-            } else {
-                $fields = array_merge($this->fixedInput['match'], $fields);
+        foreach($this->model::getMatchByFields() as $key => $type) {
+            if (! $this->request->has($key) && ! data_get($this->fixedInput, "match.$key")) {
+                continue;
             }
-        }
 
-        if (is_array($fields) === true) {
-            foreach ($fields as $key => $value) {
-                if (isset($this->model::getMatchByFields()[$key]) === true) {
-                    $field = $this->model->qualifyColumn($key);
+            $value = $this->request->get($key) ?: data_get($this->fixedInput, "match.$key");
 
-                    $values = explode(',', $value);
-                    foreach ($values as $match) {
-                        switch ($this->model::getMatchByFields()[$key]) {
-                            case RestifySearchable::MATCH_TEXT:
-                                $this->builder->where($field, '=', $match);
-                                break;
-                            case RestifySearchable::MATCH_BOOL:
-                            case 'boolean':
-                                if ($match === 'false') {
-                                    $this->builder->where(function ($query) use ($field) {
-                                        return $query->where($field, '=', false)->orWhereNull($field);
-                                    });
-                                    break;
-                                }
-                                $this->builder->where($field, '=', true);
-                                break;
-                            case RestifySearchable::MATCH_INTEGER:
-                            case 'number':
-                            case 'int':
-                                $this->builder->where($field, '=', (int) $match);
-                                break;
+            $field = $this->model->qualifyColumn($key);
+
+            $values = explode(',', $value);
+
+            foreach ($values as $match) {
+                switch ($this->model::getMatchByFields()[$key]) {
+                    case RestifySearchable::MATCH_TEXT:
+                    case 'string':
+                        $this->builder->where($field, '=', $match);
+                        break;
+                    case RestifySearchable::MATCH_BOOL:
+                    case 'boolean':
+                        if ($match === 'false') {
+                            $this->builder->where(function ($query) use ($field) {
+                                return $query->where($field, '=', false)->orWhereNull($field);
+                            });
+                            break;
                         }
-                    }
+                        $this->builder->where($field, '=', true);
+                        break;
+                    case RestifySearchable::MATCH_INTEGER:
+                    case 'number':
+                    case 'int':
+                        $this->builder->where($field, '=', (int) $match);
+                        break;
                 }
             }
         }
@@ -313,6 +311,7 @@ class SearchService extends Searchable
             if ($order === '-') {
                 $this->builder->orderBy($field, 'desc');
             }
+
             if ($order === '+') {
                 $this->builder->orderBy($field, 'asc');
             }
