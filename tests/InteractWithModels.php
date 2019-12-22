@@ -24,7 +24,7 @@ trait InteractWithModels
             $i++;
         }
 
-        foreach($predefinedEmails as $email) {
+        foreach ($predefinedEmails as $email) {
             $users->push(factory(User::class)->create([
                 'email' => $email,
             ]));
@@ -44,7 +44,7 @@ trait InteractWithModels
         $i = 0;
         while ($i < $count) {
             $users->push(factory(Post::class)->create(
-                ['user_id' => $userId,]
+                ['user_id' => $userId]
             ));
             $i++;
         }

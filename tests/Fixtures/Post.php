@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * @package Binaryk\LaravelRestify\Tests\Fixtures;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class Post extends Model
@@ -14,6 +13,6 @@ class Post extends Model
         'id',
         'user_id',
         'title',
-        'description'
+        'description',
     ];
 }

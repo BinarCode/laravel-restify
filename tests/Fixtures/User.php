@@ -21,9 +21,9 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail, Res
         InteractWithSearch;
 
     public static $search = ['id', 'email'];
-    public static $sort = ['id',];
-    public static $match = ['id' => 'int', 'email' => 'string',];
-    public static $in = ['id' => 'int',];
+    public static $sort = ['id'];
+    public static $match = ['id' => 'int', 'email' => 'string'];
+    public static $in = ['id' => 'int'];
     public static $withs = ['posts'];
 
     /**
