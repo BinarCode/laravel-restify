@@ -64,4 +64,13 @@ trait InteractWithRepositories
             //
         ];
     }
+
+    /**
+     * Get the route handling the request.
+     *
+     * @param  string|null  $param
+     * @param  mixed   $default
+     * @return \Illuminate\Routing\Route|object|string
+     */
+    abstract public function route($param = null, $default = null);
 }

@@ -3,14 +3,16 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Query\Builder as QueryBuilder;
 
 class SearchService extends Searchable
 {
     /**
-     * @var Builder
+     * @var Builder|QueryBuilder
      */
     protected $builder;
 
@@ -18,6 +20,7 @@ class SearchService extends Searchable
      * @param  RestifyRequest  $request
      * @param  Model  $model
      * @return Builder
+     * @throws InstanceOfException
      */
     public function search(RestifyRequest $request, Model $model)
     {
@@ -35,15 +38,21 @@ class SearchService extends Searchable
      * Will prepare the eloquent array to return
      *
      * @return array
+     * @throws InstanceOfException
      */
     protected function prepare()
     {
-        $this->prepareSearchFields($this->request->get('search', data_get($this->fixedInput, 'search', '')))
-            ->prepareMatchFields()
-            ->prepareIn($this->request->get('in', []))
-            ->prepareOperator($this->request->get('operator', []))
-            ->prepareOrders($this->request->get('sort', ''))
-            ->prepareRelations();
+        if ($this->model instanceof RestifySearchable) {
+            $this->prepareSearchFields($this->request->get('search', data_get($this->fixedInput, 'search', '')))
+                ->prepareMatchFields()
+                ->prepareOperator($this->request->get('operator', []))
+                ->prepareOrders($this->request->get('sort', ''))
+                ->prepareRelations();
+        } else {
+            throw new InstanceOfException(__("Model is not an instance of :parent class", [
+                'parent' => RestifySearchable::class,
+            ]));
+        }
 
         $results = $this->builder->get();
 
@@ -51,52 +60,6 @@ class SearchService extends Searchable
             'data' => $results,
             'aggregations' => null,
         ];
-    }
-
-    /**
-     * Prepare eloquent exact fields
-     *
-     * @param $fields
-     *
-     * @return $this
-     */
-    protected function prepareIn($fields)
-    {
-        if (isset($this->fixedInput['in']) === true) {
-            $fields = $this->fixedInput['in'];
-        }
-
-        if (is_array($fields) === true) {
-            foreach ($fields as $key => $value) {
-                $field = $key;
-
-                if ($field === null) {
-                    continue;
-                }
-
-                if (is_array($value) === true && isset($this->model::getInFields()[$key]) === true) {
-                    foreach ($value as $val) {
-                        switch ($this->model::getInFields()[$key]) {
-                            case 'integer':
-                            case 'int':
-                            default:
-                                $this->builder->whereIn($this->model->qualifyColumn($field), explode(',', $val));
-                                break;
-                        }
-                    }
-                } elseif (is_array($value) === false && isset($this->model::getInFields()[$key]) === true) {
-                    switch ($this->model::getInFields()[$key]) {
-                        case 'integer':
-                        case 'int':
-                        default:
-                            $this->builder->whereIn($this->model->qualifyColumn($field), explode(',', $value));
-                            break;
-                    }
-                }
-            }
-        }
-
-        return $this;
     }
 
     /**
@@ -251,17 +214,12 @@ class SearchService extends Searchable
     protected function prepareSearchFields($search)
     {
         $this->builder->where(function (Builder $query) use ($search) {
-            /**
-             * @var RestifySearchable|Model $model
-             */
-            $model = $query->getModel();
-
-            $connectionType = $query->getModel()->getConnection()->getDriverName();
+            $connectionType = $this->model->getConnection()->getDriverName();
 
             $canSearchPrimaryKey = is_numeric($search) &&
                 in_array($query->getModel()->getKeyType(), ['int', 'integer']) &&
                 ($connectionType != 'pgsql' || $search <= PHP_INT_MAX) &&
-                in_array($query->getModel()->getKeyName(), $model::getSearchableFields());
+                in_array($query->getModel()->getKeyName(), $this->model::getSearchableFields());
 
 
             if ($canSearchPrimaryKey) {
@@ -271,7 +229,7 @@ class SearchService extends Searchable
             $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
             foreach ($this->model::getSearchableFields() as $column) {
-                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
+                $query->orWhere($this->model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
             }
         });
 
