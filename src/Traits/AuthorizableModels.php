@@ -3,11 +3,14 @@
 namespace Binaryk\LaravelRestify\Traits;
 
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 /**
+ * Could be used as a trait in a model class and in a repository class
+ * 
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait AuthorizableModels
@@ -291,6 +294,14 @@ trait AuthorizableModels
      */
     public function authorizedTo(Request $request, $ability)
     {
-        return static::authorizable() ? Gate::check($ability, $this->resource) : true;
+        return static::authorizable() ? Gate::check($ability, $this->determineModel()) : true;
+    }
+
+    /**
+     * @return AuthorizableModels|Model|mixed
+     */
+    public function determineModel()
+    {
+        return $this instanceof Model ? $this : $this->modelInstance;
     }
 }

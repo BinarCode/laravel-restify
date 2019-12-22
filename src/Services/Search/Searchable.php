@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
 /**
@@ -16,7 +17,7 @@ abstract class Searchable
     protected $request;
 
     /**
-     * @var RestifySearchable $model
+     * @var RestifySearchable|Model $model
      */
     protected $model;
 
@@ -38,5 +39,13 @@ abstract class Searchable
         }
 
         return $this;
+    }
+
+    /**
+     * @return static
+     */
+    public static function instance()
+    {
+        return new static;
     }
 }

@@ -5,7 +5,9 @@ namespace Binaryk\LaravelRestify\Controllers;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
+use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Config\Repository;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
@@ -14,13 +16,10 @@ use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\Container\BindingResolutionException;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
-use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Password;
 
@@ -35,7 +34,7 @@ use Illuminate\Support\Facades\Password;
  */
 abstract class RestController extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests, PerformsQueries;
 
     /**
      * @var RestResponse
@@ -48,7 +47,7 @@ abstract class RestController extends BaseController
     protected $gate;
 
     /**
-     * @var Request
+     * @var RestifyRequest
      */
     protected $request;
 
@@ -63,13 +62,15 @@ abstract class RestController extends BaseController
     protected $guard;
 
     /**
-     * @return Request
+     * @return RestifyRequest
      * @throws BindingResolutionException
      */
     public function request()
     {
-        if (($this->request instanceof Request) === false) {
-            $this->request = app()->make(Request::class);
+        $container = Container::getInstance();
+
+        if (($this->request instanceof RestifyRequest) === false) {
+            $this->request = $container->make(RestifyRequest::class);
         }
 
         return $this->request;
@@ -81,8 +82,10 @@ abstract class RestController extends BaseController
      */
     public function config()
     {
+        $container = Container::getInstance();
+
         if (($this->config instanceof Repository) === false) {
-            $this->config = app()->make(Repository::class);
+            $this->config = $container->make(Repository::class);
         }
 
         return $this->config;
@@ -95,6 +98,7 @@ abstract class RestController extends BaseController
      * @param  int  $httpCode
      *
      * @return JsonResponse
+     * @throws BindingResolutionException
      */
     protected function respond($data = null, $httpCode = 200)
     {
@@ -130,29 +134,21 @@ abstract class RestController extends BaseController
      */
     public function search($modelClass, $filters = [])
     {
-        $container = Container::getInstance();
-
-        /** * @var SearchService $searchService */
-        $searchService = $container->make(SearchService::class);
-        $results = $searchService
+        $results = SearchService::instance()
             ->setPredefinedFilters($filters)
-            ->search($this->request(), ($modelClass instanceof Model ? $modelClass : $container->make($modelClass)));
+            ->search($this->request(), new $modelClass);
+        $results->tap(function ($query) {
+            static::indexQuery($this->request(), $query);
+        });
 
         $paginator = $results->paginate($this->request()->get('perPage') ?? ($modelClass::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
         $items = $paginator->getCollection()->map->serializeForIndex($this->request());
+
 
         return array_merge($paginator->toArray(), [
             'data' => $items,
         ]);
     }
-
-    public function index(Request $request, $model = null)
-    {
-        $data = $this->paginator($model)->getCollection()->map->serializeForIndex($this->request());
-
-        return $this->respond($data);
-    }
-
 
     /**
      * @param $policy
@@ -210,6 +206,7 @@ abstract class RestController extends BaseController
      * Returns with a message.
      * @param $msg
      * @return JsonResponse
+     * @throws BindingResolutionException
      */
     public function message($msg)
     {
@@ -221,7 +218,9 @@ abstract class RestController extends BaseController
     /**
      * Returns with a list of errors.
      *
+     * @param  array  $errors
      * @return JsonResponse
+     * @throws BindingResolutionException
      */
     protected function errors(array $errors)
     {

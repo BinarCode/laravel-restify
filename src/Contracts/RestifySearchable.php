@@ -26,17 +26,17 @@ interface RestifySearchable
     /**
      * @return array
      */
-    public function getSearchableFields();
+    public static function getSearchableFields();
 
     /**
      * @return array
      */
-    public function getWiths();
+    public static function getWiths();
 
     /**
      * @return array
      */
-    public function getInFields();
+    public static function getInFields();
 
     /**
      * Find matches in the table by given value
@@ -48,10 +48,10 @@ interface RestifySearchable
      * [  'match' => [ 'id' => 1 ] ]
      * @return array
      */
-    public function getMatchByFields();
+    public static function getMatchByFields();
 
     /**
      * @return array
      */
-    public function getOrderByFields();
+    public static function getOrderByFields();
 }

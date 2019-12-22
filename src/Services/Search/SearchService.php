@@ -3,9 +3,9 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 
 class SearchService extends Searchable
 {
@@ -15,11 +15,11 @@ class SearchService extends Searchable
     protected $builder;
 
     /**
-     * @param  Request  $request
+     * @param  RestifyRequest  $request
      * @param  Model  $model
      * @return Builder
      */
-    public function search(Request $request, Model $model)
+    public function search(RestifyRequest $request, Model $model)
     {
         $this->request = $request;
         $this->model = $model;
@@ -74,20 +74,20 @@ class SearchService extends Searchable
                     continue;
                 }
 
-                if (is_array($value) === true && isset($this->model->getInFields()[$key]) === true) {
+                if (is_array($value) === true && isset($this->model::getInFields()[$key]) === true) {
                     foreach ($value as $val) {
-                        switch ($this->model->getInFields()[$key]) {
+                        switch ($this->model::getInFields()[$key]) {
                             case 'integer':
                             default:
-                                $this->builder->whereIn($field, explode(',', $val));
+                                $this->builder->whereIn($this->model->qualifyColumn($field), explode(',', $val));
                                 break;
                         }
                     }
-                } elseif (is_array($value) === false && isset($this->model->getInFields()[$key]) === true) {
-                    switch ($this->model->getInFields()[$key]) {
+                } elseif (is_array($value) === false && isset($this->model::getInFields()[$key]) === true) {
+                    switch ($this->model::getInFields()[$key]) {
                         case 'integer':
                         default:
-                            $this->builder->whereIn($field, explode(',', $value));
+                            $this->builder->whereIn($this->model->qualifyColumn($field), explode(',', $value));
                             break;
                     }
                 }
@@ -113,18 +113,19 @@ class SearchService extends Searchable
         if (is_array($fields) === true) {
             foreach ($fields as $key => $values) {
                 foreach ($values as $field => $value) {
+                    $qualifiedField = $this->model->qualifyColumn($field);
                     switch ($key) {
                         case "gte":
-                            $this->builder->where($field, '>=', $value);
+                            $this->builder->where($qualifiedField, '>=', $value);
                             break;
                         case "gt":
-                            $this->builder->where($field, '>', $value);
+                            $this->builder->where($qualifiedField, '>', $value);
                             break;
                         case "lte":
-                            $this->builder->where($field, '<=', $value);
+                            $this->builder->where($qualifiedField, '<=', $value);
                             break;
                         case "lt":
-                            $this->builder->where($field, '<', $value);
+                            $this->builder->where($qualifiedField, '<', $value);
                             break;
                     }
                 }
@@ -153,13 +154,12 @@ class SearchService extends Searchable
 
         if (is_array($fields) === true) {
             foreach ($fields as $key => $value) {
-                if (isset($this->model->getMatchByFields()[$key]) === true) {
-                    $field = $key;
-
+                if (isset($this->model::getMatchByFields()[$key]) === true) {
+                    $field = $this->model->qualifyColumn($key);
 
                     $values = explode(',', $value);
                     foreach ($values as $match) {
-                        switch ($this->model->getMatchByFields()[$key]) {
+                        switch ($this->model::getMatchByFields()[$key]) {
                             case RestifySearchable::MATCH_TEXT:
                                 $this->builder->where($field, '=', $match);
                                 break;
@@ -252,7 +252,10 @@ class SearchService extends Searchable
      */
     protected function prepareSearchFields($search)
     {
-        $this->builder->where(function ($query) use ($search) {
+        $this->builder->where(function (Builder $query) use ($search) {
+            /**
+             * @var RestifySearchable|Model $model
+             */
             $model = $query->getModel();
 
             $connectionType = $query->getModel()->getConnection()->getDriverName();
@@ -260,7 +263,7 @@ class SearchService extends Searchable
             $canSearchPrimaryKey = is_numeric($search) &&
                 in_array($query->getModel()->getKeyType(), ['int', 'integer']) &&
                 ($connectionType != 'pgsql' || $search <= PHP_INT_MAX) &&
-                in_array($query->getModel()->getKeyName(), $model::$search);
+                in_array($query->getModel()->getKeyName(), $model::getSearchableFields());
 
 
             if ($canSearchPrimaryKey) {
@@ -269,7 +272,7 @@ class SearchService extends Searchable
 
             $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
-            foreach ($this->model->getSearchableFields() as $column) {
+            foreach ($this->model::getSearchableFields() as $column) {
                 $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
             }
         });
@@ -306,11 +309,11 @@ class SearchService extends Searchable
             $field = $param;
         }
 
-        if (isset($this->model->getOrderByFields()[$field]) === true) {
-            if ($order === '+') {
+        if (in_array($field, $this->model::getOrderByFields()) === true) {
+            if ($order === '-') {
                 $this->builder->orderBy($field, 'desc');
             }
-            if ($order === '-') {
+            if ($order === '+') {
                 $this->builder->orderBy($field, 'asc');
             }
         }

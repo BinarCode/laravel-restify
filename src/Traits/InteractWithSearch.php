@@ -17,7 +17,7 @@ trait InteractWithSearch
     /**
      * @return array
      */
-    public function getSearchableFields()
+    public static function getSearchableFields()
     {
         return static::$search ?? [];
     }
@@ -25,7 +25,7 @@ trait InteractWithSearch
     /**
      * @return array
      */
-    public function getWiths()
+    public static function getWiths()
     {
         return static::$withs ?? [];
     }
@@ -33,7 +33,7 @@ trait InteractWithSearch
     /**
      * @return array
      */
-    public function getInFields()
+    public static function getInFields()
     {
         return static::$in ?? [];
     }
@@ -41,14 +41,14 @@ trait InteractWithSearch
     /**
      * @return array
      */
-    public function getMatchByFields()
+    public static function getMatchByFields()
     {
         return static::$match ?? [];
     }
     /**
      * @return array
      */
-    public function getOrderByFields()
+    public static function getOrderByFields()
     {
         return static::$order ?? [];
     }
