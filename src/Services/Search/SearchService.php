@@ -42,17 +42,15 @@ class SearchService extends Searchable
      */
     protected function prepare()
     {
-        if ($this->model instanceof RestifySearchable) {
-            $this->prepareSearchFields($this->request->get('search', data_get($this->fixedInput, 'search', '')))
-                ->prepareMatchFields()
-                ->prepareOperator($this->request->get('operator', []))
-                ->prepareOrders($this->request->get('sort', ''))
-                ->prepareRelations();
-        } else {
-            throw new InstanceOfException(__('Model is not an instance of :parent class', [
-                'parent' => RestifySearchable::class,
-            ]));
-        }
+        throw_unless($this->model instanceof RestifySearchable, new InstanceOfException(__('Model is not an instance of :parent class', [
+            'parent' => RestifySearchable::class,
+        ])));
+
+        $this->prepareSearchFields($this->request->get('search', data_get($this->fixedInput, 'search', '')))
+            ->prepareMatchFields()
+            ->prepareOperator($this->request->get('operator', []))
+            ->prepareOrders($this->request->get('sort', ''))
+            ->prepareRelations();
 
         $results = $this->builder->get();
 
@@ -110,7 +108,7 @@ class SearchService extends Searchable
     protected function prepareMatchFields()
     {
         foreach ($this->model::getMatchByFields() as $key => $type) {
-            if (! $this->request->has($key) && ! data_get($this->fixedInput, "match.$key")) {
+            if ( ! $this->request->has($key) && ! data_get($this->fixedInput, "match.$key")) {
                 continue;
             }
 
@@ -228,7 +226,7 @@ class SearchService extends Searchable
             $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
             foreach ($this->model::getSearchableFields() as $column) {
-                $query->orWhere($this->model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
+                $query->orWhere($this->model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
             }
         });
 
