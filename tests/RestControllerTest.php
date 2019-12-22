@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\UserController;
 use Illuminate\Auth\Passwords\PasswordBroker;
@@ -111,7 +112,7 @@ class RestControllerTest extends IntegrationTest
 
     public function test_can_access_request()
     {
-        $this->assertInstanceOf(Request::class, $this->controller->request());
+        $this->assertInstanceOf(RestifyRequest::class, $this->controller->request());
     }
 
     public function test_broker_exists()

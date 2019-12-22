@@ -18,7 +18,7 @@ abstract class Repository
     /**
      * @var Model
      */
-    public $resource;
+    public $modelInstance;
 
     /**
      * Create a new resource instance.
@@ -27,7 +27,7 @@ abstract class Repository
      */
     public function __construct($resource)
     {
-        $this->resource = $resource;
+        $this->modelInstance = $resource;
     }
 
     /**
@@ -45,7 +45,7 @@ abstract class Repository
      */
     public function model()
     {
-        return $this->resource;
+        return $this->modelInstance;
     }
 
     /**

@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Exceptions\UnauthorizedException as ActionUnauthorize
 use Binaryk\LaravelRestify\Restify;
 use Closure;
 use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
@@ -93,6 +94,7 @@ class RestifyHandler extends ExceptionHandler
             case $exception instanceof UnauthorizedHttpException:
             case $exception instanceof UnauthenticateException:
             case $exception instanceof ActionUnauthorizedException:
+            case $exception instanceof AuthorizationException:
             case $exception instanceof GatePolicy:
             case $exception instanceof AuthenticationException:
                 $response->addError($exception->getMessage())->auth();
