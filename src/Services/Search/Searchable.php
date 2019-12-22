@@ -6,9 +6,6 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-/**
- * @package Binaryk\LaravelRestify\Services\Search;
- */
 abstract class Searchable
 {
     /**
@@ -17,7 +14,7 @@ abstract class Searchable
     protected $request;
 
     /**
-     * @var RestifySearchable|Model $model
+     * @var RestifySearchable|Model
      */
     protected $model;
 
@@ -25,7 +22,6 @@ abstract class Searchable
      * @var array|null
      */
     protected $fixedInput;
-
 
     /**
      * @param $input
