@@ -24,7 +24,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $response->assertJsonCount(3, 'data.data');
     }
 
-
     public function test_the_rest_controller_can_paginate()
     {
         $this->mockUsers(50);
