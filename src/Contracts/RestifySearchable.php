@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Contracts;
 use Illuminate\Http\Request;
 
 /**
- * @package Binaryk\LaravelRestify\Contracts;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 interface RestifySearchable
@@ -42,7 +41,7 @@ interface RestifySearchable
      * Find matches in the table by given value
      * Returns an array like:
      * [ 'table_column_name' => 'type' ], type can be: text, bool, boolean, int, integer, number
-     * e.g. [ 'id' => 'int' ]
+     * e.g. [ 'id' => 'int' ].
      *
      * To use this filter we have to send in query:
      * [  'match' => [ 'id' => 1 ] ]
