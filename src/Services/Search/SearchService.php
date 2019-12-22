@@ -39,6 +39,7 @@ class SearchService extends Searchable
      *
      * @return array
      * @throws InstanceOfException
+     * @throws \Throwable
      */
     protected function prepare()
     {
