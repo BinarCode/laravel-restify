@@ -32,7 +32,7 @@ abstract class IntegrationTest extends TestCase
         $this->repositoryMock();
         $this->loadMigrations();
         $this->loadRoutes();
-        $this->withFactories(__DIR__ . '/Factories');
+        $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
 
         Restify::repositories([
@@ -69,7 +69,7 @@ abstract class IntegrationTest extends TestCase
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--realpath' => realpath(__DIR__ . '/Migrations'),
+            '--realpath' => realpath(__DIR__.'/Migrations'),
         ]);
     }
 
@@ -149,6 +149,7 @@ abstract class IntegrationTest extends TestCase
     public function lastQuery()
     {
         $queries = DB::getQueryLog();
+
         return end($queries);
     }
 }

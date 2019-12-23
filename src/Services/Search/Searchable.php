@@ -2,10 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Services\Search;
 
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
-
 abstract class Searchable
 {
     /**

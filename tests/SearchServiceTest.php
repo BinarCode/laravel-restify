@@ -12,13 +12,12 @@ use Illuminate\Database\Eloquent\Model;
 use Mockery as MockeryAlias;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class SearchServiceTest extends IntegrationTest
 {
     /**
-     * @var SearchService $service
+     * @var SearchService
      */
     private $service;
 
@@ -39,7 +38,7 @@ class SearchServiceTest extends IntegrationTest
         $request->shouldReceive('get')
             ->andReturn();
         /**
-         * @var Builder $query
+         * @var Builder
          */
         $query = $this->service->prepareRelations($request, $builder, ['posts']);
         $this->assertInstanceOf(Closure::class, $query->getEagerLoads()['posts']);
@@ -55,7 +54,7 @@ class SearchServiceTest extends IntegrationTest
         $request->shouldReceive('get')
             ->andReturn('posts');
         /**
-         * @var Builder $query
+         * @var Builder
          */
         $query = $this->service->prepareRelations($request, $builder);
         $this->assertInstanceOf(Closure::class, $query->getEagerLoads()['posts']);
@@ -70,7 +69,7 @@ class SearchServiceTest extends IntegrationTest
         $request->shouldReceive('get')
             ->andReturn('-id');
         /**
-         * @var Builder $query
+         * @var Builder
          */
         $query = $this->service->prepareOrders($request, $builder);
         $this->assertEquals('id', $query->getQuery()->orders[0]['column']);
@@ -86,7 +85,7 @@ class SearchServiceTest extends IntegrationTest
         $request->shouldReceive('get')
             ->andReturn('id');
         /**
-         * @var Builder $query
+         * @var Builder
          */
         $query = $this->service->prepareOrders($request, $builder);
         $this->assertEquals('id', $query->getQuery()->orders[0]['column']);
@@ -102,7 +101,7 @@ class SearchServiceTest extends IntegrationTest
         $request->shouldReceive('get')
             ->andReturn();
         /**
-         * @var Builder $query
+         * @var Builder
          */
         $query = $this->service->prepareOrders($request, $builder, [
             'sort' => 'id',
@@ -123,7 +122,7 @@ class SearchServiceTest extends IntegrationTest
         $request->shouldReceive('has')
             ->andReturnTrue();
         /**
-         * @var Builder $query
+         * @var Builder
          */
         $query = $this->service->prepareMatchFields($request, $builder);
         $this->assertCount(count(User::$match), $query->getQuery()->getRawBindings()['where']);
@@ -147,7 +146,7 @@ class SearchServiceTest extends IntegrationTest
         $request->shouldReceive('has')
             ->andReturnFalse();
         /**
-         * @var Builder $query
+         * @var Builder
          */
         $query = $this->service->prepareMatchFields($request, $builder, [
             'match' => [
@@ -175,7 +174,7 @@ class SearchServiceTest extends IntegrationTest
         $request->shouldReceive('has')
             ->andReturnTrue();
         /**
-         * @var Builder $query
+         * @var Builder
          */
         $query = $this->service->prepareMatchFields($request, $builder);
         $this->assertCount(0, $query->getQuery()->getRawBindings()['where']);
@@ -200,7 +199,7 @@ class SearchServiceTest extends IntegrationTest
         $request->shouldReceive('get')
             ->andReturn('some search');
         /**
-         * @var Builder $query
+         * @var Builder
          */
         $query = $this->service->prepareSearchFields($request, $builder);
         $this->assertArrayHasKey('where', $query->getQuery()->getRawBindings());
