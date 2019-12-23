@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Controllers;
 
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\Arrayable;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -277,7 +276,6 @@ class RestResponse
             foreach ($this->attributes as $attribute => $value) {
                 $response->{$attribute} = $value;
             }
-
         }
 
         return $this->response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE, $this->headers);
