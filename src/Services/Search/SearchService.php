@@ -176,7 +176,7 @@ class SearchService extends Searchable
 
 
     /**
-     * @param  Builder  $query
+     * @param  $query
      * @param $param
      * @return Builder
      */
