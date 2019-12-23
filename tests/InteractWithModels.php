@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 
 /**
@@ -9,7 +10,12 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User;
  */
 trait InteractWithModels
 {
-    public function mockUsers($count = 1)
+    /**
+     * @param  int  $count
+     * @param  array  $predefinedEmails
+     * @return \Illuminate\Support\Collection
+     */
+    public function mockUsers($count = 1, $predefinedEmails = [])
     {
         $users = collect([]);
         $i = 0;
@@ -18,6 +24,31 @@ trait InteractWithModels
             $i++;
         }
 
-        return $users;
+        foreach ($predefinedEmails as $email) {
+            $users->push(factory(User::class)->create([
+                'email' => $email,
+            ]));
+        }
+
+        return $users->shuffle(); // randomly shuffles the items in the collection
+    }
+
+    /**
+     * @param $userId
+     * @param  int  $count
+     * @return \Illuminate\Support\Collection
+     */
+    public function mockPosts($userId, $count = 1)
+    {
+        $users = collect([]);
+        $i = 0;
+        while ($i < $count) {
+            $users->push(factory(Post::class)->create(
+                ['user_id' => $userId]
+            ));
+            $i++;
+        }
+
+        return $users->shuffle(); // randomly shuffles the items in the collection
     }
 }

@@ -2,41 +2,36 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
-use Binaryk\LaravelRestify\Traits\AuthorizableModels;
+use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
+use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Support\Str;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-abstract class Repository
+abstract class Repository implements RestifySearchable
 {
-    use AuthorizableModels;
+    use InteractWithSearch,
+        DelegatesToResource;
 
     /**
+     * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
      * @var Model
      */
-    public $modelInstance;
+    public $resource;
 
     /**
      * Create a new resource instance.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $resource
+     * @param  \Illuminate\Database\Eloquent\Model  $model
      */
-    public function __construct($resource)
+    public function __construct($model)
     {
-        $this->modelInstance = $resource;
+        $this->resource = $model;
     }
-
-    /**
-     * Get the fields displayed by the resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    abstract public function fields(Request $request);
 
     /**
      * Get the underlying model instance for the resource.
@@ -45,7 +40,7 @@ abstract class Repository
      */
     public function model()
     {
-        return $this->modelInstance;
+        return $this->resource;
     }
 
     /**
@@ -76,5 +71,15 @@ abstract class Repository
     public static function query()
     {
         return static::newModel()->query();
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $model = $this->model();
+
+        return $model->toArray();
     }
 }

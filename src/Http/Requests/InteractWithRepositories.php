@@ -63,4 +63,44 @@ trait InteractWithRepositories
             //
         ];
     }
+
+    /**
+     * Get the route handling the request.
+     *
+     * @param  string|null  $param
+     * @param  mixed   $default
+     * @return \Illuminate\Routing\Route|object|string
+     */
+    abstract public function route($param = null, $default = null);
+
+    /**
+     * Get a new instance of the repository being requested.
+     *
+     * @return Repository
+     * @throws EntityNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function newRepository()
+    {
+        $repository = $this->repository();
+
+        return new $repository($repository::newModel());
+    }
+
+    /**
+     * Check if the route is resolved by the Repository class, or it uses the classical Models.
+     * @return bool
+     */
+    public function isResolvedByRestify()
+    {
+        try {
+            $this->repository();
+
+            return true;
+        } catch (EntityNotFoundException $e) {
+            return false;
+        } catch (UnauthorizedException $e) {
+            return true;
+        }
+    }
 }

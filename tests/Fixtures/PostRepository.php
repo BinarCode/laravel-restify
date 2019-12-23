@@ -7,9 +7,9 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class UserRepository extends Repository
+class PostRepository extends Repository
 {
-    public static $model = User::class;
+    public static $model = Post::class;
 
     /**
      * Get the URI key for the resource.
@@ -18,6 +18,6 @@ class UserRepository extends Repository
      */
     public static function uriKey()
     {
-        return 'users';
+        return 'posts';
     }
 }

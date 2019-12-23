@@ -5,10 +5,11 @@ namespace Binaryk\LaravelRestify\Controllers;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
+use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
-use Illuminate\Config\Repository;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Access\Gate;
@@ -84,8 +85,8 @@ abstract class RestController extends BaseController
     {
         $container = Container::getInstance();
 
-        if (($this->config instanceof Repository) === false) {
-            $this->config = $container->make(Repository::class);
+        if (($this->config instanceof Config) === false) {
+            $this->config = $container->make(Config::class);
         }
 
         return $this->config;
@@ -130,18 +131,27 @@ abstract class RestController extends BaseController
      * @param  array  $filters
      * @return array
      * @throws BindingResolutionException
+     * @throws InstanceOfException
      */
     public function search($modelClass, $filters = [])
     {
         $results = SearchService::instance()
             ->setPredefinedFilters($filters)
-            ->search($this->request(), new $modelClass);
+            ->search($this->request(), $modelClass instanceof Repository ? $modelClass->model() : new $modelClass);
+
         $results->tap(function ($query) {
             static::indexQuery($this->request(), $query);
         });
 
+        /**
+         * @var \Illuminate\Pagination\Paginator
+         */
         $paginator = $results->paginate($this->request()->get('perPage') ?? ($modelClass::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
-        $items = $paginator->getCollection()->map->serializeForIndex($this->request());
+        if ($modelClass instanceof Repository) {
+            $items = $paginator->getCollection()->mapInto(get_class($modelClass))->map->serializeForIndex($this->request());
+        } else {
+            $items = $paginator->getCollection()->map->serializeForIndex($this->request());
+        }
 
         return array_merge($paginator->toArray(), [
             'data' => $items,

@@ -4,9 +4,11 @@ namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Fixtures\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
 use Illuminate\Contracts\Translation\Translator;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Orchestra\Testbench\TestCase;
@@ -25,6 +27,7 @@ abstract class IntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        DB::enableQueryLog();
         Hash::driver('bcrypt')->setRounds(4);
         $this->repositoryMock();
         $this->loadMigrations();
@@ -34,6 +37,7 @@ abstract class IntegrationTest extends TestCase
 
         Restify::repositories([
             UserRepository::class,
+            PostRepository::class,
         ]);
     }
 
@@ -137,5 +141,15 @@ abstract class IntegrationTest extends TestCase
         Route::post('password/reset', function () {
             // AuthPassport -> resetPassword
         })->name('password.reset');
+    }
+
+    /**
+     * @return array
+     */
+    public function lastQuery()
+    {
+        $queries = DB::getQueryLog();
+
+        return end($queries);
     }
 }

@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Traits;
 
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
@@ -11,6 +12,7 @@ use Illuminate\Support\Str;
 /**
  * Could be used as a trait in a model class and in a repository class.
  *
+ * @property Model resource
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait AuthorizableModels
@@ -37,7 +39,9 @@ trait AuthorizableModels
      * Determine if the resource should be available for the given request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return bool
+     * @return void
+     * @throws AuthorizationException
+     * @throws \Throwable
      */
     public function authorizeToViewAny(Request $request)
     {
@@ -71,9 +75,10 @@ trait AuthorizableModels
      * Determine if the current user can view the given resource or throw an exception.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return void
+     * @return bool
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
      */
     public function authorizeToView(Request $request)
     {
@@ -92,12 +97,13 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can create new resources or throw an exception.
+     * Determine if the current user can create new repositories or throw an exception.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
      */
     public static function authorizeToCreate(Request $request)
     {
@@ -105,7 +111,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can create new resources.
+     * Determine if the current user can create new repositories.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return bool
@@ -299,9 +305,14 @@ trait AuthorizableModels
 
     /**
      * @return AuthorizableModels|Model|mixed
+     * @throws \Throwable
      */
     public function determineModel()
     {
-        return $this instanceof Model ? $this : $this->modelInstance;
+        $model = $this instanceof Model ? $this : ($this->resource ?? null);
+
+        throw_if(is_null($model), new ModelNotFoundException(__('Model does not declared in :class', ['class' => self::class])));
+
+        return $model;
     }
 }

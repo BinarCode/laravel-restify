@@ -13,33 +13,4 @@ class DummyClass extends Repository
      * @var string
      */
     public static $model = 'DummyFullModel';
-
-    /**
-     * The single value that should be used to represent the repository when being displayed.
-     *
-     * @var string
-     */
-    public static $title = 'id';
-
-    /**
-     * The columns that should be searched.
-     *
-     * @var array
-     */
-    public static $search = [
-        'id',
-    ];
-
-    /**
-     * Get the fields displayed by the repository.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
-     */
-    public function fields(Request $request)
-    {
-        return [
-            ID::make()->sortable(),
-        ];
-    }
 }

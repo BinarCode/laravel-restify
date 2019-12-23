@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Contracts;
 
-use Illuminate\Http\Request;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -16,11 +16,11 @@ interface RestifySearchable
     const MATCH_INTEGER = 'integer';
 
     /**
-     * @param  Request  $request
+     * @param  RestifyRequest  $request
      * @param  array  $fields
      * @return array
      */
-    public function serializeForIndex(Request $request, array $fields = []);
+    public function serializeForIndex(RestifyRequest $request, array $fields = []);
 
     /**
      * @return array
