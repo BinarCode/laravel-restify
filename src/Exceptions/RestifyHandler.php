@@ -18,7 +18,7 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Exceptions\InvalidSignatureException;
 use Illuminate\Support\Facades\App;
-use Illuminate\Validation\UnauthorizedException;
+use Illuminate\Validation\UnauthorizedException as ValidationUnauthorized;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
@@ -90,7 +90,7 @@ class RestifyHandler extends ExceptionHandler
 
             case $exception instanceof BadRequestHttpException:
             case $exception instanceof MethodNotAllowedException:
-            case $exception instanceof UnauthorizedException:
+            case $exception instanceof ValidationUnauthorized:
             case $exception instanceof UnauthorizedHttpException:
             case $exception instanceof UnauthenticateException:
             case $exception instanceof ActionUnauthorizedException:

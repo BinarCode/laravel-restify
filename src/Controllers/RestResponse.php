@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Controllers;
 
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -277,13 +278,6 @@ class RestResponse
                 $response->{$attribute} = $value;
             }
 
-            if (is_iterable($response)) {
-                foreach ($response as $property => $value) {
-                    if ($value instanceof Arrayable) {
-                        $response->{$property} = $value->toArray();
-                    }
-                }
-            }
         }
 
         return $this->response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE, $this->headers);
