@@ -7,10 +7,10 @@ use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Config\Repository as Config;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -144,7 +144,7 @@ abstract class RestController extends BaseController
         });
 
         /**
-         * @var \Illuminate\Pagination\Paginator $paginator
+         * @var \Illuminate\Pagination\Paginator
          */
         $paginator = $results->paginate($this->request()->get('perPage') ?? ($modelClass::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
         if ($modelClass instanceof Repository) {
