@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Controllers;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
+use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
@@ -130,6 +131,7 @@ abstract class RestController extends BaseController
      * @param  array  $filters
      * @return array
      * @throws BindingResolutionException
+     * @throws InstanceOfException
      */
     public function search($modelClass, $filters = [])
     {

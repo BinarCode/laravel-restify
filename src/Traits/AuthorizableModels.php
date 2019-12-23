@@ -38,7 +38,9 @@ trait AuthorizableModels
      * Determine if the resource should be available for the given request.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return bool
+     * @return void
+     * @throws AuthorizationException
+     * @throws \Throwable
      */
     public function authorizeToViewAny(Request $request)
     {
@@ -72,9 +74,10 @@ trait AuthorizableModels
      * Determine if the current user can view the given resource or throw an exception.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return void
+     * @return bool
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
      */
     public function authorizeToView(Request $request)
     {
@@ -93,12 +96,13 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can create new resources or throw an exception.
+     * Determine if the current user can create new repositories or throw an exception.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
      */
     public static function authorizeToCreate(Request $request)
     {
@@ -106,7 +110,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can create new resources.
+     * Determine if the current user can create new repositories.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return bool

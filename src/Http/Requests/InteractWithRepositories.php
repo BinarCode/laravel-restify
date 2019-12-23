@@ -72,4 +72,19 @@ trait InteractWithRepositories
      * @return \Illuminate\Routing\Route|object|string
      */
     abstract public function route($param = null, $default = null);
+
+    /**
+     * Get a new instance of the repository being requested.
+     *
+     * @return Repository
+     * @throws EntityNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function newRepository()
+    {
+        $repository = $this->repository();
+
+        return new $repository($repository::newModel());
+    }
+
 }

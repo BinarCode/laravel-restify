@@ -2,7 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
-use Binaryk\LaravelRestify\Traits\AuthorizableModels;
+use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -10,9 +11,9 @@ use Illuminate\Support\Str;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-abstract class Repository
+abstract class Repository implements RestifySearchable
 {
-    use AuthorizableModels;
+    use InteractWithSearch;
 
     /**
      * @var Model
@@ -22,11 +23,11 @@ abstract class Repository
     /**
      * Create a new resource instance.
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $resource
+     * @param  \Illuminate\Database\Eloquent\Model  $model
      */
-    public function __construct($resource)
+    public function __construct($model)
     {
-        $this->modelInstance = $resource;
+        $this->modelInstance = $model;
     }
 
     /**
