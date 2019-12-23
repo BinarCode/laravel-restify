@@ -79,9 +79,10 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail, Res
     }
 
     /**
-     * Set default test values
+     * Set default test values.
      */
-    public static function reset() {
+    public static function reset()
+    {
         static::$search = ['id', 'email'];
         static::$sort = ['id'];
         static::$match = ['id' => 'int', 'email' => 'string'];
