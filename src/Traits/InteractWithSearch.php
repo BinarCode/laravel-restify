@@ -69,4 +69,9 @@ trait InteractWithSearch
             'authorizedToDelete' => $this->authorizedToDelete($request),
         ]);
     }
+
+    /**
+     * @return array
+     */
+    abstract public function toArray();
 }
