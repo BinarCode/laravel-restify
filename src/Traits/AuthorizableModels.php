@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
 /**
  * Could be used as a trait in a model class and in a repository class.
  *
+ * @property Model resource
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait AuthorizableModels

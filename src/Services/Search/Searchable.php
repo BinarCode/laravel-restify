@@ -5,9 +5,9 @@ namespace Binaryk\LaravelRestify\Services\Search;
 abstract class Searchable
 {
     /**
-     * @var array|null
+     * @var array
      */
-    protected $fixedInput;
+    protected $fixedInput = [];
 
     /**
      * @param $input

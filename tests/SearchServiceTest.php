@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Mockery as MockeryAlias;
 
 /**
