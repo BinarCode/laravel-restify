@@ -181,16 +181,6 @@ class SearchServiceTest extends IntegrationTest
         User::reset();
     }
 
-    public function test_search_throw_exception_if_not_searchable_instance()
-    {
-        $this->expectException(InstanceOfException::class);
-        $request = MockeryAlias::mock(RestifyRequest::class);
-        $class = (new class extends Model {
-        });
-
-        $this->service->search($request, $class);
-    }
-
     public function test_prepare_search_should_add_where_clause()
     {
         $this->mockUsers(1);
