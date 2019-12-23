@@ -77,4 +77,15 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail, Res
     {
         return $this->hasMany(Post::class);
     }
+
+    /**
+     * Set default test values
+     */
+    public static function reset() {
+        static::$search = ['id', 'email'];
+        static::$sort = ['id'];
+        static::$match = ['id' => 'int', 'email' => 'string'];
+        static::$in = ['id' => 'int'];
+        static::$withs = ['posts'];
+    }
 }

@@ -9,16 +9,6 @@ use Illuminate\Http\Request;
 abstract class Searchable
 {
     /**
-     * @var Request
-     */
-    protected $request;
-
-    /**
-     * @var RestifySearchable|Model
-     */
-    protected $model;
-
-    /**
      * @var array|null
      */
     protected $fixedInput;

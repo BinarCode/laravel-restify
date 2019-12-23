@@ -7,14 +7,9 @@ use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Query\Builder as QueryBuilder;
 
 class SearchService extends Searchable
 {
-    /**
-     * @var Builder|QueryBuilder
-     */
-    protected $builder;
 
     /**
      * @param  RestifyRequest  $request
@@ -25,148 +20,144 @@ class SearchService extends Searchable
      */
     public function search(RestifyRequest $request, Model $model)
     {
-        $this->model = $model;
-        $this->request = $request;
-
-        $this->builder = $model->newQuery();
-
-        throw_unless($this->model instanceof RestifySearchable, new InstanceOfException(__('Model is not an instance of :parent class', [
+        throw_unless($model instanceof RestifySearchable, new InstanceOfException(__('Model is not an instance of :parent class', [
             'parent' => RestifySearchable::class,
         ])));
 
-        $this->prepareSearchFields($this->request->get('search', data_get($this->fixedInput, 'search', '')))
-            ->prepareMatchFields()
-            ->prepareOrders($this->request->get('sort', ''))
-            ->prepareRelations();
-
-        return $this->builder;
+        $query = $this->prepareMatchFields($request, $this->prepareSearchFields($request, $model->newQuery(), $this->fixedInput), $this->fixedInput);
+        return $this->prepareRelations($request, $this->prepareOrders($request, $query), $this->fixedInput);
     }
 
     /**
      * Prepare eloquent exact fields.
      *
-     * @param $fields
-     *
-     * @return $this
+     * @param  RestifyRequest  $request
+     * @param  Builder  $query
+     * @param  array  $extra
+     * @return Builder
      */
-    protected function prepareMatchFields()
+    public function prepareMatchFields(RestifyRequest $request, $query, $extra = [])
     {
-        if ($this->model instanceof RestifySearchable) {
-            foreach ($this->model::getMatchByFields() as $key => $type) {
-                if ( ! $this->request->has($key) && ! data_get($this->fixedInput, "match.$key")) {
+        $model = $query->getModel();
+        if ($model instanceof RestifySearchable) {
+            foreach ($model::getMatchByFields() as $key => $type) {
+                if ( ! $request->has($key) && ! data_get($extra, "match.$key")) {
                     continue;
                 }
 
-                $value = $this->request->get($key) ?: data_get($this->fixedInput, "match.$key");
+                $value = $request->get($key, data_get($extra, "match.$key"));
 
-                $field = $this->model->qualifyColumn($key);
+                if (empty($value)) {
+                    continue;
+                }
+
+                $field = $model->qualifyColumn($key);
 
                 $values = explode(',', $value);
 
                 foreach ($values as $match) {
-                    switch ($this->model::getMatchByFields()[$key]) {
+                    switch ($model::getMatchByFields()[$key]) {
                         case RestifySearchable::MATCH_TEXT:
                         case 'string':
-                            $this->builder->where($field, '=', $match);
+                            $query->where($field, '=', $match);
                             break;
                         case RestifySearchable::MATCH_BOOL:
                         case 'boolean':
                             if ($match === 'false') {
-                                $this->builder->where(function ($query) use ($field) {
+                                $query->where(function ($query) use ($field) {
                                     return $query->where($field, '=', false)->orWhereNull($field);
                                 });
                                 break;
                             }
-                            $this->builder->where($field, '=', true);
+                            $query->where($field, '=', true);
                             break;
                         case RestifySearchable::MATCH_INTEGER:
                         case 'number':
                         case 'int':
-                            $this->builder->where($field, '=', (int) $match);
+                            $query->where($field, '=', (int) $match);
                             break;
                     }
                 }
             }
         }
 
-        return $this;
+        return $query;
     }
 
     /**
      * Prepare eloquent order by.
      *
-     * @param $sort
-     *
-     * @return $this
+     * @param  RestifyRequest  $request
+     * @param $query
+     * @param  array  $extra
+     * @return Builder
      */
-    protected function prepareOrders($sort)
+    public function prepareOrders(RestifyRequest $request, $query, $extra = [])
     {
-        if (isset($this->fixedInput['sort'])) {
-            $sort = $this->fixedInput['sort'];
+        $sort = $request->get('sort', '');
+
+        if (isset($extra['sort'])) {
+            $sort = $extra['sort'];
         }
 
         $params = explode(',', $sort);
 
         if (is_array($params) === true && empty($params) === false) {
             foreach ($params as $param) {
-                $this->setOrder($param);
+                $this->setOrder($query, $param);
             }
         }
 
         if (empty($params) === true) {
-            $this->setOrder('+id');
+            $this->setOrder($query, '+id');
         }
 
-        return $this;
+        return $query;
     }
 
     /**
      * Prepare relations.
      *
-     * @return $this
+     * @param  RestifyRequest  $request
+     * @param  Builder  $query
+     * @param  array  $extra
+     * @return Builder
      */
-    protected function prepareRelations()
+    public function prepareRelations(RestifyRequest $request, $query, $extra = [])
     {
-        if ($this->model instanceof RestifySearchable) {
-            $relations = null;
-
-            if (isset($this->fixedInput['with']) === true) {
-                $relations = $this->fixedInput['with'];
-            }
-
-            if (isset($this->fixedInput['with']) === false) {
-                $relations = $this->request->get('with', null);
-            }
-
-            if (empty($relations) === false) {
-                $foundRelations = explode(',', $relations);
-                foreach ($foundRelations as $relation) {
-                    if (in_array($relation, $this->model::getWiths())) {
-                        $this->builder->with($relation);
-                    }
+        $model = $query->getModel();
+        if ($model instanceof RestifySearchable) {
+            $relations = array_merge($extra, explode(',', $request->get('with')));
+            foreach ($relations as $relation) {
+                if (in_array($relation, $model::getWiths())) {
+                    $query->with($relation);
                 }
             }
         }
 
-        return $this;
+        return $query;
     }
 
     /**
      * Prepare search.
      *
-     * @param $search
-     * @return $this
+     * @param  RestifyRequest  $request
+     * @param  Builder  $query
+     * @param  array  $extra
+     * @return Builder
      */
-    protected function prepareSearchFields($search)
+    public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])
     {
-        if ($this->model instanceof RestifySearchable) {
-            $this->builder->where(function (Builder $query) use ($search) {
-                $connectionType = $this->model->getConnection()->getDriverName();
+        $search = $request->get('search', data_get($extra, 'search', ''));
+        $model = $query->getModel();
+        if ($model instanceof RestifySearchable) {
+            $query->where(function (Builder $query) use ($search, $model) {
+                $connectionType = $model->getConnection()->getDriverName();
 
                 $canSearchPrimaryKey = is_numeric($search) &&
                     in_array($query->getModel()->getKeyType(), ['int', 'integer']) &&
                     ($connectionType != 'pgsql' || $search <= PHP_INT_MAX) &&
-                    in_array($query->getModel()->getKeyName(), $this->model::getSearchableFields());
+                    in_array($query->getModel()->getKeyName(), $model::getSearchableFields());
 
                 if ($canSearchPrimaryKey) {
                     $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
@@ -174,28 +165,27 @@ class SearchService extends Searchable
 
                 $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
-                foreach ($this->model::getSearchableFields() as $column) {
-                    $query->orWhere($this->model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
+                foreach ($model::getSearchableFields() as $column) {
+                    $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
                 }
             });
         }
 
-        return $this;
+        return $query;
     }
 
+
     /**
-     * Set order.
-     *
+     * @param  Builder  $query
      * @param $param
-     *
-     * @return $this
+     * @return Builder
      */
-    public function setOrder($param)
+    public function setOrder($query, $param)
     {
         if ($param === 'random') {
-            $this->builder->inRandomOrder();
+            $query->inRandomOrder();
 
-            return $this;
+            return $query;
         }
 
         $order = substr($param, 0, 1);
@@ -213,22 +203,24 @@ class SearchService extends Searchable
             $field = $param;
         }
 
-        if (isset($field) && $this->model instanceof RestifySearchable) {
-            if (in_array($field, $this->model::getOrderByFields()) === true) {
+        $model = $query->getModel();
+
+        if (isset($field) && $model instanceof RestifySearchable) {
+            if (in_array($field, $model::getOrderByFields()) === true) {
                 if ($order === '-') {
-                    $this->builder->orderBy($field, 'desc');
+                    $query->orderBy($field, 'desc');
                 }
 
                 if ($order === '+') {
-                    $this->builder->orderBy($field, 'asc');
+                    $query->orderBy($field, 'asc');
                 }
             }
 
             if ($field === 'random') {
-                $this->builder->orderByRaw('RAND()');
+                $query->orderByRaw('RAND()');
             }
         }
 
-        return $this;
+        return $query;
     }
 }
