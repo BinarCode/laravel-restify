@@ -86,5 +86,4 @@ trait InteractWithRepositories
 
         return new $repository($repository::newModel());
     }
-
 }
