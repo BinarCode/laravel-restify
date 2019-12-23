@@ -53,7 +53,7 @@ class SearchService extends Searchable
     {
         if ($this->model instanceof RestifySearchable) {
             foreach ($this->model::getMatchByFields() as $key => $type) {
-                if ( ! $this->request->has($key) && ! data_get($this->fixedInput, "match.$key")) {
+                if (! $this->request->has($key) && ! data_get($this->fixedInput, "match.$key")) {
                     continue;
                 }
 
@@ -175,7 +175,7 @@ class SearchService extends Searchable
                 $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
                 foreach ($this->model::getSearchableFields() as $column) {
-                    $query->orWhere($this->model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
+                    $query->orWhere($this->model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
                 }
             });
         }
