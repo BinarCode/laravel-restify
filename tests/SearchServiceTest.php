@@ -181,6 +181,22 @@ class SearchServiceTest extends IntegrationTest
         User::reset();
     }
 
+    public function test_should_not_call_anything_from_search_service_if_not_searchable_instance()
+    {
+        $service = MockeryAlias::spy(SearchService::class);
+        $this->instance(SearchService::class, $service);
+        $request = MockeryAlias::mock(RestifyRequest::class);
+        $class = (new class extends Model {
+        });
+        $resolvedService = resolve(SearchService::class);
+        $resolvedService->search($request, $class);
+        $service->shouldHaveReceived('search');
+        $service->shouldNotReceive('prepareSearchFields');
+        $service->shouldNotReceive('prepareMatchFields');
+        $service->shouldNotReceive('prepareRelations');
+        $service->shouldNotReceive('prepareOrders');
+    }
+
     public function test_prepare_search_should_add_where_clause()
     {
         $this->mockUsers(1);
