@@ -19,7 +19,7 @@ class SearchService extends Searchable
      */
     public function search(RestifyRequest $request, Model $model)
     {
-        if ( ! $model instanceof RestifySearchable) {
+        if (! $model instanceof RestifySearchable) {
             return $model->newQuery();
         }
 
