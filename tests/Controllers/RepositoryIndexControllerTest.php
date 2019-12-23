@@ -199,12 +199,4 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->assertSameSize($r->data['data']->first()['posts'], $expected['posts']);
     }
-
-    public function test_should_throw_if_user_not_instance_of_searchable()
-    {
-        $this->withExceptionHandling()
-            ->get('/restify-api/posts')
-            ->assertStatus(500)
-            ->getOriginalContent();
-    }
 }
