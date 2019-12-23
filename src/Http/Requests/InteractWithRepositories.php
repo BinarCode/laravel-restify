@@ -88,13 +88,14 @@ trait InteractWithRepositories
     }
 
     /**
-     * Check if the route is resolved by the Repository class, or it uses the classical Models
+     * Check if the route is resolved by the Repository class, or it uses the classical Models.
      * @return bool
      */
     public function isResolvedByRestify()
     {
         try {
             $this->repository();
+
             return true;
         } catch (EntityNotFoundException $e) {
             return false;

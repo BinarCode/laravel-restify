@@ -18,7 +18,7 @@ abstract class Repository implements RestifySearchable
         DelegatesToResource;
 
     /**
-     * This is named `resource` because of the forwarding properties from DelegatesToResource trait
+     * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
      * @var Model
      */
     public $resource;
