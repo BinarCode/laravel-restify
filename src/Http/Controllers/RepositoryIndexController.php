@@ -18,9 +18,7 @@ class RepositoryIndexController extends RepositoryController
      */
     public function handle(RestifyRequest $request)
     {
-        $resource = $request->repository();
-
-        $data = $this->search($resource::newModel());
+        $data = $this->search($request->newRepository());
 
         return $this->respond($data);
     }

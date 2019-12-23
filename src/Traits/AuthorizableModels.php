@@ -308,7 +308,7 @@ trait AuthorizableModels
      */
     public function determineModel()
     {
-        $model = $this instanceof Model ? $this : ($this->modelInstance ?? null);
+        $model = $this instanceof Model ? $this : ($this->resource ?? null);
 
         throw_if(is_null($model), new ModelNotFoundException(__('Model does not declared in :class', ['class' => self::class])));
 

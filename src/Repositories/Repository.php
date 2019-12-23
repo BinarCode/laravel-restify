@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Support\Str;
 
 /**
@@ -13,12 +14,14 @@ use Illuminate\Support\Str;
  */
 abstract class Repository implements RestifySearchable
 {
-    use InteractWithSearch;
+    use InteractWithSearch,
+        DelegatesToResource;
 
     /**
+     * This is named `resource` because of the forwarding properties from DelegatesToResource trait
      * @var Model
      */
-    public $modelInstance;
+    public $resource;
 
     /**
      * Create a new resource instance.
@@ -27,7 +30,7 @@ abstract class Repository implements RestifySearchable
      */
     public function __construct($model)
     {
-        $this->modelInstance = $model;
+        $this->resource = $model;
     }
 
     /**
@@ -37,7 +40,7 @@ abstract class Repository implements RestifySearchable
      */
     public function model()
     {
-        return $this->modelInstance;
+        return $this->resource;
     }
 
     /**
@@ -68,5 +71,15 @@ abstract class Repository implements RestifySearchable
     public static function query()
     {
         return static::newModel()->query();
+    }
+
+    /**
+     * @return array
+     */
+    public function toArray()
+    {
+        $model = $this->model();
+
+        return $model->toArray();
     }
 }

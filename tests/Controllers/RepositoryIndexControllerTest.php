@@ -4,8 +4,10 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestController;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Mockery;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -71,7 +73,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
     public function test_search_query_works()
     {
         $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
-        $expected = $users->where('email', 'eduard.lupacescu@binarcode.com')->first()->serializeForIndex(request());
+        $expected = $users->where('email', 'eduard.lupacescu@binarcode.com')->first()->serializeForIndex(Mockery::mock(RestifyRequest::class));
         $this->withExceptionHandling()
             ->getJson('/restify-api/users?search=eduard.lupacescu@binarcode.com')
             ->assertStatus(200)
@@ -161,7 +163,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
     {
         User::$match = ['email' => RestifySearchable::MATCH_TEXT]; // it will automatically filter over these queries (email='test@email.com')
         $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
-        $expected = $users->where('email', 'eduard.lupacescu@binarcode.com')->first()->serializeForIndex(request());
+        $expected = $users->where('email', 'eduard.lupacescu@binarcode.com')->first()->serializeForIndex(Mockery::mock(RestifyRequest::class));
 
         $this->withExceptionHandling()
             ->get('/restify-api/users?email=eduard.lupacescu@binarcode.com')
@@ -190,7 +192,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         User::$match = ['email' => RestifySearchable::MATCH_TEXT]; // it will automatically filter over these queries (email='test@email.com')
         $users = $this->mockUsers(1);
         $posts = $this->mockPosts(1, 2);
-        $expected = $users->first()->serializeForIndex(request());
+        $expected = $users->first()->serializeForIndex(Mockery::mock(RestifyRequest::class));
         $expected['posts'] = $posts->toArray();
         $r = $this->withExceptionHandling()
             ->get('/restify-api/users?with=posts')

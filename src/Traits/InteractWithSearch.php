@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
-use Illuminate\Http\Request;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -56,11 +56,11 @@ trait InteractWithSearch
     /**
      * Prepare the resource for JSON serialization.
      *
-     * @param  Request  $request
+     * @param  RestifyRequest  $request
      * @param  array  $fields
      * @return array
      */
-    public function serializeForIndex(Request $request, array $fields = null)
+    public function serializeForIndex(RestifyRequest $request, array $fields = null)
     {
         return array_merge($fields ?: $this->toArray(), [
             'authorizedToView' => $this->authorizedToView($request),

@@ -20,9 +20,9 @@ class SearchService extends Searchable
      */
     public function search(RestifyRequest $request, Model $model)
     {
-        throw_unless($model instanceof RestifySearchable, new InstanceOfException(__('Model is not an instance of :parent class', [
-            'parent' => RestifySearchable::class,
-        ])));
+        if ( ! $model instanceof RestifySearchable) {
+            return $model->newQuery();
+        }
 
         $query = $this->prepareMatchFields($request, $this->prepareSearchFields($request, $model->newQuery(), $this->fixedInput), $this->fixedInput);
         return $this->prepareRelations($request, $this->prepareOrders($request, $query), $this->fixedInput);
