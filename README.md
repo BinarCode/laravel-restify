@@ -41,6 +41,7 @@ If you discover any security related issues, please email eduard.lupacescu@binar
 ## Credits
 
 - [Eduard Lupacescu](https://github.com/binaryk)
+- [Koen Koenster](https://github.com/Koenster)
 - [All Contributors](../../contributors)
 
 ## License

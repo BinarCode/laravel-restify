@@ -276,14 +276,6 @@ class RestResponse
             foreach ($this->attributes as $attribute => $value) {
                 $response->{$attribute} = $value;
             }
-
-            if (is_iterable($response)) {
-                foreach ($response as $property => $value) {
-                    if ($value instanceof Arrayable) {
-                        $response->{$property} = $value->toArray();
-                    }
-                }
-            }
         }
 
         return $this->response()->json($response, is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE, $this->headers);

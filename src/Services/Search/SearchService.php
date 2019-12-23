@@ -8,6 +8,11 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * Class SearchService.
+ *
+ * Props to @Koenster for contribution
+ */
 class SearchService extends Searchable
 {
     /**
