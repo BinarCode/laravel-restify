@@ -10,7 +10,6 @@ use Illuminate\Database\Eloquent\Model;
 
 class SearchService extends Searchable
 {
-
     /**
      * @param  RestifyRequest  $request
      * @param  Model  $model
@@ -25,6 +24,7 @@ class SearchService extends Searchable
         ])));
 
         $query = $this->prepareMatchFields($request, $this->prepareSearchFields($request, $model->newQuery(), $this->fixedInput), $this->fixedInput);
+
         return $this->prepareRelations($request, $this->prepareOrders($request, $query), $this->fixedInput);
     }
 
@@ -41,7 +41,7 @@ class SearchService extends Searchable
         $model = $query->getModel();
         if ($model instanceof RestifySearchable) {
             foreach ($model::getMatchByFields() as $key => $type) {
-                if ( ! $request->has($key) && ! data_get($extra, "match.$key")) {
+                if (! $request->has($key) && ! data_get($extra, "match.$key")) {
                     continue;
                 }
 
@@ -166,14 +166,13 @@ class SearchService extends Searchable
                 $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
                 foreach ($model::getSearchableFields() as $column) {
-                    $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
+                    $query->orWhere($model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
                 }
             });
         }
 
         return $query;
     }
-
 
     /**
      * @param  $query
