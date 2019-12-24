@@ -37,6 +37,5 @@ class PostRepository extends Repository
                 'required' => 'Description field is required bro.',
             ]),
         ];
-
     }
 }

@@ -119,12 +119,12 @@ class RestResponse
     protected $type;
 
     /**
-     * Key of the newly created resource
+     * Key of the newly created resource.
      * @var
      */
     protected $id;
     /**
-     * Model related entities
+     * Model related entities.
      * @var
      */
     protected $relationships;
@@ -184,7 +184,7 @@ class RestResponse
      */
     public function addError($message)
     {
-        if ( ! isset($this->errors)) {
+        if (! isset($this->errors)) {
             $this->errors = [];
         }
 
@@ -269,7 +269,7 @@ class RestResponse
             return $this->$key;
         }
 
-        $code = 'static::REST_RESPONSE_' . strtoupper($key) . '_CODE';
+        $code = 'static::REST_RESPONSE_'.strtoupper($key).'_CODE';
 
         return defined($code) ? constant($code) : null;
     }
@@ -284,7 +284,7 @@ class RestResponse
      */
     public function __call($func, $args)
     {
-        $code = 'static::REST_RESPONSE_' . strtoupper($func) . '_CODE';
+        $code = 'static::REST_RESPONSE_'.strtoupper($func).'_CODE';
 
         if (defined($code)) {
             return $this->code(constant($code));
@@ -303,7 +303,7 @@ class RestResponse
      */
     public function respond($response = null)
     {
-        if ( ! func_num_args()) {
+        if (! func_num_args()) {
             $response = new \stdClass();
             $response->data = new \stdClass();
 
@@ -408,7 +408,7 @@ class RestResponse
     }
 
     /**
-     * Set attributes at root level
+     * Set attributes at root level.
      *
      * @param  array  $attributes
      * @return mixed
@@ -445,6 +445,7 @@ class RestResponse
     public function header($name, $value)
     {
         $this->headers[$name] = $value;
+
         return $this;
     }
 
@@ -455,12 +456,13 @@ class RestResponse
     public function type($type)
     {
         $this->type = $type;
+
         return $this;
     }
 
     /**
      * Useful when newly created repository, will prepare the response according
-     * with JSON:API https://jsonapi.org/format/#document-resource-object-fields
+     * with JSON:API https://jsonapi.org/format/#document-resource-object-fields.
      *
      * @param  Repository  $repository
      * @param  bool  $withRelations
@@ -501,7 +503,6 @@ class RestResponse
 
             return $response;
         }
-
 
         return $response;
     }

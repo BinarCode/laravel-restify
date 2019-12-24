@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 /**
- * @package Binaryk\LaravelRestify\Tests\Controllers;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RepositoryStoreControllerTest extends IntegrationTest
@@ -24,7 +23,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             ->assertJson([
                 'errors' => [
                     'description' => [
-                        'Description field is required bro.'
+                        'Description field is required bro.',
                     ],
                 ],
             ]);

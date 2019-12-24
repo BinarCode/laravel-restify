@@ -8,7 +8,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 
 /**
- * @package Binaryk\LaravelRestify\Repositories;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait ValidatingTrait
@@ -24,7 +23,6 @@ trait ValidatingTrait
      */
     abstract public static function newModel();
 
-
     /**
      * @param  RestifyRequest  $request
      * @return \Illuminate\Contracts\Validation\Validator
@@ -36,8 +34,9 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute . '.' . $ruleFor] = $message;
+                $messages[$k->attribute.'.'.$ruleFor] = $message;
             }
+
             return $messages;
         })->toArray();
 
@@ -45,7 +44,6 @@ trait ValidatingTrait
             static::afterValidation($request, $validator);
             static::afterStoringValidation($request, $validator);
         });
-
     }
 
     /**
@@ -79,7 +77,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                $k->attribute => $k->getStoringRules()
+                $k->attribute => $k->getStoringRules(),
             ];
         })->toArray();
     }

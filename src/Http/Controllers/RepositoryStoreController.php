@@ -30,7 +30,7 @@ class RepositoryStoreController extends RepositoryController
     public function handle(RepositoryStoreRequest $request)
     {
         /**
-         * @var Repository $repository
+         * @var Repository
          */
         $repository = $request->repository();
 
@@ -57,7 +57,7 @@ class RepositoryStoreController extends RepositoryController
         return $this->response()
             ->code(201)
             ->forRepository($request->newRepositoryWith($model), true)
-            ->header('Location', Restify::path() . '/' . $repository::uriKey() . '/' . $model->id)
+            ->header('Location', Restify::path().'/'.$repository::uriKey().'/'.$model->id)
             ->respond();
     }
 }

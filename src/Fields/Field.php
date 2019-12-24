@@ -7,7 +7,6 @@ use Closure;
 use JsonSerializable;
 
 /**
- * @package Binaryk\LaravelRestify;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class Field extends OrganicField implements JsonSerializable
@@ -15,20 +14,20 @@ class Field extends OrganicField implements JsonSerializable
     use RulesTrait;
 
     /**
-     * Column name of the field
+     * Column name of the field.
      * @var string
      */
     public $attribute;
 
     /**
-     * Callback called when the value is filled, this callback will do not override the fill action
+     * Callback called when the value is filled, this callback will do not override the fill action.
      * @var Closure
      */
     public $storeCallback;
 
     /**
      * Callback called when trying to fill this attribute, this callback will override the fill action, so make
-     * sure you assign the attribute to the model over this callback
+     * sure you assign the attribute to the model over this callback.
      *
      * @var Closure
      */
@@ -57,7 +56,7 @@ class Field extends OrganicField implements JsonSerializable
 
 
     /**
-     * @inheritDoc
+     * {@inheritdoc}
      */
     public function jsonSerialize()
     {
@@ -66,7 +65,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Callback called when the value is filled, this callback will do not override the fill action. If fillCallback is defined
-     * this will do not be called
+     * this will do not be called.
      *
      * @param  Closure  $callback
      * @return Field
@@ -80,7 +79,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Callback called when trying to fill this attribute, this callback will override the fill action, so make
-     * sure you assign the attribute to the model over this callback
+     * sure you assign the attribute to the model over this callback.
      *
      * @param  Closure  $callback
      * @return $this
@@ -88,11 +87,12 @@ class Field extends OrganicField implements JsonSerializable
     public function fillCallback(Closure $callback)
     {
         $this->fillCallback = $callback;
+
         return $this;
     }
 
     /**
-     * Fill attribute with value from the request or delegate this action to the user defined callback
+     * Fill attribute with value from the request or delegate this action to the user defined callback.
      *
      * @param  RestifyRequest  $request
      * @param $model
@@ -112,7 +112,7 @@ class Field extends OrganicField implements JsonSerializable
     }
 
     /**
-     * Fill the model with value from the request
+     * Fill the model with value from the request.
      *
      * @param  RestifyRequest  $request
      * @param $model

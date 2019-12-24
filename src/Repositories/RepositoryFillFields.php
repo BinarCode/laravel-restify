@@ -8,14 +8,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
- * @package Binaryk\LaravelRestify\Repositories;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait RepositoryFillFields
 {
-
     /**
-     * Fill fields on store request
+     * Fill fields on store request.
      *
      * @param  RestifyRequest  $request
      * @param $model
@@ -32,7 +30,7 @@ trait RepositoryFillFields
     }
 
     /**
-     * Fill each field separately
+     * Fill each field separately.
      *
      * @param  RestifyRequest  $request
      * @param  Model  $model
@@ -50,7 +48,7 @@ trait RepositoryFillFields
 
     /**
      * If some fields were not defined in the @fields method, but they are in fillable attributes and present in request,
-     * they should be also filled on request
+     * they should be also filled on request.
      * @param  RestifyRequest  $request
      * @param  Model  $model
      * @param  Collection  $fields
