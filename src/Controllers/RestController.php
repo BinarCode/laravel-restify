@@ -157,7 +157,7 @@ abstract class RestController extends BaseController
         return [
             'meta' => Arr::except($paginator->toArray(), ['data', 'next_page_url', 'last_page_url', 'first_page_url', 'prev_page_url', 'path']),
             'links' => Arr::only($paginator->toArray(), ['next_page_url', 'last_page_url', 'first_page_url', 'prev_page_url', 'path']),
-            'data' => $items
+            'data' => $items,
         ];
     }
 

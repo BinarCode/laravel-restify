@@ -3,10 +3,8 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 /**
- * @package Binaryk\LaravelRestify;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 abstract class BaseField
 {
-
 }

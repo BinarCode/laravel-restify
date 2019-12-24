@@ -116,5 +116,4 @@ trait InteractWithRepositories
 
         return new $resource($model);
     }
-
 }

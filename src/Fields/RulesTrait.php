@@ -5,25 +5,23 @@ namespace Binaryk\LaravelRestify\Fields;
 use Illuminate\Contracts\Validation\Rule;
 
 /**
- * @package Binaryk\LaravelRestify\Fields;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait RulesTrait
 {
     /**
-     * Rules for applied when store
+     * Rules for applied when store.
      *
      * @var array
      */
     public $storingRules = [];
 
     /**
-     * Rules for applied when store and update
+     * Rules for applied when store and update.
      *
      * @var array
      */
     public $rules = [];
-
 
     /**
      * @var array
@@ -31,7 +29,7 @@ trait RulesTrait
     public $messages = [];
 
     /**
-     * Validation rules for store
+     * Validation rules for store.
      * @param  callable|array|string  $rules
      * @return RulesTrait
      */
@@ -43,7 +41,7 @@ trait RulesTrait
     }
 
     /**
-     * Validation rules for store
+     * Validation rules for store.
      * @param  callable|array|string  $rules
      * @return RulesTrait
      */
@@ -55,7 +53,7 @@ trait RulesTrait
     }
 
     /**
-     * Validation messages
+     * Validation messages.
      *
      * @param  array  $messages
      * @return RulesTrait
@@ -63,11 +61,12 @@ trait RulesTrait
     public function messages(array $messages)
     {
         $this->messages = $messages;
+
         return $this;
     }
 
     /**
-     * Validation rules for storing
+     * Validation rules for storing.
      *
      * @return array
      */
