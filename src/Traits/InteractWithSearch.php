@@ -64,7 +64,7 @@ trait InteractWithSearch
     public function serializeForIndex(RestifyRequest $request, array $fields = null)
     {
         $serialized = [
-            'type' => Str::plural(Str::kebab(class_basename(get_called_class()))),
+            'type' => $request->isResolvedByRestify() ? static::uriKey() : Str::plural(Str::kebab(class_basename(get_called_class()))),
             'attributes' => $fields ?: $this->toArray(),
             'meta' => [
                 'authorizedToView' => $this->authorizedToView($request),

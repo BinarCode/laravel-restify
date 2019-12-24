@@ -102,7 +102,7 @@ class RestControllerTest extends IntegrationTest
         Gate::shouldReceive('check')
             ->andReturnTrue();
         $response = $this->controller->destroy($user->id);
-        $this->assertSame($response->getData()->data->meta->message, 'User deleted.');
+        $this->assertSame($response->getData()->meta->message, 'User deleted.');
     }
 
     public function test_can_access_config_repository()

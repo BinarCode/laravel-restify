@@ -38,9 +38,8 @@ class Field extends OrganicField implements JsonSerializable
      * Create a new field.
      *
      * @param  string|callable|null  $attribute
-     * @param  callable|null  $resolveCallback
      */
-    public function __construct($attribute, callable $resolveCallback = null)
+    public function __construct($attribute)
     {
         $this->attribute = $attribute;
     }
@@ -48,12 +47,14 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Create a new element.
      *
+     * @param  array  $arguments
      * @return static
      */
     public static function fire(...$arguments)
     {
         return new static(...$arguments);
     }
+
 
     /**
      * @inheritDoc

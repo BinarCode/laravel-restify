@@ -23,7 +23,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $response = $this->withExceptionHandling()
             ->getJson('/restify-api/users');
 
-        $response->assertJsonCount(3, 'data.data');
+        $response->assertJsonCount(3, 'data');
     }
 
     public function test_the_rest_controller_can_paginate()
@@ -73,45 +73,52 @@ class RepositoryIndexControllerTest extends IntegrationTest
     public function test_search_query_works()
     {
         $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
-        $expected = $users->where('email', 'eduard.lupacescu@binarcode.com')->first()->serializeForIndex(Mockery::mock(RestifyRequest::class));
+        $request  = Mockery::mock(RestifyRequest::class);
+        $request->shouldReceive('isResolvedByRestify')
+            ->andReturnFalse();
+        $expected = $users->where('email', 'eduard.lupacescu@binarcode.com')->first()->serializeForIndex($request);
         $this->withExceptionHandling()
             ->getJson('/restify-api/users?search=eduard.lupacescu@binarcode.com')
             ->assertStatus(200)
             ->assertJson([
-                'data' => [
-                    'data' => [$expected],
-                    'current_page' => 1,
-                    'first_page_url' => 'http://localhost/restify-api/users?page=1',
-                    'from' => 1,
-                    'last_page' => 1,
+                'links' => [
                     'last_page_url' => 'http://localhost/restify-api/users?page=1',
                     'next_page_url' => null,
                     'path' => 'http://localhost/restify-api/users',
-                    'per_page' => 15,
+                    'first_page_url' => 'http://localhost/restify-api/users?page=1',
                     'prev_page_url' => null,
+                ],
+                'meta' => [
+                    'current_page' => 1,
+                    'from' => 1,
+                    'last_page' => 1,
+                    'per_page' => 15,
                     'to' => 1,
                     'total' => 1,
                 ],
+                'data' => [$expected],
             ]);
 
         $this->withExceptionHandling()
             ->getJson('/restify-api/users?search=some_unexpected_string_here')
             ->assertStatus(200)
             ->assertJson([
-                'data' => [
-                    'data' => [],
-                    'current_page' => 1,
-                    'first_page_url' => 'http://localhost/restify-api/users?page=1',
-                    'from' => 1,
-                    'last_page' => 1,
+                'links' => [
                     'last_page_url' => 'http://localhost/restify-api/users?page=1',
                     'next_page_url' => null,
                     'path' => 'http://localhost/restify-api/users',
-                    'per_page' => 15,
+                    'first_page_url' => 'http://localhost/restify-api/users?page=1',
                     'prev_page_url' => null,
+                ],
+                'meta' => [
+                    'current_page' => 1,
+                    'from' => 1,
+                    'last_page' => 1,
+                    'per_page' => 15,
                     'to' => 1,
                     'total' => 1,
                 ],
+                'data' => []
             ]);
     }
 
@@ -122,8 +129,8 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ->assertStatus(200)
             ->getOriginalContent();
 
-        $this->assertSame($response->data['data'][0]['id'], 10);
-        $this->assertSame($response->data['data'][9]['id'], 1);
+        $this->assertSame($response->data[0]['attributes']['id'], 10);
+        $this->assertSame($response->data[9]['attributes']['id'], 1);
     }
 
     public function test_that_asc_sort_query_param_works()
@@ -134,15 +141,15 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ->assertStatus(200)
             ->getOriginalContent();
 
-        $this->assertSame($response->data['data'][0]['id'], 1);
-        $this->assertSame($response->data['data'][9]['id'], 10);
+        $this->assertSame($response->data[0]['attributes']['id'], 1);
+        $this->assertSame($response->data[9]['attributes']['id'], 10);
 
         $response = $this->withExceptionHandling()->get('/restify-api/users?sort=id')//assert default ASC sort
         ->assertStatus(200)
             ->getOriginalContent();
 
-        $this->assertSame($response->data['data'][0]['id'], 1);
-        $this->assertSame($response->data['data'][9]['id'], 10);
+        $this->assertSame($response->data[0]['attributes']['id'], 1);
+        $this->assertSame($response->data[9]['attributes']['id'], 10);
     }
 
     public function test_that_default_asc_sort_query_param_works()
@@ -153,34 +160,40 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ->assertStatus(200)
             ->getOriginalContent();
 
-        $this->assertSame($response->data['data'][0]['id'], 1);
-        $this->assertSame($response->data['data'][9]['id'], 10);
+        $this->assertSame($response->data[0]['attributes']['id'], 1);
+        $this->assertSame($response->data[9]['attributes']['id'], 10);
     }
 
     public function test_that_match_param_works()
     {
         User::$match = ['email' => RestifySearchable::MATCH_TEXT]; // it will automatically filter over these queries (email='test@email.com')
         $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
-        $expected = $users->where('email', 'eduard.lupacescu@binarcode.com')->first()->serializeForIndex(Mockery::mock(RestifyRequest::class));
+        $request  = Mockery::mock(RestifyRequest::class);
+        $request->shouldReceive('isResolvedByRestify')
+            ->andReturnFalse();
+
+        $expected = $users->where('email', 'eduard.lupacescu@binarcode.com')->first()->serializeForIndex($request);
 
         $this->withExceptionHandling()
             ->get('/restify-api/users?email=eduard.lupacescu@binarcode.com')
             ->assertStatus(200)
             ->assertJson([
-                'data' => [
-                    'data' => [$expected],
-                    'current_page' => 1,
-                    'first_page_url' => 'http://localhost/restify-api/users?page=1',
-                    'from' => 1,
-                    'last_page' => 1,
+                'links' => [
                     'last_page_url' => 'http://localhost/restify-api/users?page=1',
                     'next_page_url' => null,
                     'path' => 'http://localhost/restify-api/users',
-                    'per_page' => 15,
+                    'first_page_url' => 'http://localhost/restify-api/users?page=1',
                     'prev_page_url' => null,
+                ],
+                'meta' => [
+                    'current_page' => 1,
+                    'from' => 1,
+                    'last_page' => 1,
+                    'per_page' => 15,
                     'to' => 1,
                     'total' => 1,
                 ],
+                'data' => [$expected],
             ]);
     }
 
@@ -189,13 +202,16 @@ class RepositoryIndexControllerTest extends IntegrationTest
         User::$match = ['email' => RestifySearchable::MATCH_TEXT]; // it will automatically filter over these queries (email='test@email.com')
         $users = $this->mockUsers(1);
         $posts = $this->mockPosts(1, 2);
-        $expected = $users->first()->serializeForIndex(Mockery::mock(RestifyRequest::class));
+        $request  = Mockery::mock(RestifyRequest::class);
+        $request->shouldReceive('isResolvedByRestify')
+            ->andReturnFalse();
+        $expected = $users->first()->serializeForIndex($request);
         $expected['posts'] = $posts->toArray();
         $r = $this->withExceptionHandling()
             ->get('/restify-api/users?with=posts')
             ->assertStatus(200)
             ->getOriginalContent();
 
-        $this->assertSameSize($r->data['data']->first()['posts'], $expected['posts']);
+        $this->assertSameSize($r->data[0]['attributes']['posts'], $expected['posts']);
     }
 }
