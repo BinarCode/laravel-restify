@@ -92,7 +92,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
                     'to' => 1,
                     'total' => 1,
                 ],
-                'errors' => [],
             ]);
 
         $this->withExceptionHandling()
@@ -113,7 +112,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
                     'to' => 1,
                     'total' => 1,
                 ],
-                'errors' => [],
             ]);
     }
 
@@ -183,7 +181,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
                     'to' => 1,
                     'total' => 1,
                 ],
-                'errors' => [],
             ]);
     }
 

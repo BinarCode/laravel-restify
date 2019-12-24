@@ -103,4 +103,18 @@ trait InteractWithRepositories
             return true;
         }
     }
+
+    /**
+     * Get a new instance of the resource being requested.
+     *
+     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @return Repository
+     */
+    public function newRepositoryWith($model)
+    {
+        $resource = $this->repository();
+
+        return new $resource($model);
+    }
+
 }

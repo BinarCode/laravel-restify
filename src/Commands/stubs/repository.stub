@@ -2,7 +2,8 @@
 
 namespace DummyNamespace;
 
-use Illuminate\Http\Request;
+use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
 class DummyClass extends Repository
@@ -13,4 +14,19 @@ class DummyClass extends Repository
      * @var string
      */
     public static $model = 'DummyFullModel';
+
+    /**
+     * @param  RestifyRequest  $request
+     * @return array
+     */
+    public function fields(RestifyRequest $request)
+    {
+        return [
+            Field::fire('title')->storingRules('required')->messages([
+                'required' => 'This field is required bro.',
+            ]),
+        ];
+
+    }
+
 }

@@ -3,10 +3,12 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\DelegatesToResource;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
@@ -15,7 +17,9 @@ use Illuminate\Support\Str;
 abstract class Repository implements RestifySearchable
 {
     use InteractWithSearch,
-        DelegatesToResource;
+        DelegatesToResource,
+        ValidatingTrait,
+        RepositoryFillFields;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -81,5 +85,16 @@ abstract class Repository implements RestifySearchable
         $model = $this->model();
 
         return $model->toArray();
+    }
+
+    abstract public function fields(RestifyRequest $request);
+
+    /**
+     * @param  RestifyRequest  $request
+     * @return Collection
+     */
+    public function collectFields(RestifyRequest $request)
+    {
+        return collect($this->fields($request));
     }
 }

@@ -20,6 +20,6 @@ class RepositoryIndexController extends RepositoryController
     {
         $data = $this->search($request->newRepository());
 
-        return $this->respond($data);
+        return $this->response()->data($data['data'])->meta($data['meta'])->links($data['links'])->respond();
     }
 }

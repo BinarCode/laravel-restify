@@ -22,6 +22,7 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Password;
 
 /**
@@ -153,9 +154,11 @@ abstract class RestController extends BaseController
             $items = $paginator->getCollection()->map->serializeForIndex($this->request());
         }
 
-        return array_merge($paginator->toArray(), [
-            'data' => $items,
-        ]);
+        return [
+            'meta' => Arr::except($paginator->toArray(), ['data', 'next_page_url', 'last_page_url', 'first_page_url', 'prev_page_url', 'path']),
+            'links' => Arr::only($paginator->toArray(), ['next_page_url', 'last_page_url', 'first_page_url', 'prev_page_url', 'path']),
+            'data' => $items
+        ];
     }
 
     /**
