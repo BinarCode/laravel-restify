@@ -37,6 +37,7 @@ class RepositoryDestroyController extends RepositoryController
 
         DB::transaction(function () use ($request, $repository) {
             $model = $request->findModelQuery();
+
             return $model->delete();
         });
 
