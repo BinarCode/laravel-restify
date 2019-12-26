@@ -17,12 +17,12 @@ class SearchService extends Searchable
 {
     /**
      * @param  RestifyRequest  $request
-     * @param  Model  $model
+     * @param  $model
      * @return Builder
      * @throws InstanceOfException
      * @throws \Throwable
      */
-    public function search(RestifyRequest $request, Model $model)
+    public function search(RestifyRequest $request, $model)
     {
         if (! $model instanceof RestifySearchable) {
             return $model->newQuery();

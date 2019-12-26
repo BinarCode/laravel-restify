@@ -54,35 +54,4 @@ trait InteractWithSearch
         return static::$sort ?? [];
     }
 
-    /**
-     * Prepare the resource for JSON serialization.
-     *
-     * @param  RestifyRequest  $request
-     * @param  array  $fields
-     * @return array
-     */
-    public function serializeForIndex(RestifyRequest $request, array $fields = null)
-    {
-        $serialized = [
-            'type' => $request->isResolvedByRestify() ? static::uriKey() : Str::plural(Str::kebab(class_basename(get_called_class()))),
-            'attributes' => $fields ?: $this->toArray(),
-            'meta' => [
-                'authorizedToView' => $this->authorizedToView($request),
-                'authorizedToCreate' => $this->authorizedToCreate($request),
-                'authorizedToUpdate' => $this->authorizedToUpdate($request),
-                'authorizedToDelete' => $this->authorizedToDelete($request),
-            ],
-        ];
-
-        if ($this->getKey()) {
-            $serialized['id'] = $this->getKey();
-        }
-
-        return $serialized;
-    }
-
-    /**
-     * @return array
-     */
-    abstract public function toArray();
 }

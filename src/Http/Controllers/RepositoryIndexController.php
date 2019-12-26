@@ -11,15 +11,17 @@ class RepositoryIndexController extends RepositoryController
 {
     /**
      * @param  RestifyRequest  $request
-     * @return \Illuminate\Http\JsonResponse
+     * @return \Binaryk\LaravelRestify\Repositories\Repository
      * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException
+     * @throws \Binaryk\LaravelRestify\Exceptions\InstanceOfException
      * @throws \Binaryk\LaravelRestify\Exceptions\UnauthorizedException
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     * @throws \Throwable
      */
     public function handle(RestifyRequest $request)
     {
-        $data = $this->search($request->newRepository());
+        $data = $this->paginator($request->newRepository());
 
-        return $this->response()->data($data['data'])->meta($data['meta'])->links($data['links'])->respond();
+        return $request->newRepositoryWith($data);
     }
 }

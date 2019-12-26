@@ -49,6 +49,19 @@ class Restify
     }
 
     /**
+     * Get the repository class name for a given key.
+     *
+     * @param string $model
+     * @return string
+     */
+    public static function repositoryForModel($model)
+    {
+        return collect(static::$repositories)->first(function ($value) use ($model) {
+            return $value::$model === $model;
+        });
+    }
+
+    /**
      * Register the given repositories.
      *
      * @param  array  $repositories

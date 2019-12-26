@@ -44,7 +44,7 @@ trait InteractWithRepositories
                 ]), 404);
             }
 
-            if (! $repository::authorizedToViewAny($this)) {
+            if ( ! $repository::authorizedToViewAny($this)) {
                 throw new UnauthorizedException(__('Unauthorized to view repository :name.', [
                     'name' => $repository,
                 ]), 403);
@@ -68,7 +68,7 @@ trait InteractWithRepositories
      * Get the route handling the request.
      *
      * @param  string|null  $param
-     * @param  mixed   $default
+     * @param  mixed  $default
      * @return \Illuminate\Routing\Route|object|string
      */
     abstract public function route($param = null, $default = null);
@@ -105,15 +105,53 @@ trait InteractWithRepositories
     }
 
     /**
-     * Get a new instance of the resource being requested.
+     * Get a new instance of the repository being requested.
+     * As a model it could accept either a model instance, a collection or even paginated collection
      *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
+     * @param  $model
      * @return Repository
      */
     public function newRepositoryWith($model)
     {
-        $resource = $this->repository();
+        $repository = $this->repository();
 
-        return new $resource($model);
+        return new $repository($model);
     }
+
+
+    /**
+     * Get a new, scopeless query builder for the underlying model.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function newQueryWithoutScopes()
+    {
+        return $this->model()->newQueryWithoutScopes();
+    }
+
+    /**
+     * Get a new instance of the underlying model.
+     *
+     * @return \Illuminate\Database\Eloquent\Model
+     */
+    public function model()
+    {
+        $repository = $this->repository();
+
+        return $repository::newModel();
+    }
+
+    /**
+     * Get the query to find the model instance for the request.
+     *
+     * @param  mixed|null  $repositoryId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function findModelQuery($repositoryId = null)
+    {
+        return $this->newQueryWithoutScopes()->whereKey(
+            $repositoryId ?? $this->repositoryId
+        );
+    }
+
 }
