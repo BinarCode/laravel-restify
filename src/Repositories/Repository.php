@@ -16,7 +16,7 @@ use Illuminate\Support\Str;
 /**
  * This class serve as repository collection and repository single model
  * This allow you to use all of the Laravel default repositories features (as adding headers in the response, or customizing
- * response)
+ * response).
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 abstract class Repository extends RepositoryCollection implements RestifySearchable
@@ -29,7 +29,7 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
-     * This may be a single model or a illuminate collection, or even a paginator instance
+     * This may be a single model or a illuminate collection, or even a paginator instance.
      *
      * @var Model|LengthAwarePaginator
      */
@@ -54,9 +54,7 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
     public function model()
     {
         if ($this->isRenderingCollection() || $this->isRenderingPaginated()) {
-
             return $this->modelFromIterator();
-
         }
 
         return $this->resource;
@@ -101,9 +99,7 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
         $request = Container::getInstance()->make('request');
 
         if ($this->isRenderingCollection()) {
-
             return $this->toArrayForCollection($request);
-
         }
 
         $serialized = [

@@ -3,14 +3,12 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 /**
- * @package Binaryk\LaravelRestify\Repositories;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait ResponseResolver
 {
-
     /**
-     * Return the attributes list
+     * Return the attributes list.
      *
      * @param $request
      * @return array
@@ -35,7 +33,7 @@ trait ResponseResolver
     }
 
     /**
-     * Return a list with relationship for the current model
+     * Return a list with relationship for the current model.
      *
      * @param $request
      * @return array
@@ -46,7 +44,7 @@ trait ResponseResolver
     }
 
     /**
-     * Triggered after toArray
+     * Triggered after toArray.
      *
      * @param $serialized
      * @return array
@@ -57,7 +55,7 @@ trait ResponseResolver
     }
 
     /**
-     * Return the attributes list
+     * Return the attributes list.
      *
      * @param $request
      * @return array
@@ -77,7 +75,7 @@ trait ResponseResolver
     }
 
     /**
-     * Return a list with relationship for the current model
+     * Return a list with relationship for the current model.
      *
      * @param $request
      * @return array
