@@ -17,7 +17,7 @@ trait RulesTrait
     public $storingRules = [];
 
     /**
-     * Rules for applied when update model
+     * Rules for applied when update model.
      * @var array
      */
     public $updatingRules = [];
@@ -47,7 +47,7 @@ trait RulesTrait
     }
 
     /**
-     * Validation rules for update
+     * Validation rules for update.
      *
      * @param  callable|array|string  $rules
      * @return RulesTrait

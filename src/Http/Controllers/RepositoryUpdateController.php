@@ -38,9 +38,7 @@ class RepositoryUpdateController extends RepositoryController
             return $this->response()->invalid()->errors($validator->errors()->toArray())->respond();
         }
 
-
         $repository = DB::transaction(function () use ($request, $repository, $model) {
-
             [$model] = $repository::fillWhenUpdate($request, $model);
 
             $model->save();

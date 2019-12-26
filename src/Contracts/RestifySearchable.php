@@ -2,8 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Contracts;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
