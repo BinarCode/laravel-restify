@@ -54,7 +54,6 @@ class Field extends OrganicField implements JsonSerializable
         return new static(...$arguments);
     }
 
-
     /**
      * {@inheritdoc}
      */

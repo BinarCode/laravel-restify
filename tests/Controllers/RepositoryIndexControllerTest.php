@@ -73,7 +73,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
     public function test_search_query_works()
     {
         $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
-        $request  = Mockery::mock(RestifyRequest::class);
+        $request = Mockery::mock(RestifyRequest::class);
         $request->shouldReceive('isResolvedByRestify')
             ->andReturnFalse();
         $expected = $users->where('email', 'eduard.lupacescu@binarcode.com')->first()->serializeForIndex($request);
@@ -118,7 +118,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
                     'to' => 1,
                     'total' => 1,
                 ],
-                'data' => []
+                'data' => [],
             ]);
     }
 
@@ -168,7 +168,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
     {
         User::$match = ['email' => RestifySearchable::MATCH_TEXT]; // it will automatically filter over these queries (email='test@email.com')
         $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
-        $request  = Mockery::mock(RestifyRequest::class);
+        $request = Mockery::mock(RestifyRequest::class);
         $request->shouldReceive('isResolvedByRestify')
             ->andReturnFalse();
 
@@ -202,7 +202,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         User::$match = ['email' => RestifySearchable::MATCH_TEXT]; // it will automatically filter over these queries (email='test@email.com')
         $users = $this->mockUsers(1);
         $posts = $this->mockPosts(1, 2);
-        $request  = Mockery::mock(RestifyRequest::class);
+        $request = Mockery::mock(RestifyRequest::class);
         $request->shouldReceive('isResolvedByRestify')
             ->andReturnFalse();
         $expected = $users->first()->serializeForIndex($request);
