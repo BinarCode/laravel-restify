@@ -56,7 +56,6 @@ trait ValidatingTrait
         static::validatorForUpdate($request, $resource)->validate();
     }
 
-
     /**
      * @param  RestifyRequest  $request
      * @param  null  $resource
@@ -136,7 +135,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                $k->attribute => $k->getUpdatingRules()
+                $k->attribute => $k->getUpdatingRules(),
             ];
         })->toArray();
     }
