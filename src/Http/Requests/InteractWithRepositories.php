@@ -44,7 +44,7 @@ trait InteractWithRepositories
                 ]), 404);
             }
 
-            if ( ! $repository::authorizedToViewAny($this)) {
+            if (! $repository::authorizedToViewAny($this)) {
                 throw new UnauthorizedException(__('Unauthorized to view repository :name.', [
                     'name' => $repository,
                 ]), 403);
@@ -106,7 +106,7 @@ trait InteractWithRepositories
 
     /**
      * Get a new instance of the repository being requested.
-     * As a model it could accept either a model instance, a collection or even paginated collection
+     * As a model it could accept either a model instance, a collection or even paginated collection.
      *
      * @param  $model
      * @return Repository
@@ -117,7 +117,6 @@ trait InteractWithRepositories
 
         return new $repository($model);
     }
-
 
     /**
      * Get a new, scopeless query builder for the underlying model.
@@ -153,5 +152,4 @@ trait InteractWithRepositories
             $repositoryId ?? $this->repositoryId
         );
     }
-
 }

@@ -20,7 +20,7 @@ class RepositoryShowController extends RepositoryController
     public function handle(RestifyRequest $request)
     {
         /**
-         * @var Repository $repository
+         * @var Repository
          */
         $repository = $request->newRepositoryWith(tap(SearchService::instance()->prepareRelations($request, $request->findModelQuery()), function ($query) use ($request) {
             $request->newRepository()->detailQuery($request, $query);
