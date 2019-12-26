@@ -2,9 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Illuminate\Support\Str;
-
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
@@ -53,5 +50,4 @@ trait InteractWithSearch
     {
         return static::$sort ?? [];
     }
-
 }

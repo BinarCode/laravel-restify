@@ -9,7 +9,6 @@ use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
-use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Access\Gate;

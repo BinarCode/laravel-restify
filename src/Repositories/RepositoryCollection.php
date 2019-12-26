@@ -9,15 +9,13 @@ use Illuminate\Http\Resources\Json\Resource;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Arr;
 
-
 /**
- * @package Binaryk\LaravelRestify\Repositories;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RepositoryCollection extends Resource
 {
     /**
-     * When the repository is used as a response for a collection list (index controller)
+     * When the repository is used as a response for a collection list (index controller).
      *
      * @param $request
      * @return array
@@ -84,7 +82,7 @@ class RepositoryCollection extends Resource
 
     /**
      * Check if the repository is used as a response for a list of items or for a single
-     * model entity
+     * model entity.
      * @return bool
      */
     protected function isRenderingRepository()
@@ -94,7 +92,7 @@ class RepositoryCollection extends Resource
 
     /**
      * Check if the repository is used as a response for a list of items or for a single
-     * model entity
+     * model entity.
      * @return bool
      */
     protected function isRenderingCollection()
@@ -111,21 +109,21 @@ class RepositoryCollection extends Resource
     }
 
     /**
-     * If collection or paginator then return model from the first item
+     * If collection or paginator then return model from the first item.
      *
      * @return Model
      */
     protected function modelFromIterator()
     {
         /**
-         * @var ArrayIterator $iterator
+         * @var ArrayIterator
          */
         $iterator = $this->iterator();
 
         /**
          * This is the first element from the response collection, now we have the class of the restify
-         * engine
-         * @var Model $model
+         * engine.
+         * @var Model
          */
         $model = $iterator->current();
 
