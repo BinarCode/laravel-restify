@@ -16,13 +16,6 @@ interface RestifySearchable
     const MATCH_INTEGER = 'integer';
 
     /**
-     * @param  RestifyRequest  $request
-     * @param  array  $fields
-     * @return array
-     */
-    public function serializeForIndex(RestifyRequest $request, array $fields = []);
-
-    /**
      * @return array
      */
     public static function getSearchableFields();

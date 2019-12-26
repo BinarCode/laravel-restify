@@ -30,6 +30,21 @@ trait RepositoryFillFields
     }
 
     /**
+     * @param  RestifyRequest  $request
+     * @param $model
+     * @return array
+     */
+    public static function fillWhenUpdate(RestifyRequest $request, $model)
+    {
+        return [$model, static::fillFields(
+            $request, $model,
+            (new static($model))->collectFields($request)
+        ), static::fillExtra($request, $model,
+            (new static($model))->collectFields($request)
+        )];
+    }
+
+    /**
      * Fill each field separately.
      *
      * @param  RestifyRequest  $request

@@ -17,6 +17,12 @@ trait RulesTrait
     public $storingRules = [];
 
     /**
+     * Rules for applied when update model
+     * @var array
+     */
+    public $updatingRules = [];
+
+    /**
      * Rules for applied when store and update.
      *
      * @var array
@@ -36,6 +42,19 @@ trait RulesTrait
     public function storingRules($rules)
     {
         $this->storingRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+
+        return $this;
+    }
+
+    /**
+     * Validation rules for update
+     *
+     * @param  callable|array|string  $rules
+     * @return RulesTrait
+     */
+    public function updatingRules($rules)
+    {
+        $this->updatingRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
 
         return $this;
     }
@@ -73,5 +92,13 @@ trait RulesTrait
     public function getStoringRules()
     {
         return array_merge($this->rules, $this->storingRules);
+    }
+
+    /**
+     * @return array
+     */
+    public function getUpdatingRules()
+    {
+        return array_merge($this->rules, $this->updatingRules);
     }
 }

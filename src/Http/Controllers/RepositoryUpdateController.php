@@ -5,8 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
-use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\JsonResponse;
@@ -16,7 +15,7 @@ use Throwable;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class RepositoryStoreController extends RepositoryController
+class RepositoryUpdateController extends RepositoryController
 {
     /**
      * @param  RepositoryStoreRequest  $request
@@ -27,35 +26,28 @@ class RepositoryStoreController extends RepositoryController
      * @throws AuthorizationException
      * @throws Throwable
      */
-    public function handle(RepositoryStoreRequest $request)
+    public function handle(RepositoryUpdateRequest $request)
     {
-        /**
-         * @var Repository
-         */
-        $repository = $request->repository();
+        $model = $request->findModelQuery()->lockForUpdate()->firstOrFail();
 
-        $repository::authorizeToCreate($request);
-
-        $validator = $repository::validatorForStoring($request);
+        $repository = $request->newRepositoryWith($model);
+        $repository->authorizeToUpdate($request);
+        $validator = $repository::validatorForUpdate($request, $repository);
 
         if ($validator->fails()) {
             return $this->response()->invalid()->errors($validator->errors()->toArray())->respond();
         }
 
-        $model = DB::transaction(function () use ($request, $repository) {
-            [$model] = $repository::fillWhenStore(
-                $request, $repository::newModel()
-            );
+
+        $repository = DB::transaction(function () use ($request, $repository, $model) {
+
+            [$model] = $repository::fillWhenUpdate($request, $model);
 
             $model->save();
 
-            return $model;
+            return $repository;
         });
 
-        return $this->response()
-            ->code(201)
-            ->forRepository($request->newRepositoryWith($model), true)
-            ->header('Location', Restify::path().'/'.$repository::uriKey().'/'.$model->id)
-            ->respond();
+        return $repository;
     }
 }
