@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
@@ -41,7 +42,7 @@ class RepositoryDestroyController extends RepositoryController
         });
 
         return $this->response()
-            ->code(204)
+            ->code(RestResponse::REST_RESPONSE_DELETED_CODE)
             ->respond();
     }
 }

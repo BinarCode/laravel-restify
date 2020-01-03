@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
@@ -53,7 +54,7 @@ class RepositoryStoreController extends RepositoryController
         });
 
         return $this->response()
-            ->code(201)
+            ->code(RestResponse::REST_RESPONSE_CREATED_CODE)
             ->forRepository($request->newRepositoryWith($model), true)
             ->header('Location', Restify::path().'/'.$repository::uriKey().'/'.$model->id)
             ->respond();

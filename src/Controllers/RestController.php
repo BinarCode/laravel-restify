@@ -140,9 +140,9 @@ abstract class RestController extends BaseController
         $paginator = $this->paginator($modelClass, $filters);
 
         if ($modelClass instanceof Repository) {
-            $items = $paginator->getCollection()->mapInto(get_class($modelClass))->map->serializeForIndex($this->request());
+            $items = $paginator->getCollection()->mapInto(get_class($modelClass))->map->toArray($this->request());
         } else {
-            $items = $paginator->getCollection()->map->serializeForIndex($this->request());
+            $items = $paginator->getCollection();
         }
 
         return [

@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Container\Container;
@@ -54,7 +55,7 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
     public function model()
     {
         if ($this->isRenderingCollection() || $this->isRenderingPaginated()) {
-            return $this->modelFromIterator();
+            return $this->modelFromIterator() ?? static::newModel();
         }
 
         return $this->resource;

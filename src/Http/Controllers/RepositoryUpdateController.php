@@ -2,10 +2,12 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\JsonResponse;
@@ -30,6 +32,9 @@ class RepositoryUpdateController extends RepositoryController
     {
         $model = $request->findModelQuery()->lockForUpdate()->firstOrFail();
 
+        /**
+         * @var Repository $repository
+         */
         $repository = $request->newRepositoryWith($model);
         $repository->authorizeToUpdate($request);
         $validator = $repository::validatorForUpdate($request, $repository);
@@ -46,6 +51,6 @@ class RepositoryUpdateController extends RepositoryController
             return $repository;
         });
 
-        return $repository;
+        return $this->response()->forRepository($repository)->code(RestResponse::REST_RESPONSE_DELETED_CODE)->respond();
     }
 }

@@ -26,4 +26,11 @@ class UserRepository extends Repository
     {
         return [];
     }
+
+    public function resolveDetailsRelationships($request)
+    {
+        return [
+            'posts' => PostRepository::collection($this->whenLoaded('posts')),
+        ];
+    }
 }
