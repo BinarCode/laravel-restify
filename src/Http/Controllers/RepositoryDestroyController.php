@@ -36,14 +36,6 @@ class RepositoryDestroyController extends RepositoryController
 
         $repository->authorizeToDelete($request);
 
-        DB::transaction(function () use ($request, $repository) {
-            $model = $request->findModelQuery();
-
-            return $model->delete();
-        });
-
-        return $this->response()
-            ->code(RestResponse::REST_RESPONSE_DELETED_CODE)
-            ->respond();
+        return $repository->destroy($request);
     }
 }

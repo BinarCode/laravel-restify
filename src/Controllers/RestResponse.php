@@ -46,7 +46,7 @@ class RestResponse
     const REST_RESPONSE_AUTH_CODE = 401;
     const REST_RESPONSE_REFRESH_CODE = 103;
     const REST_RESPONSE_CREATED_CODE = 201;
-    const REST_RESPONSE_UPDATED_CODE = 201;
+    const REST_RESPONSE_UPDATED_CODE = 200;
     const REST_RESPONSE_DELETED_CODE = 204; // update or delete with success
     const REST_RESPONSE_BLANK_CODE = 204;
     const REST_RESPONSE_ERROR_CODE = 500;

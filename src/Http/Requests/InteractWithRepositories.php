@@ -122,6 +122,8 @@ trait InteractWithRepositories
      * Get a new, scopeless query builder for the underlying model.
      *
      * @return \Illuminate\Database\Eloquent\Builder
+     * @throws EntityNotFoundException
+     * @throws UnauthorizedException
      */
     public function newQueryWithoutScopes()
     {
@@ -132,6 +134,8 @@ trait InteractWithRepositories
      * Get a new instance of the underlying model.
      *
      * @return \Illuminate\Database\Eloquent\Model
+     * @throws EntityNotFoundException
+     * @throws UnauthorizedException
      */
     public function model()
     {
@@ -149,7 +153,7 @@ trait InteractWithRepositories
     public function findModelQuery($repositoryId = null)
     {
         return $this->newQueryWithoutScopes()->whereKey(
-            $repositoryId ?? $this->repositoryId
+            $repositoryId ?? request('repositoryId')
         );
     }
 }

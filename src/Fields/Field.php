@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
+use Illuminate\Contracts\Validation\Rule;
 use JsonSerializable;
 
 /**
@@ -11,8 +12,6 @@ use JsonSerializable;
  */
 class Field extends OrganicField implements JsonSerializable
 {
-    use RulesTrait;
-
     /**
      * Column name of the field.
      * @var string|callable|null
@@ -132,5 +131,73 @@ class Field extends OrganicField implements JsonSerializable
     public function getAttribute()
     {
         return $this->attribute;
+    }
+
+    /**
+     * Validation rules for store.
+     * @param  callable|array|string  $rules
+     * @return Field
+     */
+    public function storingRules($rules)
+    {
+        $this->storingRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+
+        return $this;
+    }
+
+    /**
+     * Validation rules for update.
+     *
+     * @param  callable|array|string  $rules
+     * @return Field
+     */
+    public function updatingRules($rules)
+    {
+        $this->updatingRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+
+        return $this;
+    }
+
+    /**
+     * Validation rules for store.
+     * @param  callable|array|string  $rules
+     * @return Field
+     */
+    public function rules($rules)
+    {
+        $this->rules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+
+        return $this;
+    }
+
+    /**
+     * Validation messages.
+     *
+     * @param  array  $messages
+     * @return Field
+     */
+    public function messages(array $messages)
+    {
+        $this->messages = $messages;
+
+        return $this;
+    }
+
+    /**
+     * Validation rules for storing.
+     *
+     * @return array
+     */
+    public function getStoringRules()
+    {
+        return array_merge($this->rules, $this->storingRules);
+    }
+
+    /**
+     * @return array
+     */
+    public function getUpdatingRules()
+    {
+        return array_merge($this->rules, $this->updatingRules);
     }
 }

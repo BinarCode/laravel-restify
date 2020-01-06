@@ -43,20 +43,6 @@ class RepositoryStoreController extends RepositoryController
             return $this->response()->invalid()->errors($validator->errors()->toArray())->respond();
         }
 
-        $model = DB::transaction(function () use ($request, $repository) {
-            [$model] = $repository::fillWhenStore(
-                $request, $repository::newModel()
-            );
-
-            $model->save();
-
-            return $model;
-        });
-
-        return $this->response()
-            ->code(RestResponse::REST_RESPONSE_CREATED_CODE)
-            ->forRepository($request->newRepositoryWith($model), true)
-            ->header('Location', Restify::path().'/'.$repository::uriKey().'/'.$model->id)
-            ->respond();
+        return $request->newRepositoryWith($repository::newModel())->store($request);
     }
 }
