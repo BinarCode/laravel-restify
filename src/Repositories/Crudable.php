@@ -49,7 +49,7 @@ trait Crudable
     public function store(RestifyRequest $request)
     {
         $model = DB::transaction(function () use ($request) {
-            [$model] = self::fillWhenStore(
+            $model = self::fillWhenStore(
                 $request, self::newModel()
             );
 
@@ -72,7 +72,7 @@ trait Crudable
     public function update(RestifyRequest $request, $model)
     {
         DB::transaction(function () use ($request, $model) {
-            [$model] = static::fillWhenUpdate($request, $model);
+            $model = static::fillWhenUpdate($request, $model);
 
             $model->save();
 
@@ -97,4 +97,10 @@ trait Crudable
         return $this->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_DELETED_CODE);
     }
+
+    /**
+     * @param  null  $request
+     * @return mixed
+     */
+    abstract public function response($request = null);
 }

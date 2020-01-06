@@ -21,12 +21,16 @@ trait RepositoryFillFields
      */
     public static function fillWhenStore(RestifyRequest $request, $model)
     {
-        return [$model, static::fillFields(
+        static::fillFields(
             $request, $model,
             (new static($model))->collectFields($request)
-        ), static::fillExtra($request, $model,
+        );
+
+        static::fillExtra($request, $model,
             (new static($model))->collectFields($request)
-        )];
+        );
+
+        return $model;
     }
 
     /**
@@ -36,12 +40,15 @@ trait RepositoryFillFields
      */
     public static function fillWhenUpdate(RestifyRequest $request, $model)
     {
-        return [$model, static::fillFields(
+        static::fillFields(
             $request, $model,
             (new static($model))->collectFields($request)
-        ), static::fillExtra($request, $model,
+        );
+        static::fillExtra($request, $model,
             (new static($model))->collectFields($request)
-        )];
+        );
+
+        return $model;
     }
 
     /**
