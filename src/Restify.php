@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -91,10 +90,10 @@ class Restify
         $repositories = [];
 
         foreach ((new Finder)->in($directory)->files() as $repository) {
-            $repository = $namespace . str_replace(
+            $repository = $namespace.str_replace(
                     ['/', '.php'],
                     ['\\', ''],
-                    Str::after($repository->getPathname(), app_path() . DIRECTORY_SEPARATOR)
+                    Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
                 );
 
             if (is_subclass_of($repository, Repository::class) && (new ReflectionClass($repository))->isInstantiable()) {
@@ -116,10 +115,8 @@ class Restify
     public static function path($plus = null)
     {
         if (isset($plus)) {
-
-            return config('restify.base', '/restify-api') . '/' . $plus;
+            return config('restify.base', '/restify-api').'/'.$plus;
         } else {
-
             return config('restify.base', '/restify-api');
         }
     }

@@ -36,7 +36,6 @@ class RestifyServiceProvider extends ServiceProvider
 
         $this->customDefinitions($config)
             ->defaultRoutes($config);
-
     }
 
     /**
@@ -53,7 +52,7 @@ class RestifyServiceProvider extends ServiceProvider
                 $config['prefix'] = Restify::path($repository::$prefix);
 
                 Route::group($config, function () {
-                    $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+                    $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
                 });
             });
 
@@ -67,7 +66,7 @@ class RestifyServiceProvider extends ServiceProvider
     public function defaultRoutes($config)
     {
         Route::group($config, function () {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
         });
 
         return $this;
