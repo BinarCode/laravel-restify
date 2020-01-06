@@ -32,18 +32,18 @@ class RepositoryStoreControllerTest extends IntegrationTest
     public function test_success_storing()
     {
         $user = $this->mockUsers()->first();
-        $r = $this->withExceptionHandling()->post('/restify-api/posts', [
+        $r = json_decode($this->withExceptionHandling()->post('/restify-api/posts', [
             'user_id' => $user->id,
             'title' => 'Some post title',
             'description' => 'A very short description',
         ])
             ->assertStatus(201)
             ->assertHeader('Location', '/restify-api/posts/1')
-            ->getOriginalContent();
+            ->getContent());
 
-        $this->assertEquals($r->data->attributes['title'], 'Some post title');
-        $this->assertEquals($r->data->attributes['description'], 'A very short description');
-        $this->assertEquals($r->data->attributes['user_id'], $user->id);
+        $this->assertEquals($r->data->attributes->title, 'Some post title');
+        $this->assertEquals($r->data->attributes->description, 'A very short description');
+        $this->assertEquals($r->data->attributes->user_id, $user->id);
         $this->assertEquals($r->data->id, 1);
         $this->assertEquals($r->data->type, 'posts');
     }
