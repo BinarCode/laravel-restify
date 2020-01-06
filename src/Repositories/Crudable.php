@@ -49,7 +49,7 @@ trait Crudable
         return (new static ($model))
             ->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_CREATED_CODE)
-            ->header('Location', Restify::path() . '/' . self::uriKey() . '/' . $model->id);
+            ->header('Location', Restify::path().'/'.self::uriKey().'/'.$model->id);
     }
 
     /**
@@ -85,5 +85,4 @@ trait Crudable
         return $this->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_DELETED_CODE);
     }
-
 }
