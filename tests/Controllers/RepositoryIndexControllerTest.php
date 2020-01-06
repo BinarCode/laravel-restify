@@ -75,9 +75,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
     {
         $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
         $request = Mockery::mock(RestifyRequest::class);
-        $request->shouldReceive('isResolvedByRestify')
-            ->andReturnFalse();
-        $model = $users->where('email', 'eduard.lupacescu@binarcode.com')->first();
+        $model = $users->where('email', 'eduard.lupacescu@binarcode.com')->first(); //find manually the model
         $repository = Restify::repositoryForModel(get_class($model));
         $expected = (new $repository($model))->toArray($request);
         unset($expected['relationships']);

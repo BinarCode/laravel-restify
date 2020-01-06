@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Container\Container;
@@ -26,7 +25,8 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
         ValidatingTrait,
         RepositoryFillFields,
         PerformsQueries,
-        ResponseResolver;
+        ResponseResolver,
+        Crudable;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.

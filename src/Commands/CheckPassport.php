@@ -62,15 +62,15 @@ class CheckPassport extends Command
     {
         $userClass = $this->config->get('auth.providers.users.model');
 
-        if (false === $this->provider()) {
+        if (false === $this->hasProvider()) {
             return;
         }
 
-        if (false === $this->passportable($userClass)) {
+        if (false === $this->isPassportable($userClass)) {
             return;
         }
 
-        if (false === $this->passportClient()) {
+        if (false === $this->hasPassportClient()) {
             return;
         }
 
@@ -87,7 +87,7 @@ class CheckPassport extends Command
      * @param $userClass
      * @return bool
      */
-    public function passportable($userClass = null): bool
+    public function isPassportable($userClass = null): bool
     {
         try {
             $userInstance = $this->container->get($userClass);
@@ -116,7 +116,7 @@ class CheckPassport extends Command
     /**
      * @return bool
      */
-    public function provider(): bool
+    public function hasProvider(): bool
     {
         $provider = $this->app->getProviders('Laravel\\Passport\\PassportServiceProvider');
 
@@ -132,7 +132,7 @@ class CheckPassport extends Command
     /**
      * @return bool
      */
-    public function passportClient(): bool
+    public function hasPassportClient(): bool
     {
         try {
             /**
