@@ -216,7 +216,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->assertSameSize((array) data_get($r, 'data.0.relationships.posts'), $posts->toArray());
         $this->assertSame(array_keys((array) data_get($r, 'data.0.relationships.posts.0')), [
-            'id', 'type', 'attributes', 'meta'
+            'id', 'type', 'attributes', 'meta',
         ]);
     }
 }

@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
 
 /**
- * @package Binaryk\LaravelRestify\Repositories;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait Crudable
