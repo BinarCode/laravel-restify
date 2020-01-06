@@ -22,6 +22,6 @@ class RepositoryIndexController extends RepositoryController
     {
         $data = $this->paginator($request->newRepository());
 
-        return $request->newRepositoryWith($data);
+        return $request->newRepositoryWith($data)->index($request, $data);
     }
 }

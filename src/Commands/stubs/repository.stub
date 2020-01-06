@@ -22,11 +22,59 @@ class DummyClass extends Repository
     public function fields(RestifyRequest $request)
     {
         return [
-            Field::fire('title')->storingRules('required')->messages([
-                'required' => 'This field is required bro.',
-            ]),
+          //  Field::make('title')->storingRules('required')->messages([
+          //      'required' => 'This field is required bro.',
+          //  ]),
         ];
 
     }
 
+    /**
+     * @param  RestifyRequest  $request
+     * @param  Paginator  $paginated
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function index(RestifyRequest $request, Paginator $paginated)
+    {
+        return parent::index($request, $paginated);
+    }
+
+    /**
+     * @param  RestifyRequest  $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
+     */
+    public function show(RestifyRequest $request)
+    {
+        return parent::show($request);
+    }
+
+    /**
+     * @param  RestifyRequest  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function store(RestifyRequest $request)
+    {
+        return parent::store($request);
+    }
+
+    /**
+     * @param  RestifyRequest  $request
+     * @param $model
+     * @return \Illuminate\Http\JsonResponse|void
+     */
+    public function update(RestifyRequest $request, $model)
+    {
+        return parent::update($request, $model);
+    }
+
+    /**
+     * @param  RestifyRequest  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function destroy(RestifyRequest $request)
+    {
+        return parent::destroy($request);
+    }
 }

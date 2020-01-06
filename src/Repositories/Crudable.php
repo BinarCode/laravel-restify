@@ -6,6 +6,8 @@ use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
+use Illuminate\Contracts\Pagination\Paginator;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -15,7 +17,17 @@ trait Crudable
 {
     /**
      * @param  RestifyRequest  $request
-     * @return Repository
+     * @param  Paginator  $paginated
+     * @return JsonResponse
+     */
+    public function index(RestifyRequest $request, Paginator $paginated)
+    {
+        return (new static($paginated))->response();
+    }
+
+    /**
+     * @param  RestifyRequest  $request
+     * @return JsonResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws \Throwable
      */
@@ -27,12 +39,12 @@ trait Crudable
 
         $repository->authorizeToView($request);
 
-        return $repository;
+        return $repository->response();
     }
 
     /**
      * @param  RestifyRequest  $request
-     * @return mixed
+     * @return JsonResponse
      */
     public function store(RestifyRequest $request)
     {
@@ -55,7 +67,7 @@ trait Crudable
     /**
      * @param  RestifyRequest  $request
      * @param $model
-     * @return mixed
+     * @return JsonResponse
      */
     public function update(RestifyRequest $request, $model)
     {
@@ -72,7 +84,7 @@ trait Crudable
 
     /**
      * @param  RestifyRequest  $request
-     * @return mixed
+     * @return JsonResponse
      */
     public function destroy(RestifyRequest $request)
     {
