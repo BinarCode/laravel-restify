@@ -3,23 +3,36 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
+use Binaryk\LaravelRestify\Traits\PerformsQueries;
+use Illuminate\Container\Container;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Resources\DelegatesToResource;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
 /**
+ * This class serve as repository collection and repository single model
+ * This allow you to use all of the Laravel default repositories features (as adding headers in the response, or customizing
+ * response).
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-abstract class Repository implements RestifySearchable
+abstract class Repository extends RepositoryCollection implements RestifySearchable
 {
     use InteractWithSearch,
-        DelegatesToResource;
+        ValidatingTrait,
+        RepositoryFillFields,
+        PerformsQueries,
+        ResponseResolver,
+        Crudable;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
-     * @var Model
+     * This may be a single model or a illuminate collection, or even a paginator instance.
+     *
+     * @var Model|LengthAwarePaginator
      */
     public $resource;
 
@@ -30,16 +43,21 @@ abstract class Repository implements RestifySearchable
      */
     public function __construct($model)
     {
+        parent::__construct($model);
         $this->resource = $model;
     }
 
     /**
      * Get the underlying model instance for the resource.
      *
-     * @return \Illuminate\Database\Eloquent\Model
+     * @return \Illuminate\Database\Eloquent\Model|LengthAwarePaginator
      */
     public function model()
     {
+        if ($this->isRenderingCollection() || $this->isRenderingPaginated()) {
+            return $this->modelFromIterator() ?? static::newModel();
+        }
+
         return $this->resource;
     }
 
@@ -75,11 +93,37 @@ abstract class Repository implements RestifySearchable
 
     /**
      * @return array
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function toArray()
+    public function toArray($request)
     {
-        $model = $this->model();
+        $request = Container::getInstance()->make('request');
 
-        return $model->toArray();
+        if ($this->isRenderingCollection()) {
+            return $this->toArrayForCollection($request);
+        }
+
+        $serialized = [
+            'id' => $this->when($this->isRenderingRepository(), function () {
+                return $this->getKey();
+            }),
+            'type' => method_exists($this, 'uriKey') ? static::uriKey() : Str::plural(Str::kebab(class_basename(get_called_class()))),
+            'attributes' => $this->resolveDetailsAttributes($request),
+            'relationships' => $this->when(value($this->resolveDetailsRelationships($request)), $this->resolveDetailsRelationships($request)),
+            'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
+        ];
+
+        return $this->resolveDetails($serialized);
+    }
+
+    abstract public function fields(RestifyRequest $request);
+
+    /**
+     * @param  RestifyRequest  $request
+     * @return Collection
+     */
+    public function collectFields(RestifyRequest $request)
+    {
+        return collect($this->fields($request));
     }
 }

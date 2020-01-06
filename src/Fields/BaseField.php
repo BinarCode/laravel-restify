@@ -1,10 +1,10 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Controllers;
+namespace Binaryk\LaravelRestify\Fields;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-trait RestIndexController
+abstract class BaseField
 {
 }

@@ -68,7 +68,7 @@ trait InteractWithRepositories
      * Get the route handling the request.
      *
      * @param  string|null  $param
-     * @param  mixed   $default
+     * @param  mixed  $default
      * @return \Illuminate\Routing\Route|object|string
      */
     abstract public function route($param = null, $default = null);
@@ -102,5 +102,58 @@ trait InteractWithRepositories
         } catch (UnauthorizedException $e) {
             return true;
         }
+    }
+
+    /**
+     * Get a new instance of the repository being requested.
+     * As a model it could accept either a model instance, a collection or even paginated collection.
+     *
+     * @param  $model
+     * @return Repository
+     */
+    public function newRepositoryWith($model)
+    {
+        $repository = $this->repository();
+
+        return new $repository($model);
+    }
+
+    /**
+     * Get a new, scopeless query builder for the underlying model.
+     *
+     * @return \Illuminate\Database\Eloquent\Builder
+     * @throws EntityNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function newQueryWithoutScopes()
+    {
+        return $this->model()->newQueryWithoutScopes();
+    }
+
+    /**
+     * Get a new instance of the underlying model.
+     *
+     * @return \Illuminate\Database\Eloquent\Model
+     * @throws EntityNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function model()
+    {
+        $repository = $this->repository();
+
+        return $repository::newModel();
+    }
+
+    /**
+     * Get the query to find the model instance for the request.
+     *
+     * @param  mixed|null  $repositoryId
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public function findModelQuery($repositoryId = null)
+    {
+        return $this->newQueryWithoutScopes()->whereKey(
+            $repositoryId ?? request('repositoryId')
+        );
     }
 }

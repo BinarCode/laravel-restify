@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use Illuminate\Support\Facades\Gate;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Http\Resources\Json\Resource;
 use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 
 class RestifyServiceProvider extends RestifyApplicationServiceProvider
@@ -16,6 +17,8 @@ class RestifyServiceProvider extends RestifyApplicationServiceProvider
     public function boot()
     {
         parent::boot();
+        
+        Resource::withoutWrapping();
     }
 
     /**

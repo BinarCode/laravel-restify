@@ -9,7 +9,6 @@ use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
-use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Access\Gate;
@@ -22,7 +21,9 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller as BaseController;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Password;
+use Throwable;
 
 /**
  * Abstract Class RestController.
@@ -35,7 +36,7 @@ use Illuminate\Support\Facades\Password;
  */
 abstract class RestController extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests, PerformsQueries;
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
 
     /**
      * @var RestResponse
@@ -132,30 +133,46 @@ abstract class RestController extends BaseController
      * @return array
      * @throws BindingResolutionException
      * @throws InstanceOfException
+     * @throws Throwable
      */
     public function search($modelClass, $filters = [])
+    {
+        $paginator = $this->paginator($modelClass, $filters);
+
+        if ($modelClass instanceof Repository) {
+            $items = $paginator->getCollection()->mapInto(get_class($modelClass))->map->toArray($this->request());
+        } else {
+            $items = $paginator->getCollection();
+        }
+
+        return [
+            'meta' => Arr::except($paginator->toArray(), ['data', 'next_page_url', 'last_page_url', 'first_page_url', 'prev_page_url', 'path']),
+            'links' => Arr::only($paginator->toArray(), ['next_page_url', 'last_page_url', 'first_page_url', 'prev_page_url', 'path']),
+            'data' => $items,
+        ];
+    }
+
+    /**
+     * @param $modelClass
+     * @param  array  $filters
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator
+     * @throws BindingResolutionException
+     * @throws InstanceOfException
+     * @throws Throwable
+     */
+    public function paginator($modelClass, $filters = [])
     {
         $results = SearchService::instance()
             ->setPredefinedFilters($filters)
             ->search($this->request(), $modelClass instanceof Repository ? $modelClass->model() : new $modelClass);
 
-        $results->tap(function ($query) {
-            static::indexQuery($this->request(), $query);
+        $results->tap(function ($query) use ($modelClass) {
+            if ($modelClass instanceof Repository) {
+                $modelClass::indexQuery($this->request(), $query);
+            }
         });
 
-        /**
-         * @var \Illuminate\Pagination\Paginator
-         */
-        $paginator = $results->paginate($this->request()->get('perPage') ?? ($modelClass::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
-        if ($modelClass instanceof Repository) {
-            $items = $paginator->getCollection()->mapInto(get_class($modelClass))->map->serializeForIndex($this->request());
-        } else {
-            $items = $paginator->getCollection()->map->serializeForIndex($this->request());
-        }
-
-        return array_merge($paginator->toArray(), [
-            'data' => $items,
-        ]);
+        return $results->paginate($this->request()->get('perPage') ?? ($modelClass::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
     }
 
     /**

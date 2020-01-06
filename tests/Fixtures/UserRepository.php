@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures;
 
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
 /**
@@ -19,5 +20,18 @@ class UserRepository extends Repository
     public static function uriKey()
     {
         return 'users';
+    }
+
+    public function fields(RestifyRequest $request)
+    {
+        return [
+        ];
+    }
+
+    public function resolveDetailsRelationships($request)
+    {
+        return [
+            'posts' => PostRepository::collection($this->whenLoaded('posts')),
+        ];
     }
 }

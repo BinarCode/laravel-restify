@@ -2,8 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Contracts;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
@@ -14,13 +12,6 @@ interface RestifySearchable
     const MATCH_TEXT = 'text';
     const MATCH_BOOL = 'bool';
     const MATCH_INTEGER = 'integer';
-
-    /**
-     * @param  RestifyRequest  $request
-     * @param  array  $fields
-     * @return array
-     */
-    public function serializeForIndex(RestifyRequest $request, array $fields = []);
 
     /**
      * @return array
