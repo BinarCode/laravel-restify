@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 
 /**
@@ -471,6 +472,11 @@ class RestResponse
     public function forRepository(Repository $repository, $withRelations = false)
     {
         $model = $repository->model();
+
+        if (false === $model instanceof Model ) {
+            return $this;
+        }
+
         if (is_null($model->getKey())) {
             return $this;
         }

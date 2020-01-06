@@ -15,7 +15,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Column name of the field.
-     * @var string
+     * @var string|callable|null
      */
     public $attribute;
 
@@ -49,7 +49,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param  array  $arguments
      * @return static
      */
-    public static function fire(...$arguments)
+    public static function make(...$arguments)
     {
         return new static(...$arguments);
     }

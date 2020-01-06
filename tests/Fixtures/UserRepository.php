@@ -24,7 +24,8 @@ class UserRepository extends Repository
 
     public function fields(RestifyRequest $request)
     {
-        return [];
+        return [
+        ];
     }
 
     public function resolveDetailsRelationships($request)

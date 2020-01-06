@@ -30,10 +30,10 @@ class PostRepository extends Repository
     public function fields(RestifyRequest $request)
     {
         return [
-            Field::fire('title')->storingRules('required')->messages([
+            Field::make('title')->storingRules('required')->messages([
                 'required' => 'This field is required bro.',
             ]),
-            Field::fire('description')->storingRules('required')->messages([
+            Field::make('description')->storingRules('required')->messages([
                 'required' => 'Description field is required bro.',
             ]),
         ];
