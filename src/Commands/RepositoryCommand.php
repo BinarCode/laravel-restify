@@ -36,6 +36,7 @@ class RepositoryCommand extends GeneratorCommand
      * Execute the console command.
      *
      * @return bool|null
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     public function handle()
     {
@@ -47,6 +48,7 @@ class RepositoryCommand extends GeneratorCommand
      *
      * @param  string  $name
      * @return string
+     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     protected function buildClass($name)
     {
@@ -58,6 +60,19 @@ class RepositoryCommand extends GeneratorCommand
             $this->laravel->getNamespace(), '\\',
         ])) {
             $model = $this->laravel->getNamespace().$model;
+        }
+
+        if ($this->option('all')) {
+            $this->call('make:model', [
+                'name' => $this->argument('name'),
+                '--factory' => true,
+                '--migration' => true,
+                '--controller' => true,
+            ]);
+
+            $this->call('make:policy', [
+                'name' => $this->argument('name').'Policy',
+            ]);
         }
 
         return str_replace(
@@ -94,6 +109,7 @@ class RepositoryCommand extends GeneratorCommand
     protected function getOptions()
     {
         return [
+            ['all', 'a', InputOption::VALUE_NONE, 'Generate a migration, factory, and controller for the repository'],
             ['model', 'm', InputOption::VALUE_REQUIRED, 'The model class being represented.'],
         ];
     }

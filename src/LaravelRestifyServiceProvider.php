@@ -16,7 +16,9 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     public function boot()
     {
         if ($this->app->runningInConsole()) {
-            $this->commands([CheckPassport::class]);
+            $this->commands([
+                CheckPassport::class,
+            ]);
             $this->registerPublishing();
 
             $this->app->register(RestifyServiceProvider::class);
