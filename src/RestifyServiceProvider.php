@@ -7,9 +7,7 @@ use Illuminate\Support\ServiceProvider;
 
 /**
  * This provider is injected in console context by the main provider or by the RestifyInjector
- * if a restify request
- *
- * @package Binaryk\LaravelRestify
+ * if a restify request.
  */
 class RestifyServiceProvider extends ServiceProvider
 {

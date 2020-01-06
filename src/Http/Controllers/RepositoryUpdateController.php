@@ -33,7 +33,7 @@ class RepositoryUpdateController extends RepositoryController
         $model = $request->findModelQuery()->lockForUpdate()->firstOrFail();
 
         /**
-         * @var Repository $repository
+         * @var Repository
          */
         $repository = $request->newRepositoryWith($model);
         $repository->authorizeToUpdate($request);
