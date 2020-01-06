@@ -16,7 +16,9 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     public function boot()
     {
         if ($this->app->runningInConsole()) {
-            $this->commands([CheckPassport::class]);
+            $this->commands([
+                CheckPassport::class,
+            ]);
             $this->registerPublishing();
 
             $this->app->register(RestifyServiceProvider::class);
@@ -48,15 +50,15 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     protected function registerPublishing()
     {
         $this->publishes([
-            __DIR__.'/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
+            __DIR__ . '/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
         ], 'restify-provider');
 
         $this->publishes([
-            __DIR__.'/../config/config.php' => config_path('restify.php'),
+            __DIR__ . '/../config/config.php' => config_path('restify.php'),
         ], 'restify-config');
 
-        if (! $this->app->configurationIsCached()) {
-            $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-restify');
+        if ( ! $this->app->configurationIsCached()) {
+            $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'laravel-restify');
         }
     }
 }

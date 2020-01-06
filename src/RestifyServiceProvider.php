@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -33,8 +34,42 @@ class RestifyServiceProvider extends ServiceProvider
             'middleware' => config('restify.middleware', []),
         ];
 
+        $this->customDefinitions($config)
+            ->defaultRoutes($config);
+
+    }
+
+    /**
+     * @param $config
+     * @return RestifyServiceProvider
+     */
+    public function customDefinitions($config)
+    {
+        collect(Restify::$repositories)->filter(function ($repository) {
+            return isset($repository::$middleware) || isset($repository::$prefix);
+        })
+            ->each(function ($repository) use ($config) {
+                $config['middleware'] = array_merge(config('restify.middleware', []), Arr::wrap($repository::$middleware));
+                $config['prefix'] = Restify::path($repository::$prefix);
+
+                Route::group($config, function () {
+                    $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+                });
+            });
+
+        return $this;
+    }
+
+    /**
+     * @param $config
+     * @return RestifyServiceProvider
+     */
+    public function defaultRoutes($config)
+    {
         Route::group($config, function () {
-            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+            $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
         });
+
+        return $this;
     }
 }

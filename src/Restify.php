@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -51,7 +52,7 @@ class Restify
     /**
      * Get the repository class name for a given key.
      *
-     * @param string $model
+     * @param  string  $model
      * @return string
      */
     public static function repositoryForModel($model)
@@ -90,10 +91,10 @@ class Restify
         $repositories = [];
 
         foreach ((new Finder)->in($directory)->files() as $repository) {
-            $repository = $namespace.str_replace(
+            $repository = $namespace . str_replace(
                     ['/', '.php'],
                     ['\\', ''],
-                    Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+                    Str::after($repository->getPathname(), app_path() . DIRECTORY_SEPARATOR)
                 );
 
             if (is_subclass_of($repository, Repository::class) && (new ReflectionClass($repository))->isInstantiable()) {
@@ -109,11 +110,18 @@ class Restify
     /**
      * Get the URI path prefix utilized by Restify.
      *
+     * @param  null  $plus
      * @return string
      */
-    public static function path()
+    public static function path($plus = null)
     {
-        return config('restify.base', '/restify-api');
+        if (isset($plus)) {
+
+            return config('restify.base', '/restify-api') . '/' . $plus;
+        } else {
+
+            return config('restify.base', '/restify-api');
+        }
     }
 
     /**
@@ -130,7 +138,7 @@ class Restify
     }
 
     /**
-     * @param \Closure|string $callback
+     * @param  \Closure|string  $callback
      */
     public static function beforeEach($callback)
     {
