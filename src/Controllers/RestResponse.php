@@ -473,7 +473,7 @@ class RestResponse
     {
         $model = $repository->model();
 
-        if (false === $model instanceof Model ) {
+        if (false === $model instanceof Model) {
             return $this;
         }
 
