@@ -41,10 +41,9 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
      *
      * @param  \Illuminate\Database\Eloquent\Model  $model
      */
-    public function __construct($model)
+    public function __construct($model = null)
     {
         parent::__construct($model);
-        $this->resource = $model;
     }
 
     /**
@@ -125,5 +124,14 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
     public function collectFields(RestifyRequest $request)
     {
         return collect($this->fields($request));
+    }
+
+    /**
+     * @param $resource
+     * @return Repository
+     */
+    public function withResource($resource) {
+        $this->resource = $resource;
+        return $this;
     }
 }

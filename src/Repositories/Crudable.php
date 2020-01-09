@@ -22,7 +22,9 @@ trait Crudable
      */
     public function index(RestifyRequest $request, Paginator $paginated)
     {
-        return (new static($paginated))->response();
+        return resolve(static::class, [
+            'model' => $paginated
+        ])->withResource($paginated)->response();
     }
 
     /**
@@ -61,7 +63,7 @@ trait Crudable
         return (new static ($model))
             ->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_CREATED_CODE)
-            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
+            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $model->id);
     }
 
     /**
