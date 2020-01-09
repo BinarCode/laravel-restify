@@ -84,7 +84,9 @@ trait InteractWithRepositories
     {
         $repository = $this->repository();
 
-        return new $repository($repository::newModel());
+        return resolve($repository, [
+            'model' => $repository::newModel(),
+        ])->withResource($repository::newModel());
     }
 
     /**
@@ -115,7 +117,9 @@ trait InteractWithRepositories
     {
         $repository = $this->repository();
 
-        return new $repository($model);
+        return resolve($repository, [
+            'model' => $model,
+        ])->withResource($model);
     }
 
     /**

@@ -38,7 +38,11 @@ class RepositoryCollection extends Resource
             $iterator->next();
         }
 
-        $response = $data->mapInto($currentRepository)->toArray($request);
+        $response = $data->map(function ($value) use ($currentRepository) {
+            return resolve($currentRepository, [
+                'model' => $value,
+            ])->withResource($value);
+        })->toArray($request);
 
         return [
             'meta' => $this->when($this->isRenderingPaginated(), $this->meta($paginated)),

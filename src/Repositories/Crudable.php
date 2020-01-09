@@ -22,7 +22,9 @@ trait Crudable
      */
     public function index(RestifyRequest $request, Paginator $paginated)
     {
-        return (new static($paginated))->response();
+        return resolve(static::class, [
+            'model' => $paginated,
+        ])->withResource($paginated)->response();
     }
 
     /**
