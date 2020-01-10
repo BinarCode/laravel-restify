@@ -44,7 +44,7 @@ trait ResponseResolver
     }
 
     /**
-     * Resolve the response for the details
+     * Resolve the response for the details.
      *
      * @param $request
      * @param $serialized
@@ -56,7 +56,7 @@ trait ResponseResolver
     }
 
     /**
-     * Resolve the response for the index request
+     * Resolve the response for the index request.
      *
      * @param $request
      * @param $serialized
