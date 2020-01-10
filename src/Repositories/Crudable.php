@@ -17,15 +17,19 @@ use Illuminate\Validation\ValidationException;
 trait Crudable
 {
     /**
+     * @param  null  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    abstract public function response($request = null);
+
+    /**
      * @param  RestifyRequest  $request
      * @param  Paginator  $paginated
      * @return JsonResponse
      */
     public function index(RestifyRequest $request, Paginator $paginated)
     {
-        return resolve(static::class, [
-            'model' => $paginated
-        ])->withResource($paginated)->response();
+        return static::resolveWith($paginated)->response();
     }
 
     /**
@@ -36,13 +40,16 @@ trait Crudable
      */
     public function show(RestifyRequest $request, $repositoryId)
     {
-        $repository = $request->newRepositoryWith(tap(SearchService::instance()->prepareRelations($request, $request->findModelQuery()), function ($query) use ($request) {
+        /**
+         * Dive into the Search service to attach relations
+         */
+        $this->withResource(tap($this->resource, function ($query) use ($request) {
             $request->newRepository()->detailQuery($request, $query);
         })->firstOrFail());
 
-        $repository->authorizeToView($request);
+        $this->authorizeToView($request);
 
-        return $repository->response();
+        return $this->response($request);
     }
 
     /**
@@ -74,12 +81,12 @@ trait Crudable
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws ValidationException
      */
-    public function update(RestifyRequest $request, $model)
+    public function update(RestifyRequest $request, $repositoryId)
     {
         $this->allowToUpdate($request);
 
-        DB::transaction(function () use ($request, $model) {
-            $model = static::fillWhenUpdate($request, $model);
+        DB::transaction(function () use ($request) {
+            $model = static::fillWhenUpdate($request, $this->resource);
 
             $model->save();
 
@@ -92,24 +99,19 @@ trait Crudable
     /**
      * @param  RestifyRequest  $request
      * @return JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function destroy(RestifyRequest $request, $repositoryId)
     {
-        DB::transaction(function () use ($request) {
-            $model = $request->findModelQuery();
+        $this->allowToDestroy($request);
 
-            return $model->delete();
+        DB::transaction(function () use ($request) {
+            return $this->resource->delete();
         });
 
         return $this->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_DELETED_CODE);
     }
-
-    /**
-     * @param  null  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    abstract public function response($request = null);
 
     /**
      * @param  RestifyRequest  $request
@@ -124,5 +126,14 @@ trait Crudable
         $validator = static::validatorForUpdate($request, $this);
 
         $validator->validate();
+    }
+
+    /**
+     * @param  RestifyRequest  $request
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function allowToDestroy(RestifyRequest $request)
+    {
+        $this->authorizeToDelete($request);
     }
 }

@@ -63,7 +63,7 @@ trait ValidatingTrait
      */
     public static function validatorForUpdate(RestifyRequest $request, $resource = null)
     {
-        $on = $resource ?? (new static(static::newModel()));
+        $on = $resource ?? static::resolveWith(static::newModel());
 
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];

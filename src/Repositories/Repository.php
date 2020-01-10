@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -92,12 +91,9 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
 
     /**
      * @return array
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function toArray($request)
     {
-        $request = Container::getInstance()->make('request');
-
         if ($this->isRenderingCollection()) {
             return $this->toArrayForCollection($request);
         }
@@ -106,7 +102,7 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
             'id' => $this->when($this->isRenderingRepository(), function () {
                 return $this->getKey();
             }),
-            'type' => method_exists($this, 'uriKey') ? static::uriKey() : Str::plural(Str::kebab(class_basename(get_called_class()))),
+            'type' => self::model()->getTable(),
             'attributes' => $this->resolveDetailsAttributes($request),
             'relationships' => $this->when(value($this->resolveDetailsRelationships($request)), $this->resolveDetailsRelationships($request)),
             'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),

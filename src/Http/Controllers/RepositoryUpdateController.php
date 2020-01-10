@@ -35,6 +35,6 @@ class RepositoryUpdateController extends RepositoryController
          */
         $repository = $request->newRepositoryWith($model);
 
-        return $repository->update($request, $model);
+        return $repository->update($request, request('repositoryId'));
     }
 }

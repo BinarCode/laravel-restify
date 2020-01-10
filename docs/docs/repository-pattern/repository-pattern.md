@@ -152,22 +152,7 @@ public static $model = 'App\\Post';
 
 Laravel Restify magically made all "CRUD" operations for you. But sometimes you may want to intercept, or override the
 entire logic of a specific action. Let's say your `save` method has to do something different than just storing
-the newly created entity in the database. In this case you can easily override each action from the repository [defined here](#actions-handled-by-the-repository):
-
-### store
-
-```php
-    /**
-     * @param  RestifyRequest  $request
-     * @return \Illuminate\Http\JsonResponse|void
-     */
-    public function store(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request)
-    {
-        // custom storing
-        
-        return $this->response();
-    }
-```
+the newly created entity in the database. In this case you can easily override each action ([defined here](#actions-handled-by-the-repository)) from the repository:
 
 ### index
 
@@ -184,6 +169,21 @@ the newly created entity in the database. In this case you can easily override e
     public function show(RestifyRequest $request, $repositoryId)
     {
         // Custom finding
+    }
+```
+
+### store
+
+```php
+    /**
+     * @param  RestifyRequest  $request
+     * @return \Illuminate\Http\JsonResponse|void
+     */
+    public function store(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request)
+    {
+        // custom storing
+        
+        return $this->response();
     }
 ```
 

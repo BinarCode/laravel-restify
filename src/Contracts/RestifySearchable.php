@@ -8,6 +8,7 @@ namespace Binaryk\LaravelRestify\Contracts;
 interface RestifySearchable
 {
     const DEFAULT_PER_PAGE = 15;
+    const DEFAULT_RELATABLE_PER_PAGE = 15;
 
     const MATCH_TEXT = 'text';
     const MATCH_BOOL = 'bool';

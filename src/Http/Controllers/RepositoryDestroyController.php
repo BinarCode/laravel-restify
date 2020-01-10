@@ -30,9 +30,7 @@ class RepositoryDestroyController extends RepositoryController
         /**
          * @var Repository
          */
-        $repository = $request->newRepository();
-
-        $repository->authorizeToDelete($request);
+        $repository = $request->newRepositoryWith($request->findModelQuery()->firstOrFail());
 
         return $repository->destroy($request, request('repositoryId'));
     }

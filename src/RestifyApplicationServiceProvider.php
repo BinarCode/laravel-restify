@@ -36,7 +36,9 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function registerExceptionHandler()
     {
-        $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
+        if (config('restify.exception_handler') && class_exists(value(config('restify.exception_handler')))) {
+            $this->app->bind(ExceptionHandler::class, value(config('restify.exception_handler')));
+        }
     }
 
     /**

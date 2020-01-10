@@ -38,4 +38,6 @@ return [
         DispatchRestifyStartingEvent::class,
         AuthorizeRestify::class,
     ],
+
+    'exception_handler' => \Binaryk\LaravelRestify\Exceptions\RestifyHandler::class,
 ];

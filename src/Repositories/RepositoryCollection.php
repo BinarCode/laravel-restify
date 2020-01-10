@@ -29,7 +29,7 @@ class RepositoryCollection extends Resource
         $currentRepository = Restify::repositoryForModel(get_class($this->model()));
 
         if (is_null($currentRepository)) {
-            return parent::toArray($request);
+            return Arr::only(parent::toArray($request), 'data');
         }
 
         $data = collect([]);
@@ -41,9 +41,7 @@ class RepositoryCollection extends Resource
         }
 
         $response = $data->map(function ($value) use ($currentRepository) {
-            return resolve($currentRepository, [
-                'model' => $value,
-            ])->withResource($value);
+            return static::resolveWith($value);
         })->toArray($request);
 
         return $this->serializeIndex($request, [
