@@ -59,8 +59,8 @@ class PolicyCommand extends GeneratorCommand
             $model = $this->argument('name');
         }
 
-        if ($model && ! Str::startsWith($model, [$this->laravel->getNamespace(), '\\',])) {
-            $namespacedModel = $this->laravel->getNamespace() . $model;
+        if ($model && ! Str::startsWith($model, [$this->laravel->getNamespace(), '\\'])) {
+            $namespacedModel = $this->laravel->getNamespace().$model;
         }
 
         $name .= 'Policy';
@@ -84,14 +84,13 @@ class PolicyCommand extends GeneratorCommand
             $model = $this->argument('name');
         }
 
-        return $model . 'Policy';
+        return $model.'Policy';
     }
 
     protected function getPath($name)
     {
-        return $this->laravel['path'].'/Policies/'.$this->nameWithEnd() . '.php';
+        return $this->laravel['path'].'/Policies/'.$this->nameWithEnd().'.php';
     }
-
 
     /**
      * Get the stub file for the generator.
@@ -100,7 +99,7 @@ class PolicyCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return __DIR__ . '/stubs/policy.stub';
+        return __DIR__.'/stubs/policy.stub';
     }
 
     /**
@@ -111,7 +110,7 @@ class PolicyCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace . '\Restify';
+        return $rootNamespace.'\Restify';
     }
 
     /**

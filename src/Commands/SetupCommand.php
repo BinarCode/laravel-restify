@@ -39,7 +39,6 @@ class SetupCommand extends Command
             '--tag' => 'restify-config',
         ]);
 
-
         $this->registerRestifyServiceProvider();
 
         $this->comment('Generating User Repository...');

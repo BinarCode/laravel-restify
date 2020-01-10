@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -41,7 +40,7 @@ trait Crudable
     public function show(RestifyRequest $request, $repositoryId)
     {
         /**
-         * Dive into the Search service to attach relations
+         * Dive into the Search service to attach relations.
          */
         $this->withResource(tap($this->resource, function ($query) use ($request) {
             $request->newRepository()->detailQuery($request, $query);
@@ -71,7 +70,7 @@ trait Crudable
         return (new static ($model))
             ->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_CREATED_CODE)
-            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $model->id);
+            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
     }
 
     /**
