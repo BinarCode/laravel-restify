@@ -9,28 +9,28 @@ use Symfony\Component\Console\Input\InputOption;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class RepositoryCommand extends GeneratorCommand
+class PolicyCommand extends GeneratorCommand
 {
     /**
      * The console command name.
      *
      * @var string
      */
-    protected $name = 'restify:repository';
+    protected $name = 'restify:policy';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'Create a new repository class';
+    protected $description = 'Create a new policy for a specific model.';
 
     /**
      * The type of class being generated.
      *
      * @var string
      */
-    protected $type = 'Repository';
+    protected $type = 'Policy';
 
     /**
      * Execute the console command.
@@ -41,10 +41,6 @@ class RepositoryCommand extends GeneratorCommand
     public function handle()
     {
         parent::handle();
-
-        $this->callSilent('restify:base-repository', [
-            'name' => 'Repository',
-        ]);
     }
 
     /**
@@ -56,33 +52,46 @@ class RepositoryCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
+        $namespacedModel = null;
         $model = $this->option('model');
 
         if (is_null($model)) {
-            $model = $this->laravel->getNamespace().$this->argument('name');
-        } elseif (! Str::startsWith($model, [
-            $this->laravel->getNamespace(), '\\',
-        ])) {
-            $model = $this->laravel->getNamespace().$model;
+            $model = $this->argument('name');
         }
 
-        if ($this->option('all')) {
-            $this->call('make:model', [
-                'name' => $this->argument('name'),
-                '--factory' => true,
-                '--migration' => true,
-                '--controller' => true,
-            ]);
-
-            $this->call('restify:policy', [
-                'name' => $this->argument('name'),
-            ]);
+        if ($model && ! Str::startsWith($model, [$this->laravel->getNamespace(), '\\',])) {
+            $namespacedModel = $this->laravel->getNamespace() . $model;
         }
 
-        return str_replace(
-            'DummyFullModel', $model, parent::buildClass($name)
+        $name .= 'Policy';
+
+        $rendered = str_replace(
+            'UseDummyModel', $namespacedModel ?? $model, parent::buildClass($name)
         );
+
+        $rendered = str_replace(
+            'DummyModel', $model, $rendered
+        );
+
+        return $rendered;
     }
+
+    public function nameWithEnd()
+    {
+        $model = $this->option('model');
+
+        if (is_null($model)) {
+            $model = $this->argument('name');
+        }
+
+        return $model . 'Policy';
+    }
+
+    protected function getPath($name)
+    {
+        return $this->laravel['path'].'/Policies/'.$this->nameWithEnd() . '.php';
+    }
+
 
     /**
      * Get the stub file for the generator.
@@ -91,7 +100,7 @@ class RepositoryCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return __DIR__.'/stubs/repository.stub';
+        return __DIR__ . '/stubs/policy.stub';
     }
 
     /**
@@ -102,7 +111,7 @@ class RepositoryCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Restify';
+        return $rootNamespace . '\Restify';
     }
 
     /**
@@ -113,8 +122,7 @@ class RepositoryCommand extends GeneratorCommand
     protected function getOptions()
     {
         return [
-            ['all', 'a', InputOption::VALUE_NONE, 'Generate a migration, factory, and controller for the repository'],
-            ['model', 'm', InputOption::VALUE_REQUIRED, 'The model class being represented.'],
+            ['model', 'm', InputOption::VALUE_REQUIRED, 'The model class being protected.'],
         ];
     }
 }

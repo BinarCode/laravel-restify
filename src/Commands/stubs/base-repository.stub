@@ -4,6 +4,7 @@ namespace DummyNamespace;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository as RestifyRepository;
+use Illuminate\Contracts\Pagination\Paginator;
 
 abstract class Repository extends RestifyRepository
 {
@@ -35,7 +36,8 @@ abstract class Repository extends RestifyRepository
      * @param $serialized
      * @return array
      */
-    public function serializeIndex($request, $serialized) {
+    public function serializeIndex($request, $serialized)
+    {
         return $serialized;
     }
 
@@ -62,4 +64,32 @@ abstract class Repository extends RestifyRepository
     {
         return $query;
     }
+
+    public function index(RestifyRequest $request, Paginator $paginated)
+    {
+        return parent::index($request, $paginated);
+    }
+
+    public function show(RestifyRequest $request, $repositoryId)
+    {
+        return parent::show($request, $repositoryId);
+    }
+
+
+    public function store(RestifyRequest $request)
+    {
+        return parent::store($request);
+    }
+
+    public function update(RestifyRequest $request, $repositoryId)
+    {
+        $this->allowToUpdate($request);
+        return parent::update($request, $repositoryId);
+    }
+
+    public function destroy(RestifyRequest $request, $repositoryId)
+    {
+        return parent::destroy($request, $repositoryId);
+    }
+
 }

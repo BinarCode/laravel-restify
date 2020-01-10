@@ -158,15 +158,4 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
 
         return $self->withResource($model);
     }
-
-    /**
-     * @param $resource
-     * @return Repository
-     */
-    public function withResource($resource)
-    {
-        $this->resource = $resource;
-
-        return $this;
-    }
 }

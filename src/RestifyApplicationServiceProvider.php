@@ -26,6 +26,10 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function repositories()
     {
+        if (false === is_dir(app_path('Restify'))) {
+            mkdir(app_path('Restify'));
+        }
+
         Restify::repositoriesFrom(app_path('Restify'));
     }
 
