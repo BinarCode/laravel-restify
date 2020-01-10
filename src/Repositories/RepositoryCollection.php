@@ -14,6 +14,8 @@ use Illuminate\Support\Arr;
  */
 class RepositoryCollection extends Resource
 {
+    use ResponseResolver;
+
     /**
      * When the repository is used as a response for a collection list (index controller).
      *
@@ -44,11 +46,11 @@ class RepositoryCollection extends Resource
             ])->withResource($value);
         })->toArray($request);
 
-        return [
+        return $this->serializeIndex($request, [
             'meta' => $this->when($this->isRenderingPaginated(), $this->meta($paginated)),
             'links' => $this->when($this->isRenderingPaginated(), $this->paginationLinks($paginated)),
             'data' => $response,
-        ];
+        ]);
     }
 
     /**

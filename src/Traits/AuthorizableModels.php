@@ -132,6 +132,7 @@ trait AuthorizableModels
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
      */
     public function authorizeToUpdate(Request $request)
     {

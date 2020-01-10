@@ -34,12 +34,6 @@ class RepositoryUpdateController extends RepositoryController
          * @var Repository
          */
         $repository = $request->newRepositoryWith($model);
-        $repository->authorizeToUpdate($request);
-        $validator = $repository::validatorForUpdate($request, $repository);
-
-        if ($validator->fails()) {
-            return $this->response()->invalid()->errors($validator->errors()->toArray())->respond();
-        }
 
         return $repository->update($request, $model);
     }

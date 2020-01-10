@@ -44,12 +44,25 @@ trait ResponseResolver
     }
 
     /**
-     * Triggered after toArray.
+     * Resolve the response for the details
      *
+     * @param $request
      * @param $serialized
      * @return array
      */
-    public function resolveDetails($serialized)
+    public function serializeDetails($request, $serialized)
+    {
+        return $serialized;
+    }
+
+    /**
+     * Resolve the response for the index request
+     *
+     * @param $request
+     * @param $serialized
+     * @return array
+     */
+    public function serializeIndex($request, $serialized)
     {
         return $serialized;
     }

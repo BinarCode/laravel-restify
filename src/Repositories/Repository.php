@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
@@ -25,7 +26,6 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
         ValidatingTrait,
         RepositoryFillFields,
         PerformsQueries,
-        ResponseResolver,
         Crudable;
 
     /**
@@ -112,10 +112,19 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
             'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
         ];
 
-        return $this->resolveDetails($serialized);
+        return $this->serializeDetails($request, $serialized);
     }
 
-    abstract public function fields(RestifyRequest $request);
+    /**
+     * Resolvable attributes before storing/updating
+     *
+     * @param  RestifyRequest  $request
+     * @return array
+     */
+    public function fields(RestifyRequest $request)
+    {
+        return [];
+    }
 
     /**
      * @param  RestifyRequest  $request
@@ -123,15 +132,34 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
      */
     public function collectFields(RestifyRequest $request)
     {
-        return collect($this->fields($request));
+        return collect($this->fields($request))->filter(function (Field $field) {
+            return $field->filter();
+        });
     }
 
     /**
      * @param $resource
      * @return Repository
      */
-    public function withResource($resource) {
+    public function withResource($resource)
+    {
         $this->resource = $resource;
+
         return $this;
+    }
+
+    /**
+     * Resolve repository with given model
+     * @param $model
+     * @return Repository
+     */
+    public static function resolveWith($model)
+    {
+        /**
+         * @var Repository $self
+         */
+        $self = resolve(static::class);
+
+        return $self->withResource($model);
     }
 }

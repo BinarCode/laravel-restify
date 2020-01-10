@@ -40,13 +40,10 @@ trait RepositoryFillFields
      */
     public static function fillWhenUpdate(RestifyRequest $request, $model)
     {
-        static::fillFields(
-            $request, $model,
-            (new static($model))->collectFields($request)
-        );
-        static::fillExtra($request, $model,
-            (new static($model))->collectFields($request)
-        );
+        $fields = static::resolveWith($model)->collectFields($request);
+
+        static::fillFields($request, $model, $fields);
+        static::fillExtra($request, $model, $fields);
 
         return $model;
     }

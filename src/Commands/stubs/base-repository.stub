@@ -1,0 +1,65 @@
+<?php
+
+namespace DummyNamespace;
+
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository as RestifyRepository;
+
+abstract class Repository extends RestifyRepository
+{
+    /**
+     * Repository constructor.
+     * @param  null  $model
+     */
+    public function __construct($model = null)
+    {
+        parent::__construct($model);
+    }
+
+    /**
+     * Format the response for the details request (single item)
+     *
+     * @param $request
+     * @param $serialized
+     * @return array
+     */
+    public function serializeDetails($request, $serialized)
+    {
+        return $serialized;
+    }
+
+    /**
+     * Format the response for the index request
+     *
+     * @param $request
+     * @param $serialized
+     * @return array
+     */
+    public function serializeIndex($request, $serialized) {
+        return $serialized;
+    }
+
+    /**
+     * Build an "index" query for the given repository.
+     *
+     * @param  RestifyRequest  $request
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function indexQuery(RestifyRequest $request, $query)
+    {
+        return $query;
+    }
+
+    /**
+     * Build an "detail" query for the given repository.
+     *
+     * @param  RestifyRequest  $request
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    public static function detailQuery(RestifyRequest $request, $query)
+    {
+        return $query;
+    }
+}

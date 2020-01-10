@@ -34,6 +34,6 @@ class RepositoryDestroyController extends RepositoryController
 
         $repository->authorizeToDelete($request);
 
-        return $repository->destroy($request);
+        return $repository->destroy($request, request('repositoryId'));
     }
 }

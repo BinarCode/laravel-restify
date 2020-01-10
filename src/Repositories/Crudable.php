@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -33,7 +34,7 @@ trait Crudable
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws \Throwable
      */
-    public function show(RestifyRequest $request)
+    public function show(RestifyRequest $request, $repositoryId)
     {
         $repository = $request->newRepositoryWith(tap(SearchService::instance()->prepareRelations($request, $request->findModelQuery()), function ($query) use ($request) {
             $request->newRepository()->detailQuery($request, $query);
@@ -70,9 +71,13 @@ trait Crudable
      * @param  RestifyRequest  $request
      * @param $model
      * @return JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws ValidationException
      */
     public function update(RestifyRequest $request, $model)
     {
+        $this->allowToUpdate($request);
+
         DB::transaction(function () use ($request, $model) {
             $model = static::fillWhenUpdate($request, $model);
 
@@ -88,7 +93,7 @@ trait Crudable
      * @param  RestifyRequest  $request
      * @return JsonResponse
      */
-    public function destroy(RestifyRequest $request)
+    public function destroy(RestifyRequest $request, $repositoryId)
     {
         DB::transaction(function () use ($request) {
             $model = $request->findModelQuery();
@@ -102,7 +107,22 @@ trait Crudable
 
     /**
      * @param  null  $request
-     * @return mixed
+     * @return \Illuminate\Http\JsonResponse
      */
     abstract public function response($request = null);
+
+    /**
+     * @param  RestifyRequest  $request
+     * @return mixed
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws ValidationException
+     */
+    public function allowToUpdate(RestifyRequest $request)
+    {
+        $this->authorizeToUpdate($request);
+
+        $validator = static::validatorForUpdate($request, $this);
+
+        $validator->validate();
+    }
 }

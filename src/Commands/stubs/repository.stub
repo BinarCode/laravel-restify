@@ -24,7 +24,7 @@ class DummyClass extends Repository
     {
         return [
           //  Field::make('title')->storingRules('required')->messages([
-          //      'required' => 'This field is required bro.',
+          //      'required' => 'This field is required.',
           //  ]),
         ];
 
