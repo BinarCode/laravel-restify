@@ -116,7 +116,7 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
     }
 
     /**
-     * Resolvable attributes before storing/updating
+     * Resolvable attributes before storing/updating.
      *
      * @param  RestifyRequest  $request
      * @return array
@@ -149,14 +149,14 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
     }
 
     /**
-     * Resolve repository with given model
+     * Resolve repository with given model.
      * @param $model
      * @return Repository
      */
     public static function resolveWith($model)
     {
         /**
-         * @var Repository $self
+         * @var Repository
          */
         $self = resolve(static::class);
 
