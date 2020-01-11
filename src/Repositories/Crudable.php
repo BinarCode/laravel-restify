@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -16,15 +16,19 @@ use Illuminate\Support\Facades\DB;
 trait Crudable
 {
     /**
+     * @param  null  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    abstract public function response($request = null);
+
+    /**
      * @param  RestifyRequest  $request
      * @param  Paginator  $paginated
      * @return JsonResponse
      */
     public function index(RestifyRequest $request, Paginator $paginated)
     {
-        return resolve(static::class, [
-            'model' => $paginated,
-        ])->withResource($paginated)->response();
+        return static::resolveWith($paginated)->response();
     }
 
     /**
@@ -33,15 +37,18 @@ trait Crudable
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws \Throwable
      */
-    public function show(RestifyRequest $request)
+    public function show(RestifyRequest $request, $repositoryId)
     {
-        $repository = $request->newRepositoryWith(tap(SearchService::instance()->prepareRelations($request, $request->findModelQuery()), function ($query) use ($request) {
+        /**
+         * Dive into the Search service to attach relations.
+         */
+        $this->withResource(tap($this->resource, function ($query) use ($request) {
             $request->newRepository()->detailQuery($request, $query);
         })->firstOrFail());
 
-        $repository->authorizeToView($request);
+        $this->authorizeToView($request);
 
-        return $repository->response();
+        return $this->response($request);
     }
 
     /**
@@ -70,11 +77,15 @@ trait Crudable
      * @param  RestifyRequest  $request
      * @param $model
      * @return JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws ValidationException
      */
-    public function update(RestifyRequest $request, $model)
+    public function update(RestifyRequest $request, $repositoryId)
     {
-        DB::transaction(function () use ($request, $model) {
-            $model = static::fillWhenUpdate($request, $model);
+        $this->allowToUpdate($request);
+
+        DB::transaction(function () use ($request) {
+            $model = static::fillWhenUpdate($request, $this->resource);
 
             $model->save();
 
@@ -87,13 +98,14 @@ trait Crudable
     /**
      * @param  RestifyRequest  $request
      * @return JsonResponse
+     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function destroy(RestifyRequest $request)
+    public function destroy(RestifyRequest $request, $repositoryId)
     {
-        DB::transaction(function () use ($request) {
-            $model = $request->findModelQuery();
+        $this->allowToDestroy($request);
 
-            return $model->delete();
+        DB::transaction(function () use ($request) {
+            return $this->resource->delete();
         });
 
         return $this->response()
@@ -101,8 +113,26 @@ trait Crudable
     }
 
     /**
-     * @param  null  $request
+     * @param  RestifyRequest  $request
      * @return mixed
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws ValidationException
      */
-    abstract public function response($request = null);
+    public function allowToUpdate(RestifyRequest $request)
+    {
+        $this->authorizeToUpdate($request);
+
+        $validator = static::validatorForUpdate($request, $this);
+
+        $validator->validate();
+    }
+
+    /**
+     * @param  RestifyRequest  $request
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function allowToDestroy(RestifyRequest $request)
+    {
+        $this->authorizeToDelete($request);
+    }
 }

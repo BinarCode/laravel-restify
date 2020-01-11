@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
+use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
@@ -40,16 +42,48 @@ trait ResponseResolver
      */
     public function resolveDetailsRelationships($request)
     {
-        return [];
+        if (is_null($request->get('with'))) {
+            return [];
+        }
+
+        $withs = [];
+
+        if ($this->resource instanceof RestifySearchable) {
+            with(explode(',', $request->get('with')), function ($relations) use ($request, &$withs) {
+                foreach ($relations as $relation) {
+                    if (in_array($relation, $this->resource::getWiths())) {
+                        $relatable = static::resolveWith($this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? ($this->resource::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE)))->toArray($request);
+                        unset($relatable['meta']);
+                        unset($relatable['links']);
+                        $withs[$relation] = $relatable;
+                    }
+                }
+            });
+        }
+
+        return $withs;
     }
 
     /**
-     * Triggered after toArray.
+     * Resolve the response for the details.
      *
+     * @param $request
      * @param $serialized
      * @return array
      */
-    public function resolveDetails($serialized)
+    public function serializeDetails($request, $serialized)
+    {
+        return $serialized;
+    }
+
+    /**
+     * Resolve the response for the index request.
+     *
+     * @param $request
+     * @param $serialized
+     * @return array
+     */
+    public function serializeIndex($request, $serialized)
     {
         return $serialized;
     }

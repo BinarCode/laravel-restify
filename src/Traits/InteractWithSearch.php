@@ -10,6 +10,7 @@ trait InteractWithSearch
     use AuthorizableModels;
 
     public static $defaultPerPage = 15;
+    public static $defaultRelatablePerPage = 15;
 
     /**
      * @return array

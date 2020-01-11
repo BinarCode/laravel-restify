@@ -20,6 +20,14 @@ module.exports = {
                 path: '/docs/'
             },
             {
+                title: 'Repository',
+                path: '/docs/repository-pattern/repository-pattern',
+            },
+            {
+                title: 'Field',
+                path: '/docs/repository-pattern/field',
+            },
+            {
                 title: 'REST methods',
                 path: '/docs/rest-methods/rest-methods',
             },
@@ -30,10 +38,6 @@ module.exports = {
             {
                 title: 'Auth service',
                 path: '/docs/auth/auth',
-            },
-            {
-                title: 'Repository',
-                path: '/docs/repository-pattern/repository-pattern',
             },
         ]
     },

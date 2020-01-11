@@ -3,10 +3,10 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -25,7 +25,6 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
         ValidatingTrait,
         RepositoryFillFields,
         PerformsQueries,
-        ResponseResolver,
         Crudable;
 
     /**
@@ -92,12 +91,9 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
 
     /**
      * @return array
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function toArray($request)
     {
-        $request = Container::getInstance()->make('request');
-
         if ($this->isRenderingCollection()) {
             return $this->toArrayForCollection($request);
         }
@@ -106,16 +102,25 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
             'id' => $this->when($this->isRenderingRepository(), function () {
                 return $this->getKey();
             }),
-            'type' => method_exists($this, 'uriKey') ? static::uriKey() : Str::plural(Str::kebab(class_basename(get_called_class()))),
+            'type' => self::model()->getTable(),
             'attributes' => $this->resolveDetailsAttributes($request),
             'relationships' => $this->when(value($this->resolveDetailsRelationships($request)), $this->resolveDetailsRelationships($request)),
             'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
         ];
 
-        return $this->resolveDetails($serialized);
+        return $this->serializeDetails($request, $serialized);
     }
 
-    abstract public function fields(RestifyRequest $request);
+    /**
+     * Resolvable attributes before storing/updating.
+     *
+     * @param  RestifyRequest  $request
+     * @return array
+     */
+    public function fields(RestifyRequest $request)
+    {
+        return [];
+    }
 
     /**
      * @param  RestifyRequest  $request
@@ -123,7 +128,9 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
      */
     public function collectFields(RestifyRequest $request)
     {
-        return collect($this->fields($request));
+        return collect($this->fields($request))->filter(function (Field $field) {
+            return $field->filter();
+        });
     }
 
     /**
@@ -135,5 +142,20 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
         $this->resource = $resource;
 
         return $this;
+    }
+
+    /**
+     * Resolve repository with given model.
+     * @param $model
+     * @return Repository
+     */
+    public static function resolveWith($model)
+    {
+        /**
+         * @var Repository
+         */
+        $self = resolve(static::class);
+
+        return $self->withResource($model);
     }
 }

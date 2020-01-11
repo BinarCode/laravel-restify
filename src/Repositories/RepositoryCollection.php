@@ -14,6 +14,8 @@ use Illuminate\Support\Arr;
  */
 class RepositoryCollection extends Resource
 {
+    use ResponseResolver;
+
     /**
      * When the repository is used as a response for a collection list (index controller).
      *
@@ -27,7 +29,7 @@ class RepositoryCollection extends Resource
         $currentRepository = Restify::repositoryForModel(get_class($this->model()));
 
         if (is_null($currentRepository)) {
-            return parent::toArray($request);
+            return Arr::only(parent::toArray($request), 'data');
         }
 
         $data = collect([]);
@@ -39,16 +41,14 @@ class RepositoryCollection extends Resource
         }
 
         $response = $data->map(function ($value) use ($currentRepository) {
-            return resolve($currentRepository, [
-                'model' => $value,
-            ])->withResource($value);
+            return static::resolveWith($value);
         })->toArray($request);
 
-        return [
+        return $this->serializeIndex($request, [
             'meta' => $this->when($this->isRenderingPaginated(), $this->meta($paginated)),
             'links' => $this->when($this->isRenderingPaginated(), $this->paginationLinks($paginated)),
             'data' => $response,
-        ];
+        ]);
     }
 
     /**

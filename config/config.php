@@ -38,4 +38,16 @@ return [
         DispatchRestifyStartingEvent::class,
         AuthorizeRestify::class,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restify Exception Handler
+    |--------------------------------------------------------------------------
+    |
+    | These will override the main application exception handler,
+    | set to null, it will not override it.
+    | Having RestifyHandler as a global exception handler is a good approach, since it
+    | will return the exceptions in an API pretty format.
+    */
+    'exception_handler' => \Binaryk\LaravelRestify\Exceptions\RestifyHandler::class,
 ];

@@ -132,6 +132,7 @@ trait AuthorizableModels
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws \Throwable
      */
     public function authorizeToUpdate(Request $request)
     {
@@ -311,7 +312,7 @@ trait AuthorizableModels
     {
         $model = $this instanceof Model ? $this : ($this->resource ?? null);
 
-        throw_if(is_null($model), new ModelNotFoundException(__('Model does not declared in :class', ['class' => self::class])));
+        throw_if(is_null($model), new ModelNotFoundException(__('Model is not declared in :class', ['class' => self::class])));
 
         return $model;
     }

@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -26,6 +25,10 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function repositories()
     {
+        if (false === is_dir(app_path('Restify'))) {
+            mkdir(app_path('Restify'));
+        }
+
         Restify::repositoriesFrom(app_path('Restify'));
     }
 
@@ -36,7 +39,9 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function registerExceptionHandler()
     {
-        $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
+        if (config('restify.exception_handler') && class_exists(value(config('restify.exception_handler')))) {
+            $this->app->bind(ExceptionHandler::class, value(config('restify.exception_handler')));
+        }
     }
 
     /**
