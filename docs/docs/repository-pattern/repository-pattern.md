@@ -159,7 +159,7 @@ the newly created entity in the database. In this case you can easily override e
 ```php
     public function index(RestifyRequest $request, Paginator $paginated)
     {
-        // Custom response
+        // Silence is golden
     }
 ```
 
@@ -168,7 +168,7 @@ the newly created entity in the database. In this case you can easily override e
 ```php
     public function show(RestifyRequest $request, $repositoryId)
     {
-        // Custom finding
+        // Silence is golden
     }
 ```
 
@@ -181,9 +181,7 @@ the newly created entity in the database. In this case you can easily override e
      */
     public function store(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request)
     {
-        // custom storing
-        
-        return $this->response();
+        // Silence is golden
     }
 ```
 
@@ -192,7 +190,7 @@ the newly created entity in the database. In this case you can easily override e
 ```php
     public function update(RestifyRequest $request, $model)
     {
-        // Custom updating
+        // Silence is golden
     }
 ```
 
@@ -201,6 +199,7 @@ the newly created entity in the database. In this case you can easily override e
 ```php
     public function destroy(RestifyRequest $request, $repositoryId)
     {
+        // Silence is golden
     }
 ```
 
@@ -229,7 +228,8 @@ data for a single resource object:
 ```
 
 This response is made according to [JSON:API format](https://jsonapi.org/format/). You can change it for all 
-repositories at once by modifying the `resolveDetails` method of the abstract Repository:
+repositories at once by modifying the `resolveDetails` method of the abstract Repository, or for a specific
+repository by overriding it:
 
 ```php
 /**
@@ -239,18 +239,25 @@ repositories at once by modifying the `resolveDetails` method of the abstract Re
  * @param $serialized
  * @return array
  */
-public function resolveDetails($request, $serialized)
+public function serializeDetails($request, $serialized)
 {
     return $serialized;
 }
 ```
 
-Since the repository extends the [Laravel Resource](https://laravel.com/docs/6.x/eloquent-resources) you may 
-may conditionally return a field:
+You can change the index response by modifying the `resolveIndex` method:
 
 ```php
-
+/**
+ * Resolve the response for the details
+ *
+ * @param $request
+ * @param $serialized
+ * @return array
+ */
+public function serializeIndex($request, $serialized)
+{
+    return $serialized;
+}
 ```
-## Response customization
 
-## Scaffolding repository

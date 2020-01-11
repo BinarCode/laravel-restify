@@ -28,6 +28,10 @@ module.exports = {
                 path: '/docs/repository-pattern/field',
             },
             {
+                title: 'Authentication',
+                path: '/docs/auth/auth',
+            },
+            {
                 title: 'REST methods',
                 path: '/docs/rest-methods/rest-methods',
             },
