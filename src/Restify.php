@@ -141,4 +141,14 @@ class Restify
     {
         Event::listen(RestifyBeforeEach::class, $callback);
     }
+
+    /**
+     * Set the callback used for intercepting any request exception
+     *
+     * @param  \Closure|string  $callback
+     */
+    public static function exceptionHandler($callback)
+    {
+        static::$renderCallback = $callback;
+    }
 }

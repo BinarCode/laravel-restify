@@ -5,8 +5,16 @@ use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
 
 return [
     'auth' => [
-        //Table with authenticatable resource
-        'table' => 'users',
+    /*
+    |--------------------------------------------------------------------------
+    | Table containing authenticatable resource
+    |--------------------------------------------------------------------------
+    |
+    | This configuration contain the name of the table used for the authentication.
+    |
+    */
+
+    'table' => 'users',
     ],
 
     /*
@@ -14,9 +22,8 @@ return [
     | Restify Base Route
     |--------------------------------------------------------------------------
     |
-    | These middleware will be assigned to every Restify route, giving you the
-    | chance to add your own middleware to this stack or override any of
-    | the existing middleware. Or, you can just stick with this stack.
+    | This configuration is used as a prefix path where Restify will be accessible from.
+    | Feel free to change this path to anything you like.
     |
     */
 
