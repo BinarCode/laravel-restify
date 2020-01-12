@@ -28,20 +28,20 @@ module.exports = {
                 path: '/docs/repository-pattern/field',
             },
             {
-                title: 'Authentication',
-                path: '/docs/auth/auth',
-            },
-            {
                 title: 'Rest Controller',
                 path: '/docs/rest-methods/rest-methods',
             },
             {
-                title: 'Error handler',
-                path: '/docs/exception-handler/exception-handler',
+                title: 'Filtering',
+                path: '/docs/search/search',
             },
             {
                 title: 'Auth service',
                 path: '/docs/auth/auth',
+            },
+            {
+                title: 'Error handler',
+                path: '/docs/exception-handler/exception-handler',
             },
         ]
     },
