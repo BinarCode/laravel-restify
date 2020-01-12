@@ -16,7 +16,7 @@ composer require binaryk/laravel-restify
 ```
 
 ## Setup Laravel Restify
-After the instalation, the package requires a setup process, this will publish the provider, will create the 
+After the instalation, the package requires a setup process, this will publish configuration, provider and will create the 
 `app/Restify` directory with an abstract `Repository` and scaffolding a `User` repository you can play with:
 
 ```shell script
@@ -31,24 +31,12 @@ If you are not able to install Restify into your application because of your `mi
  releases for your application.
 :::
 
-That's it! 
+## Quick start
 
-Next, you may extend the `Binaryk\LaravelRestify\Controllers\RestController` and use its helpers:
+Having the package setup and users table migrated, you should be good to perform the first API request:
 
-```php
-class UserController extends RestController 
-{
-    /**
-     * Display a listing of the resource.
-     *
-     * @return JsonResponse
-     */
-    public function index()
-    {
-        $users = User::all();
-
-        return $this->respond($users);
-    }
-}
+```http request
+GET: /restify-api/users?perPage=10
 ```
 
+This should return the users list paginated and formatted according to [JSON:API](https://jsonapi.org/format/) standard.
