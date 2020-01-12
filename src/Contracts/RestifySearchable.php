@@ -15,14 +15,14 @@ interface RestifySearchable
     const MATCH_INTEGER = 'integer';
 
     /**
-     * Get available attributes for query params search
+     * Get available attributes for query params search.
      *
      * @return array
      */
     public static function getSearchableFields();
 
     /**
-     * Get relations available for query params
+     * Get relations available for query params.
      *
      * @return array
      */
