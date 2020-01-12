@@ -45,8 +45,8 @@ class RepositoryCollection extends Resource
         })->toArray($request);
 
         return $this->serializeIndex($request, [
-            'meta' => $this->when($this->isRenderingPaginated(), $this->meta($paginated)),
-            'links' => $this->when($this->isRenderingPaginated(), $this->paginationLinks($paginated)),
+            'meta' => $this->when($this->isRenderingPaginated(), static::meta($paginated)),
+            'links' => $this->when($this->isRenderingPaginated(), static::paginationLinks($paginated)),
             'data' => $response,
         ]);
     }
@@ -57,7 +57,7 @@ class RepositoryCollection extends Resource
      * @param  array  $paginated
      * @return array
      */
-    protected function paginationLinks($paginated)
+    public static function paginationLinks($paginated)
     {
         return [
             'first' => $paginated['first_page_url'] ?? null,
@@ -73,7 +73,7 @@ class RepositoryCollection extends Resource
      * @param  array  $paginated
      * @return array
      */
-    protected function meta($paginated)
+    public static function meta($paginated)
     {
         return Arr::except($paginated, [
             'data',

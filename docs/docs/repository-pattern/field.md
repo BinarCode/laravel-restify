@@ -109,7 +109,7 @@ This way you can get anything from the `$request` and perform any transformation
 
 Another handy interceptor is the `storeCallback`, this is the step immediately before attaching the value from the request to the model attribute:
 
-This interceptor may be useful to just modify the value passed through the `$request`.
+This interceptor may be useful for modifying the value passed through the `$request`.
 
 ```php
 Field::make('password')->storeCallback(function ($value) {

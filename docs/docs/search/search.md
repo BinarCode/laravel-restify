@@ -118,3 +118,18 @@ or with plus sign before the field:
  ```http request
 GET: /restify-api/posts?sort=+id
 ```
+
+## Eager loading - aka withs
+
+When get a repository index or details about a single entity, often we have to get the related entities (we have access to).
+This eager loading is configurable by Restify as follow: 
+
+```php
+public static $withs = ['posts'];
+```
+
+This means that we could use `posts` query for eager loading posts:
+
+```http request
+GET: /restify-api/users?with=posts
+```

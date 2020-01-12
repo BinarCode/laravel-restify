@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Repositories\RepositoryCollection;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Illuminate\Config\Repository as Config;
 use Illuminate\Container\Container;
@@ -146,8 +147,8 @@ abstract class RestController extends BaseController
         }
 
         return [
-            'meta' => Arr::except($paginator->toArray(), ['data', 'next_page_url', 'last_page_url', 'first_page_url', 'prev_page_url', 'path']),
-            'links' => Arr::only($paginator->toArray(), ['next_page_url', 'last_page_url', 'first_page_url', 'prev_page_url', 'path']),
+            'meta' => RepositoryCollection::meta($paginator->toArray()),
+            'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
             'data' => $items,
         ];
     }

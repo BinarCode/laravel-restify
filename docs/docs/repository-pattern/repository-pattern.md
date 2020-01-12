@@ -191,7 +191,7 @@ the newly created entity in the database. In this case you can easily override e
 ### update
 
 ```php
-    public function update(RestifyRequest $request, $model)
+    public function update(RestifyRequest $request, $repositoryId)
     {
         // Silence is golden
     }
