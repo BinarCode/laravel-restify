@@ -32,7 +32,7 @@ module.exports = {
                 path: '/docs/auth/auth',
             },
             {
-                title: 'REST methods',
+                title: 'Rest Controller',
                 path: '/docs/rest-methods/rest-methods',
             },
             {

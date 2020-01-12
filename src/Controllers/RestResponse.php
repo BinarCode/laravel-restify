@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\Arrayable;
+use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 
@@ -28,7 +29,7 @@ use Illuminate\Http\JsonResponse;
  *
  * @author lupacescueduard <eduard.lupacescu@binarcode.com>
  */
-class RestResponse
+class RestResponse implements Responsable
 {
     public static $RESPONSE_DEFAULT_ATTRIBUTES = [
         'line',
@@ -511,5 +512,14 @@ class RestResponse
         }
 
         return $response;
+    }
+
+    /**
+     * @param  \Illuminate\Http\Request  $request
+     * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
+     */
+    public function toResponse($request) {
+        return $this->respond();
     }
 }

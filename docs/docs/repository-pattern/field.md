@@ -90,7 +90,10 @@ That's a breeze with Restify, since Field expose few useful chained helpers for 
 ## Fill callback
 
 There are two steps before the value from the request is attached to model attribute. 
-Firstly it goes to the `fillCallback` and secondly to the `storeCallback`. You may intercept each of those with closures.
+Firstly it is get from the application request, and go to the `fillCallback` and secondly, 
+the value is transforming by the `storeCallback`. 
+
+You may intercept each of those with closures.
 
 ```php
 Field::make('title')
