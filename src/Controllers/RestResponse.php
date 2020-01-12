@@ -519,7 +519,8 @@ class RestResponse implements Responsable
      * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function toResponse($request) {
+    public function toResponse($request)
+    {
         return $this->respond();
     }
 }
