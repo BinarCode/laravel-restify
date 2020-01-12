@@ -143,7 +143,7 @@ class Restify
     }
 
     /**
-     * Set the callback used for intercepting any request exception
+     * Set the callback used for intercepting any request exception.
      *
      * @param  \Closure|string  $callback
      */
