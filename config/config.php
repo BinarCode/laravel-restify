@@ -5,7 +5,7 @@ use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
 
 return [
     'auth' => [
-    /*
+        /*
     |--------------------------------------------------------------------------
     | Table containing authenticatable resource
     |--------------------------------------------------------------------------
@@ -14,7 +14,7 @@ return [
     |
     */
 
-    'table' => 'users',
+        'table' => 'users',
     ],
 
     /*
