@@ -1,10 +1,13 @@
 # Laravel magic REST API builder
 
-[![Latest Version on Packagist](https://img.shields.io/packagist/v/binaryk/laravel-restify.svg?style=flat-square)](https://packagist.org/packages/binaryk/laravel-restify)
-[![Build Status](https://img.shields.io/travis/binaryk/laravel-restify/master.svg?style=flat-square)](https://travis-ci.org/binaryk/laravel-restify)
-[![Quality Score](https://img.shields.io/scrutinizer/g/binaryk/laravel-restify.svg?style=flat-square)](https://scrutinizer-ci.com/g/binaryk/laravel-restify)
-[![Test Coverage](https://img.shields.io/scrutinizer/coverage/g/binaryk/laravel-restify.svg?style=flat-square)](https://scrutinizer-ci.com/g/binaryk/laravel-restify)
-[![Total Downloads](https://img.shields.io/packagist/dt/binaryk/laravel-restify.svg?style=flat-square)](https://packagist.org/packages/binaryk/laravel-restify)
+<p align="center">
+    <a href="https://travis-ci.org/binaryk/laravel-restify"><img src="https://travis-ci.org/binaryk/laravel-restify.svg" alt="Build Status"></a>
+    <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/d/total.svg" alt="Total Downloads"></a>
+    <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/v/stable.svg" alt="Latest Stable Version"></a>
+        <a href="https://scrutinizer-ci.com/g/binaryk/laravel-restify"><img src="https://img.shields.io/scrutinizer/coverage/g/binaryk/laravel-restify.svg" alt="Test Coverage"></a>
+    <a href="https://scrutinizer-ci.com/g/binaryk/laravel-restify"><img src="https://img.shields.io/scrutinizer/g/binaryk/laravel-restify.svg" alt="Quality"></a>
+    <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/license.svg" alt="License"></a>
+</p>
 
 This package will generate the API resources "CRUD" for you. By using Laravel buit in Policies and Eloquent Resource API the implementation become a pleasure.
 
