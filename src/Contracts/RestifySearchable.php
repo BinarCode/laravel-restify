@@ -15,19 +15,18 @@ interface RestifySearchable
     const MATCH_INTEGER = 'integer';
 
     /**
+     * Get available attributes for query params search.
+     *
      * @return array
      */
     public static function getSearchableFields();
 
     /**
+     * Get relations available for query params.
+     *
      * @return array
      */
     public static function getWiths();
-
-    /**
-     * @return array
-     */
-    public static function getInFields();
 
     /**
      * Find matches in the table by given value

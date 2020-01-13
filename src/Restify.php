@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -57,6 +58,10 @@ class Restify
     public static function repositoryForModel($model)
     {
         return collect(static::$repositories)->first(function ($value) use ($model) {
+            if ($model instanceof Model) {
+                $model = get_class($model);
+            }
+
             return $value::$model === $model;
         });
     }
@@ -140,5 +145,15 @@ class Restify
     public static function beforeEach($callback)
     {
         Event::listen(RestifyBeforeEach::class, $callback);
+    }
+
+    /**
+     * Set the callback used for intercepting any request exception.
+     *
+     * @param  \Closure|string  $callback
+     */
+    public static function exceptionHandler($callback)
+    {
+        static::$renderCallback = $callback;
     }
 }

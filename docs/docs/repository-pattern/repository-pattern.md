@@ -4,9 +4,10 @@
 
 ## Introduction
 
-The Repository is the main core of the Laravel Restify, included with Laravel provides the easiest way of 
-CRUD over your resources than you can imagine. It works along with 
-[Laravel API Resource](https://laravel.com/docs/6.x/eloquent-resources), which means you can use all helpers from there right away.
+The Repository is the main core of the Laravel Restify, included with Laravel provides the an easy way of 
+managing (usually called "CRUD"). It works along with 
+[Laravel API Resource](https://laravel.com/docs/6.x/eloquent-resources), 
+that means you can use all helpers from there right away.
 
 ## Quick start
 The follow command will generate you the Repository which will take the control over the post resource.
@@ -39,8 +40,8 @@ class Post extends Repository
 Having this in place you're basically ready for the CRUD actions over posts. 
 You have available the follow endpoints:
 
-| Verb          | URI             | Action  | 
-| :------------- |:--------------------------- | :-------|
+| Verb          | URI                            | Action  | 
+| :------------- |:----------------------------- | :-------|
 | GET            | `/restify-api/posts`          | index   |
 | GET            | `/restify-api/posts/{post}`   | show    |
 | POST           | `/restify-api/posts`          | store   |
@@ -48,10 +49,12 @@ You have available the follow endpoints:
 | DELETE         | `/restify-api/posts/{post}`   | destroy |
 
 ### Fields
-When storing or updating a repository Restify will retrieve from the request all attributes defined in the `fillable`
-array of the model and will fill all of these fields as they are sent through the request.
-If you want to customize some fields before they are filled to the model `attribute`, 
-you can interact with fields by defining them in the `fields` method:
+When storing or updating a model - Restify will get from the request all of the attributes matching by key
+with those from the `fillable` array of the model definition. 
+Restify will fill these fields with the value from the request.
+However if you want to transform some attributes before they are filled into the model
+you can do that by defining the `fields` method:
+
 ```php
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -90,7 +93,7 @@ class Post extends Repository
 :::
 
 
-### Dependency injection
+## Dependency injection
 
 The Laravel [service container](https://laravel.com/docs/6.x/container) is used to resolve all Laravel Restify repositories. 
 As a result, you are able to type-hint any dependencies your `Repository` may need in its constructor. 
@@ -159,7 +162,7 @@ the newly created entity in the database. In this case you can easily override e
 ```php
     public function index(RestifyRequest $request, Paginator $paginated)
     {
-        // Custom response
+        // Silence is golden
     }
 ```
 
@@ -168,7 +171,7 @@ the newly created entity in the database. In this case you can easily override e
 ```php
     public function show(RestifyRequest $request, $repositoryId)
     {
-        // Custom finding
+        // Silence is golden
     }
 ```
 
@@ -181,18 +184,16 @@ the newly created entity in the database. In this case you can easily override e
      */
     public function store(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request)
     {
-        // custom storing
-        
-        return $this->response();
+        // Silence is golden
     }
 ```
 
 ### update
 
 ```php
-    public function update(RestifyRequest $request, $model)
+    public function update(RestifyRequest $request, $repositoryId)
     {
-        // Custom updating
+        // Silence is golden
     }
 ```
 
@@ -201,6 +202,7 @@ the newly created entity in the database. In this case you can easily override e
 ```php
     public function destroy(RestifyRequest $request, $repositoryId)
     {
+        // Silence is golden
     }
 ```
 
@@ -229,7 +231,8 @@ data for a single resource object:
 ```
 
 This response is made according to [JSON:API format](https://jsonapi.org/format/). You can change it for all 
-repositories at once by modifying the `resolveDetails` method of the abstract Repository:
+repositories at once by modifying the `resolveDetails` method of the abstract Repository, or for a specific
+repository by overriding it:
 
 ```php
 /**
@@ -239,18 +242,25 @@ repositories at once by modifying the `resolveDetails` method of the abstract Re
  * @param $serialized
  * @return array
  */
-public function resolveDetails($request, $serialized)
+public function serializeDetails($request, $serialized)
 {
     return $serialized;
 }
 ```
 
-Since the repository extends the [Laravel Resource](https://laravel.com/docs/6.x/eloquent-resources) you may 
-may conditionally return a field:
+You can change the index response by modifying the `resolveIndex` method:
 
 ```php
-
+/**
+ * Resolve the response for the details
+ *
+ * @param $request
+ * @param $serialized
+ * @return array
+ */
+public function serializeIndex($request, $serialized)
+{
+    return $serialized;
+}
 ```
-## Response customization
 
-## Scaffolding repository

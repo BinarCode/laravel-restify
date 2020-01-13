@@ -28,7 +28,7 @@ trait Crudable
      */
     public function index(RestifyRequest $request, Paginator $paginated)
     {
-        return static::resolveWith($paginated)->response();
+        return $this->response($request);
     }
 
     /**

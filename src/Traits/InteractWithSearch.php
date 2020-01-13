@@ -31,14 +31,6 @@ trait InteractWithSearch
     /**
      * @return array
      */
-    public static function getInFields()
-    {
-        return static::$in ?? [];
-    }
-
-    /**
-     * @return array
-     */
     public static function getMatchByFields()
     {
         return static::$match ?? [];

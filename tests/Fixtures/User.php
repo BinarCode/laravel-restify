@@ -21,9 +21,11 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail, Res
         InteractWithSearch;
 
     public static $search = ['id', 'email'];
+
     public static $sort = ['id'];
+
     public static $match = ['id' => 'int', 'email' => 'string'];
-    public static $in = ['id' => 'int'];
+
     public static $withs = ['posts'];
 
     /**
@@ -86,7 +88,6 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail, Res
         static::$search = ['id', 'email'];
         static::$sort = ['id'];
         static::$match = ['id' => 'int', 'email' => 'string'];
-        static::$in = ['id' => 'int'];
         static::$withs = ['posts'];
     }
 }
