@@ -61,6 +61,7 @@ class Restify
             if ($model instanceof Model) {
                 $model = get_class($model);
             }
+
             return $value::$model === $model;
         });
     }
