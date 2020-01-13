@@ -88,7 +88,6 @@ class User extends Authenticatable implements Passportable, MustVerifyEmail, Res
         static::$search = ['id', 'email'];
         static::$sort = ['id'];
         static::$match = ['id' => 'int', 'email' => 'string'];
-        static::$in = ['id' => 'int'];
         static::$withs = ['posts'];
     }
 }
