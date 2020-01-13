@@ -18,7 +18,7 @@ class DummyClass
      */
     public function viewAny(User $user = null)
     {
-        return true;
+        //
     }
 
     /**
@@ -28,9 +28,9 @@ class DummyClass
      * @param  DummyModel  $model
      * @return mixed
      */
-    public function view(User $user = null, DummyModel $model = null)
+    public function view(User $user, DummyModel $model)
     {
-        return true;
+        //
     }
 
     /**
@@ -39,9 +39,9 @@ class DummyClass
      * @param  \App\User  $user
      * @return mixed
      */
-    public function create(User $user = null)
+    public function create(User $user)
     {
-        return true;
+        //
     }
 
     /**
@@ -53,7 +53,7 @@ class DummyClass
      */
     public function update(User $user, DummyModel $model)
     {
-        return true;
+        //
     }
 
     /**
@@ -77,7 +77,7 @@ class DummyClass
      */
     public function restore(User $user, DummyModel $model)
     {
-        return true;
+        //
     }
 
     /**
@@ -89,6 +89,6 @@ class DummyClass
      */
     public function forceDelete(User $user, DummyModel $model)
     {
-        return true;
+        //
     }
 }

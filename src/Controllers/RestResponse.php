@@ -301,7 +301,6 @@ class RestResponse implements Responsable
      * @param  mixed  $response
      *
      * @return JsonResponse
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function respond($response = null)
     {
@@ -517,7 +516,6 @@ class RestResponse implements Responsable
     /**
      * @param  \Illuminate\Http\Request  $request
      * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function toResponse($request)
     {
