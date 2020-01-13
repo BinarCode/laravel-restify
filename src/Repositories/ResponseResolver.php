@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Restify;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -52,9 +53,19 @@ trait ResponseResolver
             with(explode(',', $request->get('with')), function ($relations) use ($request, &$withs) {
                 foreach ($relations as $relation) {
                     if (in_array($relation, $this->resource::getWiths())) {
-                        $relatable = static::resolveWith($this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? ($this->resource::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE)))->toArray($request);
+                        $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? ($this->resource::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
+                        $q = $this->resource->{$relation}->first();
+                        if ($q && $repository = Restify::repositoryForModel($q->getModel())) {
+                            // This will serialize into the repository dedicated for model
+                            $relatable = $repository::resolveWith($paginator)->toArray($request);
+                        } else {
+                            // This will fallback into serialization of the parent formatting
+                            $relatable = static::resolveWith($paginator)->toArray($request);
+                        }
+
                         unset($relatable['meta']);
                         unset($relatable['links']);
+
                         $withs[$relation] = $relatable;
                     }
                 }
