@@ -33,7 +33,7 @@ class PostRepository extends Repository
             Field::make('title')->storingRules('required')->messages([
                 'required' => 'This field is required',
             ]),
-            
+
             Field::make('description')->storingRules('required')->messages([
                 'required' => 'Description field is required',
             ]),
