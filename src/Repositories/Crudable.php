@@ -62,9 +62,9 @@ trait Crudable
     {
         try {
             $this->allowToStore($request);
-        } catch (AuthorizationException|UnauthorizedException $e) {
+        } catch (AuthorizationException | UnauthorizedException $e) {
             return $this->response()->setData([
-                'errors' => Arr::wrap($e->getMessage())
+                'errors' => Arr::wrap($e->getMessage()),
             ])->setStatusCode(RestResponse::REST_RESPONSE_FORBIDDEN_CODE);
         } catch (ValidationException $e) {
             return $this->response()->setData([
@@ -85,7 +85,7 @@ trait Crudable
         return (new static ($model))
             ->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_CREATED_CODE)
-            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $model->id);
+            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
     }
 
     /**

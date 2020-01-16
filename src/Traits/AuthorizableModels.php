@@ -107,7 +107,7 @@ trait AuthorizableModels
      */
     public static function authorizeToCreate(Request $request)
     {
-        throw_unless(static::authorizedToCreate($request), AuthorizationException::class, "Unauthorized to create.");
+        throw_unless(static::authorizedToCreate($request), AuthorizationException::class, 'Unauthorized to create.');
     }
 
     /**

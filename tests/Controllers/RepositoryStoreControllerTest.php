@@ -31,7 +31,6 @@ class RepositoryStoreControllerTest extends IntegrationTest
                     ],
                 ],
             ]);
-
     }
 
     public function test_unauthorized_store()

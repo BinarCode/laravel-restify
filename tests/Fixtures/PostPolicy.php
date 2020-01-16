@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures;
 
 /**
- * @package Binaryk\LaravelRestify\Tests\Fixtures;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class PostPolicy

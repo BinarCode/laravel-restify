@@ -41,7 +41,7 @@ abstract class IntegrationTest extends TestCase
         $this->repositoryMock();
         $this->loadMigrations();
         $this->loadRoutes();
-        $this->withFactories(__DIR__ . '/Factories');
+        $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
         $this->loadRepositories();
     }
@@ -74,7 +74,7 @@ abstract class IntegrationTest extends TestCase
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--realpath' => realpath(__DIR__ . '/Migrations'),
+            '--realpath' => realpath(__DIR__.'/Migrations'),
         ]);
     }
 
@@ -169,7 +169,6 @@ abstract class IntegrationTest extends TestCase
 
     /**
      * Authenticate as an anonymous user.
-     *
      */
     protected function authenticate()
     {
