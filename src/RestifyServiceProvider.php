@@ -45,7 +45,7 @@ class RestifyServiceProvider extends ServiceProvider
     {
         collect(Restify::$repositories)->each(function ($repository) {
             $config = [
-                'namespace' => trim(app()->getNamespace(), '\\') . '\Http\Controllers',
+                'namespace' => trim(app()->getNamespace(), '\\').'\Http\Controllers',
                 'as' => '',
                 'prefix' => Restify::path($repository::uriKey()),
                 'middleware' => config('restify.middleware', []),
@@ -76,7 +76,7 @@ class RestifyServiceProvider extends ServiceProvider
     public function defaultRoutes($config)
     {
         Route::group($config, function () {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
         });
 
         return $this;

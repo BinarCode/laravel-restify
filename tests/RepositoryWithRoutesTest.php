@@ -8,7 +8,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\RepositoryWithRoutes;
 use Illuminate\Routing\Router;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RepositoryWithRoutesTest extends IntegrationTest
@@ -28,7 +27,7 @@ class RepositoryWithRoutesTest extends IntegrationTest
 
     public function test_can_add_custom_routes()
     {
-        $this->get(Restify::path(RepositoryWithRoutes::uriKey()) . '/testing')->assertStatus(200)
+        $this->get(Restify::path(RepositoryWithRoutes::uriKey()).'/testing')->assertStatus(200)
             ->assertJson([
                 'success' => true,
             ]);
@@ -62,7 +61,6 @@ class RepositoryWithRoutesTest extends IntegrationTest
                 ],
             ]);
     }
-
 }
 
 class WithCustomPrefix extends RepositoryWithRoutes
@@ -109,9 +107,10 @@ class WithCustomNamespace extends RepositoryWithRoutes
     }
 }
 
-class HandleController extends RestController {
+class HandleController extends RestController
+{
     /**
-     * Just saying hello
+     * Just saying hello.
      *
      * @return \Binaryk\LaravelRestify\Controllers\RestResponse
      */
