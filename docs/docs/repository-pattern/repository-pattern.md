@@ -348,7 +348,7 @@ class PostController extends RestController
 }
 ```
 
-### Custom prefix
+### Route prefix
 
 As we noticed in the example above, the route is generated as a child of the current repository `uriKey` route,
 however sometimes you may want to have a separate prefix, which doesn't depends of the URI of the current repository. 
@@ -376,7 +376,7 @@ GET: '/api/hello-world
 With `api` as a custom prefix. 
 
 
-### Custom middleware
+### Route middleware
 
 All routes declared in the `routes` method, will have the same middelwares defined in your `restify.middleware` configuration file.
 Overriding default middlewares is a breeze with Restify:
@@ -396,7 +396,7 @@ public static function routes(Router $router, $options = ['middleware' => [Custo
 
 In that case, the single middleware of the route will be defined by the `CustomMiddleware` class.
 
-### Custom Namespace
+### Route Namespace
 
 By default each route defined in the `routes` method, will have the namespace `AppRootNamespace\Http\Controllers`.
 You can override it easily by using `namespace` configuration key:
