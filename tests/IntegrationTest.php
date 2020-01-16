@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\RepositoryWithRoutes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
 use Illuminate\Contracts\Translation\Translator;
@@ -34,11 +35,7 @@ abstract class IntegrationTest extends TestCase
         $this->loadRoutes();
         $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
-
-        Restify::repositories([
-            UserRepository::class,
-            PostRepository::class,
-        ]);
+        $this->loadRepositories();
     }
 
     protected function getPackageProviders($app)
@@ -151,5 +148,14 @@ abstract class IntegrationTest extends TestCase
         $queries = DB::getQueryLog();
 
         return end($queries);
+    }
+
+    public function loadRepositories()
+    {
+        Restify::repositories([
+            UserRepository::class,
+            PostRepository::class,
+            RepositoryWithRoutes::class,
+        ]);
     }
 }

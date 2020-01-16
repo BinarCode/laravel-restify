@@ -32,14 +32,6 @@ class RepositoryStoreController extends RepositoryController
          */
         $repository = $request->repository();
 
-        $repository::authorizeToCreate($request);
-
-        $validator = $repository::validatorForStoring($request);
-
-        if ($validator->fails()) {
-            return $this->response()->invalid()->errors($validator->errors()->toArray())->respond();
-        }
-
         return $request->newRepositoryWith($repository::newModel())->store($request);
     }
 }
