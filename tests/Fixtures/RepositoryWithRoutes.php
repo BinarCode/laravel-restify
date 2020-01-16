@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Routing\Router;
 
 /**
- * @package Binaryk\LaravelRestify\Tests\Fixtures;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RepositoryWithRoutes extends Repository

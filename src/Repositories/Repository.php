@@ -176,7 +176,7 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
      * Defining custom roues.
      * The prefix of this route is the uriKey (e.g. 'restify-api/orders'),
      * The namespace is Http/Controllers
-     * Middlewares are the same from config('restify.middleware')
+     * Middlewares are the same from config('restify.middleware').
      *
      * However all options could be customized by passing an $options argument
      *
