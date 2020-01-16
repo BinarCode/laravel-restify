@@ -2,7 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\PostPolicy;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Support\Facades\Gate;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -12,6 +15,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
     protected function setUp(): void
     {
         parent::setUp();
+        $this->authenticate();
     }
 
     public function test_basic_validation_works()
@@ -23,10 +27,24 @@ class RepositoryStoreControllerTest extends IntegrationTest
             ->assertJson([
                 'errors' => [
                     'description' => [
-                        'Description field is required bro.',
+                        'Description field is required',
                     ],
                 ],
             ]);
+
+    }
+
+    public function test_unauthorized_store()
+    {
+        $_SERVER['restify.user.creatable'] = false;
+
+        Gate::policy(Post::class, PostPolicy::class);
+
+        $this->withExceptionHandling()->post('/restify-api/posts', [
+            'title' => 'Title',
+            'description' => 'Title',
+        ])->assertStatus(403)
+            ->assertJson(['errors' => ['Unauthorized to create.']]);
     }
 
     public function test_success_storing()

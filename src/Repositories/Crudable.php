@@ -3,10 +3,13 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Controllers\RestResponse;
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -54,12 +57,20 @@ trait Crudable
     /**
      * @param  RestifyRequest  $request
      * @return JsonResponse
-     * @throws ValidationException
-     * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function store(RestifyRequest $request)
     {
-        $this->allowToStore($request);
+        try {
+            $this->allowToStore($request);
+        } catch (AuthorizationException|UnauthorizedException $e) {
+            return $this->response()->setData([
+                'errors' => Arr::wrap($e->getMessage())
+            ])->setStatusCode(RestResponse::REST_RESPONSE_FORBIDDEN_CODE);
+        } catch (ValidationException $e) {
+            return $this->response()->setData([
+                'errors' => $e->errors(),
+            ])->setStatusCode(RestResponse::REST_RESPONSE_INVALID_CODE);
+        }
 
         $model = DB::transaction(function () use ($request) {
             $model = self::fillWhenStore(
@@ -74,7 +85,7 @@ trait Crudable
         return (new static ($model))
             ->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_CREATED_CODE)
-            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
+            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $model->id);
     }
 
     /**

@@ -107,7 +107,7 @@ trait AuthorizableModels
      */
     public static function authorizeToCreate(Request $request)
     {
-        throw_unless(static::authorizedToCreate($request), AuthorizationException::class);
+        throw_unless(static::authorizedToCreate($request), AuthorizationException::class, "Unauthorized to create.");
     }
 
     /**
@@ -119,7 +119,7 @@ trait AuthorizableModels
     public static function authorizedToCreate(Request $request)
     {
         if (static::authorizable()) {
-            return Gate::check('create', get_class(static::newModel()));
+            return Gate::check('create', static::$model);
         }
 
         return true;

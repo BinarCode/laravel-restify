@@ -31,10 +31,11 @@ class PostRepository extends Repository
     {
         return [
             Field::make('title')->storingRules('required')->messages([
-                'required' => 'This field is required bro.',
+                'required' => 'This field is required',
             ]),
+            
             Field::make('description')->storingRules('required')->messages([
-                'required' => 'Description field is required bro.',
+                'required' => 'Description field is required',
             ]),
         ];
     }
