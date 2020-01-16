@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify;
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
-use ReflectionClass;
 
 /**
  * This provider is injected in console context by the main provider or by the RestifyInjector
