@@ -11,6 +11,10 @@ use Illuminate\Routing\Router;
  */
 class RepositoryWithRoutes extends Repository
 {
+    /**
+     * @param  Router  $router
+     * @param  array  $options
+     */
     public static function routes(Router $router, $options = [])
     {
         $router->get('testing', function () {
