@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 
@@ -157,5 +158,34 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
         $self = resolve(static::class);
 
         return $self->withResource($model);
+    }
+
+    /**
+     * Handle dynamic static method calls into the method.
+     *
+     * @param  string  $method
+     * @param  array  $parameters
+     * @return mixed
+     */
+    public static function __callStatic($method, $parameters)
+    {
+        return (new static)->$method(...$parameters);
+    }
+
+    /**
+     * Defining custom routes.
+     *
+     * The prefix of this route is the uriKey (e.g. 'restify-api/orders'),
+     * The namespace is Http/Controllers
+     * Middlewares are the same from config('restify.middleware').
+     *
+     * However all options could be customized by passing an $options argument
+     *
+     * @param  Router  $router
+     * @param $options
+     */
+    public static function routes(Router $router, $options = [])
+    {
+        // override for custom routes
     }
 }

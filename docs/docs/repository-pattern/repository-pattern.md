@@ -264,3 +264,150 @@ public function serializeIndex($request, $serialized)
 }
 ```
 
+## Custom routes
+
+Laravel Restify has its own "CRUD" routes, however you're able to define your own routes right from your Repository class:
+
+```php
+/**
+ * Defining custom routes
+ * 
+ * The default prefix of this route is the uriKey (e.g. 'restify-api/posts'),
+ * 
+ * The default namespace is AppNamespace/Http/Controllers
+ * 
+ * The default middlewares are the same from config('restify.middleware')
+ *
+ * However all options could be overrided by passing an $options argument
+ *
+ * @param  \Illuminate\Routing\Router  $router
+ * @param $options
+ */
+public static function routes(\Illuminate\Routing\Router $router, $options = [])
+{
+    $router->get('hello-world', function () {
+        return 'Hello World';
+    });
+}
+```
+
+Let's diving into a more "real life" example. Let's take the Post repository we had above:
+
+```php
+use Illuminate\Routing\Router;
+use Binaryk\LaravelRestify\Repositories\Repository;
+
+class Post extends Repository
+{
+   /*
+   * @param  \Illuminate\Routing\Router  $router
+   * @param $options
+   */
+   public static function routes(Router $router, $options = [])
+   {
+       $router->get('/{id}/kpi', 'PostController@kpi');
+   }
+       
+   public static function uriKey()
+   {
+       return 'posts';
+   }
+}
+```
+
+At this moment Restify built the new route as a child of the `posts`, so it has the route:
+
+```http request
+GET: /restify-api/posts/{id}/kpi
+```
+
+This route is pointing to the `PostsController`, let's define it:
+
+```php
+<?php
+
+namespace App\Http\Controllers;
+
+use Illuminate\Http\JsonResponse;
+use Binaryk\LaravelRestify\Controllers\RestController;
+
+class PostController extends RestController
+{
+    /**
+     * Show the profile for the given user.
+     *
+     * @param  int  $id
+     * @return JsonResponse
+     */
+    public function kpi($id)
+    {
+        //...
+
+        return $this->response();
+    }
+}
+```
+
+### Custom prefix
+
+As we noticed in the example above, the route is generated as a child of the current repository `uriKey` route,
+however sometimes you may want to have a separate prefix, which doesn't depends of the URI of the current repository. 
+Restify provide you an easy of doing that, by adding default value `prefix` for the second `$options` argument:
+
+```php
+/**
+ * @param  \Illuminate\Routing\Router  $router
+ * @param $options
+ */
+public static function routes(Router $router, $options = ['prefix' => 'api',])
+{
+    $router->get('hello-world', function () {
+        return 'Hello World';
+    });
+}
+````
+
+Now the generated route will look like this:
+
+```http request
+GET: '/api/hello-world
+```
+
+With `api` as a custom prefix. 
+
+
+### Custom middleware
+
+All routes declared in the `routes` method, will have the same middelwares defined in your `restify.middleware` configuration file.
+Overriding default middlewares is a breeze with Restify:
+
+```php
+/**
+ * @param  \Illuminate\Routing\Router  $router
+ * @param $options
+ */
+public static function routes(Router $router, $options = ['middleware' => [CustomMiddleware::class],])
+{
+    $router->get('hello-world', function () {
+        return 'Hello World';
+    });
+}
+````
+
+In that case, the single middleware of the route will be defined by the `CustomMiddleware` class.
+
+### Custom Namespace
+
+By default each route defined in the `routes` method, will have the namespace `AppRootNamespace\Http\Controllers`.
+You can override it easily by using `namespace` configuration key:
+
+```php
+/**
+ * @param  \Illuminate\Routing\Router  $router
+ * @param $options
+ */
+public static function routes(Router $router, $options = ['namespace' => 'App\Services',])
+{
+    $router->get('hello-world', 'WorldController@hello');
+}
+````

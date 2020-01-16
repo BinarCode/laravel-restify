@@ -5,12 +5,15 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\RepositoryWithRoutes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use Mockery;
 use Orchestra\Testbench\TestCase;
 
 /**
@@ -19,6 +22,12 @@ use Orchestra\Testbench\TestCase;
 abstract class IntegrationTest extends TestCase
 {
     use InteractWithModels;
+
+    /**
+     * @var mixed
+     */
+    protected $authenticatedAs;
+
     /**
      * @var mixed
      */
@@ -34,11 +43,7 @@ abstract class IntegrationTest extends TestCase
         $this->loadRoutes();
         $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
-
-        Restify::repositories([
-            UserRepository::class,
-            PostRepository::class,
-        ]);
+        $this->loadRepositories();
     }
 
     protected function getPackageProviders($app)
@@ -151,5 +156,27 @@ abstract class IntegrationTest extends TestCase
         $queries = DB::getQueryLog();
 
         return end($queries);
+    }
+
+    public function loadRepositories()
+    {
+        Restify::repositories([
+            UserRepository::class,
+            PostRepository::class,
+            RepositoryWithRoutes::class,
+        ]);
+    }
+
+    /**
+     * Authenticate as an anonymous user.
+     */
+    protected function authenticate()
+    {
+        $this->actingAs($this->authenticatedAs = Mockery::mock(Authenticatable::class));
+
+        $this->authenticatedAs->shouldReceive('getAuthIdentifier')->andReturn(1);
+        $this->authenticatedAs->shouldReceive('getKey')->andReturn(1);
+
+        return $this;
     }
 }
