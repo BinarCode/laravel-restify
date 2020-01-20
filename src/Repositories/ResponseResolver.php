@@ -18,7 +18,7 @@ trait ResponseResolver
      */
     public function resolveDetailsAttributes($request)
     {
-        return parent::toArray($request);
+        return method_exists($this->resource, 'toArray') ? $this->resource->toArray() : [];
     }
 
     /**
@@ -29,6 +29,7 @@ trait ResponseResolver
     {
         return [
             'authorizedToView' => $this->authorizedToView($request),
+            'authorizedToShow' => $this->authorizedToShow($request),
             'authorizedToCreate' => $this->authorizedToCreate($request),
             'authorizedToUpdate' => $this->authorizedToUpdate($request),
             'authorizedToDelete' => $this->authorizedToDelete($request),

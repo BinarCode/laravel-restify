@@ -2,6 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
+use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 /**
@@ -20,8 +23,16 @@ class RepositoryIndexController extends RepositoryController
      */
     public function handle(RestifyRequest $request)
     {
-        $data = $this->paginator($request->newRepository());
-
-        return $request->newRepositoryWith($data)->index($request, $data);
+        try {
+            return $request->newRepository()->index($request);
+        } catch (EntityNotFoundException $e) {
+            return $this->response()->notFound()
+                ->addError($e->getMessage())
+                ->debug($e, $request->isDev());
+        } catch (UnauthorizedException $e) {
+            return $this->response()->forbidden()->addError($e->getMessage())->debug($e, $request->isDev());
+        } catch (InstanceOfException |\Throwable $e) {
+            return $this->response()->error()->debug($e, $request->isDev());
+        }
     }
 }

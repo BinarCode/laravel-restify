@@ -23,6 +23,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Traits\ForwardsCalls;
 use Throwable;
 
 /**
@@ -36,7 +37,7 @@ use Throwable;
  */
 abstract class RestController extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests, ForwardsCalls;
 
     /**
      * @var RestResponse
@@ -253,5 +254,12 @@ abstract class RestController extends BaseController
             ->invalid()
             ->errors($errors)
             ->respond();
+    }
+
+    public function __call($method, $parameters)
+    {
+        $this->response();
+
+        $this->forwardCallTo($this->response, $method, $parameters);
     }
 }

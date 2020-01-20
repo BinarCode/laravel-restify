@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 
 /**
  * Class RestResponse.
@@ -18,6 +19,7 @@ use Illuminate\Http\JsonResponse;
  * @method RestResponse created()
  * @method RestResponse deleted()
  * @method RestResponse blank()
+ * @method RestResponse notFound()
  * @method RestResponse error() 500
  * @method RestResponse invalid() 400
  * @method RestResponse unauthorized() 401 - don't have correct password/email
@@ -29,9 +31,10 @@ use Illuminate\Http\JsonResponse;
  *
  * @author lupacescueduard <eduard.lupacescu@binarcode.com>
  */
-class RestResponse implements Responsable
+class RestResponse extends JsonResponse implements Responsable
 {
     public static $RESPONSE_DEFAULT_ATTRIBUTES = [
+        'attributes',
         'line',
         'file',
         'stack',
@@ -55,9 +58,15 @@ class RestResponse implements Responsable
     const REST_RESPONSE_UNAUTHORIZED_CODE = 401;
     const REST_RESPONSE_FORBIDDEN_CODE = 403;
     const REST_RESPONSE_MISSING_CODE = 404;
+    const REST_RESPONSE_NOTFOUND_CODE = 404;
     const REST_RESPONSE_THROTTLE_CODE = 429;
     const REST_RESPONSE_SUCCESS_CODE = 200;
     const REST_RESPONSE_UNAVAILABLE_CODE = 503;
+
+    /**
+     * @var ResponseFactory
+     */
+    public $response;
 
     /**
      * @var int
@@ -106,16 +115,6 @@ class RestResponse implements Responsable
     private $errors;
 
     /**
-     * @var array|null
-     */
-    private $data;
-
-    /**
-     * @var array
-     */
-    protected $headers;
-
-    /**
      * @var string
      */
     protected $type;
@@ -132,17 +131,10 @@ class RestResponse implements Responsable
     protected $relationships;
 
     /**
-     * RestResponse constructor.
-     * @param  mixed  $content
-     * @param  int  $status
-     * @param  array  $headers
+     * Indicate if response could include sensitive information (file, line)
+     * @var bool
      */
-    public function __construct($content = null, $status = 200, array $headers = [])
-    {
-        $this->data = $content;
-        $this->code = $status;
-        $this->headers = $headers;
-    }
+    public $debug = false;
 
     /**
      * Set response data.
@@ -153,7 +145,7 @@ class RestResponse implements Responsable
     public function data($data = null)
     {
         if (func_num_args()) {
-            $this->data = ($data instanceof Arrayable) ? $data->toArray() : $data;
+            $this->setData(($data instanceof Arrayable) ? $data->toArray() : $data);
 
             return $this;
         }
@@ -164,18 +156,18 @@ class RestResponse implements Responsable
     /**
      * Set response errors.
      *
-     * @param  array  $errors
+     * @param  mixed  $errors
      * @return $this|null
      */
-    public function errors(array $errors = null)
+    public function errors($errors)
     {
         if (func_num_args()) {
-            $this->errors = $errors;
+            $this->errors = Arr::wrap($errors);
 
             return $this;
         }
 
-        return $this->errors;
+        return $this;
     }
 
     /**
@@ -186,7 +178,7 @@ class RestResponse implements Responsable
      */
     public function addError($message)
     {
-        if (! isset($this->errors)) {
+        if ( ! isset($this->errors)) {
             $this->errors = [];
         }
 
@@ -271,7 +263,7 @@ class RestResponse implements Responsable
             return $this->$key;
         }
 
-        $code = 'static::REST_RESPONSE_'.strtoupper($key).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($key) . '_CODE';
 
         return defined($code) ? constant($code) : null;
     }
@@ -286,7 +278,7 @@ class RestResponse implements Responsable
      */
     public function __call($func, $args)
     {
-        $code = 'static::REST_RESPONSE_'.strtoupper($func).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($func) . '_CODE';
 
         if (defined($code)) {
             return $this->code(constant($code));
@@ -304,7 +296,7 @@ class RestResponse implements Responsable
      */
     public function respond($response = null)
     {
-        if (! func_num_args()) {
+        if ( ! func_num_args()) {
             $response = new \stdClass();
             $response->data = new \stdClass();
 
@@ -322,7 +314,9 @@ class RestResponse implements Responsable
             }
         }
 
-        return $this->response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE, $this->headers);
+        return tap($this->response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE, $this->headers), function ($response) {
+            $this->withResponse($response, request());
+        });
     }
 
     /**
@@ -433,21 +427,13 @@ class RestResponse implements Responsable
      * @return ResponseFactory
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    protected function response()
+    public function response()
     {
-        return app()->make(ResponseFactory::class);
-    }
+        if (is_null($this->response)) {
+            $this->response = app()->make(ResponseFactory::class);
+        }
 
-    /**
-     * @param $name
-     * @param $value
-     * @return RestResponse
-     */
-    public function header($name, $value)
-    {
-        $this->headers[$name] = $value;
-
-        return $this;
+        return $this->response;
     }
 
     /**
@@ -519,6 +505,59 @@ class RestResponse implements Responsable
      */
     public function toResponse($request)
     {
-        return $this->respond();
+        if ($this->errors) {
+            $this->setData([
+                'errors' => $this->getErrors(),
+            ]);
+        }
+
+        if ($this->code) {
+            $this->setStatusCode(is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
+        }
+
+        if ($this->debug) {
+            $extra = [];
+
+            foreach (['line', 'errors', 'file', 'stack', 'meta'] as $property) {
+                if (isset($this->{$property})) {
+                    $extra[$property] = $this->{$property};
+                }
+            }
+
+            $this->setData($extra);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param $response
+     * @param $request
+     */
+    public function withResponse($response, $request)
+    {
+        //
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getErrors()
+    {
+        return $this->errors instanceof Arrayable ? $this->errors->toArray() : $this->errors;
+    }
+
+    public function debug(\Exception $exception, $condition)
+    {
+        if ($condition) {
+            $this->debug = true;
+
+            $this->line($exception->getLine())
+                ->file($exception->getFile())
+                ->errors($exception->getMessage())
+                ->stack($exception->getTraceAsString());
+        }
+
+        return $this;
     }
 }

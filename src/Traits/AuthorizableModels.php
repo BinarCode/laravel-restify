@@ -97,6 +97,25 @@ trait AuthorizableModels
     }
 
     /**
+     * @param  Request  $request
+     * @throws AuthorizationException
+     * @throws \Throwable
+     */
+    public function authorizeToShow(Request $request)
+    {
+        return $this->authorizeTo($request, 'show');
+    }
+
+    /**
+     * @param  Request  $request
+     * @return bool
+     */
+    public function authorizedToShow(Request $request)
+    {
+        return $this->authorizedTo($request, 'show');
+    }
+
+    /**
      * Determine if the current user can create new repositories or throw an exception.
      *
      * @param  \Illuminate\Http\Request  $request

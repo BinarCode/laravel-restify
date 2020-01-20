@@ -3,16 +3,22 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
+use Illuminate\Support\Traits\ForwardsCalls;
+use JsonSerializable;
 
 /**
  * This class serve as repository collection and repository single model
@@ -20,13 +26,16 @@ use Illuminate\Support\Str;
  * response).
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-abstract class Repository extends RepositoryCollection implements RestifySearchable
+abstract class Repository implements RestifySearchable, JsonSerializable
 {
     use InteractWithSearch,
         ValidatingTrait,
         RepositoryFillFields,
         PerformsQueries,
-        Crudable;
+        Crudable,
+        ResponseResolver,
+        ConditionallyLoadsAttributes,
+        ForwardsCalls;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -37,27 +46,13 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
     public $resource;
 
     /**
-     * Create a new resource instance.
-     *
-     * @param  \Illuminate\Database\Eloquent\Model  $model
-     */
-    public function __construct($model = null)
-    {
-        parent::__construct($model);
-    }
-
-    /**
      * Get the underlying model instance for the resource.
      *
      * @return \Illuminate\Database\Eloquent\Model|LengthAwarePaginator
      */
     public function model()
     {
-        if ($this->isRenderingCollection() || $this->isRenderingPaginated()) {
-            return $this->modelFromIterator() ?? static::newModel();
-        }
-
-        return $this->resource;
+        return $this->resource ?? static::newModel();
     }
 
     /**
@@ -91,19 +86,16 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
     }
 
     /**
+     * @param $request
      * @return array
      */
     public function toArray($request)
     {
-        if ($this->isRenderingCollection()) {
-            return $this->toArrayForCollection($request);
-        }
-
         $serialized = [
-            'id' => $this->when($this->isRenderingRepository(), function () {
-                return $this->getKey();
+            'id' => $this->when($this->resource instanceof Model, function () {
+                return $this->resource->getKey();
             }),
-            'type' => self::model()->getTable(),
+            'type' => $this->model()->getTable(),
             'attributes' => $this->resolveDetailsAttributes($request),
             'relationships' => $this->when(value($this->resolveDetailsRelationships($request)), $this->resolveDetailsRelationships($request)),
             'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
@@ -173,6 +165,17 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
     }
 
     /**
+     * Forward calls to the model (getKey() for example).
+     * @param $method
+     * @param $parameters
+     * @return mixed
+     */
+    public function __call($method, $parameters)
+    {
+        return $this->forwardCallTo($this->model(), $method, $parameters);
+    }
+
+    /**
      * Defining custom routes.
      *
      * The prefix of this route is the uriKey (e.g. 'restify-api/orders'),
@@ -187,5 +190,45 @@ abstract class Repository extends RepositoryCollection implements RestifySearcha
     public static function routes(Router $router, $options = [])
     {
         // override for custom routes
+    }
+
+    /**
+     * Resolve the resource to an array.
+     *
+     * @param  \Illuminate\Http\Request|null  $request
+     * @return array
+     */
+    public function resolve($request = null)
+    {
+        $data = $this->toArray(
+            $request = $request ?: Container::getInstance()->make('request')
+        );
+
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        } elseif ($data instanceof JsonSerializable) {
+            $data = $data->jsonSerialize();
+        }
+
+        return $this->filter((array) $data);
+    }
+
+    /**
+     * @return array|mixed
+     */
+    public function jsonSerialize()
+    {
+        return $this->resolve();
+    }
+
+    /**
+     * @param  string  $content
+     * @param  int  $status
+     * @param  array  $headers
+     * @return RestResponse
+     */
+    public function response($content = '', $status = 200, array $headers = [])
+    {
+        return new RestResponse($content, $status, $headers);
     }
 }

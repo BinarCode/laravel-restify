@@ -106,7 +106,7 @@ class RestifyHandler extends ExceptionHandler
                 break;
 
             default:
-                if (App::environment('production') === 'production') {
+                if (App::environment('production') === true) {
                     $response->addError(__('messages.something_went_wrong'));
                 } else {
                     $response->addError($exception->getMessage())->code($exception->getCode())
