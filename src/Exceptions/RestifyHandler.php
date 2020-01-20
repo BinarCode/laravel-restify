@@ -109,15 +109,13 @@ class RestifyHandler extends ExceptionHandler
                 if (App::environment('production') === true) {
                     $response->addError(__('messages.something_went_wrong'));
                 } else {
-                    $response->addError($exception->getMessage())->code($exception->getCode())
-                        ->line($exception->getLine())
-                        ->file($exception->getFile())
-                        ->stack($exception->getTraceAsString());
+                    $response->debug($exception, true);
                 }
                 $response->error();
         }
 
-        return $response->respond();
+
+        return $response->toResponse($request);
     }
 
     /**

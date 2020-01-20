@@ -28,7 +28,6 @@ trait ResponseResolver
     public function resolveDetailsMeta($request)
     {
         return [
-            'authorizedToView' => $this->authorizedToView($request),
             'authorizedToShow' => $this->authorizedToShow($request),
             'authorizedToCreate' => $this->authorizedToCreate($request),
             'authorizedToUpdate' => $this->authorizedToUpdate($request),

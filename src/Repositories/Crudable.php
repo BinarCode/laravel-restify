@@ -210,6 +210,6 @@ trait Crudable
      */
     public function allowToViewAny($request, Collection $items)
     {
-        $this->authorizeToViewAny($request);
+        $this->authorizeToShowAny($request);
     }
 }

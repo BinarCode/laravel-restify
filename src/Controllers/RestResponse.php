@@ -314,7 +314,7 @@ class RestResponse extends JsonResponse implements Responsable
             }
         }
 
-        return tap($this->response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE, $this->headers), function ($response) {
+        return tap($this->response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE), function ($response) {
             $this->withResponse($response, request());
         });
     }
@@ -527,6 +527,11 @@ class RestResponse extends JsonResponse implements Responsable
             $this->setData($extra);
         }
 
+        if ($this->meta) {
+            $this->original['meta'] = $this->meta;
+            $this->setData($this->original);
+        }
+
         return $this;
     }
 
@@ -553,6 +558,7 @@ class RestResponse extends JsonResponse implements Responsable
             $this->debug = true;
 
             $this->line($exception->getLine())
+                ->code($exception->getCode())
                 ->file($exception->getFile())
                 ->errors($exception->getMessage())
                 ->stack($exception->getTraceAsString());
