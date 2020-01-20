@@ -36,7 +36,7 @@ trait Crudable
         });
 
         /**
-         * @var AbstractPaginator $paginator
+         * @var AbstractPaginator
          */
         $paginator = $results->paginate($request->get('perPage') ?? (static::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
 
@@ -46,7 +46,7 @@ trait Crudable
 
         try {
             $this->allowToViewAny($request, $items);
-        } catch (UnauthorizedException|AuthorizationException $e) {
+        } catch (UnauthorizedException | AuthorizationException $e) {
             return $this->response()->forbidden()->addError($e->getMessage());
         }
 
@@ -81,7 +81,6 @@ trait Crudable
             return $this->response()->forbidden()->addError($e->getMessage());
         }
 
-
         return $this->response($this->jsonSerialize());
     }
 
@@ -113,7 +112,7 @@ trait Crudable
         });
 
         return $this->response(static::resolveWith($model)->jsonSerialize(), RestResponse::REST_RESPONSE_CREATED_CODE)
-            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $model->id);
+            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
     }
 
     /**
