@@ -114,7 +114,6 @@ class RestifyHandler extends ExceptionHandler
                 $response->error();
         }
 
-
         return $response->toResponse($request);
     }
 
