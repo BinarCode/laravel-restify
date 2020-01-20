@@ -139,13 +139,15 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set response data.
      *
-     * @param  mixed  $data
+     * @param mixed $data
      * @return $this|mixed
      */
     public function data($data = null)
     {
         if (func_num_args()) {
-            $this->setData(($data instanceof Arrayable) ? $data->toArray() : $data);
+            $data = ($data instanceof Arrayable) ? $data->toArray() : $data;
+
+            $this->setData(compact('data'));
 
             return $this;
         }
@@ -156,7 +158,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set response errors.
      *
-     * @param  mixed  $errors
+     * @param mixed $errors
      * @return $this|null
      */
     public function errors($errors)
@@ -173,12 +175,12 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Add error to response errors.
      *
-     * @param  mixed  $message
+     * @param mixed $message
      * @return $this
      */
     public function addError($message)
     {
-        if (! isset($this->errors)) {
+        if ( ! isset($this->errors)) {
             $this->errors = [];
         }
 
@@ -190,7 +192,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set response Http code.
      *
-     * @param  int  $code
+     * @param int $code
      * @return $this|int
      */
     public function code($code = self::REST_RESPONSE_SUCCESS_CODE)
@@ -207,7 +209,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set response Http code.
      *
-     * @param  int  $line
+     * @param int $line
      * @return $this|int
      */
     public function line($line = null)
@@ -222,7 +224,7 @@ class RestResponse extends JsonResponse implements Responsable
     }
 
     /**
-     * @param  string  $file
+     * @param string $file
      * @return $this|int
      */
     public function file(string $file = null)
@@ -237,7 +239,7 @@ class RestResponse extends JsonResponse implements Responsable
     }
 
     /**
-     * @param  string|null  $stack
+     * @param string|null $stack
      * @return $this|int
      */
     public function stack(string $stack = null)
@@ -254,7 +256,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Magic to get response code constants.
      *
-     * @param  string  $key
+     * @param string $key
      * @return mixed|null
      */
     public function __get($key)
@@ -263,7 +265,7 @@ class RestResponse extends JsonResponse implements Responsable
             return $this->$key;
         }
 
-        $code = 'static::REST_RESPONSE_'.strtoupper($key).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($key) . '_CODE';
 
         return defined($code) ? constant($code) : null;
     }
@@ -278,7 +280,7 @@ class RestResponse extends JsonResponse implements Responsable
      */
     public function __call($func, $args)
     {
-        $code = 'static::REST_RESPONSE_'.strtoupper($func).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($func) . '_CODE';
 
         if (defined($code)) {
             return $this->code(constant($code));
@@ -290,13 +292,13 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Build a new response with our response data.
      *
-     * @param  mixed  $response
+     * @param mixed $response
      *
      * @return JsonResponse
      */
     public function respond($response = null)
     {
-        if (! func_num_args()) {
+        if ( ! func_num_args()) {
             $response = new \stdClass();
             $response->data = new \stdClass();
 
@@ -405,12 +407,25 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set attributes at root level.
      *
-     * @param  array  $attributes
+     * @param array $attributes
      * @return mixed
      */
     public function setAttributes(array $attributes)
     {
         $this->attributes = $attributes;
+
+        return $this;
+    }
+
+    /**
+     * Set "id" at root level for a model
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function id($id)
+    {
+        $this->id = $id;
 
         return $this;
     }
@@ -451,8 +466,8 @@ class RestResponse extends JsonResponse implements Responsable
      * Useful when newly created repository, will prepare the response according
      * with JSON:API https://jsonapi.org/format/#document-resource-object-fields.
      *
-     * @param  Repository  $repository
-     * @param  bool  $withRelations
+     * @param Repository $repository
+     * @param bool $withRelations
      * @return $this
      */
     public function forRepository(Repository $repository, $withRelations = false)
@@ -500,7 +515,7 @@ class RestResponse extends JsonResponse implements Responsable
     }
 
     /**
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
      */
     public function toResponse($request)
@@ -529,6 +544,14 @@ class RestResponse extends JsonResponse implements Responsable
 
         if ($this->meta) {
             $this->original['meta'] = $this->meta;
+            $this->setData($this->original);
+        }
+
+        // Single resource ($this->model(...))
+        if ($this->id) {
+            $this->original['attributes'] = $this->attributes;
+            $this->original['type'] = $this->type;
+            $this->original['id'] = $this->id;
             $this->setData($this->original);
         }
 
@@ -563,6 +586,24 @@ class RestResponse extends JsonResponse implements Responsable
                 ->errors($exception->getMessage())
                 ->stack($exception->getTraceAsString());
         }
+
+        return $this;
+    }
+
+    /**
+     * Set the JSON:API format for a single resource
+     *
+     * $this->model( User::find(1) )
+     *
+     * @param Model $model
+     * @return $this
+     */
+    public function model(Model $model)
+    {
+        $this->setAttributes($model->jsonSerialize())
+            ->type($model->getTable())
+            ->id($model->getKey());
+
 
         return $this;
     }
