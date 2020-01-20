@@ -43,7 +43,7 @@ trait AuthorizableModels
      */
     public function authorizeToShowAny(Request $request)
     {
-        if ( ! static::authorizable()) {
+        if (! static::authorizable()) {
             return;
         }
 
@@ -60,7 +60,7 @@ trait AuthorizableModels
      */
     public static function authorizedToShowAny(Request $request)
     {
-        if ( ! static::authorizable()) {
+        if (! static::authorizable()) {
             return true;
         }
 
@@ -81,7 +81,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can view the given resource
+     * Determine if the current user can view the given resource.
      *
      * @param Request $request
      * @return bool
@@ -101,7 +101,7 @@ trait AuthorizableModels
      */
     public static function authorizeToCreate(Request $request)
     {
-        if ( ! static::authorizedToCreate($request)) {
+        if (! static::authorizedToCreate($request)) {
             throw new AuthorizationException('Unauthorized to create.');
         }
     }
@@ -199,7 +199,7 @@ trait AuthorizableModels
 
     /**
      * Since this trait could be used by a repository or by a model, we have to
-     * detect the model from either class
+     * detect the model from either class.
      *
      * @return AuthorizableModels|Model|mixed|null
      * @throws ModelNotFoundException
