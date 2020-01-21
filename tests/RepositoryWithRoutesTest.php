@@ -28,7 +28,7 @@ class RepositoryWithRoutesTest extends IntegrationTest
 
     public function test_can_add_custom_routes()
     {
-        $this->get(Restify::path(RepositoryWithRoutes::uriKey()) . '/main-testing')->assertStatus(200)
+        $this->get(Restify::path(RepositoryWithRoutes::uriKey()).'/main-testing')->assertStatus(200)
             ->assertJson([
                 'success' => true,
             ]);
@@ -135,7 +135,7 @@ class WithCustomNamespace extends RepositoryWithRoutes
     {
         $options['namespace'] = 'Binaryk\LaravelRestify\Tests';
 
-        $router->group($options,function ($router) {
+        $router->group($options, function ($router) {
             $router->get('custom-namespace', 'HandleController@sayHello')->name('namespace.route');
         });
     }
