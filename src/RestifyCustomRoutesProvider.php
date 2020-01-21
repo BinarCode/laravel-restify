@@ -46,7 +46,7 @@ class RestifyCustomRoutesProvider extends ServiceProvider
             }
 
             Route::group([], function ($router) use ($repository, $config) {
-                if($repository === 'Binaryk\LaravelRestify\Tests\RepositoryWithRoutes') {
+                if ($repository === 'Binaryk\LaravelRestify\Tests\RepositoryWithRoutes') {
                 }
                 $repository::routes($router, $config);
             });
