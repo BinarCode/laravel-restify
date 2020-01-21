@@ -1,4 +1,4 @@
-# Laravel magic REST API builder
+<p align="center"><img src="https://binaryk.github.io/laravel-restify/assets/img/logo.png"></p>
 
 <p align="center">
     <a href="https://travis-ci.org/binaryk/laravel-restify"><img src="https://travis-ci.org/binaryk/laravel-restify.svg" alt="Build Status"></a>

@@ -23,6 +23,7 @@ use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Traits\ForwardsCalls;
 use Throwable;
 
 /**
@@ -36,7 +37,7 @@ use Throwable;
  */
 abstract class RestController extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
+    use AuthorizesRequests, DispatchesJobs, ValidatesRequests, ForwardsCalls;
 
     /**
      * @var RestResponse
@@ -91,23 +92,6 @@ abstract class RestController extends BaseController
         }
 
         return $this->config;
-    }
-
-    /**
-     * Returns a generic response to the client.
-     *
-     * @param  mixed  $data
-     * @param  int  $httpCode
-     *
-     * @return JsonResponse
-     * @throws BindingResolutionException
-     */
-    protected function respond($data = null, $httpCode = 200)
-    {
-        $response = new \stdClass();
-        $response->data = $data;
-
-        return $this->response()->data($data)->code($httpCode)->respond();
     }
 
     /**
@@ -230,14 +214,13 @@ abstract class RestController extends BaseController
     /**
      * Returns with a message.
      * @param $msg
-     * @return JsonResponse
+     * @return RestResponse
      * @throws BindingResolutionException
      */
     public function message($msg)
     {
         return $this->response()
-            ->message($msg)
-            ->respond();
+            ->message($msg);
     }
 
     /**
@@ -251,7 +234,13 @@ abstract class RestController extends BaseController
     {
         return $this->response()
             ->invalid()
-            ->errors($errors)
-            ->respond();
+            ->errors($errors);
+    }
+
+    public function __call($method, $parameters)
+    {
+        $this->response();
+
+        $this->forwardCallTo($this->response, $method, $parameters);
     }
 }

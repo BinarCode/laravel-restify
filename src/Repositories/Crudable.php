@@ -2,14 +2,16 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
+use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Support\Arr;
+use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -19,26 +21,49 @@ use Illuminate\Validation\ValidationException;
 trait Crudable
 {
     /**
-     * @param  null  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
-    abstract public function response($request = null);
-
-    /**
      * @param  RestifyRequest  $request
-     * @param  Paginator  $paginated
      * @return JsonResponse
+     * @throws \Binaryk\LaravelRestify\Exceptions\InstanceOfException
+     * @throws \Throwable
      */
-    public function index(RestifyRequest $request, Paginator $paginated)
+    public function index(RestifyRequest $request)
     {
-        return $this->response($request);
+        $results = SearchService::instance()->search($request, $this->model());
+
+        $results = $results->tap(function ($query) use ($request) {
+            self::indexQuery($request, $query);
+        });
+
+        /**
+         * @var AbstractPaginator
+         */
+        $paginator = $results->paginate($request->get('perPage') ?? (static::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
+
+        $items = $paginator->getCollection()->map(function ($value) {
+            return static::resolveWith($value);
+        });
+
+        try {
+            $this->allowToViewAny($request, $items);
+        } catch (UnauthorizedException | AuthorizationException $e) {
+            return $this->response()->forbidden()->addError($e->getMessage());
+        }
+
+        // Filter out items the request user don't have enough permissions for show
+        $items = $items->filter(function ($repository) use ($request) {
+            return $repository->authorizedToShow($request);
+        });
+
+        return $this->response([
+            'meta' => RepositoryCollection::meta($paginator->toArray()),
+            'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
+            'data' => $items,
+        ]);
     }
 
     /**
      * @param  RestifyRequest  $request
      * @return JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \Throwable
      */
     public function show(RestifyRequest $request, $repositoryId)
     {
@@ -46,12 +71,16 @@ trait Crudable
          * Dive into the Search service to attach relations.
          */
         $this->withResource(tap($this->resource, function ($query) use ($request) {
-            $request->newRepository()->detailQuery($request, $query);
+            static::detailQuery($request, $query);
         })->firstOrFail());
 
-        $this->authorizeToView($request);
+        try {
+            $this->allowToShow($request);
+        } catch (AuthorizationException $e) {
+            return $this->response()->forbidden()->addError($e->getMessage());
+        }
 
-        return $this->response($request);
+        return $this->response()->model($this->resource);
     }
 
     /**
@@ -63,13 +92,10 @@ trait Crudable
         try {
             $this->allowToStore($request);
         } catch (AuthorizationException | UnauthorizedException $e) {
-            return $this->response()->setData([
-                'errors' => Arr::wrap($e->getMessage()),
-            ])->setStatusCode(RestResponse::REST_RESPONSE_FORBIDDEN_CODE);
+            return $this->response()->addError($e->getMessage())->code(RestResponse::REST_RESPONSE_FORBIDDEN_CODE);
         } catch (ValidationException $e) {
-            return $this->response()->setData([
-                'errors' => $e->errors(),
-            ])->setStatusCode(RestResponse::REST_RESPONSE_INVALID_CODE);
+            return $this->response()->addError($e->errors())
+                ->code(RestResponse::REST_RESPONSE_INVALID_CODE);
         }
 
         $model = DB::transaction(function () use ($request) {
@@ -82,9 +108,8 @@ trait Crudable
             return $model;
         });
 
-        return (new static ($model))
-            ->response()
-            ->setStatusCode(RestResponse::REST_RESPONSE_CREATED_CODE)
+        return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
+            ->model($model)
             ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
     }
 
@@ -107,7 +132,7 @@ trait Crudable
             return $this;
         });
 
-        return $this->response()->setStatusCode(RestResponse::REST_RESPONSE_UPDATED_CODE);
+        return response()->json($this->jsonSerialize(), RestResponse::REST_RESPONSE_UPDATED_CODE);
     }
 
     /**
@@ -164,5 +189,24 @@ trait Crudable
     public function allowToDestroy(RestifyRequest $request)
     {
         $this->authorizeToDelete($request);
+    }
+
+    /**
+     * @param $request
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function allowToShow($request)
+    {
+        $this->authorizeToShow($request);
+    }
+
+    /**
+     * @param $request
+     * @param  Collection  $items
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
+    public function allowToViewAny($request, Collection $items)
+    {
+        $this->authorizeToShowAny($request);
     }
 }

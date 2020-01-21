@@ -1,10 +1,10 @@
 ---
 home: true
-heroImage: /assets/img/logo.svg
-heroText: Laravel Restify
-tagline: A package to start a Rest API
+heroImage: /assets/img/logo.png
+heroText: 
+tagline: A package to implement a JSON:API with Laravel
 actionText: Docs →
-actionLink: /docs/
+actionLink: /docs/2.0/
 features:
 - title: Magic CRUD over entities
   details: Enjoy powerful "CRUD" over your entities in seconds

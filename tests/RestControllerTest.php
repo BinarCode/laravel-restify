@@ -80,7 +80,7 @@ class RestControllerTest extends IntegrationTest
 
         $this->assertTrue($this->controller->gate('access', $user));
         $response = $this->controller->show($user->id);
-        $this->assertEquals($user->email, data_get($response->getData(), 'data.email'));
+        $this->assertEquals($user->email, data_get($response->getData(), 'data.attributes.email'));
     }
 
     public function test_making_custom_response()
