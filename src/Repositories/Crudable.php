@@ -103,6 +103,8 @@ trait Crudable
 
         $this->resource = static::storePlain($request->toArray());
 
+        static::stored($this->resource);
+
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
             ->model($this->resource)
             ->header('Location', Restify::path().'/'.static::uriKey().'/'.$this->resource->id);
@@ -123,6 +125,8 @@ trait Crudable
 
         $this->resource = static::updatePlain($request->all(), $repositoryId);
 
+        static::updated($this->resource);
+
         return response()->json($this->jsonSerialize(), RestResponse::REST_RESPONSE_UPDATED_CODE);
     }
 
@@ -138,7 +142,9 @@ trait Crudable
     {
         $this->allowToDestroy($request);
 
-        static::destroyPlain($repositoryId);
+        $status = static::destroyPlain($repositoryId);
+
+        static::deleted($status);
 
         return $this->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_DELETED_CODE);
@@ -314,5 +320,17 @@ trait Crudable
         return DB::transaction(function () use ($repository) {
             return $repository->resource->delete();
         });
+    }
+
+    public static function stored($model) {
+        //
+    }
+
+    public static function updated($model) {
+        //
+    }
+
+    public static function deleted($status) {
+        //
     }
 }
