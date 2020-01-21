@@ -325,21 +325,24 @@ trait Crudable
     /**
      * @param $model
      */
-    public static function stored($model) {
+    public static function stored($model)
+    {
         //
     }
 
     /**
      * @param $model
      */
-    public static function updated($model) {
+    public static function updated($model)
+    {
         //
     }
 
     /**
      * @param int $status
      */
-    public static function deleted($status) {
+    public static function deleted($status)
+    {
         //
     }
 }
