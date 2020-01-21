@@ -115,7 +115,7 @@ trait Crudable
 
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
             ->model($model)
-            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $model->id);
+            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
     }
 
     /**
@@ -229,7 +229,6 @@ trait Crudable
         $request = resolve(RepositoryStoreRequest::class);
         $request->attributes->add($payload);
 
-
         $repository = resolve(static::class);
 
         $repository->allowToStore($request);
@@ -240,7 +239,7 @@ trait Crudable
     }
 
     /**
-     * Update an entity with an array of payload
+     * Update an entity with an array of payload.
      *
      * @param array $payload
      * @param $id
@@ -272,7 +271,7 @@ trait Crudable
 
     /**
      * Returns a plain model by key
-     * Used as: Book::showPlain(1)
+     * Used as: Book::showPlain(1).
      *
      * @param $key
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Model
@@ -295,7 +294,7 @@ trait Crudable
     }
 
     /**
-     * Validate deletion and delete entity
+     * Validate deletion and delete entity.
      *
      * @param $key
      * @return mixed
