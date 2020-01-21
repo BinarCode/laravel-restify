@@ -109,7 +109,7 @@ class RestifyHandler extends ExceptionHandler
                 if (App::environment('production') === true) {
                     $response->addError(__('messages.something_went_wrong'));
                 } else {
-                    $response->debug($exception, true);
+                    $response->dump($exception, true);
                 }
                 $response->error();
         }

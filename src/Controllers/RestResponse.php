@@ -10,6 +10,7 @@ use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\App;
 
 /**
  * Class RestResponse.
@@ -580,7 +581,7 @@ class RestResponse extends JsonResponse implements Responsable
         return $this->errors instanceof Arrayable ? $this->errors->toArray() : $this->errors;
     }
 
-    public function debug(\Exception $exception, $condition)
+    public function dump(\Exception $exception, $condition)
     {
         if ($condition) {
             $this->debug = true;
@@ -593,6 +594,17 @@ class RestResponse extends JsonResponse implements Responsable
         }
 
         return $this;
+    }
+
+    /**
+     * Debug the log if the environment is local
+     *
+     * @param \Exception $exception
+     * @return $this
+     */
+    public function dumpLocal(\Exception $exception)
+    {
+        return $this->dump($exception, App::environment('production') === false);
     }
 
     /**
