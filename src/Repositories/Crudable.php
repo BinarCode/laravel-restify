@@ -216,6 +216,8 @@ trait Crudable
     }
 
     /**
+     * Validate input array and store a new entity
+     *
      * @param array $payload
      * @return mixed
      * @throws AuthorizationException
