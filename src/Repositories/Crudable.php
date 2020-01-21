@@ -322,15 +322,18 @@ trait Crudable
         });
     }
 
-    public static function stored($model) {
+    public static function stored($model)
+    {
         //
     }
 
-    public static function updated($model) {
+    public static function updated($model)
+    {
         //
     }
 
-    public static function deleted($status) {
+    public static function deleted($status)
+    {
         //
     }
 }
