@@ -4,7 +4,7 @@ module.exports = {
     title: 'Laravel Restify',
     description: 'A package to start the REST API',
     serviceWorker: true,
-    base: '/',
+    base: '/laravel-restify/',
     themeConfig: {
         logo: '/assets/img/icon.png',
         displayAllHeaders: true,
@@ -17,6 +17,7 @@ module.exports = {
                 link: "/",
                 items: [{ text: "1.0", link: "/docs/1.0/" }, { text: "2.0", link: "/docs/2.0/" }]
             },
+            { text: 'Git', link: 'https://github.com/binaryk/laravel-restify', target: '_blank' },
             { text: 'About us', link: 'https://binarcode.com', target: '_blank' }
         ],
 
