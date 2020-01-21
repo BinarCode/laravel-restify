@@ -56,7 +56,7 @@ trait ResponseResolver
                 foreach ($relations as $relation) {
                     if (in_array($relation, $this->resource::getWiths())) {
                         /**
-                         * @var AbstractPaginator $paginator
+                         * @var AbstractPaginator
                          */
                         $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? ($this->resource::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
                         /** * @var Builder $q */
