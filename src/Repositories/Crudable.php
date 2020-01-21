@@ -81,7 +81,7 @@ trait Crudable
             return $this->response()->forbidden()->addError($e->getMessage());
         }
 
-        return $this->response($this->jsonSerialize());
+        return $this->response()->model($this->resource);
     }
 
     /**

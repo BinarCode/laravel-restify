@@ -214,14 +214,13 @@ abstract class RestController extends BaseController
     /**
      * Returns with a message.
      * @param $msg
-     * @return JsonResponse
+     * @return RestResponse
      * @throws BindingResolutionException
      */
     public function message($msg)
     {
         return $this->response()
-            ->message($msg)
-            ->respond();
+            ->message($msg);
     }
 
     /**
@@ -235,8 +234,7 @@ abstract class RestController extends BaseController
     {
         return $this->response()
             ->invalid()
-            ->errors($errors)
-            ->respond();
+            ->errors($errors);
     }
 
     public function __call($method, $parameters)
