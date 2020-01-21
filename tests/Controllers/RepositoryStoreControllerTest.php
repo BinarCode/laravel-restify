@@ -30,7 +30,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
                         'description' => [
                             'Description field is required',
                         ],
-                    ]
+                    ],
                 ],
             ]);
     }
