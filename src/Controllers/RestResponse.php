@@ -597,7 +597,7 @@ class RestResponse extends JsonResponse implements Responsable
     }
 
     /**
-     * Debug the log if the environment is local
+     * Debug the log if the environment is local.
      *
      * @param \Exception $exception
      * @return $this
