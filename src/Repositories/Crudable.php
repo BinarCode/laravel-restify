@@ -5,6 +5,9 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
@@ -21,7 +24,7 @@ use Illuminate\Validation\ValidationException;
 trait Crudable
 {
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @return JsonResponse
      * @throws \Binaryk\LaravelRestify\Exceptions\InstanceOfException
      * @throws \Throwable
@@ -62,7 +65,7 @@ trait Crudable
     }
 
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @return JsonResponse
      */
     public function show(RestifyRequest $request, $repositoryId)
@@ -84,7 +87,7 @@ trait Crudable
     }
 
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @return JsonResponse
      */
     public function store(RestifyRequest $request)
@@ -108,13 +111,15 @@ trait Crudable
             return $model;
         });
 
+        $this->resource = $model;
+
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
             ->model($model)
-            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
+            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $model->id);
     }
 
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @param $model
      * @return JsonResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
@@ -124,19 +129,19 @@ trait Crudable
     {
         $this->allowToUpdate($request);
 
-        DB::transaction(function () use ($request) {
+        $this->resource = DB::transaction(function () use ($request) {
             $model = static::fillWhenUpdate($request, $this->resource);
 
             $model->save();
 
-            return $this;
+            return $model;
         });
 
         return response()->json($this->jsonSerialize(), RestResponse::REST_RESPONSE_UPDATED_CODE);
     }
 
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @return JsonResponse
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
@@ -153,7 +158,7 @@ trait Crudable
     }
 
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @return mixed
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws ValidationException
@@ -168,7 +173,7 @@ trait Crudable
     }
 
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @return mixed
      * @throws \Illuminate\Auth\Access\AuthorizationException
      * @throws ValidationException
@@ -183,7 +188,7 @@ trait Crudable
     }
 
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function allowToDestroy(RestifyRequest $request)
@@ -202,11 +207,111 @@ trait Crudable
 
     /**
      * @param $request
-     * @param  Collection  $items
+     * @param Collection $items
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function allowToViewAny($request, Collection $items)
     {
         $this->authorizeToShowAny($request);
+    }
+
+    /**
+     * @param array $payload
+     * @return mixed
+     * @throws AuthorizationException
+     * @throws ValidationException
+     */
+    public static function storePlain(array $payload)
+    {
+        /** * @var RepositoryStoreRequest $request */
+        $request = resolve(RepositoryStoreRequest::class);
+        $request->attributes->add($payload);
+
+
+        $repository = resolve(static::class);
+
+        $repository->allowToStore($request);
+
+        $repository->store($request);
+
+        return $repository->resource;
+    }
+
+    /**
+     * Update an entity with an array of payload
+     *
+     * @param array $payload
+     * @param $id
+     * @return mixed
+     * @throws AuthorizationException
+     * @throws UnauthorizedException
+     * @throws ValidationException
+     * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException
+     */
+    public static function updatePlain(array $payload, $id)
+    {
+        /** * @var RepositoryUpdateRequest $request */
+        $request = resolve(RepositoryUpdateRequest::class);
+        $request->attributes->add($payload);
+
+        $model = $request->findModelQuery($id, static::uriKey())->lockForUpdate()->firstOrFail();
+
+        /**
+         * @var Repository
+         */
+        $repository = $request->newRepositoryWith($model, static::uriKey());
+
+        $repository->allowToUpdate($request);
+
+        $repository->update($request, $id);
+
+        return $repository->resource;
+    }
+
+    /**
+     * Returns a plain model by key
+     * Used as: Book::showPlain(1)
+     *
+     * @param $key
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Model
+     * @throws AuthorizationException
+     * @throws UnauthorizedException
+     * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException
+     */
+    public static function showPlain($key)
+    {
+        /** * @var RestifyRequest $request */
+        $request = resolve(RestifyRequest::class);
+
+        $repository = $request->newRepositoryWith($request->findModelQuery($key, static::uriKey())->firstOrFail(), static::uriKey());
+
+        $repository->allowToShow($request);
+
+        $repository->show($request, $key);
+
+        return $repository->resource;
+    }
+
+    /**
+     * Validate deletion and delete entity
+     *
+     * @param $key
+     * @return mixed
+     * @throws AuthorizationException
+     * @throws UnauthorizedException
+     * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException
+     */
+    public static function destroyPlain($key)
+    {
+        /** * @var RepositoryDestroyRequest $request */
+        $request = resolve(RepositoryDestroyRequest::class);
+
+        $repository = $request->newRepositoryWith($request->findModelQuery($key, static::uriKey())->firstOrFail(), static::uriKey());
+
+        $repository->allowToDestroy($request);
+
+        return DB::transaction(function () use ($repository) {
+            return $repository->resource->delete();
+        });
     }
 }
