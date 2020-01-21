@@ -66,17 +66,15 @@ trait Crudable
 
     /**
      * @param RestifyRequest $request
+     * @param $repositoryId
      * @return JsonResponse
+     * @throws AuthorizationException
+     * @throws UnauthorizedException
+     * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException
      */
     public function show(RestifyRequest $request, $repositoryId)
     {
-        /**
-         * Dive into the Search service to attach relations.
-         */
-        $this->withResource(tap($this->resource, function ($query) use ($request) {
-            static::detailQuery($request, $query);
-        })->firstOrFail());
-
+        $this->resource = static::showPlain($repositoryId);
         try {
             $this->allowToShow($request);
         } catch (AuthorizationException $e) {
@@ -89,6 +87,8 @@ trait Crudable
     /**
      * @param RestifyRequest $request
      * @return JsonResponse
+     * @throws AuthorizationException
+     * @throws ValidationException
      */
     public function store(RestifyRequest $request)
     {
@@ -101,57 +101,44 @@ trait Crudable
                 ->code(RestResponse::REST_RESPONSE_INVALID_CODE);
         }
 
-        $model = DB::transaction(function () use ($request) {
-            $model = self::fillWhenStore(
-                $request, self::newModel()
-            );
-
-            $model->save();
-
-            return $model;
-        });
-
-        $this->resource = $model;
+        $this->resource = static::storePlain($request->toArray());
 
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
-            ->model($model)
-            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
+            ->model($this->resource)
+            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $this->resource->id);
     }
 
     /**
      * @param RestifyRequest $request
-     * @param $model
+     * @param $repositoryId
      * @return JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
+     * @throws UnauthorizedException
      * @throws ValidationException
+     * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException
      */
     public function update(RestifyRequest $request, $repositoryId)
     {
         $this->allowToUpdate($request);
 
-        $this->resource = DB::transaction(function () use ($request) {
-            $model = static::fillWhenUpdate($request, $this->resource);
-
-            $model->save();
-
-            return $model;
-        });
+        $this->resource = static::updatePlain($request->all(), $repositoryId);
 
         return response()->json($this->jsonSerialize(), RestResponse::REST_RESPONSE_UPDATED_CODE);
     }
 
     /**
      * @param RestifyRequest $request
+     * @param $repositoryId
      * @return JsonResponse
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
+     * @throws UnauthorizedException
+     * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException
      */
     public function destroy(RestifyRequest $request, $repositoryId)
     {
         $this->allowToDestroy($request);
 
-        DB::transaction(function () use ($request) {
-            return $this->resource->delete();
-        });
+        static::destroyPlain($repositoryId);
 
         return $this->response()
             ->setStatusCode(RestResponse::REST_RESPONSE_DELETED_CODE);
@@ -233,9 +220,15 @@ trait Crudable
 
         $repository->allowToStore($request);
 
-        $repository->store($request);
+        return DB::transaction(function () use ($request) {
+            $model = self::fillWhenStore(
+                $request, self::newModel()
+            );
 
-        return $repository->resource;
+            $model->save();
+
+            return $model;
+        });
     }
 
     /**
@@ -264,9 +257,13 @@ trait Crudable
 
         $repository->allowToUpdate($request);
 
-        $repository->update($request, $id);
+        return DB::transaction(function () use ($request, $repository) {
+            $model = static::fillWhenUpdate($request, $repository->resource);
 
-        return $repository->resource;
+            $model->save();
+
+            return $model;
+        });
     }
 
     /**
@@ -284,11 +281,14 @@ trait Crudable
         /** * @var RestifyRequest $request */
         $request = resolve(RestifyRequest::class);
 
-        $repository = $request->newRepositoryWith($request->findModelQuery($key, static::uriKey())->firstOrFail(), static::uriKey());
+        /**
+         * Dive into the Search service to attach relations.
+         */
+        $repository = $request->newRepositoryWith(tap($request->findModelQuery($key, static::uriKey())->firstOrFail(), function ($query) use ($request) {
+            static::detailQuery($request, $query);
+        }));
 
         $repository->allowToShow($request);
-
-        $repository->show($request, $key);
 
         return $repository->resource;
     }
