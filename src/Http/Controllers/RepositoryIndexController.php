@@ -28,11 +28,11 @@ class RepositoryIndexController extends RepositoryController
         } catch (EntityNotFoundException $e) {
             return $this->response()->notFound()
                 ->addError($e->getMessage())
-                ->debug($e, $request->isDev());
+                ->dump($e, $request->isDev());
         } catch (UnauthorizedException $e) {
-            return $this->response()->forbidden()->addError($e->getMessage())->debug($e, $request->isDev());
+            return $this->response()->forbidden()->addError($e->getMessage())->dump($e, $request->isDev());
         } catch (InstanceOfException | \Throwable $e) {
-            return $this->response()->error()->debug($e, $request->isDev());
+            return $this->response()->error()->dump($e, $request->isDev());
         }
     }
 }

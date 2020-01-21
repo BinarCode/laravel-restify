@@ -23,11 +23,11 @@ trait RepositoryFillFields
     {
         static::fillFields(
             $request, $model,
-            (new static($model))->collectFields($request)
+            static::resolveWith($model)->collectFields($request)
         );
 
         static::fillExtra($request, $model,
-            (new static($model))->collectFields($request)
+            static::resolveWith($model)->collectFields($request)
         );
 
         return $model;

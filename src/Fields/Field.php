@@ -118,8 +118,8 @@ class Field extends OrganicField implements JsonSerializable
      */
     protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute)
     {
-        if ($request->exists($attribute)) {
-            $value = $request[$attribute];
+        if ($request->exists($attribute) || $request->get($attribute)) {
+            $value = $request[$attribute] ?? $request->get($attribute);
 
             $model->{$attribute} = is_callable($this->storeCallback) ? call_user_func($this->storeCallback, $value, $request, $model) : $value;
         }

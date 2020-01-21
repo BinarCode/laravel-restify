@@ -31,13 +31,12 @@ trait InteractWithRepositories
     /**
      * Get the class name of the repository being requested.
      *
+     * @param null $key
      * @return Repository
-     * @throws EntityNotFoundException
-     * @throws UnauthorizedException
      */
-    public function repository()
+    public function repository($key = null)
     {
-        return tap(Restify::repositoryForKey($this->route('repository')), function ($repository) {
+        return tap(Restify::repositoryForKey($key ?? $this->route('repository')), function ($repository) {
             if (is_null($repository)) {
                 throw new EntityNotFoundException(__('Repository :name not found.', [
                     'name' => $repository,
@@ -109,11 +108,12 @@ trait InteractWithRepositories
      * As a model it could accept either a model instance, a collection or even paginated collection.
      *
      * @param  $model
+     * @param null $uriKey
      * @return Repository
      */
-    public function newRepositoryWith($model)
+    public function newRepositoryWith($model, $uriKey = null)
     {
-        $repository = $this->repository();
+        $repository = $this->repository($uriKey);
 
         return $repository::resolveWith($model);
     }
@@ -121,25 +121,27 @@ trait InteractWithRepositories
     /**
      * Get a new, scopeless query builder for the underlying model.
      *
+     * @param null $uriKey
      * @return \Illuminate\Database\Eloquent\Builder
      * @throws EntityNotFoundException
      * @throws UnauthorizedException
      */
-    public function newQueryWithoutScopes()
+    public function newQueryWithoutScopes($uriKey = null)
     {
-        return $this->model()->newQueryWithoutScopes();
+        return $this->model($uriKey)->newQueryWithoutScopes();
     }
 
     /**
      * Get a new instance of the underlying model.
      *
+     * @param null $uriKey
      * @return \Illuminate\Database\Eloquent\Model
      * @throws EntityNotFoundException
      * @throws UnauthorizedException
      */
-    public function model()
+    public function model($uriKey = null)
     {
-        $repository = $this->repository();
+        $repository = $this->repository($uriKey);
 
         return $repository::newModel();
     }
@@ -147,12 +149,15 @@ trait InteractWithRepositories
     /**
      * Get the query to find the model instance for the request.
      *
-     * @param  mixed|null  $repositoryId
+     * @param mixed|null $repositoryId
+     * @param null $uriKey
      * @return \Illuminate\Database\Eloquent\Builder
+     * @throws EntityNotFoundException
+     * @throws UnauthorizedException
      */
-    public function findModelQuery($repositoryId = null)
+    public function findModelQuery($repositoryId = null, $uriKey = null)
     {
-        return $this->newQueryWithoutScopes()->whereKey(
+        return $this->newQueryWithoutScopes($uriKey)->whereKey(
             $repositoryId ?? request('repositoryId')
         );
     }

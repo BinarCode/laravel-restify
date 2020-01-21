@@ -29,7 +29,7 @@ trait ValidatingTrait
      */
     public static function validatorForStoring(RestifyRequest $request)
     {
-        $on = (new static(static::newModel()));
+        $on = static::resolveWith(static::newModel());
 
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
