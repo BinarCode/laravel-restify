@@ -180,7 +180,7 @@ class RestResponse extends JsonResponse implements Responsable
      */
     public function addError($message)
     {
-        if ( ! isset($this->errors)) {
+        if (! isset($this->errors)) {
             $this->errors = [];
         }
 
@@ -265,7 +265,7 @@ class RestResponse extends JsonResponse implements Responsable
             return $this->$key;
         }
 
-        $code = 'static::REST_RESPONSE_' . strtoupper($key) . '_CODE';
+        $code = 'static::REST_RESPONSE_'.strtoupper($key).'_CODE';
 
         return defined($code) ? constant($code) : null;
     }
@@ -280,7 +280,7 @@ class RestResponse extends JsonResponse implements Responsable
      */
     public function __call($func, $args)
     {
-        $code = 'static::REST_RESPONSE_' . strtoupper($func) . '_CODE';
+        $code = 'static::REST_RESPONSE_'.strtoupper($func).'_CODE';
 
         if (defined($code)) {
             return $this->code(constant($code));
@@ -298,7 +298,7 @@ class RestResponse extends JsonResponse implements Responsable
      */
     public function respond($response = null)
     {
-        if ( ! func_num_args()) {
+        if (! func_num_args()) {
             $response = new \stdClass();
             $response->data = new \stdClass();
 
@@ -418,7 +418,7 @@ class RestResponse extends JsonResponse implements Responsable
     }
 
     /**
-     * Set "id" at root level for a model
+     * Set "id" at root level for a model.
      *
      * @param $id
      * @return mixed
@@ -596,7 +596,7 @@ class RestResponse extends JsonResponse implements Responsable
     }
 
     /**
-     * Set the JSON:API format for a single resource
+     * Set the JSON:API format for a single resource.
      *
      * $this->model( User::find(1) )
      *
