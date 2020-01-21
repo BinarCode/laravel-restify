@@ -4,6 +4,8 @@ namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\AbstractPaginator;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -53,14 +55,23 @@ trait ResponseResolver
             with(explode(',', $request->get('with')), function ($relations) use ($request, &$withs) {
                 foreach ($relations as $relation) {
                     if (in_array($relation, $this->resource::getWiths())) {
+                        /**
+                         * @var AbstractPaginator $paginator
+                         */
                         $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? ($this->resource::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
+                        /** * @var Builder $q */
                         $q = $this->resource->{$relation}->first();
+                        /** * @var Repository $repository */
                         if ($q && $repository = Restify::repositoryForModel($q->getModel())) {
                             // This will serialize into the repository dedicated for model
-                            $relatable = $repository::resolveWith($paginator)->toArray($request);
+                            $relatable = $paginator->getCollection()->map(function ($value) use ($repository) {
+                                return $repository::resolveWith($value);
+                            });
                         } else {
                             // This will fallback into serialization of the parent formatting
-                            $relatable = static::resolveWith($paginator)->toArray($request);
+                            $relatable = $paginator->getCollection()->map(function ($value) use ($repository) {
+                                return $repository::resolveWith($value);
+                            });
                         }
 
                         unset($relatable['meta']);

@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\PostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\RepositoryWithRoutes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -163,7 +162,6 @@ abstract class IntegrationTest extends TestCase
         Restify::repositories([
             UserRepository::class,
             PostRepository::class,
-            RepositoryWithRoutes::class,
         ]);
     }
 

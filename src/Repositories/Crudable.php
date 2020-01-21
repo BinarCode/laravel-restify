@@ -93,11 +93,9 @@ trait Crudable
         try {
             $this->allowToStore($request);
         } catch (AuthorizationException | UnauthorizedException $e) {
-            return $this->response()->errors([
-                'errors' => Arr::wrap($e->getMessage()),
-            ])->code(RestResponse::REST_RESPONSE_FORBIDDEN_CODE);
+            return $this->response()->addError($e->getMessage())->code(RestResponse::REST_RESPONSE_FORBIDDEN_CODE);
         } catch (ValidationException $e) {
-            return $this->response()->errors($e->errors())
+            return $this->response()->addError($e->errors())
                 ->code(RestResponse::REST_RESPONSE_INVALID_CODE);
         }
 
@@ -111,7 +109,8 @@ trait Crudable
             return $model;
         });
 
-        return $this->response(static::resolveWith($model)->jsonSerialize(), RestResponse::REST_RESPONSE_CREATED_CODE)
+        return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
+            ->model($model)
             ->header('Location', Restify::path().'/'.static::uriKey().'/'.$model->id);
     }
 

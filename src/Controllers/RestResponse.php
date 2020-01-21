@@ -71,7 +71,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * @var int
      */
-    protected $code = self::REST_RESPONSE_SUCCESS_CODE;
+    protected $code;
     /**
      * @var int
      */
@@ -518,7 +518,7 @@ class RestResponse extends JsonResponse implements Responsable
      * @param \Illuminate\Http\Request $request
      * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function toResponse($request)
+    public function toResponse($request = null)
     {
         if ($this->errors) {
             $this->setData([
@@ -549,10 +549,15 @@ class RestResponse extends JsonResponse implements Responsable
 
         // Single resource ($this->model(...))
         if ($this->id) {
-            $this->original['attributes'] = $this->attributes;
-            $this->original['type'] = $this->type;
-            $this->original['id'] = $this->id;
-            $this->setData($this->original);
+            $original = [
+                'data' => [
+                    'attributes' => $this->attributes,
+                    'type' => $this->type,
+                    'id' => $this->id,
+                ],
+            ];
+
+            $this->setData($original);
         }
 
         return $this;
@@ -603,7 +608,6 @@ class RestResponse extends JsonResponse implements Responsable
         $this->setAttributes($model->jsonSerialize())
             ->type($model->getTable())
             ->id($model->getKey());
-
 
         return $this;
     }

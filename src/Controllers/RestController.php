@@ -95,23 +95,6 @@ abstract class RestController extends BaseController
     }
 
     /**
-     * Returns a generic response to the client.
-     *
-     * @param  mixed  $data
-     * @param  int  $httpCode
-     *
-     * @return JsonResponse
-     * @throws BindingResolutionException
-     */
-    protected function respond($data = null, $httpCode = 200)
-    {
-        $response = new \stdClass();
-        $response->data = $data;
-
-        return $this->response()->data($data)->code($httpCode)->respond();
-    }
-
-    /**
      * Get Response object.
      *
      * @param  null  $data

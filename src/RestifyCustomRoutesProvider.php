@@ -42,11 +42,13 @@ class RestifyCustomRoutesProvider extends ServiceProvider
             $parameters = $method->getParameters();
 
             if (count($parameters) === 2 && $parameters[1] instanceof \ReflectionParameter) {
-                $config = array_merge($config, $parameters[1]->getDefaultValue());
+//                $config = array_merge($config, $parameters[1]->getDefaultValue());
             }
 
-            Route::group($config, function ($router) use ($repository) {
-                $repository::routes($router);
+            Route::group([], function ($router) use ($repository, $config) {
+                if($repository === 'Binaryk\LaravelRestify\Tests\RepositoryWithRoutes') {
+                }
+                $repository::routes($router, $config);
             });
         });
     }

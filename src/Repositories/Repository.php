@@ -185,11 +185,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * However all options could be customized by passing an $options argument
      *
      * @param  Router  $router
-     * @param $options
+     * @param array $attributes
      */
-    public static function routes(Router $router, $options = [])
+    public static function routes(Router $router, $attributes)
     {
-        // override for custom routes
+        $router->group($attributes, function ($router) {
+            // override for custom routes
+        });
     }
 
     /**
