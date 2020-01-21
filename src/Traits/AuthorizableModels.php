@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 
 /**
  * Could be used as a trait in a model class and in a repository class.
@@ -38,82 +37,79 @@ trait AuthorizableModels
     /**
      * Determine if the resource should be available for the given request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return void
      * @throws AuthorizationException
-     * @throws \Throwable
      */
-    public function authorizeToViewAny(Request $request)
+    public function authorizeToShowAny(Request $request)
     {
         if (! static::authorizable()) {
             return;
         }
 
-        if (method_exists(Gate::getPolicyFor(static::newModel()), 'viewAny')) {
-            $this->authorizeTo($request, 'viewAny');
+        if (method_exists(Gate::getPolicyFor(static::newModel()), 'showAny')) {
+            $this->authorizeTo($request, 'showAny');
         }
     }
 
     /**
      * Determine if the resource should be available for the given request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return bool
      */
-    public static function authorizedToViewAny(Request $request)
+    public static function authorizedToShowAny(Request $request)
     {
         if (! static::authorizable()) {
             return true;
         }
 
-        return method_exists(Gate::getPolicyFor(static::newModel()), 'viewAny')
-            ? Gate::check('viewAny', get_class(static::newModel()))
+        return method_exists(Gate::getPolicyFor(static::newModel()), 'showAny')
+            ? Gate::check('showAny', get_class(static::newModel()))
             : true;
     }
 
     /**
-     * Determine if the current user can view the given resource or throw an exception.
+     * Determine if the current user can view the given resource or throw.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return bool
-     *
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \Throwable
+     * @param Request $request
+     * @throws AuthorizationException
      */
-    public function authorizeToView(Request $request)
+    public function authorizeToShow(Request $request)
     {
-        return $this->authorizeTo($request, 'view') && $this->authorizeToViewAny($request);
+        $this->authorizeTo($request, 'show');
     }
 
     /**
      * Determine if the current user can view the given resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param Request $request
      * @return bool
      */
-    public function authorizedToView(Request $request)
+    public function authorizedToShow(Request $request)
     {
-        return $this->authorizedTo($request, 'view') && $this->authorizedToViewAny($request);
+        return $this->authorizedTo($request, 'show');
     }
 
     /**
      * Determine if the current user can create new repositories or throw an exception.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \Throwable
      */
     public static function authorizeToCreate(Request $request)
     {
-        throw_unless(static::authorizedToCreate($request), AuthorizationException::class, 'Unauthorized to create.');
+        if (! static::authorizedToCreate($request)) {
+            throw new AuthorizationException('Unauthorized to create.');
+        }
     }
 
     /**
      * Determine if the current user can create new repositories.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return bool
      */
     public static function authorizedToCreate(Request $request)
@@ -128,21 +124,20 @@ trait AuthorizableModels
     /**
      * Determine if the current user can update the given resource or throw an exception.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \Throwable
      */
     public function authorizeToUpdate(Request $request)
     {
-        return $this->authorizeTo($request, 'update');
+        $this->authorizeTo($request, 'update');
     }
 
     /**
      * Determine if the current user can update the given resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return bool
      */
     public function authorizedToUpdate(Request $request)
@@ -153,20 +148,20 @@ trait AuthorizableModels
     /**
      * Determine if the current user can delete the given resource or throw an exception.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function authorizeToDelete(Request $request)
     {
-        return $this->authorizeTo($request, 'delete');
+        $this->authorizeTo($request, 'delete');
     }
 
     /**
      * Determine if the current user can delete the given resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return bool
      */
     public function authorizedToDelete(Request $request)
@@ -175,128 +170,26 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can restore the given resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return bool
-     */
-    public function authorizedToRestore(Request $request)
-    {
-        return $this->authorizedTo($request, 'restore');
-    }
-
-    /**
-     * Determine if the current user can force delete the given resource.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return bool
-     */
-    public function authorizedToForceDelete(Request $request)
-    {
-        return $this->authorizedTo($request, 'forceDelete');
-    }
-
-    /**
-     * Determine if the user can add / associate models of the given type to the resource.
-     *
-     * @param  Request  $request
-     * @param  \Illuminate\Database\Eloquent\Model|string  $model
-     * @return bool
-     */
-    public function authorizedToAdd(Request $request, $model)
-    {
-        if (! static::authorizable()) {
-            return true;
-        }
-
-        $method = 'add'.class_basename($model);
-
-        return method_exists(Gate::getPolicyFor($this->model()), $method)
-            ? Gate::check($method, $this->model())
-            : true;
-    }
-
-    /**
-     * Determine if the user can attach any models of the given type to the resource.
-     *
-     * @param  Request  $request
-     * @param  \Illuminate\Database\Eloquent\Model|string  $model
-     * @return bool
-     */
-    public function authorizedToAttachAny(Request $request, $model)
-    {
-        if (! static::authorizable()) {
-            return true;
-        }
-
-        $method = 'attachAny'.Str::singular(class_basename($model));
-
-        return method_exists(Gate::getPolicyFor($this->model()), $method)
-            ? Gate::check($method, [$this->model()])
-            : true;
-    }
-
-    /**
-     * Determine if the user can attach models of the given type to the resource.
-     *
-     * @param  Request  $request
-     * @param  \Illuminate\Database\Eloquent\Model|string  $model
-     * @return bool
-     */
-    public function authorizedToAttach(Request $request, $model)
-    {
-        if (! static::authorizable()) {
-            return true;
-        }
-
-        $method = 'attach'.Str::singular(class_basename($model));
-
-        return method_exists(Gate::getPolicyFor($this->model()), $method)
-            ? Gate::check($method, [$this->model(), $model])
-            : true;
-    }
-
-    /**
-     * Determine if the user can detach models of the given type to the resource.
-     *
-     * @param  Request  $request
-     * @param  \Illuminate\Database\Eloquent\Model|string  $model
-     * @param  string  $relationship
-     * @return bool
-     */
-    public function authorizedToDetach(Request $request, $model, $relationship)
-    {
-        if (! static::authorizable()) {
-            return true;
-        }
-
-        $method = 'detach'.Str::singular(class_basename($model));
-
-        return method_exists(Gate::getPolicyFor($this->model()), $method)
-            ? Gate::check($method, [$this->model(), $model])
-            : true;
-    }
-
-    /**
      * Determine if the current user has a given ability.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $ability
+     * @param \Illuminate\Http\Request $request
+     * @param string $ability
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \Throwable
      */
     public function authorizeTo(Request $request, $ability)
     {
-        throw_unless($this->authorizedTo($request, $ability), AuthorizationException::class);
+        if ($this->authorizedTo($request, $ability) === false) {
+            throw new AuthorizationException();
+        }
     }
 
     /**
      * Determine if the current user can view the given resource.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $ability
+     * @param \Illuminate\Http\Request $request
+     * @param string $ability
      * @return bool
      */
     public function authorizedTo(Request $request, $ability)
@@ -305,14 +198,19 @@ trait AuthorizableModels
     }
 
     /**
-     * @return AuthorizableModels|Model|mixed
-     * @throws \Throwable
+     * Since this trait could be used by a repository or by a model, we have to
+     * detect the model from either class.
+     *
+     * @return AuthorizableModels|Model|mixed|null
+     * @throws ModelNotFoundException
      */
     public function determineModel()
     {
         $model = $this instanceof Model ? $this : ($this->resource ?? null);
 
-        throw_if(is_null($model), new ModelNotFoundException(__('Model is not declared in :class', ['class' => self::class])));
+        if (is_null($model)) {
+            throw new ModelNotFoundException(__('Model is not declared in :class', ['class' => self::class]));
+        }
 
         return $model;
     }

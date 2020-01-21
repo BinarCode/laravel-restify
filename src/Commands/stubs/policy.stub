@@ -16,19 +16,19 @@ class DummyClass
      * @param  \App\User  $user
      * @return mixed
      */
-    public function viewAny(User $user = null)
+    public function showAny(User $user = null)
     {
         //
     }
 
     /**
-     * Determine whether the user can view the model.
+     * Determine whether the user can get the model.
      *
      * @param  \App\User  $user
      * @param  DummyModel  $model
      * @return mixed
      */
-    public function view(User $user, DummyModel $model)
+    public function show(User $user, DummyModel $model)
     {
         //
     }

@@ -9,6 +9,7 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 
 /**
  * Class RestResponse.
@@ -18,6 +19,7 @@ use Illuminate\Http\JsonResponse;
  * @method RestResponse created()
  * @method RestResponse deleted()
  * @method RestResponse blank()
+ * @method RestResponse notFound()
  * @method RestResponse error() 500
  * @method RestResponse invalid() 400
  * @method RestResponse unauthorized() 401 - don't have correct password/email
@@ -29,9 +31,10 @@ use Illuminate\Http\JsonResponse;
  *
  * @author lupacescueduard <eduard.lupacescu@binarcode.com>
  */
-class RestResponse implements Responsable
+class RestResponse extends JsonResponse implements Responsable
 {
     public static $RESPONSE_DEFAULT_ATTRIBUTES = [
+        'attributes',
         'line',
         'file',
         'stack',
@@ -55,14 +58,20 @@ class RestResponse implements Responsable
     const REST_RESPONSE_UNAUTHORIZED_CODE = 401;
     const REST_RESPONSE_FORBIDDEN_CODE = 403;
     const REST_RESPONSE_MISSING_CODE = 404;
+    const REST_RESPONSE_NOTFOUND_CODE = 404;
     const REST_RESPONSE_THROTTLE_CODE = 429;
     const REST_RESPONSE_SUCCESS_CODE = 200;
     const REST_RESPONSE_UNAVAILABLE_CODE = 503;
 
     /**
+     * @var ResponseFactory
+     */
+    public $response;
+
+    /**
      * @var int
      */
-    protected $code = self::REST_RESPONSE_SUCCESS_CODE;
+    protected $code;
     /**
      * @var int
      */
@@ -106,16 +115,6 @@ class RestResponse implements Responsable
     private $errors;
 
     /**
-     * @var array|null
-     */
-    private $data;
-
-    /**
-     * @var array
-     */
-    protected $headers;
-
-    /**
      * @var string
      */
     protected $type;
@@ -132,28 +131,23 @@ class RestResponse implements Responsable
     protected $relationships;
 
     /**
-     * RestResponse constructor.
-     * @param  mixed  $content
-     * @param  int  $status
-     * @param  array  $headers
+     * Indicate if response could include sensitive information (file, line).
+     * @var bool
      */
-    public function __construct($content = null, $status = 200, array $headers = [])
-    {
-        $this->data = $content;
-        $this->code = $status;
-        $this->headers = $headers;
-    }
+    public $debug = false;
 
     /**
      * Set response data.
      *
-     * @param  mixed  $data
+     * @param mixed $data
      * @return $this|mixed
      */
     public function data($data = null)
     {
         if (func_num_args()) {
-            $this->data = ($data instanceof Arrayable) ? $data->toArray() : $data;
+            $data = ($data instanceof Arrayable) ? $data->toArray() : $data;
+
+            $this->setData(compact('data'));
 
             return $this;
         }
@@ -164,24 +158,24 @@ class RestResponse implements Responsable
     /**
      * Set response errors.
      *
-     * @param  array  $errors
+     * @param mixed $errors
      * @return $this|null
      */
-    public function errors(array $errors = null)
+    public function errors($errors)
     {
         if (func_num_args()) {
-            $this->errors = $errors;
+            $this->errors = Arr::wrap($errors);
 
             return $this;
         }
 
-        return $this->errors;
+        return $this;
     }
 
     /**
      * Add error to response errors.
      *
-     * @param  mixed  $message
+     * @param mixed $message
      * @return $this
      */
     public function addError($message)
@@ -198,7 +192,7 @@ class RestResponse implements Responsable
     /**
      * Set response Http code.
      *
-     * @param  int  $code
+     * @param int $code
      * @return $this|int
      */
     public function code($code = self::REST_RESPONSE_SUCCESS_CODE)
@@ -215,7 +209,7 @@ class RestResponse implements Responsable
     /**
      * Set response Http code.
      *
-     * @param  int  $line
+     * @param int $line
      * @return $this|int
      */
     public function line($line = null)
@@ -230,7 +224,7 @@ class RestResponse implements Responsable
     }
 
     /**
-     * @param  string  $file
+     * @param string $file
      * @return $this|int
      */
     public function file(string $file = null)
@@ -245,7 +239,7 @@ class RestResponse implements Responsable
     }
 
     /**
-     * @param  string|null  $stack
+     * @param string|null $stack
      * @return $this|int
      */
     public function stack(string $stack = null)
@@ -262,7 +256,7 @@ class RestResponse implements Responsable
     /**
      * Magic to get response code constants.
      *
-     * @param  string  $key
+     * @param string $key
      * @return mixed|null
      */
     public function __get($key)
@@ -298,7 +292,7 @@ class RestResponse implements Responsable
     /**
      * Build a new response with our response data.
      *
-     * @param  mixed  $response
+     * @param mixed $response
      *
      * @return JsonResponse
      */
@@ -322,7 +316,9 @@ class RestResponse implements Responsable
             }
         }
 
-        return $this->response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE, $this->headers);
+        return tap($this->response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE), function ($response) {
+            $this->withResponse($response, request());
+        });
     }
 
     /**
@@ -411,12 +407,25 @@ class RestResponse implements Responsable
     /**
      * Set attributes at root level.
      *
-     * @param  array  $attributes
+     * @param array $attributes
      * @return mixed
      */
     public function setAttributes(array $attributes)
     {
         $this->attributes = $attributes;
+
+        return $this;
+    }
+
+    /**
+     * Set "id" at root level for a model.
+     *
+     * @param $id
+     * @return mixed
+     */
+    public function id($id)
+    {
+        $this->id = $id;
 
         return $this;
     }
@@ -433,21 +442,13 @@ class RestResponse implements Responsable
      * @return ResponseFactory
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    protected function response()
+    public function response()
     {
-        return app()->make(ResponseFactory::class);
-    }
+        if (is_null($this->response)) {
+            $this->response = app()->make(ResponseFactory::class);
+        }
 
-    /**
-     * @param $name
-     * @param $value
-     * @return RestResponse
-     */
-    public function header($name, $value)
-    {
-        $this->headers[$name] = $value;
-
-        return $this;
+        return $this->response;
     }
 
     /**
@@ -465,8 +466,8 @@ class RestResponse implements Responsable
      * Useful when newly created repository, will prepare the response according
      * with JSON:API https://jsonapi.org/format/#document-resource-object-fields.
      *
-     * @param  Repository  $repository
-     * @param  bool  $withRelations
+     * @param Repository $repository
+     * @param bool $withRelations
      * @return $this
      */
     public function forRepository(Repository $repository, $withRelations = false)
@@ -514,11 +515,100 @@ class RestResponse implements Responsable
     }
 
     /**
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
      */
-    public function toResponse($request)
+    public function toResponse($request = null)
     {
-        return $this->respond();
+        if ($this->errors) {
+            $this->setData([
+                'errors' => $this->getErrors(),
+            ]);
+        }
+
+        if ($this->code) {
+            $this->setStatusCode(is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
+        }
+
+        if ($this->debug) {
+            $extra = [];
+
+            foreach (['line', 'errors', 'file', 'stack', 'meta'] as $property) {
+                if (isset($this->{$property})) {
+                    $extra[$property] = $this->{$property};
+                }
+            }
+
+            $this->setData($extra);
+        }
+
+        if ($this->meta) {
+            $this->original['meta'] = $this->meta;
+            $this->setData($this->original);
+        }
+
+        // Single resource ($this->model(...))
+        if ($this->id) {
+            $original = [
+                'data' => [
+                    'attributes' => $this->attributes,
+                    'type' => $this->type,
+                    'id' => $this->id,
+                ],
+            ];
+
+            $this->setData($original);
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param $response
+     * @param $request
+     */
+    public function withResponse($response, $request)
+    {
+        //
+    }
+
+    /**
+     * @return array|null
+     */
+    public function getErrors()
+    {
+        return $this->errors instanceof Arrayable ? $this->errors->toArray() : $this->errors;
+    }
+
+    public function debug(\Exception $exception, $condition)
+    {
+        if ($condition) {
+            $this->debug = true;
+
+            $this->line($exception->getLine())
+                ->code($exception->getCode())
+                ->file($exception->getFile())
+                ->errors($exception->getMessage())
+                ->stack($exception->getTraceAsString());
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the JSON:API format for a single resource.
+     *
+     * $this->model( User::find(1) )
+     *
+     * @param Model $model
+     * @return $this
+     */
+    public function model(Model $model)
+    {
+        $this->setAttributes($model->jsonSerialize())
+            ->type($model->getTable())
+            ->id($model->getKey());
+
+        return $this;
     }
 }

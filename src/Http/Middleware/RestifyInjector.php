@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Middleware;
 use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyServiceProviderRegistered;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\RestifyCustomRoutesProvider;
 use Binaryk\LaravelRestify\RestifyServiceProvider;
 use Closure;
 
@@ -27,6 +28,8 @@ class RestifyInjector
         $isRestify = $request->is($path) ||
             $request->is(trim($path.'/*', '/')) ||
             $request->is('restify-api/*');
+
+        app()->register(RestifyCustomRoutesProvider::class);
 
         if ($isRestify) {
             RestifyBeforeEach::dispatch($request);

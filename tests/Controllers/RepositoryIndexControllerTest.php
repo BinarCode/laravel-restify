@@ -34,7 +34,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $class = (new class extends RestController {
             public function users()
             {
-                return $this->respond($this->search(User::class));
+                return $this->response($this->search(User::class));
             }
         });
 
@@ -45,7 +45,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         ]);
         $this->assertIsArray($class->search(User::class));
         $this->assertCount(1, $response['data']);
-        $this->assertEquals(count($class->users()->getData()->data->data), User::$defaultPerPage);
+        $this->assertEquals(count($class->users()->getData()->data), User::$defaultPerPage);
     }
 
     public function test_that_default_per_page_works()
@@ -56,7 +56,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $class = (new class extends RestController {
             public function users()
             {
-                return $this->respond($this->search(User::class));
+                return $this->response($this->search(User::class));
             }
         });
 
@@ -67,7 +67,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         ]);
         $this->assertIsArray($class->search(User::class));
         $this->assertCount(1, $response['data']);
-        $this->assertEquals(count($class->users()->getData()->data->data), 40);
+        $this->assertEquals(count($class->users()->getData()->data), 40);
         User::$defaultPerPage = RestifySearchable::DEFAULT_PER_PAGE;
     }
 
@@ -77,30 +77,32 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $request = Mockery::mock(RestifyRequest::class);
         $model = $users->where('email', 'eduard.lupacescu@binarcode.com')->first(); //find manually the model
         $repository = Restify::repositoryForModel(get_class($model));
-        $expected = (new $repository($model))->toArray($request);
+        $expected = $repository::resolveWith($model)->toArray(request());
         unset($expected['relationships']);
 
-        $this->withExceptionHandling()
+        $r = $this->withExceptionHandling()
             ->getJson('/restify-api/users?search=eduard.lupacescu@binarcode.com')
             ->assertStatus(200)
-            ->assertJson([
+            ->assertJsonStructure([
                 'links' => [
-                    'last' => 'http://localhost/restify-api/users?page=1',
-                    'next' => null,
-                    'first' => 'http://localhost/restify-api/users?page=1',
-                    'prev' => null,
+                    'last',
+                    'next',
+                    'first',
+                    'prev',
                 ],
                 'meta' => [
-                    'path' => 'http://localhost/restify-api/users',
-                    'current_page' => 1,
-                    'from' => 1,
-                    'last_page' => 1,
-                    'per_page' => 15,
-                    'to' => 1,
-                    'total' => 1,
+                    'path',
+                    'current_page',
+                    'from',
+                    'last_page',
+                    'per_page',
+                    'to',
+                    'total',
                 ],
-                'data' => [$expected],
-            ]);
+                'data',
+            ])->decodeResponseJson();
+
+        $this->assertCount(1, $r['data']);
 
         $this->withExceptionHandling()
             ->getJson('/restify-api/users?search=some_unexpected_string_here')
@@ -114,12 +116,12 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 ],
                 'meta' => [
                     'current_page' => 1,
-                    'from' => 1,
+                    'from' => null,
                     'last_page' => 1,
                     'per_page' => 15,
-                    'to' => 1,
+                    'to' => null,
                     'path' => 'http://localhost/restify-api/users',
-                    'total' => 1,
+                    'total' => 0,
                 ],
                 'data' => [],
             ]);
@@ -132,8 +134,8 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ->assertStatus(200)
             ->getOriginalContent();
 
-        $this->assertSame($response->getCollection()->first()->id, 10);
-        $this->assertSame($response->getCollection()->last()->id, 1);
+        $this->assertSame($response['data']->first()->resource->id, 10);
+        $this->assertSame($response['data']->last()->resource->id, 1);
     }
 
     public function test_that_asc_sort_query_param_works()
@@ -172,7 +174,8 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $model = $users->where('email', 'eduard.lupacescu@binarcode.com')->first();
         $repository = Restify::repositoryForModel(get_class($model));
-        $expected = (new $repository($model))->toArray($request);
+        $expected = $repository::resolveWith($model)->toArray($request);
+
         unset($expected['relationships']);
         $this->withExceptionHandling()
             ->get('/restify-api/users?email=eduard.lupacescu@binarcode.com')

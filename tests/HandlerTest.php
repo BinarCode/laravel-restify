@@ -142,7 +142,7 @@ class HandlerTest extends IntegrationTest
     {
         App::shouldReceive('environment')
             ->times(1)
-            ->andReturn('production');
+            ->andReturnTrue();
         $response = $this->handler->render($this->request, new \Exception('Foo'));
         $this->assertObjectNotHasAttribute('file', $response->getData());
         $this->assertObjectNotHasAttribute('line', $response->getData());

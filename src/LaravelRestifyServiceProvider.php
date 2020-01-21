@@ -27,6 +27,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
             ]);
             $this->registerPublishing();
 
+            $this->app->register(RestifyCustomRoutesProvider::class);
             $this->app->register(RestifyServiceProvider::class);
         }
 

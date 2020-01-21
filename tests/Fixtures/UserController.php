@@ -20,7 +20,7 @@ class UserController extends RestController
     {
         $users = User::all();
 
-        return $this->respond($users);
+        return $this->response()->data($users);
     }
 
     /**
@@ -31,7 +31,7 @@ class UserController extends RestController
      */
     public function store(Request $request)
     {
-        return $this->respond(factory(User::class)->create());
+        return $this->response()->data(factory(User::class)->create());
     }
 
     /**
@@ -49,7 +49,7 @@ class UserController extends RestController
 
         $this->gate('access', $user);
 
-        return $this->respond($user);
+        return $this->response()->model($user)->toResponse($this->request());
     }
 
     /**
@@ -93,6 +93,6 @@ class UserController extends RestController
         $this->gate('access', $user);
         $user->delete();
 
-        return $this->message('User deleted.');
+        return $this->message('User deleted.')->toResponse($this->request());
     }
 }

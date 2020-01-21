@@ -3,8 +3,8 @@
 namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\Controllers\RestController;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Tests\Fixtures\RepositoryWithRoutes;
 use Illuminate\Routing\Router;
 
 /**
@@ -17,6 +17,7 @@ class RepositoryWithRoutesTest extends IntegrationTest
         $this->loadRepositories();
 
         Restify::repositories([
+            RepositoryWithRoutes::class,
             WithCustomPrefix::class,
             WithCustomMiddleware::class,
             WithCustomNamespace::class,
@@ -27,12 +28,12 @@ class RepositoryWithRoutesTest extends IntegrationTest
 
     public function test_can_add_custom_routes()
     {
-        $this->get(Restify::path(RepositoryWithRoutes::uriKey()).'/testing')->assertStatus(200)
+        $this->get(Restify::path(RepositoryWithRoutes::uriKey()).'/main-testing')->assertStatus(200)
             ->assertJson([
                 'success' => true,
             ]);
 
-        $this->get(route('testing.route'))->assertStatus(200)
+        $this->get(route('main.testing.route'))->assertStatus(200)
             ->assertJson([
                 'success' => true,
             ]);
@@ -40,7 +41,7 @@ class RepositoryWithRoutesTest extends IntegrationTest
 
     public function test_can_use_custom_prefix()
     {
-        $this->get('/custom-prefix/testing')->assertStatus(200)
+        $this->withoutExceptionHandling()->get('/custom-prefix/testing')->assertStatus(200)
             ->assertJson([
                 'success' => true,
             ]);
@@ -63,15 +64,42 @@ class RepositoryWithRoutesTest extends IntegrationTest
     }
 }
 
+class RepositoryWithRoutes extends Repository
+{
+    /**
+     * @param Router $router
+     * @param array $attributes
+     */
+    public static function routes(Router $router, $attributes)
+    {
+        $router->group($attributes, function ($router) {
+            $router->get('/main-testing', function () {
+                return response()->json([
+                    'success' => true,
+                ]);
+            })->name('main.testing.route');
+        });
+    }
+
+    public static function uriKey()
+    {
+        return 'posts';
+    }
+}
+
 class WithCustomPrefix extends RepositoryWithRoutes
 {
-    public static function routes(Router $router, $options = ['prefix' => 'custom-prefix'])
+    public static function routes(Router $router, $attributes)
     {
-        $router->get('testing', function () {
-            return response()->json([
-                'success' => true,
-            ]);
-        })->name('custom.testing.route');
+        $attributes['prefix'] = 'custom-prefix';
+
+        $router->group($attributes, function ($router) {
+            $router->get('testing', function () {
+                return response()->json([
+                    'success' => true,
+                ]);
+            })->name('custom.testing.route');
+        });
     }
 }
 
@@ -87,23 +115,29 @@ class MiddlewareFail
 
 class WithCustomMiddleware extends RepositoryWithRoutes
 {
-    public static function routes(Router $router, $options = ['middleware' => [MiddlewareFail::class]])
+    public static function routes(Router $router, $options)
     {
-        $router->get('with-middleware', function () {
-            return response()->json([
-                'success' => true,
-            ]);
-        })->name('middleware.failing.route');
+        $options['middleware'] = [MiddlewareFail::class];
+
+        $router->group($options, function ($router) {
+            $router->get('with-middleware', function () {
+                return response()->json([
+                    'success' => true,
+                ]);
+            })->name('middleware.failing.route');
+        });
     }
 }
 
 class WithCustomNamespace extends RepositoryWithRoutes
 {
-    public static function routes(Router $router, $options = [
-        'namespace' => 'Binaryk\LaravelRestify\Tests',
-    ])
+    public static function routes(Router $router, $options)
     {
-        $router->get('custom-namespace', 'HandleController@sayHello')->name('namespace.route');
+        $options['namespace'] = 'Binaryk\LaravelRestify\Tests';
+
+        $router->group($options, function ($router) {
+            $router->get('custom-namespace', 'HandleController@sayHello')->name('namespace.route');
+        });
     }
 }
 
