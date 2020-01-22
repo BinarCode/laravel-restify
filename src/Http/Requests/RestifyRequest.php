@@ -30,7 +30,7 @@ class RestifyRequest extends FormRequest
     }
 
     /**
-     * Determine if the request is on repository index e.g. restify-api/users
+     * Determine if the request is on repository index e.g. restify-api/users.
      *
      * @return bool
      */
@@ -43,7 +43,7 @@ class RestifyRequest extends FormRequest
 
     /**
      * Determine if the request is on repository detail e.g. restify-api/users/1
-     * This will match any verbs (PATCH, DELETE or GET)
+     * This will match any verbs (PATCH, DELETE or GET).
      * @return bool
      */
     public function isDetailRequest()
