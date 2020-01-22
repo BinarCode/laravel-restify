@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Support\Arr;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -17,12 +18,37 @@ trait ResponseResolver
     /**
      * Return the attributes list.
      *
+     * Resolve all model fields through showCallback methods and exclude from the final response if
+     * that is required by method
+     *
      * @param $request
      * @return array
      */
-    public function resolveDetailsAttributes($request)
+    public function resolveDetailsAttributes(RestifyRequest $request)
     {
-        return method_exists($this->resource, 'toArray') ? $this->resource->toArray($request) : [];
+        $resolvedAttributes = [];
+        $modelAttributes = method_exists($this->resource, 'toArray') ? $this->resource->toArray($request) : [];
+        $this->collectFields($request)->filter(function (Field $field) {
+            return is_callable($field->showCallback);
+        })->map(function (Field $field) use (&$resolvedAttributes) {
+            $resolvedAttributes[$field->attribute] = $field->resolveForShow($this);
+        });
+
+        $resolved = array_merge($modelAttributes, $resolvedAttributes);
+
+        if ($request->isDetailRequest()) {
+            $hidden = $this->collectFields($request)->filter->isHiddenOnDetail($request, $this)->pluck('attribute')->toArray();
+
+            $resolved = Arr::except($resolved, $hidden);
+        }
+
+        if ($request->isIndexRequest()) {
+            $hidden = $this->collectFields($request)->filter->isHiddenOnIndex($request, $this)->pluck('attribute')->toArray();
+
+            $resolved = Arr::except($resolved, $hidden);
+        }
+
+        return $resolved;
     }
 
     /**
@@ -97,15 +123,6 @@ trait ResponseResolver
      */
     public function serializeDetails(RestifyRequest $request, $serialized)
     {
-        $resolvedAttributes = [];
-        $this->collectFields($request)->filter(function (Field $field) {
-            return is_callable($field->showCallback);
-        })->map(function (Field $field) use (&$resolvedAttributes) {
-            $resolvedAttributes[$field->attribute] = $field->resolveForShow($this);
-        });
-
-        $serialized['attributes'] = array_merge($serialized['attributes'], $resolvedAttributes);
-
         return $serialized;
     }
 
