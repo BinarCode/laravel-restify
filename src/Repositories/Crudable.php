@@ -295,7 +295,6 @@ trait Crudable
             static::detailQuery($request, $query);
         }));
 
-
         $repository->allowToShow($request);
 
         return $repository->resource;
