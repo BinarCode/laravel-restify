@@ -37,7 +37,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
 
     public function test_unauthorized_store()
     {
-        $_SERVER['restify.user.creatable'] = false;
+        $_SERVER['restify.post.creatable'] = false;
 
         Gate::policy(Post::class, PostPolicy::class);
 
@@ -45,13 +45,13 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'title' => 'Title',
             'description' => 'Title',
         ])->assertStatus(403)
-            ->assertJson(['errors' => ['Unauthorized to create.']]);
+            ->assertJson(['errors' => ['Unauthorized to store.']]);
     }
 
     public function test_success_storing()
     {
         $user = $this->mockUsers()->first();
-        $r = json_decode($this->withExceptionHandling()->post('/restify-api/posts', [
+        $r = json_decode($this->withoutExceptionHandling()->post('/restify-api/posts', [
             'user_id' => $user->id,
             'title' => 'Some post title',
             'description' => 'A very short description',

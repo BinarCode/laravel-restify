@@ -92,30 +92,30 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can create new repositories or throw an exception.
+     * Determine if the current user can store new repositories or throw an exception.
      *
      * @param \Illuminate\Http\Request $request
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public static function authorizeToCreate(Request $request)
+    public static function authorizeToStore(Request $request)
     {
-        if (! static::authorizedToCreate($request)) {
-            throw new AuthorizationException('Unauthorized to create.');
+        if (! static::authorizedToStore($request)) {
+            throw new AuthorizationException('Unauthorized to store.');
         }
     }
 
     /**
-     * Determine if the current user can create new repositories.
+     * Determine if the current user can store new repositories.
      *
      * @param \Illuminate\Http\Request $request
      * @return bool
      */
-    public static function authorizedToCreate(Request $request)
+    public static function authorizedToStore(Request $request)
     {
         if (static::authorizable()) {
-            return Gate::check('create', static::$model);
+            return Gate::check('store', static::$model);
         }
 
         return true;

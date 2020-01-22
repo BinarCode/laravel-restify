@@ -157,7 +157,7 @@ trait Crudable
      * @param array $payload
      * @return mixed
      */
-    public function allowToUpdate(RestifyRequest $request, $payload = [])
+    public function allowToUpdate(RestifyRequest $request, $payload = null)
     {
         $this->authorizeToUpdate($request);
 
@@ -171,9 +171,9 @@ trait Crudable
      * @param array $payload
      * @return mixed
      */
-    public function allowToStore(RestifyRequest $request, $payload = [])
+    public function allowToStore(RestifyRequest $request, $payload = null)
     {
-        self::authorizeToCreate($request);
+        self::authorizeToStore($request);
 
         $validator = self::validatorForStoring($request, $payload);
 

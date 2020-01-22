@@ -59,7 +59,7 @@ trait ResponseResolver
     {
         return [
             'authorizedToShow' => $this->authorizedToShow($request),
-            'authorizedToCreate' => $this->authorizedToCreate($request),
+            'authorizedToStore' => $this->authorizedToStore($request),
             'authorizedToUpdate' => $this->authorizedToUpdate($request),
             'authorizedToDelete' => $this->authorizedToDelete($request),
         ];
