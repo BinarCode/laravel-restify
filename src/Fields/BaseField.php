@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Illuminate\Http\Request;
+
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
@@ -31,10 +33,11 @@ abstract class BaseField
     /**
      * Conditionally load the field.
      *
+     * @param Request $request
      * @return bool|callable|mixed
      */
-    public function filter()
+    public function filter(Request $request)
     {
-        return is_callable($this->when) ? call_user_func($this->when) : $this->when;
+        return is_callable($this->when) ? call_user_func($this->when, $request) : $this->when;
     }
 }

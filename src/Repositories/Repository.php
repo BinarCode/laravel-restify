@@ -121,8 +121,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function collectFields(RestifyRequest $request)
     {
-        return collect($this->fields($request))->filter(function (Field $field) {
-            return $field->filter();
+        return collect($this->fields($request))->filter(function (Field $field) use ($request) {
+            return $field->filter($request);
         });
     }
 
