@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Throwable;
 
 /**
  * Class RestResponse.
@@ -581,7 +582,12 @@ class RestResponse extends JsonResponse implements Responsable
         return $this->errors instanceof Arrayable ? $this->errors->toArray() : $this->errors;
     }
 
-    public function dump(\Exception $exception, $condition)
+    /**
+     * @param Throwable $exception
+     * @param $condition
+     * @return $this
+     */
+    public function dump(Throwable $exception, $condition)
     {
         if ($condition) {
             $this->debug = true;
@@ -599,10 +605,10 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Debug the log if the environment is local.
      *
-     * @param \Exception $exception
+     * @param Throwable $exception
      * @return $this
      */
-    public function dumpLocal(\Exception $exception)
+    public function dumpLocal(Throwable $exception)
     {
         return $this->dump($exception, App::environment('production') === false);
     }
