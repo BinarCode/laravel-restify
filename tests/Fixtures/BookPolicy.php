@@ -32,7 +32,7 @@ class BookPolicy
     }
 
     /**
-     * Determine if book can be shown
+     * Determine if book can be shown.
      */
     public function show($user, $book)
     {
@@ -40,7 +40,7 @@ class BookPolicy
     }
 
     /**
-     * Determine if books can be deleted
+     * Determine if books can be deleted.
      */
     public function destroy($user)
     {

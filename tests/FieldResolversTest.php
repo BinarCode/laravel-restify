@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Book;
 use Binaryk\LaravelRestify\Tests\Fixtures\BookRepository;
 
 /**
- * @package Binaryk\LaravelRestify\Tests;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class FieldResolversTest extends IntegrationTest
