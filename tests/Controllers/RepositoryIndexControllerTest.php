@@ -74,10 +74,9 @@ class RepositoryIndexControllerTest extends IntegrationTest
     public function test_search_query_works()
     {
         $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
-        $request = Mockery::mock(RestifyRequest::class);
         $model = $users->where('email', 'eduard.lupacescu@binarcode.com')->first(); //find manually the model
         $repository = Restify::repositoryForModel(get_class($model));
-        $expected = $repository::resolveWith($model)->toArray(request());
+        $expected = $repository::resolveWith($model)->toArray(resolve(RestifyRequest::class));
         unset($expected['relationships']);
 
         $r = $this->withExceptionHandling()
@@ -171,6 +170,10 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ->andReturnFalse();
         $request->shouldReceive('get')
             ->andReturnFalse();
+        $request->shouldReceive('isDetailRequest')
+            ->andReturnFalse();
+        $request->shouldReceive('isIndexRequest')
+            ->andReturnTrue();
 
         $model = $users->where('email', 'eduard.lupacescu@binarcode.com')->first();
         $repository = Restify::repositoryForModel(get_class($model));
@@ -210,6 +213,10 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ->andReturnTrue();
         $request->shouldReceive('get')
             ->andReturn('posts');
+        $request->shouldReceive('isDetailRequest')
+            ->andReturnFalse();
+        $request->shouldReceive('isIndexRequest')
+            ->andReturnTrue();
 
         $r = $this->withExceptionHandling()
             ->getJson('/restify-api/users?with=posts')

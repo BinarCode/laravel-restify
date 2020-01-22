@@ -75,13 +75,14 @@ trait Crudable
     public function show(RestifyRequest $request, $repositoryId)
     {
         $this->resource = static::showPlain($repositoryId);
+
         try {
             $this->allowToShow($request);
         } catch (AuthorizationException $e) {
             return $this->response()->forbidden()->addError($e->getMessage());
         }
 
-        return $this->response()->model($this->resource);
+        return $this->response()->data($this->jsonSerialize());
     }
 
     /**
@@ -127,7 +128,9 @@ trait Crudable
 
         static::updated($this->resource);
 
-        return response()->json($this->jsonSerialize(), RestResponse::REST_RESPONSE_UPDATED_CODE);
+        return $this->response()
+            ->data($this->jsonSerialize())
+            ->updated();
     }
 
     /**
@@ -146,36 +149,33 @@ trait Crudable
 
         static::deleted($status);
 
-        return $this->response()
-            ->setStatusCode(RestResponse::REST_RESPONSE_DELETED_CODE);
+        return $this->response()->deleted();
     }
 
     /**
      * @param RestifyRequest $request
+     * @param array $payload
      * @return mixed
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws ValidationException
      */
-    public function allowToUpdate(RestifyRequest $request)
+    public function allowToUpdate(RestifyRequest $request, $payload = null)
     {
         $this->authorizeToUpdate($request);
 
-        $validator = static::validatorForUpdate($request, $this);
+        $validator = static::validatorForUpdate($request, $this, $payload);
 
         $validator->validate();
     }
 
     /**
      * @param RestifyRequest $request
+     * @param array $payload
      * @return mixed
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws ValidationException
      */
-    public function allowToStore(RestifyRequest $request)
+    public function allowToStore(RestifyRequest $request, $payload = null)
     {
-        self::authorizeToCreate($request);
+        self::authorizeToStore($request);
 
-        $validator = self::validatorForStoring($request);
+        $validator = self::validatorForStoring($request, $payload);
 
         $validator->validate();
     }
@@ -220,11 +220,12 @@ trait Crudable
     {
         /** * @var RepositoryStoreRequest $request */
         $request = resolve(RepositoryStoreRequest::class);
+
         $request->attributes->add($payload);
 
         $repository = resolve(static::class);
 
-        $repository->allowToStore($request);
+        $repository->allowToStore($request, $payload);
 
         return DB::transaction(function () use ($request) {
             $model = self::fillWhenStore(
@@ -261,7 +262,7 @@ trait Crudable
          */
         $repository = $request->newRepositoryWith($model, static::uriKey());
 
-        $repository->allowToUpdate($request);
+        $repository->allowToUpdate($request, $payload);
 
         return DB::transaction(function () use ($request, $repository) {
             $model = static::fillWhenUpdate($request, $repository->resource);

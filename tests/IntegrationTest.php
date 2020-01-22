@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Fixtures\BookRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
@@ -162,6 +163,7 @@ abstract class IntegrationTest extends TestCase
         Restify::repositories([
             UserRepository::class,
             PostRepository::class,
+            BookRepository::class,
         ]);
     }
 

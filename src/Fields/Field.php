@@ -25,6 +25,11 @@ class Field extends OrganicField implements JsonSerializable
     public $storeCallback;
 
     /**
+     * @var Closure
+     */
+    public $showCallback;
+
+    /**
      * Callback called when trying to fill this attribute, this callback will override the fill action, so make
      * sure you assign the attribute to the model over this callback.
      *
@@ -35,7 +40,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Create a new field.
      *
-     * @param  string|callable|null  $attribute
+     * @param string|callable|null $attribute
      */
     public function __construct($attribute)
     {
@@ -45,7 +50,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Create a new element.
      *
-     * @param  array  $arguments
+     * @param array $arguments
      * @return static
      */
     public static function make(...$arguments)
@@ -58,14 +63,16 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function jsonSerialize()
     {
-        return [];
+        return [
+            'value' => $this->value,
+        ];
     }
 
     /**
      * Callback called when the value is filled, this callback will do not override the fill action. If fillCallback is defined
      * this will do not be called.
      *
-     * @param  Closure  $callback
+     * @param Closure $callback
      * @return Field
      */
     public function storeCallback(Closure $callback)
@@ -76,10 +83,21 @@ class Field extends OrganicField implements JsonSerializable
     }
 
     /**
+     * @param Closure $callback
+     * @return $this
+     */
+    public function showCallback(Closure $callback)
+    {
+        $this->showCallback = $callback;
+
+        return $this;
+    }
+
+    /**
      * Callback called when trying to fill this attribute, this callback will override the fill action, so make
      * sure you assign the attribute to the model over this callback.
      *
-     * @param  Closure  $callback
+     * @param Closure $callback
      * @return $this
      */
     public function fillCallback(Closure $callback)
@@ -92,7 +110,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill attribute with value from the request or delegate this action to the user defined callback.
      *
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @param $model
      * @return mixed|void
      */
@@ -112,7 +130,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill the model with value from the request.
      *
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @param $model
      * @param $attribute
      */
@@ -135,7 +153,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Validation rules for store.
-     * @param  callable|array|string  $rules
+     * @param callable|array|string $rules
      * @return Field
      */
     public function storingRules($rules)
@@ -148,7 +166,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Validation rules for update.
      *
-     * @param  callable|array|string  $rules
+     * @param callable|array|string $rules
      * @return Field
      */
     public function updatingRules($rules)
@@ -160,7 +178,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Validation rules for store.
-     * @param  callable|array|string  $rules
+     * @param callable|array|string $rules
      * @return Field
      */
     public function rules($rules)
@@ -173,7 +191,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Validation messages.
      *
-     * @param  array  $messages
+     * @param array $messages
      * @return Field
      */
     public function messages(array $messages)
@@ -199,5 +217,36 @@ class Field extends OrganicField implements JsonSerializable
     public function getUpdatingRules()
     {
         return array_merge($this->rules, $this->updatingRules);
+    }
+
+    /**
+     * Resolve the field's value for display.
+     *
+     * @param mixed $repository
+     * @param string|null $attribute
+     * @return callable|string
+     */
+    public function resolveForShow($repository, $attribute = null)
+    {
+        $attribute = $attribute ?? $this->attribute;
+
+        if (is_callable($this->showCallback)) {
+            $value = $this->resolveAttribute($repository, $attribute);
+            $attribute = call_user_func($this->showCallback, $value, $repository, $attribute);
+        }
+
+        return $attribute;
+    }
+
+    /**
+     * Resolve the given attribute from the given resource.
+     *
+     * @param mixed $repository
+     * @param string $attribute
+     * @return mixed
+     */
+    protected function resolveAttribute($repository, $attribute)
+    {
+        return data_get($repository, str_replace('->', '.', $attribute));
     }
 }

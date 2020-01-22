@@ -12,14 +12,14 @@ class PostPolicy
      */
     public function viewAny($user)
     {
-        return $_SERVER['restify.user.viewAnyable'] ?? true;
+        return $_SERVER['restify.post.viewAnyable'] ?? true;
     }
 
     /**
-     * Determine if users can be created.
+     * Determine if posts can be created.
      */
-    public function create($user)
+    public function store($user)
     {
-        return $_SERVER['restify.user.creatable'] ?? true;
+        return $_SERVER['restify.post.creatable'] ?? true;
     }
 }

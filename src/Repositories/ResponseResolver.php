@@ -3,9 +3,12 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Support\Arr;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -15,12 +18,37 @@ trait ResponseResolver
     /**
      * Return the attributes list.
      *
+     * Resolve all model fields through showCallback methods and exclude from the final response if
+     * that is required by method
+     *
      * @param $request
      * @return array
      */
-    public function resolveDetailsAttributes($request)
+    public function resolveDetailsAttributes(RestifyRequest $request)
     {
-        return method_exists($this->resource, 'toArray') ? $this->resource->toArray() : [];
+        $resolvedAttributes = [];
+        $modelAttributes = method_exists($this->resource, 'toArray') ? $this->resource->toArray($request) : [];
+        $this->collectFields($request)->filter(function (Field $field) {
+            return is_callable($field->showCallback);
+        })->map(function (Field $field) use (&$resolvedAttributes) {
+            $resolvedAttributes[$field->attribute] = $field->resolveForShow($this);
+        });
+
+        $resolved = array_merge($modelAttributes, $resolvedAttributes);
+
+        if ($request->isDetailRequest()) {
+            $hidden = $this->collectFields($request)->filter->isHiddenOnDetail($request, $this)->pluck('attribute')->toArray();
+
+            $resolved = Arr::except($resolved, $hidden);
+        }
+
+        if ($request->isIndexRequest()) {
+            $hidden = $this->collectFields($request)->filter->isHiddenOnIndex($request, $this)->pluck('attribute')->toArray();
+
+            $resolved = Arr::except($resolved, $hidden);
+        }
+
+        return $resolved;
     }
 
     /**
@@ -31,7 +59,7 @@ trait ResponseResolver
     {
         return [
             'authorizedToShow' => $this->authorizedToShow($request),
-            'authorizedToCreate' => $this->authorizedToCreate($request),
+            'authorizedToStore' => $this->authorizedToStore($request),
             'authorizedToUpdate' => $this->authorizedToUpdate($request),
             'authorizedToDelete' => $this->authorizedToDelete($request),
         ];
@@ -93,7 +121,7 @@ trait ResponseResolver
      * @param $serialized
      * @return array
      */
-    public function serializeDetails($request, $serialized)
+    public function serializeDetails(RestifyRequest $request, $serialized)
     {
         return $serialized;
     }
