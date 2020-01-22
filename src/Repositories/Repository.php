@@ -14,10 +14,10 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
+use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Illuminate\Support\Traits\ForwardsCalls;
 use JsonSerializable;
 
 /**
@@ -35,7 +35,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         Crudable,
         ResponseResolver,
         ConditionallyLoadsAttributes,
-        ForwardsCalls;
+        DelegatesToResource;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -89,7 +89,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @param $request
      * @return array
      */
-    public function toArray($request)
+    public function toArray(RestifyRequest $request)
     {
         $serialized = [
             'id' => $this->when($this->resource instanceof Model, function () {
@@ -107,7 +107,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Resolvable attributes before storing/updating.
      *
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @return array
      */
     public function fields(RestifyRequest $request)
@@ -116,7 +116,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @return Collection
      */
     public function collectFields(RestifyRequest $request)
@@ -155,8 +155,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Handle dynamic static method calls into the method.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public static function __callStatic($method, $parameters)
@@ -184,7 +184,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      *
      * However all options could be customized by passing an $options argument
      *
-     * @param  Router  $router
+     * @param Router $router
      * @param array $attributes
      */
     public static function routes(Router $router, $attributes)
@@ -197,13 +197,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Resolve the resource to an array.
      *
-     * @param  \Illuminate\Http\Request|null  $request
+     * @param \Illuminate\Http\Request|null $request
      * @return array
      */
     public function resolve($request = null)
     {
         $data = $this->toArray(
-            $request = $request ?: Container::getInstance()->make('request')
+            $request = $request ?: Container::getInstance()->make(RestifyRequest::class)
         );
 
         if ($data instanceof Arrayable) {
@@ -224,9 +224,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * @param  string  $content
-     * @param  int  $status
-     * @param  array  $headers
+     * @param string $content
+     * @param int $status
+     * @param array $headers
      * @return RestResponse
      */
     public function response($content = '', $status = 200, array $headers = [])

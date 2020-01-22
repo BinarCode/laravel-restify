@@ -3,6 +3,8 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\AbstractPaginator;
@@ -20,7 +22,7 @@ trait ResponseResolver
      */
     public function resolveDetailsAttributes($request)
     {
-        return method_exists($this->resource, 'toArray') ? $this->resource->toArray() : [];
+        return method_exists($this->resource, 'toArray') ? $this->resource->toArray($request) : [];
     }
 
     /**
@@ -93,8 +95,17 @@ trait ResponseResolver
      * @param $serialized
      * @return array
      */
-    public function serializeDetails($request, $serialized)
+    public function serializeDetails(RestifyRequest $request, $serialized)
     {
+        $resolvedAttributes = [];
+        $this->collectFields($request)->filter(function (Field $field) {
+            return is_callable($field->showCallback);
+        })->map(function (Field $field) use (&$resolvedAttributes) {
+            $resolvedAttributes[$field->attribute] = $field->resolveForShow($this);
+        });
+
+        $serialized['attributes'] = array_merge($serialized['attributes'], $resolvedAttributes);
+
         return $serialized;
     }
 

@@ -24,10 +24,11 @@ trait ValidatingTrait
     abstract public static function newModel();
 
     /**
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
+     * @param array $plainPayload
      * @return \Illuminate\Contracts\Validation\Validator
      */
-    public static function validatorForStoring(RestifyRequest $request)
+    public static function validatorForStoring(RestifyRequest $request, array $plainPayload = null)
     {
         $on = static::resolveWith(static::newModel());
 
@@ -40,7 +41,7 @@ trait ValidatingTrait
             return $messages;
         })->toArray();
 
-        return Validator::make($request->all(), $on->getStoringRules($request), $messages)->after(function ($validator) use ($request) {
+        return Validator::make($plainPayload ?? $request->all(), $on->getStoringRules($request), $messages)->after(function ($validator) use ($request) {
             static::afterValidation($request, $validator);
             static::afterStoringValidation($request, $validator);
         });
@@ -57,11 +58,12 @@ trait ValidatingTrait
     }
 
     /**
-     * @param  RestifyRequest  $request
-     * @param  null  $resource
+     * @param RestifyRequest $request
+     * @param null $resource
+     * @param array $plainPayload
      * @return \Illuminate\Contracts\Validation\Validator
      */
-    public static function validatorForUpdate(RestifyRequest $request, $resource = null)
+    public static function validatorForUpdate(RestifyRequest $request, $resource = null, array $plainPayload = null)
     {
         $on = $resource ?? static::resolveWith(static::newModel());
 
@@ -74,7 +76,7 @@ trait ValidatingTrait
             return $messages;
         })->toArray();
 
-        return Validator::make($request->all(), $on->getUpdatingRules($request), $messages)->after(function ($validator) use ($request) {
+        return Validator::make($plainPayload ?? $request->all(), $on->getUpdatingRules($request), $messages)->after(function ($validator) use ($request) {
             static::afterValidation($request, $validator);
             static::afterUpdatingValidation($request, $validator);
         });
