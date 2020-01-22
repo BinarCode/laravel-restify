@@ -238,7 +238,6 @@ class Field extends OrganicField implements JsonSerializable
         return $attribute;
     }
 
-
     /**
      * Resolve the given attribute from the given resource.
      *
