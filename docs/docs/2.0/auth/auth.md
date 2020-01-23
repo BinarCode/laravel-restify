@@ -1,12 +1,14 @@
 # Authentication setup
 
-Laravel Restify has the authentication implemented with Passport, so you can use it out of the box. 
+Laravel Restify has support for authentication with Passport or Laravel Airlock.
+
 You'll finally enjoy the auth setup (`register`, `login`, `forgot` and `reset password`).
 
 :::tip
 
-First make sure you have installed and configured the Laravel Passport properly. 
-This can be done easily by using the follow Restify command: 
+Firstly make sure you have setup the desired provider in the `restify.auth.provider`.
+and make sure you have installed and configured the Laravel Passport (or Restify) properly. 
+The passport check could be done easily by using the follow Restify command: 
 
 `php artisan restify:check-passport`
 
@@ -15,9 +17,8 @@ This command will become with suggestions if anything is setup wrong.
 
 ## Prerequisites
 - When using the Restify authentication service, you will need to migrate the `users` and `password_resets` table (these 2 migrations are by default in a fresh laravel app, however you may modify the users table as you prefer)
-- Make sure your authenticatable entity (usually `User`) implements: `Illuminate\Contracts\Auth\Authenticatable`
-- Make sure your authenticatable implements the `Binaryk\LaravelRestify\Contracts\Passportable` interface.
-- Check if `restify:check-passport` passes with success.
+
+- Make sure your authenticatable entity (usually `User`) implements: `Illuminate\Contracts\Auth\Authenticatable` (or `Illuminate\Contracts\Auth\Restifyable`)
 
 ## Register users
 
