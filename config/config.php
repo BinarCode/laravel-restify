@@ -28,7 +28,7 @@ return [
         | Supported: "passport", "airlock"
         */
 
-        'provider' => 'airlock'
+        'provider' => 'airlock',
     ],
 
     /*
