@@ -2,9 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Services;
 
+use Binaryk\LaravelRestify\Contracts\Airlockable;
 use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
 use Binaryk\LaravelRestify\Events\UserLogout;
+use Binaryk\LaravelRestify\Exceptions\AirlockUserException;
 use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
@@ -59,6 +61,7 @@ class AuthService extends RestifyService
      * @throws CredentialsDoesntMatch
      * @throws UnverifiedUser
      * @throws PassportUserException
+     * @throws AirlockUserException
      */
     public function login(array $credentials = [])
     {
@@ -69,7 +72,7 @@ class AuthService extends RestifyService
         }
 
         /**
-         * @var Authenticatable|Passportable
+         * @var Authenticatable|Passportable|Airlockable
          */
         $user = Auth::user();
 
@@ -79,7 +82,7 @@ class AuthService extends RestifyService
 
         $this->validateUserModel($user);
 
-        if ($user instanceof Passportable) {
+        if (method_exists($user, 'createToken')) {
             $token = $user->createToken('Login')->accessToken;
             event(new UserLoggedIn($user));
         }
@@ -218,6 +221,7 @@ class AuthService extends RestifyService
      *
      * @throws EntityNotFoundException
      * @throws PassportUserException
+     * @throws AirlockUserException
      * @return Model
      */
     public function userQuery()
@@ -239,11 +243,16 @@ class AuthService extends RestifyService
     /**
      * @param $userInstance
      * @throws PassportUserException
+     * @throws AirlockUserException
      */
     public function validateUserModel($userInstance)
     {
-        if (false === $userInstance instanceof Passportable) {
+        if (config('restify.auth.provider') === 'passport' && false === $userInstance instanceof Passportable) {
             throw new PassportUserException(__("User is not implementing Binaryk\LaravelRestify\Contracts\Passportable contract. User can use 'Laravel\Passport\HasApiTokens' trait"));
+        }
+
+        if (config('restify.auth.provider') === 'airlock' && false === $userInstance instanceof Airlockable) {
+            throw new AirlockUserException(__("User is not implementing Binaryk\LaravelRestify\Contracts\Airlockable contract. User should use 'Laravel\Airlock\HasApiTokens' trait to provide"));
         }
     }
 
@@ -302,9 +311,16 @@ class AuthService extends RestifyService
          * @var User
          */
         $user = Auth::user();
-        if ($user instanceof Authenticatable && $user instanceof Passportable) {
-            $user->tokens()->get()->each->revoke();
-            event(new UserLogout($user));
+        if ($user instanceof Authenticatable) {
+            if ($user instanceof Passportable) {
+                $user->tokens->each->revoke();
+                event(new UserLogout($user));
+            }
+
+            if ($user instanceof Airlockable) {
+                $user->tokens->each->delete();
+                event(new UserLogout($user));
+            }
         } else {
             throw new AuthenticatableUserException(__('User is not authenticated.'));
         }
