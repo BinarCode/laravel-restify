@@ -99,7 +99,6 @@ class AuthService extends RestifyService
      * @throws ValidationException
      * @throws BindingResolutionException
      * @throws AirlockUserException
-     *
      */
     public function register(array $payload)
     {
