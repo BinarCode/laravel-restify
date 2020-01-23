@@ -34,7 +34,7 @@ trait Crudable
         $results = SearchService::instance()->search($request, $this->model());
 
         $results = $results->tap(function ($query) use ($request) {
-            self::indexQuery($request, $query);
+            static::indexQuery($request, $query);
         });
 
         /**
@@ -173,9 +173,9 @@ trait Crudable
      */
     public function allowToStore(RestifyRequest $request, $payload = null)
     {
-        self::authorizeToStore($request);
+        static::authorizeToStore($request);
 
-        $validator = self::validatorForStoring($request, $payload);
+        $validator = static::validatorForStoring($request, $payload);
 
         $validator->validate();
     }
@@ -228,8 +228,8 @@ trait Crudable
         $repository->allowToStore($request, $payload);
 
         return DB::transaction(function () use ($request) {
-            $model = self::fillWhenStore(
-                $request, self::newModel()
+            $model = static::fillWhenStore(
+                $request, static::newModel()
             );
 
             $model->save();
