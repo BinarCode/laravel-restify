@@ -91,13 +91,15 @@ class AuthService extends RestifyService
     }
 
     /**
-     * @param  array  $payload
+     * @param array $payload
      * @return \Illuminate\Database\Eloquent\Builder|Model|mixed
      * @throws AuthenticatableUserException
      * @throws EntityNotFoundException
      * @throws PassportUserException
      * @throws ValidationException
      * @throws BindingResolutionException
+     * @throws AirlockUserException
+     *
      */
     public function register(array $payload)
     {

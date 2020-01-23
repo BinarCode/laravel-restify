@@ -10,9 +10,10 @@ interface Airlockable
      * Create a new personal access token for the user.
      *
      * @param  string  $name
-     * @param  array  $scopes
+     * @param  array  $abilities
+     * @return \Laravel\Airlock\NewAccessToken
      */
-    public function createToken($name, array $scopes = []);
+    public function createToken(string $name, array $abilities = ['*']);
 
     /**
      * @return Builder
