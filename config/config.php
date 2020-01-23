@@ -6,15 +6,29 @@ use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
 return [
     'auth' => [
         /*
-    |--------------------------------------------------------------------------
-    | Table containing authenticatable resource
-    |--------------------------------------------------------------------------
-    |
-    | This configuration contain the name of the table used for the authentication.
-    |
-    */
+        |--------------------------------------------------------------------------
+        | Table containing authenticatable resource
+        |--------------------------------------------------------------------------
+        |
+        | This configuration contain the name of the table used for the authentication.
+        |
+        */
 
         'table' => 'users',
+
+        /*
+        |--------------------------------------------------------------------------
+        |
+        |--------------------------------------------------------------------------
+        |
+        | Next you may configure the package you're using for the personal tokens generation,
+        | this will be used for the verification of the authenticatable model and provide the
+        | authorizable functionality
+        |
+        | Supported: "passport", "airlock"
+        */
+
+        'provider' => 'airlock',
     ],
 
     /*
