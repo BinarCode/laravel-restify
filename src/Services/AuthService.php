@@ -315,7 +315,7 @@ class AuthService extends RestifyService
         $user = Auth::user();
         if ($user instanceof Authenticatable) {
             if ($user instanceof Passportable) {
-                $user->tokens->each->revoke();
+                $user->tokens()->get()->each->revoke();
                 event(new UserLogout($user));
             }
 
