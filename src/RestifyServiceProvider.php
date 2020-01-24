@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
@@ -17,6 +18,7 @@ class RestifyServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerRoutes();
+        $this->registerExceptionHandler();
     }
 
     /**
@@ -47,5 +49,18 @@ class RestifyServiceProvider extends ServiceProvider
         });
 
         return $this;
+    }
+
+
+    /**
+     * Register Restify's custom exception handler.
+     *
+     * @return void
+     */
+    protected function registerExceptionHandler()
+    {
+        if (config('restify.exception_handler') && class_exists(value(config('restify.exception_handler')))) {
+            $this->app->bind(ExceptionHandler::class, value(config('restify.exception_handler')));
+        }
     }
 }
