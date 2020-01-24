@@ -51,7 +51,6 @@ class RestifyServiceProvider extends ServiceProvider
         return $this;
     }
 
-
     /**
      * Register Restify's custom exception handler.
      *

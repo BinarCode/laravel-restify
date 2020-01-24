@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 
