@@ -70,7 +70,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the repository url is available
+     * Determine if the repository url is available.
      *
      * @param \Illuminate\Http\Request $request
      * @return bool
