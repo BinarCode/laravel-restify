@@ -70,6 +70,23 @@ trait AuthorizableModels
     }
 
     /**
+     * Determine if the repository url is available
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return bool
+     */
+    public static function authorizedToShowRepository(Request $request)
+    {
+        if (! static::authorizable()) {
+            return true;
+        }
+
+        return method_exists(Gate::getPolicyFor(static::newModel()), 'showRepository')
+            ? Gate::check('showRepository', get_class(static::newModel()))
+            : true;
+    }
+
+    /**
      * Determine if the current user can view the given resource or throw.
      *
      * @param Request $request
