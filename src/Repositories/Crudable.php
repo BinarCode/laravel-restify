@@ -47,7 +47,7 @@ trait Crudable
         });
 
         try {
-            $this->allowToViewAny($request, $items);
+            $this->allowToShowEvery($request, $items);
         } catch (UnauthorizedException | AuthorizationException $e) {
             return $this->response()->forbidden()->addError($e->getMessage());
         }
@@ -203,9 +203,9 @@ trait Crudable
      * @param Collection $items
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
-    public function allowToViewAny($request, Collection $items)
+    public function allowToShowEvery($request, Collection $items)
     {
-        $this->authorizeToShowAny($request);
+        $this->authorizeToShowEvery($request);
     }
 
     /**

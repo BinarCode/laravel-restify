@@ -70,19 +70,37 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the repository url is available
+     * Determine if the resource should be available for the given request (
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return void
+     * @throws AuthorizationException
+     */
+    public function authorizeToShowEvery(Request $request)
+    {
+        if (! static::authorizable()) {
+            return;
+        }
+
+        if (method_exists(Gate::getPolicyFor(static::newModel()), 'showEvery')) {
+            $this->authorizeTo($request, 'showEvery');
+        }
+    }
+
+    /**
+     * Determine if the resource should be available for the given request.
      *
      * @param \Illuminate\Http\Request $request
      * @return bool
      */
-    public static function authorizedToShowRepository(Request $request)
+    public static function authorizedToShowEvery(Request $request)
     {
         if (! static::authorizable()) {
             return true;
         }
 
-        return method_exists(Gate::getPolicyFor(static::newModel()), 'showRepository')
-            ? Gate::check('showRepository', get_class(static::newModel()))
+        return method_exists(Gate::getPolicyFor(static::newModel()), 'showEvery')
+            ? Gate::check('showEvery', get_class(static::newModel()))
             : true;
     }
 
