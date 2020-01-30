@@ -29,7 +29,7 @@ class RestifyCustomRoutesProvider extends ServiceProvider
     {
         collect(Restify::$repositories)->each(function ($repository) {
             $config = [
-                'namespace' => trim(app()->getNamespace(), '\\').'\Http\Controllers',
+                'namespace' => trim(app()->getNamespace(), '\\') . '\Http\Controllers',
                 'as' => '',
                 'prefix' => Restify::path($repository::uriKey()),
                 'middleware' => config('restify.middleware', []),
@@ -41,13 +41,16 @@ class RestifyCustomRoutesProvider extends ServiceProvider
 
             $parameters = $method->getParameters();
 
-            if (count($parameters) === 2 && $parameters[1] instanceof \ReflectionParameter) {
-//                $config = array_merge($config, $parameters[1]->getDefaultValue());
+            $wrap = [];
+
+            if (count($parameters) === 3 && $parameters[1] instanceof \ReflectionParameter) {
+                $default = $parameters[1]->isDefaultValueAvailable() ? $parameters[1]->getDefaultValue() : [];
+                $config = array_merge($config, $default);
+
+                $wrap = ($parameters[2]->isDefaultValueAvailable() && $parameters[2]->getDefaultValueConstantName()) ? $config : [];
             }
 
-            Route::group([], function ($router) use ($repository, $config) {
-                if ($repository === 'Binaryk\LaravelRestify\Tests\RepositoryWithRoutes') {
-                }
+            Route::group($wrap, function ($router) use ($repository, $config) {
                 $repository::routes($router, $config);
             });
         });
