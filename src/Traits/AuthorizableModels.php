@@ -70,7 +70,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the resource should be available for the given request (
+     * Determine if the resource should be available for the given request (.
      *
      * @param \Illuminate\Http\Request $request
      * @return void
