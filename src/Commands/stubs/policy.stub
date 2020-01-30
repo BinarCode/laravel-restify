@@ -16,6 +16,17 @@ class DummyClass
      * @param  \App\User  $user
      * @return mixed
      */
+    public function showEvery(User $user = null)
+    {
+        //
+    }
+
+    /**
+     * Determine whether the user is authorized to access the repository uriKey
+     *
+     * @param  \App\User  $user
+     * @return mixed
+     */
     public function showAny(User $user = null)
     {
         //

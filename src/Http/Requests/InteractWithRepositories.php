@@ -44,7 +44,7 @@ trait InteractWithRepositories
             }
 
             if (! $repository::authorizedToShowAny($this)) {
-                throw new UnauthorizedException(__('Unauthorized to view repository :name.', [
+                throw new UnauthorizedException(__('Unauthorized to view repository :name. See "showAny" policy.', [
                     'name' => $repository,
                 ]), 403);
             }
