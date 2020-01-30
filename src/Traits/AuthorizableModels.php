@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -43,7 +44,7 @@ trait AuthorizableModels
      */
     public function authorizeToShowAny(Request $request)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return;
         }
 
@@ -60,7 +61,7 @@ trait AuthorizableModels
      */
     public static function authorizedToShowAny(Request $request)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return true;
         }
 
@@ -78,7 +79,7 @@ trait AuthorizableModels
      */
     public function authorizeToShowEvery(Request $request)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return;
         }
 
@@ -95,7 +96,7 @@ trait AuthorizableModels
      */
     public static function authorizedToShowEvery(Request $request)
     {
-        if (! static::authorizable()) {
+        if ( ! static::authorizable()) {
             return true;
         }
 
@@ -136,7 +137,7 @@ trait AuthorizableModels
      */
     public static function authorizeToStore(Request $request)
     {
-        if (! static::authorizedToStore($request)) {
+        if ( ! static::authorizedToStore($request)) {
             throw new AuthorizationException('Unauthorized to store.');
         }
     }
@@ -241,12 +242,22 @@ trait AuthorizableModels
      */
     public function determineModel()
     {
-        $model = $this instanceof Model ? $this : ($this->resource ?? null);
+        $model = $this->isRepositoryContext() === false ? $this : ($this->resource ?? null);
 
         if (is_null($model)) {
             throw new ModelNotFoundException(__('Model is not declared in :class', ['class' => self::class]));
         }
 
         return $model;
+    }
+
+    /**
+     * Determine if the trait is used by repository or model
+     *
+     * @return bool
+     */
+    public static function isRepositoryContext()
+    {
+        return new static instanceof Repository;
     }
 }
