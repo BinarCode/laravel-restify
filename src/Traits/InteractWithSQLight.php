@@ -6,7 +6,6 @@ use Illuminate\Database\Connectors\ConnectionFactory;
 use Illuminate\Support\Str;
 
 /**
- * @package App\Models;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait InteractWithSQLight
@@ -21,9 +20,9 @@ trait InteractWithSQLight
     public static function bootSushi()
     {
         $instance = (new static);
-        $cacheFileName = 'sushi-' . Str::kebab(str_replace('\\', '', static::class)) . '.sqlite';
+        $cacheFileName = 'sushi-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
-        $cachePath = $cacheDirectory . '/' . $cacheFileName;
+        $cachePath = $cacheDirectory.'/'.$cacheFileName;
         $modelPath = (new \ReflectionClass(static::class))->getFileName();
 
         $states = [
@@ -75,7 +74,7 @@ trait InteractWithSQLight
         $firstRow = $rows[0];
         $tableName = $this->getTable();
 
-        throw_unless($rows, new \Exception('Sushi: $rows property not found on model: ' . get_class($this)));
+        throw_unless($rows, new \Exception('Sushi: $rows property not found on model: '.get_class($this)));
 
         static::resolveConnection()->getSchemaBuilder()->create($tableName, function ($table) use ($firstRow) {
             foreach ($firstRow as $column => $value) {
@@ -92,5 +91,4 @@ trait InteractWithSQLight
 
         static::insert($rows);
     }
-
 }

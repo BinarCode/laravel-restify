@@ -44,7 +44,7 @@ trait AuthorizableModels
      */
     public function authorizeToShowAny(Request $request)
     {
-        if ( ! static::authorizable()) {
+        if (! static::authorizable()) {
             return;
         }
 
@@ -61,7 +61,7 @@ trait AuthorizableModels
      */
     public static function authorizedToShowAny(Request $request)
     {
-        if ( ! static::authorizable()) {
+        if (! static::authorizable()) {
             return true;
         }
 
@@ -71,7 +71,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the resource should be available for the given request (
+     * Determine if the resource should be available for the given request (.
      *
      * @param \Illuminate\Http\Request $request
      * @return void
@@ -79,7 +79,7 @@ trait AuthorizableModels
      */
     public function authorizeToShowEvery(Request $request)
     {
-        if ( ! static::authorizable()) {
+        if (! static::authorizable()) {
             return;
         }
 
@@ -96,7 +96,7 @@ trait AuthorizableModels
      */
     public static function authorizedToShowEvery(Request $request)
     {
-        if ( ! static::authorizable()) {
+        if (! static::authorizable()) {
             return true;
         }
 
@@ -137,7 +137,7 @@ trait AuthorizableModels
      */
     public static function authorizeToStore(Request $request)
     {
-        if ( ! static::authorizedToStore($request)) {
+        if (! static::authorizedToStore($request)) {
             throw new AuthorizationException('Unauthorized to store.');
         }
     }
@@ -252,7 +252,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the trait is used by repository or model
+     * Determine if the trait is used by repository or model.
      *
      * @return bool
      */
