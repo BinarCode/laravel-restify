@@ -7,7 +7,7 @@ use Illuminate\Support\Str;
 
 /**
  * @package App\Models;
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
+ * @author Caleb Porzio https://github.com/calebporzio/sushi/blob/master/src/Sushi.php
  */
 trait InteractWithSQLight
 {
