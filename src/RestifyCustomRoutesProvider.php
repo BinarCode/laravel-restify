@@ -29,7 +29,7 @@ class RestifyCustomRoutesProvider extends ServiceProvider
     {
         collect(Restify::$repositories)->each(function ($repository) {
             $config = [
-                'namespace' => trim(app()->getNamespace(), '\\') . '\Http\Controllers',
+                'namespace' => trim(app()->getNamespace(), '\\').'\Http\Controllers',
                 'as' => '',
                 'prefix' => Restify::path($repository::uriKey()),
                 'middleware' => config('restify.middleware', []),
@@ -46,7 +46,6 @@ class RestifyCustomRoutesProvider extends ServiceProvider
             if (count($parameters) >= 2 && $parameters[1] instanceof \ReflectionParameter) {
                 $default = $parameters[1]->isDefaultValueAvailable() ? $parameters[1]->getDefaultValue() : [];
                 $config = array_merge($config, $default);
-
             }
 
             if (count($parameters) === 3) {
