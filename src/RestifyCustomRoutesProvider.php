@@ -43,11 +43,14 @@ class RestifyCustomRoutesProvider extends ServiceProvider
 
             $wrap = [];
 
-            if (count($parameters) === 3 && $parameters[1] instanceof \ReflectionParameter) {
+            if (count($parameters) >= 2 && $parameters[1] instanceof \ReflectionParameter) {
                 $default = $parameters[1]->isDefaultValueAvailable() ? $parameters[1]->getDefaultValue() : [];
                 $config = array_merge($config, $default);
 
-                $wrap = ($parameters[2]->isDefaultValueAvailable() && $parameters[2]->getDefaultValueConstantName()) ? $config : [];
+            }
+
+            if (count($parameters) === 3) {
+                $wrap = ($parameters[2]->isDefaultValueAvailable() && $parameters[2]->getDefaultValue()) ? $config : [];
             }
 
             Route::group($wrap, function ($router) use ($repository, $config) {
