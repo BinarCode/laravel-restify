@@ -31,6 +31,7 @@ class Refresh extends Command
         $this->call('cache:clear');
         $this->call('config:cache');
         $this->call('view:clear');
+        $this->call('route:clear');
         $this->call('optimize');
     }
 }

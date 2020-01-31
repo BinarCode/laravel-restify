@@ -76,7 +76,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public static function newModel()
     {
-        $model = static::$model;
+        if (property_exists(static::class, 'model')) {
+            $model = static::$model;
+        } else {
+            $model = NullModel::class;
+        }
 
         return new $model;
     }
