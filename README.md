@@ -1,11 +1,11 @@
-<p align="center"><img src="https://binaryk.github.io/laravel-restify/assets/img/logo.png"></p>
+<p align="center"><img src="https://BinarCode.github.io/laravel-restify/assets/img/logo.png"></p>
 
 <p align="center">
-    <a href="https://travis-ci.org/binaryk/laravel-restify"><img src="https://travis-ci.org/binaryk/laravel-restify.svg" alt="Build Status"></a>
+    <a href="https://travis-ci.org/BinarCode/laravel-restify.svg?branch=master"><img src="https://travis-ci.org/BinarCode/laravel-restify.svg?branch=master" alt="Build Status"></a>
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/d/total.svg" alt="Total Downloads"></a>
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/v/stable.svg" alt="Latest Stable Version"></a>
-        <a href="https://scrutinizer-ci.com/g/binaryk/laravel-restify"><img src="https://img.shields.io/scrutinizer/coverage/g/binaryk/laravel-restify.svg" alt="Test Coverage"></a>
-    <a href="https://scrutinizer-ci.com/g/binaryk/laravel-restify"><img src="https://img.shields.io/scrutinizer/g/binaryk/laravel-restify.svg" alt="Quality"></a>
+        <a href="https://scrutinizer-ci.com/g/BinarCode/laravel-restify"><img src="https://img.shields.io/scrutinizer/coverage/g/BinarCode/laravel-restify.svg" alt="Test Coverage"></a>
+    <a href="https://scrutinizer-ci.com/g/BinarCode/laravel-restify"><img src="https://img.shields.io/scrutinizer/g/BinarCode/laravel-restify.svg" alt="Quality"></a>
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/license.svg" alt="License"></a>
 </p>
 
