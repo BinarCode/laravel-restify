@@ -2,10 +2,12 @@
     "name": "binaryk/laravel-restify",
     "description": "Laravel REST API helpers",
     "keywords": [
-        "binaryk",
+        "crud",
+        "rest",
+        "api",
         "laravel-restify"
     ],
-    "homepage": "https://github.com/binaryk/laravel-restify",
+    "homepage": "https://github.com/BinarCode/laravel-restify",
     "license": "MIT",
     "type": "library",
     "authors": [
@@ -16,13 +18,14 @@
         }
     ],
     "require": {
-        "php": "^7.1",
-        "illuminate/support": "^5.8|^6.0"
+        "php": "^7.2",
+        "ext-json": "*",
+        "illuminate/support": "^6.0|^7.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.3",
-        "orchestra/testbench": "3.8.*",
-        "phpunit/phpunit": "^7.0"
+        "orchestra/testbench": "^4.0|^5.0",
+        "phpunit/phpunit": "^8.0"
     },
     "autoload": {
         "psr-4": {

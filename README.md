@@ -2,6 +2,7 @@
 
 <p align="center">
     <a href="https://travis-ci.org/BinarCode/laravel-restify.svg?branch=master"><img src="https://travis-ci.org/BinarCode/laravel-restify.svg?branch=master" alt="Build Status"></a>
+    <a href="https://github.com/laravel/airlock/actions"><img src="https://github.com/laravel/airlock/workflows/tests/badge.svg" alt="Build Status"></a>
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/d/total.svg" alt="Total Downloads"></a>
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/v/stable.svg" alt="Latest Stable Version"></a>
         <a href="https://scrutinizer-ci.com/g/BinarCode/laravel-restify"><img src="https://img.shields.io/scrutinizer/coverage/g/BinarCode/laravel-restify.svg" alt="Test Coverage"></a>
