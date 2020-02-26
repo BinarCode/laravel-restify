@@ -8,7 +8,7 @@
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/license.svg" alt="License"></a>
 </p>
 
-The first Fully customizable Laravel [JSON:API](https://jsonapi.org builder. "CRUD" and protect your resources with 0 (zero extra line of code).
+The first Fully customizable Laravel [JSON:API](https://jsonapi.org) builder. "CRUD" and protect your resources with 0 (zero extra line of code).
 
 ## Installation
 
