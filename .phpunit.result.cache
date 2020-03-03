@@ -1,1 +1,0 @@
-C:37:"PHPUnit\Runner\DefaultTestResultCache":250:{a:2:{s:7:"defects";a:1:{s:89:"Binaryk\LaravelRestify\Tests\AuthServiceForgotPasswordTest::test_invalid_email_in_payload";i:4;}s:5:"times";a:1:{s:89:"Binaryk\LaravelRestify\Tests\AuthServiceForgotPasswordTest::test_invalid_email_in_payload";d:0.305;}}}
