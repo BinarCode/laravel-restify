@@ -4,17 +4,14 @@ namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
-use Binaryk\LaravelRestify\Exceptions\PasswordResetException;
 use Binaryk\LaravelRestify\Exceptions\PasswordResetInvalidTokenException;
 use Binaryk\LaravelRestify\Services\AuthService;
 use Binaryk\LaravelRestify\Tests\Fixtures\MailTracking;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
-use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithContainer;
 use Illuminate\Support\Facades\Event;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
