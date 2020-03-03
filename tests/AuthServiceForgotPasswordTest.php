@@ -92,24 +92,6 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
         ]);
     }
 
-    public function test_reset_password_invalid_password()
-    {
-        Password::shouldReceive('broker')
-            ->andReturn((new class {
-                public function reset()
-                {
-                    return PasswordBroker::INVALID_PASSWORD;
-                }
-            }));
-        $this->expectException(PasswordResetException::class);
-        $this->authService->resetPassword([
-            'email' => 'random@test.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-            'token' => 'secret',
-        ]);
-    }
-
     public function test_reset_password_successfully()
     {
         $user = $this->register();
