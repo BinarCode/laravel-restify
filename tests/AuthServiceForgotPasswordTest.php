@@ -46,13 +46,15 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
     {
         $user = $this->register();
         $this->authService->sendResetPasswordLinkEmail($user->email);
-        $lastEmail = $this->lastEmail()->getBody();
-        preg_match_all('/token=([\w\.]*)/i', $lastEmail, $data);
-        $token = $data[1][0];
+        if ($this->lastEmail()) {
+            $lastEmail = $this->lastEmail()->getBody();
+            preg_match_all('/token=([\w\.]*)/i', $lastEmail, $data);
+            $token = $data[1][0];
 
-        $this->assertEmailsSent(1);
-        $this->assertEmailTo($user->email);
-        $this->assertNotNull($token);
+            $this->assertEmailsSent(1);
+            $this->assertEmailTo($user->email);
+            $this->assertNotNull($token);
+        }
     }
 
     public function test_reset_password_invalid_payload()
