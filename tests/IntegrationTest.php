@@ -74,7 +74,7 @@ abstract class IntegrationTest extends TestCase
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--realpath' => realpath(__DIR__.'/Migrations'),
+            '--path' => realpath(__DIR__.DIRECTORY_SEPARATOR.'Migrations'),
         ]);
     }
 
@@ -85,6 +85,16 @@ abstract class IntegrationTest extends TestCase
     public function injectTranslator()
     {
         $this->instance('translator', (new class implements Translator {
+            public function get($key, array $replace = [], $locale = null)
+            {
+                return $key;
+            }
+
+            public function choice($key, $number, array $replace = [], $locale = null)
+            {
+                return $key;
+            }
+
             /**
              * {@inheritdoc}
              */
