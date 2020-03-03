@@ -96,34 +96,36 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
         $user = $this->register();
         $this->authService->verify($user->id, sha1($user->email));
         $this->authService->sendResetPasswordLinkEmail($user->email);
-        $lastEmail = $this->lastEmail()->getBody();
-        preg_match_all('/token=([\w\.]*)/i', $lastEmail, $data);
-        $token = $data[1][0];
-        $password = Str::random(10);
+        if ($this->lastEmail()) {
+            $lastEmail = $this->lastEmail()->getBody();
+            preg_match_all('/token=([\w\.]*)/i', $lastEmail, $data);
+            $token = $data[1][0];
+            $password = Str::random(10);
 
-        $this->authService->resetPassword([
-            'email' => $user->email,
-            'password' => $password,
-            'password_confirmation' => $password,
-            'token' => $token,
-        ]);
+            $this->authService->resetPassword([
+                'email' => $user->email,
+                'password' => $password,
+                'password_confirmation' => $password,
+                'token' => $token,
+            ]);
 
-        Event::assertDispatched(PasswordReset::class, function ($e) use ($user) {
-            $this->assertEquals($e->user->email, $user->email);
+            Event::assertDispatched(PasswordReset::class, function ($e) use ($user) {
+                $this->assertEquals($e->user->email, $user->email);
 
-            return $e->user instanceof User;
-        });
+                return $e->user instanceof User;
+            });
 
-        $this->authService->login([
-            'email' => $user->email,
-            'password' => $password,
-        ]);
+            $this->authService->login([
+                'email' => $user->email,
+                'password' => $password,
+            ]);
 
-        Event::assertDispatched(UserLoggedIn::class, function ($e) use ($user) {
-            $this->assertEquals($e->user->email, $user->email);
+            Event::assertDispatched(UserLoggedIn::class, function ($e) use ($user) {
+                $this->assertEquals($e->user->email, $user->email);
 
-            return $e->user instanceof User;
-        });
+                return $e->user instanceof User;
+            });
+        }
     }
 
     public function register()
