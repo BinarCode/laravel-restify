@@ -24,7 +24,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create(['user_id' => 1]);
 
-        $this->withoutExceptionHandling()->patch('/restify-api/posts/' . $post->id, [
+        $this->withoutExceptionHandling()->patch('/restify-api/posts/'.$post->id, [
             'title' => 'Updated title',
         ])
             ->assertStatus(200);
@@ -44,7 +44,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.updateable'] = false;
 
-        $this->patch('/restify-api/posts/' . $post->id, [
+        $this->patch('/restify-api/posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertStatus(403)
             ->assertJson([
