@@ -94,13 +94,13 @@ class RestifyHandler extends ExceptionHandler
             case $exception instanceof ValidationUnauthorized:
             case $exception instanceof UnauthorizedHttpException:
             case $exception instanceof UnauthenticateException:
-            case $exception instanceof ActionUnauthorizedException:
-            case $exception instanceof AuthorizationException:
             case $exception instanceof GatePolicy:
             case $exception instanceof AuthenticationException:
                 $response->addError($exception->getMessage())->auth();
                 break;
 
+            case $exception instanceof AuthorizationException:
+            case $exception instanceof ActionUnauthorizedException:
             case $exception instanceof AccessDeniedHttpException:
             case $exception instanceof InvalidSignatureException:
                 $response->addError($exception->getMessage())->forbidden();
