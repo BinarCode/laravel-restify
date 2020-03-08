@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Events;
 
 use Illuminate\Foundation\Events\Dispatchable;
-use Illuminate\Http\Request;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
