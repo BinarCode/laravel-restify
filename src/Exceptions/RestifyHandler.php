@@ -9,7 +9,6 @@ use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException as ActionUnauthorizedException;
 use Binaryk\LaravelRestify\Restify;
 use Closure;
-use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -54,8 +53,8 @@ class RestifyHandler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param  Request  $request
-     * @param  \Exception|Throwable $exception
+     * @param Request $request
+     * @param \Exception|Throwable $exception
      *
      * @return Response|\Symfony\Component\HttpFoundation\Response
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
@@ -94,13 +93,13 @@ class RestifyHandler extends ExceptionHandler
             case $exception instanceof ValidationUnauthorized:
             case $exception instanceof UnauthorizedHttpException:
             case $exception instanceof UnauthenticateException:
-            case $exception instanceof ActionUnauthorizedException:
-            case $exception instanceof AuthorizationException:
             case $exception instanceof GatePolicy:
             case $exception instanceof AuthenticationException:
                 $response->addError($exception->getMessage())->auth();
                 break;
 
+            case $exception instanceof AuthorizationException:
+            case $exception instanceof ActionUnauthorizedException:
             case $exception instanceof AccessDeniedHttpException:
             case $exception instanceof InvalidSignatureException:
                 $response->addError($exception->getMessage())->forbidden();
@@ -121,7 +120,7 @@ class RestifyHandler extends ExceptionHandler
     /**
      * Report or log an exception.
      *
-     * @param  \Exception|Throwable  $e
+     * @param \Exception|Throwable $e
      * @return mixed
      *
      * @throws \Exception

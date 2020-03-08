@@ -21,6 +21,7 @@ class RepositoryWithRoutesTest extends IntegrationTest
             WithCustomPrefix::class,
             WithCustomMiddleware::class,
             WithCustomNamespace::class,
+            WithoutGroup::class,
         ]);
 
         parent::setUp();
@@ -62,6 +63,17 @@ class RepositoryWithRoutesTest extends IntegrationTest
                 ],
             ]);
     }
+
+    public function test_routes_default_wrapped()
+    {
+        $this->withoutExceptionHandling()->getJson(route('no.group.default.options'))
+            ->assertStatus(200)
+            ->assertJson([
+                'meta' => [
+                    'message' => 'From the sayHello method',
+                ],
+            ]);
+    }
 }
 
 class RepositoryWithRoutes extends Repository
@@ -69,8 +81,9 @@ class RepositoryWithRoutes extends Repository
     /**
      * @param Router $router
      * @param array $attributes
+     * @param bool $wrap
      */
-    public static function routes(Router $router, $attributes)
+    public static function routes(Router $router, $attributes, $wrap = false)
     {
         $router->group($attributes, function ($router) {
             $router->get('/main-testing', function () {
@@ -89,7 +102,7 @@ class RepositoryWithRoutes extends Repository
 
 class WithCustomPrefix extends RepositoryWithRoutes
 {
-    public static function routes(Router $router, $attributes)
+    public static function routes(Router $router, $attributes, $wrap = false)
     {
         $attributes['prefix'] = 'custom-prefix';
 
@@ -115,7 +128,7 @@ class MiddlewareFail
 
 class WithCustomMiddleware extends RepositoryWithRoutes
 {
-    public static function routes(Router $router, $options)
+    public static function routes(Router $router, $options, $wrap = false)
     {
         $options['middleware'] = [MiddlewareFail::class];
 
@@ -131,13 +144,21 @@ class WithCustomMiddleware extends RepositoryWithRoutes
 
 class WithCustomNamespace extends RepositoryWithRoutes
 {
-    public static function routes(Router $router, $options)
+    public static function routes(Router $router, $options, $wrap = false)
     {
         $options['namespace'] = 'Binaryk\LaravelRestify\Tests';
 
         $router->group($options, function ($router) {
             $router->get('custom-namespace', 'HandleController@sayHello')->name('namespace.route');
         });
+    }
+}
+
+class WithoutGroup extends RepositoryWithRoutes
+{
+    public static function routes(Router $router, $options = [], $wrap = true)
+    {
+        $router->get('default-options', '\\'.HandleController::class.'@sayHello')->name('no.group.default.options');
     }
 }
 

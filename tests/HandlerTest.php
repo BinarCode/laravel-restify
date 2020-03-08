@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\Exceptions\UnauthenticateException;
+use Binaryk\LaravelRestify\Restify;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\Concerns\InteractsWithContainer;
@@ -149,5 +150,17 @@ class HandlerTest extends IntegrationTest
         $this->assertObjectNotHasAttribute('stack', $response->getData());
         $this->assertObjectHasAttribute('errors', $response->getData());
         $this->assertEquals($response->getData()->errors[0], __('messages.something_went_wrong'));
+    }
+
+    public function test_can_inject_custom_handler_but_handler_will_continue_handle()
+    {
+        Restify::exceptionHandler(function ($request, $exception) {
+            $this->assertInstanceOf(NotFoundHttpException::class, $exception);
+        });
+
+        $response = $this->handler->render($this->request, new NotFoundHttpException('This message is not visible'));
+        $this->assertInstanceOf(JsonResponse::class, $response);
+        $this->assertEquals($response->getData()->errors[0], __('messages.not_found'));
+        $this->assertEquals($response->getStatusCode(), 404);
     }
 }
