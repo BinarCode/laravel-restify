@@ -55,12 +55,12 @@ class RestifyHandler extends ExceptionHandler
      * Render an exception into an HTTP response.
      *
      * @param  Request  $request
-     * @param  \Exception  $exception
+     * @param  \Exception|Throwable $exception
      *
      * @return Response|\Symfony\Component\HttpFoundation\Response
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function render($request, Exception $exception)
+    public function render($request, $exception)
     {
         with(Restify::$renderCallback, function ($handler) use ($request, $exception) {
             if ($handler instanceof Closure || is_callable($handler)) {
