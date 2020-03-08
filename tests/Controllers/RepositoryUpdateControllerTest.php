@@ -34,6 +34,20 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         $this->assertEquals($updatedPost->title, 'Updated title');
     }
 
+    public function test_put_works()
+    {
+        $post = factory(Post::class)->create(['user_id' => 1]);
+
+        $this->withoutExceptionHandling()->put('/restify-api/posts/' . $post->id, [
+            'title' => 'Updated title',
+        ])
+            ->assertStatus(200);
+
+        $updatedPost = Post::find($post->id);
+
+        $this->assertEquals($updatedPost->title, 'Updated title');
+    }
+
     public function test_unathorized_to_update()
     {
         $this->app->bind(ExceptionHandler::class, RestifyHandler::class);

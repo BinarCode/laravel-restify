@@ -9,7 +9,6 @@ use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException as ActionUnauthorizedException;
 use Binaryk\LaravelRestify\Restify;
 use Closure;
-use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -54,8 +53,8 @@ class RestifyHandler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param  Request  $request
-     * @param  \Exception|Throwable $exception
+     * @param Request $request
+     * @param \Exception|Throwable $exception
      *
      * @return Response|\Symfony\Component\HttpFoundation\Response
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
@@ -121,7 +120,7 @@ class RestifyHandler extends ExceptionHandler
     /**
      * Report or log an exception.
      *
-     * @param  \Exception|Throwable  $e
+     * @param \Exception|Throwable $e
      * @return mixed
      *
      * @throws \Exception
