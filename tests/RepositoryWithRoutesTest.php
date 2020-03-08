@@ -29,7 +29,7 @@ class RepositoryWithRoutesTest extends IntegrationTest
 
     public function test_can_add_custom_routes()
     {
-        $this->get(Restify::path(RepositoryWithRoutes::uriKey()) . '/main-testing')->assertStatus(200)
+        $this->get(Restify::path(RepositoryWithRoutes::uriKey()).'/main-testing')->assertStatus(200)
             ->assertJson([
                 'success' => true,
             ]);
@@ -73,7 +73,6 @@ class RepositoryWithRoutesTest extends IntegrationTest
                     'message' => 'From the sayHello method',
                 ],
             ]);
-
     }
 }
 
@@ -159,7 +158,7 @@ class WithoutGroup extends RepositoryWithRoutes
 {
     public static function routes(Router $router, $options = [], $wrap = true)
     {
-        $router->get('default-options', '\\' . HandleController::class . '@sayHello')->name('no.group.default.options');
+        $router->get('default-options', '\\'.HandleController::class.'@sayHello')->name('no.group.default.options');
     }
 }
 
