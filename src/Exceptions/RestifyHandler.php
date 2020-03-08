@@ -26,6 +26,7 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
+use Throwable;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -120,12 +121,12 @@ class RestifyHandler extends ExceptionHandler
     /**
      * Report or log an exception.
      *
-     * @param  \Exception  $e
+     * @param  \Exception|Throwable  $e
      * @return mixed
      *
      * @throws \Exception
      */
-    public function report(\Exception $e)
+    public function report($e)
     {
         return with(Restify::$reportCallback, function ($handler) use ($e) {
             if (is_callable($handler) || $handler instanceof Closure) {
