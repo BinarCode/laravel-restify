@@ -153,7 +153,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Validation rules for store.
-     * @param callable|array|string $rules
+     * @param $rules
      * @return Field
      */
     public function storingRules($rules)
@@ -166,7 +166,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Validation rules for update.
      *
-     * @param callable|array|string $rules
+     * @param $rules
      * @return Field
      */
     public function updatingRules($rules)
@@ -178,7 +178,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Validation rules for store.
-     * @param callable|array|string $rules
+     * @param $rules
      * @return Field
      */
     public function rules($rules)
