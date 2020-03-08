@@ -38,7 +38,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create(['user_id' => 1]);
 
-        $this->withoutExceptionHandling()->put('/restify-api/posts/' . $post->id, [
+        $this->withoutExceptionHandling()->put('/restify-api/posts/'.$post->id, [
             'title' => 'Updated title',
         ])
             ->assertStatus(200);

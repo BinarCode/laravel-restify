@@ -27,7 +27,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $this->assertInstanceOf(Post::class, Post::find($post->id));
 
-        $this->withoutExceptionHandling()->delete('/restify-api/posts/' . $post->id, [
+        $this->withoutExceptionHandling()->delete('/restify-api/posts/'.$post->id, [
             'title' => 'Updated title',
         ])
             ->assertStatus(204);
@@ -43,7 +43,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.deletable'] = false;
 
-        $this->delete('/restify-api/posts/' . $post->id, [
+        $this->delete('/restify-api/posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertStatus(403)
             ->assertJson([
