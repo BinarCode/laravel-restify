@@ -21,7 +21,7 @@ use Illuminate\Support\Facades\Auth;
 class PassportService extends RestifyService
 {
     /**
-     * Create user token based on credentials
+     * Create user token based on credentials.
      *
      * @param array $credentials
      * @return string|null

@@ -6,7 +6,6 @@ use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 
 /**
- * @package Binaryk\LaravelRestify\Services;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class LoginService

@@ -11,6 +11,6 @@ class SanctumUserException extends Exception
 {
     public static function wrongConfiguration()
     {
-        return new static("Auth provider should be [sanctum] in the configuration [restify.auth.provider].");
+        return new static('Auth provider should be [sanctum] in the configuration [restify.auth.provider].');
     }
 }
