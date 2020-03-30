@@ -44,7 +44,6 @@ class AuthService extends RestifyService
         return ForgotPasswordService::make($request);
     }
 
-
     /*
      * @param $id
      * @param null $hash
@@ -60,7 +59,7 @@ class AuthService extends RestifyService
          */
         $user = $this->userQuery()->query()->find($id);
 
-        if ($user instanceof Sanctumable && !hash_equals((string)$hash, sha1($user->getEmailForVerification()))) {
+        if ($user instanceof Sanctumable && ! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
             throw new AuthorizationException('Invalid hash');
         }
 

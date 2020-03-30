@@ -11,7 +11,6 @@ class AuthController extends RestController
 
     public function __construct(AuthService $authService)
     {
-
         $this->authService = $authService;
     }
 

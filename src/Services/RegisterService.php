@@ -15,12 +15,10 @@ use Illuminate\Validation\ValidationException;
 use ReflectionException;
 
 /**
- * @package Binaryk\LaravelRestify\Services;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class RegisterService
 {
-
     /**
      * The callback that should be used to create the registered user.
      *
@@ -80,5 +78,4 @@ class RegisterService
 
         return true;
     }
-
 }

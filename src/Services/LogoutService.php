@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * @package Binaryk\LaravelRestify\Services;
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 class LogoutService
