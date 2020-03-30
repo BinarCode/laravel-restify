@@ -5,7 +5,7 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
 use Binaryk\LaravelRestify\Events\UserLogout;
-use Binaryk\LaravelRestify\Exceptions\AirlockUserException;
+use Binaryk\LaravelRestify\Exceptions\SanctumUserException;
 use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch;
 use Binaryk\LaravelRestify\Exceptions\PassportUserException;
@@ -96,10 +96,11 @@ class AuthServiceLoginTest extends IntegrationTest
         $this->authService->login();
     }
 
-    public function test_login_user_did_not_user_passport_trait_or_not_implement_airlockable()
+    public function test_login_user_did_not_user_passport_trait_or_not_implement_sanctumable()
     {
-        $this->app['config']->set('restify.auth.provider', 'airlock');
-        $this->expectException(AirlockUserException::class);
+        $this->app['config']->set('restify.auth.provider', 'sanctum');
+        $this->expectException(SanctumUserException::class);
+
         $userMustVerify = (new class extends User implements MustVerifyEmail {
             use \Illuminate\Auth\MustVerifyEmail;
         });

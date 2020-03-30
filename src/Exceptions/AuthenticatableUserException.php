@@ -9,4 +9,10 @@ use Exception;
  */
 class AuthenticatableUserException extends Exception
 {
+    public static function wrongInstance(): self
+    {
+        $message = __("Repository model should be an instance of \Illuminate\Contracts\Auth\Authenticatable");
+
+        return new static($message);
+    }
 }

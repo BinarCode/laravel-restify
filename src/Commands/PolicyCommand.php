@@ -110,7 +110,7 @@ class PolicyCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Restify';
+        return $rootNamespace.'\Policies';
     }
 
     /**

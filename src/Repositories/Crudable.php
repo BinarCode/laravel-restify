@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\SearchService;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Collection;
@@ -104,7 +105,7 @@ trait Crudable
 
         $this->resource = static::storePlain($request->toArray());
 
-        static::stored($this->resource);
+        static::stored($this->resource, $request);
 
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
             ->model($this->resource)
@@ -324,9 +325,10 @@ trait Crudable
     }
 
     /**
-     * @param $model
+     * @param Model $model
+     * @param RestifyRequest $request
      */
-    public static function stored($model)
+    public static function stored(Model $model, RestifyRequest $request)
     {
         //
     }

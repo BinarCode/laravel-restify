@@ -25,10 +25,10 @@ return [
         | this will be used for the verification of the authenticatable model and provide the
         | authorizable functionality
         |
-        | Supported: "passport", "airlock"
+        | Supported: "passport", "sanctum"
         */
 
-        'provider' => 'airlock',
+        'provider' => 'sanctum',
     ],
 
     /*
