@@ -4,9 +4,9 @@ namespace DummyNamespace;
 
 use App\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use UseDummyModel;
+use {{ modelQualified }};
 
-class DummyClass
+class {{ class }}
 {
     use HandlesAuthorization;
 
@@ -36,10 +36,10 @@ class DummyClass
      * Determine whether the user can get the model.
      *
      * @param  \App\User  $user
-     * @param  DummyModel  $model
+     * @param  {{ model }}  $model
      * @return mixed
      */
-    public function show(User $user, DummyModel $model)
+    public function show(User $user, {{ model }} $model)
     {
         //
     }
@@ -59,10 +59,10 @@ class DummyClass
      * Determine whether the user can update the model.
      *
      * @param  \App\User  $user
-     * @param  DummyModel  $model
+     * @param  {{ model }}  $model
      * @return mixed
      */
-    public function update(User $user, DummyModel $model)
+    public function update(User $user, {{ model }} $model)
     {
         //
     }
@@ -71,10 +71,10 @@ class DummyClass
      * Determine whether the user can delete the model.
      *
      * @param  \App\User  $user
-     * @param  DummyModel  $model
+     * @param  {{ model }}  $model
      * @return mixed
      */
-    public function delete(User $user, DummyModel $model)
+    public function delete(User $user, {{ model }} $model)
     {
         //
     }
@@ -83,10 +83,10 @@ class DummyClass
      * Determine whether the user can restore the model.
      *
      * @param  \App\User  $user
-     * @param  DummyModel  $model
+     * @param  {{ model }}  $model
      * @return mixed
      */
-    public function restore(User $user, DummyModel $model)
+    public function restore(User $user, {{ model }} $model)
     {
         //
     }
@@ -95,10 +95,10 @@ class DummyClass
      * Determine whether the user can permanently delete the model.
      *
      * @param  \App\User  $user
-     * @param  DummyModel  $model
+     * @param  {{ model }}  $model
      * @return mixed
      */
-    public function forceDelete(User $user, DummyModel $model)
+    public function forceDelete(User $user, {{ model }} $model)
     {
         //
     }

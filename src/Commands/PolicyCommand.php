@@ -6,90 +6,67 @@ use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class PolicyCommand extends GeneratorCommand
 {
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
     protected $name = 'restify:policy';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Create a new policy for a specific model.';
 
-    /**
-     * The type of class being generated.
-     *
-     * @var string
-     */
-    protected $type = 'Policy';
-
-    /**
-     * Execute the console command.
-     *
-     * @return bool|null
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
     public function handle()
     {
-        parent::handle();
+        if (parent::handle() === false && !$this->option('force')) {
+            return false;
+        }
     }
 
-    /**
-     * Build the class with the given name.
-     *
-     * @param  string  $name
-     * @return string
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
     protected function buildClass($name)
     {
-        $namespacedModel = null;
-        $model = $this->option('model');
+        $class = $this->replaceModel(parent::buildClass($name));
 
-        if (is_null($model)) {
-            $model = $this->argument('name');
-        }
+        $class = $this->replaceQualifiedModel($class);
 
-        if ($model && ! Str::startsWith($model, [$this->laravel->getNamespace(), '\\'])) {
-            $namespacedModel = $this->laravel->getNamespace().$model;
-        }
-
-        $name .= 'Policy';
-
-        $rendered = str_replace(
-            'UseDummyModel', $namespacedModel ?? $model, parent::buildClass($name)
-        );
-
-        $rendered = str_replace(
-            'DummyModel', $model, $rendered
-        );
-
-        return $rendered;
+        return $class;
     }
 
-    public function nameWithEnd()
+    protected function replaceClass($stub, $name)
     {
-        $model = $this->option('model');
+        $class = str_replace($this->getNamespace($name).'\\', '', $this->guessPolicyName());
 
-        if (is_null($model)) {
-            $model = $this->argument('name');
+        return str_replace(['{{ class }}', '{{class}}'], $class, $stub);
+    }
+
+    protected function replaceModel($stub)
+    {
+        return str_replace(['{{ model }}', '{{model}}'], class_basename($this->guessQualifiedModel()), $stub);
+    }
+
+    protected function replaceQualifiedModel($stub)
+    {
+
+        return str_replace('{{ modelQualified }}', $this->guessQualifiedModel(), $stub);
+    }
+
+    protected function guessQualifiedModel(): string
+    {
+        $model = Str::singular(class_basename(Str::beforeLast($this->getNameInput(), 'Policy')));
+
+        return str_replace('/', '\\', $this->rootNamespace() . 'Models/' . $model);
+    }
+
+    protected function guessPolicyName()
+    {
+        $name = $this->getNameInput();
+
+        if (false === Str::endsWith($name, 'Policy')) {
+            $name .= 'Policy';
         }
 
-        return $model.'Policy';
+        return $name;
     }
 
     protected function getPath($name)
     {
-        return $this->laravel['path'].'/Policies/'.$this->nameWithEnd().'.php';
+        return $this->laravel['path'] . '/Policies/' . $this->guessPolicyName() . '.php';
     }
 
     /**
@@ -99,18 +76,18 @@ class PolicyCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return __DIR__.'/stubs/policy.stub';
+        return __DIR__ . '/stubs/policy.stub';
     }
 
     /**
      * Get the default namespace for the class.
      *
-     * @param  string  $rootNamespace
+     * @param string $rootNamespace
      * @return string
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Restify';
+        return $rootNamespace . '\Policies';
     }
 
     /**
@@ -122,6 +99,7 @@ class PolicyCommand extends GeneratorCommand
     {
         return [
             ['model', 'm', InputOption::VALUE_REQUIRED, 'The model class being protected.'],
+            ['force', null, InputOption::VALUE_NONE, 'Create the class even if the model already exists.'],
         ];
     }
 }
