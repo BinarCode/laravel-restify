@@ -9,7 +9,6 @@ use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException as ActionUnauthorizedException;
 use Binaryk\LaravelRestify\Restify;
 use Closure;
-use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -26,6 +25,7 @@ use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
 use Symfony\Component\Routing\Exception\MethodNotAllowedException;
+use Throwable;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -53,13 +53,13 @@ class RestifyHandler extends ExceptionHandler
     /**
      * Render an exception into an HTTP response.
      *
-     * @param  Request  $request
-     * @param  \Exception  $exception
+     * @param Request $request
+     * @param \Exception|Throwable $exception
      *
      * @return Response|\Symfony\Component\HttpFoundation\Response
      * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
-    public function render($request, Exception $exception)
+    public function render($request, $exception)
     {
         with(Restify::$renderCallback, function ($handler) use ($request, $exception) {
             if ($handler instanceof Closure || is_callable($handler)) {
@@ -93,13 +93,13 @@ class RestifyHandler extends ExceptionHandler
             case $exception instanceof ValidationUnauthorized:
             case $exception instanceof UnauthorizedHttpException:
             case $exception instanceof UnauthenticateException:
-            case $exception instanceof ActionUnauthorizedException:
-            case $exception instanceof AuthorizationException:
             case $exception instanceof GatePolicy:
             case $exception instanceof AuthenticationException:
                 $response->addError($exception->getMessage())->auth();
                 break;
 
+            case $exception instanceof AuthorizationException:
+            case $exception instanceof ActionUnauthorizedException:
             case $exception instanceof AccessDeniedHttpException:
             case $exception instanceof InvalidSignatureException:
                 $response->addError($exception->getMessage())->forbidden();
@@ -120,12 +120,12 @@ class RestifyHandler extends ExceptionHandler
     /**
      * Report or log an exception.
      *
-     * @param  \Exception  $e
+     * @param \Exception|Throwable $e
      * @return mixed
      *
      * @throws \Exception
      */
-    public function report(\Exception $e)
+    public function report($e)
     {
         return with(Restify::$reportCallback, function ($handler) use ($e) {
             if (is_callable($handler) || $handler instanceof Closure) {

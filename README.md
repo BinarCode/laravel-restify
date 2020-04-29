@@ -1,17 +1,14 @@
-<p align="center"><img src="https://binaryk.github.io/laravel-restify/assets/img/logo.png"></p>
+<p align="center"><img src="https://BinarCode.github.io/laravel-restify/assets/img/logo.png"></p>
 
 <p align="center">
-    <a href="https://travis-ci.org/binaryk/laravel-restify"><img src="https://travis-ci.org/binaryk/laravel-restify.svg" alt="Build Status"></a>
+    <a href="https://github.com/BinarCode/laravel-restify/actions"><img src="https://github.com/BinarCode/laravel-restify/workflows/tests/badge.svg" alt="Build Status"></a>
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/d/total.svg" alt="Total Downloads"></a>
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/v/stable.svg" alt="Latest Stable Version"></a>
-        <a href="https://scrutinizer-ci.com/g/binaryk/laravel-restify"><img src="https://img.shields.io/scrutinizer/coverage/g/binaryk/laravel-restify.svg" alt="Test Coverage"></a>
-    <a href="https://scrutinizer-ci.com/g/binaryk/laravel-restify"><img src="https://img.shields.io/scrutinizer/g/binaryk/laravel-restify.svg" alt="Quality"></a>
+    <a href="https://scrutinizer-ci.com/g/BinarCode/laravel-restify"><img src="https://img.shields.io/scrutinizer/g/BinarCode/laravel-restify.svg" alt="Quality"></a>
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/license.svg" alt="License"></a>
 </p>
 
-This package will generate the API resources "CRUD" for you. By using Laravel buit in Policies and Eloquent Resource API the implementation become a pleasure.
-
-The response is made according with [JSON:API](https://jsonapi.org/format/) standard.
+The first fully customizable Laravel [JSON:API](https://jsonapi.org) builder. "CRUD" and protect your resources with 0 (zero) extra line of code.
 
 ## Installation
 
@@ -46,7 +43,7 @@ php artisan restify:repository Post
 
 ## Usage
 
-See the [official documentation](https://binaryk.github.io/laravel-restify/).
+See the [official documentation](https://binarcode.github.io/laravel-restify/docs/2.0/).
 
 ### Testing
 

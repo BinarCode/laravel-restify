@@ -22,4 +22,14 @@ class PostPolicy
     {
         return $_SERVER['restify.post.creatable'] ?? true;
     }
+
+    public function update($user, $post)
+    {
+        return $_SERVER['restify.post.updateable'] ?? true;
+    }
+
+    public function delete($user, $post)
+    {
+        return $_SERVER['restify.post.deletable'] ?? true;
+    }
 }

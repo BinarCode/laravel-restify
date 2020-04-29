@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -241,12 +242,22 @@ trait AuthorizableModels
      */
     public function determineModel()
     {
-        $model = $this instanceof Model ? $this : ($this->resource ?? null);
+        $model = $this->isRepositoryContext() === false ? $this : ($this->resource ?? null);
 
         if (is_null($model)) {
             throw new ModelNotFoundException(__('Model is not declared in :class', ['class' => self::class]));
         }
 
         return $model;
+    }
+
+    /**
+     * Determine if the trait is used by repository or model.
+     *
+     * @return bool
+     */
+    public static function isRepositoryContext()
+    {
+        return new static instanceof Repository;
     }
 }

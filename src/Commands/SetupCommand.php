@@ -3,13 +3,10 @@
 namespace Binaryk\LaravelRestify\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Console\DetectsApplicationNamespace;
 use Illuminate\Support\Str;
 
 class SetupCommand extends Command
 {
-    use DetectsApplicationNamespace;
-
     /**
      * The name and signature of the console command.
      *
@@ -57,7 +54,7 @@ class SetupCommand extends Command
      */
     protected function registerRestifyServiceProvider()
     {
-        $namespace = Str::replaceLast('\\', '', $this->getAppNamespace());
+        $namespace = Str::replaceLast('\\', '', $this->laravel->getNamespace());
 
         file_put_contents(config_path('app.php'), str_replace(
             "{$namespace}\\Providers\EventServiceProvider::class,".PHP_EOL,
@@ -73,7 +70,7 @@ class SetupCommand extends Command
      */
     protected function setAppNamespace()
     {
-        $namespace = $this->getAppNamespace();
+        $namespace = $this->laravel->getNamespace();
 
         $this->setAppNamespaceOn(app_path('Restify/User.php'), $namespace);
         $this->setAppNamespaceOn(app_path('Providers/RestifyServiceProvider.php'), $namespace);

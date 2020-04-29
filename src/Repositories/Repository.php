@@ -62,6 +62,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public static function uriKey()
     {
+        if (property_exists(static::class, 'uriKey') && is_string(static::$uriKey)) {
+            return static::$uriKey;
+        }
+
         return Str::plural(Str::kebab(class_basename(get_called_class())));
     }
 
@@ -72,7 +76,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public static function newModel()
     {
-        $model = static::$model;
+        if (property_exists(static::class, 'model')) {
+            $model = static::$model;
+        } else {
+            $model = NullModel::class;
+        }
 
         return new $model;
     }
