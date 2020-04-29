@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
+use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
@@ -11,33 +12,14 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class RepositoryCommand extends GeneratorCommand
 {
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
+    use ConfirmableTrait;
+
     protected $name = 'restify:repository';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Create a new repository class';
 
-    /**
-     * The type of class being generated.
-     *
-     * @var string
-     */
     protected $type = 'Repository';
 
-    /**
-     * Execute the console command.
-     *
-     * @return bool|null
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
     public function handle()
     {
         parent::handle();
@@ -45,30 +27,82 @@ class RepositoryCommand extends GeneratorCommand
         $this->callSilent('restify:base-repository', [
             'name' => 'Repository',
         ]);
+
+        $this->buildModel();
+        $this->buildMigration();
+        $this->tryAll();
     }
 
     /**
      * Build the class with the given name.
+     * This method should return the file class content
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     protected function buildClass($name)
     {
-        $model = $this->option('model');
+        $model = $this->guessQualifiedModelName($this->option('model'));
 
-        if (is_null($model)) {
-            $model = $this->laravel->getNamespace().$this->argument('name');
-        } elseif (! Str::startsWith($model, [
-            $this->laravel->getNamespace(), '\\',
-        ])) {
-            $model = $this->laravel->getNamespace().$model;
+        return str_replace('DummyFullModel', $model, parent::buildClass($name));
+    }
+
+    protected function guessQualifiedModelName($name = null)
+    {
+        $class = trim($this->option('model')) ?: null;
+        $model = Str::singular(Str::before($this->getNameInput(), 'Repository'));
+
+        if ($userDidntPassModel = is_null($class)) {
+            /*Check if the user didnt provide the model name*/
+            return str_replace('/', '\\', $this->rootNamespace() . '/Models//' . $model);
         }
 
+        if (Str::startsWith($class, $this->rootNamespace())) {
+            return str_replace('\\', '\\\\', $class);
+        }
+
+        /* * Assuming the class model doesn't contain the namespace * * */
+        return str_replace('/', '\\', $this->rootNamespace() . '/Models//' . $class);
+    }
+
+    protected function buildMigration()
+    {
+        $table = Str::snake(Str::pluralStudly(class_basename($this->guessQualifiedModelName())));
+
+        $guessMigration = 'Create' . Str::studly($table) . 'Table';
+
+        if (false === class_exists($guessMigration)) {
+            $migration = Str::snake($guessMigration);
+            $yes = $this->confirm("Do you want to generate the migration [{$migration}]?");
+
+            if ($yes) {
+                $this->call('make:migration', [
+                    'name' => $migration,
+                    '--create' => $table
+                ]);
+            }
+        }
+    }
+
+    protected function buildModel()
+    {
+        $model = $this->guessQualifiedModelName();
+
+        if (false === class_exists($model)) {
+            $yes = $this->confirm("Do you want to generate the model [{$model}]?");
+
+            if ($yes) {
+                $this->call('make:model', ['name' => str_replace('\\\\', '\\', $model),]);
+            }
+        }
+    }
+
+    public function tryAll()
+    {
         if ($this->option('all')) {
             $this->call('make:model', [
-                'name' => $this->argument('name'),
+                'name' => $this->guessQualifiedModelName(),
                 '--factory' => true,
                 '--migration' => true,
                 '--controller' => true,
@@ -78,38 +112,18 @@ class RepositoryCommand extends GeneratorCommand
                 'name' => $this->argument('name'),
             ]);
         }
-
-        return str_replace(
-            'DummyFullModel', $model, parent::buildClass($name)
-        );
     }
 
-    /**
-     * Get the stub file for the generator.
-     *
-     * @return string
-     */
     protected function getStub()
     {
-        return __DIR__.'/stubs/repository.stub';
+        return __DIR__ . '/stubs/repository.stub';
     }
 
-    /**
-     * Get the default namespace for the class.
-     *
-     * @param  string  $rootNamespace
-     * @return string
-     */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Restify';
+        return $rootNamespace . '\Restify';
     }
 
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
     protected function getOptions()
     {
         return [
