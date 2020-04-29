@@ -70,7 +70,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         /**
          * e.g. UserRepository => users
-         * e.g. LaravelEntityRepository => laravel-entities
+         * e.g. LaravelEntityRepository => laravel-entities.
          */
         return Str::plural($kebabWithoutRepository);
     }
@@ -229,7 +229,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $data = $data->jsonSerialize();
         }
 
-        return $this->filter((array)$data);
+        return $this->filter((array) $data);
     }
 
     /**
