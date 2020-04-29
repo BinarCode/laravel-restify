@@ -66,7 +66,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return static::$uriKey;
         }
 
-        return Str::plural(Str::kebab(class_basename(get_called_class())));
+        $kebabWithoutRepository = Str::kebab(Str::replaceLast('Repository', '', class_basename(get_called_class())));
+
+        /**
+         * e.g. UserRepository => users
+         * e.g. LaravelEntityRepository => laravel-entities
+         */
+        return Str::plural($kebabWithoutRepository);
     }
 
     /**
@@ -223,7 +229,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $data = $data->jsonSerialize();
         }
 
-        return $this->filter((array) $data);
+        return $this->filter((array)$data);
     }
 
     /**

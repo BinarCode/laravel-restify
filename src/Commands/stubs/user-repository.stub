@@ -6,7 +6,7 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Facades\Hash;
 
-class User extends Repository
+class UserRepository extends Repository
 {
     /**
      * The model the repository corresponds to.
