@@ -14,7 +14,7 @@ class PolicyCommand extends GeneratorCommand
 
     public function handle()
     {
-        if (parent::handle() === false && !$this->option('force')) {
+        if (parent::handle() === false && ! $this->option('force')) {
             return false;
         }
     }
@@ -42,7 +42,6 @@ class PolicyCommand extends GeneratorCommand
 
     protected function replaceQualifiedModel($stub)
     {
-
         return str_replace('{{ modelQualified }}', $this->guessQualifiedModel(), $stub);
     }
 
@@ -50,7 +49,7 @@ class PolicyCommand extends GeneratorCommand
     {
         $model = Str::singular(class_basename(Str::beforeLast($this->getNameInput(), 'Policy')));
 
-        return str_replace('/', '\\', $this->rootNamespace() . 'Models/' . $model);
+        return str_replace('/', '\\', $this->rootNamespace().'Models/'.$model);
     }
 
     protected function guessPolicyName()
@@ -66,7 +65,7 @@ class PolicyCommand extends GeneratorCommand
 
     protected function getPath($name)
     {
-        return $this->laravel['path'] . '/Policies/' . $this->guessPolicyName() . '.php';
+        return $this->laravel['path'].'/Policies/'.$this->guessPolicyName().'.php';
     }
 
     /**
@@ -76,7 +75,7 @@ class PolicyCommand extends GeneratorCommand
      */
     protected function getStub()
     {
-        return __DIR__ . '/stubs/policy.stub';
+        return __DIR__.'/stubs/policy.stub';
     }
 
     /**
@@ -87,7 +86,7 @@ class PolicyCommand extends GeneratorCommand
      */
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace . '\Policies';
+        return $rootNamespace.'\Policies';
     }
 
     /**
