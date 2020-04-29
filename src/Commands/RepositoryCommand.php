@@ -22,15 +22,36 @@ class RepositoryCommand extends GeneratorCommand
 
     public function handle()
     {
-        parent::handle();
+        if (parent::handle() === false && !$this->option('force')) {
+            return false;
+        }
 
         $this->callSilent('restify:base-repository', [
             'name' => 'Repository',
         ]);
 
-        $this->buildModel();
-        $this->buildMigration();
-        $this->tryAll();
+        if ($this->option('all')) {
+            $this->input->setOption('factory', true);
+            $this->input->setOption('model', true);
+            $this->input->setOption('policy', true);
+            $this->input->setOption('table', true);
+        }
+
+        if ($this->option('policy')) {
+            $this->buildPolicy();
+        }
+
+        if ($this->option('model')) {
+            $this->buildModel();
+        }
+
+        if ($this->option('table')) {
+            $this->buildMigration();
+        }
+
+        if ($this->option('factory')) {
+            $this->buildFactory();
+        }
     }
 
     /**
@@ -43,27 +64,24 @@ class RepositoryCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
-        $model = $this->guessQualifiedModelName($this->option('model'));
-
-        return str_replace('DummyFullModel', $model, parent::buildClass($name));
+        return $this->replaceModel(parent::buildClass($name), $this->guessQualifiedModelName());
     }
 
-    protected function guessQualifiedModelName($name = null)
+    protected function replaceModel($stub, $class)
     {
-        $class = trim($this->option('model')) ?: null;
-        $model = Str::singular(Str::before($this->getNameInput(), 'Repository'));
+        return str_replace(['DummyClass', '{{ model }}', '{{model}}'], $class, $stub);
+    }
 
-        if ($userDidntPassModel = is_null($class)) {
-            /*Check if the user didnt provide the model name*/
-            return str_replace('/', '\\', $this->rootNamespace() . '/Models//' . $model);
-        }
+    protected function guessBaseModelClass()
+    {
+        return class_basename($this->guessQualifiedModelName());
+    }
 
-        if (Str::startsWith($class, $this->rootNamespace())) {
-            return str_replace('\\', '\\\\', $class);
-        }
+    protected function guessQualifiedModelName()
+    {
+        $model = Str::singular(class_basename(Str::before($this->getNameInput(), 'Repository')));
 
-        /* * Assuming the class model doesn't contain the namespace * * */
-        return str_replace('/', '\\', $this->rootNamespace() . '/Models//' . $class);
+        return str_replace('/', '\\', $this->rootNamespace() . '/Models//' . $model);
     }
 
     protected function buildMigration()
@@ -85,6 +103,15 @@ class RepositoryCommand extends GeneratorCommand
         }
     }
 
+    protected function buildPolicy()
+    {
+        $this->call('restify:policy', [
+            'name' => $this->guessBaseModelClass(),
+        ]);
+
+        return $this;
+    }
+
     protected function buildModel()
     {
         $model = $this->guessQualifiedModelName();
@@ -98,20 +125,14 @@ class RepositoryCommand extends GeneratorCommand
         }
     }
 
-    public function tryAll()
+    protected function buildFactory()
     {
-        if ($this->option('all')) {
-            $this->call('make:model', [
-                'name' => $this->guessQualifiedModelName(),
-                '--factory' => true,
-                '--migration' => true,
-                '--controller' => true,
-            ]);
+        $factory = Str::studly(class_basename($this->guessQualifiedModelName()));
 
-            $this->call('restify:policy', [
-                'name' => $this->argument('name'),
-            ]);
-        }
+        $this->call('make:factory', [
+            'name' => "{$factory}Factory",
+            '--model' => str_replace('\\\\', '\\', $this->guessQualifiedModelName())
+        ]);
     }
 
     protected function getStub()
@@ -128,7 +149,11 @@ class RepositoryCommand extends GeneratorCommand
     {
         return [
             ['all', 'a', InputOption::VALUE_NONE, 'Generate a migration, factory, and controller for the repository'],
-            ['model', 'm', InputOption::VALUE_REQUIRED, 'The model class being represented.'],
+            ['model', 'm', InputOption::VALUE_NONE, 'The model class being represented.'],
+            ['factory', 'f', InputOption::VALUE_NONE, 'Create a new factory for the repository model.'],
+            ['policy', 'p', InputOption::VALUE_NONE, 'Create a new policy for the repository model.'],
+            ['table', 't', InputOption::VALUE_NONE, 'Create a new migration table file for the repository model.'],
+            ['force', null, InputOption::VALUE_NONE, 'Create the class even if the model already exists.'],
         ];
     }
 }
