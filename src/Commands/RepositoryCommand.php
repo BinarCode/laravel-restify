@@ -35,7 +35,7 @@ class RepositoryCommand extends GeneratorCommand
 
     /**
      * Build the class with the given name.
-     * This method should return the file class content
+     * This method should return the file class content.
      *
      * @param string $name
      * @return string
@@ -55,7 +55,7 @@ class RepositoryCommand extends GeneratorCommand
 
         if ($userDidntPassModel = is_null($class)) {
             /*Check if the user didnt provide the model name*/
-            return str_replace('/', '\\', $this->rootNamespace() . '/Models//' . $model);
+            return str_replace('/', '\\', $this->rootNamespace().'/Models//'.$model);
         }
 
         if (Str::startsWith($class, $this->rootNamespace())) {
@@ -63,14 +63,14 @@ class RepositoryCommand extends GeneratorCommand
         }
 
         /* * Assuming the class model doesn't contain the namespace * * */
-        return str_replace('/', '\\', $this->rootNamespace() . '/Models//' . $class);
+        return str_replace('/', '\\', $this->rootNamespace().'/Models//'.$class);
     }
 
     protected function buildMigration()
     {
         $table = Str::snake(Str::pluralStudly(class_basename($this->guessQualifiedModelName())));
 
-        $guessMigration = 'Create' . Str::studly($table) . 'Table';
+        $guessMigration = 'Create'.Str::studly($table).'Table';
 
         if (false === class_exists($guessMigration)) {
             $migration = Str::snake($guessMigration);
@@ -79,7 +79,7 @@ class RepositoryCommand extends GeneratorCommand
             if ($yes) {
                 $this->call('make:migration', [
                     'name' => $migration,
-                    '--create' => $table
+                    '--create' => $table,
                 ]);
             }
         }
@@ -93,7 +93,7 @@ class RepositoryCommand extends GeneratorCommand
             $yes = $this->confirm("Do you want to generate the model [{$model}]?");
 
             if ($yes) {
-                $this->call('make:model', ['name' => str_replace('\\\\', '\\', $model),]);
+                $this->call('make:model', ['name' => str_replace('\\\\', '\\', $model)]);
             }
         }
     }
@@ -116,12 +116,12 @@ class RepositoryCommand extends GeneratorCommand
 
     protected function getStub()
     {
-        return __DIR__ . '/stubs/repository.stub';
+        return __DIR__.'/stubs/repository.stub';
     }
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace . '\Restify';
+        return $rootNamespace.'\Restify';
     }
 
     protected function getOptions()
