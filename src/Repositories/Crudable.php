@@ -105,7 +105,7 @@ trait Crudable
 
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
             ->model($this->resource)
-            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $this->resource->id);
+            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$this->resource->id);
     }
 
     public function update(RestifyRequest $request, $repositoryId)
