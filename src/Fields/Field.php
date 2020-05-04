@@ -30,7 +30,7 @@ class Field extends OrganicField implements JsonSerializable
     public $showCallback;
 
     /**
-     * Closure to resolve the index method
+     * Closure to resolve the index method.
      *
      * @var
      */
@@ -102,9 +102,9 @@ class Field extends OrganicField implements JsonSerializable
 
     public function indexCallback(Closure $callback)
     {
-       $this->indexCallback = $callback;
+        $this->indexCallback = $callback;
 
-       return $this;
+        return $this;
     }
 
     /**

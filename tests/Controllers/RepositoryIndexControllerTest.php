@@ -217,8 +217,8 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $r = $this->getJson('/restify-api/users?with=posts')
             ->assertStatus(200);
 
-        $this->assertSameSize((array)data_get($r, 'data.0.relationships.posts'), $posts->toArray());
-        $this->assertSame(array_keys((array)data_get($r, 'data.0.relationships.posts.0')), [
+        $this->assertSameSize((array) data_get($r, 'data.0.relationships.posts'), $posts->toArray());
+        $this->assertSame(array_keys((array) data_get($r, 'data.0.relationships.posts.0')), [
             'id', 'type', 'attributes', 'meta',
         ]);
     }
