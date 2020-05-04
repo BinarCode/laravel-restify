@@ -31,7 +31,7 @@ class RepositoryIndexController extends RepositoryController
                 ->dump($e, $request->isDev());
         } catch (UnauthorizedException $e) {
             return $this->response()->forbidden()->addError($e->getMessage())->dump($e, $request->isDev());
-        } catch (InstanceOfException | \Throwable $e) {
+        } catch (\Throwable $e) {
             return $this->response()->error()->dump($e, $request->isDev());
         }
     }

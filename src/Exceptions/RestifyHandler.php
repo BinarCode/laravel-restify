@@ -83,6 +83,9 @@ class RestifyHandler extends ExceptionHandler
             case $exception instanceof ValidationException:
                 $response->errors($exception->errors())->invalid();
                 break;
+            case $exception instanceof InstanceOfException:
+                $response->errors($exception->getMessage())->invalid();
+                break;
 
             case $exception instanceof MethodNotAllowedHttpException:
                 $response->addError(__('messages.method_not_allowed'))->invalid();

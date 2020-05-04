@@ -11,23 +11,12 @@ class {{ class }}
     use HandlesAuthorization;
 
     /**
-     * Determine whether the user can view any models.
-     *
+     * Determine whether the user can use restify feature for each CRUD operation.
+     * So if this is not allowed, all operations will be disabled
      * @param  \App\User  $user
      * @return mixed
      */
-    public function showEvery(User $user = null)
-    {
-        //
-    }
-
-    /**
-     * Determine whether the user is authorized to access the repository uriKey
-     *
-     * @param  \App\User  $user
-     * @return mixed
-     */
-    public function showAny(User $user = null)
+    public function allowRestify(User $user = null)
     {
         //
     }

@@ -22,7 +22,7 @@ class RepositoryCommand extends GeneratorCommand
 
     public function handle()
     {
-        if (parent::handle() === false && ! $this->option('force')) {
+        if (parent::handle() === false && !$this->option('force')) {
             return false;
         }
 
@@ -64,6 +64,10 @@ class RepositoryCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
+        if (false === Str::endsWith($name, 'Repository')) {
+            $name .= 'Repository';
+        }
+
         return $this->replaceModel(parent::buildClass($name), $this->guessQualifiedModelName());
     }
 
@@ -81,14 +85,14 @@ class RepositoryCommand extends GeneratorCommand
     {
         $model = Str::singular(class_basename(Str::before($this->getNameInput(), 'Repository')));
 
-        return str_replace('/', '\\', $this->rootNamespace().'/Models//'.$model);
+        return str_replace('/', '\\', $this->rootNamespace() . '/Models//' . $model);
     }
 
     protected function buildMigration()
     {
         $table = Str::snake(Str::pluralStudly(class_basename($this->guessQualifiedModelName())));
 
-        $guessMigration = 'Create'.Str::studly($table).'Table';
+        $guessMigration = 'Create' . Str::studly($table) . 'Table';
 
         if (false === class_exists($guessMigration)) {
             $migration = Str::snake($guessMigration);
@@ -137,12 +141,21 @@ class RepositoryCommand extends GeneratorCommand
 
     protected function getStub()
     {
-        return __DIR__.'/stubs/repository.stub';
+        return __DIR__ . '/stubs/repository.stub';
+    }
+
+    protected function getPath($name)
+    {
+        if (false === Str::endsWith($name, 'Repository')) {
+            $name .= 'Repository';
+        }
+
+        return parent::getPath($name);
     }
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Restify';
+        return $rootNamespace . '\Restify';
     }
 
     protected function getOptions()

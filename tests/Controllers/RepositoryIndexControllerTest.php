@@ -15,7 +15,7 @@ use Mockery;
  */
 class RepositoryIndexControllerTest extends IntegrationTest
 {
-    public function test_list_resource()
+    public function test_list_repository()
     {
         factory(User::class)->create();
         factory(User::class)->create();
@@ -129,36 +129,32 @@ class RepositoryIndexControllerTest extends IntegrationTest
     public function test_that_desc_sort_query_param_works()
     {
         $this->mockUsers(10);
-        $response = $this->withExceptionHandling()->get('/restify-api/users?sort=-id')
-            ->assertStatus(200)
-            ->getOriginalContent();
+        $response = $this->getJson('/restify-api/users?sort=-id')
+            ->assertStatus(200);
 
-        $this->assertSame($response['data']->first()->resource->id, 10);
-        $this->assertSame($response['data']->last()->resource->id, 1);
+        $this->assertSame($response->json('data.0.attributes.id'), 10);
+        $this->assertSame($response->json('data.9.attributes.id'), 1);
     }
 
     public function test_that_asc_sort_query_param_works()
     {
         $this->mockUsers(10);
 
-        $response = (array) json_decode($this->withExceptionHandling()->get('/restify-api/users?sort=+id')
-            ->assertStatus(200)
-            ->getContent());
+        $response = $this->getJson('/restify-api/users?sort=+id')
+            ->assertStatus(200);
 
-        $this->assertSame(data_get($response, 'data.0.id'), 1);
-        $this->assertSame(data_get($response, 'data.9.id'), 10);
+        $this->assertSame($response->json('data.0.id'), 1);
+        $this->assertSame($response->json('data.9.id'), 10);
     }
 
     public function test_that_default_asc_sort_query_param_works()
     {
         $this->mockUsers(10);
 
-        $response = (array) json_decode($this->withExceptionHandling()->get('/restify-api/users?sort=id')
-            ->assertStatus(200)
-            ->getContent());
+        $response = $this->get('/restify-api/users?sort=id')->assertStatus(200);
 
-        $this->assertSame(data_get($response, 'data.0.id'), 1);
-        $this->assertSame(data_get($response, 'data.9.id'), 10);
+        $this->assertSame($response->json('data.0.id'), 1);
+        $this->assertSame($response->json('data.9.id'), 10);
     }
 
     public function test_that_match_param_works()
@@ -218,14 +214,11 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $request->shouldReceive('isIndexRequest')
             ->andReturnTrue();
 
-        $r = $this->withExceptionHandling()
-            ->getJson('/restify-api/users?with=posts')
-            ->assertStatus(200)
-            ->getContent();
-        $r = (array) json_decode($r);
+        $r = $this->getJson('/restify-api/users?with=posts')
+            ->assertStatus(200);
 
-        $this->assertSameSize((array) data_get($r, 'data.0.relationships.posts'), $posts->toArray());
-        $this->assertSame(array_keys((array) data_get($r, 'data.0.relationships.posts.0')), [
+        $this->assertSameSize((array)data_get($r, 'data.0.relationships.posts'), $posts->toArray());
+        $this->assertSame(array_keys((array)data_get($r, 'data.0.relationships.posts.0')), [
             'id', 'type', 'attributes', 'meta',
         ]);
     }

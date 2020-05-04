@@ -12,16 +12,6 @@ class UserRepository extends Repository
 {
     public static $model = User::class;
 
-    /**
-     * Get the URI key for the resource.
-     *
-     * @return string
-     */
-    public static function uriKey()
-    {
-        return 'users';
-    }
-
     public function fields(RestifyRequest $request)
     {
         return [

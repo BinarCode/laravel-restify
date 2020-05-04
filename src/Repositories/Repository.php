@@ -43,7 +43,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      *
      * @var Model|LengthAwarePaginator
      */
-    public $resource;
+    public $repository;
 
     /**
      * Get the underlying model instance for the resource.
@@ -52,7 +52,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function model()
     {
-        return $this->resource ?? static::newModel();
+        return $this->repository ?? static::newModel();
     }
 
     /**
@@ -80,7 +80,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      *
      * @return mixed
      */
-    public static function newModel()
+    public static function newModel(): Model
     {
         if (property_exists(static::class, 'model')) {
             $model = static::$model;
@@ -91,31 +91,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return new $model;
     }
 
-    /**
-     * @return Builder
-     */
-    public static function query()
+    public static function query(): Builder
     {
         return static::newModel()->query();
-    }
-
-    /**
-     * @param $request
-     * @return array
-     */
-    public function toArray(RestifyRequest $request)
-    {
-        $serialized = [
-            'id' => $this->when($this->resource instanceof Model, function () {
-                return $this->resource->getKey();
-            }),
-            'type' => $this->model()->getTable(),
-            'attributes' => $this->resolveDetailsAttributes($request),
-            'relationships' => $this->when(value($this->resolveDetailsRelationships($request)), $this->resolveDetailsRelationships($request)),
-            'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
-        ];
-
-        return $this->serializeDetails($request, $serialized);
     }
 
     /**
@@ -146,21 +124,20 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function withResource($resource)
     {
-        $this->resource = $resource;
+        $this->repository = $resource;
 
         return $this;
     }
 
     /**
      * Resolve repository with given model.
+     *
      * @param $model
      * @return Repository
      */
     public static function resolveWith($model)
     {
-        /**
-         * @var Repository
-         */
+        /** * @var Repository $self */
         $self = resolve(static::class);
 
         return $self->withResource($model);
@@ -186,6 +163,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function __call($method, $parameters)
     {
+        dd($this->model());
         return $this->forwardCallTo($this->model(), $method, $parameters);
     }
 
@@ -212,10 +190,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * Resolve the resource to an array.
+     * Resolve the repository to an array.
      *
      * @param \Illuminate\Http\Request|null $request
      * @return array
+     * @throws \Illuminate\Contracts\Container\BindingResolutionException
      */
     public function resolve($request = null)
     {
@@ -229,25 +208,29 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $data = $data->jsonSerialize();
         }
 
-        return $this->filter((array) $data);
+        return $this->filter((array)$data);
     }
 
-    /**
-     * @return array|mixed
-     */
+    public function response($content = '', $status = 200, array $headers = []): RestResponse
+    {
+        return new RestResponse($content, $status, $headers);
+    }
+
+    public function toArray(RestifyRequest $request): array
+    {
+        return [
+            'id' => $this->when($this->repository instanceof Model, function () {
+                return $this->repository->getKey();
+            }),
+            'type' => $this->model()->getTable(),
+            'attributes' => $request->isDetailRequest() ? $this->resolveDetailsAttributes($request) : $this->resolveIndexAttributes($request),
+            'relationships' => $this->when(value($this->resolveDetailsRelationships($request)), $this->resolveDetailsRelationships($request)),
+            'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
+        ];
+    }
+
     public function jsonSerialize()
     {
         return $this->resolve();
-    }
-
-    /**
-     * @param string $content
-     * @param int $status
-     * @param array $headers
-     * @return RestResponse
-     */
-    public function response($content = '', $status = 200, array $headers = [])
-    {
-        return new RestResponse($content, $status, $headers);
     }
 }

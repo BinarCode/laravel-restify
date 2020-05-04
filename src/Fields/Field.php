@@ -30,6 +30,13 @@ class Field extends OrganicField implements JsonSerializable
     public $showCallback;
 
     /**
+     * Closure to resolve the index method
+     *
+     * @var
+     */
+    private $indexCallback;
+
+    /**
      * Callback called when trying to fill this attribute, this callback will override the fill action, so make
      * sure you assign the attribute to the model over this callback.
      *
@@ -91,6 +98,13 @@ class Field extends OrganicField implements JsonSerializable
         $this->showCallback = $callback;
 
         return $this;
+    }
+
+    public function indexCallback(Closure $callback)
+    {
+       $this->indexCallback = $callback;
+
+       return $this;
     }
 
     /**
@@ -233,6 +247,18 @@ class Field extends OrganicField implements JsonSerializable
         if (is_callable($this->showCallback)) {
             $value = $this->resolveAttribute($repository, $attribute);
             $attribute = call_user_func($this->showCallback, $value, $repository, $attribute);
+        }
+
+        return $attribute;
+    }
+
+    public function resolveForIndex($repository, $attribute = null)
+    {
+        $attribute = $attribute ?? $this->attribute;
+
+        if (is_callable($this->indexCallback)) {
+            $value = $this->resolveAttribute($repository, $attribute);
+            $attribute = call_user_func($this->indexCallback, $value, $repository, $attribute);
         }
 
         return $attribute;

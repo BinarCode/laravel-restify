@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Arr;
 
@@ -27,7 +28,7 @@ trait ResponseResolver
     public function resolveDetailsAttributes(RestifyRequest $request)
     {
         $resolvedAttributes = [];
-        $modelAttributes = method_exists($this->resource, 'toArray') ? $this->resource->toArray($request) : [];
+        $modelAttributes = method_exists($this->repository, 'toArray') ? $this->repository->toArray($request) : [];
         $this->collectFields($request)->filter(function (Field $field) {
             return is_callable($field->showCallback);
         })->map(function (Field $field) use (&$resolvedAttributes) {
@@ -36,17 +37,9 @@ trait ResponseResolver
 
         $resolved = array_merge($modelAttributes, $resolvedAttributes);
 
-        if ($request->isDetailRequest()) {
-            $hidden = $this->collectFields($request)->filter->isHiddenOnDetail($request, $this)->pluck('attribute')->toArray();
+        $hidden = $this->collectFields($request)->filter->isHiddenOnDetail($request, $this)->pluck('attribute')->toArray();
 
-            $resolved = Arr::except($resolved, $hidden);
-        }
-
-        if ($request->isIndexRequest()) {
-            $hidden = $this->collectFields($request)->filter->isHiddenOnIndex($request, $this)->pluck('attribute')->toArray();
-
-            $resolved = Arr::except($resolved, $hidden);
-        }
+        $resolved = Arr::except($resolved, $hidden);
 
         return $resolved;
     }
@@ -79,16 +72,16 @@ trait ResponseResolver
 
         $withs = [];
 
-        if ($this->resource instanceof RestifySearchable) {
+        if ($this->repository instanceof RestifySearchable) {
             with(explode(',', $request->get('with')), function ($relations) use ($request, &$withs) {
                 foreach ($relations as $relation) {
-                    if (in_array($relation, $this->resource::getWiths())) {
+                    if (in_array($relation, $this->repository::getWiths())) {
                         /**
                          * @var AbstractPaginator
                          */
-                        $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? ($this->resource::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
+                        $paginator = $this->repository->{$relation}()->paginate($request->get('relatablePerPage') ?? ($this->repository::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
                         /** * @var Builder $q */
-                        $q = $this->resource->{$relation}->first();
+                        $q = $this->repository->{$relation}->first();
                         /** * @var Repository $repository */
                         if ($q && $repository = Restify::repositoryForModel($q->getModel())) {
                             // This will serialize into the repository dedicated for model
@@ -118,24 +111,38 @@ trait ResponseResolver
      * Resolve the response for the details.
      *
      * @param $request
-     * @param $serialized
      * @return array
      */
-    public function serializeDetails(RestifyRequest $request, $serialized)
+    public function serializeDetails(RestifyRequest $request)
     {
-        return $serialized;
+        return [
+            'id' => $this->when($this->repository instanceof Model, function () {
+                return $this->repository->getKey();
+            }),
+            'type' => $this->model()->getTable(),
+            'attributes' => $this->resolveDetailsAttributes($request),
+            'relationships' => $this->when(value($this->resolveDetailsRelationships($request)), $this->resolveDetailsRelationships($request)),
+            'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
+        ];
     }
 
     /**
      * Resolve the response for the index request.
      *
      * @param $request
-     * @param $serialized
      * @return array
      */
-    public function serializeIndex($request, $serialized)
+    public function serializeIndex(RestifyRequest $request)
     {
-        return $serialized;
+        return [
+            'id' => $this->when($this->repository instanceof Model, function () {
+                return $this->repository->getKey();
+            }),
+            'type' => $this->model()->getTable(),
+            'attributes' => $this->resolveIndexAttributes($request),
+            'relationships' => $this->when(value($this->resolveDetailsRelationships($request)), $this->resolveDetailsRelationships($request)),
+            'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
+        ];
     }
 
     /**
@@ -146,7 +153,19 @@ trait ResponseResolver
      */
     public function resolveIndexAttributes($request)
     {
-        return $this->resolveDetailsAttributes($request);
+        $resolvedAttributes = method_exists($this->repository, 'toArray') ? $this->repository->toArray($request) : [];
+
+        // Resolve the show method, and attach the value to the array
+        $this->collectFields($request)
+            ->filter(fn(Field $field) => !$field->isHiddenOnIndex($request, static::class))
+            ->each(function (Field $field) use (&$resolvedAttributes) {
+                $resolvedAttributes[$field->attribute] = $field->resolveForIndex($this);
+            });
+        $hidden = $this->collectFields($request)->filter(fn(Field $field) => $field->isHiddenOnIndex($request, $this))->pluck('attribute')->toArray();
+
+        $resolved = Arr::except($resolvedAttributes, $hidden);
+
+        return $resolved;
     }
 
     /**
