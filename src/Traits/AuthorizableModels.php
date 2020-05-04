@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\Gate;
 /**
  * Could be used as a trait in a model class and in a repository class.
  *
- * @property Model $repository
+ * @property Model $resource
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait AuthorizableModels
@@ -207,7 +207,7 @@ trait AuthorizableModels
      */
     public function determineModel()
     {
-        $model = $this->isRepositoryContext() === false ? $this : ($this->repository ?? null);
+        $model = $this->isRepositoryContext() === false ? $this : ($this->resource ?? null);
 
         if (is_null($model)) {
             throw new ModelNotFoundException(__('Model is not declared in :class', ['class' => self::class]));

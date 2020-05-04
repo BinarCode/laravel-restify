@@ -71,7 +71,7 @@ trait Crudable
             return $this->response()->forbidden()->addError($e->getMessage());
         }
 
-        $this->repository = static::showPlain($repositoryId);
+        $this->resource = static::showPlain($repositoryId);
 
         try {
             $this->allowToShow($request);
@@ -99,13 +99,13 @@ trait Crudable
                 ->code(RestResponse::REST_RESPONSE_INVALID_CODE);
         }
 
-        $this->repository = static::storePlain($request->toArray());
+        $this->resource = static::storePlain($request->toArray());
 
-        static::stored($this->repository);
+        static::stored($this->resource);
 
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
-            ->model($this->repository)
-            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $this->repository->id);
+            ->model($this->resource)
+            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $this->resource->id);
     }
 
     public function update(RestifyRequest $request, $repositoryId)
@@ -118,9 +118,9 @@ trait Crudable
 
         $this->allowToUpdate($request);
 
-        $this->repository = static::updatePlain($request->all(), $repositoryId);
+        $this->resource = static::updatePlain($request->all(), $repositoryId);
 
-        static::updated($this->repository);
+        static::updated($this->resource);
 
         return $this->response()
             ->data($this->jsonSerialize())
@@ -220,7 +220,7 @@ trait Crudable
         $repository->allowToUpdate($request, $payload);
 
         return DB::transaction(function () use ($request, $repository) {
-            $model = static::fillWhenUpdate($request, $repository->repository);
+            $model = static::fillWhenUpdate($request, $repository->resource);
 
             $model->save();
 
@@ -242,7 +242,7 @@ trait Crudable
 
         $repository->allowToShow($request);
 
-        return $repository->repository;
+        return $repository->resource;
     }
 
     public static function destroyPlain($key)
@@ -255,7 +255,7 @@ trait Crudable
         $repository->allowToDestroy($request);
 
         return DB::transaction(function () use ($repository) {
-            return $repository->repository->delete();
+            return $repository->resource->delete();
         });
     }
 

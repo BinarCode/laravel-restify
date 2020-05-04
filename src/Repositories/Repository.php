@@ -43,7 +43,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      *
      * @var Model|LengthAwarePaginator
      */
-    public $repository;
+    public $resource;
 
     /**
      * Get the underlying model instance for the resource.
@@ -52,7 +52,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function model()
     {
-        return $this->repository ?? static::newModel();
+        return $this->resource ?? static::newModel();
     }
 
     /**
@@ -124,7 +124,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function withResource($resource)
     {
-        $this->repository = $resource;
+        $this->resource = $resource;
 
         return $this;
     }
@@ -219,8 +219,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function toArray(RestifyRequest $request): array
     {
         return [
-            'id' => $this->when($this->repository instanceof Model, function () {
-                return $this->repository->getKey();
+            'id' => $this->when($this->resource instanceof Model, function () {
+                return $this->resource->getKey();
             }),
             'type' => $this->model()->getTable(),
             'attributes' => $request->isDetailRequest() ? $this->resolveDetailsAttributes($request) : $this->resolveIndexAttributes($request),

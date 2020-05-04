@@ -16,7 +16,7 @@ class FieldResolversTest extends IntegrationTest
         tap($this->basicField(), function (Field $field) {
             $book = factory(Book::class)->create();
             $repository = $this->basicRepository();
-            $repository->repository = $book;
+            $repository->resource = $book;
 
             $field->showCallback(function ($value, $repo) use ($book, $repository) {
                 $this->assertInstanceOf(get_class($repository), $repo);

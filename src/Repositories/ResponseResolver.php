@@ -28,7 +28,7 @@ trait ResponseResolver
     public function resolveDetailsAttributes(RestifyRequest $request)
     {
         $resolvedAttributes = [];
-        $modelAttributes = method_exists($this->repository, 'toArray') ? $this->repository->toArray($request) : [];
+        $modelAttributes = method_exists($this->resource, 'toArray') ? $this->resource->toArray($request) : [];
         $this->collectFields($request)->filter(function (Field $field) {
             return is_callable($field->showCallback);
         })->map(function (Field $field) use (&$resolvedAttributes) {
@@ -72,16 +72,16 @@ trait ResponseResolver
 
         $withs = [];
 
-        if ($this->repository instanceof RestifySearchable) {
+        if ($this->resource instanceof RestifySearchable) {
             with(explode(',', $request->get('with')), function ($relations) use ($request, &$withs) {
                 foreach ($relations as $relation) {
-                    if (in_array($relation, $this->repository::getWiths())) {
+                    if (in_array($relation, $this->resource::getWiths())) {
                         /**
                          * @var AbstractPaginator
                          */
-                        $paginator = $this->repository->{$relation}()->paginate($request->get('relatablePerPage') ?? ($this->repository::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
+                        $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? ($this->resource::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
                         /** * @var Builder $q */
-                        $q = $this->repository->{$relation}->first();
+                        $q = $this->resource->{$relation}->first();
                         /** * @var Repository $repository */
                         if ($q && $repository = Restify::repositoryForModel($q->getModel())) {
                             // This will serialize into the repository dedicated for model
@@ -116,8 +116,8 @@ trait ResponseResolver
     public function serializeDetails(RestifyRequest $request)
     {
         return [
-            'id' => $this->when($this->repository instanceof Model, function () {
-                return $this->repository->getKey();
+            'id' => $this->when($this->resource instanceof Model, function () {
+                return $this->resource->getKey();
             }),
             'type' => $this->model()->getTable(),
             'attributes' => $this->resolveDetailsAttributes($request),
@@ -135,8 +135,8 @@ trait ResponseResolver
     public function serializeIndex(RestifyRequest $request)
     {
         return [
-            'id' => $this->when($this->repository instanceof Model, function () {
-                return $this->repository->getKey();
+            'id' => $this->when($this->resource instanceof Model, function () {
+                return $this->resource->getKey();
             }),
             'type' => $this->model()->getTable(),
             'attributes' => $this->resolveIndexAttributes($request),
@@ -153,7 +153,7 @@ trait ResponseResolver
      */
     public function resolveIndexAttributes($request)
     {
-        $resolvedAttributes = method_exists($this->repository, 'toArray') ? $this->repository->toArray($request) : [];
+        $resolvedAttributes = method_exists($this->resource, 'toArray') ? $this->resource->toArray($request) : [];
 
         // Resolve the show method, and attach the value to the array
         $this->collectFields($request)
