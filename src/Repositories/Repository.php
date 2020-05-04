@@ -164,6 +164,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function __call($method, $parameters)
     {
         dd($this->model());
+
         return $this->forwardCallTo($this->model(), $method, $parameters);
     }
 
@@ -208,7 +209,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $data = $data->jsonSerialize();
         }
 
-        return $this->filter((array)$data);
+        return $this->filter((array) $data);
     }
 
     public function response($content = '', $status = 200, array $headers = []): RestResponse

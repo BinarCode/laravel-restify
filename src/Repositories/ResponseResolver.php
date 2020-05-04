@@ -157,11 +157,11 @@ trait ResponseResolver
 
         // Resolve the show method, and attach the value to the array
         $this->collectFields($request)
-            ->filter(fn(Field $field) => !$field->isHiddenOnIndex($request, static::class))
+            ->filter(fn (Field $field) => ! $field->isHiddenOnIndex($request, static::class))
             ->each(function (Field $field) use (&$resolvedAttributes) {
                 $resolvedAttributes[$field->attribute] = $field->resolveForIndex($this);
             });
-        $hidden = $this->collectFields($request)->filter(fn(Field $field) => $field->isHiddenOnIndex($request, $this))->pluck('attribute')->toArray();
+        $hidden = $this->collectFields($request)->filter(fn (Field $field) => $field->isHiddenOnIndex($request, $this))->pluck('attribute')->toArray();
 
         $resolved = Arr::except($resolvedAttributes, $hidden);
 

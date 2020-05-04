@@ -36,7 +36,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the Restify is enabled for this repository
+     * Determine if the Restify is enabled for this repository.
      *
      * @param \Illuminate\Http\Request $request
      * @return void
