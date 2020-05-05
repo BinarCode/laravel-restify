@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Laravel\Nova\Fields\Text;
 
 class FieldTest extends IntegrationTest
 {
