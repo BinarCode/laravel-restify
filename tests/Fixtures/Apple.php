@@ -10,12 +10,12 @@ class Apple extends Model
 
     protected $fillable = [
         'title',
-        'user_id'
+        'user_id',
     ];
 
     public function user()
     {
-       return $this->belongsTo(User::class);
+        return $this->belongsTo(User::class);
     }
 
     public function toArray()

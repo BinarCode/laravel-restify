@@ -19,7 +19,7 @@ class Field extends OrganicField implements JsonSerializable
     public $attribute;
 
     /**
-     * Field value
+     * Field value.
      *
      * @var string|callable|null
      */
@@ -223,7 +223,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param string|null $attribute
      * @return Field
      */
-    public function resolveForShow($repository, $attribute = null): Field
+    public function resolveForShow($repository, $attribute = null): self
     {
         $attribute = $attribute ?? $this->attribute;
 
@@ -234,7 +234,7 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    public function resolveForIndex($repository, $attribute = null): Field
+    public function resolveForIndex($repository, $attribute = null): self
     {
         $attribute = $attribute ?? $this->attribute;
 

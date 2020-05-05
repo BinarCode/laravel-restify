@@ -15,7 +15,7 @@ class SearchService extends Searchable
 {
     public function search(RestifyRequest $request, $model)
     {
-        if (!$model instanceof RestifySearchable) {
+        if (! $model instanceof RestifySearchable) {
             return $model->newQuery();
         }
 
@@ -37,7 +37,7 @@ class SearchService extends Searchable
         $model = $query->getModel();
         if ($model instanceof RestifySearchable) {
             foreach ($model::getMatchByFields() as $key => $type) {
-                if (!$request->has($key) && !data_get($extra, "match.$key")) {
+                if (! $request->has($key) && ! data_get($extra, "match.$key")) {
                     continue;
                 }
 
@@ -70,7 +70,7 @@ class SearchService extends Searchable
                         case RestifySearchable::MATCH_INTEGER:
                         case 'number':
                         case 'int':
-                            $query->where($field, '=', (int)$match);
+                            $query->where($field, '=', (int) $match);
                             break;
                     }
                 }
@@ -162,7 +162,7 @@ class SearchService extends Searchable
                 $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
                 foreach ($model::getSearchableFields() as $column) {
-                    $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
+                    $query->orWhere($model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
                 }
             });
         }

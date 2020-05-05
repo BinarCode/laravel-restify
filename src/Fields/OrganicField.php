@@ -10,7 +10,6 @@ use Illuminate\Http\Request;
  */
 abstract class OrganicField extends BaseField
 {
-
     /**
      * The callback used to authorize viewing the filter or action.
      *
