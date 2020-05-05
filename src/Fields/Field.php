@@ -19,6 +19,13 @@ class Field extends OrganicField implements JsonSerializable
     public $attribute;
 
     /**
+     * Field value
+     *
+     * @var string|callable|null
+     */
+    public $value;
+
+    /**
      * Callback called when the value is filled, this callback will do not override the fill action.
      * @var Closure
      */
@@ -63,16 +70,6 @@ class Field extends OrganicField implements JsonSerializable
     public static function make(...$arguments)
     {
         return new static(...$arguments);
-    }
-
-    /**
-     * {@inheritdoc}
-     */
-    public function jsonSerialize()
-    {
-        return [
-            'value' => $this->value,
-        ];
     }
 
     /**
@@ -202,12 +199,6 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    /**
-     * Validation messages.
-     *
-     * @param array $messages
-     * @return Field
-     */
     public function messages(array $messages)
     {
         $this->messages = $messages;
@@ -215,20 +206,12 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    /**
-     * Validation rules for storing.
-     *
-     * @return array
-     */
-    public function getStoringRules()
+    public function getStoringRules(): array
     {
         return array_merge($this->rules, $this->storingRules);
     }
 
-    /**
-     * @return array
-     */
-    public function getUpdatingRules()
+    public function getUpdatingRules(): array
     {
         return array_merge($this->rules, $this->updatingRules);
     }
@@ -238,30 +221,28 @@ class Field extends OrganicField implements JsonSerializable
      *
      * @param mixed $repository
      * @param string|null $attribute
-     * @return callable|string
+     * @return Field
      */
-    public function resolveForShow($repository, $attribute = null)
+    public function resolveForShow($repository, $attribute = null): Field
     {
         $attribute = $attribute ?? $this->attribute;
 
-        if (is_callable($this->showCallback)) {
-            $value = $this->resolveAttribute($repository, $attribute);
-            $attribute = call_user_func($this->showCallback, $value, $repository, $attribute);
-        }
+        $value = $this->resolveAttribute($repository, $attribute);
 
-        return $attribute;
+        $this->value = is_callable($this->showCallback) ? call_user_func($this->showCallback, $value, $repository, $attribute) : $value;
+
+        return $this;
     }
 
-    public function resolveForIndex($repository, $attribute = null)
+    public function resolveForIndex($repository, $attribute = null): Field
     {
         $attribute = $attribute ?? $this->attribute;
 
-        if (is_callable($this->indexCallback)) {
-            $value = $this->resolveAttribute($repository, $attribute);
-            $attribute = call_user_func($this->indexCallback, $value, $repository, $attribute);
-        }
+        $value = $this->resolveAttribute($repository, $attribute);
 
-        return $attribute;
+        $this->value = is_callable($this->indexCallback) ? call_user_func($this->indexCallback, $value, $repository, $attribute) : $value;
+
+        return $this;
     }
 
     /**
@@ -274,5 +255,13 @@ class Field extends OrganicField implements JsonSerializable
     protected function resolveAttribute($repository, $attribute)
     {
         return data_get($repository, str_replace('->', '.', $attribute));
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            'attribute' => $this->attribute,
+            'value' => $this->value,
+        ];
     }
 }

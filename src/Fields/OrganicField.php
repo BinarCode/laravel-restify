@@ -3,12 +3,21 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Http\Request;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 abstract class OrganicField extends BaseField
 {
+
+    /**
+     * The callback used to authorize viewing the filter or action.
+     *
+     * @var \Closure|null
+     */
+    public $seeCallback;
+
     /**
      * Rules for applied when store.
      *
@@ -152,5 +161,40 @@ abstract class OrganicField extends BaseField
         }
 
         return ! $this->showOnIndex;
+    }
+
+    /**
+     * Determine if the element should be displayed for the given request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorize(Request $request)
+    {
+        return $this->authorizedToSee($request);
+    }
+
+    /**
+     * Determine if the filter or action should be available for the given request.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return bool
+     */
+    public function authorizedToSee(Request $request)
+    {
+        return $this->seeCallback ? call_user_func($this->seeCallback, $request) : true;
+    }
+
+    /**
+     * Set the callback to be run to authorize viewing the filter or action.
+     *
+     * @param  \Closure  $callback
+     * @return $this
+     */
+    public function canSee(Closure $callback)
+    {
+        $this->seeCallback = $callback;
+
+        return $this;
     }
 }

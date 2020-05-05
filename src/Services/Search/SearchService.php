@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -14,16 +13,9 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class SearchService extends Searchable
 {
-    /**
-     * @param  RestifyRequest  $request
-     * @param  $model
-     * @return Builder
-     * @throws InstanceOfException
-     * @throws \Throwable
-     */
     public function search(RestifyRequest $request, $model)
     {
-        if (! $model instanceof RestifySearchable) {
+        if (!$model instanceof RestifySearchable) {
             return $model->newQuery();
         }
 
@@ -35,9 +27,9 @@ class SearchService extends Searchable
     /**
      * Prepare eloquent exact fields.
      *
-     * @param  RestifyRequest  $request
-     * @param  Builder  $query
-     * @param  array  $extra
+     * @param RestifyRequest $request
+     * @param Builder $query
+     * @param array $extra
      * @return Builder
      */
     public function prepareMatchFields(RestifyRequest $request, $query, $extra = [])
@@ -45,7 +37,7 @@ class SearchService extends Searchable
         $model = $query->getModel();
         if ($model instanceof RestifySearchable) {
             foreach ($model::getMatchByFields() as $key => $type) {
-                if (! $request->has($key) && ! data_get($extra, "match.$key")) {
+                if (!$request->has($key) && !data_get($extra, "match.$key")) {
                     continue;
                 }
 
@@ -78,7 +70,7 @@ class SearchService extends Searchable
                         case RestifySearchable::MATCH_INTEGER:
                         case 'number':
                         case 'int':
-                            $query->where($field, '=', (int) $match);
+                            $query->where($field, '=', (int)$match);
                             break;
                     }
                 }
@@ -91,9 +83,9 @@ class SearchService extends Searchable
     /**
      * Prepare eloquent order by.
      *
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @param $query
-     * @param  array  $extra
+     * @param array $extra
      * @return Builder
      */
     public function prepareOrders(RestifyRequest $request, $query, $extra = [])
@@ -122,9 +114,9 @@ class SearchService extends Searchable
     /**
      * Prepare relations.
      *
-     * @param  RestifyRequest  $request
-     * @param  Builder  $query
-     * @param  array  $extra
+     * @param RestifyRequest $request
+     * @param Builder $query
+     * @param array $extra
      * @return Builder
      */
     public function prepareRelations(RestifyRequest $request, $query, $extra = [])
@@ -145,9 +137,9 @@ class SearchService extends Searchable
     /**
      * Prepare search.
      *
-     * @param  RestifyRequest  $request
-     * @param  Builder  $query
-     * @param  array  $extra
+     * @param RestifyRequest $request
+     * @param Builder $query
+     * @param array $extra
      * @return Builder
      */
     public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])
@@ -170,7 +162,7 @@ class SearchService extends Searchable
                 $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
                 foreach ($model::getSearchableFields() as $column) {
-                    $query->orWhere($model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
+                    $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
                 }
             });
         }

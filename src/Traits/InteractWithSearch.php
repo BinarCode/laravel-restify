@@ -10,14 +10,14 @@ trait InteractWithSearch
     use AuthorizableModels;
 
     public static $defaultPerPage = 15;
+
     public static $defaultRelatablePerPage = 15;
 
-    /**
-     * @return array
-     */
     public static function getSearchableFields()
     {
-        return static::$search ?? [];
+        return empty(static::$search)
+            ? [static::newModel()->getKeyName()]
+            : static::$search;
     }
 
     /**
@@ -31,9 +31,19 @@ trait InteractWithSearch
     /**
      * @return array
      */
+    public static function getRelated()
+    {
+        return static::$related ?? [];
+    }
+
+    /**
+     * @return array
+     */
     public static function getMatchByFields()
     {
-        return static::$match ?? [];
+        return empty(static::$match)
+            ? [static::newModel()->getKeyName()]
+            : static::$match;
     }
 
     /**
@@ -41,6 +51,8 @@ trait InteractWithSearch
      */
     public static function getOrderByFields()
     {
-        return static::$sort ?? [];
+        return empty(static::$sort)
+            ? [static::newModel()->getKeyName()]
+            : static::$sort;
     }
 }
