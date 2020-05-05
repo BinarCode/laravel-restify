@@ -18,14 +18,6 @@ use Illuminate\Support\Facades\Gate;
 trait AuthorizableModels
 {
     /**
-     * @return static
-     */
-    public static function newModel()
-    {
-        return new static;
-    }
-
-    /**
      * Determine if the given resource is authorizable.
      *
      * @return bool
@@ -195,25 +187,7 @@ trait AuthorizableModels
      */
     public function authorizedTo(Request $request, $ability)
     {
-        return static::authorizable() ? Gate::check($ability, $this->determineModel()) : true;
-    }
-
-    /**
-     * Since this trait could be used by a repository or by a model, we have to
-     * detect the model from either class.
-     *
-     * @return AuthorizableModels|Model|mixed|null
-     * @throws ModelNotFoundException
-     */
-    public function determineModel()
-    {
-        $model = $this->isRepositoryContext() === false ? $this : ($this->resource ?? null);
-
-        if (is_null($model)) {
-            throw new ModelNotFoundException(__('Model is not declared in :class', ['class' => self::class]));
-        }
-
-        return $model;
+        return static::authorizable() ? Gate::check($ability, $this->resource) : true;
     }
 
     /**

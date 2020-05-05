@@ -17,6 +17,6 @@ class RepositoryShowController extends RepositoryController
      */
     public function handle(RestifyRequest $request)
     {
-        return $request->newRepositoryWith($request->findModelQuery())->show($request, request('repositoryId'));
+        return $request->newRepositoryWith($request->findModelQuery()->firstOr())->show($request, request('repositoryId'));
     }
 }
