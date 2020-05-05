@@ -5,8 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Tests\Fixtures\Apple;
 use Binaryk\LaravelRestify\Tests\Fixtures\AppleRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post;
-use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
