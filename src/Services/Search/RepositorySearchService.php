@@ -24,7 +24,7 @@ class RepositorySearchService extends Searchable
     {
         $model = $query->getModel();
         foreach ($this->repository->getMatchByFields() as $key => $type) {
-            if (!$request->has($key) && !data_get($extra, "match.$key")) {
+            if (! $request->has($key) && ! data_get($extra, "match.$key")) {
                 continue;
             }
 
@@ -57,7 +57,7 @@ class RepositorySearchService extends Searchable
                     case RestifySearchable::MATCH_INTEGER:
                     case 'number':
                     case 'int':
-                        $query->where($field, '=', (int)$match);
+                        $query->where($field, '=', (int) $match);
                         break;
                 }
             }
@@ -122,7 +122,7 @@ class RepositorySearchService extends Searchable
             $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
             foreach ($this->repository->getSearchableFields() as $column) {
-                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
+                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
             }
         });
 
