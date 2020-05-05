@@ -56,7 +56,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public $resource;
 
     /**
-     * The list of relations available for the details or index
+     * The list of relations available for the details or index.
      *
      * e.g. ?with=users
      * @var array
@@ -64,21 +64,21 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static array $related;
 
     /**
-     * The list of searchable fields
+     * The list of searchable fields.
      *
      * @var array
      */
     public static array $search;
 
     /**
-     * The list of matchable fields
+     * The list of matchable fields.
      *
      * @var array
      */
     public static array $match;
 
     /**
-     * The list of fields to be sortable
+     * The list of fields to be sortable.
      *
      * @var array
      */
@@ -290,7 +290,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     /** * @var AbstractPaginator $paginator */
                     $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
 
-                    $withs[$relation] = $paginator->getCollection()->map(fn(Model $item) => [
+                    $withs[$relation] = $paginator->getCollection()->map(fn (Model $item) => [
                         'attributes' => $item->toArray(),
                     ]);
                 }
@@ -335,7 +335,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             }),
             'type' => $this->model()->getTable(),
             'attributes' => $this->resolveIndexAttributes($request),
-            'relationships' => $this->when(!empty($relations), $relations),
+            'relationships' => $this->when(! empty($relations), $relations),
             'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
         ];
     }
@@ -352,11 +352,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         // Resolve the show method, and attach the value to the array
         $this->collectFields($request)
-            ->filter(fn(Field $field) => !$field->isHiddenOnIndex($request, static::class))
+            ->filter(fn (Field $field) => ! $field->isHiddenOnIndex($request, static::class))
             ->each(function (Field $field) use (&$resolvedAttributes) {
                 $resolvedAttributes[$field->attribute] = $field->resolveForIndex($this)->value;
             });
-        $hidden = $this->collectFields($request)->filter(fn(Field $field) => $field->isHiddenOnIndex($request, $this))->pluck('attribute')->toArray();
+        $hidden = $this->collectFields($request)->filter(fn (Field $field) => $field->isHiddenOnIndex($request, $this))->pluck('attribute')->toArray();
 
         return Arr::except($resolvedAttributes, $hidden);
     }
@@ -394,9 +394,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         $items = $paginator->getCollection()->map(function ($value) {
             return static::resolveWith($value);
-        })->filter(function (Repository $repository) use ($request) {
+        })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
-        })->values()->map(fn(self $item) => $this->filter($item->serializeIndex($request)));
+        })->values()->map(fn (self $item) => $this->filter($item->serializeIndex($request)));
 
         return $this->response([
             'meta' => RepositoryCollection::meta($paginator->toArray()),
@@ -447,7 +447,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
             ->model($this->resource)
-            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $this->resource->id);
+            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$this->resource->id);
     }
 
     public function update(RestifyRequest $request, $repositoryId)

@@ -16,6 +16,6 @@ use Faker\Generator as Faker;
 
 $factory->define(Apple::class, function (Faker $faker) {
     return [
-        'title' => $faker->text(50)
+        'title' => $faker->text(50),
     ];
 });
