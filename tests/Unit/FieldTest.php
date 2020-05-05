@@ -43,6 +43,4 @@ class FieldTest extends IntegrationTest
 
         $this->assertEquals('DEFAULT', $field->value);
     }
-
-
 }
