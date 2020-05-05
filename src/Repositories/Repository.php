@@ -61,28 +61,28 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * e.g. ?with=users
      * @var array
      */
-    public static array $related;
+    public static $related;
 
     /**
      * The list of searchable fields.
      *
      * @var array
      */
-    public static array $search;
+    public static $search;
 
     /**
      * The list of matchable fields.
      *
      * @var array
      */
-    public static array $match;
+    public static $match;
 
     /**
      * The list of fields to be sortable.
      *
      * @var array
      */
-    public static array $sort;
+    public static $sort;
 
     /**
      * Get the underlying model instance for the resource.
