@@ -146,7 +146,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         factory(Apple::class)->create();
 
-        $response = $this->get('/restify-api/apples-title')
+        $response = $this->get('/restify-api/apples-title-mergeable')
             ->assertStatus(200);
 
         $this->assertArrayHasKey('title', $response->json('data.0.attributes'));
@@ -171,7 +171,7 @@ class AppleTitleRepository extends Repository
 
 class AppleMergeable extends Repository implements Mergeable
 {
-    public static $uriKey = 'apples-title';
+    public static $uriKey = 'apples-title-mergeable';
 
     public static $model = Apple::class;
 

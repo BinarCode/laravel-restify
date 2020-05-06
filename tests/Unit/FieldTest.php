@@ -72,6 +72,6 @@ class FieldTest extends IntegrationTest
 
         $field->resolveForIndex((object) []);
 
-        $this->assertEquals('Title', $field->value);
+        $this->assertEquals('Title', data_get($field->jsonSerialize(), 'value'));
     }
 }
