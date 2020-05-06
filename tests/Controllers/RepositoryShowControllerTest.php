@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Mergeable;
@@ -11,7 +10,6 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Apple;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -118,8 +116,8 @@ class AppleAuthorized extends Repository
     public function fields(RestifyRequest $request)
     {
         return [
-            Field::make('title')->canSee(fn() => $_SERVER['can.see.title'] ?? true)
-            ->showCallback(fn($value) => strtoupper($value)),
+            Field::make('title')->canSee(fn () => $_SERVER['can.see.title'] ?? true)
+            ->showCallback(fn ($value) => strtoupper($value)),
         ];
     }
 }
