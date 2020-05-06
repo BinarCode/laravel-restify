@@ -24,7 +24,7 @@ class FieldResolversTest extends IntegrationTest
                 return 'something else';
             });
 
-            $this->assertSame($field->resolveForShow($repository), 'something else');
+            $this->assertSame($field->resolveForShow($repository)->value, 'something else');
         });
     }
 

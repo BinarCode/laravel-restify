@@ -21,6 +21,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Pagination\AbstractPaginator;
@@ -157,6 +158,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         });
     }
 
+    private function indexFields(RestifyRequest $request): Collection
+    {
+        return $this->collectFields($request)
+            ->filter(fn(Field $field) => !$field->isHiddenOnIndex($request, $this))
+            ->values();
+    }
+
     /**
      * @param $resource
      * @return Repository
@@ -290,7 +298,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     /** * @var AbstractPaginator $paginator */
                     $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
 
-                    $withs[$relation] = $paginator->getCollection()->map(fn (Model $item) => [
+                    $withs[$relation] = $paginator->getCollection()->map(fn(Model $item) => [
                         'attributes' => $item->toArray(),
                     ]);
                 }
@@ -301,64 +309,45 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * Resolve the response for the details.
-     *
-     * @param $request
-     * @return array
-     */
-    public function serializeDetails(RestifyRequest $request)
-    {
-        return [
-            'id' => $this->when($this->resource instanceof Model, function () {
-                return $this->resource->getKey();
-            }),
-            'type' => $this->model()->getTable(),
-            'attributes' => $this->resolveDetailsAttributes($request),
-            'relationships' => $this->when(value($this->resolveRelationships($request)), $this->resolveRelationships($request)),
-            'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
-        ];
-    }
-
-    /**
-     * Resolve the response for the index request.
-     *
-     * @param $request
-     * @return array
-     */
-    public function serializeIndex(RestifyRequest $request): array
-    {
-        $relations = $this->resolveIndexRelationships($request);
-
-        return [
-            'id' => $this->when($this->resource instanceof Model, function () {
-                return $this->resource->getKey();
-            }),
-            'type' => $this->model()->getTable(),
-            'attributes' => $this->resolveIndexAttributes($request),
-            'relationships' => $this->when(! empty($relations), $relations),
-            'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
-        ];
-    }
-
-    /**
      * Return the attributes list.
      *
-     * @param $request
+     * @param RestifyRequest $request
      * @return array
      */
     public function resolveIndexAttributes($request)
     {
-        $resolvedAttributes = method_exists($this->resource, 'toArray') ? $this->resource->toArray($request) : [];
-
         // Resolve the show method, and attach the value to the array
-        $this->collectFields($request)
-            ->filter(fn (Field $field) => ! $field->isHiddenOnIndex($request, static::class))
-            ->each(function (Field $field) use (&$resolvedAttributes) {
-                $resolvedAttributes[$field->attribute] = $field->resolveForIndex($this)->value;
-            });
-        $hidden = $this->collectFields($request)->filter(fn (Field $field) => $field->isHiddenOnIndex($request, $this))->pluck('attribute')->toArray();
+        $fields = $this->indexFields($request)
+            ->filter(fn(Field $field) => $field->authorize($request))
+            ->each(fn(Field $field) => $field->resolveForIndex($this))
+            ->map(fn(Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn($value) => $value)
+            ->all();
 
-        return Arr::except($resolvedAttributes, $hidden);
+        if ($this instanceof Mergeable) {
+            // Hiden and authorized index fields
+            $fields = $this->modelAttributes($request)
+                ->filter(function ($value, $attribute) use ($request) {
+                    /** * @var Field $field */
+                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
+
+                    if (is_null($field)) {
+                        return true;
+                    }
+
+                    if ($field->isHiddenOnIndex($request, $this)) {
+                        return false;
+                    }
+
+                    if (!$field->authorize($request)) {
+                        return false;
+                    }
+
+                    return true;
+                })->all();
+        }
+
+        return $fields;
     }
 
     /**
@@ -383,12 +372,18 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function index(RestifyRequest $request)
     {
+        // Check if the user has the policy allowRestify
         $this->allowToUseRepository($request);
 
+        // Check if the model was set under the repository
         throw_if($this->model() instanceof NullModel, InstanceOfException::because(__('Model is not defined in the repository.')));
 
-        /** * @var AbstractPaginator $paginator */
+        /** *
+         * Apply all of the query: search, match, sort, related
+         * @var AbstractPaginator $paginator
+         */
         $paginator = RepositorySearchService::instance()->search($request, $this)->tap(function ($query) use ($request) {
+            // Call the local definition of the query
             static::indexQuery($request, $query);
         })->paginate($request->perPage ?? (static::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
 
@@ -396,7 +391,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return static::resolveWith($value);
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
-        })->values()->map(fn (self $item) => $this->filter($item->serializeIndex($request)));
+        })->values();//->map(fn (self $repository) => $this->filter($repository->serializeIndex($request)));
 
         return $this->response([
             'meta' => RepositoryCollection::meta($paginator->toArray()),
@@ -443,7 +438,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
             ->model($this->resource)
-            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$this->resource->id);
+            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $this->resource->id);
     }
 
     public function update(RestifyRequest $request, $repositoryId)
@@ -613,28 +608,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         //
     }
 
-    /**
-     * Resolve the repository to an array.
-     *
-     * @param \Illuminate\Http\Request|null $request
-     * @return array
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     */
-    public function resolve($request = null)
-    {
-        $data = $this->toArray(
-            $request = $request ?: Container::getInstance()->make(RestifyRequest::class)
-        );
-
-        if ($data instanceof Arrayable) {
-            $data = $data->toArray();
-        } elseif ($data instanceof JsonSerializable) {
-            $data = $data->jsonSerialize();
-        }
-
-        return $this->filter((array) $data);
-    }
-
     public function response($content = '', $status = 200, array $headers = []): RestResponse
     {
         return new RestResponse($content, $status, $headers);
@@ -648,13 +621,26 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             }),
             'type' => $this->model()->getTable(),
             'attributes' => $request->isDetailRequest() ? $this->resolveDetailsAttributes($request) : $this->resolveIndexAttributes($request),
-            'relationships' => $this->when(value($this->resolveRelationships($request)), $this->resolveRelationships($request)),
-            'meta' => $this->when(value($this->resolveDetailsMeta($request)), $this->resolveDetailsMeta($request)),
+            'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
+            'meta' => $this->when(value($meta = $request->isDetailRequest() ? $this->resolveDetailsMeta($request) : $this->resolveIndexMeta($request)), $meta),
         ];
     }
 
     public function jsonSerialize()
     {
-        return $this->resolve();
+        $data = $this->toArray(Container::getInstance()->make(RestifyRequest::class));
+
+        if ($data instanceof Arrayable) {
+            $data = $data->toArray();
+        } elseif ($data instanceof JsonSerializable) {
+            $data = $data->jsonSerialize();
+        }
+
+        return $this->filter((array)$data);
+    }
+
+    private function modelAttributes(Request $request = null): Collection
+    {
+        return collect(method_exists($this->resource, 'toArray') ? $this->resource->toArray() : []);
     }
 }

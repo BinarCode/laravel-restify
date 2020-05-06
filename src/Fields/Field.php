@@ -264,4 +264,11 @@ class Field extends OrganicField implements JsonSerializable
             'value' => $this->value,
         ];
     }
+
+    public function serializeToValue($request)
+    {
+        return [
+            $this->attribute => $this->value,
+        ];
+    }
 }
