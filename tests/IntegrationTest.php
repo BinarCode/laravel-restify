@@ -192,7 +192,6 @@ abstract class IntegrationTest extends TestCase
         return $this;
     }
 
-
     /**
      * Assert a top-level subset for an array.
      *
