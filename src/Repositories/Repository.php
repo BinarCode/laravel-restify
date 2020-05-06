@@ -161,7 +161,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     private function indexFields(RestifyRequest $request): Collection
     {
         return $this->collectFields($request)
-            ->filter(fn(Field $field) => !$field->isHiddenOnIndex($request, $this))
+            ->filter(fn (Field $field) => ! $field->isHiddenOnIndex($request, $this))
             ->values();
     }
 
@@ -298,7 +298,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     /** * @var AbstractPaginator $paginator */
                     $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
 
-                    $withs[$relation] = $paginator->getCollection()->map(fn(Model $item) => [
+                    $withs[$relation] = $paginator->getCollection()->map(fn (Model $item) => [
                         'attributes' => $item->toArray(),
                     ]);
                 }
@@ -318,10 +318,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         // Resolve the show method, and attach the value to the array
         $fields = $this->indexFields($request)
-            ->filter(fn(Field $field) => $field->authorize($request))
-            ->each(fn(Field $field) => $field->resolveForIndex($this))
-            ->map(fn(Field $field) => $field->serializeToValue($request))
-            ->mapWithKeys(fn($value) => $value)
+            ->filter(fn (Field $field) => $field->authorize($request))
+            ->each(fn (Field $field) => $field->resolveForIndex($this))
+            ->map(fn (Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn ($value) => $value)
             ->all();
 
         if ($this instanceof Mergeable) {
@@ -339,7 +339,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                         return false;
                     }
 
-                    if (!$field->authorize($request)) {
+                    if (! $field->authorize($request)) {
                         return false;
                     }
 
@@ -379,7 +379,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         throw_if($this->model() instanceof NullModel, InstanceOfException::because(__('Model is not defined in the repository.')));
 
         /** *
-         * Apply all of the query: search, match, sort, related
+         * Apply all of the query: search, match, sort, related.
          * @var AbstractPaginator $paginator
          */
         $paginator = RepositorySearchService::instance()->search($request, $this)->tap(function ($query) use ($request) {
@@ -391,7 +391,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return static::resolveWith($value);
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
-        })->values();//->map(fn (self $repository) => $this->filter($repository->serializeIndex($request)));
+        })->values(); //->map(fn (self $repository) => $this->filter($repository->serializeIndex($request)));
 
         return $this->response([
             'meta' => RepositoryCollection::meta($paginator->toArray()),
@@ -438,7 +438,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
             ->model($this->resource)
-            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $this->resource->id);
+            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$this->resource->id);
     }
 
     public function update(RestifyRequest $request, $repositoryId)
@@ -636,7 +636,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $data = $data->jsonSerialize();
         }
 
-        return $this->filter((array)$data);
+        return $this->filter((array) $data);
     }
 
     private function modelAttributes(Request $request = null): Collection

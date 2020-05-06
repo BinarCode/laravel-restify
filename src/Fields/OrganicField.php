@@ -3,8 +3,8 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Illuminate\Http\Request;
 use Closure;
+use Illuminate\Http\Request;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>

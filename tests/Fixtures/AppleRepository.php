@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures;
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Mergeable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
 class AppleRepository extends Repository
