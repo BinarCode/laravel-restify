@@ -373,7 +373,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function index(RestifyRequest $request)
     {
         // Check if the user has the policy allowRestify
-        $this->allowToUseRepository($request);
 
         // Check if the model was set under the repository
         throw_if($this->model() instanceof NullModel, InstanceOfException::because(__('Model is not defined in the repository.')));
@@ -402,10 +401,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function show(RestifyRequest $request, $repositoryId)
     {
-        $this->allowToUseRepository($request);
-
-        $this->resource = static::showPlain($repositoryId);
-
         try {
             $this->allowToShow($request);
         } catch (AuthorizationException $e) {
@@ -417,8 +412,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function store(RestifyRequest $request)
     {
-        $this->allowToUseRepository($request);
-
         try {
             $this->allowToStore($request);
         } catch (AuthorizationException | UnauthorizedException $e) {
@@ -439,12 +432,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function update(RestifyRequest $request, $repositoryId)
     {
-        try {
-            $this->allowToUseRepository($request);
-        } catch (UnauthorizedException | AuthorizationException $e) {
-            return $this->response()->forbidden()->addError($e->getMessage());
-        }
-
         $this->allowToUpdate($request);
 
         $this->resource = static::updatePlain($request->all(), $repositoryId);
@@ -458,12 +445,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function destroy(RestifyRequest $request, $repositoryId)
     {
-        try {
-            $this->allowToUseRepository($request);
-        } catch (UnauthorizedException | AuthorizationException $e) {
-            return $this->response()->forbidden()->addError($e->getMessage());
-        }
-
         $this->allowToDestroy($request);
 
         $status = static::destroyPlain($repositoryId);
@@ -504,11 +485,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function allowToShow($request)
     {
         $this->authorizeToShow($request);
-    }
-
-    public function allowToUseRepository($request)
-    {
-        $this->authorizeToUseRepository($request);
     }
 
     public static function storePlain(array $payload)
