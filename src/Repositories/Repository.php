@@ -161,7 +161,14 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     private function indexFields(RestifyRequest $request): Collection
     {
         return $this->collectFields($request)
-            ->filter(fn (Field $field) => ! $field->isHiddenOnIndex($request, $this))
+            ->filter(fn(Field $field) => !$field->isHiddenOnIndex($request, $this))
+            ->values();
+    }
+
+    private function showFields(RestifyRequest $request): Collection
+    {
+        return $this->collectFields($request)
+            ->filter(fn(Field $field) => !$field->isHiddenOnDetail($request, $this))
             ->values();
     }
 
@@ -246,21 +253,79 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveDetailsAttributes(RestifyRequest $request)
     {
-        $resolvedAttributes = [];
-        $modelAttributes = method_exists($this->resource, 'toArray') ? $this->resource->toArray($request) : [];
-        $this->collectFields($request)->filter(function (Field $field) {
-            return is_callable($field->showCallback);
-        })->map(function (Field $field) use (&$resolvedAttributes) {
-            $resolvedAttributes[$field->attribute] = $field->resolveForShow($this)->value;
-        });
+        $fields = $this->showFields($request)
+            ->filter(fn(Field $field) => $field->authorize($request))
+            ->each(fn(Field $field) => $field->resolveForShow($this))
+            ->map(fn(Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn($value) => $value)
+            ->all();
 
-        $resolved = array_merge($modelAttributes, $resolvedAttributes);
+        if ($this instanceof Mergeable) {
+            // Hiden and authorized index fields
+            $fields = $this->modelAttributes($request)
+                ->filter(function ($value, $attribute) use ($request) {
+                    /** * @var Field $field */
+                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
 
-        $hidden = $this->collectFields($request)->filter->isHiddenOnDetail($request, $this)->pluck('attribute')->toArray();
+                    if (is_null($field)) {
+                        return true;
+                    }
 
-        $resolved = Arr::except($resolved, $hidden);
+                    if ($field->isHiddenOnDetail($request, $this)) {
+                        return false;
+                    }
 
-        return $resolved;
+                    if (!$field->authorize($request)) {
+                        return false;
+                    }
+
+                    return true;
+                })->all();
+        }
+
+        return $fields;
+    }
+
+    /**
+     * Return the attributes list.
+     *
+     * @param RestifyRequest $request
+     * @return array
+     */
+    public function resolveIndexAttributes($request)
+    {
+        // Resolve the show method, and attach the value to the array
+        $fields = $this->indexFields($request)
+            ->filter(fn(Field $field) => $field->authorize($request))
+            ->each(fn(Field $field) => $field->resolveForIndex($this))
+            ->map(fn(Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn($value) => $value)
+            ->all();
+
+        if ($this instanceof Mergeable) {
+            // Hiden and authorized index fields
+            $fields = $this->modelAttributes($request)
+                ->filter(function ($value, $attribute) use ($request) {
+                    /** * @var Field $field */
+                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
+
+                    if (is_null($field)) {
+                        return true;
+                    }
+
+                    if ($field->isHiddenOnIndex($request, $this)) {
+                        return false;
+                    }
+
+                    if (!$field->authorize($request)) {
+                        return false;
+                    }
+
+                    return true;
+                })->all();
+        }
+
+        return $fields;
     }
 
     /**
@@ -298,7 +363,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     /** * @var AbstractPaginator $paginator */
                     $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
 
-                    $withs[$relation] = $paginator->getCollection()->map(fn (Model $item) => [
+                    $withs[$relation] = $paginator->getCollection()->map(fn(Model $item) => [
                         'attributes' => $item->toArray(),
                     ]);
                 }
@@ -306,48 +371,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         });
 
         return $withs;
-    }
-
-    /**
-     * Return the attributes list.
-     *
-     * @param RestifyRequest $request
-     * @return array
-     */
-    public function resolveIndexAttributes($request)
-    {
-        // Resolve the show method, and attach the value to the array
-        $fields = $this->indexFields($request)
-            ->filter(fn (Field $field) => $field->authorize($request))
-            ->each(fn (Field $field) => $field->resolveForIndex($this))
-            ->map(fn (Field $field) => $field->serializeToValue($request))
-            ->mapWithKeys(fn ($value) => $value)
-            ->all();
-
-        if ($this instanceof Mergeable) {
-            // Hiden and authorized index fields
-            $fields = $this->modelAttributes($request)
-                ->filter(function ($value, $attribute) use ($request) {
-                    /** * @var Field $field */
-                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
-
-                    if (is_null($field)) {
-                        return true;
-                    }
-
-                    if ($field->isHiddenOnIndex($request, $this)) {
-                        return false;
-                    }
-
-                    if (! $field->authorize($request)) {
-                        return false;
-                    }
-
-                    return true;
-                })->all();
-        }
-
-        return $fields;
     }
 
     /**
@@ -427,7 +450,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         return $this->response('', RestResponse::REST_RESPONSE_CREATED_CODE)
             ->model($this->resource)
-            ->header('Location', Restify::path().'/'.static::uriKey().'/'.$this->resource->id);
+            ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $this->resource->id);
     }
 
     public function update(RestifyRequest $request, $repositoryId)
@@ -608,7 +631,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $data = $data->jsonSerialize();
         }
 
-        return $this->filter((array) $data);
+        return $this->filter((array)$data);
     }
 
     private function modelAttributes(Request $request = null): Collection

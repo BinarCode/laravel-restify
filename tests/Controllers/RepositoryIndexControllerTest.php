@@ -120,7 +120,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->assertArrayNotHasKey('user', $response->json('data.0.attributes'));
     }
 
-    public function test_unmergeable_repository_containes_only_explicitly_defined_fields()
+    public function test_index_unmergeable_repository_containes_only_explicitly_defined_fields()
     {
         Restify::repositories([
             AppleTitleRepository::class,
@@ -129,7 +129,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
         factory(Apple::class)->create();
 
         $response = $this->get('/restify-api/apples-title')
-            ->dump()
             ->assertStatus(200);
 
         $this->assertArrayHasKey('title', $response->json('data.0.attributes'));
@@ -138,7 +137,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->assertArrayNotHasKey('created_at', $response->json('data.0.attributes'));
     }
 
-    public function test_mergeable_repository_containes_model_attributes_and_local_fields()
+    public function test_index_mergeable_repository_containes_model_attributes_and_local_fields()
     {
         Restify::repositories([
             AppleMergeable::class,

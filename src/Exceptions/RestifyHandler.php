@@ -21,6 +21,7 @@ use Illuminate\Validation\UnauthorizedException as ValidationUnauthorized;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
 use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\HttpKernel\Exception\UnauthorizedHttpException;
@@ -105,6 +106,9 @@ class RestifyHandler extends ExceptionHandler
             case $exception instanceof ActionUnauthorizedException:
             case $exception instanceof AccessDeniedHttpException:
             case $exception instanceof InvalidSignatureException:
+                $response->addError($exception->getMessage())->forbidden();
+                break;
+            case $exception instanceof HttpException:
                 $response->addError($exception->getMessage())->forbidden();
                 break;
 
