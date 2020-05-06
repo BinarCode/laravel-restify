@@ -156,7 +156,8 @@ class RepositoryIndexControllerTest extends IntegrationTest
     }
 }
 
-class AppleTitleRepository extends Repository {
+class AppleTitleRepository extends Repository
+{
     public static $uriKey = 'apples-title';
 
     public static $model = Apple::class;
@@ -169,7 +170,8 @@ class AppleTitleRepository extends Repository {
     }
 }
 
-class AppleMergeable extends Repository implements Mergeable {
+class AppleMergeable extends Repository implements Mergeable
+{
     public static $uriKey = 'apples-title';
 
     public static $model = Apple::class;
@@ -181,5 +183,3 @@ class AppleMergeable extends Repository implements Mergeable {
         ];
     }
 }
-
-
