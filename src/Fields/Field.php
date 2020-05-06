@@ -46,7 +46,7 @@ class Field extends OrganicField implements JsonSerializable
     private $indexCallback;
 
     /**
-     * The callback to be used to resolve the field's value.
+     * Closure be used to resolve the field's value.
      *
      * @var \Closure
      */
@@ -61,14 +61,14 @@ class Field extends OrganicField implements JsonSerializable
     public $fillCallback;
 
     /**
-     * The callback to be used for computed field.
+     * Closure be used for computed field.
      *
      * @var callable
      */
     protected $computedCallback;
 
     /**
-     * The callback to be used for the field's default value.
+     * Closure be used for the field's default value.
      *
      * @var callable
      */
@@ -91,14 +91,13 @@ class Field extends OrganicField implements JsonSerializable
     {
         $this->attribute = $attribute;
 
-        $this->default(null);
-
         $this->resolveCallback = $resolveCallback;
 
-        if ($attribute instanceof Closure ||
-            (is_callable($attribute) && is_object($attribute))) {
+        $this->default(null);
+
+        if ($attribute instanceof Closure || (is_callable($attribute) && is_object($attribute))) {
             $this->computedCallback = $attribute;
-            $this->attribute = 'ComputedField';
+            $this->attribute = 'Computed';
         } else {
             $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($attribute));
         }
@@ -270,13 +269,13 @@ class Field extends OrganicField implements JsonSerializable
     {
         $attribute = $attribute ?? $this->attribute;
 
-        if ($attribute === 'ComputedField') {
+        if ($attribute === 'Computed') {
             $this->value = call_user_func($this->computedCallback, $repository);
 
             return;
         }
 
-        if (! $this->showCallback) {
+        if (!$this->showCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->showCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -293,13 +292,13 @@ class Field extends OrganicField implements JsonSerializable
 
         $attribute = $attribute ?? $this->attribute;
 
-        if ($attribute === 'ComputedField') {
+        if ($attribute === 'Computed') {
             $this->value = call_user_func($this->computedCallback, $repository);
 
             return;
         }
 
-        if (! $this->indexCallback) {
+        if (!$this->indexCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->indexCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -313,7 +312,7 @@ class Field extends OrganicField implements JsonSerializable
     public function resolve($repository, $attribute = null)
     {
         $this->repository = $repository;
-        if ($attribute === 'ComputedField') {
+        if ($attribute === 'Computed') {
             $this->value = call_user_func($this->computedCallback, $repository);
 
             return;
@@ -388,7 +387,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Define the callback that should be used to resolve the field's value.
      *
-     * @param  callable  $resolveCallback
+     * @param callable $resolveCallback
      * @return $this
      */
     public function resolveUsing(callable $resolveCallback)
