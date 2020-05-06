@@ -43,4 +43,35 @@ class FieldTest extends IntegrationTest
 
         $this->assertEquals('DEFAULT', $field->value);
     }
+
+    public function test_computed_fields_resolve()
+    {
+        $field = Field::make(function () {
+            return 'Computed';
+        });
+
+        $field->resolveForIndex((object) []);
+
+        $this->assertEquals('Computed', $field->value);
+    }
+
+    public function test_fields_may_have_callback_resolver()
+    {
+        $field = Field::make('title', function () {
+            return 'Resolved Title';
+        });
+
+        $field->resolveForIndex((object) []);
+
+        $this->assertEquals('Resolved Title', $field->value);
+    }
+
+    public function test_fields_has_default_value()
+    {
+        $field = Field::make('title')->default('Title');
+
+        $field->resolveForIndex((object) []);
+
+        $this->assertEquals('Title', $field->value);
+    }
 }

@@ -3,8 +3,10 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Support\Str;
 use JsonSerializable;
 
 /**
@@ -44,6 +46,13 @@ class Field extends OrganicField implements JsonSerializable
     private $indexCallback;
 
     /**
+     * The callback to be used to resolve the field's value.
+     *
+     * @var \Closure
+     */
+    public $resolveCallback;
+
+    /**
      * Callback called when trying to fill this attribute, this callback will override the fill action, so make
      * sure you assign the attribute to the model over this callback.
      *
@@ -52,13 +61,47 @@ class Field extends OrganicField implements JsonSerializable
     public $fillCallback;
 
     /**
+     * The callback to be used for computed field.
+     *
+     * @var callable
+     */
+    protected $computedCallback;
+
+    /**
+     * The callback to be used for the field's default value.
+     *
+     * @var callable
+     */
+    protected $defaultCallback;
+
+    /**
+     * The resource associated with the field.
+     *
+     * @var  Repository
+     */
+    public $repository;
+
+    /**
      * Create a new field.
      *
      * @param string|callable|null $attribute
+     * @param callable|null $resolveCallback
      */
-    public function __construct($attribute)
+    public function __construct($attribute, callable $resolveCallback = null)
     {
         $this->attribute = $attribute;
+
+        $this->default(null);
+
+        $this->resolveCallback = $resolveCallback;
+
+        if ($attribute instanceof Closure ||
+            (is_callable($attribute) && is_object($attribute))) {
+            $this->computedCallback = $attribute;
+            $this->attribute = 'ComputedField';
+        } else {
+            $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($attribute));
+        }
     }
 
     /**
@@ -221,32 +264,72 @@ class Field extends OrganicField implements JsonSerializable
      *
      * @param mixed $repository
      * @param string|null $attribute
-     * @return Field
+     * @return Field|void
      */
-    public function resolveForShow($repository, $attribute = null): self
+    public function resolveForShow($repository, $attribute = null)
     {
         $attribute = $attribute ?? $this->attribute;
 
-        $value = $this->resolveAttribute($repository, $attribute);
+        if ($attribute === 'ComputedField') {
+            $this->value = call_user_func($this->computedCallback, $repository);
 
-        $this->value = is_callable($this->showCallback) ? call_user_func($this->showCallback, $value, $repository, $attribute) : $value;
+            return;
+        }
+
+        if (! $this->showCallback) {
+            $this->resolve($repository, $attribute);
+        } elseif (is_callable($this->showCallback)) {
+            tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
+                $this->value = call_user_func($this->showCallback, $value, $repository, $attribute);
+            });
+        }
 
         return $this;
     }
 
-    public function resolveForIndex($repository, $attribute = null): self
+    public function resolveForIndex($repository, $attribute = null)
     {
+        $this->repository = $repository;
+
         $attribute = $attribute ?? $this->attribute;
 
-        $value = $this->resolveAttribute($repository, $attribute);
+        if ($attribute === 'ComputedField') {
+            $this->value = call_user_func($this->computedCallback, $repository);
 
-        $this->value = is_callable($this->indexCallback) ? call_user_func($this->indexCallback, $value, $repository, $attribute) : $value;
+            return;
+        }
+
+        if (! $this->indexCallback) {
+            $this->resolve($repository, $attribute);
+        } elseif (is_callable($this->indexCallback)) {
+            tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
+                $this->value = call_user_func($this->indexCallback, $value, $repository, $attribute);
+            });
+        }
 
         return $this;
+    }
+
+    public function resolve($repository, $attribute = null)
+    {
+        $this->repository = $repository;
+        if ($attribute === 'ComputedField') {
+            $this->value = call_user_func($this->computedCallback, $repository);
+
+            return;
+        }
+
+        if (!$this->resolveCallback) {
+            $this->value = $this->resolveAttribute($repository, $attribute);
+        } elseif (is_callable($this->resolveCallback)) {
+            tap($this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
+                $this->value = call_user_func($this->resolveCallback, $value, $repository, $attribute);
+            });
+        }
     }
 
     /**
-     * Resolve the given attribute from the given resource.
+     * Resolve the given attribute from the given repository.
      *
      * @param mixed $repository
      * @param string $attribute
@@ -259,16 +342,59 @@ class Field extends OrganicField implements JsonSerializable
 
     public function jsonSerialize()
     {
-        return [
-            'attribute' => $this->attribute,
-            'value' => $this->value,
-        ];
+        return with(app(RestifyRequest::class), function ($request) {
+            return [
+                'attribute' => $this->attribute,
+                'value' => $this->resolveDefaultValue($request) ?? $this->value,
+            ];
+        });
     }
 
     public function serializeToValue($request)
     {
         return [
-            $this->attribute => $this->value,
+            $this->attribute => $this->resolveDefaultValue($request) ?? $this->value,
         ];
+    }
+
+    /**
+     * Set the callback to be used for determining the field's default value.
+     *
+     * @param $callback
+     * @return $this
+     */
+    public function default($callback)
+    {
+        $this->defaultCallback = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Resolve the default value for the field.
+     *
+     * @param RestifyRequest $request
+     * @return callable|mixed
+     */
+    protected function resolveDefaultValue(RestifyRequest $request)
+    {
+        if (is_null($this->value) && is_callable($this->defaultCallback)) {
+            return call_user_func($this->defaultCallback, $request);
+        }
+
+        return $this->defaultCallback;
+    }
+
+    /**
+     * Define the callback that should be used to resolve the field's value.
+     *
+     * @param  callable  $resolveCallback
+     * @return $this
+     */
+    public function resolveUsing(callable $resolveCallback)
+    {
+        $this->resolveCallback = $resolveCallback;
+
+        return $this;
     }
 }

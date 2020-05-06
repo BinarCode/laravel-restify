@@ -50,4 +50,5 @@ class RestifyRequest extends FormRequest
     {
         return ! $this->isIndexRequest();
     }
+
 }

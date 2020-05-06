@@ -147,7 +147,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
         factory(Apple::class)->create();
 
         $response = $this->get('/restify-api/apples-title')
-            ->dump()
             ->assertStatus(200);
 
         $this->assertArrayHasKey('title', $response->json('data.0.attributes'));
