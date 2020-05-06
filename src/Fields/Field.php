@@ -275,7 +275,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (!$this->showCallback) {
+        if (! $this->showCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->showCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -298,7 +298,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (!$this->indexCallback) {
+        if (! $this->indexCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->indexCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
