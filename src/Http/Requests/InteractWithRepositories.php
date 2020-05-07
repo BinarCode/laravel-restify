@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
-use Binaryk\LaravelRestify\Repositories\NullModel;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Model;
