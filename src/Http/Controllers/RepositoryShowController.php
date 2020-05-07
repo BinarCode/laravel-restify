@@ -2,20 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryShowController extends RepositoryController
 {
-    /**
-     * @param  RestifyRequest  $request
-     * @return \Binaryk\LaravelRestify\Controllers\RestResponse|mixed
-     * @throws \Illuminate\Auth\Access\AuthorizationException
-     * @throws \Throwable
-     */
-    public function handle(RestifyRequest $request)
+    public function __invoke(RepositoryShowRequest $request)
     {
         return $request->newRepositoryWith($request->findModelQuery()->firstOrFail())->show($request, request('repositoryId'));
     }

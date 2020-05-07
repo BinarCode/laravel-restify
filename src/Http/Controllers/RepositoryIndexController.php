@@ -4,11 +4,12 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyIndexRequest;
 
 class RepositoryIndexController extends RepositoryController
 {
-    public function handle(RestifyRequest $request)
+    public function __invoke(RepositoryIndexRequest $request)
     {
         try {
             return $request->newRepository()->index($request);

@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Str;
@@ -14,6 +15,15 @@ use JsonSerializable;
  */
 class Field extends OrganicField implements JsonSerializable
 {
+    use Make;
+
+    /**
+     * The resource associated with the field.
+     *
+     * @var  Repository
+     */
+    public $repository;
+
     /**
      * Column name of the field.
      * @var string|callable|null
@@ -28,10 +38,11 @@ class Field extends OrganicField implements JsonSerializable
     public $value;
 
     /**
-     * Callback called when the value is filled, this callback will do not override the fill action.
-     * @var Closure
+     * Closure to resolve the index method.
+     *
+     * @var
      */
-    public $storeCallback;
+    private $indexCallback;
 
     /**
      * @var Closure
@@ -39,11 +50,16 @@ class Field extends OrganicField implements JsonSerializable
     public $showCallback;
 
     /**
-     * Closure to resolve the index method.
-     *
-     * @var
+     * Callback called when the value is filled, this callback will do not override the fill action.
+     * @var Closure
      */
-    private $indexCallback;
+    public $storeCallback;
+
+    /**
+     * Callback called when update.
+     * @var Closure
+     */
+    public $updateCallback;
 
     /**
      * Closure be used to resolve the field's value.
@@ -53,8 +69,9 @@ class Field extends OrganicField implements JsonSerializable
     public $resolveCallback;
 
     /**
-     * Callback called when trying to fill this attribute, this callback will override the fill action, so make
-     * sure you assign the attribute to the model over this callback.
+     * Callback called when trying to fill this attribute, this callback will override the storeCallback or updateCallback.
+     *
+     * Make sure you assign the attribute to the model over this callback.
      *
      * @var Closure
      */
@@ -73,13 +90,6 @@ class Field extends OrganicField implements JsonSerializable
      * @var callable
      */
     protected $defaultCallback;
-
-    /**
-     * The resource associated with the field.
-     *
-     * @var  Repository
-     */
-    public $repository;
 
     /**
      * Create a new field.
@@ -103,27 +113,9 @@ class Field extends OrganicField implements JsonSerializable
         }
     }
 
-    /**
-     * Create a new element.
-     *
-     * @param array $arguments
-     * @return static
-     */
-    public static function make(...$arguments)
+    public function indexCallback(Closure $callback)
     {
-        return new static(...$arguments);
-    }
-
-    /**
-     * Callback called when the value is filled, this callback will do not override the fill action. If fillCallback is defined
-     * this will do not be called.
-     *
-     * @param Closure $callback
-     * @return Field
-     */
-    public function storeCallback(Closure $callback)
-    {
-        $this->storeCallback = $callback;
+        $this->indexCallback = $callback;
 
         return $this;
     }
@@ -139,9 +131,15 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    public function indexCallback(Closure $callback)
+    public function storeCallback(Closure $callback)
     {
-        $this->indexCallback = $callback;
+        $this->storeCallback = $callback;
+
+        return $this;
+    }
+    public function updateCallback(Closure $callback)
+    {
+        $this->updateCallback = $callback;
 
         return $this;
     }
@@ -175,9 +173,16 @@ class Field extends OrganicField implements JsonSerializable
             );
         }
 
-        return $this->fillAttributeFromRequest(
+//        if ($intercepted = $this->fillInterceptor($request, $model, $this->attribute)) {
+//            return;
+//        }
+
+        $this->fillAttributeFromRequest(
             $request, $model, $this->attribute
         );
+    }
+
+    protected function fillInterceptor($request, $model, $attribute) {
     }
 
     /**
@@ -190,9 +195,7 @@ class Field extends OrganicField implements JsonSerializable
     protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute)
     {
         if ($request->exists($attribute) || $request->get($attribute)) {
-            $value = $request[$attribute] ?? $request->get($attribute);
-
-            $model->{$attribute} = is_callable($this->storeCallback) ? call_user_func($this->storeCallback, $value, $request, $model) : $value;
+            $model->{$attribute} = $request[$attribute] ?? $request->get($attribute);
         }
     }
 
@@ -214,6 +217,17 @@ class Field extends OrganicField implements JsonSerializable
         $this->storingRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
 
         return $this;
+    }
+
+    /**
+     * Alias for storingRules - to maintain it consistent
+     *
+     * @param $rules
+     * @return $this
+     */
+    public function storeRules($rules)
+    {
+        return $this->storingRules($rules);
     }
 
     /**

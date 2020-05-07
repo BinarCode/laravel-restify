@@ -36,9 +36,7 @@ class RestifyRequest extends FormRequest
      */
     public function isIndexRequest()
     {
-        $path = trim(Restify::path($this->route('repository')), '/') ?: '/';
-
-        return $this->is($path);
+        return $this instanceof RepositoryIndexRequest;
     }
 
     /**
@@ -48,6 +46,11 @@ class RestifyRequest extends FormRequest
      */
     public function isDetailRequest()
     {
-        return ! $this->isIndexRequest();
+        return $this->isShowRequest();
+    }
+
+    public function isShowRequest()
+    {
+        return $this instanceof RepositoryShowRequest;
     }
 }

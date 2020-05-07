@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
+use Binaryk\LaravelRestify\Repositories\NullModel;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Model;
@@ -34,9 +35,9 @@ trait InteractWithRepositories
      * @param null $key
      * @return Repository
      */
-    public function repository($key = null)
+    public function repository($key = null): ?Repository
     {
-        return tap(Restify::repositoryForKey($key ?? $this->route('repository')), function ($repository) {
+        $repository = tap(Restify::repositoryForKey($key ?? $this->route('repository')), function ($repository) {
             /** * @var Repository $repository */
             if (is_null($repository)) {
                 throw new EntityNotFoundException(__('Repository :name not found.', [
@@ -50,6 +51,8 @@ trait InteractWithRepositories
                 ]), 403);
             }
         });
+
+        return $repository::resolveWith($repository::newModel());
     }
 
     /**

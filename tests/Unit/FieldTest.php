@@ -3,7 +3,11 @@
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 class FieldTest extends IntegrationTest
 {
@@ -73,5 +77,17 @@ class FieldTest extends IntegrationTest
         $field->resolveForIndex((object) []);
 
         $this->assertEquals('Title', data_get($field->jsonSerialize(), 'value'));
+    }
+
+    public function test_field_can_have_custom_store_callback()
+    {
+        /** * @var Field $field */
+        $field = Field::new('title')->storeCallback(function ($value) {
+            return 'custom title';
+        });
+
+        $model = new class extends Model{};
+
+        $field->fillAttribute(\Mockery::mock(RestifyRequest::class), $model);
     }
 }
