@@ -80,7 +80,7 @@ class HandlerTest extends IntegrationTest
         $validator = Validator::make([], ['email' => 'required'], ['email.required' => 'Email should be fill']);
         $response = $this->handler->render($this->request, new ValidationException($validator));
         $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals(end($response->getData()->errors->email), 'Email should be fill');
+        $this->assertEquals(end($response->getData()->errors[0]->email), 'Email should be fill');
         $this->assertEquals($response->getStatusCode(), 400);
     }
 

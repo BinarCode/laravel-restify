@@ -16,9 +16,7 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Container\Container;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -26,7 +24,6 @@ use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -251,7 +248,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @param $request
      * @return array
      */
-    public function resolveDetailsAttributes(RestifyRequest $request)
+    public function resolveShowAttributes(RestifyRequest $request)
     {
         $fields = $this->showFields($request)
             ->filter(fn(Field $field) => $field->authorize($request))
@@ -413,7 +410,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return static::resolveWith($value);
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
-        })->values(); //->map(fn (self $repository) => $this->filter($repository->serializeIndex($request)));
+        })->values()->map(fn(self $repository) => $repository->serializeForIndex($request));
 
         return $this->response([
             'meta' => RepositoryCollection::meta($paginator->toArray()),
@@ -424,13 +421,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function show(RestifyRequest $request, $repositoryId)
     {
-        try {
-            $this->allowToShow($request);
-        } catch (AuthorizationException $e) {
-            return $this->response()->forbidden()->addError($e->getMessage());
-        }
-
-        return $this->response()->data($this->jsonSerialize());
+        return $this->response()->data($this->serializeForShow($request));
     }
 
     public function store(RestifyRequest $request)
@@ -486,28 +477,29 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $validator->validate();
     }
 
-    /**
-     * @param RestifyRequest $request
-     * @param array $payload
-     * @return mixed
-     */
-    public function allowToStore(RestifyRequest $request, $payload = null)
+    public function allowToStore(RestifyRequest $request, $payload = null): self
     {
         static::authorizeToStore($request);
 
         $validator = static::validatorForStoring($request, $payload);
 
         $validator->validate();
+
+        return $this;
     }
 
     public function allowToDestroy(RestifyRequest $request)
     {
         $this->authorizeToDelete($request);
+
+        return $this;
     }
 
-    public function allowToShow($request)
+    public function allowToShow($request): self
     {
         $this->authorizeToShow($request);
+
+        return $this;
     }
 
     public static function storePlain(array $payload)
@@ -608,30 +600,41 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return new RestResponse($content, $status, $headers);
     }
 
-    public function toArray(RestifyRequest $request): array
+    public function serializeForShow(RestifyRequest $request): array
     {
-        return [
-            'id' => $this->when($this->resource instanceof Model, function () {
-                return $this->resource->getKey();
-            }),
-            'type' => $this->model()->getTable(),
-            'attributes' => $request->isDetailRequest() ? $this->resolveDetailsAttributes($request) : $this->resolveIndexAttributes($request),
+        return $this->filter([
+            'id' => $this->when($this->resource->id, fn() => $this->getShowId($request)),
+            'type' => $this->when($type = $this->getType($request), $type),
+            'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
             'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
-            'meta' => $this->when(value($meta = $request->isDetailRequest() ? $this->resolveDetailsMeta($request) : $this->resolveIndexMeta($request)), $meta),
-        ];
+            'meta' => $this->when(value($meta = $request->isShowRequest() ? $this->resolveDetailsMeta($request) : $this->resolveIndexMeta($request)), $meta),
+        ]);
+    }
+
+    public function serializeForIndex(RestifyRequest $request): array
+    {
+        return $this->filter([
+            'id' => $this->when($id = $this->getShowId($request), $id),
+            'type' => $this->when($type = $this->getType($request), $type),
+            'attributes' => $this->when((bool)$attrs = $this->resolveIndexAttributes($request), $attrs),
+            'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
+            'meta' => $this->when(value($meta = $this->resolveIndexMeta($request)), $meta),
+        ]);
+    }
+
+    protected function getType(RestifyRequest $request): ?string
+    {
+        return $this->model()->getTable();
+    }
+
+    protected function getShowId(RestifyRequest $request): ?string
+    {
+        return $this->resource->getKey();
     }
 
     public function jsonSerialize()
     {
-        $data = $this->toArray(Container::getInstance()->make(RestifyRequest::class));
-
-        if ($data instanceof Arrayable) {
-            $data = $data->toArray();
-        } elseif ($data instanceof JsonSerializable) {
-            $data = $data->jsonSerialize();
-        }
-
-        return $this->filter((array)$data);
+        return $this->serializeForShow(app(RestifyRequest::class));
     }
 
     private function modelAttributes(Request $request = null): Collection

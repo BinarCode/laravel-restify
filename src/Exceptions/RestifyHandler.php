@@ -82,7 +82,7 @@ class RestifyHandler extends ExceptionHandler
                 break;
 
             case $exception instanceof ValidationException:
-                $response->errors($exception->errors())->invalid();
+                $response->addError($exception->errors())->invalid();
                 break;
             case $exception instanceof InstanceOfException:
                 $response->errors($exception->getMessage())->invalid();
