@@ -498,9 +498,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function destroy(RestifyRequest $request, $repositoryId)
     {
-        $this->allowToDestroy($request);
-
-        $status = static::destroyPlain($repositoryId);
+        $status = DB::transaction(function () {
+            return $this->resource->delete();
+        });
 
         static::deleted($status, $request);
 
@@ -543,19 +543,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this;
     }
 
-    public static function destroyPlain($key)
-    {
-        /** * @var RepositoryDestroyRequest $request */
-        $request = resolve(RepositoryDestroyRequest::class);
-
-        $repository = $request->newRepositoryWith($request->findModelQuery($key, static::uriKey())->firstOrFail(), static::uriKey());
-
-        $repository->allowToDestroy($request);
-
-        return DB::transaction(function () use ($repository) {
-            return $repository->resource->delete();
-        });
-    }
 
     public static function stored($repository, $request)
     {
