@@ -570,18 +570,17 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         });
     }
 
-    /**
-     * @param $model
-     */
-    public static function updated($model)
+    public static function stored($repository, $request)
     {
         //
     }
 
-    /**
-     * @param int $status
-     */
-    public static function deleted($status)
+    public static function updated($model, $request)
+    {
+        //
+    }
+
+    public static function deleted($status, $request)
     {
         //
     }
@@ -633,11 +632,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return collect(method_exists($this->resource, 'toArray') ? $this->resource->toArray() : []);
     }
 
-    public static function stored($repository, $request)
-    {
-        //
-    }
-
     /**
      * Fill fields on store request.
      *
@@ -649,10 +643,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         static::fillFields(
             $request, $model,
-            static::resolveWith($model)->collectFields($request)
-        );
-
-        static::fillExtra($request, $model,
             static::resolveWith($model)->collectFields($request)
         );
 
@@ -672,34 +662,5 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $fields->map(function (Field $field) use ($request, $model) {
             return $field->fillAttribute($request, $model);
         });
-    }
-
-    /**
-     * If some fields were not defined in the @fields method, but they are in fillable attributes and present in request,
-     * they should be also filled on request.
-     * @param RestifyRequest $request
-     * @param Model $model
-     * @param Collection $fields
-     * @return array
-     */
-    protected static function fillExtra(RestifyRequest $request, Model $model, Collection $fields)
-    {
-//        dd('Aici trebuie sa filtrez doar acele campuri care sunt in fillable si sa vad daca e Mergeable repository, deci nu e ok sa fie statica');
-
-        $a = collect($model->getFillable())->filter(fn($attribute) => $fields->contains('attribute', $attribute) === false)
-            ->map(fn($attribute) => Field::new($attribute))
-            ->toArray();
-
-        dd($a);
-
-        $definedAttributes = $fields->map->getAttribute()->toArray();
-        dd($definedAttributes);
-        $fromRequest = collect($request->only($model->getFillable()))->keys()->filter(function ($attribute) use ($definedAttributes) {
-            return !in_array($attribute, $definedAttributes);
-        });
-
-        return $fromRequest->each(function ($attribute) use ($request, $model) {
-            $model->{$attribute} = $request->{$attribute};
-        })->values()->all();
     }
 }

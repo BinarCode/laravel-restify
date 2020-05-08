@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Mergeable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Apple;
@@ -128,18 +127,3 @@ class AppleUnauthorizedField extends Repository
         ];
     }
 }
-
-class AppleUpdateMergeable extends Repository implements Mergeable
-{
-    public static $uriKey = 'apple-update-extra';
-
-    public static $model = Apple::class;
-
-    public function fields(RestifyRequest $request)
-    {
-        return [
-            Field::make('user_id')->canUpdate(fn($value) => true),
-        ];
-    }
-}
-
