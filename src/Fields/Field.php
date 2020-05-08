@@ -425,6 +425,4 @@ class Field extends OrganicField implements JsonSerializable
 
         return $this;
     }
-
-
 }
