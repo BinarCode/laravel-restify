@@ -506,7 +506,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         $status = static::destroyPlain($repositoryId);
 
-        static::deleted($status);
+        static::deleted($status, $request);
 
         return $this->response()->deleted();
     }

@@ -38,6 +38,12 @@ class Field extends OrganicField implements JsonSerializable
     public $value;
 
     /**
+     * In case of the update, this will keep the previous value
+     * @var
+     */
+    public $valueBeforeUpdate;
+
+    /**
      * Closure to resolve the index method.
      *
      * @var
@@ -173,23 +179,29 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function fillAttribute(RestifyRequest $request, $model)
     {
+        $this->resolveValueBeforeUpdate($request, $model);
+
         if (isset($this->fillCallback)) {
             return call_user_func(
                 $this->fillCallback, $request, $model, $this->attribute
             );
         }
 
-//        if ($intercepted = $this->fillInterceptor($request, $model, $this->attribute)) {
-//            return;
-//        }
+        if ($request->isStoreRequest() && is_callable($this->storeCallback)) {
+            return call_user_func(
+                $this->storeCallback, $request, $model, $this->attribute
+            );
+        }
+
+        if ($request->isUpdateRequest() && is_callable($this->updateCallback)) {
+            return call_user_func(
+                $this->updateCallback, $request, $model, $this->attribute
+            );
+        }
 
         $this->fillAttributeFromRequest(
             $request, $model, $this->attribute
         );
-    }
-
-    protected function fillInterceptor($request, $model, $attribute)
-    {
     }
 
     /**
@@ -358,6 +370,13 @@ class Field extends OrganicField implements JsonSerializable
     protected function resolveAttribute($repository, $attribute)
     {
         return data_get($repository, str_replace('->', '.', $attribute));
+    }
+
+    protected function resolveValueBeforeUpdate(RestifyRequest $request, $repository)
+    {
+        if ($request->isUpdateRequest()) {
+            $this->valueBeforeUpdate = $this->resolveAttribute($repository, $this->attribute);
+        }
     }
 
     public function jsonSerialize()

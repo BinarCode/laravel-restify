@@ -20,15 +20,13 @@ class RepositoryStoreControllerTest extends IntegrationTest
 
     public function test_basic_validation_works()
     {
-        $this->postJson('/restify-api/posts', [
-            'title' => 'Title',
-        ])
+        $this->postJson('/restify-api/posts', [])
             ->assertStatus(400)
             ->assertJson([
                 'errors' => [
                     [
-                        'description' => [
-                            'Description field is required',
+                        'title' => [
+                            'This field is required',
                         ],
                     ],
                 ],
@@ -54,12 +52,10 @@ class RepositoryStoreControllerTest extends IntegrationTest
         $r = $this->postJson('/restify-api/posts', [
             'user_id' => $user->id,
             'title' => 'Some post title',
-            'description' => 'A very short description',
         ])->assertStatus(201)
             ->assertHeader('Location', '/restify-api/posts/1');
 
         $this->assertEquals('Some post title', $r->json('data.attributes.title'));
-        $this->assertEquals('A very short description', $r->json('data.attributes.description'));
         $this->assertEquals(1, $r->json('data.attributes.user_id'));
         $this->assertEquals(1, $r->json('data.id'));
         $this->assertEquals('posts', $r->json('data.type'));
