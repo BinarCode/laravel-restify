@@ -4,10 +4,8 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 
 class FieldTest extends IntegrationTest
 {
@@ -86,7 +84,8 @@ class FieldTest extends IntegrationTest
             return 'custom title';
         });
 
-        $model = new class extends Model{};
+        $model = new class extends Model {
+        };
 
         $field->fillAttribute(\Mockery::mock(RestifyRequest::class), $model);
     }

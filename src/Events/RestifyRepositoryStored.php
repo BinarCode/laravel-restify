@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Events;
 
-use Illuminate\Contracts\Auth\Model;
 use Illuminate\Queue\SerializesModels;
 
 class RestifyRepositoryStored

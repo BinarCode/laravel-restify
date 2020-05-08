@@ -143,6 +143,7 @@ class Field extends OrganicField implements JsonSerializable
 
         return $this;
     }
+
     public function updateCallback(Closure $callback)
     {
         $this->updateCallback = $callback;
@@ -188,7 +189,8 @@ class Field extends OrganicField implements JsonSerializable
         );
     }
 
-    protected function fillInterceptor($request, $model, $attribute) {
+    protected function fillInterceptor($request, $model, $attribute)
+    {
     }
 
     /**
@@ -226,7 +228,7 @@ class Field extends OrganicField implements JsonSerializable
     }
 
     /**
-     * Alias for storingRules - to maintain it consistent
+     * Alias for storingRules - to maintain it consistent.
      *
      * @param $rules
      * @return $this
