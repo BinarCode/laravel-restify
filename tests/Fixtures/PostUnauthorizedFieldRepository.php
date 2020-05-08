@@ -37,8 +37,7 @@ class PostUnauthorizedFieldRepository extends Repository implements Mergeable
 
             Field::new('title'),
 
-
-            Field::new('description')->canStore(fn() => $_SERVER['posts.description.authorized'] ?? false)
+            Field::new('description')->canStore(fn () => $_SERVER['posts.description.authorized'] ?? false),
         ];
     }
 }
