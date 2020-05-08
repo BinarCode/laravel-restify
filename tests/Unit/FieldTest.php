@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Model;
@@ -19,10 +18,10 @@ class FieldTest extends IntegrationTest
             return strtoupper($value);
         });
 
-        $field->resolveForIndex((object)['name' => 'Binaryk'], 'name');
+        $field->resolveForIndex((object) ['name' => 'Binaryk'], 'name');
         $this->assertEquals('BINARYK', $field->value);
 
-        $field->resolveForShow((object)['name' => 'Binaryk'], 'name');
+        $field->resolveForShow((object) ['name' => 'Binaryk'], 'name');
         $this->assertEquals('Binaryk', $field->value);
     }
 
@@ -32,10 +31,10 @@ class FieldTest extends IntegrationTest
             return strtoupper($value);
         });
 
-        $field->resolveForShow((object)['name' => 'Binaryk'], 'name');
+        $field->resolveForShow((object) ['name' => 'Binaryk'], 'name');
         $this->assertEquals('BINARYK', $field->value);
 
-        $field->resolveForIndex((object)['name' => 'Binaryk'], 'name');
+        $field->resolveForIndex((object) ['name' => 'Binaryk'], 'name');
         $this->assertEquals('Binaryk', $field->value);
     }
 
@@ -45,7 +44,7 @@ class FieldTest extends IntegrationTest
             return strtoupper('default');
         });
 
-        $field->resolveForShow((object)['name' => 'Binaryk'], 'email');
+        $field->resolveForShow((object) ['name' => 'Binaryk'], 'email');
 
         $this->assertEquals('DEFAULT', $field->value);
     }
@@ -56,7 +55,7 @@ class FieldTest extends IntegrationTest
             return 'Computed';
         });
 
-        $field->resolveForIndex((object)[]);
+        $field->resolveForIndex((object) []);
 
         $this->assertEquals('Computed', $field->value);
     }
@@ -67,7 +66,7 @@ class FieldTest extends IntegrationTest
             return 'Resolved Title';
         });
 
-        $field->resolveForIndex((object)[]);
+        $field->resolveForIndex((object) []);
 
         $this->assertEquals('Resolved Title', $field->value);
     }
@@ -76,7 +75,7 @@ class FieldTest extends IntegrationTest
     {
         $field = Field::make('title')->default('Title');
 
-        $field->resolveForIndex((object)[]);
+        $field->resolveForIndex((object) []);
 
         $this->assertEquals('Title', data_get($field->jsonSerialize(), 'value'));
     }
@@ -93,7 +92,6 @@ class FieldTest extends IntegrationTest
         $field = Field::new('title')->storeCallback(function ($request, $model) {
             $model->title = 'from store callback';
         });
-
 
         $field->fillAttribute($request, $model);
 
@@ -112,7 +110,6 @@ class FieldTest extends IntegrationTest
         $field = Field::new('title')->updateCallback(function ($request, $model) {
             $model->title = 'from update callback';
         });
-
 
         $field->fillAttribute($request, $model);
 
@@ -136,9 +133,8 @@ class FieldTest extends IntegrationTest
                 $model->title = 'from store callback';
             })
             ->updateCallback(function ($request, $model) {
-            $model->title = 'from update callback';
-        });
-
+                $model->title = 'from update callback';
+            });
 
         $field->fillAttribute($request, $model);
 
@@ -157,7 +153,6 @@ class FieldTest extends IntegrationTest
             });
         });
 
-
         $request->merge([
             'title' => 'title from request',
         ]);
@@ -168,7 +163,6 @@ class FieldTest extends IntegrationTest
 
         /** * @var Field $field */
         $field = Field::new('title');
-
 
         $field->fillAttribute($request, $model);
 
