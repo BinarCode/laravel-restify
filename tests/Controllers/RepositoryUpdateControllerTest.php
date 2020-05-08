@@ -31,7 +31,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create(['user_id' => 1]);
 
-        $this->withoutExceptionHandling()->patch('/restify-api/posts/' . $post->id, [
+        $this->withoutExceptionHandling()->patch('/restify-api/posts/'.$post->id, [
             'title' => 'Updated title',
         ])
             ->assertStatus(200);
@@ -45,7 +45,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create(['user_id' => 1]);
 
-        $this->withoutExceptionHandling()->put('/restify-api/posts/' . $post->id, [
+        $this->withoutExceptionHandling()->put('/restify-api/posts/'.$post->id, [
             'title' => 'Updated title',
         ])
             ->assertStatus(200);
@@ -65,7 +65,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.updateable'] = false;
 
-        $this->patch('/restify-api/posts/' . $post->id, [
+        $this->patch('/restify-api/posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertStatus(403)
             ->assertJson([
@@ -77,15 +77,14 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         Restify::repositories([AppleUnauthorizedField::class]);
 
-        $post = factory(Apple::class)->create(['user_id' => 1, 'title' => 'Title',]);
+        $post = factory(Apple::class)->create(['user_id' => 1, 'title' => 'Title']);
 
         $_SERVER['restify.apple.updateable'] = false;
 
-        $response = $this->putJson('/restify-api/apple-unauthorized-put/' . $post->id, [
+        $response = $this->putJson('/restify-api/apple-unauthorized-put/'.$post->id, [
             'title' => 'Updated title',
-            'user_id' => 2
+            'user_id' => 2,
         ])->assertStatus(200);
-
 
         $this->assertEquals('Title', $response->json('data.attributes.title'));
         $this->assertEquals(2, $response->json('data.attributes.user_id'));
@@ -94,18 +93,17 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     public function test_update_fillable_fields_for_mergeable_repository()
     {
         Restify::repositories([
-            AppleUpdateMergeable::class
+            AppleUpdateMergeable::class,
         ]);
 
-        $apple = factory(Apple::class)->create(['user_id' => 1, 'title' => 'Title', 'color' => 'red',]);
+        $apple = factory(Apple::class)->create(['user_id' => 1, 'title' => 'Title', 'color' => 'red']);
 
-        $response = $this->putJson('/restify-api/apple-update-extra/' . $apple->id, [
+        $response = $this->putJson('/restify-api/apple-update-extra/'.$apple->id, [
             'title' => 'Updated title',
             'color' => 'blue',
-            'user_id' => 2
+            'user_id' => 2,
         ])
             ->assertStatus(200);
-
 
         $this->assertEquals('Updated title', $response->json('data.attributes.title')); // via extra
         $this->assertEquals('blue', $response->json('data.attributes.color')); // via extra
@@ -122,9 +120,9 @@ class AppleUnauthorizedField extends Repository
     public function fields(RestifyRequest $request)
     {
         return [
-            Field::make('title')->canUpdate(fn($value) => $_SERVER['restify.apple.updateable']),
+            Field::make('title')->canUpdate(fn ($value) => $_SERVER['restify.apple.updateable']),
 
-            Field::make('user_id')->canUpdate(fn($value) => true),
+            Field::make('user_id')->canUpdate(fn ($value) => true),
         ];
     }
 }
@@ -138,8 +136,7 @@ class AppleUpdateMergeable extends Repository implements Mergeable
     public function fields(RestifyRequest $request)
     {
         return [
-            Field::make('user_id')->canUpdate(fn($value) => true),
+            Field::make('user_id')->canUpdate(fn ($value) => true),
         ];
     }
 }
-
