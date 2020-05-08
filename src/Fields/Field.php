@@ -38,7 +38,7 @@ class Field extends OrganicField implements JsonSerializable
     public $value;
 
     /**
-     * In case of the update, this will keep the previous value
+     * In case of the update, this will keep the previous value.
      * @var
      */
     public $valueBeforeUpdate;
