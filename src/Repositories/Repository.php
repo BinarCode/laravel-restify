@@ -10,7 +10,6 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
-use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
@@ -164,8 +163,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         if ($this instanceof Mergeable) {
             $fillable = collect($this->resource->getFillable())
-                ->filter(fn($attribute) => $fields->contains('attribute', $attribute) === false)
-                ->map(fn($attribute) => Field::new($attribute));
+                ->filter(fn ($attribute) => $fields->contains('attribute', $attribute) === false)
+                ->map(fn ($attribute) => Field::new($attribute));
 
             $fields = $fields->merge($fillable);
         }
@@ -469,7 +468,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->header('Location', Restify::path().'/'.static::uriKey().'/'.$this->resource->id);
     }
 
-
     public function update(RestifyRequest $request, $repositoryId)
     {
         $this->resource = DB::transaction(function () use ($request) {
@@ -686,8 +684,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
 //        dd('Aici trebuie sa filtrez doar acele campuri care sunt in fillable si sa vad daca e Mergeable repository, deci nu e ok sa fie statica');
 
-        $a = collect($model->getFillable())->filter(fn($attribute) => $fields->contains('attribute', $attribute) === false)
-            ->map(fn($attribute) => Field::new($attribute))
+        $a = collect($model->getFillable())->filter(fn ($attribute) => $fields->contains('attribute', $attribute) === false)
+            ->map(fn ($attribute) => Field::new($attribute))
             ->toArray();
 
         dd($a);
@@ -695,7 +693,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $definedAttributes = $fields->map->getAttribute()->toArray();
         dd($definedAttributes);
         $fromRequest = collect($request->only($model->getFillable()))->keys()->filter(function ($attribute) use ($definedAttributes) {
-            return !in_array($attribute, $definedAttributes);
+            return ! in_array($attribute, $definedAttributes);
         });
 
         return $fromRequest->each(function ($attribute) use ($request, $model) {
