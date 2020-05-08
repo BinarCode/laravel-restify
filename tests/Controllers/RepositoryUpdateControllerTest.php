@@ -115,7 +115,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $user = $this->mockUsers()->first();
 
-        $post = factory(Post::class)->create(['image' => null,]);
+        $post = factory(Post::class)->create(['image' => null]);
 
         $r = $this->putJson('/restify-api/posts-unauthorized-fields/'.$post->id, [
             'user_id' => $user->id,
@@ -155,9 +155,9 @@ class AppleUpdateMergeable extends Repository implements Mergeable
     public function fields(RestifyRequest $request)
     {
         return [
-            Field::make('title')->canUpdate(fn($value) => true),
+            Field::make('title')->canUpdate(fn ($value) => true),
 
-            Field::make('user_id')->canUpdate(fn($value) => true),
+            Field::make('user_id')->canUpdate(fn ($value) => true),
         ];
     }
 }
