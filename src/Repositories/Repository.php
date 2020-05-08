@@ -10,7 +10,6 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
-use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
@@ -172,8 +171,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         if ($this instanceof Mergeable) {
             $fillable = collect($this->resource->getFillable())
-                ->filter(fn($attribute) => $fields->contains('attribute', $attribute) === false)
-                ->map(fn($attribute) => Field::new($attribute));
+                ->filter(fn ($attribute) => $fields->contains('attribute', $attribute) === false)
+                ->map(fn ($attribute) => Field::new($attribute));
 
             $fields = $fields->merge($fillable);
         }
