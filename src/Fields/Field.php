@@ -92,6 +92,12 @@ class Field extends OrganicField implements JsonSerializable
     protected $defaultCallback;
 
     /**
+     * Closure be used to be called after the field value changed.
+     * @todo trigger it
+     */
+    public $eventCallback;
+
+    /**
      * Create a new field.
      *
      * @param string|callable|null $attribute
@@ -410,4 +416,13 @@ class Field extends OrganicField implements JsonSerializable
 
         return $this;
     }
+
+    public function event(Closure $callback)
+    {
+        $this->eventCallback = $callback;
+
+        return $this;
+    }
+
+
 }

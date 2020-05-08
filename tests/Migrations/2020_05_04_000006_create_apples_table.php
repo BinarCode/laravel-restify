@@ -16,6 +16,7 @@ class CreateApplesTable extends Migration
         Schema::create('apples', function (Blueprint $table) {
             $table->increments('id');
             $table->string('title');
+            $table->string('color')->nullable();
             $table->unsignedBigInteger('user_id')->nullable();
             $table->timestamps();
         });

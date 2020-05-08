@@ -10,6 +10,7 @@ class Apple extends Model
 
     protected $fillable = [
         'title',
+        'color',
         'user_id',
     ];
 

@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
@@ -40,7 +41,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 {
     use InteractWithSearch,
         ValidatingTrait,
-        RepositoryFillFields,
         PerformsQueries,
         ConditionallyLoadsAttributes,
         DelegatesToResource;
@@ -146,13 +146,31 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * @param RestifyRequest $request
-     * @return Collection
+     * @return FieldCollection
      */
     public function collectFields(RestifyRequest $request)
     {
-        return collect($this->fields($request))->filter(function (Field $field) use ($request) {
-            return $field->filter($request);
-        });
+        $method = 'fields';
+
+        if ($request->isIndexRequest() && method_exists($this, 'fieldsForIndex')) {
+            $method = 'fieldsForIndex';
+        }
+
+        if ($request->isShowRequest() && method_exists($this, 'fieldsForShow')) {
+            $method = 'fieldsForShow';
+        }
+
+        $fields = FieldCollection::make(array_values($this->filter($this->{$method}($request))));
+
+        if ($this instanceof Mergeable) {
+            $fillable = collect($this->resource->getFillable())
+                ->filter(fn($attribute) => $fields->contains('attribute', $attribute) === false)
+                ->map(fn($attribute) => Field::new($attribute));
+
+            $fields = $fields->merge($fillable);
+        }
+
+        return $fields;
     }
 
     private function indexFields(RestifyRequest $request): Collection
@@ -167,6 +185,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this->collectFields($request)
             ->filter(fn(Field $field) => !$field->isHiddenOnDetail($request, $this))
             ->values();
+    }
+
+    private function updateFields(RestifyRequest $request)
+    {
+        return $this->collectFields($request)
+            ->forUpdate($request, $this)
+            ->authorizedUpdate($request);
     }
 
     /**
@@ -444,17 +469,22 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->header('Location', Restify::path() . '/' . static::uriKey() . '/' . $this->resource->id);
     }
 
+
     public function update(RestifyRequest $request, $repositoryId)
     {
-        $this->allowToUpdate($request);
+        $this->resource = DB::transaction(function () use ($request) {
+            $fields = $this->updateFields($request);
 
-        $this->resource = static::updatePlain($request->all(), $repositoryId);
+            static::fillFields($request, $this->resource, $fields);
 
-        static::updated($this->resource);
+            $this->resource->save();
+
+            return $this->resource;
+        });
 
         return $this->response()
-            ->data($this->jsonSerialize())
-            ->updated();
+            ->data($this->serializeForShow($request))
+            ->success();
     }
 
     public function destroy(RestifyRequest $request, $repositoryId)
@@ -468,13 +498,15 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this->response()->deleted();
     }
 
-    public function allowToUpdate(RestifyRequest $request, $payload = null)
+    public function allowToUpdate(RestifyRequest $request, $payload = null): self
     {
         $this->authorizeToUpdate($request);
 
         $validator = static::validatorForUpdate($request, $this, $payload);
 
         $validator->validate();
+
+        return $this;
     }
 
     public function allowToStore(RestifyRequest $request, $payload = null): self
@@ -522,47 +554,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
             return $model;
         });
-    }
-
-    public static function updatePlain(array $payload, $id)
-    {
-        /** * @var RepositoryUpdateRequest $request */
-        $request = resolve(RepositoryUpdateRequest::class);
-        $request->attributes->add($payload);
-
-        $model = $request->findModelQuery($id, static::uriKey())->lockForUpdate()->firstOrFail();
-
-        /**
-         * @var Repository
-         */
-        $repository = $request->newRepositoryWith($model, static::uriKey());
-
-        $repository->allowToUpdate($request, $payload);
-
-        return DB::transaction(function () use ($request, $repository) {
-            $model = static::fillWhenUpdate($request, $repository->resource);
-
-            $model->save();
-
-            return $model;
-        });
-    }
-
-    public static function showPlain($key)
-    {
-        /** * @var RestifyRequest $request */
-        $request = resolve(RestifyRequest::class);
-
-        /**
-         * Dive into the Search service to attach relations.
-         */
-        $repository = $request->newRepositoryWith(tap($request->findModelQuery($key, static::uriKey())->firstOrFail(), function ($query) use ($request) {
-            static::detailQuery($request, $query);
-        }));
-
-        $repository->allowToShow($request);
-
-        return $repository->resource;
     }
 
     public static function destroyPlain($key)
@@ -645,5 +636,70 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static function stored($repository, $request)
     {
         //
+    }
+
+    /**
+     * Fill fields on store request.
+     *
+     * @param RestifyRequest $request
+     * @param $model
+     * @return array
+     */
+    public static function fillWhenStore(RestifyRequest $request, $model)
+    {
+        static::fillFields(
+            $request, $model,
+            static::resolveWith($model)->collectFields($request)
+        );
+
+        static::fillExtra($request, $model,
+            static::resolveWith($model)->collectFields($request)
+        );
+
+        return $model;
+    }
+
+    /**
+     * Fill each field separately.
+     *
+     * @param RestifyRequest $request
+     * @param Model $model
+     * @param Collection $fields
+     * @return Collection
+     */
+    protected static function fillFields(RestifyRequest $request, Model $model, Collection $fields)
+    {
+        return $fields->map(function (Field $field) use ($request, $model) {
+            return $field->fillAttribute($request, $model);
+        });
+    }
+
+    /**
+     * If some fields were not defined in the @fields method, but they are in fillable attributes and present in request,
+     * they should be also filled on request.
+     * @param RestifyRequest $request
+     * @param Model $model
+     * @param Collection $fields
+     * @return array
+     */
+    protected static function fillExtra(RestifyRequest $request, Model $model, Collection $fields)
+    {
+//        dd('Aici trebuie sa filtrez doar acele campuri care sunt in fillable si sa vad daca e Mergeable repository, deci nu e ok sa fie statica');
+
+        $a = collect($model->getFillable())->filter(fn($attribute) => $fields->contains('attribute', $attribute) === false)
+            ->map(fn($attribute) => Field::new($attribute))
+            ->toArray();
+
+        dd($a);
+
+        $definedAttributes = $fields->map->getAttribute()->toArray();
+        dd($definedAttributes);
+        $fromRequest = collect($request->only($model->getFillable()))->keys()->filter(function ($attribute) use ($definedAttributes) {
+            return !in_array($attribute, $definedAttributes);
+        });
+
+        return $fromRequest->each(function ($attribute) use ($request, $model) {
+            $model->{$attribute} = $request->{$attribute};
+        })->values()->all();
     }
 }

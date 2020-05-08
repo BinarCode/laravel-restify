@@ -10,6 +10,8 @@ abstract class OrganicField extends BaseField
 {
     public $seeCallback;
 
+    public $updateCallback;
+
     public $storingRules = [];
 
     public $updatingRules = [];
@@ -96,12 +98,12 @@ abstract class OrganicField extends BaseField
 
     public function isShownOnUpdate(RestifyRequest $request, $repository): bool
     {
-        return $this->authorize($request);
+        return true;
     }
 
     public function isShownOnStore(RestifyRequest $request, $repository): bool
     {
-        return $this->authorize($request);
+        return true;
     }
 
     public function authorize(Request $request)
@@ -114,9 +116,21 @@ abstract class OrganicField extends BaseField
         return $this->seeCallback ? call_user_func($this->seeCallback, $request) : true;
     }
 
+    public function authorizedToUpdate(Request $request)
+    {
+        return $this->updateCallback ? call_user_func($this->updateCallback, $request) : true;
+    }
+
     public function canSee(Closure $callback)
     {
         $this->seeCallback = $callback;
+
+        return $this;
+    }
+
+    public function canUpdate(Closure $callback)
+    {
+        $this->updateCallback = $callback;
 
         return $this;
     }
