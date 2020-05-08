@@ -18,7 +18,14 @@ class FieldCollection extends Collection
     public function authorizedUpdate(Request $request): self
     {
         return $this->filter(function (OrganicField $field) use ($request) {
-            return $field->authorize($request) && $field->authorizedToUpdate($request);
+            return $field->authorizedToUpdate($request);
+        })->values();
+    }
+
+    public function authorizedStore(Request $request): self
+    {
+        return $this->filter(function (OrganicField $field) use ($request) {
+            return $field->authorizedToStore($request);
         })->values();
     }
 

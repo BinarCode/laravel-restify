@@ -7,7 +7,9 @@ use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\AppleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\BookRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\PostUnauthorizedFieldRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -177,6 +179,8 @@ abstract class IntegrationTest extends TestCase
         Restify::repositories([
             UserRepository::class,
             PostRepository::class,
+            PostMergeableRepository::class,
+            PostUnauthorizedFieldRepository::class,
             BookRepository::class,
             AppleRepository::class,
         ]);

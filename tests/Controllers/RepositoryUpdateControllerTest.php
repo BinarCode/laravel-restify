@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Mergeable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Apple;
@@ -103,12 +104,31 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             'color' => 'blue',
             'user_id' => 2
         ])
+            ->dump()
             ->assertStatus(200);
 
 
         $this->assertEquals('Updated title', $response->json('data.attributes.title')); // via extra
         $this->assertEquals('blue', $response->json('data.attributes.color')); // via extra
         $this->assertEquals(2, $response->json('data.attributes.user_id')); // via field
+    }
+
+    public function test_will_not_update_readonly_fields()
+    {
+        $user = $this->mockUsers()->first();
+
+        $post = factory(Post::class)->create(['image' => null,]);
+
+        $r = $this->putJson('/restify-api/posts-unauthorized-fields/'.$post->id, [
+            'user_id' => $user->id,
+            'image' => 'avatar.png',
+            'title' => 'Some post title',
+            'description' => 'A very short description',
+        ])
+            ->dump()
+            ->assertStatus(200);
+
+        $this->assertNull($r->json('data.attributes.image'));
     }
 }
 
@@ -122,6 +142,22 @@ class AppleUnauthorizedField extends Repository
     {
         return [
             Field::make('title')->canUpdate(fn($value) => $_SERVER['restify.apple.updateable']),
+
+            Field::make('user_id')->canUpdate(fn($value) => true),
+        ];
+    }
+}
+
+class AppleUpdateMergeable extends Repository implements Mergeable
+{
+    public static $uriKey = 'apple-update-extra';
+
+    public static $model = Apple::class;
+
+    public function fields(RestifyRequest $request)
+    {
+        return [
+            Field::make('title')->canUpdate(fn($value) => true),
 
             Field::make('user_id')->canUpdate(fn($value) => true),
         ];

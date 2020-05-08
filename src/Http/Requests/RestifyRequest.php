@@ -44,13 +44,18 @@ class RestifyRequest extends FormRequest
      * This will match any verbs (PATCH, DELETE or GET).
      * @return bool
      */
-    public function isDetailRequest()
-    {
-        return $this->isShowRequest();
-    }
-
     public function isShowRequest()
     {
         return $this instanceof RepositoryShowRequest;
+    }
+
+    public function isUpdateRequest()
+    {
+        return $this instanceof RepositoryUpdateRequest;
+    }
+
+    public function isStoreRequest()
+    {
+        return $this instanceof RepositoryStoreRequest;
     }
 }

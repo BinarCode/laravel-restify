@@ -8,6 +8,8 @@ class RepositoryStoreController extends RepositoryController
 {
     public function __invoke(RepositoryStoreRequest $request)
     {
-        return $request->repository()->allowToStore($request)->store($request);
+        return $request->repository()
+            ->allowToStore($request)
+            ->store($request);
     }
 }

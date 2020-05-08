@@ -93,9 +93,8 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Closure be used to be called after the field value changed.
-     * @todo trigger it
      */
-    public $eventCallback;
+    public $afterCallback;
 
     /**
      * Create a new field.
@@ -297,7 +296,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (! $this->showCallback) {
+        if (!$this->showCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->showCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -320,7 +319,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (! $this->indexCallback) {
+        if (!$this->indexCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->indexCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -340,7 +339,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (! $this->resolveCallback) {
+        if (!$this->resolveCallback) {
             $this->value = $this->resolveAttribute($repository, $attribute);
         } elseif (is_callable($this->resolveCallback)) {
             tap($this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -419,10 +418,17 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    public function event(Closure $callback)
+    public function after(Closure $callback)
     {
-        $this->eventCallback = $callback;
+        $this->afterCallback = $callback;
 
         return $this;
+    }
+
+    public function invokeAfter($repository, $request)
+    {
+        if (is_callable($this->afterCallback)) {
+            call_user_func($this->afterCallback, data_get($repository, $this->attribute), $repository, $request);
+        }
     }
 }
