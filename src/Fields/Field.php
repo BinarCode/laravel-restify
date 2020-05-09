@@ -98,9 +98,14 @@ class Field extends OrganicField implements JsonSerializable
     protected $defaultCallback;
 
     /**
+     * Closure be used to be called after the field value stored.
+     */
+    public $afterStoreCallback;
+
+    /**
      * Closure be used to be called after the field value changed.
      */
-    public $afterCallback;
+    public $afterUpdateCallback;
 
     /**
      * Create a new field.
@@ -437,17 +442,28 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    public function after(Closure $callback)
+    public function afterUpdate(Closure $callback)
     {
-        $this->afterCallback = $callback;
+        $this->afterUpdateCallback = $callback;
 
         return $this;
     }
 
-    public function invokeAfter($repository, $request)
+    public function afterStore(Closure $callback)
     {
-        if (is_callable($this->afterCallback)) {
-            call_user_func($this->afterCallback, data_get($repository, $this->attribute), $repository, $request);
+        $this->afterStoreCallback = $callback;
+
+        return $this;
+    }
+
+    public function invokeAfter(RestifyRequest $request, $repository)
+    {
+        if ($request->isStoreRequest() && is_callable($this->afterStoreCallback)) {
+            call_user_func($this->afterStoreCallback, data_get($repository, $this->attribute), $repository, $request);
+        }
+
+        if ($request->isUpdateRequest() && is_callable($this->afterUpdateCallback)) {
+            call_user_func($this->afterUpdateCallback, $this->resolveAttribute($repository, $this->attribute), $this->valueBeforeUpdate, $repository, $request);
         }
     }
 }

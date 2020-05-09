@@ -466,9 +466,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 $request, $this->resource, $this->storeFields($request)
             );
 
-            $this->storeFields($request)->each(fn (Field $field) => $field->invokeAfter($this->resource, $request));
-
             $this->resource->save();
+
+            $this->storeFields($request)->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
         });
 
         static::stored($this->resource, $request);

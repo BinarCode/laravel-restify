@@ -168,4 +168,77 @@ class FieldTest extends IntegrationTest
 
         $this->assertEquals('title from request', $model->title);
     }
+
+    public function test_field_after_store_called()
+    {
+        $request = new RepositoryStoreRequest([], []);
+
+        $request->setRouteResolver(function () use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {
+            }), function (Route $route) use ($request) {
+                $route->bind($request);
+                $route->setParameter('repository', PostRepository::uriKey());
+            });
+        });
+
+        $request->merge([
+            'title' => 'After store title',
+        ]);
+
+        $model = new class extends Model {
+            protected $table = 'posts';
+            protected $fillable = ['title'];
+        };
+
+        /** * @var Field $field */
+        $field = Field::new('title')->afterStore(function($value, $model) {
+            $this->assertEquals('After store title', $value);
+            $this->assertInstanceOf(Model::class, $model);
+        });
+
+        $field->fillAttribute($request, $model);
+
+        $model->save();
+
+        $field->invokeAfter($request, $model);
+    }
+
+    public function test_field_after_update_called()
+    {
+        $model = new class extends Model {
+            protected $table = 'posts';
+            protected $fillable = ['title'];
+        };
+
+        $model->title = 'Before update title';
+        $model->save();
+
+        $request = new RepositoryUpdateRequest([], []);
+
+        $request->setRouteResolver(function () use ($request, $model) {
+            return tap(new Route('PUT', "/{repository}/{$model->id}", function () {
+            }), function (Route $route) use ($request) {
+                $route->bind($request);
+                $route->setParameter('repository', PostRepository::uriKey());
+            });
+        });
+
+        $request->merge([
+            'title' => 'After update title',
+        ]);
+
+        /** * @var Field $field */
+        $field = Field::new('title')->afterUpdate(function($valueAfterUpdate, $valueBeforeUpdate, $model) {
+            $this->assertEquals('After update title', $valueAfterUpdate);
+            $this->assertEquals('Before update title', $valueBeforeUpdate);
+            $this->assertInstanceOf(Model::class, $model);
+        });
+
+        $field->fillAttribute($request, $model);
+
+        $model->save();
+
+        $field->invokeAfter($request, $model);
+    }
+
 }
