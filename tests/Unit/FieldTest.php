@@ -191,7 +191,7 @@ class FieldTest extends IntegrationTest
         };
 
         /** * @var Field $field */
-        $field = Field::new('title')->afterStore(function($value, $model) {
+        $field = Field::new('title')->afterStore(function ($value, $model) {
             $this->assertEquals('After store title', $value);
             $this->assertInstanceOf(Model::class, $model);
         });
@@ -228,7 +228,7 @@ class FieldTest extends IntegrationTest
         ]);
 
         /** * @var Field $field */
-        $field = Field::new('title')->afterUpdate(function($valueAfterUpdate, $valueBeforeUpdate, $model) {
+        $field = Field::new('title')->afterUpdate(function ($valueAfterUpdate, $valueBeforeUpdate, $model) {
             $this->assertEquals('After update title', $valueAfterUpdate);
             $this->assertEquals('Before update title', $valueBeforeUpdate);
             $this->assertInstanceOf(Model::class, $model);
@@ -240,5 +240,4 @@ class FieldTest extends IntegrationTest
 
         $field->invokeAfter($request, $model);
     }
-
 }
