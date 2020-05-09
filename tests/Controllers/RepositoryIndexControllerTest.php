@@ -3,13 +3,8 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Mergeable;
-use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Tests\Fixtures\Apple;
-use Binaryk\LaravelRestify\Tests\Fixtures\AppleRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -19,62 +14,60 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
     public function test_repository_per_page()
     {
-        factory(Apple::class, 20)->create();
+        factory(Post::class, 20)->create();
 
-        AppleRepository::$defaultPerPage = 5;
+        PostRepository::$defaultPerPage = 5;
 
-        $response = $this->getJson('restify-api/apples')
-            ->assertStatus(200);
+        $response = $this->getJson('restify-api/posts');
 
         $this->assertCount(5, $response->json('data'));
 
-        $response = $this->getJson('restify-api/apples?perPage=10');
+        $response = $this->getJson('restify-api/posts?perPage=10');
 
         $this->assertCount(10, $response->json('data'));
     }
 
     public function test_repository_search_query_works()
     {
-        factory(Apple::class)->create([
-            'title' => 'Some title',
+        factory(Post::class)->create([
+            'title' => 'Title with code word',
         ]);
 
-        factory(Apple::class)->create([
-            'title' => 'Another one',
+        factory(Post::class)->create([
+            'title' => 'Another title with code inner',
         ]);
 
-        factory(Apple::class)->create([
-            'title' => 'foo another',
+        factory(Post::class)->create([
+            'title' => 'A title with no key word',
         ]);
 
-        factory(Apple::class)->create([
-            'title' => 'Third apple',
+        factory(Post::class)->create([
+            'title' => 'Lorem ipsum dolor',
         ]);
 
-        AppleRepository::$search = ['title'];
+        PostRepository::$search = ['title'];
 
-        $response = $this->getJson('restify-api/apples?search=another')
-            ->assertStatus(200);
+        $response = $this->getJson('restify-api/posts?search=code');
 
         $this->assertCount(2, $response->json('data'));
     }
 
     public function test_repository_filter_works()
     {
-        AppleRepository::$match = [
+        PostRepository::$match = [
             'title' => RestifySearchable::MATCH_TEXT,
         ];
 
-        factory(Apple::class)->create([
+        factory(Post::class)->create([
             'title' => 'Some title',
         ]);
 
-        factory(Apple::class)->create([
+        factory(Post::class)->create([
             'title' => 'Another one',
         ]);
 
         $response = $this
-            ->getJson('restify-api/apples?title=Another one')
+            ->getJson('restify-api/posts?title=Another one')
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -82,38 +75,38 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
     public function test_repository_order()
     {
-        AppleRepository::$sort = [
+        PostRepository::$sort = [
             'title',
         ];
 
-        factory(Apple::class)->create(['title' => 'aaa']);
+        factory(Post::class)->create(['title' => 'aaa']);
 
-        factory(Apple::class)->create(['title' => 'zzz']);
+        factory(Post::class)->create(['title' => 'zzz']);
 
         $response = $this
-            ->getJson('restify-api/apples?sort=-title')
+            ->getJson('restify-api/posts?sort=-title')
             ->assertStatus(200);
 
         $this->assertEquals('zzz', $response->json('data.0.attributes.title'));
         $this->assertEquals('aaa', $response->json('data.1.attributes.title'));
 
         $response = $this
-            ->getJson('restify-api/apples?order=-title')
+            ->getJson('restify-api/posts?order=-title')
             ->assertStatus(200);
 
         $this->assertEquals('zzz', $response->json('data.1.attributes.title'));
         $this->assertEquals('aaa', $response->json('data.0.attributes.title'));
     }
 
-    public function test_repsitory_with_relations()
+    public function test_repository_with_relations()
     {
-        AppleRepository::$related = ['user'];
+        PostRepository::$related = ['user'];
 
         $user = $this->mockUsers(1)->first();
 
-        factory(Apple::class)->create(['user_id' => $user->id]);
+        factory(Post::class)->create(['user_id' => $user->id]);
 
-        $response = $this->getJson('/restify-api/apples?related=user')
+        $response = $this->getJson('/restify-api/posts?related=user')
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data.0.relationships.user'));
@@ -122,62 +115,37 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
     public function test_index_unmergeable_repository_containes_only_explicitly_defined_fields()
     {
-        Restify::repositories([
-            AppleTitleRepository::class,
-        ]);
+        factory(Post::class)->create();
 
-        factory(Apple::class)->create();
+        $response = $this->get('/restify-api/posts')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data' => [[
+                    'attributes' => [
+                        'user_id',
+                        'title',
+                        'description'
+                    ],
+                ]],
+            ]);
 
-        $response = $this->get('/restify-api/apples-title')
-            ->assertStatus(200);
-
-        $this->assertArrayHasKey('title', $response->json('data.0.attributes'));
-
-        $this->assertArrayNotHasKey('id', $response->json('data.0.attributes'));
-        $this->assertArrayNotHasKey('created_at', $response->json('data.0.attributes'));
+        $this->assertArrayNotHasKey('image', $response->json('data.0.attributes'));
     }
 
     public function test_index_mergeable_repository_containes_model_attributes_and_local_fields()
     {
-        Restify::repositories([
-            AppleMergeable::class,
-        ]);
+        factory(Post::class)->create();
 
-        factory(Apple::class)->create();
-
-        $response = $this->get('/restify-api/apples-title-mergeable')
-            ->assertStatus(200);
-
-        $this->assertArrayHasKey('title', $response->json('data.0.attributes'));
-        $this->assertArrayHasKey('id', $response->json('data.0.attributes'));
-        $this->assertArrayHasKey('created_at', $response->json('data.0.attributes'));
-    }
-}
-
-class AppleTitleRepository extends Repository
-{
-    public static $uriKey = 'apples-title';
-
-    public static $model = Apple::class;
-
-    public function fields(RestifyRequest $request)
-    {
-        return [
-            Field::make('title'),
-        ];
-    }
-}
-
-class AppleMergeable extends Repository implements Mergeable
-{
-    public static $uriKey = 'apples-title-mergeable';
-
-    public static $model = Apple::class;
-
-    public function fields(RestifyRequest $request)
-    {
-        return [
-            Field::make('title'),
-        ];
+        $this->get('/restify-api/posts-mergeable')
+            ->assertJsonStructure([
+                'data' => [[
+                    'attributes' => [
+                        'user_id',
+                        'title',
+                        'description',
+                        'image',
+                    ],
+                ]],
+            ]);
     }
 }

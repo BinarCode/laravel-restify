@@ -1,11 +1,18 @@
 <?php
 
+use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController;
+use Illuminate\Support\Facades\Route;
 
+// Global Search...
+Route::get('/search', '\\' . GlobalSearchController::class);
+
+
+// API CRUD
 Route::get('/{repository}', '\\'.RepositoryIndexController::class);
 Route::post('/{repository}', '\\'.RepositoryStoreController::class);
 Route::get('/{repository}/{repositoryId}', '\\'.RepositoryShowController::class);

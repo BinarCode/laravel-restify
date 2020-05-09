@@ -5,13 +5,14 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Tests\Fixtures\AppleRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\BookRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\PostMergeableRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\PostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\PostUnauthorizedFieldRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\User;
-use Binaryk\LaravelRestify\Tests\Fixtures\UserRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAuthorizeRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithUnauthorizedFieldsRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Translation\Translator;
@@ -26,8 +27,6 @@ use Orchestra\Testbench\TestCase;
  */
 abstract class IntegrationTest extends TestCase
 {
-    use InteractWithModels;
-
     /**
      * @var mixed
      */
@@ -180,9 +179,9 @@ abstract class IntegrationTest extends TestCase
             UserRepository::class,
             PostRepository::class,
             PostMergeableRepository::class,
+            PostAuthorizeRepository::class,
+            PostWithUnauthorizedFieldsRepository::class,
             PostUnauthorizedFieldRepository::class,
-            BookRepository::class,
-            AppleRepository::class,
         ]);
     }
 
@@ -197,5 +196,47 @@ abstract class IntegrationTest extends TestCase
         $this->authenticatedAs->shouldReceive('getKey')->andReturn(1);
 
         return $this;
+    }
+
+    /**
+     * @param  int  $count
+     * @param  array  $predefinedEmails
+     * @return \Illuminate\Support\Collection
+     */
+    public function mockUsers($count = 1, $predefinedEmails = [])
+    {
+        $users = collect([]);
+        $i = 0;
+        while ($i < $count) {
+            $users->push(factory(User::class)->create());
+            $i++;
+        }
+
+        foreach ($predefinedEmails as $email) {
+            $users->push(factory(User::class)->create([
+                'email' => $email,
+            ]));
+        }
+
+        return $users->shuffle(); // randomly shuffles the items in the collection
+    }
+
+    /**
+     * @param $userId
+     * @param  int  $count
+     * @return \Illuminate\Support\Collection
+     */
+    public function mockPosts($userId, $count = 1)
+    {
+        $users = collect([]);
+        $i = 0;
+        while ($i < $count) {
+            $users->push(factory(Post::class)->create(
+                ['user_id' => $userId]
+            ));
+            $i++;
+        }
+
+        return $users->shuffle(); // randomly shuffles the items in the collection
     }
 }

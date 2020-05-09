@@ -3,14 +3,8 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
-use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Mergeable;
-use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Tests\Fixtures\Apple;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post;
-use Binaryk\LaravelRestify\Tests\Fixtures\PostPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
@@ -75,13 +69,11 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
     public function test_do_not_update_fields_without_permission()
     {
-        Restify::repositories([AppleUnauthorizedField::class]);
+        $post = factory(Post::class)->create(['user_id' => 1, 'title' => 'Title']);
 
-        $post = factory(Apple::class)->create(['user_id' => 1, 'title' => 'Title']);
+        $_SERVER['posts.authorizable.title'] = false;
 
-        $_SERVER['restify.apple.updateable'] = false;
-
-        $response = $this->putJson('/restify-api/apple-unauthorized-put/'.$post->id, [
+        $response = $this->putJson('/restify-api/post-with-unathorized-fields/'.$post->id, [
             'title' => 'Updated title',
             'user_id' => 2,
         ])->assertStatus(200);
@@ -92,23 +84,16 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
     public function test_update_fillable_fields_for_mergeable_repository()
     {
-        Restify::repositories([
-            AppleUpdateMergeable::class,
-        ]);
+        $post = factory(Post::class)->create(['user_id' => 1, 'title' => 'Title', 'image' => 'red.png']);
 
-        $apple = factory(Apple::class)->create(['user_id' => 1, 'title' => 'Title', 'color' => 'red']);
-
-        $response = $this->putJson('/restify-api/apple-update-extra/'.$apple->id, [
+        $response = $this->putJson('/restify-api/posts-mergeable/'.$post->id, [
             'title' => 'Updated title',
-            'color' => 'blue',
-            'user_id' => 2,
+            'image' => 'image.png', // via mergeable
         ])
-            ->dump()
             ->assertStatus(200);
 
-        $this->assertEquals('Updated title', $response->json('data.attributes.title')); // via extra
-        $this->assertEquals('blue', $response->json('data.attributes.color')); // via extra
-        $this->assertEquals(2, $response->json('data.attributes.user_id')); // via field
+        $this->assertEquals('Updated title', $response->json('data.attributes.title'));
+        $this->assertEquals('image.png', $response->json('data.attributes.image')); // via extra
     }
 
     public function test_will_not_update_readonly_fields()
@@ -123,41 +108,9 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             'title' => 'Some post title',
             'description' => 'A very short description',
         ])
-            ->dump()
             ->assertStatus(200);
 
         $this->assertNull($r->json('data.attributes.image'));
     }
 }
 
-class AppleUnauthorizedField extends Repository
-{
-    public static $uriKey = 'apple-unauthorized-put';
-
-    public static $model = Apple::class;
-
-    public function fields(RestifyRequest $request)
-    {
-        return [
-            Field::make('title')->canUpdate(fn ($value) => $_SERVER['restify.apple.updateable']),
-
-            Field::make('user_id')->canUpdate(fn ($value) => true),
-        ];
-    }
-}
-
-class AppleUpdateMergeable extends Repository implements Mergeable
-{
-    public static $uriKey = 'apple-update-extra';
-
-    public static $model = Apple::class;
-
-    public function fields(RestifyRequest $request)
-    {
-        return [
-            Field::make('title')->canUpdate(fn ($value) => true),
-
-            Field::make('user_id')->canUpdate(fn ($value) => true),
-        ];
-    }
-}
