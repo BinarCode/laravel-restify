@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
-use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
@@ -542,7 +541,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         return $this;
     }
-
 
     public static function stored($repository, $request)
     {
