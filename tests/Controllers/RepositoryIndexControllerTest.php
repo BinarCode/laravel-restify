@@ -3,230 +3,181 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Controllers\RestController;
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Mergeable;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Tests\Fixtures\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\Apple;
+use Binaryk\LaravelRestify\Tests\Fixtures\AppleRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Mockery;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryIndexControllerTest extends IntegrationTest
 {
-    public function test_list_resource()
+    use RefreshDatabase;
+
+    public function test_repository_per_page()
     {
-        factory(User::class)->create();
-        factory(User::class)->create();
-        factory(User::class)->create();
+        factory(Apple::class, 20)->create();
 
-        $response = $this->withExceptionHandling()
-            ->getJson('/restify-api/users');
+        AppleRepository::$defaultPerPage = 5;
 
-        $response->assertJsonCount(3, 'data');
+        $response = $this->getJson('restify-api/apples')
+            ->assertStatus(200);
+
+        $this->assertCount(5, $response->json('data'));
+
+        $response = $this->getJson('restify-api/apples?perPage=10');
+
+        $this->assertCount(10, $response->json('data'));
     }
 
-    public function test_the_rest_controller_can_paginate()
+    public function test_repository_search_query_works()
     {
-        $this->mockUsers(20);
-
-        $class = (new class extends RestController {
-            public function users()
-            {
-                return $this->response($this->search(User::class));
-            }
-        });
-
-        $response = $class->search(User::class, [
-            'match' => [
-                'id' => 1,
-            ],
+        factory(Apple::class)->create([
+            'title' => 'Some title',
         ]);
-        $this->assertIsArray($class->search(User::class));
-        $this->assertCount(1, $response['data']);
-        $this->assertEquals(count($class->users()->getData()->data), User::$defaultPerPage);
-    }
 
-    public function test_that_default_per_page_works()
-    {
-        User::$defaultPerPage = 40;
-        $this->mockUsers(50);
-
-        $class = (new class extends RestController {
-            public function users()
-            {
-                return $this->response($this->search(User::class));
-            }
-        });
-
-        $response = $class->search(User::class, [
-            'match' => [
-                'id' => 1,
-            ],
+        factory(Apple::class)->create([
+            'title' => 'Another one',
         ]);
-        $this->assertIsArray($class->search(User::class));
-        $this->assertCount(1, $response['data']);
-        $this->assertEquals(count($class->users()->getData()->data), 40);
-        User::$defaultPerPage = RestifySearchable::DEFAULT_PER_PAGE;
-    }
 
-    public function test_search_query_works()
-    {
-        $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
-        $model = $users->where('email', 'eduard.lupacescu@binarcode.com')->first(); //find manually the model
-        $repository = Restify::repositoryForModel(get_class($model));
-        $expected = $repository::resolveWith($model)->toArray(resolve(RestifyRequest::class));
-        unset($expected['relationships']);
-
-        $r = $this->withExceptionHandling()
-            ->getJson('/restify-api/users?search=eduard.lupacescu@binarcode.com')
-            ->assertStatus(200)
-            ->assertJsonStructure([
-                'links' => [
-                    'last',
-                    'next',
-                    'first',
-                    'prev',
-                ],
-                'meta' => [
-                    'path',
-                    'current_page',
-                    'from',
-                    'last_page',
-                    'per_page',
-                    'to',
-                    'total',
-                ],
-                'data',
-            ])->decodeResponseJson();
-
-        $this->assertCount(1, $r['data']);
-
-        $this->withExceptionHandling()
-            ->getJson('/restify-api/users?search=some_unexpected_string_here')
-            ->assertStatus(200)
-            ->assertJson([
-                'links' => [
-                    'next' => null,
-                    'last' => 'http://localhost/restify-api/users?page=1',
-                    'first' => 'http://localhost/restify-api/users?page=1',
-                    'prev' => null,
-                ],
-                'meta' => [
-                    'current_page' => 1,
-                    'from' => null,
-                    'last_page' => 1,
-                    'per_page' => 15,
-                    'to' => null,
-                    'path' => 'http://localhost/restify-api/users',
-                    'total' => 0,
-                ],
-                'data' => [],
-            ]);
-    }
-
-    public function test_that_desc_sort_query_param_works()
-    {
-        $this->mockUsers(10);
-        $response = $this->withExceptionHandling()->get('/restify-api/users?sort=-id')
-            ->assertStatus(200)
-            ->getOriginalContent();
-
-        $this->assertSame($response['data']->first()->resource->id, 10);
-        $this->assertSame($response['data']->last()->resource->id, 1);
-    }
-
-    public function test_that_asc_sort_query_param_works()
-    {
-        $this->mockUsers(10);
-
-        $response = (array) json_decode($this->withExceptionHandling()->get('/restify-api/users?sort=+id')
-            ->assertStatus(200)
-            ->getContent());
-
-        $this->assertSame(data_get($response, 'data.0.id'), 1);
-        $this->assertSame(data_get($response, 'data.9.id'), 10);
-    }
-
-    public function test_that_default_asc_sort_query_param_works()
-    {
-        $this->mockUsers(10);
-
-        $response = (array) json_decode($this->withExceptionHandling()->get('/restify-api/users?sort=id')
-            ->assertStatus(200)
-            ->getContent());
-
-        $this->assertSame(data_get($response, 'data.0.id'), 1);
-        $this->assertSame(data_get($response, 'data.9.id'), 10);
-    }
-
-    public function test_that_match_param_works()
-    {
-        User::$match = ['email' => RestifySearchable::MATCH_TEXT]; // it will automatically filter over these queries (email='test@email.com')
-        $users = $this->mockUsers(10, ['eduard.lupacescu@binarcode.com']);
-        $request = Mockery::mock(RestifyRequest::class);
-        $request->shouldReceive('has')
-            ->andReturnFalse();
-        $request->shouldReceive('get')
-            ->andReturnFalse();
-        $request->shouldReceive('isDetailRequest')
-            ->andReturnFalse();
-        $request->shouldReceive('isIndexRequest')
-            ->andReturnTrue();
-
-        $model = $users->where('email', 'eduard.lupacescu@binarcode.com')->first();
-        $repository = Restify::repositoryForModel(get_class($model));
-        $expected = $repository::resolveWith($model)->toArray($request);
-
-        unset($expected['relationships']);
-        $this->withExceptionHandling()
-            ->get('/restify-api/users?email=eduard.lupacescu@binarcode.com')
-            ->assertStatus(200)
-            ->assertJson([
-                'links' => [
-                    'last' => 'http://localhost/restify-api/users?page=1',
-                    'next' => null,
-                    'first' => 'http://localhost/restify-api/users?page=1',
-                    'prev' => null,
-                ],
-                'meta' => [
-                    'current_page' => 1,
-                    'path' => 'http://localhost/restify-api/users',
-                    'from' => 1,
-                    'last_page' => 1,
-                    'per_page' => 15,
-                    'to' => 1,
-                    'total' => 1,
-                ],
-                'data' => [$expected],
-            ]);
-    }
-
-    public function test_that_with_param_works()
-    {
-        User::$match = ['email' => RestifySearchable::MATCH_TEXT]; // it will automatically filter over these queries (email='test@email.com')
-        $this->mockUsers(1);
-        $posts = $this->mockPosts(1, 2);
-        $request = Mockery::mock(RestifyRequest::class);
-        $request->shouldReceive('has')
-            ->andReturnTrue();
-        $request->shouldReceive('get')
-            ->andReturn('posts');
-        $request->shouldReceive('isDetailRequest')
-            ->andReturnFalse();
-        $request->shouldReceive('isIndexRequest')
-            ->andReturnTrue();
-
-        $r = $this->withExceptionHandling()
-            ->getJson('/restify-api/users?with=posts')
-            ->assertStatus(200)
-            ->getContent();
-        $r = (array) json_decode($r);
-
-        $this->assertSameSize((array) data_get($r, 'data.0.relationships.posts'), $posts->toArray());
-        $this->assertSame(array_keys((array) data_get($r, 'data.0.relationships.posts.0')), [
-            'id', 'type', 'attributes', 'meta',
+        factory(Apple::class)->create([
+            'title' => 'foo another',
         ]);
+
+        factory(Apple::class)->create([
+            'title' => 'Third apple',
+        ]);
+
+        AppleRepository::$search = ['title'];
+
+        $response = $this->getJson('restify-api/apples?search=another')
+            ->assertStatus(200);
+
+        $this->assertCount(2, $response->json('data'));
+    }
+
+    public function test_repository_filter_works()
+    {
+        AppleRepository::$match = [
+            'title' => RestifySearchable::MATCH_TEXT,
+        ];
+
+        factory(Apple::class)->create([
+            'title' => 'Some title',
+        ]);
+
+        factory(Apple::class)->create([
+            'title' => 'Another one',
+        ]);
+
+        $response = $this
+            ->getJson('restify-api/apples?title=Another one')
+            ->assertStatus(200);
+
+        $this->assertCount(1, $response->json('data'));
+    }
+
+    public function test_repository_order()
+    {
+        AppleRepository::$sort = [
+            'title',
+        ];
+
+        factory(Apple::class)->create(['title' => 'aaa']);
+
+        factory(Apple::class)->create(['title' => 'zzz']);
+
+        $response = $this
+            ->getJson('restify-api/apples?sort=-title')
+            ->assertStatus(200);
+
+        $this->assertEquals('zzz', $response->json('data.0.attributes.title'));
+        $this->assertEquals('aaa', $response->json('data.1.attributes.title'));
+
+        $response = $this
+            ->getJson('restify-api/apples?order=-title')
+            ->assertStatus(200);
+
+        $this->assertEquals('zzz', $response->json('data.1.attributes.title'));
+        $this->assertEquals('aaa', $response->json('data.0.attributes.title'));
+    }
+
+    public function test_repsitory_with_relations()
+    {
+        AppleRepository::$related = ['user'];
+
+        $user = $this->mockUsers(1)->first();
+
+        factory(Apple::class)->create(['user_id' => $user->id]);
+
+        $response = $this->getJson('/restify-api/apples?related=user')
+            ->assertStatus(200);
+
+        $this->assertCount(1, $response->json('data.0.relationships.user'));
+        $this->assertArrayNotHasKey('user', $response->json('data.0.attributes'));
+    }
+
+    public function test_index_unmergeable_repository_containes_only_explicitly_defined_fields()
+    {
+        Restify::repositories([
+            AppleTitleRepository::class,
+        ]);
+
+        factory(Apple::class)->create();
+
+        $response = $this->get('/restify-api/apples-title')
+            ->assertStatus(200);
+
+        $this->assertArrayHasKey('title', $response->json('data.0.attributes'));
+
+        $this->assertArrayNotHasKey('id', $response->json('data.0.attributes'));
+        $this->assertArrayNotHasKey('created_at', $response->json('data.0.attributes'));
+    }
+
+    public function test_index_mergeable_repository_containes_model_attributes_and_local_fields()
+    {
+        Restify::repositories([
+            AppleMergeable::class,
+        ]);
+
+        factory(Apple::class)->create();
+
+        $response = $this->get('/restify-api/apples-title-mergeable')
+            ->assertStatus(200);
+
+        $this->assertArrayHasKey('title', $response->json('data.0.attributes'));
+        $this->assertArrayHasKey('id', $response->json('data.0.attributes'));
+        $this->assertArrayHasKey('created_at', $response->json('data.0.attributes'));
+    }
+}
+
+class AppleTitleRepository extends Repository
+{
+    public static $uriKey = 'apples-title';
+
+    public static $model = Apple::class;
+
+    public function fields(RestifyRequest $request)
+    {
+        return [
+            Field::make('title'),
+        ];
+    }
+}
+
+class AppleMergeable extends Repository implements Mergeable
+{
+    public static $uriKey = 'apples-title-mergeable';
+
+    public static $model = Apple::class;
+
+    public function fields(RestifyRequest $request)
+    {
+        return [
+            Field::make('title'),
+        ];
     }
 }

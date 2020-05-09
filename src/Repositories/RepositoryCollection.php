@@ -4,9 +4,6 @@ namespace Binaryk\LaravelRestify\Repositories;
 
 use Illuminate\Support\Arr;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryCollection
 {
     /**

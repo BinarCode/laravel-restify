@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -14,13 +13,6 @@ use Illuminate\Database\Eloquent\Builder;
  */
 class SearchService extends Searchable
 {
-    /**
-     * @param  RestifyRequest  $request
-     * @param  $model
-     * @return Builder
-     * @throws InstanceOfException
-     * @throws \Throwable
-     */
     public function search(RestifyRequest $request, $model)
     {
         if (! $model instanceof RestifySearchable) {
@@ -35,9 +27,9 @@ class SearchService extends Searchable
     /**
      * Prepare eloquent exact fields.
      *
-     * @param  RestifyRequest  $request
-     * @param  Builder  $query
-     * @param  array  $extra
+     * @param RestifyRequest $request
+     * @param Builder $query
+     * @param array $extra
      * @return Builder
      */
     public function prepareMatchFields(RestifyRequest $request, $query, $extra = [])
@@ -91,9 +83,9 @@ class SearchService extends Searchable
     /**
      * Prepare eloquent order by.
      *
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @param $query
-     * @param  array  $extra
+     * @param array $extra
      * @return Builder
      */
     public function prepareOrders(RestifyRequest $request, $query, $extra = [])
@@ -122,9 +114,9 @@ class SearchService extends Searchable
     /**
      * Prepare relations.
      *
-     * @param  RestifyRequest  $request
-     * @param  Builder  $query
-     * @param  array  $extra
+     * @param RestifyRequest $request
+     * @param Builder $query
+     * @param array $extra
      * @return Builder
      */
     public function prepareRelations(RestifyRequest $request, $query, $extra = [])
@@ -145,9 +137,9 @@ class SearchService extends Searchable
     /**
      * Prepare search.
      *
-     * @param  RestifyRequest  $request
-     * @param  Builder  $query
-     * @param  array  $extra
+     * @param RestifyRequest $request
+     * @param Builder $query
+     * @param array $extra
      * @return Builder
      */
     public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])

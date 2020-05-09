@@ -16,6 +16,7 @@ class Post extends Model implements RestifySearchable
     protected $fillable = [
         'id',
         'user_id',
+        'image',
         'title',
         'description',
     ];

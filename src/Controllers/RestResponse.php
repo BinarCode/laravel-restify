@@ -65,6 +65,24 @@ class RestResponse extends JsonResponse implements Responsable
     const REST_RESPONSE_SUCCESS_CODE = 200;
     const REST_RESPONSE_UNAVAILABLE_CODE = 503;
 
+    const CODES = [
+        self::REST_RESPONSE_AUTH_CODE,
+        self::REST_RESPONSE_REFRESH_CODE,
+        self::REST_RESPONSE_CREATED_CODE,
+        self::REST_RESPONSE_UPDATED_CODE,
+        self::REST_RESPONSE_DELETED_CODE,
+        self::REST_RESPONSE_BLANK_CODE,
+        self::REST_RESPONSE_ERROR_CODE,
+        self::REST_RESPONSE_INVALID_CODE,
+        self::REST_RESPONSE_UNAUTHORIZED_CODE,
+        self::REST_RESPONSE_FORBIDDEN_CODE,
+        self::REST_RESPONSE_MISSING_CODE,
+        self::REST_RESPONSE_NOTFOUND_CODE,
+        self::REST_RESPONSE_THROTTLE_CODE,
+        self::REST_RESPONSE_SUCCESS_CODE,
+        self::REST_RESPONSE_UNAVAILABLE_CODE,
+    ];
+
     /**
      * @var ResponseFactory
      */
@@ -529,7 +547,9 @@ class RestResponse extends JsonResponse implements Responsable
         }
 
         if ($this->code) {
-            $this->setStatusCode(is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
+            if (in_array($this->code(), static::CODES)) {
+                $this->setStatusCode(is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
+            }
         }
 
         if ($this->debug) {

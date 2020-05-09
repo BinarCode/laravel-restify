@@ -1,5 +1,6 @@
 <?php
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Apple;
 use Faker\Generator as Faker;
 
 /*
@@ -13,11 +14,8 @@ use Faker\Generator as Faker;
 |
 */
 
-$factory->define(Binaryk\LaravelRestify\Tests\Fixtures\Post::class, function (Faker $faker) {
+$factory->define(Apple::class, function (Faker $faker) {
     return [
-        'user_id' => 1,
-        'image' => $faker->imageUrl(),
-        'title' => $faker->title,
-        'description' => $faker->text,
+        'title' => $faker->text(50),
     ];
 });

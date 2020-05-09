@@ -5,26 +5,17 @@ namespace Binaryk\LaravelRestify\Traits;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 /**
  * Could be used as a trait in a model class and in a repository class.
  *
- * @property Model resource
+ * @property Model $resource
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
 trait AuthorizableModels
 {
-    /**
-     * @return static
-     */
-    public static function newModel()
-    {
-        return new static;
-    }
-
     /**
      * Determine if the given resource is authorizable.
      *
@@ -36,20 +27,20 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the resource should be available for the given request.
+     * Determine if the Restify is enabled for this repository.
      *
      * @param \Illuminate\Http\Request $request
      * @return void
      * @throws AuthorizationException
      */
-    public function authorizeToShowAny(Request $request)
+    public function authorizeToUseRepository(Request $request)
     {
         if (! static::authorizable()) {
             return;
         }
 
-        if (method_exists(Gate::getPolicyFor(static::newModel()), 'showAny')) {
-            $this->authorizeTo($request, 'showAny');
+        if (method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')) {
+            $this->authorizeTo($request, 'allowRestify');
         }
     }
 
@@ -59,49 +50,14 @@ trait AuthorizableModels
      * @param \Illuminate\Http\Request $request
      * @return bool
      */
-    public static function authorizedToShowAny(Request $request)
+    public static function authorizedToUseRepository(Request $request)
     {
         if (! static::authorizable()) {
             return true;
         }
 
-        return method_exists(Gate::getPolicyFor(static::newModel()), 'showAny')
-            ? Gate::check('showAny', get_class(static::newModel()))
-            : true;
-    }
-
-    /**
-     * Determine if the resource should be available for the given request (.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return void
-     * @throws AuthorizationException
-     */
-    public function authorizeToShowEvery(Request $request)
-    {
-        if (! static::authorizable()) {
-            return;
-        }
-
-        if (method_exists(Gate::getPolicyFor(static::newModel()), 'showEvery')) {
-            $this->authorizeTo($request, 'showEvery');
-        }
-    }
-
-    /**
-     * Determine if the resource should be available for the given request.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return bool
-     */
-    public static function authorizedToShowEvery(Request $request)
-    {
-        if (! static::authorizable()) {
-            return true;
-        }
-
-        return method_exists(Gate::getPolicyFor(static::newModel()), 'showEvery')
-            ? Gate::check('showEvery', get_class(static::newModel()))
+        return method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
+            ? Gate::check('allowRestify', get_class(static::newModel()))
             : true;
     }
 
@@ -230,25 +186,7 @@ trait AuthorizableModels
      */
     public function authorizedTo(Request $request, $ability)
     {
-        return static::authorizable() ? Gate::check($ability, $this->determineModel()) : true;
-    }
-
-    /**
-     * Since this trait could be used by a repository or by a model, we have to
-     * detect the model from either class.
-     *
-     * @return AuthorizableModels|Model|mixed|null
-     * @throws ModelNotFoundException
-     */
-    public function determineModel()
-    {
-        $model = $this->isRepositoryContext() === false ? $this : ($this->resource ?? null);
-
-        if (is_null($model)) {
-            throw new ModelNotFoundException(__('Model is not declared in :class', ['class' => self::class]));
-        }
-
-        return $model;
+        return static::authorizable() ? Gate::check($ability, $this->resource) : true;
     }
 
     /**
