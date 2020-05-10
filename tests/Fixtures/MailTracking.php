@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures;
 
+use Illuminate\Mail\Mailer;
 use Illuminate\Support\Facades\Mail;
 use Swift_Events_EventListener;
 use Swift_Message;

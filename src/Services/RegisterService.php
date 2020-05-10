@@ -20,11 +20,16 @@ use ReflectionException;
 class RegisterService
 {
     /**
+     * @var AuthService
+     */
+    protected $authService;
+
+    /**
      * The callback that should be used to create the registered user.
      *
      * @var Closure|null
      */
-    public static Closure $creating;
+    public static $creating;
 
     public static $registerFormRequest = RestifyRegisterRequest::class;
 
@@ -34,7 +39,7 @@ class RegisterService
 
         $this->validateRegister($payload);
 
-        $builder = $this->userQuery();
+        $builder = $this->authService->userQuery();
 
         if (false === $builder instanceof Authenticatable) {
             throw AuthenticatableUserException::wrongInstance();
@@ -57,9 +62,11 @@ class RegisterService
         return $user;
     }
 
-    public static function make(Request $request)
+    public static function make(Request $request, AuthService $authService)
     {
-        return resolve(static::class)->register($request);
+        return resolve(static::class)
+            ->usingAuthService($authService)
+            ->register($request);
     }
 
     public function validateRegister(array $payload)
@@ -77,5 +84,11 @@ class RegisterService
         }
 
         return true;
+    }
+
+    protected function usingAuthService(AuthService $service) {
+        $this->authService = $service;
+
+        return $this;
     }
 }

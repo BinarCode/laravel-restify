@@ -12,8 +12,19 @@ class ResetPasswordService
 {
     use ResetsPasswords;
 
-    public static function make(Request $request)
+    protected $authService;
+
+    public static function make(Request $request, AuthService $authService)
     {
-        return resolve(static::class)->reset($request);
+        return resolve(static::class)
+            ->reset($request);
+    }
+
+
+    protected function usingAuthService(AuthService $authService)
+    {
+        $this->authService = $authService;
+
+        return $this;
     }
 }

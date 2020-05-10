@@ -31,12 +31,14 @@ class AuthService extends RestifyService
             throw SanctumUserException::wrongConfiguration();
         }
 
-        return LoginService::make($request);
+        $token = LoginService::make($request);
+
+        return $token;
     }
 
     public function register(Request $request)
     {
-        return RegisterService::make($request);
+        return RegisterService::make($request, $this);
     }
 
     public function forgotPassword(Request $request)
@@ -72,7 +74,7 @@ class AuthService extends RestifyService
 
     public function resetPassword(Request $request)
     {
-        return ResetPasswordService::make($request);
+        return ResetPasswordService::make($request, $this);
     }
 
     /**
