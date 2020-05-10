@@ -1,5 +1,6 @@
 <?php
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Faker\Generator as Faker;
 
 /*
@@ -13,7 +14,7 @@ use Faker\Generator as Faker;
 |
 */
 
-$factory->define(Binaryk\LaravelRestify\Tests\Fixtures\Post::class, function (Faker $faker) {
+$factory->define(Post::class, function (Faker $faker) {
     return [
         'user_id' => 1,
         'image' => $faker->imageUrl(),

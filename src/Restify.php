@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
 use Illuminate\Database\Eloquent\Model;
@@ -15,6 +16,7 @@ use Symfony\Component\Finder\Finder;
 class Restify
 {
     use AuthorizesRequests;
+
     /**
      * The registered repository names.
      *
@@ -39,7 +41,7 @@ class Restify
     /**
      * Get the repository class name for a given key.
      *
-     * @param  string  $key
+     * @param string $key
      * @return string
      */
     public static function repositoryForKey($key)
@@ -52,7 +54,7 @@ class Restify
     /**
      * Get the repository class name for a given key.
      *
-     * @param  string  $model
+     * @param string $model
      * @return string
      */
     public static function repositoryForModel($model)
@@ -69,7 +71,7 @@ class Restify
     /**
      * Register the given repositories.
      *
-     * @param  array  $repositories
+     * @param array $repositories
      * @return static
      */
     public static function repositories(array $repositories)
@@ -84,7 +86,7 @@ class Restify
     /**
      * Register all of the repository classes in the given directory.
      *
-     * @param  string  $directory
+     * @param string $directory
      * @return void
      * @throws \ReflectionException
      */
@@ -114,7 +116,7 @@ class Restify
     /**
      * Get the URI path prefix utilized by Restify.
      *
-     * @param  null  $plus
+     * @param null $plus
      * @return string
      */
     public static function path($plus = null)
@@ -131,7 +133,7 @@ class Restify
      *
      * This listener is added in the RestifyApplicationServiceProvider
      *
-     * @param  \Closure|string  $callback
+     * @param \Closure|string $callback
      * @return void
      */
     public static function starting($callback)
@@ -140,7 +142,7 @@ class Restify
     }
 
     /**
-     * @param  \Closure|string  $callback
+     * @param \Closure|string $callback
      */
     public static function beforeEach($callback)
     {
@@ -150,10 +152,26 @@ class Restify
     /**
      * Set the callback used for intercepting any request exception.
      *
-     * @param  \Closure|string  $callback
+     * @param \Closure|string $callback
      */
     public static function exceptionHandler($callback)
     {
         static::$renderCallback = $callback;
+    }
+
+    public static function globallySearchableRepositories(RestifyRequest $request)
+    {
+        return collect(static::$repositories)
+            ->filter(fn ($repository) => $repository::authorizedToUseRepository($request))
+            ->filter(fn ($repository) => $repository::$globallySearchable)
+            ->sortBy(static::sortResourcesWith())
+            ->all();
+    }
+
+    public static function sortResourcesWith()
+    {
+        return function ($resource) {
+            return $resource::label();
+        };
     }
 }
