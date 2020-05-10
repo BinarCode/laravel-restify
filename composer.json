@@ -20,8 +20,9 @@
     "require": {
         "php": "^7.4",
         "ext-json": "*",
+        "doctrine/dbal": "^2.10",
         "illuminate/support": "^6.0|^7.0",
-        "doctrine/dbal": "^2.10"
+        "laravel/ui": "^2.0"
     },
     "require-dev": {
         "mockery/mockery": "^1.3",

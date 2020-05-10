@@ -2,8 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
-use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Contracts\Sanctumable;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -15,7 +15,7 @@ use Mockery;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class User extends Authenticatable implements Passportable, MustVerifyEmail, RestifySearchable
+class User extends Authenticatable implements Sanctumable, MustVerifyEmail, RestifySearchable
 {
     use \Illuminate\Auth\MustVerifyEmail;
     use Notifiable,

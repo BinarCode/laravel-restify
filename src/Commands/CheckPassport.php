@@ -148,7 +148,7 @@ class CheckPassport extends Command
         } catch (\RuntimeException $e) {
             $this->warn($e->getMessage());
             $this->warn('Hint: php artisan passport:client --personal');
-            $this->warn('See: https://laravel.com/docs/6.x/passport#creating-a-personal-access-client');
+            $this->warn('See: https://laravel.com/docs/7.x/passport#creating-a-personal-access-client');
 
             return false;
         }

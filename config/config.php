@@ -25,10 +25,24 @@ return [
         | this will be used for the verification of the authenticatable model and provide the
         | authorizable functionality
         |
-        | Supported: "passport", "airlock"
+        | Supported: "passport", "sanctum"
         */
 
-        'provider' => 'airlock',
+        'provider' => 'sanctum',
+
+        /*
+        |--------------------------------------------------------------------------
+        | Auth frontend app url
+        |--------------------------------------------------------------------------
+        |
+        |URL used for reset password URL generating.
+        |
+        |
+        */
+
+        'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),
+
+        'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
     ],
 
     /*
