@@ -20,7 +20,6 @@ class ResetPasswordService
             ->reset($request);
     }
 
-
     protected function usingAuthService(AuthService $authService)
     {
         $this->authService = $authService;

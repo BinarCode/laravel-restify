@@ -34,6 +34,7 @@ class LoginService
 
         if ($this->attemptLogin($request)) {
             event(new UserLoggedIn($this->guard()->user()));
+
             return $this->guard()->user()->createToken('login');
         }
 
@@ -43,6 +44,5 @@ class LoginService
         $this->incrementLoginAttempts($request);
 
         return $this->sendFailedLoginResponse($request);
-
     }
 }
