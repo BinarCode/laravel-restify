@@ -34,21 +34,24 @@ trait InteractWithRepositories
      * @param null $key
      * @return Repository
      */
-    public function repository($key = null)
+    public function repository($key = null): ?Repository
     {
-        return tap(Restify::repositoryForKey($key ?? $this->route('repository')), function ($repository) {
+        $repository = tap(Restify::repositoryForKey($key ?? $this->route('repository')), function ($repository) {
+            /** * @var Repository $repository */
             if (is_null($repository)) {
                 throw new EntityNotFoundException(__('Repository :name not found.', [
                     'name' => $repository,
                 ]), 404);
             }
 
-            if (! $repository::authorizedToShowAny($this)) {
-                throw new UnauthorizedException(__('Unauthorized to view repository :name. See "showAny" policy.', [
+            if (! $repository::authorizedToUseRepository($this)) {
+                throw new UnauthorizedException(__('Unauthorized to view repository :name. See "allowRestify" policy.', [
                     'name' => $repository,
                 ]), 403);
             }
         });
+
+        return $repository::resolveWith($repository::newModel());
     }
 
     /**
@@ -66,8 +69,8 @@ trait InteractWithRepositories
     /**
      * Get the route handling the request.
      *
-     * @param  string|null  $param
-     * @param  mixed  $default
+     * @param string|null $param
+     * @param mixed $default
      * @return \Illuminate\Routing\Route|object|string
      */
     abstract public function route($param = null, $default = null);

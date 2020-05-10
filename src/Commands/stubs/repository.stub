@@ -12,7 +12,7 @@ class DummyClass extends Repository
      *
      * @var string
      */
-    public static $model = 'DummyFullModel';
+    public static $model = '{{ model }}';
 
     /**
      * @param  RestifyRequest  $request

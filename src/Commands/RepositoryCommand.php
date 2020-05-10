@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
+use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
@@ -11,110 +12,161 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class RepositoryCommand extends GeneratorCommand
 {
-    /**
-     * The console command name.
-     *
-     * @var string
-     */
+    use ConfirmableTrait;
+
     protected $name = 'restify:repository';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
     protected $description = 'Create a new repository class';
 
-    /**
-     * The type of class being generated.
-     *
-     * @var string
-     */
     protected $type = 'Repository';
 
-    /**
-     * Execute the console command.
-     *
-     * @return bool|null
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
     public function handle()
     {
-        parent::handle();
+        if (parent::handle() === false && ! $this->option('force')) {
+            return false;
+        }
 
         $this->callSilent('restify:base-repository', [
             'name' => 'Repository',
         ]);
+
+        if ($this->option('all')) {
+            $this->input->setOption('factory', true);
+            $this->input->setOption('model', true);
+            $this->input->setOption('policy', true);
+            $this->input->setOption('table', true);
+        }
+
+        if ($this->option('policy')) {
+            $this->buildPolicy();
+        }
+
+        if ($this->option('model')) {
+            $this->buildModel();
+        }
+
+        if ($this->option('table')) {
+            $this->buildMigration();
+        }
+
+        if ($this->option('factory')) {
+            $this->buildFactory();
+        }
     }
 
     /**
      * Build the class with the given name.
+     * This method should return the file class content.
      *
-     * @param  string  $name
+     * @param string $name
      * @return string
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     protected function buildClass($name)
     {
-        $model = $this->option('model');
-
-        if (is_null($model)) {
-            $model = $this->laravel->getNamespace().$this->argument('name');
-        } elseif (! Str::startsWith($model, [
-            $this->laravel->getNamespace(), '\\',
-        ])) {
-            $model = $this->laravel->getNamespace().$model;
+        if (false === Str::endsWith($name, 'Repository')) {
+            $name .= 'Repository';
         }
 
-        if ($this->option('all')) {
-            $this->call('make:model', [
-                'name' => $this->argument('name'),
-                '--factory' => true,
-                '--migration' => true,
-                '--controller' => true,
-            ]);
-
-            $this->call('restify:policy', [
-                'name' => $this->argument('name'),
-            ]);
-        }
-
-        return str_replace(
-            'DummyFullModel', $model, parent::buildClass($name)
-        );
+        return $this->replaceModel(parent::buildClass($name), $this->guessQualifiedModelName());
     }
 
-    /**
-     * Get the stub file for the generator.
-     *
-     * @return string
-     */
+    protected function replaceModel($stub, $class)
+    {
+        return str_replace(['DummyClass', '{{ model }}', '{{model}}'], $class, $stub);
+    }
+
+    protected function guessBaseModelClass()
+    {
+        return class_basename($this->guessQualifiedModelName());
+    }
+
+    protected function guessQualifiedModelName()
+    {
+        $model = Str::singular(class_basename(Str::before($this->getNameInput(), 'Repository')));
+
+        return str_replace('/', '\\', $this->rootNamespace().'/Models//'.$model);
+    }
+
+    protected function buildMigration()
+    {
+        $table = Str::snake(Str::pluralStudly(class_basename($this->guessQualifiedModelName())));
+
+        $guessMigration = 'Create'.Str::studly($table).'Table';
+
+        if (false === class_exists($guessMigration)) {
+            $migration = Str::snake($guessMigration);
+            $yes = $this->confirm("Do you want to generate the migration [{$migration}]?");
+
+            if ($yes) {
+                $this->call('make:migration', [
+                    'name' => $migration,
+                    '--create' => $table,
+                ]);
+            }
+        }
+    }
+
+    protected function buildPolicy()
+    {
+        $this->call('restify:policy', [
+            'name' => $this->guessBaseModelClass(),
+        ]);
+
+        return $this;
+    }
+
+    protected function buildModel()
+    {
+        $model = $this->guessQualifiedModelName();
+
+        if (false === class_exists($model)) {
+            $yes = $this->confirm("Do you want to generate the model [{$model}]?");
+
+            if ($yes) {
+                $this->call('make:model', ['name' => str_replace('\\\\', '\\', $model)]);
+            }
+        }
+    }
+
+    protected function buildFactory()
+    {
+        $factory = Str::studly(class_basename($this->guessQualifiedModelName()));
+
+        $this->call('make:factory', [
+            'name' => "{$factory}Factory",
+            '--model' => str_replace('\\\\', '\\', $this->guessQualifiedModelName()),
+        ]);
+    }
+
     protected function getStub()
     {
         return __DIR__.'/stubs/repository.stub';
     }
 
-    /**
-     * Get the default namespace for the class.
-     *
-     * @param  string  $rootNamespace
-     * @return string
-     */
+    protected function getPath($name)
+    {
+        if (false === Str::endsWith($name, 'Repository')) {
+            $name .= 'Repository';
+        }
+
+        return parent::getPath($name);
+    }
+
     protected function getDefaultNamespace($rootNamespace)
     {
         return $rootNamespace.'\Restify';
     }
 
-    /**
-     * Get the console command options.
-     *
-     * @return array
-     */
     protected function getOptions()
     {
         return [
             ['all', 'a', InputOption::VALUE_NONE, 'Generate a migration, factory, and controller for the repository'],
-            ['model', 'm', InputOption::VALUE_REQUIRED, 'The model class being represented.'],
+            ['model', 'm', InputOption::VALUE_NONE, 'The model class being represented.'],
+            ['factory', 'f', InputOption::VALUE_NONE, 'Create a new factory for the repository model.'],
+            ['policy', 'p', InputOption::VALUE_NONE, 'Create a new policy for the repository model.'],
+            ['table', 't', InputOption::VALUE_NONE, 'Create a new migration table file for the repository model.'],
+            ['force', null, InputOption::VALUE_NONE, 'Create the class even if the model already exists.'],
         ];
     }
 }

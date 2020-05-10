@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-use Binaryk\LaravelRestify\Restify;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\App;
 
@@ -36,9 +35,7 @@ class RestifyRequest extends FormRequest
      */
     public function isIndexRequest()
     {
-        $path = trim(Restify::path($this->route('repository')), '/') ?: '/';
-
-        return $this->is($path);
+        return $this instanceof RepositoryIndexRequest;
     }
 
     /**
@@ -46,8 +43,18 @@ class RestifyRequest extends FormRequest
      * This will match any verbs (PATCH, DELETE or GET).
      * @return bool
      */
-    public function isDetailRequest()
+    public function isShowRequest()
     {
-        return ! $this->isIndexRequest();
+        return $this instanceof RepositoryShowRequest;
+    }
+
+    public function isUpdateRequest()
+    {
+        return $this instanceof RepositoryUpdateRequest;
+    }
+
+    public function isStoreRequest()
+    {
+        return $this instanceof RepositoryStoreRequest;
     }
 }

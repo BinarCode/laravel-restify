@@ -3,25 +3,12 @@
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
-use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryIndexController extends RepositoryController
 {
-    /**
-     * @param  RestifyRequest  $request
-     * @return \Binaryk\LaravelRestify\Repositories\Repository
-     * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException
-     * @throws \Binaryk\LaravelRestify\Exceptions\InstanceOfException
-     * @throws \Binaryk\LaravelRestify\Exceptions\UnauthorizedException
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     * @throws \Throwable
-     */
-    public function handle(RestifyRequest $request)
+    public function __invoke(RepositoryIndexRequest $request)
     {
         try {
             return $request->newRepository()->index($request);
@@ -31,7 +18,7 @@ class RepositoryIndexController extends RepositoryController
                 ->dump($e, $request->isDev());
         } catch (UnauthorizedException $e) {
             return $this->response()->forbidden()->addError($e->getMessage())->dump($e, $request->isDev());
-        } catch (InstanceOfException | \Throwable $e) {
+        } catch (\Throwable $e) {
             return $this->response()->error()->dump($e, $request->isDev());
         }
     }

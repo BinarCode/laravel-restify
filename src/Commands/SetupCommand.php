@@ -7,25 +7,10 @@ use Illuminate\Support\Str;
 
 class SetupCommand extends Command
 {
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
     protected $signature = 'restify:setup';
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Prepare Restify dependencies and resources';
+    protected $description = 'Should be run when you firstly instal the package. It will setup everything for you.';
 
-    /**
-     * Execute the console command.
-     *
-     * @return void
-     */
     public function handle()
     {
         $this->comment('Publishing Restify Service Provider...');
@@ -40,7 +25,7 @@ class SetupCommand extends Command
 
         $this->comment('Generating User Repository...');
         $this->callSilent('restify:repository', ['name' => 'User']);
-        copy(__DIR__.'/stubs/user-repository.stub', app_path('Restify/User.php'));
+        copy(__DIR__.'/stubs/user-repository.stub', app_path('Restify/UserRepository.php'));
 
         $this->setAppNamespace();
 

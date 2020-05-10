@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Commands\PolicyCommand;
 use Binaryk\LaravelRestify\Commands\Refresh;
 use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
+use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\ServiceProvider;
@@ -26,6 +27,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
                 PolicyCommand::class,
                 BaseRepositoryCommand::class,
                 Refresh::class,
+                StubCommand::class,
             ]);
             $this->registerPublishing();
 

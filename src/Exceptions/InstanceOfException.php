@@ -9,4 +9,8 @@ use Exception;
  */
 class InstanceOfException extends Exception
 {
+    public static function because($message = '')
+    {
+        return new static($message);
+    }
 }

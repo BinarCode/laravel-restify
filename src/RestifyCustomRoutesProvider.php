@@ -12,19 +12,11 @@ use ReflectionClass;
  */
 class RestifyCustomRoutesProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap the application services.
-     */
     public function boot()
     {
         $this->registerRoutes();
     }
 
-    /**
-     * Register the package routes.
-     *
-     * @return void
-     */
     protected function registerRoutes()
     {
         collect(Restify::$repositories)->each(function ($repository) {

@@ -2,19 +2,20 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures;
 
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
-class UserRepository extends Repository
+class AppleRepository extends Repository
 {
-    public static $model = User::class;
+    public static $model = Apple::class;
 
     public function fields(RestifyRequest $request)
     {
         return [
+            Field::make('id'),
+
+            Field::make('title'),
         ];
     }
 }

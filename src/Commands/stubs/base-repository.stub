@@ -9,30 +9,6 @@ use Illuminate\Contracts\Pagination\Paginator;
 abstract class Repository extends RestifyRepository
 {
     /**
-     * Format the response for the details request (single item)
-     *
-     * @param $request
-     * @param $serialized
-     * @return array
-     */
-    public function serializeDetails($request, $serialized)
-    {
-        return $serialized;
-    }
-
-    /**
-     * Format the response for the index request
-     *
-     * @param $request
-     * @param $serialized
-     * @return array
-     */
-    public function serializeIndex($request, $serialized)
-    {
-        return $serialized;
-    }
-
-    /**
      * Build an "index" query for the given repository.
      *
      * @param  RestifyRequest  $request
