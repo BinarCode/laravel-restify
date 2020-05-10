@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Feature\Authentication;
 
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
-use Binaryk\LaravelRestify\Notifications\PasswordResetNotification;
 use Binaryk\LaravelRestify\Services\AuthService;
 use Binaryk\LaravelRestify\Services\RegisterService;
 use Binaryk\LaravelRestify\Tests\Fixtures\MailTracking;
@@ -55,6 +54,7 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
 
         Notification::assertSentTo($user, ResetPassword::class, function ($notification) {
             $this->assertNotEmpty($notification->token);
+
             return true;
         });
     }

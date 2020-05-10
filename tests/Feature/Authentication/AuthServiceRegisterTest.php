@@ -52,7 +52,6 @@ class AuthServiceRegisterTest extends IntegrationTest
 
         $request->merge($user);
 
-
         $this->expectException(AuthenticatableUserException::class);
         $this->authService->register($request);
     }

@@ -86,7 +86,8 @@ class RegisterService
         return true;
     }
 
-    protected function usingAuthService(AuthService $service) {
+    protected function usingAuthService(AuthService $service)
+    {
         $this->authService = $service;
 
         return $this;

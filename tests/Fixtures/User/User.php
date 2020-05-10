@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
-use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Contracts\Sanctumable;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;

@@ -42,7 +42,7 @@ return [
 
         'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),
 
-        'password_reset_url' => env('FRONTEND_APP_URL') . '/password/reset?token={token}&email={email}',
+        'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
     ],
 
     /*
