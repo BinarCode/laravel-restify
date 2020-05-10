@@ -77,6 +77,27 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static $sort;
 
     /**
+     * Attribute that should be used for displaying single model.
+     *
+     * @var string
+     */
+    public static $title = 'id';
+
+    /**
+     * Indicates if the repository should be globally searchable.
+     *
+     * @var bool
+     */
+    public static $globallySearchable = true;
+
+    /**
+     * The number of results to display in the global search.
+     *
+     * @var int
+     */
+    public static $globalSearchResults = 5;
+
+    /**
      * Get the underlying model instance for the resource.
      *
      * @return \Illuminate\Database\Eloquent\Model|LengthAwarePaginator
@@ -104,6 +125,42 @@ abstract class Repository implements RestifySearchable, JsonSerializable
          * e.g. LaravelEntityRepository => laravel-entities.
          */
         return Str::plural($kebabWithoutRepository);
+    }
+
+    /**
+     * Get the label for the resource.
+     *
+     * @return string
+     */
+    public static function label()
+    {
+        if (property_exists(static::class, 'label') && is_string(static::$label)) {
+            return static::$label;
+        }
+
+        $title = Str::title(Str::replaceLast('Repository', '', class_basename(get_called_class())));
+
+        return Str::plural($title);
+    }
+
+    /**
+     * Get the value that should be displayed to represent the repository.
+     *
+     * @return string
+     */
+    public function title()
+    {
+        return $this->{static::$title};
+    }
+
+    /**
+     * Get the search result subtitle for the repository.
+     *
+     * @return string|null
+     */
+    public function subtitle()
+    {
+        //
     }
 
     /**
@@ -435,10 +492,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
          * Apply all of the query: search, match, sort, related.
          * @var AbstractPaginator $paginator
          */
-        $paginator = RepositorySearchService::instance()->search($request, $this)->tap(function ($query) use ($request) {
-            // Call the local definition of the query
-            static::indexQuery($request, $query);
-        })->paginate($request->perPage ?? (static::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
+        $paginator = RepositorySearchService::instance()->search($request, $this)
+            ->paginate($request->perPage ?? (static::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
 
         $items = $paginator->getCollection()->map(function ($value) {
             return static::resolveWith($value);

@@ -5,7 +5,7 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
-use Binaryk\LaravelRestify\Tests\Fixtures\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
@@ -40,13 +40,13 @@ class FieldTest extends IntegrationTest
 
     public function test_fields_can_have_custom_resolver_callback_even_if_field_is_missing()
     {
-        $field = Field::make('Name')->showCallback(function ($value, $model, $attribute) {
-            return strtoupper('default');
+        $field = Field::make('Name')->resolveCallback(function ($value, $model, $attribute) {
+            return strtoupper($value);
         });
 
-        $field->resolveForShow((object) ['name' => 'Binaryk'], 'email');
+        $field->resolve((object) ['name' => 'Eduard'], 'name');
 
-        $this->assertEquals('DEFAULT', $field->value);
+        $this->assertEquals('EDUARD', $field->value);
     }
 
     public function test_computed_fields_resolve()

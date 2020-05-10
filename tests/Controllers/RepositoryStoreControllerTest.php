@@ -2,8 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-use Binaryk\LaravelRestify\Tests\Fixtures\Post;
-use Binaryk\LaravelRestify\Tests\Fixtures\PostPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
 
@@ -100,7 +100,6 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'title' => 'Some post title',
             'description' => 'A very short description',
         ])
-            ->dump()
             ->assertStatus(201);
 
         $_SERVER['posts.description.authorized'] = false;
@@ -118,7 +117,6 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'title' => 'Some post title',
             'description' => 'A very short description',
         ])
-            ->dump()
             ->assertStatus(201);
 
         $this->assertNull($r->json('data.attributes.image'));

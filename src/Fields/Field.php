@@ -435,7 +435,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param callable $resolveCallback
      * @return $this
      */
-    public function resolveUsing(callable $resolveCallback)
+    public function resolveCallback(callable $resolveCallback)
     {
         $this->resolveCallback = $resolveCallback;
 

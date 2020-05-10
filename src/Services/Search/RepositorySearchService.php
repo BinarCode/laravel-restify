@@ -17,7 +17,7 @@ class RepositorySearchService extends Searchable
 
         $query = $this->prepareMatchFields($request, $this->prepareSearchFields($request, $repository::query(), $this->fixedInput), $this->fixedInput);
 
-        return $this->prepareRelations($request, $this->prepareOrders($request, $query), $this->fixedInput);
+        return tap($this->prepareRelations($request, $this->prepareOrders($request, $query), $this->fixedInput), $this->applyIndexQuery($request, $repository));
     }
 
     public function prepareMatchFields(RestifyRequest $request, $query, $extra = [])
@@ -113,7 +113,7 @@ class RepositorySearchService extends Searchable
             $canSearchPrimaryKey = is_numeric($search) &&
                 in_array($query->getModel()->getKeyType(), ['int', 'integer']) &&
                 ($connectionType != 'pgsql' || $search <= PHP_INT_MAX) &&
-                in_array($query->getModel()->getKeyName(), $model::getSearchableFields());
+                in_array($query->getModel()->getKeyName(), $this->repository->getSearchableFields());
 
             if ($canSearchPrimaryKey) {
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
@@ -169,5 +169,10 @@ class RepositorySearchService extends Searchable
         }
 
         return $query;
+    }
+
+    protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
+    {
+        return fn ($query) => $repository::indexQuery($request, $query);
     }
 }
