@@ -12,15 +12,14 @@ class PostAuthorizeRepository extends Repository
 
     public static $globallySearchable = false;
 
-
     public function fields(RestifyRequest $request)
     {
         return [
             Field::new('user_id'),
 
             Field::new('title')
-                ->canSee(fn() => $_SERVER['postAuthorize.can.see.title'])
-                ->showCallback(fn($value) => strtoupper($value)),
+                ->canSee(fn () => $_SERVER['postAuthorize.can.see.title'])
+                ->showCallback(fn ($value) => strtoupper($value)),
 
             Field::new('description')->storingRules('required')->messages([
                 'required' => 'Description field is required',

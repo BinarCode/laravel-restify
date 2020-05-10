@@ -80,4 +80,3 @@ class GlobalSearch
         return collect($results)->sortKeys()->all();
     }
 }
-

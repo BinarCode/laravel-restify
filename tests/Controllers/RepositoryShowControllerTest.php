@@ -50,7 +50,7 @@ class RepositoryShowControllerTest extends IntegrationTest
     {
         $_SERVER['postAuthorize.can.see.title'] = true;
 
-        factory(Post::class)->create(['title' => 'Eduard',]);
+        factory(Post::class)->create(['title' => 'Eduard']);
 
         $response = $this->getJson('/restify-api/post-authorizes/1');
 
@@ -59,7 +59,7 @@ class RepositoryShowControllerTest extends IntegrationTest
 
     public function test_show_unmergeable_repository_containes_only_explicitly_defined_fields()
     {
-        factory(Post::class)->create(['title' => 'Eduard',]);
+        factory(Post::class)->create(['title' => 'Eduard']);
 
         $response = $this->getJson('/restify-api/posts/1')
             ->assertJsonStructure([
@@ -78,7 +78,7 @@ class RepositoryShowControllerTest extends IntegrationTest
 
     public function test_show_mergeable_repository_containes_model_attributes_and_local_fields()
     {
-        factory(Post::class)->create(['title' => 'Eduard',]);
+        factory(Post::class)->create(['title' => 'Eduard']);
 
         $this->getJson('/restify-api/posts-mergeable/1')
             ->assertJsonStructure([
