@@ -9,8 +9,7 @@ use Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController;
 use Illuminate\Support\Facades\Route;
 
 // Global Search...
-Route::get('/search', '\\' . GlobalSearchController::class);
-
+Route::get('/search', '\\'.GlobalSearchController::class);
 
 // API CRUD
 Route::get('/{repository}', '\\'.RepositoryIndexController::class);

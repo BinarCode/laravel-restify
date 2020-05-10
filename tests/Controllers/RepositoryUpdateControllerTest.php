@@ -113,4 +113,3 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         $this->assertNull($r->json('data.attributes.image'));
     }
 }
-

@@ -20,7 +20,6 @@ class GlobalSearchControllerTest extends IntegrationTest
         factory(User::class)->create(['name' => 'First user']);
         factory(User::class)->create(['name' => 'Second user']);
 
-
         $response = $this
             ->withoutExceptionHandling()
             ->getJson('/restify-api/search?search=Second');
@@ -38,7 +37,6 @@ class GlobalSearchControllerTest extends IntegrationTest
 
         factory(Post::class)->create();
         factory(User::class)->create();
-
 
         $response = $this
             ->withoutExceptionHandling()

@@ -97,10 +97,10 @@ class Restify
         $repositories = [];
 
         foreach ((new Finder)->in($directory)->files() as $repository) {
-            $repository = $namespace . str_replace(
+            $repository = $namespace.str_replace(
                     ['/', '.php'],
                     ['\\', ''],
-                    Str::after($repository->getPathname(), app_path() . DIRECTORY_SEPARATOR)
+                    Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
                 );
 
             if (is_subclass_of($repository, Repository::class) && (new ReflectionClass($repository))->isInstantiable()) {
@@ -122,7 +122,7 @@ class Restify
     public static function path($plus = null)
     {
         if (isset($plus)) {
-            return config('restify.base', '/restify-api') . '/' . $plus;
+            return config('restify.base', '/restify-api').'/'.$plus;
         } else {
             return config('restify.base', '/restify-api');
         }
@@ -162,8 +162,8 @@ class Restify
     public static function globallySearchableRepositories(RestifyRequest $request)
     {
         return collect(static::$repositories)
-            ->filter(fn($repository) => $repository::authorizedToUseRepository($request))
-            ->filter(fn($repository) => $repository::$globallySearchable)
+            ->filter(fn ($repository) => $repository::authorizedToUseRepository($request))
+            ->filter(fn ($repository) => $repository::$globallySearchable)
             ->sortBy(static::sortResourcesWith())
             ->all();
     }
@@ -174,5 +174,4 @@ class Restify
             return $resource::label();
         };
     }
-
 }

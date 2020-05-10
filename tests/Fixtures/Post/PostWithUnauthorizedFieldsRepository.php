@@ -19,7 +19,7 @@ class PostWithUnauthorizedFieldsRepository extends Repository
         return [
             Field::new('user_id'),
 
-            Field::new('title')->canUpdate(fn() => $_SERVER['posts.authorizable.title']),
+            Field::new('title')->canUpdate(fn () => $_SERVER['posts.authorizable.title']),
         ];
     }
 }
