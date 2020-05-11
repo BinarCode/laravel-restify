@@ -207,8 +207,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return [];
     }
 
-
-
     /**
      * @param RestifyRequest $request
      * @return FieldCollection
@@ -695,7 +693,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function availableFilters(RestifyRequest $request)
     {
-        return collect($this->filter($this->filters($request)))->each(fn(Filter $filter) => $filter->authorizedToSee($request))
+        return collect($this->filter($this->filters($request)))->each(fn (Filter $filter) => $filter->authorizedToSee($request))
             ->values();
     }
 }

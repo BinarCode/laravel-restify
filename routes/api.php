@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Route;
 Route::get('/search', '\\'.GlobalSearchController::class);
 
 // Filters
-Route::get('/{repository}/filters', '\\' . RepositoryFilterController::class);
+Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
 
 // API CRUD
 Route::get('/{repository}', '\\'.RepositoryIndexController::class);
@@ -22,4 +22,3 @@ Route::get('/{repository}/{repositoryId}', '\\'.RepositoryShowController::class)
 Route::patch('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
 Route::put('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
 Route::delete('/{repository}/{repositoryId}', '\\'.RepositoryDestroyController::class);
-
