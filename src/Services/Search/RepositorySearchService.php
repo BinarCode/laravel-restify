@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,6 +18,8 @@ class RepositorySearchService extends Searchable
 
         $query = $this->prepareMatchFields($request, $this->prepareSearchFields($request, $repository::query(), $this->fixedInput), $this->fixedInput);
 
+        $query = $this->applyFilters($request, $repository, $query);
+
         return tap($this->prepareRelations($request, $this->prepareOrders($request, $query), $this->fixedInput), $this->applyIndexQuery($request, $repository));
     }
 
@@ -24,7 +27,7 @@ class RepositorySearchService extends Searchable
     {
         $model = $query->getModel();
         foreach ($this->repository->getMatchByFields() as $key => $type) {
-            if (! $request->has($key) && ! data_get($extra, "match.$key")) {
+            if (!$request->has($key) && !data_get($extra, "match.$key")) {
                 continue;
             }
 
@@ -57,7 +60,7 @@ class RepositorySearchService extends Searchable
                     case RestifySearchable::MATCH_INTEGER:
                     case 'number':
                     case 'int':
-                        $query->where($field, '=', (int) $match);
+                        $query->where($field, '=', (int)$match);
                         break;
                 }
             }
@@ -122,7 +125,7 @@ class RepositorySearchService extends Searchable
             $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
             foreach ($this->repository->getSearchableFields() as $column) {
-                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
+                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
             }
         });
 
@@ -173,6 +176,38 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::indexQuery($request, $query);
+        return fn($query) => $repository::indexQuery($request, $query);
+    }
+
+    protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
+    {
+        if (!empty($request->filters)) {
+            $filters = json_decode(base64_decode($request->filters), true);
+
+            collect($filters)
+                ->map(function ($filter) use ($request, $repository) {
+                    /** * @var Filter $matchingFilter */
+                    $matchingFilter = $repository->availableFilters($request)->first(function ($availableFilter) use ($filter) {
+                        return $filter['class'] === $availableFilter->key();
+                    });
+
+
+                    if (is_null($matchingFilter)) {
+                        return false;
+                    }
+
+                    if ($matchingFilter->invalidPayloadValue($request, $filter['value']))  {
+                        return false;
+                    };
+
+                    $matchingFilter->resolve($request, $filter['value']);
+
+                    return $matchingFilter;
+                })
+                ->filter()
+                ->each(fn(Filter $filter) => $filter->filter($request, $query, $filter->value));
+        }
+
+        return $query;
     }
 }

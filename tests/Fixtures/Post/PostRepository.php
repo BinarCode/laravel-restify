@@ -49,4 +49,13 @@ class PostRepository extends Repository
             ]),
         ];
     }
+
+    public function filters(RestifyRequest $request)
+    {
+        return [
+            ActiveBooleanFilter::new()->canSee(fn() => true),
+            SelectCategoryFilter::new(),
+            CreatedAfterDateFilter::new(),
+        ];
+    }
 }
