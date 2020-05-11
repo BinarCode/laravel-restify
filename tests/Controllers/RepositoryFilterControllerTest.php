@@ -24,8 +24,8 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
     public function test_the_boolean_filter_is_applied()
     {
-        factory(Post::class)->create(['is_active' => false,]);
-        factory(Post::class)->create(['is_active' => true,]);
+        factory(Post::class)->create(['is_active' => false]);
+        factory(Post::class)->create(['is_active' => true]);
 
         $filters = base64_encode(json_encode([
             [
@@ -33,12 +33,12 @@ class RepositoryFilterControllerTest extends IntegrationTest
                 'value' => [
                     'is_active' => false,
                 ],
-            ]
+            ],
         ]));
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('restify-api/posts?filters=' . $filters)
+            ->getJson('restify-api/posts?filters='.$filters)
             ->dump()
             ->assertStatus(200);
 
@@ -47,19 +47,19 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
     public function test_the_select_filter_is_applied()
     {
-        factory(Post::class)->create(['category' => 'movie',]);
-        factory(Post::class)->create(['category' => 'article',]);
+        factory(Post::class)->create(['category' => 'movie']);
+        factory(Post::class)->create(['category' => 'article']);
 
         $filters = base64_encode(json_encode([
             [
                 'class' => SelectCategoryFilter::class,
-                'value' => 'article'
-            ]
+                'value' => 'article',
+            ],
         ]));
 
         $response = $this
             ->withExceptionHandling()
-            ->getJson('restify-api/posts?filters=' . $filters)
+            ->getJson('restify-api/posts?filters='.$filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -67,8 +67,8 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
     public function test_the_timestamp_filter_is_applied()
     {
-        factory(Post::class)->create(['created_at' => now()->addYear(),]);
-        factory(Post::class)->create(['created_at' => now()->subYear(),]);
+        factory(Post::class)->create(['created_at' => now()->addYear()]);
+        factory(Post::class)->create(['created_at' => now()->subYear()]);
 
         $filters = base64_encode(json_encode([
             [
@@ -78,12 +78,12 @@ class RepositoryFilterControllerTest extends IntegrationTest
             [
                 'class' => CreatedAfterDateFilter::class,
                 'value' => now()->addWeek()->timestamp,
-            ]
+            ],
         ]));
 
         $response = $this
             ->withExceptionHandling()
-            ->getJson('restify-api/posts?filters=' . $filters)
+            ->getJson('restify-api/posts?filters='.$filters)
             ->dump()
             ->assertStatus(200);
 
