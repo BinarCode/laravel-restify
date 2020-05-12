@@ -57,4 +57,9 @@ class RestifyRequest extends FormRequest
     {
         return $this instanceof RepositoryStoreRequest;
     }
+
+    public function isViaRepository()
+    {
+        return $this->viaRepository && $this->viaRepositoryId && $this->viaRelationship;
+    }
 }

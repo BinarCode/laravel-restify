@@ -14,7 +14,6 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
@@ -180,9 +179,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return new $model;
     }
 
-    public static function query(): Builder
+    public static function query(RestifyRequest $request)
     {
-        return static::newModel()->query();
+        if (! $request->isViaRepository()) {
+            return static::newModel()->query();
+        }
+
+        return $request->viaQuery();
     }
 
     /**
@@ -505,7 +508,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
          * @var AbstractPaginator $paginator
          */
         $paginator = RepositorySearchService::instance()->search($request, $this)
-            ->paginate($request->perPage ?? (static::$defaultPerPage ?? RestifySearchable::DEFAULT_PER_PAGE));
+            ->paginate(
+                $request->isViaRepository()
+                    ? static::$defaultRelatablePerPage
+                    : ($request->perPage ?? static::$defaultPerPage)
+            );
 
         $items = $paginator->getCollection()->map(function ($value) {
             return static::resolveWith($value);
@@ -532,7 +539,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 $request, $this->resource, $this->storeFields($request)
             );
 
-            $this->resource->save();
+            if ($request->isViaRepository()) {
+                $this->resource = $request->viaQuery()
+                    ->save($this->resource);
+            } else {
+                $this->resource->save();
+            }
 
             $this->storeFields($request)->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
         });
