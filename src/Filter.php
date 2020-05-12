@@ -70,7 +70,7 @@ abstract class Filter implements JsonSerializable
 
     public function resolve(RestifyRequest $request, $filter)
     {
-        $this->value = $filter['value'];
+        $this->value = $filter;
     }
 
     public function jsonSerialize()
