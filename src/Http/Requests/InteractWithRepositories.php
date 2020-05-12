@@ -44,7 +44,7 @@ trait InteractWithRepositories
                 ]), 404);
             }
 
-            if (!$repository::authorizedToUseRepository($this)) {
+            if (! $repository::authorizedToUseRepository($this)) {
                 throw new UnauthorizedException(__('Unauthorized to view repository :name. See "allowRestify" policy.', [
                     'name' => $repository,
                 ]), 403);
@@ -114,7 +114,7 @@ trait InteractWithRepositories
      */
     public function newQueryWithoutScopes($uriKey = null)
     {
-        if (!$this->isViaRepository()) {
+        if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQueryWithoutScopes();
         }
 
