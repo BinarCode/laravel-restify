@@ -156,7 +156,7 @@ trait InteractWithRepositories
     {
         $parent = $this->repository($this->viaRepository);
 
-        return $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail();
+        return once(fn() => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
     }
 
     public function viaQuery()
