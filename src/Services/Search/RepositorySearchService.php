@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Services\Search;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Database\Eloquent\Builder;
 
 class RepositorySearchService extends Searchable
 {

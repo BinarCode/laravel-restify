@@ -75,9 +75,9 @@ class RelatedIndexControllerTest extends IntegrationTest
         factory(User::class)->create();
         factory(User::class)->create();
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 1,]);
+        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 1]);
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2,]);
+        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
 
         $response = $this->putJson('restify-api/posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts', [
             'title' => 'Post updated title',
@@ -95,9 +95,9 @@ class RelatedIndexControllerTest extends IntegrationTest
         factory(User::class)->create();
         factory(User::class)->create();
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 1,]);
+        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 1]);
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2,]);
+        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
 
         $this->deleteJson('restify-api/posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(204);
 
@@ -114,9 +114,9 @@ class RelatedIndexControllerTest extends IntegrationTest
 
         factory(User::class)->create();
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 1,]);
+        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 1]);
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2,]);
+        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
 
         $this->deleteJson('restify-api/posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(403);
 
