@@ -15,7 +15,7 @@ class RepositorySearchService extends Searchable
     {
         $this->repository = $repository;
 
-        $query = $this->prepareMatchFields($request, $this->prepareSearchFields($request, $repository::query(), $this->fixedInput), $this->fixedInput);
+        $query = $this->prepareMatchFields($request, $this->prepareSearchFields($request, $repository::query($request), $this->fixedInput), $this->fixedInput);
 
         return tap($this->prepareRelations($request, $this->prepareOrders($request, $query), $this->fixedInput), $this->applyIndexQuery($request, $repository));
     }
@@ -66,7 +66,7 @@ class RepositorySearchService extends Searchable
         return $query;
     }
 
-    public function prepareOrders(RestifyRequest $request, $query, $extra = []): Builder
+    public function prepareOrders(RestifyRequest $request, $query, $extra = [])
     {
         $sort = $request->get('sort', '');
 
@@ -89,7 +89,7 @@ class RepositorySearchService extends Searchable
         return $query;
     }
 
-    public function prepareRelations(RestifyRequest $request, $query, $extra = []): Builder
+    public function prepareRelations(RestifyRequest $request, $query, $extra = [])
     {
         $relations = array_merge($extra, explode(',', $request->get('with')));
 
@@ -102,12 +102,12 @@ class RepositorySearchService extends Searchable
         return $query;
     }
 
-    public function prepareSearchFields(RestifyRequest $request, $query, $extra = []): Builder
+    public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])
     {
         $search = $request->get('search', data_get($extra, 'search', ''));
         $model = $query->getModel();
 
-        $query->where(function (Builder $query) use ($search, $model) {
+        $query->where(function ($query) use ($search, $model) {
             $connectionType = $model->getConnection()->getDriverName();
 
             $canSearchPrimaryKey = is_numeric($search) &&

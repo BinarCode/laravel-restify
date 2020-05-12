@@ -44,7 +44,7 @@ trait InteractWithRepositories
                 ]), 404);
             }
 
-            if (! $repository::authorizedToUseRepository($this)) {
+            if (!$repository::authorizedToUseRepository($this)) {
                 throw new UnauthorizedException(__('Unauthorized to view repository :name. See "allowRestify" policy.', [
                     'name' => $repository,
                 ]), 403);
@@ -90,23 +90,6 @@ trait InteractWithRepositories
     }
 
     /**
-     * Check if the route is resolved by the Repository class, or it uses the classical Models.
-     * @return bool
-     */
-    public function isResolvedByRestify()
-    {
-        try {
-            $this->repository();
-
-            return true;
-        } catch (EntityNotFoundException $e) {
-            return false;
-        } catch (UnauthorizedException $e) {
-            return true;
-        }
-    }
-
-    /**
      * Get a new instance of the repository being requested.
      * As a model it could accept either a model instance, a collection or even paginated collection.
      *
@@ -131,7 +114,11 @@ trait InteractWithRepositories
      */
     public function newQueryWithoutScopes($uriKey = null)
     {
-        return $this->model($uriKey)->newQueryWithoutScopes();
+        if (!$this->isViaRepository()) {
+            return $this->model($uriKey)->newQueryWithoutScopes();
+        }
+
+        return $this->viaQuery();
     }
 
     /**
@@ -163,5 +150,17 @@ trait InteractWithRepositories
         return $this->newQueryWithoutScopes($uriKey)->whereKey(
             $repositoryId ?? request('repositoryId')
         );
+    }
+
+    public function viaParentModel()
+    {
+        $parent = $this->repository($this->viaRepository);
+
+        return $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail();
+    }
+
+    public function viaQuery()
+    {
+        return $this->viaParentModel()->{$this->viaRelationship}();
     }
 }
