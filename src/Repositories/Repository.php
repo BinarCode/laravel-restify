@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
+use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
@@ -185,12 +186,23 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * Resolvable attributes before storing/updating.
+     * Resolvable attributes.
      *
      * @param RestifyRequest $request
      * @return array
      */
     public function fields(RestifyRequest $request)
+    {
+        return [];
+    }
+
+    /**
+     * Resolvable filters for the repository.
+     *
+     * @param RestifyRequest $request
+     * @return array
+     */
+    public function filters(RestifyRequest $request)
     {
         return [];
     }
@@ -677,5 +689,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static function uriTo(Model $model)
     {
         return Restify::path().'/'.static::uriKey().'/'.$model->getKey();
+    }
+
+    public function availableFilters(RestifyRequest $request)
+    {
+        return collect($this->filter($this->filters($request)))->each(fn (Filter $filter) => $filter->authorizedToSee($request))
+            ->values();
     }
 }

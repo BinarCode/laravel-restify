@@ -19,6 +19,8 @@ class CreatePostsTable extends Migration
             $table->string('title');
             $table->longText('description')->nullable();
             $table->string('image')->nullable();
+            $table->string('category')->nullable();
+            $table->boolean('is_active')->default(true);
             $table->timestamps();
         });
     }

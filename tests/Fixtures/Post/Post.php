@@ -20,6 +20,8 @@ class Post extends Model implements RestifySearchable
         'image',
         'title',
         'description',
+        'category',
+        'is_active',
     ];
 
     public function user()
