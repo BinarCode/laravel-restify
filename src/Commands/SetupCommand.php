@@ -57,7 +57,7 @@ class SetupCommand extends Command
     {
         $namespace = $this->laravel->getNamespace();
 
-        $this->setAppNamespaceOn(app_path('Restify/User.php'), $namespace);
+        $this->setAppNamespaceOn(app_path('Restify/UserRepository.php'), $namespace);
         $this->setAppNamespaceOn(app_path('Providers/RestifyServiceProvider.php'), $namespace);
     }
 
