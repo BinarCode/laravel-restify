@@ -85,7 +85,7 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail, Rest
     public function companies()
     {
         return $this->belongsToMany(Company::class, 'company_user', 'user_id', 'company_id')->withPivot([
-            'is_admin'
+            'is_admin',
         ])->withTimestamps();
     }
 
