@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryAttachRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
@@ -572,6 +573,18 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this->response()
             ->data($this->serializeForShow($request))
             ->success();
+    }
+
+    public function attach(RestifyRequest $request, $repositoryId, Collection $pivots)
+    {
+        DB::transaction(function () use ($request, $pivots) {
+            return $pivots->map(fn($pivot) => $pivot->forceFill($request->except($request->relatedRepository)))
+                ->map(fn($pivot) => $pivot->save());
+        });
+
+        return $this->response()
+            ->data($pivots)
+            ->created();
     }
 
     public function destroy(RestifyRequest $request, $repositoryId)

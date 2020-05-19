@@ -44,7 +44,7 @@ trait InteractWithRepositories
                 ]), 404);
             }
 
-            if (! $repository::authorizedToUseRepository($this)) {
+            if (!$repository::authorizedToUseRepository($this)) {
                 throw new UnauthorizedException(__('Unauthorized to view repository :name. See "allowRestify" policy.', [
                     'name' => $repository,
                 ]), 403);
@@ -114,7 +114,7 @@ trait InteractWithRepositories
      */
     public function newQueryWithoutScopes($uriKey = null)
     {
-        if (! $this->isViaRepository()) {
+        if (!$this->isViaRepository()) {
             return $this->model($uriKey)->newQueryWithoutScopes();
         }
 
@@ -152,15 +152,71 @@ trait InteractWithRepositories
         );
     }
 
+    public function findModelOrFail($id = null)
+    {
+        if ($id) {
+            return $this->findModelQuery($id)->firstOrFail();
+        }
+
+        return once(function () {
+            return $this->findModelQuery()->firstOrFail();
+        });
+    }
+
+    public function findRelatedModelOrFail()
+    {
+        return once(function () {
+            return $this->findRelatedQuery()->firstOrFail();
+        });
+    }
+
+
+    public function findRelatedQuery($relatedRepository = null, $relatedRepositoryId = null)
+    {
+        return $this->repository($relatedRepository ?? request('relatedRepository'))::newModel()
+            ->newQueryWithoutScopes()
+            ->whereKey($relatedRepositoryId ?? request('relatedRepositoryId'));
+    }
+
+
+    protected function findPivot(RestifyRequest $request, $model)
+    {
+        $pivot = $model->{$request->relatedRepository}()->getPivotAccessor();
+
+        return $model->{$request->viaRelationship}()
+            ->withoutGlobalScopes()
+            ->lockForUpdate()
+            ->findOrFail($request->relatedRepositoryId)->{$pivot};
+    }
+
     public function viaParentModel()
     {
         $parent = $this->repository($this->viaRepository);
 
-        return once(fn () => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
+        return once(fn() => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
     }
 
     public function viaQuery()
     {
         return $this->viaParentModel()->{$this->viaRelationship}();
     }
+
+    /**
+     * Get a new instance of the "related" resource being requested.
+     *
+     * @return Repository
+     */
+    public function newRelatedRepository()
+    {
+        $resource = $this->relatedRepository();
+
+        return new $resource($resource::newModel());
+    }
+
+    public function relatedRepository()
+    {
+        return Restify::repositoryForKey($this->relatedRepository);
+    }
+
+
 }

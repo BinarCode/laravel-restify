@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAuthorizeRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
@@ -178,6 +179,7 @@ abstract class IntegrationTest extends TestCase
         Restify::repositories([
             UserRepository::class,
             PostRepository::class,
+            CompanyRepository::class,
             PostMergeableRepository::class,
             PostAuthorizeRepository::class,
             PostWithUnauthorizedFieldsRepository::class,

@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Contracts\Sanctumable;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
@@ -79,6 +80,13 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail, Rest
     public function posts()
     {
         return $this->hasMany(Post::class);
+    }
+
+    public function companies()
+    {
+        return $this->belongsToMany(Company::class, 'company_user', 'user_id', 'company_id')->withPivot([
+            'is_admin'
+        ])->withTimestamps();
     }
 
     /**
