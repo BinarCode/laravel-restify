@@ -76,7 +76,9 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         $response = $this->putJson('/restify-api/post-with-unathorized-fields/'.$post->id, [
             'title' => 'Updated title',
             'user_id' => 2,
-        ])->assertStatus(200);
+        ])
+            ->dump()
+            ->assertStatus(200);
 
         $this->assertEquals('Title', $response->json('data.attributes.title'));
         $this->assertEquals(2, $response->json('data.attributes.user_id'));

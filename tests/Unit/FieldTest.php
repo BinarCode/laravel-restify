@@ -240,4 +240,13 @@ class FieldTest extends IntegrationTest
 
         $field->invokeAfter($request, $model);
     }
+
+    public function test_field_can_have_custom_label()
+    {
+        $field = Field::make('name')->label('custom_label');
+
+        $field->resolveForIndex((object) ['name' => 'Binaryk'], 'name');
+
+        $this->assertEquals('custom_label', $field->label);
+    }
 }

@@ -107,6 +107,8 @@ class Field extends OrganicField implements JsonSerializable
      */
     public $afterUpdateCallback;
 
+    public $label;
+
     /**
      * Create a new field.
      *
@@ -116,6 +118,8 @@ class Field extends OrganicField implements JsonSerializable
     public function __construct($attribute, callable $resolveCallback = null)
     {
         $this->attribute = $attribute;
+
+        $this->label = $attribute;
 
         $this->resolveCallback = $resolveCallback;
 
@@ -313,7 +317,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (! $this->showCallback) {
+        if (!$this->showCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->showCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -336,7 +340,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (! $this->indexCallback) {
+        if (!$this->indexCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->indexCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -356,7 +360,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (! $this->resolveCallback) {
+        if (!$this->resolveCallback) {
             $this->value = $this->resolveAttribute($repository, $attribute);
         } elseif (is_callable($this->resolveCallback)) {
             tap($this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -388,16 +392,23 @@ class Field extends OrganicField implements JsonSerializable
     {
         return with(app(RestifyRequest::class), function ($request) {
             return [
-                'attribute' => $this->attribute,
+                'attribute' => $this->label ?? $this->attribute,
                 'value' => $this->resolveDefaultValue($request) ?? $this->value,
             ];
         });
     }
 
+    public function label($label)
+    {
+        $this->label = $label;
+
+        return $this;
+    }
+
     public function serializeToValue($request)
     {
         return [
-            $this->attribute => $this->resolveDefaultValue($request) ?? $this->value,
+            $this->label ?? $this->attribute => $this->resolveDefaultValue($request) ?? $this->value,
         ];
     }
 
