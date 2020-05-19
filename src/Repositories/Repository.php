@@ -670,7 +670,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     protected function getShowId(RestifyRequest $request): ?string
     {
-        return $this->resource->getKey();
+        return collect($this->resource->getHidden())->contains($this->resource->getKeyName()) ? null : $this->resource->getKey();
     }
 
     public function jsonSerialize()
