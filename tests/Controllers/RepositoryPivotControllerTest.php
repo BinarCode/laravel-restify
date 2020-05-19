@@ -12,7 +12,7 @@ class RepositoryPivotControllerTest extends IntegrationTest
         $user = $this->mockUsers(2)->first();
         $company = factory(Company::class)->create();
 
-        $response = $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $response = $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -32,7 +32,7 @@ class RepositoryPivotControllerTest extends IntegrationTest
         $usersFromCompany = $this->getJson('/restify-api/users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(0, $usersFromCompany->json('data'));
 
-        $response = $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $response = $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => [1, 2],
             'is_admin' => true,
         ])
@@ -56,7 +56,7 @@ class RepositoryPivotControllerTest extends IntegrationTest
         $usersFromCompany = $this->getJson('/restify-api/users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(0, $usersFromCompany->json('data'));
 
-        $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
         ]);
 
