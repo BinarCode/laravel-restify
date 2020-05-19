@@ -17,7 +17,7 @@ class RepositoryAttachController extends RepositoryController
         return $repository->attach(
             $request, $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))
-            ->map(fn($relatedRepositoryId) => $this->initializePivot(
+            ->map(fn ($relatedRepositoryId) => $this->initializePivot(
                 $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
             ))
         );
@@ -61,5 +61,4 @@ class RepositoryAttachController extends RepositoryController
 
         return $pivot;
     }
-
 }
