@@ -586,6 +586,17 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->created();
     }
 
+    public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
+    {
+        $deleted = DB::transaction(function () use ($request, $pivots) {
+            return $pivots->map(fn ($pivot) => $pivot->delete());
+        });
+
+        return $this->response()
+            ->data($deleted)
+            ->deleted();
+    }
+
     public function destroy(RestifyRequest $request, $repositoryId)
     {
         $status = DB::transaction(function () {
