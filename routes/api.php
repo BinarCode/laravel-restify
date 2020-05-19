@@ -1,6 +1,7 @@
 <?php
 
 use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryAttachController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryFilterController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
@@ -22,3 +23,6 @@ Route::get('/{repository}/{repositoryId}', '\\'.RepositoryShowController::class)
 Route::patch('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
 Route::put('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
 Route::delete('/{repository}/{repositoryId}', '\\'.RepositoryDestroyController::class);
+
+// Attach related repository id
+Route::post('/{repository}/{repositoryId}/attach/{relatedRepository}', '\\'.RepositoryAttachController::class);

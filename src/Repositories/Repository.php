@@ -574,6 +574,18 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->success();
     }
 
+    public function attach(RestifyRequest $request, $repositoryId, Collection $pivots)
+    {
+        DB::transaction(function () use ($request, $pivots) {
+            return $pivots->map(fn ($pivot) => $pivot->forceFill($request->except($request->relatedRepository)))
+                ->map(fn ($pivot) => $pivot->save());
+        });
+
+        return $this->response()
+            ->data($pivots)
+            ->created();
+    }
+
     public function destroy(RestifyRequest $request, $repositoryId)
     {
         $status = DB::transaction(function () {
