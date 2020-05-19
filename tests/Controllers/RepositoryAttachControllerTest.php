@@ -5,7 +5,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
-class RepositoryPivotControllerTest extends IntegrationTest
+class RepositoryAttachControllerTest extends IntegrationTest
 {
     public function test_attach_a_user_to_a_company()
     {
