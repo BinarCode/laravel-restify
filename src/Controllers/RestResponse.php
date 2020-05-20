@@ -649,4 +649,9 @@ class RestResponse extends JsonResponse implements Responsable
 
         return $this;
     }
+
+    public static function created()
+    {
+        return (new RestResponse())->code(201);
+    }
 }
