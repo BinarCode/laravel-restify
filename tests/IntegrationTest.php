@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAuthorizeRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithUnauthorizedFieldsRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
@@ -184,6 +185,7 @@ abstract class IntegrationTest extends TestCase
             PostAuthorizeRepository::class,
             PostWithUnauthorizedFieldsRepository::class,
             PostUnauthorizedFieldRepository::class,
+            PostWithHiddenFieldRepository::class,
         ]);
     }
 
