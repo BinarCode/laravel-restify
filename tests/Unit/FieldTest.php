@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -292,7 +291,7 @@ class FieldTest extends IntegrationTest
         };
 
         /** * @var Field $field */
-        $field = Field::new('title')->append(fn() => 'Append title');
+        $field = Field::new('title')->append(fn () => 'Append title');
 
         $field->fillAttribute($request, $model);
 
