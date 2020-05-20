@@ -126,6 +126,9 @@ class FieldTest extends IntegrationTest
 
         /** * @var Field $field */
         $field = Field::new('title')
+            ->append(function () {
+                return 'from append callback';
+            })
             ->fillCallback(function ($request, $model) {
                 $model->title = 'from fill callback';
             })
@@ -248,5 +251,52 @@ class FieldTest extends IntegrationTest
         $field->resolveForIndex((object) ['name' => 'Binaryk'], 'name');
 
         $this->assertEquals('custom_label', $field->label);
+        $this->assertEquals('custom_label', $field->jsonSerialize()['attribute']);
+    }
+
+    public function test_field_can_be_filled_from_the_append_value()
+    {
+        $request = new RepositoryStoreRequest([], []);
+
+        $request->merge([
+            'title' => 'Title from the request.',
+        ]);
+
+        $model = new class extends Model {
+            protected $table = 'posts';
+            protected $fillable = ['title'];
+        };
+
+        /** * @var Field $field */
+        $field = Field::new('title')->append('Append title');
+
+        $field->fillAttribute($request, $model);
+
+        $model->save();
+
+        $this->assertEquals($model->title, 'Append title');
+    }
+
+    public function test_field_can_be_filled_from_the_append_callback()
+    {
+        $request = new RepositoryStoreRequest([], []);
+
+        $request->merge([
+            'title' => 'Title from the request.',
+        ]);
+
+        $model = new class extends Model {
+            protected $table = 'posts';
+            protected $fillable = ['title'];
+        };
+
+        /** * @var Field $field */
+        $field = Field::new('title')->append(fn () => 'Append title');
+
+        $field->fillAttribute($request, $model);
+
+        $model->save();
+
+        $this->assertEquals($model->title, 'Append title');
     }
 }

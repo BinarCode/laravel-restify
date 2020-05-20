@@ -16,6 +16,8 @@ abstract class OrganicField extends BaseField
 
     public $readonlyCallback;
 
+    public $hiddenCallback;
+
     public array $rules = [];
 
     public array $storingRules = [];
@@ -64,6 +66,10 @@ abstract class OrganicField extends BaseField
 
     public function isShownOnShow(RestifyRequest $request, $repository): bool
     {
+        if ($this->isHidden($request)) {
+            return false;
+        }
+
         if (is_callable($this->showOnShow)) {
             $this->showOnShow = call_user_func($this->showOnShow, $request, $repository);
         }
@@ -78,6 +84,10 @@ abstract class OrganicField extends BaseField
 
     public function isShownOnIndex(RestifyRequest $request, $repository): bool
     {
+        if ($this->isHidden($request)) {
+            return false;
+        }
+
         return false === $this->isHiddenOnIndex($request, $repository);
     }
 
@@ -157,5 +167,16 @@ abstract class OrganicField extends BaseField
     public function isShownOnStore(RestifyRequest $request, $repository): bool
     {
         return ! $this->isReadonly($request);
+    }
+
+    public function isHidden(RestifyRequest $request)
+    {
+        return with($this->hiddenCallback, function ($callback) use ($request) {
+            if ($callback === true || (is_callable($callback) && call_user_func($callback, $request))) {
+                return true;
+            }
+
+            return false;
+        });
     }
 }

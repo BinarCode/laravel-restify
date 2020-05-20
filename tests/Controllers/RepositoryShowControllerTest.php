@@ -95,4 +95,39 @@ class RepositoryShowControllerTest extends IntegrationTest
                 ],
             ]);
     }
+
+    public function test_repository_hidden_fields_are_not_visible()
+    {
+        factory(Post::class)->create(['title' => 'Eduard']);
+
+        $response = $this->getJson('/restify-api/post-with-hidden-fields/1');
+
+        $this->assertArrayNotHasKey('user_id', $response->json('data.attributes'));
+    }
+
+    public function test_repository_hidden_fields_could_not_be_updated()
+    {
+        $post = factory(Post::class)->create(['user_id' => 2, 'title' => 'Eduard']);
+
+        $oldUserId = $post->user_id;
+
+        $this->putJson('/restify-api/post-with-hidden-fields/1', [
+            'title' => 'Updated title',
+            'user_id' => 1,
+        ]);
+
+        $this->assertEquals($oldUserId, Post::find($post->id)->user_id);
+    }
+
+    public function test_repository_hidden_fields_could_be_updated_through_append()
+    {
+        $post = factory(Post::class)->create(['user_id' => 2, 'title' => 'Eduard', 'category' => 'Hidden category before update.']);
+
+        $this->putJson('/restify-api/post-with-hidden-fields/1', [
+            'title' => 'Updated title',
+            'category' => 'Trying to update hidden category.',
+        ]);
+
+        $this->assertEquals('Append category for a hidden field.', $post->fresh()->category);
+    }
 }

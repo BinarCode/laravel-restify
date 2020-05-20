@@ -98,6 +98,13 @@ class Field extends OrganicField implements JsonSerializable
     protected $defaultCallback;
 
     /**
+     * Closure be used for the field's default value when store/update.
+     *
+     * @var callable
+     */
+    protected $appendCallback;
+
+    /**
      * Closure be used to be called after the field value stored.
      */
     public $afterStoreCallback;
@@ -190,10 +197,20 @@ class Field extends OrganicField implements JsonSerializable
     {
         $this->resolveValueBeforeUpdate($request, $model);
 
-        if (isset($this->fillCallback)) {
+        if ($this->isHidden($request)) {
+            if (! isset($this->appendCallback)) {
+                return;
+            }
+        }
+
+        if (! $this->isHidden($request) && isset($this->fillCallback)) {
             return call_user_func(
                 $this->fillCallback, $request, $model, $this->attribute
             );
+        }
+
+        if (isset($this->appendCallback)) {
+            return $this->fillAttributeFromAppend($request, $model, $this->attribute);
         }
 
         if ($request->isStoreRequest() && is_callable($this->storeCallback)) {
@@ -225,6 +242,28 @@ class Field extends OrganicField implements JsonSerializable
         if ($request->exists($attribute) || $request->get($attribute)) {
             $model->{$attribute} = $request[$attribute] ?? $request->get($attribute);
         }
+    }
+
+    /**
+     * Fill the model with the default value.
+     *
+     * @param RestifyRequest $request
+     * @param $model
+     * @param $attribute
+     */
+    protected function fillAttributeFromAppend(RestifyRequest $request, $model, $attribute)
+    {
+        if (! isset($this->appendCallback)) {
+            return;
+        }
+
+        if (is_callable($this->appendCallback)) {
+            return $model->{$attribute} = call_user_func(
+                $this->appendCallback, $request, $model, $attribute
+            );
+        }
+
+        $model->{$attribute} = $this->appendCallback;
     }
 
     /**
@@ -476,5 +515,34 @@ class Field extends OrganicField implements JsonSerializable
         if ($request->isUpdateRequest() && is_callable($this->afterUpdateCallback)) {
             call_user_func($this->afterUpdateCallback, $this->resolveAttribute($repository, $this->attribute), $this->valueBeforeUpdate, $repository, $request);
         }
+    }
+
+    /**
+     * Indicate whatever the input is hidden or not.
+     *
+     * @param bool $callback
+     * @return $this
+     */
+    public function hidden($callback = true)
+    {
+        $this->hideFromIndex($callback)
+            ->hideFromShow($callback);
+
+        $this->hiddenCallback = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Append values when store/update.
+     *
+     * @param callable|string $value
+     * @return $this
+     */
+    public function append($value)
+    {
+        $this->appendCallback = $value;
+
+        return $this;
     }
 }
