@@ -61,6 +61,6 @@ class RestifyRequest extends FormRequest
 
     public function isViaRepository()
     {
-        return $this->viaRepository && $this->viaRepositoryId && $this->viaRelationship;
+        return $this->viaRepository && $this->viaRepositoryId;
     }
 }

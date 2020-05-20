@@ -25,6 +25,21 @@ class RelatedIndexControllerTest extends IntegrationTest
         $this->assertCount(10, $response->json('data'));
     }
 
+    public function test_can_list_posts_belongs_to_a_user_without_via_relationship_because_get_default_main_repository()
+    {
+        $this->mockUsers();
+        $this->mockPosts(1, 10);
+
+        $this->mockPosts(
+            factory(User::class)->create()->id
+        );
+
+        $response = $this->getJson('restify-api/posts?viaRepository=users&viaRepositoryId=1')
+            ->assertStatus(200);
+
+        $this->assertCount(10, $response->json('data'));
+    }
+
     public function test_can_show_post_belongs_to_a_user()
     {
         factory(User::class)->create();

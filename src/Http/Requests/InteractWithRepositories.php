@@ -177,16 +177,6 @@ trait InteractWithRepositories
             ->whereKey($relatedRepositoryId ?? request('relatedRepositoryId'));
     }
 
-    protected function findPivot(RestifyRequest $request, $model)
-    {
-        $pivot = $model->{$request->relatedRepository}()->getPivotAccessor();
-
-        return $model->{$request->viaRelationship}()
-            ->withoutGlobalScopes()
-            ->lockForUpdate()
-            ->findOrFail($request->relatedRepositoryId)->{$pivot};
-    }
-
     public function viaParentModel()
     {
         $parent = $this->repository($this->viaRepository);
@@ -196,7 +186,7 @@ trait InteractWithRepositories
 
     public function viaQuery()
     {
-        return $this->viaParentModel()->{$this->viaRelationship}();
+        return $this->viaParentModel()->{$this->viaRelationship ?? request('repository')}();
     }
 
     /**
