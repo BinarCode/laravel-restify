@@ -652,6 +652,6 @@ class RestResponse extends JsonResponse implements Responsable
 
     public static function created()
     {
-        return (new RestResponse())->code(201);
+        return (new self())->code(201);
     }
 }
