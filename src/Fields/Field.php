@@ -198,12 +198,12 @@ class Field extends OrganicField implements JsonSerializable
         $this->resolveValueBeforeUpdate($request, $model);
 
         if ($this->isHidden($request)) {
-            if (!isset($this->appendCallback)) {
+            if (! isset($this->appendCallback)) {
                 return;
             }
         }
 
-        if (!$this->isHidden($request) && isset($this->fillCallback)) {
+        if (! $this->isHidden($request) && isset($this->fillCallback)) {
             return call_user_func(
                 $this->fillCallback, $request, $model, $this->attribute
             );
@@ -253,7 +253,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     protected function fillAttributeFromAppend(RestifyRequest $request, $model, $attribute)
     {
-        if (!isset($this->appendCallback)) {
+        if (! isset($this->appendCallback)) {
             return;
         }
 
@@ -356,7 +356,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (!$this->showCallback) {
+        if (! $this->showCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->showCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -379,7 +379,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (!$this->indexCallback) {
+        if (! $this->indexCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->indexCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -399,7 +399,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (!$this->resolveCallback) {
+        if (! $this->resolveCallback) {
             $this->value = $this->resolveAttribute($repository, $attribute);
         } elseif (is_callable($this->resolveCallback)) {
             tap($this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
