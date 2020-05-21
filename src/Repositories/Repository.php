@@ -582,8 +582,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         });
 
         return $this->response()
-            ->data($pivots)
-            ->created();
+            ->created()
+            ->data($pivots);
     }
 
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
