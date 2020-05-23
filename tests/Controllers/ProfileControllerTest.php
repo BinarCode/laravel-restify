@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileControllerTest extends IntegrationTest
 {
@@ -24,7 +23,7 @@ class ProfileControllerTest extends IntegrationTest
         $response = $this->getJson('/restify-api/profile')
             ->assertStatus(200)
             ->assertJsonStructure([
-                'data'
+                'data',
             ]);
 
         $response->assertJsonFragment([
@@ -63,7 +62,7 @@ class ProfileControllerTest extends IntegrationTest
         $file = UploadedFile::fake()->image($this->getTestJpg())->size(100);
 
         $this->postJson('restify-api/profile/avatar', [
-            'avatar' => $file
+            'avatar' => $file,
         ])
             ->assertStatus(200);
     }
