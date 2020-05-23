@@ -11,14 +11,14 @@ class ProfileAvatarController extends RepositoryController
         $user = $request->user();
 
         $request->validate([
-            'avatar' => 'required|image',
+            $request::$userAvatarAttribute => 'required|image',
         ]);
 
         ProfileAvatarRequest::$path = "avatars/{$user->getKey()}";
 
         $path = is_callable(ProfileAvatarRequest::$pathCallback) ? call_user_func(ProfileAvatarRequest::$pathCallback, $request) : $request::$path;
 
-        $path = $request->file('avatar')->store($path);
+        $path = $request->file($request::$userAvatarAttribute)->store($path);
 
         $user->{$request::$userAvatarAttribute} = $path;
         $user->save();
