@@ -191,13 +191,17 @@ abstract class IntegrationTest extends TestCase
 
     /**
      * Authenticate as an anonymous user.
+     * @param Authenticatable|null $user
+     * @return IntegrationTest
      */
-    protected function authenticate()
+    protected function authenticate(Authenticatable $user = null)
     {
-        $this->actingAs($this->authenticatedAs = Mockery::mock(Authenticatable::class));
+        $this->actingAs($this->authenticatedAs = $user ?? Mockery::mock(Authenticatable::class));
 
-        $this->authenticatedAs->shouldReceive('getAuthIdentifier')->andReturn(1);
-        $this->authenticatedAs->shouldReceive('getKey')->andReturn(1);
+        if (is_null($user)) {
+            $this->authenticatedAs->shouldReceive('getAuthIdentifier')->andReturn(1);
+            $this->authenticatedAs->shouldReceive('getKey')->andReturn(1);
+        }
 
         return $this;
     }
@@ -242,5 +246,25 @@ abstract class IntegrationTest extends TestCase
         }
 
         return $users->shuffle(); // randomly shuffles the items in the collection
+    }
+
+    public function getTempDirectory($suffix = ''): string
+    {
+        return __DIR__.'/TestSupport/temp'.($suffix == '' ? '' : '/'.$suffix);
+    }
+
+    public function getMediaDirectory($suffix = ''): string
+    {
+        return $this->getTempDirectory().'/media'.($suffix == '' ? '' : '/'.$suffix);
+    }
+
+    public function getTestFilesDirectory($suffix = ''): string
+    {
+        return $this->getTempDirectory().'/testfiles'.($suffix == '' ? '' : '/'.$suffix);
+    }
+
+    public function getTestJpg(): string
+    {
+        return $this->getTestFilesDirectory('test.jpg');
     }
 }

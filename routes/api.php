@@ -1,6 +1,9 @@
 <?php
 
 use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
+use Binaryk\LaravelRestify\Http\Controllers\ProfileAvatarController;
+use Binaryk\LaravelRestify\Http\Controllers\ProfileController;
+use Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryAttachController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryDetachController;
@@ -13,6 +16,10 @@ use Illuminate\Support\Facades\Route;
 
 // Global Search...
 Route::get('/search', '\\'.GlobalSearchController::class);
+
+Route::get('/profile', '\\' . ProfileController::class);
+Route::put('/profile', '\\' . ProfileUpdateController::class);
+Route::post('/profile/avatar', '\\' . ProfileAvatarController::class);
 
 // Filters
 Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
