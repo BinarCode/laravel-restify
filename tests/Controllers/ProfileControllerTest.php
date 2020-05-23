@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 
 class ProfileControllerTest extends IntegrationTest
@@ -44,6 +45,20 @@ class ProfileControllerTest extends IntegrationTest
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
         ]);
+    }
+
+    public function test_profile_update_password()
+    {
+        $this->putJson('restify-api/profile', [
+            'email' => 'contact@binarschool.com',
+            'name' => 'Eduard',
+            'password' => 'secret',
+            'password_confirmation' => 'secret',
+        ])
+            ->assertStatus(200);
+
+        $this->assertTrue(Hash::check('secret', $this->authenticatedAs->password));
+
     }
 
     public function test_profile_update_unique_email()
