@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Storage;
 
 class ProfileControllerTest extends IntegrationTest
 {
@@ -25,7 +24,7 @@ class ProfileControllerTest extends IntegrationTest
         $response = $this->getJson('/restify-api/profile')
             ->assertStatus(200)
             ->assertJsonStructure([
-                'data'
+                'data',
             ]);
 
         $response->assertJsonFragment([
@@ -58,7 +57,6 @@ class ProfileControllerTest extends IntegrationTest
             ->assertStatus(200);
 
         $this->assertTrue(Hash::check('secret', $this->authenticatedAs->password));
-
     }
 
     public function test_profile_update_unique_email()
@@ -78,7 +76,7 @@ class ProfileControllerTest extends IntegrationTest
         $file = UploadedFile::fake()->image($this->getTestJpg())->size(100);
 
         $this->postJson('restify-api/profile/avatar', [
-            'avatar' => $file
+            'avatar' => $file,
         ])
             ->assertStatus(200);
     }
