@@ -15,6 +15,6 @@ class ProfileController extends RepositoryController
             $user->{ProfileAvatarRequest::$userAvatarAttribute} = url($user->{ProfileAvatarRequest::$userAvatarAttribute});
         }
 
-        return $this->response()->data($request->user());
+        return $this->response()->data($user);
     }
 }
