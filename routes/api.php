@@ -17,9 +17,9 @@ use Illuminate\Support\Facades\Route;
 // Global Search...
 Route::get('/search', '\\'.GlobalSearchController::class);
 
-Route::get('/profile', '\\' . ProfileController::class);
-Route::put('/profile', '\\' . ProfileUpdateController::class);
-Route::post('/profile/avatar', '\\' . ProfileAvatarController::class);
+Route::get('/profile', '\\'.ProfileController::class);
+Route::put('/profile', '\\'.ProfileUpdateController::class);
+Route::post('/profile/avatar', '\\'.ProfileAvatarController::class);
 
 // Filters
 Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
