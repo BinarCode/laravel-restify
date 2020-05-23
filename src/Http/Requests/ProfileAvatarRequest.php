@@ -25,5 +25,4 @@ class ProfileAvatarRequest extends RestifyRequest
     {
         static::$pathCallback = $pathCallback;
     }
-
 }
