@@ -16,7 +16,6 @@ class PostWithCustomMiddlewareRepository extends Repository
 
     public static $uriKey = 'post-with-middleware';
 
-
     public function fields(RestifyRequest $request)
     {
         return [
