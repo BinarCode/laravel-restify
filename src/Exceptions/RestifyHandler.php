@@ -71,13 +71,13 @@ class RestifyHandler extends ExceptionHandler
         $response = new RestResponse();
 
         switch (true) {
-            case $exception instanceof NotFoundHttpException:
             case $exception instanceof ModelNotFoundException:
                 $response->addError(__('messages.not_found'))->missing();
                 break;
             // These has custom message, that message could be displayed in production.
             case $exception instanceof EntityNotFoundExceptionEloquent:
             case $exception instanceof EntityNotFoundException:
+            case $exception instanceof NotFoundHttpException:
                 $response->addError($exception->getMessage())->missing();
                 break;
 
@@ -108,8 +108,9 @@ class RestifyHandler extends ExceptionHandler
             case $exception instanceof InvalidSignatureException:
                 $response->addError($exception->getMessage())->forbidden();
                 break;
+
             case $exception instanceof HttpException:
-                $response->addError($exception->getMessage())->forbidden();
+                $response->addError($exception->getMessage())->code($exception->getStatusCode());
                 break;
 
             default:

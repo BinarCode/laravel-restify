@@ -54,7 +54,7 @@ class HandlerTest extends IntegrationTest
     {
         $response = $this->handler->render($this->request, new NotFoundHttpException('This message is not visible'));
         $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals($response->getData()->errors[0], __('messages.not_found'));
+        $this->assertEquals($response->getData()->errors[0], 'This message is not visible');
         $this->assertEquals($response->getStatusCode(), 404);
 
         $response = $this->handler->render($this->request, new ModelNotFoundException('This message is not visible'));
@@ -161,7 +161,7 @@ class HandlerTest extends IntegrationTest
 
         $response = $this->handler->render($this->request, new NotFoundHttpException('This message is not visible'));
         $this->assertInstanceOf(JsonResponse::class, $response);
-        $this->assertEquals($response->getData()->errors[0], __('messages.not_found'));
+        $this->assertEquals($response->getData()->errors[0], 'This message is not visible');
         $this->assertEquals($response->getStatusCode(), 404);
     }
 }
