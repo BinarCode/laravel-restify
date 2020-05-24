@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAbortMiddleware;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithCustomMiddlewareRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Mockery as m;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class RepositoryMiddlewaresTest extends IntegrationTest
 {
@@ -41,7 +40,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
     public function test_request_fails_if_middleware_abort()
     {
         PostWithCustomMiddlewareRepository::$middlewares = [
-            PostAbortMiddleware::class
+            PostAbortMiddleware::class,
         ];
 
         Restify::repositories([
@@ -54,7 +53,6 @@ class RepositoryMiddlewaresTest extends IntegrationTest
 
     public function test_foreign_repository_middleware_should_not_be_invoked()
     {
-
         $middleware = m::mock(PostAbortMiddleware::class);
 
         $nextParam = null;

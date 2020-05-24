@@ -2,7 +2,6 @@
 
 use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMiddleware;
 
 return [
     'auth' => [
