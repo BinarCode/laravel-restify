@@ -98,6 +98,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static $globalSearchResults = 5;
 
     /**
+     * The list of middlewares for the current repository.
+     *
+     * @var array
+     */
+    public static $middlewares = [];
+
+    /**
      * Get the underlying model instance for the resource.
      *
      * @return \Illuminate\Database\Eloquent\Model|LengthAwarePaginator
@@ -730,5 +737,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         return collect($this->filter($this->filters($request)))->each(fn (Filter $filter) => $filter->authorizedToSee($request))
             ->values();
+    }
+
+    public static function collectMiddlewares(): Collection
+    {
+        return collect(static::$middlewares);
     }
 }

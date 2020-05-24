@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-use Binaryk\LaravelRestify\Restify;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\App;
 

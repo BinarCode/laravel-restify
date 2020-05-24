@@ -58,7 +58,8 @@ class GlobalSearchControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('/restify-api/search?search=1');
+            ->getJson('/restify-api/search?search=1')
+            ->dump();
 
         $this->assertCount(1, $response->json('data'));
 

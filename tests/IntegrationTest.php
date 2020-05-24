@@ -43,7 +43,9 @@ abstract class IntegrationTest extends TestCase
     {
         parent::setUp();
         DB::enableQueryLog();
+
         Hash::driver('bcrypt')->setRounds(4);
+
         $this->repositoryMock();
         $this->loadMigrations();
         $this->loadRoutes();
