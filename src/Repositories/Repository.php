@@ -739,7 +739,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->values();
     }
 
-    public static function collectMiddlewares(RestifyRequest $request): Collection
+    public static function collectMiddlewares(RestifyRequest $request): ?Collection
     {
         return collect(static::$middlewares);
     }
