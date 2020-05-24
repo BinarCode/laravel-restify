@@ -7,6 +7,8 @@ use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pipeline\Pipeline;
+use Throwable;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -44,11 +46,16 @@ trait InteractWithRepositories
                 ]), 404);
             }
 
-            if (! $repository::authorizedToUseRepository($this)) {
+            if (!$repository::authorizedToUseRepository($this)) {
                 throw new UnauthorizedException(__('Unauthorized to view repository :name. See "allowRestify" policy.', [
                     'name' => $repository,
                 ]), 403);
             }
+
+            app(Pipeline::class)
+                ->send($this)
+                ->through($repository::collectMiddlewares()->toArray())
+                ->thenReturn();
         });
 
         return $repository::resolveWith($repository::newModel());
@@ -114,7 +121,7 @@ trait InteractWithRepositories
      */
     public function newQueryWithoutScopes($uriKey = null)
     {
-        if (! $this->isViaRepository()) {
+        if (!$this->isViaRepository()) {
             return $this->model($uriKey)->newQueryWithoutScopes();
         }
 
@@ -181,7 +188,7 @@ trait InteractWithRepositories
     {
         $parent = $this->repository($this->viaRepository);
 
-        return once(fn () => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
+        return once(fn() => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
     }
 
     public function viaQuery()

@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAuthorizeRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithCustomMiddlewareRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithUnauthorizedFieldsRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -43,7 +44,9 @@ abstract class IntegrationTest extends TestCase
     {
         parent::setUp();
         DB::enableQueryLog();
+
         Hash::driver('bcrypt')->setRounds(4);
+
         $this->repositoryMock();
         $this->loadMigrations();
         $this->loadRoutes();
