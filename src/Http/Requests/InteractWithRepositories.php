@@ -53,7 +53,7 @@ trait InteractWithRepositories
 
             app(Pipeline::class)
                 ->send($this)
-                ->through($repository::collectMiddlewares()->toArray())
+                ->through($repository::collectMiddlewares($this)->toArray())
                 ->thenReturn();
         });
 
