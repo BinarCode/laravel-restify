@@ -12,12 +12,11 @@ class RepositoryAttachInterceptorTest extends IntegrationTest
         $role = factory(Role::class)->create();
         $user = $this->mockUsers()->first();
 
-        $this->postJson('restify-api/roles/' . $role->id . '/attach/users', [
+        $this->postJson('restify-api/roles/'.$role->id.'/attach/users', [
             'users' => $user->id,
         ])
             ->assertCreated();
 
         $this->assertDatabaseCount('model_has_roles', 1);
-
     }
 }

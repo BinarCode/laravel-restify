@@ -23,7 +23,7 @@ class RepositoryAttachController extends RepositoryController
         return $repository->attach(
             $request, $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))
-                ->map(fn($relatedRepositoryId) => $this->initializePivot(
+                ->map(fn ($relatedRepositoryId) => $this->initializePivot(
                     $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
                 ))
         );
@@ -76,7 +76,7 @@ class RepositoryAttachController extends RepositoryController
             return $cb;
         }
 
-        $methodGuesser = "attach" . Str::studly($request->relatedRepository);
+        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
 
         if (method_exists($repository, $methodGuesser)) {
             return [$repository, $methodGuesser];
