@@ -105,6 +105,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static $middlewares = [];
 
     /**
+     * The list of attach callable's.
+     *
+     * @var array
+     */
+    public static $attachers = [];
+
+    /**
      * Get the underlying model instance for the resource.
      *
      * @return \Illuminate\Database\Eloquent\Model|LengthAwarePaginator
@@ -742,5 +749,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static function collectMiddlewares(RestifyRequest $request): ?Collection
     {
         return collect(static::$middlewares);
+    }
+
+    public static function getAttachers(): array
+    {
+        return static::$attachers;
     }
 }
