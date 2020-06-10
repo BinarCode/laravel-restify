@@ -104,7 +104,7 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail, Rest
     {
         return [
             'roles' => [
-               'admin'
+                'admin',
             ],
         ];
     }
