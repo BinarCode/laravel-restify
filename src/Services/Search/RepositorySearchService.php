@@ -93,7 +93,7 @@ class RepositorySearchService extends Searchable
 
     public function prepareRelations(RestifyRequest $request, $query, $extra = [])
     {
-        $relations = array_merge($extra, explode(',', $request->get('with')));
+        $relations = array_merge($extra, explode(',', $request->get('related')));
 
         foreach ($relations as $relation) {
             if (in_array($relation, $this->repository->getWiths())) {

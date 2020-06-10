@@ -22,6 +22,7 @@ class ProfileControllerTest extends IntegrationTest
     public function test_profile_returns_authenticated_user()
     {
         $response = $this->getJson('/restify-api/profile')
+            ->dump()
             ->assertStatus(200)
             ->assertJsonStructure([
                 'data',
