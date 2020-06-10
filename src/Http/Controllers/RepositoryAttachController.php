@@ -4,8 +4,10 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\RepositoryAttachRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use DateTime;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Str;
 
 class RepositoryAttachController extends RepositoryController
 {
@@ -14,12 +16,16 @@ class RepositoryAttachController extends RepositoryController
         $model = $request->findModelOrFail();
         $repository = $request->repository()->allowToUpdate($request);
 
+        if (is_callable($method = $this->guessMethodName($request, $repository))) {
+            return call_user_func($method, $request, $repository, $model);
+        }
+
         return $repository->attach(
             $request, $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))
-            ->map(fn ($relatedRepositoryId) => $this->initializePivot(
-                $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
-            ))
+                ->map(fn ($relatedRepositoryId) => $this->initializePivot(
+                    $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
+                ))
         );
     }
 
@@ -60,5 +66,22 @@ class RepositoryAttachController extends RepositoryController
         }
 
         return $pivot;
+    }
+
+    public function guessMethodName(RestifyRequest $request, Repository $repository): ?callable
+    {
+        $key = $request->relatedRepository;
+
+        if (array_key_exists($key, $repository::getAttachers()) && is_callable($cb = $repository::getAttachers()[$key])) {
+            return $cb;
+        }
+
+        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
+
+        if (method_exists($repository, $methodGuesser)) {
+            return [$repository, $methodGuesser];
+        }
+
+        return null;
     }
 }
