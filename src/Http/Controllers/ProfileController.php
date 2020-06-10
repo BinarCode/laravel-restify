@@ -19,6 +19,14 @@ class ProfileController extends RepositoryController
             $user->load(explode(',', $related));
         }
 
-        return $this->response()->model($user);
+        $meta = [];
+
+        if (method_exists($user, 'profile')) {
+            $meta = (array) call_user_func([$user, 'profile'], $request);
+        }
+
+        return $this->response()
+            ->data($user)
+            ->meta($meta);
     }
 }

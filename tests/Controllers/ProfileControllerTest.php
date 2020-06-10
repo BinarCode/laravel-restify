@@ -37,6 +37,7 @@ class ProfileControllerTest extends IntegrationTest
     {
         $response = $this->getJson('/restify-api/profile?related=posts')
             ->assertStatus(200)
+
             ->assertJsonStructure([
                 'data',
             ]);
@@ -45,6 +46,18 @@ class ProfileControllerTest extends IntegrationTest
             'email' => $this->authenticatedAs->email,
             'posts' => [],
         ]);
+    }
+
+    public function test_profile_returns_authenticated_user_with_meta_profile_data()
+    {
+        $this->getJson('/restify-api/profile')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data',
+                'meta' => [
+                    'roles'
+                ],
+            ]);
     }
 
     public function test_profile_update()

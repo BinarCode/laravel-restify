@@ -99,4 +99,13 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail, Rest
         static::$match = ['id' => 'int', 'email' => 'string'];
         static::$withs = ['posts'];
     }
+
+    public function profile()
+    {
+        return [
+            'roles' => [
+               'admin'
+            ],
+        ];
+    }
 }
