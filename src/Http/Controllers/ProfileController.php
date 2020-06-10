@@ -4,8 +4,6 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\ProfileAvatarRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
-use Binaryk\LaravelRestify\Services\Search\SearchService;
 
 class ProfileController extends RepositoryController
 {

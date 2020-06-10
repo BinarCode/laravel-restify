@@ -33,6 +33,20 @@ class ProfileControllerTest extends IntegrationTest
         ]);
     }
 
+    public function test_profile_returns_authenticated_user_with_related_posts()
+    {
+        $response = $this->getJson('/restify-api/profile?related=posts')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'data',
+            ]);
+
+        $response->assertJsonFragment([
+            'email' => $this->authenticatedAs->email,
+            'posts' => [],
+        ]);
+    }
+
     public function test_profile_update()
     {
         $response = $this->putJson('restify-api/profile', [
