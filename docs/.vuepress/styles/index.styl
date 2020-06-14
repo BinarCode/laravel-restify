@@ -158,6 +158,11 @@ h6 .header-anchor:hover
   zoom: 50%;
 }
 
+/* Table
+-----------------------------------------------------------------------------*/
+tr:nth-child(2n)
+    background-color: #21243d
+
 /* TOC
 -----------------------------------------------------------------------------*/
 .table-of-contents
@@ -196,6 +201,11 @@ $tipColor = rgb(251, 99, 64)
 .prev, .next
   color $accentColor
 
+/* Theme defaults
+-----------------------------------------------------------------------------*/
+.theme-default-content code
+    color: $accentColor
+
 /* Custom Blocks
 -----------------------------------------------------------------------------*/
 .custom-block.tip
@@ -214,6 +224,7 @@ $tipColor = rgb(251, 99, 64)
 
 .custom-block.warning
   border-color darken(#F3ECC5, 30%)
+  color: #fff
 
 .custom-block.danger
   border-color darken(#ffe6e6, 15%)
