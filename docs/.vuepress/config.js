@@ -1,4 +1,4 @@
-var versions = ["1.0", "2.0"];
+var versions = ["1.0", "2.0", "3.0"];
 
 module.exports = {
     title: 'Laravel Restify',
@@ -11,11 +11,15 @@ module.exports = {
         sidebarDepth: 2,
 
         nav: [
-            { text: 'Docs', link: '/docs/2.0/' },
+            { text: 'Docs', link: '/docs/3.0/' },
             {
                 text: "Version",
                 link: "/",
-                items: [{ text: "1.0", link: "/docs/1.0/" }, { text: "2.0", link: "/docs/2.0/" }]
+                items: [
+                    { text: "1.0", link: "/docs/1.0/" },
+                    { text: "2.0", link: "/docs/2.0/" },
+                    { text: "3.0", link: "/docs/3.0/" },
+                    ]
             },
             { text: 'Git', link: 'https://github.com/binaryk/laravel-restify', target: '_blank' },
             { text: 'About us', link: 'https://binarcode.com', target: '_blank' }
@@ -23,8 +27,10 @@ module.exports = {
 
         sidebar: {
             "/docs/1.0/": require("./1.0"),
-            "/docs/2.0/": require("./2.0")
+            "/docs/2.0/": require("./2.0"),
+            "/docs/3.0/": require("./3.0")
         },
+
     },
     plugins: [
         '@vuepress/pwa',
@@ -43,9 +49,19 @@ module.exports = {
                     }
                 });
             }
-        })
+        }),
+        ['vuepress-plugin-code-copy', true]
     ],
     head: [
+        [
+            "link",
+            {
+                href:
+                    "https://fonts.googleapis.com/css?family=Montserrat:200,200i,300,300i,400,400i,600,600i,800,800i,900,900i",
+                rel: "stylesheet",
+                type: "text/css"
+            }
+        ],
         // Used for PWA
         [
             "link",
