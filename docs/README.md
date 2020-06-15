@@ -2,9 +2,9 @@
 home: true
 heroImage: /assets/img/logo.png
 heroText: 
-tagline: A package to implement a JSON:API with Laravel
-actionText: Docs →
-actionLink: /docs/2.0/
+tagline: The fastest way to implement JSON:API with Laravel
+actionText: See how →
+actionLink: /docs/3.0/
 features:
 - title: Magic CRUD over entities
   details: Enjoy powerful "CRUD" over your entities in seconds
@@ -17,6 +17,6 @@ features:
 - title: Exception handler
   details: Make your API more suggestive by giving readable exceptions
 - title: JSON:API consistency
-  details: Maintain your API consistent according with https://jsonapi.org
+  details: Maintain your API consistent accordingly with https://jsonapi.org
   
 footer: MIT Lice
