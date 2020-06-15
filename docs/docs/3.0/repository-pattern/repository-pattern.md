@@ -310,7 +310,7 @@ $default = parent::resolveIndexMeta($request);
 You can also override the main `meta` object for the index, not the one for per item:
 
 ```php
-public function resolveIndexMainMeta(RestifyRequest $request)
+public function resolveIndexMainMeta(RestifyRequest $request, Collection $items)
 {
 $default = parent::resolveIndexMeta($request);
     return array_merge($default, [
