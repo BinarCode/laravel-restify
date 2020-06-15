@@ -36,7 +36,7 @@ public function filters(RestifyRequest $request)
 JavaScript implementation:
 
 ```javascript
-const filters = atob(JSON.stringify([
+const filters = btoa(JSON.stringify([
     {
         'class': 'App\\Restify\\Filters\\CreatedAfterDateFilter',
         'value': moment()->timestamp
@@ -92,7 +92,7 @@ public function filters(RestifyRequest $request)
 JavaScript implementation:
 
 ```javascript
-const filters = atob(JSON.stringify([
+const filters = btoa(JSON.stringify([
     {
         'class': 'App\\Restify\\Filters\\SelectCategoryFilter',
         'value': 'article'
@@ -140,7 +140,7 @@ public function filters(RestifyRequest $request)
 JavaScript implementation:
 
 ```javascript
-const filters = atob(JSON.stringify([
+const filters = btoa(JSON.stringify([
     {
         'class': 'App\\Restify\\Filters\\ActiveBooleanFilter',
         'value': {
@@ -171,7 +171,7 @@ Definitely you can combine filters as you prefer:
 
 
 ```javascript
-const filters = atob(JSON.stringify([
+const filters = btoa(JSON.stringify([
     {
         'class': 'App\\Restify\\Filters\\ActiveBooleanFilter',
         'value': {
