@@ -187,3 +187,46 @@ const filters = atob(JSON.stringify([
 const  response = await axios.get('restify-api/posts?filters=' + filters);
 ```
 
+## Get available filters
+
+```javascript
+await axios.get('resitfy-api/posts/filters');
+```
+
+The response will look like this:
+
+```json
+{
+  "data": [
+    {
+      "class": "Binaryk\\LaravelRestify\\Tests\\Fixtures\\Post\\ActiveBooleanFilter",
+      "type": "boolean",
+      "options": [
+        {
+          "label": "Is Active",
+          "property": "is_active"
+        }
+      ]
+    },
+    {
+      "class": "Binaryk\\LaravelRestify\\Tests\\Fixtures\\Post\\SelectCategoryFilter",
+      "type": "select",
+      "options": [
+        {
+          "label": "Movie category",
+          "property": "movie"
+        },
+        {
+          "label": "Article Category",
+          "property": "article"
+        }
+      ]
+    },
+    {
+      "class": "Binaryk\\LaravelRestify\\Tests\\Fixtures\\Post\\CreatedAfterDateFilter",
+      "type": "timestamp",
+      "options": []
+    }
+  ]
+```
+
