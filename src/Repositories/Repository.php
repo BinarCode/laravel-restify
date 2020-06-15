@@ -543,7 +543,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function indexPaginator(RestifyRequest $request)
     {
-
     }
 
     public function resolveIndexMainMeta(RestifyRequest $request)
