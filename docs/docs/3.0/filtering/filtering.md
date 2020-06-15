@@ -100,5 +100,5 @@ public static $related = ['user'];
 This means that we could use `posts` query for eager loading posts:
 
 ```http request
-GET: /restify-api/related?with=user
+GET: /restify-api/related?related=user
 ```
