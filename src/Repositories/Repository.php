@@ -449,7 +449,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @param $request
      * @return array
      */
-    public function resolveDetailsMeta($request)
+    public function resolveShowMeta($request)
     {
         return [
             'authorizedToShow' => $this->authorizedToShow($request),
@@ -496,7 +496,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveIndexMeta($request)
     {
-        return $this->resolveDetailsMeta($request);
+        return $this->resolveShowMeta($request);
     }
 
     /**
@@ -695,7 +695,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
             'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
-            'meta' => $this->when(value($meta = $request->isShowRequest() ? $this->resolveDetailsMeta($request) : $this->resolveIndexMeta($request)), $meta),
+            'meta' => $this->when(value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)), $meta),
         ]);
     }
 

@@ -465,3 +465,39 @@ $default = parent::resolveIndexMeta($request);
     ]);
 }
 ```
+
+## Index main meta
+
+You can also override the main `meta` object for the index, not the one for per item:
+
+```php
+public function resolveIndexMainMeta(RestifyRequest $request)
+{
+$default = parent::resolveIndexMeta($request);
+    return array_merge($default, [
+        'next_payment_at' => $this->resource->current_payment_at->addMonth(),
+    ]);
+}
+```
+
+## Serialize show
+
+As well as for the index items, you can add custom attributes or change the format for the show request resolved by `/resource/{resourceKey}`:
+
+```php
+public function resolveForShow($repository, $attribute = null)
+{
+    //    
+}
+```
+
+## Show Meta
+
+You are free to customize the show meta information as well by defining the `resolveShowMeta` method:
+
+```php
+public function resolveShowMeta($request)
+{
+    //    
+}
+```
