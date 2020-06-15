@@ -446,3 +446,22 @@ public static function routes(Router $router, $attributes = ['namespace' => 'App
 If `$wrap` is false, your routes will have any Route group `$attributes`, that means no prefix, middleware, or namespace will be applied out of the box, even you defined that as a default argument in the `routes` method. So you should take care of that.
 :::
 
+
+## Serialize index
+
+The default response for the index call could be customized.
+
+### Index meta
+
+Index request returns a list with `meta` attribute. By default, this includes the permissions over the current list item. 
+You can customize the `meta` attributes adding `resolveIndexMeta`:
+
+```php
+public function resolveIndexMeta($request)
+{
+$default = parent::resolveIndexMeta($request);
+    return array_merge($default, [
+        'next_payment_at' => $this->resource->current_payment_at->addMonth(),
+    ]);
+}
+```

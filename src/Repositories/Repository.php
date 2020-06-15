@@ -535,10 +535,20 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         })->values()->map(fn (self $repository) => $repository->serializeForIndex($request));
 
         return $this->response([
-            'meta' => RepositoryCollection::meta($paginator->toArray()),
+            'meta' => $this->resolveIndexMainMeta($request) ?? RepositoryCollection::meta($paginator->toArray()),
             'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
             'data' => $items,
         ]);
+    }
+
+    public function indexPaginator(RestifyRequest $request)
+    {
+
+    }
+
+    public function resolveIndexMainMeta(RestifyRequest $request)
+    {
+        //
     }
 
     public function show(RestifyRequest $request, $repositoryId)
