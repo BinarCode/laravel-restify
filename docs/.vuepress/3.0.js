@@ -10,9 +10,14 @@ module.exports = [
         children: ['repository-pattern/repository-pattern']
     },
     {
-        title: 'Filtering & Relations',
+        title: 'Filtering',
         collapsable: true,
         children: ['filtering/filtering'],
+    },
+    {
+        title: 'Custom Filters',
+        collapsable: true,
+        children: ['custom-filters/custom-filters'],
     },
     {
         title: 'Field',
