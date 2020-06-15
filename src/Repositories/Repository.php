@@ -535,7 +535,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         })->values()->map(fn (self $repository) => $repository->serializeForIndex($request));
 
         return $this->response([
-            'meta' => $this->resolveIndexMainMeta($request) ?? RepositoryCollection::meta($paginator->toArray()),
+            'meta' => $this->resolveIndexMainMeta($request, $items) ?? RepositoryCollection::meta($paginator->toArray()),
             'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
             'data' => $items,
         ]);
@@ -545,7 +545,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
     }
 
-    public function resolveIndexMainMeta(RestifyRequest $request)
+    public function resolveIndexMainMeta(RestifyRequest $request, Collection $items)
     {
         //
     }
