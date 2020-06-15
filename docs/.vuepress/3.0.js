@@ -6,32 +6,32 @@ module.exports = [
     },
     {
         title: "Repository",
-        collapsable: false,
+        collapsable: true,
         children: ['repository-pattern/repository-pattern']
     },
     {
+        title: 'Filtering & Relations',
+        collapsable: true,
+        children: ['filtering/filtering'],
+    },
+    {
         title: 'Field',
-        collapsable: false,
+        collapsable: true,
         children: ['repository-pattern/field'],
     },
     {
         title: 'Rest Controller',
-        collapsable: false,
+        collapsable: true,
         children: ['rest-methods/rest-methods'],
     },
     {
-        title: 'Filtering',
-        collapsable: false,
-        children: ['search/search'],
-    },
-    {
         title: 'Auth service',
-        collapsable: false,
+        collapsable: true,
         children: ['auth/auth'],
     },
     {
         title: 'Error handler',
-        collapsable: false,
+        collapsable: true,
         children: ['exception-handler/exception-handler'],
     },
 ];

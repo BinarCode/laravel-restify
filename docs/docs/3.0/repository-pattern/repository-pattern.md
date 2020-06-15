@@ -93,6 +93,44 @@ class Post extends Repository
 :::
 
 
+## Repository middleware
+
+Each repository has the `restify.middleware` out of the box for the CRUD methods. However, you're free to add your own middlewares for a specific repository.
+
+```php
+    // PostRepository.php
+
+    public static $middlewares = [
+        NeedsCompanyMiddleware::class,
+    ];
+
+```
+
+This `NeedsCompanyMiddleware` is a custom middleware, and it will be applied over all CRUD routes for this repository.
+
+If you need the current request, you can override the `collectMiddlewares` method, and use the current request:
+
+```php
+public static function collectMiddlewares(RestifyRequest $request): ?Collection
+{
+    if ($request->isShowRequest())         
+    {
+        return collect([ 
+            NeedsCompanyMiddleware::class,
+        ]);
+    }
+
+    if ($request->isIndexRequest())         
+    {
+        return collect([ 
+            SampleIndexRequest::class,
+        ]);
+    }
+
+    return null;
+}
+```
+
 ## Dependency injection
 
 The Laravel [service container](https://laravel.com/docs/6.x/container) is used to resolve all Laravel Restify repositories. 
