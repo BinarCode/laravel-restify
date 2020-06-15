@@ -513,3 +513,71 @@ public static function routes(Router $router, $attributes = ['namespace' => 'App
 :::warning Clean routes
 If `$wrap` is false, your routes will have any Route group `$attributes`, that means no prefix, middleware, or namespace will be applied out of the box, even you defined that as a default argument in the `routes` method. So you should take care of that.
 :::
+
+## Attach related 
+
+- Attach related models to a model (check tests)
+- Attach multiple related model to a model
+- Attach extra information to the pivot
+
+Example of how to attach users posts to users with `is_owner` extra pivot:
+```javascript
+axios.post('restify-api/users/1/attach/posts', [
+    'posts': [1, 2],
+    'is_owner': true
+])
+```
+
+## Detach related
+
+- Detach repository
+- Detach multiple repositories
+
+Example of how to remove posts from user:
+
+```javascript
+axios.post('restify-api/users/1/detach/posts', [
+    'users': [1, 2]
+]);
+```
+
+## Write your own attach
+
+If you want to implement attach method for such relationship on your own, Laravel Restify provides you an easy way of doing that. Let's say you have to attach roles to user:
+
+```php
+// app/Restify/UserRepository.php
+public function attachRoles(RestifyRequest $request, UserRepository $repository, User $user)
+{
+    $roles = collect($request->get('roles'))->map(fn($role) => Role::findByName($role, 'web'));
+
+    if ($id = $request->get('company_id')) {
+        $user->assignCompanyRoles(
+            Company::find($id),
+            $roles
+        );
+    }
+
+    return $this->response()->created();
+}
+```
+The javascript request will remain the same:
+
+```javascript
+axios.post('restify-api/users/1/attach/roles', [
+    'roles': [1, 2]
+])
+```
+
+Based on your related resource, `roles`, Laravel Restify will automatically detect the `attachRoles` method.
+
+If you don't like this kind of `magic` stuff, you can override the `getAttachers` method, and return an associative array, where the key is the name of the related resource, and the value should be a closure which  handle the action:
+
+```php
+public static function getAttachers(): array
+{
+    'roles' => function(RestifyRequest $request, UserRepository $repository, User $user) {
+        //
+    },
+}
+```
