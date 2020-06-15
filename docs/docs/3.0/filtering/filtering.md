@@ -102,3 +102,22 @@ This means that we could use `posts` query for eager loading posts:
 ```http request
 GET: /restify-api/related?related=user
 ```
+
+## Pagination
+
+Laravel Restify has returns `index` items paginates. The default `perPage` is 15.
+
+You can modify that by modifying `$defaultPerPage` property:
+
+```php
+class PostRepository extends Repository
+{
+    public static $defaultPerPage = 30;
+}
+```
+
+The per page could be changed via query param `perPage`:
+
+```http request
+`/restify-api/posts?perPage=30
+```
