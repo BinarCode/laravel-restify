@@ -43,7 +43,7 @@ php artisan restify:repository Post
 
 ## Usage
 
-See the [official documentation](https://binarcode.github.io/laravel-restify/docs/2.0/).
+See the [official documentation](https://restify.binarcode.com).
 
 ### Testing
 
