@@ -55,7 +55,7 @@ class ProfileControllerTest extends IntegrationTest
             ->assertJsonStructure([
                 'data',
                 'meta' => [
-                    'roles'
+                    'roles',
                 ],
             ]);
     }
