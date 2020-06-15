@@ -446,3 +446,58 @@ public static function routes(Router $router, $attributes = ['namespace' => 'App
 If `$wrap` is false, your routes will have any Route group `$attributes`, that means no prefix, middleware, or namespace will be applied out of the box, even you defined that as a default argument in the `routes` method. So you should take care of that.
 :::
 
+
+## Serialize index
+
+The default response for the index call could be customized.
+
+### Index meta
+
+Index request returns a list with `meta` attribute. By default, this includes the permissions over the current list item. 
+You can customize the `meta` attributes adding `resolveIndexMeta`:
+
+```php
+public function resolveIndexMeta($request)
+{
+$default = parent::resolveIndexMeta($request);
+    return array_merge($default, [
+        'next_payment_at' => $this->resource->current_payment_at->addMonth(),
+    ]);
+}
+```
+
+## Index main meta
+
+You can also override the main `meta` object for the index, not the one for per item:
+
+```php
+public function resolveIndexMainMeta(RestifyRequest $request)
+{
+$default = parent::resolveIndexMeta($request);
+    return array_merge($default, [
+        'next_payment_at' => $this->resource->current_payment_at->addMonth(),
+    ]);
+}
+```
+
+## Serialize show
+
+As well as for the index items, you can add custom attributes or change the format for the show request resolved by `/resource/{resourceKey}`:
+
+```php
+public function resolveForShow($repository, $attribute = null)
+{
+    //    
+}
+```
+
+## Show Meta
+
+You are free to customize the show meta information as well by defining the `resolveShowMeta` method:
+
+```php
+public function resolveShowMeta($request)
+{
+    //    
+}
+```
