@@ -162,24 +162,13 @@ Field::new('user_id')->hidden()->append(function(RestifyRequest $request, $model
 
 ## Field label
 
-- Field label, so you can replace a field attribute:
+Field label, so you can replace a field attribute spelling when it is returned to the frontend:
 ```
 Field::new('created_at')->label('sent_at')
 ```
-- Field can be setup as hidden:
+
+## Hidden field
+Field can be setup as hidden:
 ```
 Field::new('token')->hidden(); // this will not be visible 
 ```
-- Field can have append value, to append information like auth user, or any other relationships:
-```
-Field::new('user_id')->hidden()->append(auth()->user()->id); // this will not be visible, but will be stored
-```
-
-- Related repositories no longer requires a `viaRelationship` query param, as it will get the default one from the main repository:
-Before:
-
-` axios.get('/restify/users?viaRelationship=users&viaRepositoryId=1&viaRepository=companies')`
-
-After:
-
-` axios.get('/restify/users?viaRepositoryId=1&viaRepository=companies')`
