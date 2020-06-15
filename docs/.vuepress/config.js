@@ -4,7 +4,7 @@ module.exports = {
     title: 'Laravel Restify',
     description: 'A package to start the REST API',
     serviceWorker: true,
-    base: '/laravel-restify/',
+    base: '/',
     themeConfig: {
         logo: '/assets/img/icon.png',
         displayAllHeaders: true,
