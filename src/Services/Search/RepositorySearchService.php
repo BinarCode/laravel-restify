@@ -26,7 +26,7 @@ class RepositorySearchService extends Searchable
     {
         $model = $query->getModel();
         foreach ($this->repository->getMatchByFields() as $key => $type) {
-            if (!$request->has($key) && !data_get($extra, "match.$key")) {
+            if (! $request->has($key) && ! data_get($extra, "match.$key")) {
                 continue;
             }
 
@@ -59,7 +59,7 @@ class RepositorySearchService extends Searchable
                     case RestifySearchable::MATCH_INTEGER:
                     case 'number':
                     case 'int':
-                        $query->where($field, '=', (int)$match);
+                        $query->where($field, '=', (int) $match);
                         break;
                 }
             }
@@ -129,7 +129,7 @@ class RepositorySearchService extends Searchable
             $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
             foreach ($this->repository->getSearchableFields() as $column) {
-                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
+                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
             }
         });
 
@@ -180,12 +180,12 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn($query) => $repository::indexQuery($request, $query);
+        return fn ($query) => $repository::indexQuery($request, $query);
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
     {
-        if (!empty($request->filters)) {
+        if (! empty($request->filters)) {
             $filters = json_decode(base64_decode($request->filters), true);
 
             collect($filters)
@@ -208,7 +208,7 @@ class RepositorySearchService extends Searchable
                     return $matchingFilter;
                 })
                 ->filter()
-                ->each(fn(Filter $filter) => $filter->filter($request, $query, $filter->value));
+                ->each(fn (Filter $filter) => $filter->filter($request, $query, $filter->value));
         }
 
         return $query;
