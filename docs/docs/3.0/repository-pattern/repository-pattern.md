@@ -341,6 +341,23 @@ public function resolveShowMeta($request)
 }
 ```
 
+
+## Merge all model attributes
+
+Laravel Restify will show and fill only attributes defined in the `fields` method of the repository. However, you can merge all of the model attributes by implementing `Mergeable` contract:
+
+```php
+
+use Binaryk\LaravelRestify\Repositories\Mergeable;
+
+class PostRepository extends Repository implements Mergeable
+{
+    //
+}
+```
+
+Even if you didn't specify any field in your `fields` method, the show/index requests will always return all the model attributes in this case. 
+
 ## Custom routes
 
 Laravel Restify has its own "CRUD" routes, however you're able to define your own routes right from your Repository class:
