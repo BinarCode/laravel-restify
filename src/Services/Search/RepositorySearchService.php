@@ -72,7 +72,6 @@ class RepositorySearchService extends Searchable
     {
         $orderings = explode(',', $request->get('sort', ''));
 
-
         if (isset($extra['sort'])) {
             $orderings = $extra['sort'];
         }
