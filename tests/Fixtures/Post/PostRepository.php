@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Support\Collection;
 
 class PostRepository extends Repository
 {
@@ -56,6 +57,14 @@ class PostRepository extends Repository
             ActiveBooleanFilter::new()->canSee(fn () => true),
             SelectCategoryFilter::new(),
             CreatedAfterDateFilter::new(),
+        ];
+    }
+
+    public function resolveIndexMainMeta(RestifyRequest $request, Collection $items)
+    {
+        return [
+            'postKey' => 'Custom Meta Value',
+            'first_title' => optional($items->first())->title,
         ];
     }
 }
