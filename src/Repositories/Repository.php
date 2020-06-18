@@ -532,12 +532,14 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return static::resolveWith($value);
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
-        })->values()->map(fn (self $repository) => $repository->serializeForIndex($request));
+        })->values();
 
         return $this->response([
-            'meta' => $this->resolveIndexMainMeta($request, $items) ?? RepositoryCollection::meta($paginator->toArray()),
+            'meta' => $this->resolveIndexMainMeta(
+                    $request, $items->map(fn (self $repository) => $repository->resource),
+                ) ?? RepositoryCollection::meta($paginator->toArray()),
             'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
-            'data' => $items,
+            'data' => $items->map(fn (self $repository) => $repository->serializeForIndex($request)),
         ]);
     }
 

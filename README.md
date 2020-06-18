@@ -1,4 +1,4 @@
-<p align="center"><img src="https://BinarCode.github.io/laravel-restify/assets/img/logo.png"></p>
+<p align="center"><img src="http://restify.binarcode.com/assets/img/logo.png"></p>
 
 <p align="center">
     <a href="https://github.com/BinarCode/laravel-restify/actions"><img src="https://github.com/BinarCode/laravel-restify/workflows/tests/badge.svg" alt="Build Status"></a>
@@ -21,8 +21,8 @@ composer require binaryk/laravel-restify
 ## Key havings
 
 - "CRUD" over resources with 0 (zero) extra custom code
-- Passport authentication (use `php artisan restify:check-passport` for it's setup)
-- Auth module (register, verify, login, reset + forgot password)
+- Passport checker (`php artisan restify:check-passport`)
+- Auth module with [Laravel Sanctum](https://laravel.com/docs/7.x/sanctum#introduction) (register, verify, login, reset + forgot password)
 - Beautiful response maker
 - Powerful and configurable searching/filtering over entities
 - API friendly Exception Handler
@@ -38,7 +38,7 @@ php artisan restify:setup
 Generate repository:
 
 ```bash
-php artisan restify:repository Post
+php artisan restify:repository PostRepository --all
 ```
 
 ## Usage

@@ -70,13 +70,13 @@ class RepositorySearchService extends Searchable
 
     public function prepareOrders(RestifyRequest $request, $query, $extra = [])
     {
-        $sort = $request->get('sort', '');
+        $orderings = explode(',', $request->get('sort', ''));
 
         if (isset($extra['sort'])) {
-            $sort = $extra['sort'];
+            $orderings = $extra['sort'];
         }
 
-        $params = explode(',', $sort);
+        $params = array_filter($orderings);
 
         if (is_array($params) === true && empty($params) === false) {
             foreach ($params as $param) {
@@ -85,7 +85,7 @@ class RepositorySearchService extends Searchable
         }
 
         if (empty($params) === true) {
-            $this->setOrder($query, '+id');
+            $this->setOrder($query, '+'.$this->repository->newModel()->getKeyName());
         }
 
         return $query;
@@ -107,6 +107,11 @@ class RepositorySearchService extends Searchable
     public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])
     {
         $search = $request->get('search', data_get($extra, 'search', ''));
+
+        if (empty($search)) {
+            return $query;
+        }
+
         $model = $query->getModel();
 
         $query->where(function ($query) use ($search, $model) {
@@ -153,6 +158,8 @@ class RepositorySearchService extends Searchable
             $order = '+';
             $field = $param;
         }
+
+        $field = $field ?? $this->repository->newModel()->getKeyName();
 
         if (isset($field)) {
             if (in_array($field, $this->repository->getOrderByFields()) === true) {

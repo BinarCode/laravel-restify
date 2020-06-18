@@ -148,4 +148,22 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 ]],
             ]);
     }
+
+    public function test_can_add_custom_index_main_meta_attributes()
+    {
+        factory(Post::class)->create([
+            'title' => 'Post Title',
+        ]);
+
+        $response = $this->get('/restify-api/posts')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'meta' => [
+                    'postKey',
+                ],
+            ]);
+
+        $this->assertEquals('Custom Meta Value', $response->json('meta.postKey'));
+        $this->assertEquals('Post Title', $response->json('meta.first_title'));
+    }
 }
