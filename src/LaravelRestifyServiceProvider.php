@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\CheckPassport;
+use Binaryk\LaravelRestify\Commands\DocumentationCommand;
 use Binaryk\LaravelRestify\Commands\PolicyCommand;
 use Binaryk\LaravelRestify\Commands\Refresh;
 use Binaryk\LaravelRestify\Commands\RepositoryCommand;
@@ -28,6 +29,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
                 BaseRepositoryCommand::class,
                 Refresh::class,
                 StubCommand::class,
+                DocumentationCommand::class,
             ]);
             $this->registerPublishing();
 
