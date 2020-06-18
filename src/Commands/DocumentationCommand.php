@@ -2,9 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
+use Binaryk\LaravelRestify\Documentator\PostmanCollectionWriter;
 use Illuminate\Console\Command;
 use Illuminate\Support\Collection;
-use Binaryk\LaravelRestify\Documentator\PostmanCollectionWriter;
 use Illuminate\Support\Facades\Storage;
 
 class DocumentationCommand extends Command
@@ -20,11 +20,10 @@ class DocumentationCommand extends Command
         $groupedRoutes = collect([
             [
                 'name' => 'routeName',
-            ]
+            ],
         ]);
 
         $this->writePostmanCollection($groupedRoutes);
-
 
         $this->info('-----------Documentation generated----------------------');
     }

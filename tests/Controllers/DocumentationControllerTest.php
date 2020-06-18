@@ -15,5 +15,4 @@ class DocumentationControllerTest extends IntegrationTest
             ->assertOk()
             ->assertViewIs('restify::docs.index');
     }
-
 }

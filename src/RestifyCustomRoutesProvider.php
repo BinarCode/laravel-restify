@@ -21,7 +21,7 @@ class RestifyCustomRoutesProvider extends ServiceProvider
     {
         collect(Restify::$repositories)->each(function ($repository) {
             $config = [
-                'namespace' => trim(app()->getNamespace(), '\\') . '\Http\Controllers',
+                'namespace' => trim(app()->getNamespace(), '\\').'\Http\Controllers',
                 'as' => '',
                 'prefix' => Restify::path($repository::uriKey()),
                 'middleware' => config('restify.middleware', []),
