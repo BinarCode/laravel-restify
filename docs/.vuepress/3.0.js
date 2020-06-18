@@ -30,9 +30,12 @@ module.exports = [
         children: ['rest-methods/rest-methods'],
     },
     {
-        title: 'Auth service',
+        title: 'Auth',
         collapsable: true,
-        children: ['auth/auth'],
+        children: [
+            'auth/auth',
+            'auth/profile'
+        ],
     },
     {
         title: 'Error handler',

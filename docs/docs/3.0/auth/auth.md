@@ -1,18 +1,18 @@
 # Authentication setup
 
-Laravel Restify has support for authentication with Passport or Laravel Airlock.
+Laravel Restify has support for authentication with Passport or Laravel Sanctum.
 
 You'll finally enjoy the auth setup (`register`, `login`, `forgot` and `reset password`).
 
 :::tip
 
-Firstly make sure you have setup the desired provider in the `restify.auth.provider`.
-and make sure you have installed and configured the Laravel Passport (or Restify) properly. 
+Firstly make sure you have the setup the desired provider in the `restify.auth.provider`. Make sure you have installed and configured the [Laravel Sanctum](https://laravel.com/docs/7.x/sanctum#introduction) (or Passport) properly. 
+
 The passport check could be done easily by using the follow Restify command: 
 
 `php artisan restify:check-passport`
 
-This command will become with suggestions if anything is setup wrong.
+This command will become with suggestions if any setup is invalid.
 :::
 
 ## Prerequisites
