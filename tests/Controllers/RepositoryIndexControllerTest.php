@@ -159,7 +159,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ->assertStatus(200)
             ->assertJsonStructure([
                 'meta' => [
-                    'postKey'
+                    'postKey',
                 ],
             ]);
 

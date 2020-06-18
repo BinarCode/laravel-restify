@@ -15,7 +15,7 @@ class DocumentationCommand extends Command
 
     public function handle()
     {
-        $this->info("-----------Generating documentation----------------------");
+        $this->info('-----------Generating documentation----------------------');
 
         $groupedRoutes = collect([
             [
@@ -26,7 +26,7 @@ class DocumentationCommand extends Command
         $this->writePostmanCollection($groupedRoutes);
 
 
-        $this->info("-----------Documentation generated----------------------");
+        $this->info('-----------Documentation generated----------------------');
     }
 
     protected function writePostmanCollection(Collection $parsedRoutes): void
