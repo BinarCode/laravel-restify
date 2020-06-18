@@ -3,6 +3,9 @@
 namespace Binaryk\LaravelRestify\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Collection;
+use Binaryk\LaravelRestify\Documentator\PostmanCollectionWriter;
+use Illuminate\Support\Facades\Storage;
 
 class DocumentationCommand extends Command
 {
@@ -14,12 +17,54 @@ class DocumentationCommand extends Command
     {
         $this->info("-----------Generating documentation----------------------");
 
-        $targetFile = '/resources/index.md';
+        $groupedRoutes = collect([
+            [
+                'name' => 'routeName',
+            ]
+        ]);
 
-        $markdown = 'lorem ipsum';
+        $this->writePostmanCollection($groupedRoutes);
 
-        file_put_contents($targetFile, $markdown);
 
         $this->info("-----------Documentation generated----------------------");
+    }
+
+    protected function writePostmanCollection(Collection $parsedRoutes): void
+    {
+        $this->info('Generating Postman collection');
+
+        $collection = $this->generatePostmanCollection($parsedRoutes);
+        if ($this->isStatic) {
+            $collectionPath = "{$this->outputPath}/collection.json";
+            file_put_contents($collectionPath, $collection);
+        } else {
+            $storageInstance = Storage::disk($this->config->get('storage'));
+            $storageInstance->put('apidoc/collection.json', $collection, 'public');
+            if ($this->config->get('storage') == 'local') {
+                $collectionPath = 'storage/app/apidoc/collection.json';
+            } else {
+                $collectionPath = $storageInstance->url('collection.json');
+            }
+        }
+
+        $this->output->info("Wrote Postman collection to: {$collectionPath}");
+    }
+
+    /**
+     * Generate Postman collection JSON file.
+     *
+     * @param Collection $routes
+     *
+     * @return string
+     */
+    public function generatePostmanCollection(Collection $routes)
+    {
+        /** @var PostmanCollectionWriter $writer */
+        $writer = app()->makeWith(
+            PostmanCollectionWriter::class,
+            ['routeGroups' => $routes, 'baseUrl' => 'restify-api']
+        );
+
+        return $writer->getCollection();
     }
 }

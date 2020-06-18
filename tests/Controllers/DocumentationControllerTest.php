@@ -2,11 +2,18 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-/**
- * @package Binaryk\LaravelRestify\Tests\Controllers;
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
-class DocumentationControllerTest
+use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Support\Facades\Route;
+
+class DocumentationControllerTest extends IntegrationTest
 {
+    public function test_list_routes_visible()
+    {
+        Route::restifyDocs('restify');
+
+        $this->get('restify/api-docs')
+            ->assertOk()
+            ->assertViewIs('restify::docs.index');
+    }
 
 }

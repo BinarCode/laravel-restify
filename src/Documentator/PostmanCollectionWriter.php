@@ -1,6 +1,6 @@
 <?php
 
-namespace Mpociot\ApiDoc\Writing;
+namespace Binaryk\LaravelRestify\Documentator;
 
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\URL;
