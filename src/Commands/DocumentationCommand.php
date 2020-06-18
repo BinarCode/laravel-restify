@@ -12,7 +12,7 @@ class DocumentationCommand extends Command
 
     public function handle()
     {
-        $this->info("-----------Generating documentation----------------------");
+        $this->info('-----------Generating documentation----------------------');
 
         $targetFile = '/resources/index.md';
 
@@ -20,6 +20,6 @@ class DocumentationCommand extends Command
 
         file_put_contents($targetFile, $markdown);
 
-        $this->info("-----------Documentation generated----------------------");
+        $this->info('-----------Documentation generated----------------------');
     }
 }
