@@ -18,7 +18,7 @@ class ProfileAvatarController extends RepositoryController
 
         $path = is_callable(ProfileAvatarRequest::$pathCallback) ? call_user_func(ProfileAvatarRequest::$pathCallback, $request) : $request::$path;
 
-        $path = $request->file($request::$userAvatarAttribute)->store($path);
+        $path = $request->file($request::$userAvatarAttribute)->store($path, 'public');
 
         $user->{$request::$userAvatarAttribute} = $path;
         $user->save();
