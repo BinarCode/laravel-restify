@@ -77,7 +77,6 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             'title' => 'Updated title',
             'user_id' => 2,
         ])
-            ->dump()
             ->assertStatus(200);
 
         $this->assertEquals('Title', $response->json('data.attributes.title'));

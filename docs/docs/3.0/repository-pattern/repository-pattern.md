@@ -310,10 +310,9 @@ $default = parent::resolveIndexMeta($request);
 You can also override the main `meta` object for the index, not the one for per item:
 
 ```php
-public function resolveIndexMainMeta(RestifyRequest $request, Collection $items)
+public function resolveIndexMainMeta(RestifyRequest $request, Collection $items, array $paginatorMeta): array
 {
-$default = parent::resolveIndexMeta($request);
-    return array_merge($default, [
+    return array_merge($paginatorMeta, [
         'next_payment_at' => $this->resource->current_payment_at->addMonth(),
     ]);
 }

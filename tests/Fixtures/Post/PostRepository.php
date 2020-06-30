@@ -60,7 +60,7 @@ class PostRepository extends Repository
         ];
     }
 
-    public function resolveIndexMainMeta(RestifyRequest $request, Collection $items)
+    public function resolveIndexMainMeta(RestifyRequest $request, Collection $items, array $paginator): array
     {
         return [
             'postKey' => 'Custom Meta Value',
