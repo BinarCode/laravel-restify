@@ -120,4 +120,19 @@ class RestControllerTest extends IntegrationTest
     {
         $this->assertInstanceOf(PasswordBroker::class, $this->controller->broker());
     }
+
+    public function test_abstract_paginator_response()
+    {
+        factory(User::class, 1)->create();
+
+        $paginator = User::query()->paginate(5);
+
+        $response = RestResponse::index(
+            $paginator
+        );
+
+        $this->assertObjectHasAttribute('meta', $response->getData());
+        $this->assertObjectHasAttribute('data', $response->getData());
+        $this->assertObjectHasAttribute('links', $response->getData());
+    }
 }
