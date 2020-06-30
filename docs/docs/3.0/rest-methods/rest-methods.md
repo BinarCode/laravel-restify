@@ -354,3 +354,45 @@ Adding error by error in a response instance:
 ```php
 $this->addError('Something went wrong')
 ```
+
+
+## Custom Paginator 
+
+Sometimes you have a custom paginator collection, and you want to keep the same response format as the `Repository` does. 
+
+You can use this static call:
+
+```php
+        $paginator = User::query()->paginate(5);
+
+        $response = Binaryk\LaravelRestify\Controllers\RestResponse::index(
+            $paginator
+        );
+
+```
+
+The `$paginator` argument should be an instance of: `Illuminate\Pagination\AbstractPaginator`. 
+
+The expected response will contain: 
+
+```json
+ "meta": [
+      "current_page" :1
+      "from" :1
+      "last_page" :1
+      "path" :"http://localhost"
+      "per_page" :5
+      "to" :1
+      "total" :1
+    ],
+ "links": [
+      "first" :"http://localhost?page=1"
+      "last" :"http://localhost?page=1"
+      "prev" :null
+      "next" :null
+    ]
+"data": [{...}],
+
+
+```
+
