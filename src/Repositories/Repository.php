@@ -50,7 +50,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * The list of relations available for the details or index.
      *
-     * e.g. ?with=users
+     * e.g. ?related=users
      * @var array
      */
     public static $related;
@@ -110,6 +110,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var array
      */
     public static $attachers = [];
+
+    /**
+     * The relationships that should be eager loaded when performing an index query.
+     *
+     * @var array
+     */
+    public static $with = [];
 
     /**
      * Get the underlying model instance for the resource.
