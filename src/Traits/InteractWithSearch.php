@@ -52,7 +52,7 @@ trait InteractWithSearch
     public static function getOrderByFields()
     {
         return empty(static::$sort)
-            ? [static::newModel()->getKeyName()]
+            ? [static::newModel()->getQualifiedKeyName()]
             : static::$sort;
     }
 }
