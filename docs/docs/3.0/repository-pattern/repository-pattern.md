@@ -580,3 +580,16 @@ public static function getAttachers(): array
     },
 }
 ```
+
+## Force eager loading
+
+However, Laravel Restify [provides eager](/search/) loading based on the query `related` property, 
+you may want to force eager load a relationship in terms of using it in fields, or whatever else: 
+
+```php
+// UserRepository.php
+
+public static $with = ['posts'];
+```
+
+

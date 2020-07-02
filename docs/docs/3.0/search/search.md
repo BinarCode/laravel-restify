@@ -125,7 +125,7 @@ When get a repository index or details about a single entity, often we have to g
 This eager loading is configurable by Restify as follow: 
 
 ```php
-public static $withs = ['posts'];
+public static $related = ['posts'];
 ```
 
 This means that we could use `posts` query for eager loading posts:
@@ -133,3 +133,4 @@ This means that we could use `posts` query for eager loading posts:
 ```http request
 GET: /restify-api/users?with=posts
 ```
+
