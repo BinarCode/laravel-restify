@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-use Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\App;
 
