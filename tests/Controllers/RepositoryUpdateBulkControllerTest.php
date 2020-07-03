@@ -58,7 +58,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
             [
                 'id' => $post2->id,
                 'title' => 'Updated second title',
-            ]
+            ],
         ])
             ->assertStatus(200);
 
