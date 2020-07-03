@@ -36,7 +36,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute . '.' . $ruleFor] = $message;
+                $messages[$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
@@ -56,7 +56,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages['*' . $k->attribute . '.' . $ruleFor] = $message;
+                $messages['*'.$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
@@ -86,7 +86,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute . '.' . $ruleFor] = $message;
+                $messages[$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
