@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
-use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 
 class RepositoryStoreBulkController extends RepositoryController
 {

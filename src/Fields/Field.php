@@ -268,7 +268,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        $bulkableAttribute = $bulkRow . '.' . $attribute;
+        $bulkableAttribute = $bulkRow.'.'.$attribute;
 
         if ($request->exists($bulkableAttribute) || $request->get($bulkableAttribute)) {
             $model->{$attribute} = $request[$bulkableAttribute] ?? $request->get($bulkableAttribute);
