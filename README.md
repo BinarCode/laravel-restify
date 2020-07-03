@@ -38,7 +38,33 @@ php artisan restify:setup
 Generate repository:
 
 ```bash
-php artisan restify:repository PostRepository --all
+php artisan restify:repository UserRepository --all
+```
+
+Now you have the REST CRUD over users and this beautiful repository:
+
+<p align="center"><img src="http://restify.binarcode.com/assets/userRepository.png"></p>
+
+Now you can go into Postman and check it out: 
+
+```http request
+GET: http://laravel.test/api/restify/users
+```
+
+```http request
+POST: http://laravel.test/api/restify/users
+```
+
+```http request
+GET: http://laravel.test/api/restify/users/1
+```
+
+```http request
+PUT: http://laravel.test/api/restify/users/1
+```
+
+```http request
+DELETE: http://laravel.test/api/restify/users/1
 ```
 
 ## Usage
