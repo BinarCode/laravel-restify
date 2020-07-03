@@ -324,6 +324,13 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
+    public function updateBulkRules($rules)
+    {
+        $this->updateBulkRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+
+        return $this;
+    }
+
     /**
      * Alias for storingRules - to maintain it consistent.
      *
@@ -374,12 +381,17 @@ class Field extends OrganicField implements JsonSerializable
 
     public function getStoringBulkRules(): array
     {
-        return $this->storingBulkRules;
+        return array_merge($this->rules, $this->storingBulkRules);
     }
 
     public function getUpdatingRules(): array
     {
         return array_merge($this->rules, $this->updatingRules);
+    }
+
+    public function getUpdatingBulkRules(): array
+    {
+        return array_merge($this->rules, $this->updateBulkRules);
     }
 
     /**

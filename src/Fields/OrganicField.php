@@ -12,6 +12,8 @@ abstract class OrganicField extends BaseField
 
     public $canUpdateCallback;
 
+    public $canUpdateBulkCallback;
+
     public $canStoreCallback;
 
     public $readonlyCallback;
@@ -23,6 +25,8 @@ abstract class OrganicField extends BaseField
     public array $storingRules = [];
 
     public array $storingBulkRules = [];
+
+    public array $updateBulkRules = [];
 
     public array $updatingRules = [];
 
@@ -117,6 +121,11 @@ abstract class OrganicField extends BaseField
         return $this->canUpdateCallback ? call_user_func($this->canUpdateCallback, $request) : true;
     }
 
+    public function authorizedToUpdateBulk(Request $request)
+    {
+        return $this->canUpdateBulkCallback ? call_user_func($this->canUpdateBulkCallback, $request) : true;
+    }
+
     public function authorizedToStore(Request $request)
     {
         return $this->canStoreCallback ? call_user_func($this->canStoreCallback, $request) : true;
@@ -132,6 +141,13 @@ abstract class OrganicField extends BaseField
     public function canUpdate(Closure $callback)
     {
         $this->canUpdateCallback = $callback;
+
+        return $this;
+    }
+
+    public function canUpdateBulk(Closure $callback)
+    {
+        $this->canUpdateBulkCallback = $callback;
 
         return $this;
     }
@@ -162,6 +178,11 @@ abstract class OrganicField extends BaseField
     }
 
     public function isShownOnUpdate(RestifyRequest $request, $repository): bool
+    {
+        return ! $this->isReadonly($request);
+    }
+
+    public function isShownOnUpdateBulk(RestifyRequest $request, $repository): bool
     {
         return ! $this->isReadonly($request);
     }

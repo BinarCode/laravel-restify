@@ -22,6 +22,13 @@ class FieldCollection extends Collection
         })->values();
     }
 
+    public function authorizedUpdateBulk(Request $request): self
+    {
+        return $this->filter(function (OrganicField $field) use ($request) {
+            return $field->authorizedToUpdateBulk($request);
+        })->values();
+    }
+
     public function authorizedStore(Request $request): self
     {
         return $this->filter(function (OrganicField $field) use ($request) {
@@ -68,6 +75,13 @@ class FieldCollection extends Collection
     {
         return $this->filter(function (Field $field) use ($repository, $request) {
             return $field->isShownOnUpdate($request, $repository);
+        })->values();
+    }
+
+    public function forUpdateBulk(RestifyRequest $request, $repository): self
+    {
+        return $this->filter(function (Field $field) use ($repository, $request) {
+            return $field->isShownOnUpdateBulk($request, $repository);
         })->values();
     }
 }

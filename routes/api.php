@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreBulkController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController;
 use Illuminate\Support\Facades\Route;
 
@@ -29,6 +30,7 @@ Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
 Route::get('/{repository}', '\\'.RepositoryIndexController::class);
 Route::post('/{repository}', '\\'.RepositoryStoreController::class);
 Route::post('/{repository}/bulk', '\\'.RepositoryStoreBulkController::class);
+Route::post('/{repository}/bulk/update', '\\'.RepositoryUpdateBulkController::class);
 Route::get('/{repository}/{repositoryId}', '\\'.RepositoryShowController::class);
 Route::patch('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
 Route::put('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);

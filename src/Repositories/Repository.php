@@ -260,6 +260,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $method = 'fieldsForStoreBulk';
         }
 
+        if ($request->isUpdateBulkRequest() && method_exists($this, 'fieldsForUpdateBulk')) {
+            $method = 'fieldsForUpdateBulk';
+        }
+
         $fields = FieldCollection::make(array_values($this->filter($this->{$method}($request))));
 
         if ($this instanceof Mergeable) {
@@ -292,6 +296,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this->collectFields($request)
             ->forUpdate($request, $this)
             ->authorizedUpdate($request);
+    }
+
+    private function updateBulkFields(RestifyRequest $request)
+    {
+        return $this->collectFields($request)
+            ->forUpdateBulk($request, $this)
+            ->authorizedUpdateBulk($request);
     }
 
     private function storeFields(RestifyRequest $request)
@@ -643,6 +654,18 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->success();
     }
 
+    public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
+    {
+        $fields = $this->updateBulkFields($request);
+
+        static::fillBulkFields($request, $this->resource, $fields, $row);
+
+        $this->resource->save();
+
+        return $this->response()
+            ->success();
+    }
+
     public function attach(RestifyRequest $request, $repositoryId, Collection $pivots)
     {
         DB::transaction(function () use ($request, $pivots) {
@@ -682,6 +705,17 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $this->authorizeToUpdate($request);
 
         $validator = static::validatorForUpdate($request, $this, $payload);
+
+        $validator->validate();
+
+        return $this;
+    }
+
+    public function allowToUpdateBulk(RestifyRequest $request, $payload = null): self
+    {
+        $this->authorizeToUpdateBulk($request);
+
+        $validator = static::validatorForUpdateBulk($request, $this, $payload);
 
         $validator->validate();
 

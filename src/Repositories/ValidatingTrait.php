@@ -78,12 +78,6 @@ trait ValidatingTrait
         static::validatorForUpdate($request, $resource)->validate();
     }
 
-    /**
-     * @param RestifyRequest $request
-     * @param null $resource
-     * @param array $plainPayload
-     * @return \Illuminate\Contracts\Validation\Validator
-     */
     public static function validatorForUpdate(RestifyRequest $request, $resource = null, array $plainPayload = null)
     {
         /** * @var Repository $on */
@@ -104,6 +98,26 @@ trait ValidatingTrait
         });
     }
 
+    public static function validatorForUpdateBulk(RestifyRequest $request, $resource = null, array $plainPayload = null)
+    {
+        /** * @var Repository $on */
+        $on = $resource ?? static::resolveWith(static::newModel());
+
+        $messages = $on->collectFields($request)->flatMap(function ($k) {
+            $messages = [];
+            foreach ($k->messages as $ruleFor => $message) {
+                $messages['*' . $k->attribute . '.' . $ruleFor] = $message;
+            }
+
+            return $messages;
+        })->toArray();
+
+        return Validator::make($plainPayload ?? $request->all(), $on->getUpdatingBulkRules($request), $messages)->after(function ($validator) use ($request) {
+            static::afterValidation($request, $validator);
+            static::afterUpdatingBulkValidation($request, $validator);
+        });
+    }
+
     /**
      * Handle any post-validation processing.
      *
@@ -116,13 +130,6 @@ trait ValidatingTrait
         //
     }
 
-    /**
-     * Handle any post-storing validation processing.
-     *
-     * @param RestifyRequest $request
-     * @param \Illuminate\Validation\Validator $validator
-     * @return void
-     */
     protected static function afterStoringValidation(RestifyRequest $request, $validator)
     {
     }
@@ -131,14 +138,11 @@ trait ValidatingTrait
     {
     }
 
-    /**
-     * Handle any post-storing validation processing.
-     *
-     * @param RestifyRequest $request
-     * @param \Illuminate\Validation\Validator $validator
-     * @return void
-     */
     protected static function afterUpdatingValidation(RestifyRequest $request, $validator)
+    {
+    }
+
+    protected static function afterUpdatingBulkValidation(RestifyRequest $request, $validator)
     {
     }
 
@@ -164,15 +168,20 @@ trait ValidatingTrait
         })->toArray();
     }
 
-    /**
-     * @param RestifyRequest $request
-     * @return array
-     */
     public function getUpdatingRules(RestifyRequest $request)
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
                 $k->attribute => $k->getUpdatingRules(),
+            ];
+        })->toArray();
+    }
+
+    public function getUpdatingBulkRules(RestifyRequest $request)
+    {
+        return $this->collectFields($request)->mapWithKeys(function (Field $k) {
+            return [
+                "*.{$k->attribute}" => $k->getUpdatingBulkRules(),
             ];
         })->toArray();
     }

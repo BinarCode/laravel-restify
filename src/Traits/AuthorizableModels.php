@@ -142,6 +142,11 @@ trait AuthorizableModels
         $this->authorizeTo($request, 'update');
     }
 
+    public function authorizeToUpdateBulk(Request $request)
+    {
+        $this->authorizeTo($request, 'updateBulk');
+    }
+
     /**
      * Determine if the current user can update the given resource.
      *
