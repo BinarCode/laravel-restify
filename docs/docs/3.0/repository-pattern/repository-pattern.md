@@ -44,6 +44,7 @@ You have available the follow endpoints:
 | GET            | `/restify-api/posts/{post}`   | show    |
 | POST           | `/restify-api/posts`          | store   |
 | POST           | `/restify-api/posts/bulk`     | store multiple   |
+| POST           | `/restify-api/posts/bulk/update`     | store multiple   |
 | PATCH          | `/restify-api/posts/{post}`   | update  |
 | PUT            | `/restify-api/posts/{post}`   | update  |
 | POST           | `/restify-api/posts/{post}`   | update  |
@@ -222,6 +223,17 @@ entire logic of a specific action. Let's say your `save` method has to do someth
 
 ```php
     public function update(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request, $repositoryId)
+    {
+        // Silence is golden
+    }
+```
+
+### update bulk
+
+// $row is the payload row to be updated
+
+```php
+    public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
         // Silence is golden
     }
@@ -642,3 +654,31 @@ public static function storedBulk(Collection $repositories, $request)
     //
 }
 ```
+
+## Update bulk flow
+
+As the store bulk, the update bulk uses DB transaction to perform the action. So you can make sure that even all entries, even no one where updated.
+
+### Bulk update field validations
+
+```php
+->updateBulkRules('required', function () {}, Rule::in('posts:id'))
+```
+
+### Bulk Payload
+
+The payload for a bulk update should contain an array of objects. Each object SHOULD contain an `id` key, based on this, the Laravel Restify will find the entity: 
+
+```json
+[
+  {
+  "id": 1,
+  "title": "First post"
+  },
+  {
+  "id": 2,
+  "title": "Second post"
+  }
+]
+```
+
