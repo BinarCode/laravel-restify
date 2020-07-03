@@ -43,6 +43,7 @@ You have available the follow endpoints:
 | GET            | `/restify-api/posts`          | index   |
 | GET            | `/restify-api/posts/{post}`   | show    |
 | POST           | `/restify-api/posts`          | store   |
+| POST           | `/restify-api/posts/bulk`     | store multiple   |
 | PATCH          | `/restify-api/posts/{post}`   | update  |
 | PUT            | `/restify-api/posts/{post}`   | update  |
 | POST           | `/restify-api/posts/{post}`   | update  |
@@ -133,7 +134,7 @@ public static function collectMiddlewares(RestifyRequest $request): ?Collection
 
 ## Dependency injection
 
-The Laravel [service container](https://laravel.com/docs/6.x/container) is used to resolve all Laravel Restify repositories. 
+The Laravel [service container](https://laravel.com/docs/7.x/container) is used to resolve all Laravel Restify repositories. 
 As a result, you are able to type-hint any dependencies your `Repository` may need in its constructor. 
 The declared dependencies will automatically be resolved and injected into the repository instance:
 
@@ -203,6 +204,15 @@ entire logic of a specific action. Let's say your `save` method has to do someth
 
 ```php
     public function store(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request)
+    {
+        // Silence is golden
+    }
+```
+
+### store bulk
+
+```php
+    public function storeBulk(Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest $request)
     {
         // Silence is golden
     }
@@ -592,4 +602,43 @@ you may want to force eager load a relationship in terms of using it in fields, 
 public static $with = ['posts'];
 ```
 
+## Store bulk flow
 
+However, the `store` method is a common one, the `store bulk` requires a bit of attention. 
+
+### Bulk field validations
+
+Similar with `store` and `update` methods, `bulk` rules has their own field rule definition: 
+
+```php
+->storeBulkRules('required', function () {}, Rule::in('posts:id'))
+```
+
+The validation rules will be merged with the rules provided into the `rules()` method. The validation will be performed 
+by using native Laravel validator, so you will have exactly the same experience. The validation `messages` could still be used as usual. 
+
+### Bulk Payload
+
+The payload for a bulk store should contain an array of objects: 
+
+```json
+[
+  {
+  "title": "First post"
+  },
+  {
+  "title": "Second post"
+  }
+]
+```
+
+### Bulk after store 
+
+After storing an entity, the repository will call the static `bulkStored` method from the repository, so you can override:
+
+```php
+public static function storedBulk(Collection $repositories, $request)
+{
+    //
+}
+```
