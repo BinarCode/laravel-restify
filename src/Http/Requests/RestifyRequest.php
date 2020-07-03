@@ -58,6 +58,16 @@ class RestifyRequest extends FormRequest
         return $this instanceof RepositoryStoreRequest;
     }
 
+    public function isStoreBulkRequest()
+    {
+        return $this instanceof RepositoryStoreBulkRequest;
+    }
+
+    public function isUpdateBulkRequest()
+    {
+        return $this instanceof RepositoryUpdateBulkRequest;
+    }
+
     public function isViaRepository()
     {
         return $this->viaRepository && $this->viaRepositoryId;

@@ -25,6 +25,14 @@ class PostPolicy
         return $_SERVER['restify.post.creatable'] ?? true;
     }
 
+    /**
+     * Determine if posts can be stored bulk.
+     */
+    public function storeBulk($user)
+    {
+        return $_SERVER['restify.post.storeBulk'] ?? true;
+    }
+
     public function update($user, $post)
     {
         return $_SERVER['restify.post.updateable'] ?? true;

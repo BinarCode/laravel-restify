@@ -98,6 +98,13 @@ trait AuthorizableModels
         }
     }
 
+    public static function authorizeToStoreBulk(Request $request)
+    {
+        if (! static::authorizedToStoreBulk($request)) {
+            throw new AuthorizationException('Unauthorized to store bulk.');
+        }
+    }
+
     /**
      * Determine if the current user can store new repositories.
      *
@@ -108,6 +115,15 @@ trait AuthorizableModels
     {
         if (static::authorizable()) {
             return Gate::check('store', static::$model);
+        }
+
+        return true;
+    }
+
+    public static function authorizedToStoreBulk(Request $request)
+    {
+        if (static::authorizable()) {
+            return Gate::check('storeBulk', static::$model);
         }
 
         return true;
@@ -124,6 +140,11 @@ trait AuthorizableModels
     public function authorizeToUpdate(Request $request)
     {
         $this->authorizeTo($request, 'update');
+    }
+
+    public function authorizeToUpdateBulk(Request $request)
+    {
+        $this->authorizeTo($request, 'updateBulk');
     }
 
     /**

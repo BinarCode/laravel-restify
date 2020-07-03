@@ -51,6 +51,28 @@ class PostRepository extends Repository
         ];
     }
 
+    public function fieldsForStoreBulk(RestifyRequest $request)
+    {
+        return [
+            Field::new('title')->storeBulkRules('required')->messages([
+                'required' => 'This field is required',
+            ]),
+
+            Field::new('user_id'),
+        ];
+    }
+
+    public function fieldsForUpdateBulk(RestifyRequest $request)
+    {
+        return [
+            Field::new('title')->updateBulkRules('required')->messages([
+                'required' => 'This field is required',
+            ]),
+
+            Field::new('user_id'),
+        ];
+    }
+
     public function filters(RestifyRequest $request)
     {
         return [
