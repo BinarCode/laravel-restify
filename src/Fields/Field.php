@@ -62,6 +62,12 @@ class Field extends OrganicField implements JsonSerializable
     public $storeCallback;
 
     /**
+     * Callback called when the value is filled from a store bulk, this callback will do not override the fill action.
+     * @var Closure
+     */
+    public $storeBulkCallback;
+
+    /**
      * Callback called when update.
      * @var Closure
      */
@@ -165,6 +171,13 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
+    public function storeCallbackCallback(Closure $callback)
+    {
+        $this->storeBulkCallback = $callback;
+
+        return $this;
+    }
+
     public function updateCallback(Closure $callback)
     {
         $this->updateCallback = $callback;
@@ -191,9 +204,10 @@ class Field extends OrganicField implements JsonSerializable
      *
      * @param RestifyRequest $request
      * @param $model
+     * @param int|null $bulkRow
      * @return mixed|void
      */
-    public function fillAttribute(RestifyRequest $request, $model)
+    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
         $this->resolveValueBeforeUpdate($request, $model);
 
@@ -205,28 +219,34 @@ class Field extends OrganicField implements JsonSerializable
 
         if (! $this->isHidden($request) && isset($this->fillCallback)) {
             return call_user_func(
-                $this->fillCallback, $request, $model, $this->attribute
+                $this->fillCallback, $request, $model, $this->attribute, $bulkRow
             );
         }
 
         if (isset($this->appendCallback)) {
-            return $this->fillAttributeFromAppend($request, $model, $this->attribute);
+            return $this->fillAttributeFromAppend($request, $model, $this->attribute, $bulkRow);
         }
 
         if ($request->isStoreRequest() && is_callable($this->storeCallback)) {
             return call_user_func(
-                $this->storeCallback, $request, $model, $this->attribute
+                $this->storeCallback, $request, $model, $this->attribute, $bulkRow
+            );
+        }
+
+        if ($request->isStoreBulkRequest() && is_callable($this->storeBulkCallback)) {
+            return call_user_func(
+                $this->storeBulkCallback, $request, $model, $this->attribute, $bulkRow
             );
         }
 
         if ($request->isUpdateRequest() && is_callable($this->updateCallback)) {
             return call_user_func(
-                $this->updateCallback, $request, $model, $this->attribute
+                $this->updateCallback, $request, $model, $this->attribute, $bulkRow
             );
         }
 
         $this->fillAttributeFromRequest(
-            $request, $model, $this->attribute
+            $request, $model, $this->attribute, $bulkRow
         );
     }
 
@@ -236,11 +256,22 @@ class Field extends OrganicField implements JsonSerializable
      * @param RestifyRequest $request
      * @param $model
      * @param $attribute
+     * @param int|null $bulkRow
      */
-    protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute)
+    protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
     {
-        if ($request->exists($attribute) || $request->get($attribute)) {
-            $model->{$attribute} = $request[$attribute] ?? $request->get($attribute);
+        if (is_null($bulkRow)) {
+            if ($request->exists($attribute) || $request->input($attribute)) {
+                $model->{$attribute} = $request[$attribute] ?? $request->input($attribute);
+            }
+
+            return;
+        }
+
+        $bulkableAttribute = $bulkRow . '.' . $attribute;
+
+        if ($request->exists($bulkableAttribute) || $request->get($bulkableAttribute)) {
+            $model->{$attribute} = $request[$bulkableAttribute] ?? $request->get($bulkableAttribute);
         }
     }
 
@@ -282,6 +313,13 @@ class Field extends OrganicField implements JsonSerializable
     public function storingRules($rules)
     {
         $this->storingRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+
+        return $this;
+    }
+
+    public function storeBulkRules($rules)
+    {
+        $this->storingBulkRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
 
         return $this;
     }
@@ -332,6 +370,11 @@ class Field extends OrganicField implements JsonSerializable
     public function getStoringRules(): array
     {
         return array_merge($this->rules, $this->storingRules);
+    }
+
+    public function getStoringBulkRules(): array
+    {
+        return $this->storingBulkRules;
     }
 
     public function getUpdatingRules(): array

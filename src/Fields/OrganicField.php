@@ -22,6 +22,8 @@ abstract class OrganicField extends BaseField
 
     public array $storingRules = [];
 
+    public array $storingBulkRules = [];
+
     public array $updatingRules = [];
 
     public array $messages = [];
@@ -165,6 +167,11 @@ abstract class OrganicField extends BaseField
     }
 
     public function isShownOnStore(RestifyRequest $request, $repository): bool
+    {
+        return ! $this->isReadonly($request);
+    }
+
+    public function isShownOnStoreBulk(RestifyRequest $request, $repository): bool
     {
         return ! $this->isReadonly($request);
     }

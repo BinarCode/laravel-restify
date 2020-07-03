@@ -57,6 +57,13 @@ class FieldCollection extends Collection
         })->values();
     }
 
+    public function forStoreBulk(RestifyRequest $request, $repository): self
+    {
+        return $this->filter(function (Field $field) use ($repository, $request) {
+            return $field->isShownOnStoreBulk($request, $repository);
+        })->values();
+    }
+
     public function forUpdate(RestifyRequest $request, $repository): self
     {
         return $this->filter(function (Field $field) use ($repository, $request) {
