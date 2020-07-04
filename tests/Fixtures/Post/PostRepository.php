@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Collection;
 
 class PostRepository extends Repository
