@@ -6,18 +6,16 @@ use Binaryk\LaravelRestify\AuthorizedToSee;
 use Binaryk\LaravelRestify\Controllers\RestController;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\ProxiesCanSeeToGate;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\Make;
 use Binaryk\LaravelRestify\Visibility;
-use Illuminate\Contracts\Support\Responsable;
+use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
-use Closure;
 
 abstract class Action extends RestController implements JsonSerializable
 {

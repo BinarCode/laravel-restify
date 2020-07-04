@@ -14,7 +14,7 @@ class PerformRepositoryActionController extends RepositoryController
             $request,
             collect(
                 [
-                    $request->findModelQuery()->firstOrFail()
+                    $request->findModelQuery()->firstOrFail(),
                 ]
             )
         );
