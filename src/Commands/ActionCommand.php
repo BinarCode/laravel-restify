@@ -51,7 +51,7 @@ class ActionCommand extends GeneratorCommand
             $name .= 'Action';
         }
 
-        return parent::getPath('Actions/'.$name);
+        return parent::getPath($name);
     }
 
     protected function getDefaultNamespace($rootNamespace)
