@@ -18,14 +18,17 @@ class PerformActionsControllerTest extends IntegrationTest
         $post = $this->mockPosts(1, 2);
 
         $this->post('/restify-api/posts/action?action=' . (new PublishPostAction())->uriKey(), [
-            'repositories' => [1, 2],
+            'repositories' => [
+                $post->first()->id,
+                $post->last()->id,
+            ],
         ])
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data'
             ]);
 
-        $this->assertEquals($post->first()->id, PublishPostAction::$applied[0][0]->id);
-        $this->assertEquals($post->last()->id, PublishPostAction::$applied[0][1]->id);
+        $this->assertEquals(1, PublishPostAction::$applied[0][0]->id);
+        $this->assertEquals(2, PublishPostAction::$applied[0][1]->id);
     }
 }

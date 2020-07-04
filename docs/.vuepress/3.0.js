@@ -20,6 +20,11 @@ module.exports = [
         children: ['custom-filters/custom-filters'],
     },
     {
+        title: 'Actions',
+        collapsable: true,
+        children: ['actions/actions'],
+    },
+    {
         title: 'Field',
         collapsable: true,
         children: ['repository-pattern/field'],

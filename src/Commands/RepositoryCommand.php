@@ -7,9 +7,6 @@ use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryCommand extends GeneratorCommand
 {
     use ConfirmableTrait;

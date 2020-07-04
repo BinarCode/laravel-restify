@@ -2,6 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Actions;
 
-class DestructiveAction extends Action
+abstract class DestructiveAction extends Action
 {
 }
