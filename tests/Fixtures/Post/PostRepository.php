@@ -76,7 +76,7 @@ class PostRepository extends Repository
     public function filters(RestifyRequest $request)
     {
         return [
-            ActiveBooleanFilter::new()->canSee(fn() => true),
+            ActiveBooleanFilter::new()->canSee(fn () => true),
             SelectCategoryFilter::new(),
             CreatedAfterDateFilter::new(),
         ];
@@ -94,9 +94,9 @@ class PostRepository extends Repository
     {
         return [
             PublishPostAction::new(),
-            InvalidatePostAction::new()->canSee(function() {
+            InvalidatePostAction::new()->canSee(function () {
                 return $_SERVER['actions.posts.invalidate'] ?? true;
-            })
+            }),
         ];
     }
 }
