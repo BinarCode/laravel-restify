@@ -30,11 +30,13 @@ class ActionRequest extends RestifyRequest
         });
     }
 
-    public function collectRepositories($count, Closure $callback)
+    public function collectRepositories(Action $action, $count, Closure $callback)
     {
         $output = [];
 
-        RepositorySearchService::instance()->search($this, $this->repository())
+        tap(RepositorySearchService::instance()->search($this, $this->repository()), function ($query) use ($action) {
+            $action::indexQuery($this, $query);
+        })
         ->when($this->input('repositories') !== 'all', function ($query) {
             $query->whereKey($this->input('repositories', []));
         })->latest($this->model()->getKeyName())

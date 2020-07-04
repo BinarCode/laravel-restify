@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Actions;
 use Binaryk\LaravelRestify\AuthorizedToSee;
 use Binaryk\LaravelRestify\Controllers\RestController;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\ProxiesCanSeeToGate;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -24,6 +25,11 @@ abstract class Action extends RestController implements JsonSerializable
     use AuthorizedToSee, ProxiesCanSeeToGate, Make, Visibility;
 
     public static int $chunkCount = 200;
+
+    public static function indexQuery(RestifyRequest $request, $query)
+    {
+        return $query;
+    }
 
     /**
      * The callback used to authorize running the action.
@@ -92,7 +98,7 @@ abstract class Action extends RestController implements JsonSerializable
 
         $response = null;
 
-        $request->collectRepositories(static::$chunkCount, function ($models) use ($request, &$response) {
+        $request->collectRepositories($this, static::$chunkCount, function ($models) use ($request, &$response) {
             Transaction::run(function () use ($models, $request, &$response) {
                 $response = $this->handle($request, $models);
             });
