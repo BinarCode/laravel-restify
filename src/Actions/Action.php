@@ -95,7 +95,7 @@ abstract class Action extends RestController implements JsonSerializable
         $response = null;
 
         $request->collectRepositories(static::$chunkCount, function ($models) use ($request, &$response) {
-            return DB::transaction(function () use ($models, $request, &$response){
+            Transaction::run(function () use ($models, $request, &$response){
                 $response = $this->handle($request, $models);
             });
         });
