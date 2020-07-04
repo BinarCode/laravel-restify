@@ -2,9 +2,8 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Illuminate\Http\Request;
-
 use Closure;
+use Illuminate\Http\Request;
 
 trait AuthorizedToSee
 {
@@ -38,5 +37,4 @@ trait AuthorizedToSee
 
         return $this;
     }
-
 }

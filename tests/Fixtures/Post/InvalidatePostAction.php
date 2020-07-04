@@ -9,7 +9,6 @@ use Illuminate\Support\Collection;
 
 class InvalidatePostAction extends Action
 {
-
     public function handle(ActionRequest $request, Collection $models): JsonResponse
     {
         return response()->json();

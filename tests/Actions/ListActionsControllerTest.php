@@ -25,8 +25,8 @@ class ListActionsControllerTest extends IntegrationTest
                     [
                         'name',
                         'uriKey',
-                    ]
-                ]
+                    ],
+                ],
             ]);
     }
 
@@ -40,7 +40,7 @@ class ListActionsControllerTest extends IntegrationTest
         ])
             ->assertSuccessful()
             ->assertJsonStructure([
-                'data'
+                'data',
             ]);
 
         $this->assertEquals($post->first()->id, PublishPostAction::$applied[0][0]->id);

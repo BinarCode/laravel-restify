@@ -27,9 +27,9 @@ trait Visibility
     public function hideFromShow($callback = true)
     {
         $this->showOnShow = is_callable($callback) ? function () use ($callback) {
-            return !call_user_func_array($callback, func_get_args());
+            return ! call_user_func_array($callback, func_get_args());
         }
-            : !$callback;
+        : ! $callback;
 
         return $this;
     }
@@ -37,9 +37,9 @@ trait Visibility
     public function hideFromIndex($callback = true)
     {
         $this->showOnIndex = is_callable($callback) ? function () use ($callback) {
-            return !call_user_func_array($callback, func_get_args());
+            return ! call_user_func_array($callback, func_get_args());
         }
-            : !$callback;
+        : ! $callback;
 
         return $this;
     }
@@ -69,6 +69,6 @@ trait Visibility
             $this->showOnIndex = call_user_func($this->showOnIndex, $request, $repository);
         }
 
-        return !$this->showOnIndex;
+        return ! $this->showOnIndex;
     }
 }

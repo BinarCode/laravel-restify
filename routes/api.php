@@ -29,8 +29,8 @@ Route::post('/profile/avatar', '\\'.ProfileAvatarController::class);
 Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
 
 // Actions
-Route::get('/{repository}/actions', '\\'. ListActionsController::class);
-Route::post('/{repository}/{repositoryId}/action', '\\'. PerformRepositoryActionController::class);
+Route::get('/{repository}/actions', '\\'.ListActionsController::class);
+Route::post('/{repository}/{repositoryId}/action', '\\'.PerformRepositoryActionController::class);
 
 // API CRUD
 Route::get('/{repository}', '\\'.RepositoryIndexController::class);
@@ -46,4 +46,3 @@ Route::delete('/{repository}/{repositoryId}', '\\'.RepositoryDestroyController::
 // Attach related repository id
 Route::post('/{repository}/{repositoryId}/attach/{relatedRepository}', '\\'.RepositoryAttachController::class);
 Route::post('/{repository}/{repositoryId}/detach/{relatedRepository}', '\\'.RepositoryDetachController::class);
-

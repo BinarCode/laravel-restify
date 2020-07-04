@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 trait ResolvesActions
