@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
-use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 

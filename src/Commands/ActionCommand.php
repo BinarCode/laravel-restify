@@ -18,7 +18,7 @@ class ActionCommand extends GeneratorCommand
 
     public function handle()
     {
-        if (parent::handle() === false && !$this->option('force')) {
+        if (parent::handle() === false && ! $this->option('force')) {
             return false;
         }
     }
@@ -42,7 +42,7 @@ class ActionCommand extends GeneratorCommand
 
     protected function getStub()
     {
-        return __DIR__ . '/stubs/action.stub';
+        return __DIR__.'/stubs/action.stub';
     }
 
     protected function getPath($name)
@@ -51,11 +51,11 @@ class ActionCommand extends GeneratorCommand
             $name .= 'Action';
         }
 
-        return parent::getPath('Actions/' . $name);
+        return parent::getPath('Actions/'.$name);
     }
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace . '\Restify\Actions';
+        return $rootNamespace.'\Restify\Actions';
     }
 }
