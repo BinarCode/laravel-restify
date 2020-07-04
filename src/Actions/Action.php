@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Actions;
 use Binaryk\LaravelRestify\AuthorizedToSee;
 use Binaryk\LaravelRestify\Controllers\RestController;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\ProxiesCanSeeToGate;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -17,7 +16,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
@@ -88,14 +86,14 @@ abstract class Action extends RestController implements JsonSerializable
 
     public function handleRequest(ActionRequest $request)
     {
-        if (!method_exists($this, 'handle')) {
-            throw new Exception("Missing handle method from the action.");
+        if (! method_exists($this, 'handle')) {
+            throw new Exception('Missing handle method from the action.');
         }
 
         $response = null;
 
         $request->collectRepositories(static::$chunkCount, function ($models) use ($request, &$response) {
-            Transaction::run(function () use ($models, $request, &$response){
+            Transaction::run(function () use ($models, $request, &$response) {
                 $response = $this->handle($request, $models);
             });
         });
