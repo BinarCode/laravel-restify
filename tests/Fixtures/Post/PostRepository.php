@@ -76,7 +76,7 @@ class PostRepository extends Repository
     public function filters(RestifyRequest $request)
     {
         return [
-            ActiveBooleanFilter::new()->canSee(fn () => true),
+            ActiveBooleanFilter::new()->canSee(fn() => true),
             SelectCategoryFilter::new(),
             CreatedAfterDateFilter::new(),
         ];
@@ -87,6 +87,16 @@ class PostRepository extends Repository
         return [
             'postKey' => 'Custom Meta Value',
             'first_title' => optional($items->first())->title,
+        ];
+    }
+
+    public function actions(RestifyRequest $request)
+    {
+        return [
+            PublishPostAction::new(),
+            InvalidatePostAction::new()->canSee(function() {
+                return $_SERVER['actions.posts.invalidate'] ?? true;
+            })
         ];
     }
 }

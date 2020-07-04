@@ -1,6 +1,8 @@
 <?php
 
 use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
+use Binaryk\LaravelRestify\Http\Controllers\ListActionsController;
+use Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileAvatarController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController;
@@ -26,6 +28,10 @@ Route::post('/profile/avatar', '\\'.ProfileAvatarController::class);
 // Filters
 Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
 
+// Actions
+Route::get('/{repository}/actions', '\\'. ListActionsController::class);
+Route::post('/{repository}/{repositoryId}/action', '\\'. PerformRepositoryActionController::class);
+
 // API CRUD
 Route::get('/{repository}', '\\'.RepositoryIndexController::class);
 Route::post('/{repository}', '\\'.RepositoryStoreController::class);
@@ -40,3 +46,4 @@ Route::delete('/{repository}/{repositoryId}', '\\'.RepositoryDestroyController::
 // Attach related repository id
 Route::post('/{repository}/{repositoryId}/attach/{relatedRepository}', '\\'.RepositoryAttachController::class);
 Route::post('/{repository}/{repositoryId}/detach/{relatedRepository}', '\\'.RepositoryDetachController::class);
+
