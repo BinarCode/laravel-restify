@@ -4,7 +4,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 
-class PerformRepositoryActionController extends RepositoryController
+class PerformActionController extends RepositoryController
 {
     public function __invoke(ActionRequest $request)
     {
