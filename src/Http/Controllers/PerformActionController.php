@@ -10,9 +10,8 @@ class PerformActionController extends RepositoryController
     {
         $action = $request->action();
 
-        return $action->handle(
+        return $action->handleRequest(
             $request,
-            $request->collectRepositories(),
         );
     }
 }

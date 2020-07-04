@@ -5,21 +5,27 @@ namespace Binaryk\LaravelRestify\Actions;
 use Binaryk\LaravelRestify\AuthorizedToSee;
 use Binaryk\LaravelRestify\Controllers\RestController;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\ProxiesCanSeeToGate;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\Make;
+use Binaryk\LaravelRestify\Transaction;
 use Binaryk\LaravelRestify\Visibility;
 use Closure;
+use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
 abstract class Action extends RestController implements JsonSerializable
 {
     use AuthorizedToSee, ProxiesCanSeeToGate, Make, Visibility;
+
+    public static int $chunkCount = 200;
 
     /**
      * The callback used to authorize running the action.
@@ -79,6 +85,23 @@ abstract class Action extends RestController implements JsonSerializable
     }
 
     abstract public function handle(ActionRequest $request, Collection $models): JsonResponse;
+
+    public function handleRequest(ActionRequest $request)
+    {
+        if (!method_exists($this, 'handle')) {
+            throw new Exception("Missing handle method from the action.");
+        }
+
+        $response = null;
+
+        $request->collectRepositories(static::$chunkCount, function ($models) use ($request, &$response) {
+            return DB::transaction(function () use ($models, $request, &$response){
+                $response = $this->handle($request, $models);
+            });
+        });
+
+        return $response;
+    }
 
     public function jsonSerialize()
     {

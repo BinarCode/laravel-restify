@@ -3,6 +3,8 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
+use Closure;
 use Illuminate\Support\Collection;
 
 class ActionRequest extends RestifyRequest
@@ -28,13 +30,18 @@ class ActionRequest extends RestifyRequest
         });
     }
 
-    public function collectRepositories(): Collection
+    public function collectRepositories($count, Closure $callback)
     {
-        $model = $this->model();
+        $output = [];
 
-        return $model->newQuery()->whereIn(
-            $model->getKeyName(),
-            $this->input('repositories', []) ?? []
-        )->get();
+        RepositorySearchService::instance()->search($this, $this->repository())
+        ->when($this->input('repositories') !== 'all', function ($query) {
+            $query->whereKey($this->input('repositories', []));
+        })->latest($this->model()->getKeyName())
+        ->chunk($count, function ($chunk) use ($callback, &$output) {
+            $output[] = $callback(Collection::make($chunk));
+        });
+
+        return $output;
     }
 }

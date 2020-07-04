@@ -161,3 +161,28 @@ public function handle(ActionRequest $request, Collection $models): JsonResponse
 ```
 
 
+## Filters
+
+You can apply any filter or eager loadings as for an usual request: 
+
+```http request
+POST: api/restify-api/posts/actions?action=publish-posts-action&id=1&filters=
+```
+
+This will apply the match for the `id = 1` and `filtetr` along with the match for the `repositories` payload you're sending.
+
+## All
+
+Sometimes you may need to apply an action for all models. For this you can send: 
+
+```http request
+repositories: 'all'
+```
+
+## Chunk
+
+Under the hood Restify will take by 200 chunks entries from the database and the handle method for these in a DB transaction. You are free to modify this default number of chunks: 
+
+```php
+public static int $chunkCount = 150;
+```
