@@ -1,6 +1,8 @@
 <?php
 
 use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
+use Binaryk\LaravelRestify\Http\Controllers\ListActionsController;
+use Binaryk\LaravelRestify\Http\Controllers\PerformActionController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileAvatarController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController;
@@ -25,6 +27,10 @@ Route::post('/profile/avatar', '\\'.ProfileAvatarController::class);
 
 // Filters
 Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
+
+// Actions
+Route::get('/{repository}/actions', '\\'.ListActionsController::class);
+Route::post('/{repository}/action', '\\'.PerformActionController::class);
 
 // API CRUD
 Route::get('/{repository}', '\\'.RepositoryIndexController::class);

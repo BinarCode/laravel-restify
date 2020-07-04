@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\CheckPassport;
 use Binaryk\LaravelRestify\Commands\PolicyCommand;
@@ -55,6 +56,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
 
         $this->commands([
             RepositoryCommand::class,
+            ActionCommand::class,
         ]);
     }
 

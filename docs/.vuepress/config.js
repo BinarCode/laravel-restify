@@ -8,7 +8,7 @@ module.exports = {
     themeConfig: {
         logo: '/assets/img/icon.png',
         displayAllHeaders: true,
-        sidebarDepth: 2,
+        sidebarDepth: 1,
 
         nav: [
             { text: 'Docs', link: '/docs/3.0/' },

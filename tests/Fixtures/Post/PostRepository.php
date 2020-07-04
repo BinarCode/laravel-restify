@@ -89,4 +89,14 @@ class PostRepository extends Repository
             'first_title' => optional($items->first())->title,
         ];
     }
+
+    public function actions(RestifyRequest $request)
+    {
+        return [
+            PublishPostAction::new(),
+            InvalidatePostAction::new()->canSee(function () {
+                return $_SERVER['actions.posts.invalidate'] ?? true;
+            }),
+        ];
+    }
 }

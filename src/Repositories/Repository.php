@@ -38,7 +38,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         ValidatingTrait,
         PerformsQueries,
         ConditionallyLoadsAttributes,
-        DelegatesToResource;
+        DelegatesToResource,
+        ResolvesActions;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.

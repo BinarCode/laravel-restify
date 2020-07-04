@@ -68,6 +68,18 @@ class {{ class }}
     }
 
     /**
+     * Determine whether the user can update bulk the model.
+     *
+     * @param  \App\User  $user
+     * @param  {{ model }}  $model
+     * @return mixed
+     */
+    public function updateBulk(User $user, {{ model }} $model)
+    {
+        //
+    }
+
+    /**
      * Determine whether the user can delete the model.
      *
      * @param  \App\User  $user
