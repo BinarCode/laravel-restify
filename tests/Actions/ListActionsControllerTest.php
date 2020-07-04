@@ -24,8 +24,8 @@ class ListActionsControllerTest extends IntegrationTest
                     [
                         'name',
                         'uriKey',
-                    ]
-                ]
+                    ],
+                ],
             ]);
     }
 }
