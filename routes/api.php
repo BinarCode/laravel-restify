@@ -30,7 +30,7 @@ Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
 
 // Actions
 Route::get('/{repository}/actions', '\\'. ListActionsController::class);
-Route::post('/{repository}/{repositoryId}/action', '\\'. PerformRepositoryActionController::class);
+Route::post('/{repository}/action', '\\'. PerformRepositoryActionController::class);
 
 // API CRUD
 Route::get('/{repository}', '\\'.RepositoryIndexController::class);

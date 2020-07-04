@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Illuminate\Support\Collection;
 
 class ActionRequest extends RestifyRequest
 {
@@ -25,5 +26,15 @@ class ActionRequest extends RestifyRequest
         return $this->availableActions()->contains(function (Action $action) {
             return $action->uriKey() == $this->query('action');
         });
+    }
+
+    public function collectRepositories(): Collection
+    {
+        $model = $this->model();
+
+        return $model->newQuery()->whereIn(
+            $model->getKeyName(),
+            $this->input('repositories', []) ?? []
+        )->get();
     }
 }

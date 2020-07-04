@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests\Actions;
 
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class ListActionsControllerTest extends IntegrationTest
@@ -28,21 +27,5 @@ class ListActionsControllerTest extends IntegrationTest
                     ]
                 ]
             ]);
-    }
-
-    public function test_could_perform_action_for_repository()
-    {
-        $post = $this->mockPosts(
-            $this->mockUsers()->first()->id
-        );
-
-        $this->post('/restify-api/posts/'.$post->first()->id.'/action?action='.(new PublishPostAction())->uriKey(), [
-        ])
-            ->assertSuccessful()
-            ->assertJsonStructure([
-                'data'
-            ]);
-
-        $this->assertEquals($post->first()->id, PublishPostAction::$applied[0][0]->id);
     }
 }

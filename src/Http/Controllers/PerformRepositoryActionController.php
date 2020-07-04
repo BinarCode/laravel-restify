@@ -12,11 +12,7 @@ class PerformRepositoryActionController extends RepositoryController
 
         return $action->handle(
             $request,
-            collect(
-                [
-                    $request->findModelQuery()->firstOrFail()
-                ]
-            )
+            $request->collectRepositories(),
         );
     }
 }
