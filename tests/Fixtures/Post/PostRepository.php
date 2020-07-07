@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
@@ -93,10 +94,17 @@ class PostRepository extends Repository
     public function actions(RestifyRequest $request)
     {
         return [
-            PublishPostAction::new(),
-            InvalidatePostAction::new()->canSee(function () {
-                return $_SERVER['actions.posts.invalidate'] ?? true;
-            }),
+            PublishPostAction::new()
+            ->onlyOnShow(
+                $_SERVER['actions.posts.publish.onlyOnShow'] ?? false,
+            ),
+            InvalidatePostAction::new()
+                ->onlyOnShow(
+                    $_SERVER['actions.posts.onlyOnShow'] ?? true
+                )
+                ->canSee(function (ActionRequest $request) {
+                    return $_SERVER['actions.posts.invalidate'] ?? true;
+                }),
         ];
     }
 }

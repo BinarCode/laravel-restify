@@ -2,7 +2,9 @@
 
 use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
 use Binaryk\LaravelRestify\Http\Controllers\ListActionsController;
+use Binaryk\LaravelRestify\Http\Controllers\ListRepositoryActionsController;
 use Binaryk\LaravelRestify\Http\Controllers\PerformActionController;
+use Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileAvatarController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController;
@@ -30,7 +32,9 @@ Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
 
 // Actions
 Route::get('/{repository}/actions', '\\'.ListActionsController::class);
+Route::get('/{repository}/{repositoryId}/actions', '\\'.ListRepositoryActionsController::class);
 Route::post('/{repository}/action', '\\'.PerformActionController::class);
+Route::post('/{repository}/{repositoryId}/action', '\\'.PerformRepositoryActionController::class);
 
 // API CRUD
 Route::get('/{repository}', '\\'.RepositoryIndexController::class);

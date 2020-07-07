@@ -12,7 +12,7 @@ abstract class Filter implements JsonSerializable
 {
     use Make;
 
-    public $type;
+    public $type = 'value';
 
     public $value;
 

@@ -186,3 +186,36 @@ Under the hood Restify will take by 200 chunks entries from the database and the
 ```php
 public static int $chunkCount = 150;
 ```
+
+## Action visibility
+
+Usually you need an action only for a single model. Then you can use: 
+
+```php
+public function actions(RestifyRequest $request)
+{
+    return [
+        PublishPostAction::new()->onlyOnShow(),
+    ];
+}
+```
+
+
+And available actions only for a specific repository id could be listed like:
+
+```http request
+GET: api/restify-api/posts/1/actions
+```
+
+Having this in place, you now have access to the current repository in the `actions` method: 
+
+```php
+public function actions(RestifyRequest $request)
+{
+    return [
+        PublishPostAction::new()->onlyOnShow()->canSee(function(ActionRequest $request) {
+            return $request->user()->ownsPost($request->findModelOrFail());
+        })
+    ];
+}
+```

@@ -24,6 +24,22 @@ trait Visibility
         return $this;
     }
 
+    public function onlyOnShow($value = true)
+    {
+        $this->showOnIndex = ! $value;
+        $this->showOnShow = $value;
+
+        return $this;
+    }
+
+    public function onlyOnIndex($value = true)
+    {
+        $this->showOnIndex = $value;
+        $this->showOnShow = ! $value;
+
+        return $this;
+    }
+
     public function hideFromShow($callback = true)
     {
         $this->showOnShow = is_callable($callback) ? function () use ($callback) {

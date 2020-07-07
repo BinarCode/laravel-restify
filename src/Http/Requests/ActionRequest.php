@@ -19,7 +19,9 @@ class ActionRequest extends RestifyRequest
         return once(function () {
             return $this->availableActions()->first(function ($action) {
                 return $action->uriKey() == $this->query('action');
-            }) ?: abort($this->actionExists() ? 403 : 404);
+            }) ?: abort(
+                $this->actionExists() ? 403 : 404, 'Action does not exists or you don\'t have enough permissions to perform it.'
+            );
         });
     }
 
@@ -30,11 +32,13 @@ class ActionRequest extends RestifyRequest
         });
     }
 
-    public function collectRepositories($count, Closure $callback)
+    public function collectRepositories(Action $action, $count, Closure $callback)
     {
         $output = [];
 
-        RepositorySearchService::instance()->search($this, $this->repository())
+        tap(RepositorySearchService::instance()->search($this, $this->repository()), function ($query) use ($action) {
+            $action::indexQuery($this, $query);
+        })
         ->when($this->input('repositories') !== 'all', function ($query) {
             $query->whereKey($this->input('repositories', []));
         })->latest($this->model()->getKeyName())
@@ -43,5 +47,10 @@ class ActionRequest extends RestifyRequest
         });
 
         return $output;
+    }
+
+    public function isForRepositoryRequest()
+    {
+        return $this instanceof RepositoryActionRequest;
     }
 }
