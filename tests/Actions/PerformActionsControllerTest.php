@@ -17,7 +17,7 @@ class PerformActionsControllerTest extends IntegrationTest
     {
         $post = $this->mockPosts(1, 2);
 
-        $this->post('/restify-api/posts/action?action=' . (new PublishPostAction())->uriKey(), [
+        $this->post('/restify-api/posts/action?action='.(new PublishPostAction())->uriKey(), [
             'repositories' => [
                 $post->first()->id,
                 $post->last()->id,
@@ -39,7 +39,7 @@ class PerformActionsControllerTest extends IntegrationTest
         $_SERVER['actions.posts.invalidate'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->post('/restify-api/posts/action?action=' . (new PublishPostAction())->uriKey(), [
+        $this->post('/restify-api/posts/action?action='.(new PublishPostAction())->uriKey(), [
             'repositories' => [
                 $post->first()->id,
                 $post->last()->id,
@@ -47,7 +47,7 @@ class PerformActionsControllerTest extends IntegrationTest
         ])
             ->assertNotFound()
             ->assertJsonStructure([
-                'errors'
+                'errors',
             ]);
     }
 }
