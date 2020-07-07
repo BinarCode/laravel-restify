@@ -33,7 +33,7 @@ class RestifyRequest extends FormRequest
      *
      * @return bool
      */
-    public function isIndexRequest()
+    public function isForRepositoryRequest()
     {
         return $this instanceof RepositoryIndexRequest;
     }

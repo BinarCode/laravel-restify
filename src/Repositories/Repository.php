@@ -241,7 +241,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         $method = 'fields';
 
-        if ($request->isIndexRequest() && method_exists($this, 'fieldsForIndex')) {
+        if ($request->isForRepositoryRequest() && method_exists($this, 'fieldsForIndex')) {
             $method = 'fieldsForIndex';
         }
 

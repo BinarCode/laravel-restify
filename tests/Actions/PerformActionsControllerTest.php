@@ -17,7 +17,7 @@ class PerformActionsControllerTest extends IntegrationTest
     {
         $post = $this->mockPosts(1, 2);
 
-        $this->post('/restify-api/posts/action?action='.(new PublishPostAction())->uriKey(), [
+        $this->post('/restify-api/posts/action?action=' . (new PublishPostAction())->uriKey(), [
             'repositories' => [
                 $post->first()->id,
                 $post->last()->id,
@@ -30,5 +30,24 @@ class PerformActionsControllerTest extends IntegrationTest
 
         $this->assertEquals(2, PublishPostAction::$applied[0][0]->id);
         $this->assertEquals(1, PublishPostAction::$applied[0][1]->id);
+    }
+
+    public function test_cannot_apply_a_show_action_to_index()
+    {
+        $post = $this->mockPosts(1, 2);
+
+        $_SERVER['actions.posts.invalidate'] = true;
+        $_SERVER['actions.posts.publish.onlyOnShow'] = true;
+
+        $this->post('/restify-api/posts/action?action=' . (new PublishPostAction())->uriKey(), [
+            'repositories' => [
+                $post->first()->id,
+                $post->last()->id,
+            ],
+        ])
+            ->assertNotFound()
+            ->assertJsonStructure([
+                'errors'
+            ]);
     }
 }

@@ -19,7 +19,9 @@ class ActionRequest extends RestifyRequest
         return once(function () {
             return $this->availableActions()->first(function ($action) {
                 return $action->uriKey() == $this->query('action');
-            }) ?: abort($this->actionExists() ? 403 : 404);
+            }) ?: abort(
+                $this->actionExists() ? 403 : 404, 'Action does not exists or you don\'t have enough permissions to perform it.'
+            );
         });
     }
 
@@ -45,5 +47,10 @@ class ActionRequest extends RestifyRequest
         });
 
         return $output;
+    }
+
+    public function isForRepositoryRequest()
+    {
+        return $this instanceof RepositoryActionRequest;
     }
 }

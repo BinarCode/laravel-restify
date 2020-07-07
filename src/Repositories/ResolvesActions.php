@@ -2,14 +2,35 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
+use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Collection;
 
 trait ResolvesActions
 {
-    public function availableActions(RestifyRequest $request)
+    public function availableActions(ActionRequest $request)
     {
-        return $this->resolveActions($request)->filter->authorizedToSee($request)->values();
+        $actions = $request->isForRepositoryRequest()
+            ? $this->resolveShowActions($request)
+            : $this->resolveIndexActions($request);
+
+        return $actions->filter->authorizedToSee($request)->values();
+    }
+
+    public function resolveIndexActions(ActionRequest $request): Collection
+    {
+        return $this->resolveActions($request)->filter(fn($action) => $action->isShownOnIndex(
+            $request, $request->repository()
+        ))->values();
+    }
+
+    public function resolveShowActions(ActionRequest $request): Collection
+    {
+        return $this->resolveActions($request)->filter(fn($action) => $action->isShownOnShow(
+            $request, $request->newRepositoryWith(
+            $request->findModelOrFail()
+        )
+        ))->values();
     }
 
     public function resolveActions(RestifyRequest $request): Collection
