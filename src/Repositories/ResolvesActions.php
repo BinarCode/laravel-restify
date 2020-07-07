@@ -19,14 +19,14 @@ trait ResolvesActions
 
     public function resolveIndexActions(ActionRequest $request): Collection
     {
-        return $this->resolveActions($request)->filter(fn($action) => $action->isShownOnIndex(
+        return $this->resolveActions($request)->filter(fn ($action) => $action->isShownOnIndex(
             $request, $request->repository()
         ))->values();
     }
 
     public function resolveShowActions(ActionRequest $request): Collection
     {
-        return $this->resolveActions($request)->filter(fn($action) => $action->isShownOnShow(
+        return $this->resolveActions($request)->filter(fn ($action) => $action->isShownOnShow(
             $request, $request->newRepositoryWith(
             $request->findModelOrFail()
         )
