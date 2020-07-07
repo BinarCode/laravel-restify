@@ -26,7 +26,7 @@ trait Visibility
 
     public function onlyOnShow($value = true)
     {
-        $this->showOnIndex = !$value;
+        $this->showOnIndex = ! $value;
         $this->showOnShow = $value;
 
         return $this;
@@ -35,7 +35,7 @@ trait Visibility
     public function onlyOnIndex($value = true)
     {
         $this->showOnIndex = $value;
-        $this->showOnShow = !$value;
+        $this->showOnShow = ! $value;
 
         return $this;
     }
