@@ -235,10 +235,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * @param RestifyRequest $request
-     * @param int|null $bulkRow
      * @return FieldCollection
      */
-    public function collectFields(RestifyRequest $request, int $bulkRow = null)
+    public function collectFields(RestifyRequest $request)
     {
         $method = 'fields';
 
@@ -266,7 +265,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $method = 'fieldsForUpdateBulk';
         }
 
-        $fields = FieldCollection::make(array_values($this->filter($this->{$method}($request, $bulkRow))));
+        $fields = FieldCollection::make(array_values($this->filter($this->{$method}($request))));
 
         if ($this instanceof Mergeable) {
             $fillable = collect($this->resource->getFillable())
@@ -300,9 +299,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->authorizedUpdate($request);
     }
 
-    private function updateBulkFields(RestifyRequest $request, int $bulkRow)
+    private function updateBulkFields(RestifyRequest $request)
     {
-        return $this->collectFields($request, $bulkRow)
+        return $this->collectFields($request)
             ->forUpdateBulk($request, $this)
             ->authorizedUpdateBulk($request);
     }
@@ -314,9 +313,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->authorizedStore($request);
     }
 
-    private function storeBulkFields(RestifyRequest $request, int $bulkRow)
+    private function storeBulkFields(RestifyRequest $request)
     {
-        return $this->collectFields($request, $bulkRow)
+        return $this->collectFields($request)
             ->forStoreBulk($request, $this)
             ->authorizedStore($request);
     }
@@ -621,17 +620,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 ->map(function (array $input, $row) use ($request) {
                     $this->resource = static::newModel();
 
-                    $request->merge([
-                        'bulk_row' => $row,
-                    ]);
-
                     static::fillBulkFields(
-                        $request, $this->resource, $this->storeBulkFields($request, $row), $row
+                        $request, $this->resource, $this->storeBulkFields($request), $row
                     );
 
                     $this->resource->save();
 
-                    $this->storeBulkFields($request, $row)->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
+                    $this->storeBulkFields($request)->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
 
                     return $this->resource;
                 });
@@ -662,7 +657,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
-        $fields = $this->updateBulkFields($request, $row);
+        $fields = $this->updateBulkFields($request);
 
         static::fillBulkFields($request, $this->resource, $fields, $row);
 
@@ -739,11 +734,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this;
     }
 
-    public function allowToBulkStore(RestifyRequest $request, $payload = null): self
+    public function allowToBulkStore(RestifyRequest $request, $payload = null, $row = null): self
     {
         static::authorizeToStoreBulk($request);
 
-        $validator = static::validatorForStoringBulk($request, $payload);
+        $validator = static::validatorForStoringBulk($request, $payload, $row);
 
         $validator->validate();
 

@@ -22,6 +22,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
                 'title' => null,
             ],
         ])
+            ->dump()
             ->assertStatus(400)
             ->assertJson([
                 'errors' => [

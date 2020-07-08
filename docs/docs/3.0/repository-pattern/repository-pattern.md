@@ -671,19 +671,6 @@ As the store bulk, the update bulk uses DB transaction to perform the action. So
 ->updateBulkRules('required', Rule::in('posts:id'))
 ```
 
-Sometimes you may need to know the current row in `fieldsForStoreBulk` for some complex validations, this will be passed for bulk update and store:
-
-```php
-public function fieldsForStoreBulk(RestifyRequest $request, int $bulkRow)
-{
-return [
-    Field::new()->rules(Rule::unique('users')->where(function ($query) use ($request, $bulkRow) {
-                            return $query->where('account_id', data_get($request->all(), $bulkRow . '.account_id'));
-                        }))
-];
-}
-```
-
 ### Bulk Payload
 
 The payload for a bulk update should contain an array of objects. Each object SHOULD contain an `id` key, based on this, the Laravel Restify will find the entity: 
