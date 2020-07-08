@@ -60,6 +60,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
                 'title' => 'Updated second title',
             ],
         ])
+            ->dump()
             ->assertStatus(200);
 
         $updatedPost = Post::find($post1->id);

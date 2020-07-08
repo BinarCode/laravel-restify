@@ -668,7 +668,20 @@ As the store bulk, the update bulk uses DB transaction to perform the action. So
 ### Bulk update field validations
 
 ```php
-->updateBulkRules('required', function () {}, Rule::in('posts:id'))
+->updateBulkRules('required', Rule::in('posts:id'))
+```
+
+Sometimes you may need to know the current row in `fields` for some complex validations, this will be passed for bulk update and store:
+
+```php
+public function fields(RestifyRequest $request, int $bulkRow)
+{
+return [
+    Field::new()->rules(Rule::unique('users')->where(function ($query) use ($request, $bulkRow) {
+                            return $query->where('account_id', data_get($request->all(), $bulkRow . '.account_id'));
+                        }))
+];
+}
 ```
 
 ### Bulk Payload

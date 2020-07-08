@@ -219,3 +219,11 @@ public function actions(RestifyRequest $request)
     ];
 }
 ```
+
+Performing this action, you can only for a single repository: 
+
+```http request
+POST: api/restify-api/posts/1/actions?action=publish-posts-action
+```
+
+And you don't have to pass the `repositories` array in that case, since it's present in the query.
