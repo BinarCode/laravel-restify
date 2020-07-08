@@ -633,6 +633,12 @@ by using native Laravel validator, so you will have exactly the same experience.
 
 The payload for a bulk store should contain an array of objects: 
 
+```http request
+POST: /restify-api/posts/bulk/update
+```
+
+Payload:
+
 ```json
 [
   {
@@ -668,6 +674,12 @@ As the store bulk, the update bulk uses DB transaction to perform the action. So
 ### Bulk Payload
 
 The payload for a bulk update should contain an array of objects. Each object SHOULD contain an `id` key, based on this, the Laravel Restify will find the entity: 
+
+```http request
+POST: /restify-api/posts/bulk/update
+```
+
+Payload: 
 
 ```json
 [
