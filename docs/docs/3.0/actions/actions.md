@@ -227,3 +227,12 @@ POST: api/restify-api/posts/1/actions?action=publish-posts-action
 ```
 
 And you don't have to pass the `repositories` array in that case, since it's present in the query.
+
+Because it will be right in your handle method: 
+
+```php
+public function handle(ActionRequest $request, Post $post): JsonResponse
+{
+    //
+}
+```
