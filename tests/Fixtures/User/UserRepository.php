@@ -22,4 +22,11 @@ class UserRepository extends Repository
         return [
         ];
     }
+
+    public function actions(RestifyRequest $request)
+    {
+        return [
+            ActivateAction::new(),
+        ];
+    }
 }

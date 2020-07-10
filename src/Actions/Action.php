@@ -92,13 +92,13 @@ abstract class Action extends RestController implements JsonSerializable
 
     public function handleRequest(ActionRequest $request)
     {
-        if (! method_exists($this, 'handle')) {
+        if (!method_exists($this, 'handle')) {
             throw new Exception('Missing handle method from the action.');
         }
 
         $response = null;
 
-        if (! $request->isForRepositoryRequest()) {
+        if (!$request->isForRepositoryRequest()) {
             $request->collectRepositories($this, static::$chunkCount, function ($models) use ($request, &$response) {
                 Transaction::run(function () use ($models, $request, &$response) {
                     $response = $this->handle($request, $models);
@@ -108,7 +108,9 @@ abstract class Action extends RestController implements JsonSerializable
             Transaction::run(function () use ($request, &$response) {
                 $response = $this->handle(
                     $request,
-                    $request->findModelOrFail()
+                    tap($request->findModelQuery(), function ($query) use ($request) {
+                        static::indexQuery($request, $query);
+                    })->firstOrFail()
                 );
             });
         }

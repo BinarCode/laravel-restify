@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Actions;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\ActivateAction;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class PerformActionsControllerTest extends IntegrationTest
@@ -49,5 +50,18 @@ class PerformActionsControllerTest extends IntegrationTest
             ->assertJsonStructure([
                 'errors',
             ]);
+    }
+
+    public function test_show_action_not_need_repositories()
+    {
+        $users = $this->mockUsers();
+
+        $this->post('/restify-api/users/'.$users->first()->id.'/action?action='.(new ActivateAction)->uriKey())
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                'data',
+            ]);
+
+        $this->assertEquals(1, ActivateAction::$applied[0]->id);
     }
 }
