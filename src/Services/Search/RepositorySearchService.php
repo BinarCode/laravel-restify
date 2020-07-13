@@ -201,11 +201,14 @@ class RepositorySearchService extends Searchable
                         return false;
                     }
 
-                    if ($matchingFilter->invalidPayloadValue($request, $filter['value'])) {
+                    if (array_key_exists('value', $filter) && $matchingFilter->invalidPayloadValue($request, $filter['value'])) {
                         return false;
                     }
 
-                    $matchingFilter->resolve($request, $filter['value']);
+                    $matchingFilter->resolve(
+                        $request,
+                        array_key_exists('value', $filter) ? $filter['value'] : null
+                    );
 
                     return $matchingFilter;
                 })

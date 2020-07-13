@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\ActiveBooleanFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\CreatedAfterDateFilter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\InactiveFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\SelectCategoryFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
@@ -17,7 +18,26 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ->withoutExceptionHandling()
             ->getJson('restify-api/posts/filters');
 
-        $this->assertCount(3, $response->json('data'));
+        $this->assertCount(4, $response->json('data'));
+    }
+
+    public function test_value_filter_doesnt_require_value()
+    {
+        factory(Post::class)->create(['is_active' => false]);
+        factory(Post::class)->create(['is_active' => true]);
+
+        $filters = base64_encode(json_encode([
+            [
+                'class' => InactiveFilter::class,
+            ],
+        ]));
+
+        $response = $this
+            ->withoutExceptionHandling()
+            ->getJson('restify-api/posts?filters='.$filters)
+            ->assertStatus(200);
+
+        $this->assertCount(1, $response->json('data'));
     }
 
     public function test_the_boolean_filter_is_applied()

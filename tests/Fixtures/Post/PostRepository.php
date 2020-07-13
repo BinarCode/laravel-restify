@@ -80,6 +80,7 @@ class PostRepository extends Repository
             ActiveBooleanFilter::new()->canSee(fn () => true),
             SelectCategoryFilter::new(),
             CreatedAfterDateFilter::new(),
+            InactiveFilter::new(),
         ];
     }
 
