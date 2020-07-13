@@ -36,7 +36,6 @@ class ProfileControllerTest extends IntegrationTest
     {
         $response = $this->getJson('/restify-api/profile?related=posts')
             ->assertStatus(200)
-
             ->assertJsonStructure([
                 'data',
             ]);
@@ -65,6 +64,7 @@ class ProfileControllerTest extends IntegrationTest
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
         ])
+            ->dump()
             ->assertStatus(200);
 
         $response->assertJsonFragment([
@@ -95,7 +95,8 @@ class ProfileControllerTest extends IntegrationTest
         $this->putJson('restify-api/profile', [
             'email' => 'existing@gmail.com',
             'name' => 'Eduard',
-        ])->assertStatus(400);
+        ])
+            ->assertStatus(400);
     }
 
     public function test_profile_upload_avatar()
@@ -106,5 +107,22 @@ class ProfileControllerTest extends IntegrationTest
             'avatar' => $file,
         ])
             ->assertStatus(200);
+    }
+
+    public function test_profile_validation_from_repository()
+    {
+        $this->putJson('/restify-api/profile', [
+            'email' => 'contact@binarschool.com',
+            'name' => 'Ed',
+        ])
+            ->dump()
+            ->assertStatus(400)
+            ->assertJsonStructure([
+                'errors' => [
+                    [
+                        'name'
+                    ]
+                ]
+            ]);
     }
 }

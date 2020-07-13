@@ -2,13 +2,15 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Mergeable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class UserRepository extends Repository
+class UserRepository extends Repository implements Mergeable
 {
     public static $model = User::class;
 
@@ -20,6 +22,11 @@ class UserRepository extends Repository
     public function fields(RestifyRequest $request)
     {
         return [
+            Field::new('name')->rules('sometimes', 'nullable', 'min:4'),
+
+            Field::new('email')->rules('required', 'unique:users'),
+
+            Field::new('password'),
         ];
     }
 
