@@ -28,7 +28,7 @@ class ProfileController extends RepositoryController
         $meta = [];
 
         if (method_exists($user, 'profile')) {
-            $meta = (array)call_user_func([$user, 'profile'], $request);
+            $meta = (array) call_user_func([$user, 'profile'], $request);
         }
 
         return $this->response()
@@ -40,7 +40,7 @@ class ProfileController extends RepositoryController
     {
         $repository = $request->repository('users');
 
-        if (!$repository) {
+        if (! $repository) {
             return null;
         }
 
