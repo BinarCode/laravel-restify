@@ -24,7 +24,7 @@ class ProfileControllerTest extends IntegrationTest
         $response = $this->getJson('/restify-api/profile')
             ->assertStatus(200)
             ->assertJsonStructure([
-                'data',
+                'attributes',
             ]);
 
         $response->assertJsonFragment([
@@ -37,7 +37,7 @@ class ProfileControllerTest extends IntegrationTest
         $response = $this->getJson('/restify-api/profile?related=posts')
             ->assertStatus(200)
             ->assertJsonStructure([
-                'data',
+                'attributes',
             ]);
 
         $response->assertJsonFragment([
@@ -51,10 +51,7 @@ class ProfileControllerTest extends IntegrationTest
         $this->getJson('/restify-api/profile')
             ->assertStatus(200)
             ->assertJsonStructure([
-                'data',
-                'meta' => [
-                    'roles',
-                ],
+                'meta',
             ]);
     }
 
@@ -64,7 +61,6 @@ class ProfileControllerTest extends IntegrationTest
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
         ])
-            ->dump()
             ->assertStatus(200);
 
         $response->assertJsonFragment([
@@ -115,7 +111,6 @@ class ProfileControllerTest extends IntegrationTest
             'email' => 'contact@binarschool.com',
             'name' => 'Ed',
         ])
-            ->dump()
             ->assertStatus(400)
             ->assertJsonStructure([
                 'errors' => [

@@ -10,13 +10,17 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class UserRepository extends Repository implements Mergeable
+class UserRepository extends Repository
 {
     public static $model = User::class;
 
     public static $search = [
         'id',
         'name',
+    ];
+
+    public static $related = [
+        'posts',
     ];
 
     public function fields(RestifyRequest $request)

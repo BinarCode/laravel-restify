@@ -19,7 +19,7 @@ class RepositorySearchService extends Searchable
 
         $query = $this->applyFilters($request, $repository, $query);
 
-        return tap($this->prepareRelations($request, $this->prepareOrders($request, $query), $this->fixedInput), $this->applyIndexQuery($request, $repository));
+        return tap($this->prepareOrders($request, $query), $this->applyIndexQuery($request, $repository));
     }
 
     public function prepareMatchFields(RestifyRequest $request, $query, $extra = [])
@@ -30,7 +30,7 @@ class RepositorySearchService extends Searchable
                 continue;
             }
 
-            $value = $request->get($key, data_get($extra, "match.$key"));
+            $value = $request->input($key, data_get($extra, "match.$key"));
 
             if (empty($value)) {
                 continue;
@@ -70,7 +70,7 @@ class RepositorySearchService extends Searchable
 
     public function prepareOrders(RestifyRequest $request, $query, $extra = [])
     {
-        $orderings = explode(',', $request->get('sort', ''));
+        $orderings = explode(',', $request->input('sort', ''));
 
         if (isset($extra['sort'])) {
             $orderings = $extra['sort'];
@@ -93,7 +93,7 @@ class RepositorySearchService extends Searchable
 
     public function prepareRelations(RestifyRequest $request, $query, $extra = [])
     {
-        $relations = array_merge($extra, explode(',', $request->get('related')));
+        $relations = array_merge($extra, explode(',', $request->input('related')));
 
         foreach ($relations as $relation) {
             if (in_array($relation, $this->repository->getWiths())) {
@@ -106,7 +106,7 @@ class RepositorySearchService extends Searchable
 
     public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])
     {
-        $search = $request->get('search', data_get($extra, 'search', ''));
+        $search = $request->input('search', data_get($extra, 'search', ''));
 
         if (empty($search)) {
             return $query;
