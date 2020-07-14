@@ -115,9 +115,9 @@ class ProfileControllerTest extends IntegrationTest
             ->assertJsonStructure([
                 'errors' => [
                     [
-                        'name'
-                    ]
-                ]
+                        'name',
+                    ],
+                ],
             ]);
     }
 }
