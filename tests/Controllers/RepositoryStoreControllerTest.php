@@ -25,7 +25,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             ->assertJson([
                 'errors' => [
                     [
-                        '0.title' => [
+                        'title' => [
                             'This field is required',
                         ],
                     ],
