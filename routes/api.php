@@ -37,7 +37,7 @@ Route::post('/{repository}/action', '\\'.PerformActionController::class);
 Route::post('/{repository}/{repositoryId}/action', '\\'.PerformRepositoryActionController::class);
 
 // API CRUD
-Route::get('/{repository}', '\\'.RepositoryIndexController::class);
+//Route::get('/{repository}', '\\'.RepositoryIndexController::class);
 Route::post('/{repository}', '\\'.RepositoryStoreController::class);
 Route::post('/{repository}/bulk', '\\'.RepositoryStoreBulkController::class);
 Route::post('/{repository}/bulk/update', '\\'.RepositoryUpdateBulkController::class);

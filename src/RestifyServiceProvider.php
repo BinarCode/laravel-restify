@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\EmptyMiddleware;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -46,6 +48,7 @@ class RestifyServiceProvider extends ServiceProvider
     {
         Route::group($config, function () {
             $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+            Route::get('/{repository}', '\\'.RepositoryIndexController::class);
         });
 
         return $this;

@@ -106,6 +106,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public static $middlewares = [];
 
+    public static $withoutMiddleware = [];
+
     /**
      * The list of attach callable's.
      *

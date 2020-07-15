@@ -13,6 +13,8 @@ interface RestifySearchable
     const MATCH_TEXT = 'text';
     const MATCH_BOOL = 'bool';
     const MATCH_INTEGER = 'integer';
+    const MATCH_ARRAY = 'array';
+    const MATCH_DATE = 'date';
 
     /**
      * Get available attributes for query params search.
