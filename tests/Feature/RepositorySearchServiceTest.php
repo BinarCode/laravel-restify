@@ -48,7 +48,6 @@ class RepositorySearchServiceTest extends IntegrationTest
             '-id' => RestifySearchable::MATCH_ARRAY,
         ];
 
-
         $this->getJson('restify-api/users?id=1,2,3')
             ->assertJsonCount(3, 'data');
 
