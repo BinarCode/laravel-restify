@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 class RepositorySearchService extends Searchable
 {
@@ -28,48 +29,60 @@ class RepositorySearchService extends Searchable
         /** * @var Builder $query */
         $model = $query->getModel();
         foreach ($this->repository->getMatchByFields() as $key => $type) {
+            $negation = false;
+
             if (!$request->has($key) && !data_get($extra, "match.$key")) {
                 continue;
             }
 
-            $value = $request->input($key, data_get($extra, "match.$key"));
+            $match = $request->input($key, data_get($extra, "match.$key"));
 
-            if (empty($value)) {
+            if (substr($key, 0, 1) === '-') {
+                $negation = true;
+                $key = Str::after($key, '-');
+            }
+
+            if (empty($match)) {
                 continue;
             }
 
             $field = $model->qualifyColumn($key);
 
-            $values = explode(',', $value);
+            if ($match === 'null') {
+                $query->whereNull($field);
+            } else {
+                switch ($this->repository->getMatchByFields()[$key]) {
+                    case RestifySearchable::MATCH_TEXT:
+                    case 'string':
+                        $query->where($field, $negation ? '!=' : '=', $match);
+                        break;
+                    case RestifySearchable::MATCH_BOOL:
+                    case 'boolean':
+                        if ($match === 'false') {
+                            $query->where(function ($query) use ($field) {
+                                return $query->where($field, '=', false)->orWhereNull($field);
+                            });
+                            break;
+                        }
+                        $query->where($field, $negation ? '!=' : '=', true);
+                        break;
+                    case RestifySearchable::MATCH_INTEGER:
+                    case 'number':
+                    case 'int':
+                        $query->where($field, $negation ? '!=' : '=', (int)$match);
+                        break;
+                    case RestifySearchable::MATCH_DATETIME:
+                        $query->whereDate($field, $negation ? '!=' : '=', $match);
+                        break;
+                    case RestifySearchable::MATCH_ARRAY:
+                        $match = explode(',', $match);
 
-            foreach ($values as $match) {
-                if ($match === 'null') {
-                    $query->whereNull($field);
-                } else {
-                    switch ($this->repository->getMatchByFields()[$key]) {
-                        case RestifySearchable::MATCH_TEXT:
-                        case 'string':
-                            $query->where($field, '=', $match);
-                            break;
-                        case RestifySearchable::MATCH_BOOL:
-                        case 'boolean':
-                            if ($match === 'false') {
-                                $query->where(function ($query) use ($field) {
-                                    return $query->where($field, '=', false)->orWhereNull($field);
-                                });
-                                break;
-                            }
-                            $query->where($field, '=', true);
-                            break;
-                        case RestifySearchable::MATCH_INTEGER:
-                        case 'number':
-                        case 'int':
-                            $query->where($field, '=', (int)$match);
-                            break;
-                        case RestifySearchable::MATCH_DATETIME:
-                            $query->whereDate($field, '=', $match);
-                            break;
-                    }
+                        if ($negation) {
+                            $query->whereNotIn($field, $match);
+                        } else {
+                            $query->whereIn($field, $match);
+                        }
+                        break;
                 }
             }
         }
@@ -148,8 +161,7 @@ class RepositorySearchService extends Searchable
         return $query;
     }
 
-    public
-    function setOrder($query, $param)
+    public function setOrder($query, $param)
     {
         if ($param === 'random') {
             $query->inRandomOrder();

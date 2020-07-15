@@ -44,4 +44,21 @@ class RepositorySearchServiceTest extends IntegrationTest
         $this->getJson('restify-api/users?created_at=2020-12-01')
             ->assertJsonCount(1, 'data');
     }
+
+    public function test_can_match_array()
+    {
+        factory(User::class, 4)->create();
+
+        UserRepository::$match = [
+            'id' => RestifySearchable::MATCH_ARRAY,
+            '-id' => RestifySearchable::MATCH_ARRAY,
+        ];
+
+
+        $this->getJson('restify-api/users?id=1,2,3')
+            ->assertJsonCount(3, 'data');
+
+        $this->getJson('restify-api/users?-id=1,2,3')
+            ->assertJsonCount(1, 'data');
+    }
 }
