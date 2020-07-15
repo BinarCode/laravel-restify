@@ -21,7 +21,16 @@ class RepositoryStoreControllerTest extends IntegrationTest
     public function test_basic_validation_works()
     {
         $this->postJson('/restify-api/posts', [])
-            ->assertStatus(400);
+            ->assertStatus(400)
+            ->assertJson([
+                'errors' => [
+                    [
+                        'title' => [
+                            'This field is required',
+                        ],
+                    ],
+                ],
+            ]);
     }
 
     public function test_unauthorized_store()
