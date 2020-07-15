@@ -62,6 +62,17 @@ GET: /restify-api/posts?title="Some title"
 
 The `datetime` filter add behind the scene an `whereDate` query. 
 
+```php
+class PostRepository extends Repository
+{
+    public static $match = [
+        'published_at' => RestifySearchable::MATCH_DATETIME,
+    ];
+}
+```
+
+Request: 
+
 ```http request
 GET: /restify-api/posts?published_at=2020-12-01
 ```
@@ -77,6 +88,17 @@ GET: /restify-api/posts?published_at=null
 ### Match array
 
 Match also accept a list of elements in the query param:
+
+```php
+class PostRepository extends Repository
+{
+    public static $match = [
+        'id' => RestifySearchable::MATCH_ARRAY
+    ];
+}
+```
+
+Request: 
 
 ```http request
 GET: /restify-api/posts?id=1,2,3
