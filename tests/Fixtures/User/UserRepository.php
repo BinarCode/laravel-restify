@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
+use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Mergeable;
@@ -21,6 +22,10 @@ class UserRepository extends Repository
 
     public static $related = [
         'posts',
+    ];
+
+    public static $match = [
+        'created_at' => RestifySearchable::MATCH_DATETIME,
     ];
 
     public function fields(RestifyRequest $request)

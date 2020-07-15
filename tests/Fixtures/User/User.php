@@ -36,7 +36,7 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail, Rest
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'email_verified_at', 'avatar',
+        'name', 'email', 'password', 'email_verified_at', 'avatar', 'created_at'
     ];
 
     /**
