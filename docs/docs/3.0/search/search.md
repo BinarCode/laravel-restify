@@ -88,6 +88,46 @@ The `datetime` filter add behind the scene an `whereDate` query.
 GET: /restify-api/posts?published_at=2020-12-01
 ```
 
+### Match null
+
+Match accept `null` as a value, and check add `whereNull` to the query:
+
+```http request
+GET: /restify-api/posts?published_at=null
+```
+
+### Match array
+
+Match also accept a list of elements in the query param:
+
+```http request
+GET: /restify-api/posts?id=1,2,3
+```
+
+This will be converted to:
+
+```php
+->whereIn('id', [1, 2, 3])
+```
+
+### Match negation
+
+You can negate the column match by simply adding the `-` (minus) sign before the field:
+
+```http request
+GET: /restify-api/posts?-id=1,2,3
+```
+
+This will return all posts where doesn't have the `id` in the `[1,2,3]` list.
+
+You can apply `-` (negation) for every match: 
+
+```http request
+GET: /restify-api/posts?-title="Some title"
+```
+
+This will return all posts that doesn't contain `Some title` substring.
+
 ## Sort 
 When index query entities, usually we have to sort by specific attributes. 
 
