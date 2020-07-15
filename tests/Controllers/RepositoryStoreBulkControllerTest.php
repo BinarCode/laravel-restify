@@ -23,16 +23,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
             ],
         ])
             ->dump()
-            ->assertStatus(400)
-            ->assertJson([
-                'errors' => [
-                    [
-                        '0.title' => [
-                            'This field is required',
-                        ],
-                    ],
-                ],
-            ]);
+            ->assertStatus(400);
     }
 
     public function test_unauthorized_store_bulk()

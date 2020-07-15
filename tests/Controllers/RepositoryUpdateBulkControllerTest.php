@@ -27,16 +27,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
                 'title' => null,
             ],
         ])
-            ->assertStatus(400)
-            ->assertJson([
-                'errors' => [
-                    [
-                        '0.title' => [
-                            'This field is required',
-                        ],
-                    ],
-                ],
-            ]);
+            ->assertStatus(400);
     }
 
     public function test_basic_update_works()

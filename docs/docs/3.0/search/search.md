@@ -64,6 +64,8 @@ Available types:
 - text (or `string`)
 - bool
 - int (or `integer`)
+- datetime
+- array
 
 When performing the request you may pass the match field and value as query params:
 
@@ -77,6 +79,14 @@ or by title:
 GET: /restify-api/posts?title="Some title"
 ```
 
+
+### Match datetime
+
+The `datetime` filter add behind the scene an `whereDate` query. 
+
+```http request
+GET: /restify-api/posts?published_at=2020-12-01
+```
 
 ## Sort 
 When index query entities, usually we have to sort by specific attributes. 
