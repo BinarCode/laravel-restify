@@ -45,10 +45,9 @@ class UserRepositoryWithoutMiddleware extends Repository
     }
 }
 
-
 class EmptyMiddleware
 {
-    static $called = false;
+    public static $called = false;
 
     public function handle(Request $request, $next)
     {
@@ -57,4 +56,3 @@ class EmptyMiddleware
         return $next($request);
     }
 }
-

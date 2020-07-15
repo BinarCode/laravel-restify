@@ -11,11 +11,9 @@ class RepositoryWithoutMiddlewareTest extends IntegrationTest
 {
     protected function setUp(): void
     {
-
         Restify::repositories([
             UserRepositoryWithoutMiddleware::class,
         ]);
-
 
         parent::setUp();
 

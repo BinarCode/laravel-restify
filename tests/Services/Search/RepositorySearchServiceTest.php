@@ -6,5 +6,4 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class RepositorySearchServiceTest extends IntegrationTest
 {
-
 }
