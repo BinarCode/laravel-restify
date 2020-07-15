@@ -1,17 +1,6 @@
 # Filtering entities
 
-Laravel Restify provides configurable and powerful way of filtering over entities. 
-
-- Prerequisites
-
-In order to make a model searchable, it should implement the `Binaryk\LaravelRestify\Contracts\RestifySearchable` contract.
-After running this command, add the `Binaryk\LaravelRestify\Traits\InteractWithSearch` trait to your model. 
-This trait will provide a few helper methods to your model which allow you to filter.
-
-:::tip
-The searchable feature is available as for the Restify generated endpoints as well as from a custom Controller searching,
-`$this->search(Model::class)`
-:::
+Laravel Restify provides configurable and powerful way of filtering over entities.
 
 ## Search
 
@@ -19,18 +8,12 @@ If you want search for some specific fields from a model, you have to define the
 property:
 
 ```php
-use Illuminate\Database\Eloquent\Model;
-use Binaryk\LaravelRestify\Traits\InteractWithSearch;
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-
-class Post extends Model implements  RestifySearchable
+class PostRepository extends Repository
 {
-    use InteractWithSearch;
-
     public static $search = ['id', 'title'];
 ```
 
-Now the `Post` entity is searchable by `id` and `title`, so you could use `search` query param for filtering the index 
+Now `posts` are searchable by `id` and `title`, so you could use `search` query param for filtering the index 
 request: 
 
 ```http request
@@ -39,22 +22,18 @@ GET: /restify-api/posts?search="Test title"
 
 ## Match
 
-Matching by specific attributes may be useful if you want an exact matching. Model 
-configuration:
+Matching by specific attributes may be useful if you want an exact matching. 
+
+Repository configuration:
 
 ```php
-use Illuminate\Database\Eloquent\Model;
-use Binaryk\LaravelRestify\Traits\InteractWithSearch;
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-
-class Post extends Model implements  RestifySearchable
+class PostRepository extends Repository
 {
-    use InteractWithSearch;
-
-    public static $search = ['id', 'title'];
-
-    public static $match = ['id' => 'int', 'title' => 'string'];
-
+    public static $match = [
+        'id' => RestifySearchable::MATCH_INTEGER
+        'title' => RestifySearchable::MATCH_TEXT,
+    ];
+}
 ```
 
 As we may notice the match configuration is an associative array, defining the attribute name and type mapping. 
@@ -78,7 +57,6 @@ or by title:
 ```http request
 GET: /restify-api/posts?title="Some title"
 ```
-
 
 ### Match datetime
 
@@ -134,24 +112,14 @@ When index query entities, usually we have to sort by specific attributes.
 This requires the `$sort` configuration:
 
 ```php
-use Illuminate\Database\Eloquent\Model;
-use Binaryk\LaravelRestify\Traits\InteractWithSearch;
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-
-class Post extends Model implements  RestifySearchable
+class PostRepository extends Repository
 {
-    use InteractWithSearch;
-
-    public static $search = ['id', 'title'];
-
-    public static $match = ['id' => 'int', 'title' => 'string'];
-
     public static $sort = ['id'];
 ```
  
  Performing request requires the sort query param: 
  
- Sorting DESC requires a minus sign before the attribute name:
+ Sorting DESC requires a minus (`-`) sign before the attribute name:
  
  ```http request
 GET: /restify-api/posts?sort=-id
