@@ -40,6 +40,8 @@ class ProfileController extends RepositoryController
     {
         $repository = $request->repository('users');
 
+        return null;
+
         if (! $repository) {
             return null;
         }
