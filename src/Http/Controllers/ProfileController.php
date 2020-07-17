@@ -40,10 +40,14 @@ class ProfileController extends RepositoryController
     {
         $repository = $request->repository('users');
 
-        return null;
-
         if (! $repository) {
             return null;
+        }
+
+        if (method_exists($repository, 'canUseForProfile')) {
+            if (! call_user_func($repository, 'canUseForProfile', $request)) {
+                return null;
+            }
         }
 
         $user = tap(RepositorySearchService::instance()->search(
