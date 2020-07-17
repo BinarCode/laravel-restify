@@ -93,7 +93,7 @@ class RepositorySearchService extends Searchable
                     default:
                         if (is_callable($this->repository->getMatchByFields($request)[$key])) {
                             call_user_func_array($this->repository->getMatchByFields($request)[$key], [
-                                $request, $query
+                                $request, $query,
                             ]);
                         }
                 }
