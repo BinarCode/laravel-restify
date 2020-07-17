@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\ServiceProvider;
 
@@ -50,6 +51,8 @@ class LaravelRestifyServiceProvider extends ServiceProvider
      */
     public function register()
     {
+        Repository::clearBootedRepositories();
+
         // Register the main class to use with the facade
         $this->app->singleton('laravel-restify', function () {
             return new Restify;

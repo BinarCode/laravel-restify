@@ -39,7 +39,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         PerformsQueries,
         ConditionallyLoadsAttributes,
         DelegatesToResource,
-        ResolvesActions;
+        ResolvesActions,
+        RepositoryEvents;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -119,6 +120,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var array
      */
     public static $with = [];
+
+    public function __construct()
+    {
+        $this->bootIfNotBooted();
+    }
 
     /**
      * Get the underlying model instance for the resource.
