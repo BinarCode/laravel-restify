@@ -140,7 +140,9 @@ public static function getMatchByFields()
         'is_active' => function ($request, $query) {
             if ($request->boolean('is_active')) {
                $query->whereNotNull('email_verified_at');
-           }
+           } else {
+               $query->whereNull('email_verified_at');
+            }       
         }
     ];
 }
