@@ -15,9 +15,9 @@ class UserRepository extends Repository
 {
     use UserProfile;
 
-    public static $canUseForProfile = true;
-
     public static $model = User::class;
+
+    public static $wasBooted = false;
 
     public static $search = [
         'id',
@@ -48,5 +48,10 @@ class UserRepository extends Repository
         return [
             ActivateAction::new(),
         ];
+    }
+
+    protected static function booted()
+    {
+        static::$wasBooted = true;
     }
 }

@@ -694,3 +694,21 @@ Payload:
 ]
 ```
 
+
+## Repository boot
+
+You can handle the repository boot, by using the `booted` static method:
+
+````php
+/**
+     * The "booted" method of the repository.
+     *
+     * @return void
+     */
+    protected static function booted()
+    {
+        static::$wasBooted = true;
+    }
+````
+
+
