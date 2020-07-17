@@ -28,7 +28,7 @@ class RepositorySearchService extends Searchable
     {
         /** * @var Builder $query */
         $model = $query->getModel();
-        foreach ($this->repository->getMatchByFields() as $key => $type) {
+        foreach ($this->repository->getMatchByFields($request) as $key => $type) {
             $negation = false;
 
             if ($request->has('-'.$key)) {
@@ -90,6 +90,12 @@ class RepositorySearchService extends Searchable
                             $query->whereIn($field, $match);
                         }
                         break;
+                    default:
+                        if (is_callable($this->repository->getMatchByFields($request)[$key])) {
+                            call_user_func_array($this->repository->getMatchByFields($request)[$key], [
+                                $request, $query
+                            ]);
+                        }
                 }
             }
         }

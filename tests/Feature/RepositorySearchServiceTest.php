@@ -7,10 +7,12 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Database\Query\Builder;
+use Illuminate\Http\Request;
 
 class RepositorySearchServiceTest extends IntegrationTest
 {
-    /** * @var RepositorySearchService*/
+    /** * @var RepositorySearchService */
     private $service;
 
     protected function setUp(): void
@@ -53,5 +55,19 @@ class RepositorySearchServiceTest extends IntegrationTest
         $this->getJson('restify-api/users?-id=1,2,3')
             ->dump()
             ->assertJsonCount(1, 'data');
+    }
+
+    public function test_can_match_closure()
+    {
+        factory(User::class, 4)->create();
+
+        UserRepository::$match = [
+            'is_active' => function ($request, $query) {
+                $this->assertInstanceOf(Request::class, $request);
+                $this->assertInstanceOf(Builder::class, $query);
+            }
+        ];
+
+        $this->getJson('restify-api/users?is_active=true');
     }
 }

@@ -128,6 +128,30 @@ GET: /restify-api/posts?-title="Some title"
 
 This will return all posts that doesn't contain `Some title` substring.
 
+### Match closure
+
+There may be situations when the filter you want to apply not necessarily is a database attributes. You can use a Closure to handle this easily:
+
+```php
+// UserRepository
+public static function getMatchByFields()
+{
+    return [
+        'is_active' => function ($request, $query) {
+            if ($request->boolean('is_active')) {
+               $query->whereNotNull('email_verified_at');
+           }
+        }
+    ];
+}
+```
+
+So now you can query this: 
+
+```http request
+GET: /restify-api/users?is_active=true
+```
+
 ## Sort 
 When index query entities, usually we have to sort by specific attributes. 
 
