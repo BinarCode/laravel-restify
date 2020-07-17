@@ -42,7 +42,7 @@ class ProfileUpdateController extends RepositoryController
         }
 
         if (method_exists($repository, 'canUseForProfileUpdate')) {
-            if (!call_user_func([$repository, 'canUseForProfileUpdate'], $request)) {
+            if (! call_user_func([$repository, 'canUseForProfileUpdate'], $request)) {
                 return null;
             }
         }
