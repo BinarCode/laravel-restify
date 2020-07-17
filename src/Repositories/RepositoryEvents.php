@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Binaryk\LaravelRestify\Repositories;
-
 
 trait RepositoryEvents
 {
