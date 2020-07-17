@@ -85,13 +85,19 @@ class UserRepository extends Repository
 Now you can inform whatever the Restify can use this repository to return the profile: 
 
 ```php
-public static $canUseForProfile = true;
+protected static function booted()
+{
+    static::$canUseForProfile = true;
+}
 ```
 
 or to update it:
 
 ```php
-public static $canUseForProfileUpdate = true;
+protected static function booted()
+{
+    static::$canUseForProfileUpdate = true;
+}
 ```
 
 If the `UserRepository` is used to get the user profile, the format of the data will follow the JSON:API format: 
