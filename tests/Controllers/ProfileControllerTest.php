@@ -45,10 +45,10 @@ class ProfileControllerTest extends IntegrationTest
                 'data' => [
                     'posts' => [
                         [
-                            'title'
-                        ]
-                    ]
-                ]
+                            'title',
+                        ],
+                    ],
+                ],
             ]);
     }
 
@@ -140,7 +140,7 @@ class ProfileControllerTest extends IntegrationTest
             ->assertStatus(200)
             ->assertJsonStructure([
                 'attributes',
-                'meta'
+                'meta',
             ]);
 
         $response->assertJsonFragment([
@@ -159,10 +159,10 @@ class ProfileControllerTest extends IntegrationTest
                 'relationships' => [
                     'posts' => [
                         [
-                            'attributes'
-                        ]
-                    ]
-                ]
+                            'attributes',
+                        ],
+                    ],
+                ],
             ]);
 
         $response->assertJsonFragment([
@@ -203,6 +203,4 @@ class ProfileControllerTest extends IntegrationTest
             'name' => 'Eduard',
         ]);
     }
-
-
 }

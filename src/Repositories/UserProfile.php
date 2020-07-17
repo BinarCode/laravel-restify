@@ -34,10 +34,10 @@ trait UserProfile
     public function resolveShowMeta($request)
     {
         return [
-                'authorizedToShow' => $this->authorizedToShow($request),
-                'authorizedToStore' => $this->authorizedToStore($request),
-                'authorizedToUpdate' => $this->authorizedToUpdate($request),
-                'authorizedToDelete' => $this->authorizedToDelete($request),
-            ] + static::metaProfile($request);
+            'authorizedToShow' => $this->authorizedToShow($request),
+            'authorizedToStore' => $this->authorizedToStore($request),
+            'authorizedToUpdate' => $this->authorizedToUpdate($request),
+            'authorizedToDelete' => $this->authorizedToDelete($request),
+        ] + static::metaProfile($request);
     }
 }
