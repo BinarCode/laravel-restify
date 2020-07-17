@@ -116,6 +116,8 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_validation_from_repository()
     {
+        UserRepository::$canUseForProfileUpdate = true;
+
         $this->putJson('/restify-api/profile', [
             'email' => 'contact@binarschool.com',
             'name' => 'Ed',
@@ -185,4 +187,22 @@ class ProfileControllerTest extends IntegrationTest
                 ],
             ]);
     }
+
+    public function test_profile_update_via_repository()
+    {
+        UserRepository::$canUseForProfileUpdate = true;
+
+        $response = $this->putJson('restify-api/profile', [
+            'email' => 'contact@binarschool.com',
+            'name' => 'Eduard',
+        ])
+            ->assertStatus(200);
+
+        $response->assertJsonFragment([
+            'email' => 'contact@binarschool.com',
+            'name' => 'Eduard',
+        ]);
+    }
+
+
 }
