@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Http\Requests\ProfileAvatarRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
+use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends RepositoryController
 {
@@ -28,7 +29,7 @@ class ProfileController extends RepositoryController
         $meta = [];
 
         if (method_exists($user, 'profile')) {
-            $meta = (array) call_user_func([$user, 'profile'], $request);
+            $meta = (array)call_user_func([$user, 'profile'], $request);
         }
 
         return $this->response()
@@ -40,12 +41,12 @@ class ProfileController extends RepositoryController
     {
         $repository = $request->repository('users');
 
-        if (! $repository) {
+        if (!$repository) {
             return null;
         }
 
         if (method_exists($repository, 'canUseForProfile')) {
-            if (! call_user_func([$repository, 'canUseForProfile'], $request)) {
+            if (!call_user_func([$repository, 'canUseForProfile'], $request)) {
                 return null;
             }
         }
@@ -54,7 +55,7 @@ class ProfileController extends RepositoryController
             $request, $repository
         ), function ($query) use ($request, $repository) {
             $repository::indexQuery($request, $query);
-        })->firstOrFail();
+        })->whereKey(Auth::id())->firstOrFail();
 
         return $repository->withResource($user);
     }

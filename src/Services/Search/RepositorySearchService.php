@@ -31,14 +31,17 @@ class RepositorySearchService extends Searchable
         foreach ($this->repository->getMatchByFields() as $key => $type) {
             $negation = false;
 
-            if (! $request->has($key) && ! data_get($extra, "match.$key")) {
+            if ($request->has('-' . $key)) {
+                $negation = true;
+            }
+
+            if (!$request->has($negation ? '-' . $key : $key) && !data_get($extra, "match.$key")) {
                 continue;
             }
 
-            $match = $request->input($key, data_get($extra, "match.$key"));
+            $match = $request->input($negation ? '-' . $key : $key, data_get($extra, "match.$key"));
 
-            if (substr($key, 0, 1) === '-') {
-                $negation = true;
+            if ($negation) {
                 $key = Str::after($key, '-');
             }
 
@@ -49,7 +52,11 @@ class RepositorySearchService extends Searchable
             $field = $model->qualifyColumn($key);
 
             if ($match === 'null') {
-                $query->whereNull($field);
+                if ($negation) {
+                    $query->whereNotNull($field);
+                } else {
+                    $query->whereNull($field);
+                }
             } else {
                 switch ($this->repository->getMatchByFields()[$key]) {
                     case RestifySearchable::MATCH_TEXT:
@@ -69,7 +76,7 @@ class RepositorySearchService extends Searchable
                     case RestifySearchable::MATCH_INTEGER:
                     case 'number':
                     case 'int':
-                        $query->where($field, $negation ? '!=' : '=', (int) $match);
+                        $query->where($field, $negation ? '!=' : '=', (int)$match);
                         break;
                     case RestifySearchable::MATCH_DATETIME:
                         $query->whereDate($field, $negation ? '!=' : '=', $match);
@@ -107,7 +114,7 @@ class RepositorySearchService extends Searchable
         }
 
         if (empty($params) === true) {
-            $this->setOrder($query, '+'.$this->repository->newModel()->getKeyName());
+            $this->setOrder($query, '+' . $this->repository->newModel()->getKeyName());
         }
 
         return $query;
@@ -151,7 +158,7 @@ class RepositorySearchService extends Searchable
             $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
             foreach ($this->repository->getSearchableFields() as $column) {
-                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
+                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%' . $search . '%');
             }
         });
 
@@ -204,12 +211,12 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::indexQuery($request, $query->with($repository::$with));
+        return fn($query) => $repository::indexQuery($request, $query->with($repository::$with));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
     {
-        if (! empty($request->filters)) {
+        if (!empty($request->filters)) {
             $filters = json_decode(base64_decode($request->filters), true);
 
             collect($filters)
@@ -235,7 +242,7 @@ class RepositorySearchService extends Searchable
                     return $matchingFilter;
                 })
                 ->filter()
-                ->each(fn (Filter $filter) => $filter->filter($request, $query, $filter->value));
+                ->each(fn(Filter $filter) => $filter->filter($request, $query, $filter->value));
         }
 
         return $query;
