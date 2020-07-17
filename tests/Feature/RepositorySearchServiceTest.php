@@ -45,13 +45,13 @@ class RepositorySearchServiceTest extends IntegrationTest
 
         UserRepository::$match = [
             'id' => RestifySearchable::MATCH_ARRAY,
-            '-id' => RestifySearchable::MATCH_ARRAY,
         ];
 
         $this->getJson('restify-api/users?id=1,2,3')
             ->assertJsonCount(3, 'data');
 
         $this->getJson('restify-api/users?-id=1,2,3')
+            ->dump()
             ->assertJsonCount(1, 'data');
     }
 }
