@@ -65,7 +65,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             'is_active' => function ($request, $query) {
                 $this->assertInstanceOf(Request::class, $request);
                 $this->assertInstanceOf(Builder::class, $query);
-            }
+            },
         ];
 
         $this->getJson('restify-api/users?is_active=true');
