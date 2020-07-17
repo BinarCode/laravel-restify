@@ -31,7 +31,7 @@ class DevCommand extends Command
 
     public function handle()
     {
-        if (!$this->confirmToProceed()) {
+        if (! $this->confirmToProceed()) {
             return true;
         }
 
@@ -68,7 +68,7 @@ class DevCommand extends Command
 
         if (array_key_exists('repositories', $composer)) {
             $composer['repositories'] = collect($composer['repositories'])->filter(function ($repository) {
-                if (!array_key_exists('url', $repository)) {
+                if (! array_key_exists('url', $repository)) {
                     return true;
                 }
 
@@ -88,22 +88,20 @@ class DevCommand extends Command
         if ($this->option('git')) {
             $composer['repositories'][] = [
                 'type' => 'vcs',
-                'url' => $this->option('path') ?: 'git@github.com:BinarCode/laravel-restify.git'
+                'url' => $this->option('path') ?: 'git@github.com:BinarCode/laravel-restify.git',
             ];
         } else {
             $composer['repositories'][] = [
                 'type' => 'path',
-                'url' => $this->option('path') ?: '../../binarcode/laravel-restify'
+                'url' => $this->option('path') ?: '../../binarcode/laravel-restify',
             ];
         }
-
 
         file_put_contents(
             base_path('composer.json'),
             json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
         );
     }
-
 
     protected function composerUpdate()
     {
