@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -17,6 +18,10 @@ class ProfileControllerTest extends IntegrationTest
             'name' => 'Eduard Lupacescu',
             'email' => 'eduard.lupacescu@binarcode.com',
         ]));
+
+        $this->mockPosts(
+            $this->authenticatedAs->id
+        );
     }
 
     public function test_profile_returns_authenticated_user()
@@ -24,7 +29,7 @@ class ProfileControllerTest extends IntegrationTest
         $response = $this->getJson('/restify-api/profile')
             ->assertStatus(200)
             ->assertJsonStructure([
-                'attributes',
+                'data',
             ]);
 
         $response->assertJsonFragment([
@@ -34,16 +39,17 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_returns_authenticated_user_with_related_posts()
     {
-        $response = $this->getJson('/restify-api/profile?related=posts')
+        $this->getJson('/restify-api/profile?related=posts')
             ->assertStatus(200)
             ->assertJsonStructure([
-                'attributes',
+                'data' => [
+                    'posts' => [
+                        [
+                            'title'
+                        ]
+                    ]
+                ]
             ]);
-
-        $response->assertJsonFragment([
-            'email' => $this->authenticatedAs->email,
-            'posts' => [],
-        ]);
     }
 
     public function test_profile_returns_authenticated_user_with_meta_profile_data()
@@ -51,7 +57,10 @@ class ProfileControllerTest extends IntegrationTest
         $this->getJson('/restify-api/profile')
             ->assertStatus(200)
             ->assertJsonStructure([
-                'meta',
+                'data',
+                'meta' => [
+                    'roles',
+                ],
             ]);
     }
 
@@ -117,6 +126,62 @@ class ProfileControllerTest extends IntegrationTest
                     [
                         'name',
                     ],
+                ],
+            ]);
+    }
+
+    public function test_get_profile_can_use_repository()
+    {
+        UserRepository::$canUseForProfile = true;
+
+        $response = $this->getJson('/restify-api/profile')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'attributes',
+                'meta'
+            ]);
+
+        $response->assertJsonFragment([
+            'email' => $this->authenticatedAs->email,
+        ]);
+    }
+
+    public function test_profile_returns_authenticated_user_with_related_posts_via_repository()
+    {
+        UserRepository::$canUseForProfile = true;
+
+        $response = $this->getJson('/restify-api/profile?related=posts')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'attributes',
+                'relationships' => [
+                    'posts' => [
+                        [
+                            'attributes'
+                        ]
+                    ]
+                ]
+            ]);
+
+        $response->assertJsonFragment([
+            'email' => $this->authenticatedAs->email,
+        ]);
+    }
+
+    public function test_profile_returns_authenticated_user_with_meta_profile_data_via_repository()
+    {
+        UserRepository::$canUseForProfile = true;
+
+        UserRepository::$metaProfile = [
+            'roles' => '',
+        ];
+
+        $this->getJson('/restify-api/profile')
+            ->assertStatus(200)
+            ->assertJsonStructure([
+                'attributes',
+                'meta' => [
+                    'roles',
                 ],
             ]);
     }
