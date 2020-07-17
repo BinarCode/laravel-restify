@@ -70,3 +70,76 @@ Binaryk\LaravelRestify\Http\Requests\ProfileAvatarRequest::usingPath(function(Il
 })
 ```
 
+
+## Profile via User Repository
+
+You can use the `UserRepository` (if you have one), to resolve the profile and perform the updates over the profile by using the `UserProfile` trait in your repository: 
+
+```php
+class UserRepository extends Repository
+{
+    use Binaryk\LaravelRestify\Repositories\UserProfile;
+}
+```
+
+Now you can inform whatever the Restify can use this repository to return the profile: 
+
+```php
+public static $canUseForProfile = true;
+```
+
+or to update it:
+
+```php
+public static $canUseForProfileUpdate = true;
+```
+
+If the `UserRepository` is used to get the user profile, the format of the data will follow the JSON:API format: 
+
+```json
+{
+  "id": "1"
+  "type": "users"
+  "attributes": {
+    "name": "Eduard Lupacescu"
+    "email": "eduard.lupacescu@binarcode.com"
+    "password": "" 
+  }
+}
+```
+
+You can specify related entities as for an usual request: 
+
+```http request
+GET: restify-api/profile?related=posts
+```
+
+So Restify will attach the relationships to the response: 
+
+```json
+{
+  "id": "1"
+  "type": "users"
+  "attributes": {
+    "name": "Eduard Lupacescu"
+    "email": "eduard.lupacescu@binarcode.com"
+  }
+  "relationships": {
+    "posts": array:1 [
+      0 => {
+        "attributes": {
+          "id": 1
+          "user_id": "1"
+
+```
+
+If you want to attach some custom / meta profile data, you can do that by overriding the: 
+
+
+```php
+// UserRepository
+public static function metaProfile(Request $request): array
+{
+    return static::$metaProfile;
+}
+```

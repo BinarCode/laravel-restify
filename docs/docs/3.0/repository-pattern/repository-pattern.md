@@ -454,7 +454,7 @@ use Binaryk\LaravelRestify\Controllers\RestController;
 class PostController extends RestController
 {
     /**
-     * Show the profile for the given user.
+     * Show the kpi for the given user.
      *
      * @param  int  $id
      * @return JsonResponse

@@ -15,6 +15,8 @@ class UserRepository extends Repository
 {
     use UserProfile;
 
+    public static $canUseForProfile = true;
+
     public static $model = User::class;
 
     public static $search = [
