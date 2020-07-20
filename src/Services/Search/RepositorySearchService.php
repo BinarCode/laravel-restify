@@ -66,8 +66,12 @@ class RepositorySearchService extends Searchable
                     case RestifySearchable::MATCH_BOOL:
                     case 'boolean':
                         if ($match === 'false') {
-                            $query->where(function ($query) use ($field) {
-                                return $query->where($field, '=', false)->orWhereNull($field);
+                            $query->where(function ($query) use ($field, $negation) {
+                                if ($negation) {
+                                    return $query->where($field, true);
+                                } else {
+                                    return $query->where($field, '=', false)->orWhereNull($field);
+                                }
                             });
                             break;
                         }
