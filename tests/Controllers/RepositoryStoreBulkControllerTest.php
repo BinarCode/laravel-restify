@@ -54,7 +54,6 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
                 'title' => 'Second post.',
             ],
         ])
-            ->dump()
             ->assertStatus(201);
 
         $this->assertDatabaseCount('posts', 2);
