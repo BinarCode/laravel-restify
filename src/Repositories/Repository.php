@@ -25,7 +25,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
-use phpDocumentor\Reflection\Types\Static_;
 
 /**
  * This class serve as repository collection and repository single model
