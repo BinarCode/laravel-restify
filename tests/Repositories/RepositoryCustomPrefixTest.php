@@ -19,7 +19,7 @@ class RepositoryCustomPrefixTest extends IntegrationTest
 
     public function test_repository_can_have_custom_prefix()
     {
-        $this->getJson('api/restify-api/v1/'.PostRepository::uriKey())
+        $this->getJson('api/restify-api/index/'.PostRepository::uriKey())
             ->assertSuccessful();
     }
 
