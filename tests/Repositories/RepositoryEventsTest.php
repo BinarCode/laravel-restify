@@ -14,7 +14,6 @@ class RepositoryEventsTest extends IntegrationTest
         parent::setUp();
 
         $this->authenticate();
-
     }
 
     public function test_booted_method_not_invoked_when_foreign_repository()
