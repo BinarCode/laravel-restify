@@ -42,6 +42,7 @@ abstract class IntegrationTest extends TestCase
 
     protected function setUp(): void
     {
+        $this->loadRepositories();
         parent::setUp();
         DB::enableQueryLog();
 
@@ -52,7 +53,6 @@ abstract class IntegrationTest extends TestCase
         $this->loadRoutes();
         $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
-        $this->loadRepositories();
         $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
     }
 

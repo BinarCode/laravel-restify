@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -35,7 +37,8 @@ class RestifyServiceProvider extends ServiceProvider
             'middleware' => config('restify.middleware', []),
         ];
 
-        $this->defaultRoutes($config);
+        $this->defaultRoutes($config)
+            ->registerPrefixed($config);
     }
 
     /**
@@ -45,8 +48,26 @@ class RestifyServiceProvider extends ServiceProvider
     public function defaultRoutes($config)
     {
         Route::group($config, function () {
-            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+            $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
         });
+
+        return $this;
+    }
+
+    /**
+     * @param $config
+     * @return $this
+     */
+    public function registerPrefixed($config)
+    {
+        collect(Restify::$repositories)
+            ->filter(fn($repository) => $repository::prefix())
+            ->each(function ($repository) use ($config) {
+                $config['prefix'] = $repository::prefix();
+                Route::group($config, function () {
+                    $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+                });
+            });
 
         return $this;
     }

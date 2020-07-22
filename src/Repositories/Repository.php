@@ -25,6 +25,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
+use phpDocumentor\Reflection\Types\Static_;
 
 /**
  * This class serve as repository collection and repository single model
@@ -120,6 +121,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var array
      */
     public static $with = [];
+
+    /**
+     * The repository routes default prefix.
+     *
+     * @var string
+     */
+    public static $prefix;
 
     public function __construct()
     {
@@ -873,5 +881,20 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static function getAttachers(): array
     {
         return static::$attachers;
+    }
+
+    public static function prefix(): ?string
+    {
+        $prefix = static::$prefix;
+
+        if ($prefix && Str::startsWith($prefix, '/')) {
+            $prefix = Str::replaceFirst('/', '', $prefix);
+        }
+
+        if ($prefix && Str::endsWith($prefix, '/')) {
+            $prefix = Str::replaceLast('/', '', $prefix);
+        }
+
+        return $prefix;
     }
 }
