@@ -53,7 +53,7 @@ trait InteractWithRepositories
 
             if (! $repository::authorizedToUseRoute($this)) {
                 abort(403, __('Unauthorized to use the route :name. Check prefix.', [
-                    'name' => $this->getRequestUri()
+                    'name' => $this->getRequestUri(),
                 ]));
             }
 
