@@ -1,8 +1,6 @@
 <?php
 
-
 namespace Binaryk\LaravelRestify\Repositories;
-
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Str;
@@ -61,12 +59,11 @@ trait WithRoutePrefix
                 return true;
             }
 
-            return $request->is(static::indexPrefix() . '/*');
+            return $request->is(static::indexPrefix().'/*');
         } else {
             // the rest
-            return $request->is(static::prefix() . '/*');
+            return $request->is(static::prefix().'/*');
         }
-
     }
 
     protected static function shouldAuthorizeRouteUsage(): bool
@@ -74,6 +71,6 @@ trait WithRoutePrefix
         return collect([
             static::prefix(),
             static::indexPrefix(),
-        ])->some(fn($prefix) => (bool) $prefix);
+        ])->some(fn ($prefix) => (bool) $prefix);
     }
 }
