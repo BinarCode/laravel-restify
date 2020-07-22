@@ -75,7 +75,7 @@ class RestifyServiceProvider extends ServiceProvider
     public function registerIndexPrefixed($config)
     {
         collect(Restify::$repositories)
-            ->filter(fn($repository) => $repository::indexPrefix())
+            ->filter(fn ($repository) => $repository::indexPrefix())
             ->each(function ($repository) use ($config) {
                 $config['prefix'] = $repository::indexPrefix();
                 Route::group($config, function () {
