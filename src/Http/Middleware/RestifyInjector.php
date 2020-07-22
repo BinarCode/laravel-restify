@@ -26,7 +26,7 @@ class RestifyInjector
         $path = trim(Restify::path(), '/') ?: '/';
 
         $isRestify = $request->is($path) ||
-            $request->is(trim($path . '/*', '/')) ||
+            $request->is(trim($path.'/*', '/')) ||
             $request->is('restify-api/*') ||
             collect(Restify::$repositories)
                 ->filter(fn($repository) => $repository::prefix())
