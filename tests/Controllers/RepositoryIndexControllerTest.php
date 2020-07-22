@@ -113,6 +113,21 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->assertArrayNotHasKey('user', $response->json('data.0.attributes'));
     }
 
+    public function test_paginated_repository_with_relations()
+    {
+        PostRepository::$related = ['user'];
+
+        $user = $this->mockUsers(1)->first();
+
+        factory(Post::class, 20)->create(['user_id' => $user->id]);
+
+        $response = $this->getJson('/restify-api/posts?related=user&page=2')
+            ->assertStatus(200);
+
+        $this->assertCount(1, $response->json('data.0.relationships.user'));
+        $this->assertArrayNotHasKey('user', $response->json('data.0.attributes'));
+    }
+
     public function test_index_unmergeable_repository_containes_only_explicitly_defined_fields()
     {
         factory(Post::class)->create();

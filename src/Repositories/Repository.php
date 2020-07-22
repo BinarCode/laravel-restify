@@ -504,7 +504,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveRelationships($request): array
     {
-        if (is_null($request->get('related'))) {
+        if (is_null($request->input('related'))) {
             return [];
         }
 
@@ -515,9 +515,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 if (in_array($relation, static::getRelated())) {
                     // @todo check if the resource has the relation
                     /** * @var AbstractPaginator $paginator */
-                    $paginator = $this->resource->{$relation}()->paginate($request->get('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE));
+                    $paginator = $this->resource->{$relation}()->take($request->input('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
 
-                    $withs[$relation] = $paginator->getCollection()->map(fn (Model $item) => [
+                    $withs[$relation] = $paginator->map(fn (Model $item) => [
                         'attributes' => $item->toArray(),
                     ]);
                 }
