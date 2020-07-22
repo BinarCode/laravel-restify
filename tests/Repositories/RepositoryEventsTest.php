@@ -11,6 +11,8 @@ class RepositoryEventsTest extends IntegrationTest
     protected function setUp(): void
     {
         Repository::clearBootedRepositories();
+        UserRepository::$wasBooted = false;
+
         parent::setUp();
 
         $this->authenticate();
@@ -19,8 +21,6 @@ class RepositoryEventsTest extends IntegrationTest
 
     public function test_booted_method_not_invoked_when_foreign_repository()
     {
-        UserRepository::$wasBooted = false;
-
         $this->getJson('/restify-api/posts');
 
         $this->assertFalse(UserRepository::$wasBooted);
@@ -28,8 +28,6 @@ class RepositoryEventsTest extends IntegrationTest
 
     public function test_booted_method_invoked()
     {
-        UserRepository::$wasBooted = false;
-
         $this->getJson('/restify-api/users');
 
         $this->assertTrue(UserRepository::$wasBooted);
