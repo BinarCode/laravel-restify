@@ -26,11 +26,11 @@ class RestifyInjector
         $path = trim(Restify::path(), '/') ?: '/';
 
         $isRestify = $request->is($path) ||
-            $request->is(trim($path . '/*', '/')) ||
+            $request->is(trim($path.'/*', '/')) ||
             $request->is('restify-api/*') ||
             collect(Restify::$repositories)
-                ->filter(fn($repository) => $repository::prefix())
-                ->some(fn($repository) => $request->is($repository::prefix() . '/*'));
+                ->filter(fn ($repository) => $repository::prefix())
+                ->some(fn ($repository) => $request->is($repository::prefix().'/*'));
 
         app()->register(RestifyCustomRoutesProvider::class);
 
