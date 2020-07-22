@@ -52,9 +52,9 @@ trait InteractWithRepositories
             }
 
             if (! $repository::authorizedToUseRoute($this)) {
-                throw new UnauthorizedException(__('Unauthorized to use the route :name. Check prefix.', [
+                abort(403, __('Unauthorized to use the route :name. Check prefix.', [
                     'name' => $this->getRequestUri()
-                ]), 403);
+                ]));
             }
 
             app(Pipeline::class)

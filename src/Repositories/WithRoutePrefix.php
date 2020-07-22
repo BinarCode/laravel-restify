@@ -57,11 +57,13 @@ trait WithRoutePrefix
 
         if ($request->isForRepositoryRequest()) {
             // index
-            if (! static::indexPrefix()) {
-                return true;
+            if (static::indexPrefix()) {
+                return $request->is(static::indexPrefix() . '/*');
             }
 
-            return $request->is(static::indexPrefix() . '/*');
+            if (static::prefix()) {
+                return $request->is(static::prefix() . '/*');
+            }
         } else {
             // the rest
             return $request->is(static::prefix() . '/*');

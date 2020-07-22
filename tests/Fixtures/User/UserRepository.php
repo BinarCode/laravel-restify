@@ -12,8 +12,6 @@ class UserRepository extends Repository
 {
     use UserProfile;
 
-    public static $prefix = 'api/v1';
-
     public static $model = User::class;
 
     public static $wasBooted = false;
