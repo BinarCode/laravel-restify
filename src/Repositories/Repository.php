@@ -41,7 +41,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         ConditionallyLoadsAttributes,
         DelegatesToResource,
         ResolvesActions,
-        RepositoryEvents;
+        RepositoryEvents,
+        WithRoutePrefix;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -121,13 +122,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var array
      */
     public static $with = [];
-
-    /**
-     * The repository routes default prefix.
-     *
-     * @var string
-     */
-    public static $prefix;
 
     public function __construct()
     {
@@ -881,20 +875,5 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static function getAttachers(): array
     {
         return static::$attachers;
-    }
-
-    public static function prefix(): ?string
-    {
-        $prefix = static::$prefix;
-
-        if ($prefix && Str::startsWith($prefix, '/')) {
-            $prefix = Str::replaceFirst('/', '', $prefix);
-        }
-
-        if ($prefix && Str::endsWith($prefix, '/')) {
-            $prefix = Str::replaceLast('/', '', $prefix);
-        }
-
-        return $prefix;
     }
 }

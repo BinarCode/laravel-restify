@@ -38,7 +38,8 @@ class RestifyServiceProvider extends ServiceProvider
         ];
 
         $this->defaultRoutes($config)
-            ->registerPrefixed($config);
+            ->registerPrefixed($config)
+            ->registerIndexPrefixed($config);
     }
 
     /**
@@ -66,6 +67,20 @@ class RestifyServiceProvider extends ServiceProvider
                 $config['prefix'] = $repository::prefix();
                 Route::group($config, function () {
                     $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+                });
+            });
+
+        return $this;
+    }
+
+    public function registerIndexPrefixed($config)
+    {
+        collect(Restify::$repositories)
+            ->filter(fn($repository) => $repository::indexPrefix())
+            ->each(function ($repository) use ($config) {
+                $config['prefix'] = $repository::indexPrefix();
+                Route::group($config, function () {
+                    Route::get('/{repository}', '\\'.RepositoryIndexController::class);
                 });
             });
 

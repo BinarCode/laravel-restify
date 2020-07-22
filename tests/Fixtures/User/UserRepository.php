@@ -8,12 +8,11 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\UserProfile;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class UserRepository extends Repository
 {
     use UserProfile;
+
+    public static $prefix = 'api/v1';
 
     public static $model = User::class;
 
