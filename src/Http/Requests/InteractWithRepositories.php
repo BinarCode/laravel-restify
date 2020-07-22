@@ -46,9 +46,15 @@ trait InteractWithRepositories
             }
 
             if (! $repository::authorizedToUseRepository($this)) {
-                throw new UnauthorizedException(__('Unauthorized to view repository :name. See "allowRestify" policy.', [
+                throw new UnauthorizedException(__('Unauthorized to view repository :name. Check "allowRestify" policy.', [
                     'name' => $repository,
                 ]), 403);
+            }
+
+            if (! $repository::authorizedToUseRoute($this)) {
+                abort(403, __('Unauthorized to use the route :name. Check prefix.', [
+                    'name' => $this->getRequestUri(),
+                ]));
             }
 
             app(Pipeline::class)

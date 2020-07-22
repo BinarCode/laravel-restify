@@ -94,6 +94,38 @@ class Post extends Repository
 
 :::
 
+## Repository prefix
+
+Restify generates the URI for the repository in the following way: 
+
+```php
+config('restify.base') . '/' . UserRepository::uriKey() . '/'
+```
+
+For example, let's assume we have the `restify.base` equal with: `api/restify`, the default URI generated for the UserRepository is: 
+
+```http request
+GET: /api/restify/users
+```
+
+However, you can prefix the repository with your own: 
+
+```php
+// UserRepository
+public static $prefix = 'api/v1';
+```
+
+Now, the generated URI will look like this: 
+
+```http request
+GET: /api/v1/users
+```
+
+:::tip 
+For the rest of the repositories the prefix will stay as it is, the default one. 
+
+Keep in mind that this custom prefix, will be used for all the endpoints related to the user repository.
+:::
 
 ## Repository middleware
 
@@ -710,5 +742,7 @@ You can handle the repository boot, by using the `booted` static method:
         static::$wasBooted = true;
     }
 ````
+
+
 
 

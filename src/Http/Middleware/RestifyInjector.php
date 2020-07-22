@@ -17,8 +17,8 @@ class RestifyInjector
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \Closure  $next
+     * @param \Illuminate\Http\Request $request
+     * @param \Closure $next
      * @return mixed
      */
     public function handle($request, Closure $next)
@@ -27,7 +27,13 @@ class RestifyInjector
 
         $isRestify = $request->is($path) ||
             $request->is(trim($path.'/*', '/')) ||
-            $request->is('restify-api/*');
+            $request->is('restify-api/*') ||
+            collect(Restify::$repositories)
+                ->filter(fn ($repository) => $repository::prefix())
+                ->some(fn ($repository) => $request->is($repository::prefix().'/*')) ||
+            collect(Restify::$repositories)
+                ->filter(fn ($repository) => $repository::indexPrefix())
+                ->some(fn ($repository) => $request->is($repository::indexPrefix().'/*'));
 
         app()->register(RestifyCustomRoutesProvider::class);
 
