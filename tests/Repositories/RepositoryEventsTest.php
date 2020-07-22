@@ -10,11 +10,11 @@ class RepositoryEventsTest extends IntegrationTest
 {
     protected function setUp(): void
     {
+        Repository::clearBootedRepositories();
         parent::setUp();
 
         $this->authenticate();
 
-        Repository::clearBootedRepositories();
     }
 
     public function test_booted_method_not_invoked_when_foreign_repository()
