@@ -8,11 +8,9 @@ use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rules\Unique;
 use JsonSerializable;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class Field extends OrganicField implements JsonSerializable
 {
     use Make;
@@ -312,21 +310,21 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function storingRules($rules)
     {
-        $this->storingRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+        $this->storingRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
         return $this;
     }
 
     public function storeBulkRules($rules)
     {
-        $this->storingBulkRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+        $this->storingBulkRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
         return $this;
     }
 
     public function updateBulkRules($rules)
     {
-        $this->updateBulkRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+        $this->updateBulkRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
         return $this;
     }
@@ -350,7 +348,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function updatingRules($rules)
     {
-        $this->updatingRules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+        $this->updatingRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
         return $this;
     }
@@ -362,7 +360,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function rules($rules)
     {
-        $this->rules = ($rules instanceof Rule || is_string($rules)) ? func_get_args() : $rules;
+        $this->rules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
         return $this;
     }
