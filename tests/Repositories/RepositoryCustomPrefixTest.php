@@ -16,6 +16,14 @@ class RepositoryCustomPrefixTest extends IntegrationTest
         parent::setUp();
     }
 
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        PostRepository::$prefix = null;
+        PostRepository::$indexPrefix = null;
+    }
+
     public function test_repository_can_have_custom_prefix()
     {
         $this->getJson('api/restify-api/index/'.PostRepository::uriKey())
