@@ -15,7 +15,7 @@ class HasMany extends EagerField
         if (is_callable($this->storeForParentCallback)) {
             call_user_func_array($this->storeForParentCallback, [
                 $request,
-                $parent
+                $parent,
             ]);
 
             return $this;
@@ -41,4 +41,3 @@ class HasMany extends EagerField
         return $this;
     }
 }
-
