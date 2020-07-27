@@ -134,6 +134,23 @@ trait InteractWithRepositories
     }
 
     /**
+     * Get a new query builder for the underlying model.
+     *
+     * @param null $uriKey
+     * @return \Illuminate\Database\Eloquent\Builder
+     * @throws EntityNotFoundException
+     * @throws UnauthorizedException
+     */
+    public function newQuery($uriKey = null)
+    {
+        if (! $this->isViaRepository()) {
+            return $this->model($uriKey)->newQuery();
+        }
+
+        return $this->scopedViaQuery();
+    }
+
+    /**
      * Get a new instance of the underlying model.
      *
      * @param null $uriKey
@@ -159,7 +176,7 @@ trait InteractWithRepositories
      */
     public function findModelQuery($repositoryId = null, $uriKey = null)
     {
-        return $this->newQueryWithoutScopes($uriKey)->whereKey(
+        return $this->newQuery($uriKey)->whereKey(
             $repositoryId ?? request('repositoryId')
         );
     }
@@ -196,9 +213,21 @@ trait InteractWithRepositories
         return once(fn () => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
     }
 
+    public function scopedViaParentModel()
+    {
+        $parent = $this->repository($this->viaRepository);
+
+        return once(fn () => $parent::newModel()->newQuery()->whereKey($this->viaRepositoryId)->firstOrFail());
+    }
+
     public function viaQuery()
     {
         return $this->viaParentModel()->{$this->viaRelationship ?? request('repository')}();
+    }
+
+    public function scopedViaQuery()
+    {
+        return $this->scopedViaParentModel()->{$this->viaRelationship ?? request('repository')}();
     }
 
     /**
