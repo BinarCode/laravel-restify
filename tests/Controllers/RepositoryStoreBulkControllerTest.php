@@ -44,7 +44,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
     {
         $user = $this->mockUsers()->first();
 
-        $this->postJson('/restify-api/posts/bulk', [
+        $r = $this->postJson('/restify-api/posts/bulk', [
             [
                 'user_id' => $user->id,
                 'title' => 'First post.',
@@ -54,8 +54,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
                 'title' => 'Second post.',
             ],
         ])
-            ->dump()
-            ->assertStatus(201);
+            ->assertSuccessful();
 
         $this->assertDatabaseCount('posts', 2);
     }
