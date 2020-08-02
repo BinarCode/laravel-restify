@@ -13,7 +13,7 @@ class ProfileController extends RepositoryController
     public function __invoke(RestifyRequest $request)
     {
         if ($repository = $this->guessRepository($request)) {
-            return $repository;
+            return $repository->serializeForShow($request);
         }
 
         $user = $request->user();
