@@ -522,7 +522,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     }
 
                     $withs[$relation] = $paginator instanceof Collection
-                        ? $paginator->map(fn(Model $item) => [
+                        ? $paginator->map(fn (Model $item) => [
                             'attributes' => $item->toArray(),
                         ])
                         : $paginator->toArray();
