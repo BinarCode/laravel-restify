@@ -657,10 +657,10 @@ class RestResponse extends JsonResponse implements Responsable
         return (new self())->code(201);
     }
 
-    public static function index(AbstractPaginator $paginator, array $meta = null)
+    public static function index(AbstractPaginator $paginator, array $meta = [])
     {
         return response()->json([
-            'meta' => $meta ?? RepositoryCollection::meta($paginator->toArray()),
+            'meta' => array_merge(RepositoryCollection::meta($paginator->toArray()), $meta),
             'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
             'data' => $paginator->getCollection(),
         ]
