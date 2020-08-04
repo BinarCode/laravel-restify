@@ -521,9 +521,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                         $paginator = $this->resource->{$relation}()->take($request->input('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
                     }
 
-                    $withs[$relation] = $paginator->map(fn (Model $item) => [
-                        'attributes' => $item->toArray(),
-                    ]);
+                    $withs[$relation] = $paginator instanceof Collection
+                        ? $paginator->map(fn(Model $item) => [
+                            'attributes' => $item->toArray(),
+                        ])
+                        : $paginator->toArray();
                 }
             }
         });
