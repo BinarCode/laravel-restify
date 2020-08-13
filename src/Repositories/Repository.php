@@ -517,8 +517,18 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     if ($this->resource->relationLoaded($relation)) {
                         $paginator = $this->resource->{$relation};
                     } else {
+                        $paginator = $this->resource->{$relation}();
+
+                        if ($paginator instanceof Model) {
+                            continue;
+                        }
+
+                        if ($paginator instanceof Collection) {
+                            continue;
+                        }
+
                         /** * @var AbstractPaginator $paginator */
-                        $paginator = $this->resource->{$relation}()->take($request->input('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
+                        $paginator = $paginator->take($request->input('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
                     }
 
                     $withs[$relation] = $paginator instanceof Collection
