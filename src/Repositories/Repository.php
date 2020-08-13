@@ -15,7 +15,9 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
@@ -520,15 +522,22 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                         $paginator = $this->resource->{$relation}();
 
                         if ($paginator instanceof Model) {
+                            $withs[$relation] = $paginator;
                             continue;
                         }
 
                         if ($paginator instanceof Collection) {
+                            $withs[$relation] = $paginator;
                             continue;
                         }
 
-                        /** * @var AbstractPaginator $paginator */
-                        $paginator = $paginator->take($request->input('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
+                        if (
+                            $paginator instanceof Relation ||
+                            $paginator instanceof Builder
+                        ) {
+                            /** * @var AbstractPaginator $paginator */
+                            $paginator = $paginator->take($request->input('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
+                        }
                     }
 
                     $withs[$relation] = $paginator instanceof Collection
