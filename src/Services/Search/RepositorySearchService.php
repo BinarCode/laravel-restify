@@ -228,7 +228,7 @@ class RepositorySearchService extends Searchable
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::$with));
+        return fn ($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
