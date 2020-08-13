@@ -25,6 +25,18 @@ trait PerformsQueries
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
+    public static function detailQuery(RestifyRequest $request, $query)
+    {
+        return $query;
+    }
+
+    /**
+     * Build a "show" query for the given repository.
+     *
+     * @param  RestifyRequest  $request
+     * @param  \Illuminate\Database\Eloquent\Builder  $query
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
     public static function showQuery(RestifyRequest $request, $query)
     {
         return $query;
