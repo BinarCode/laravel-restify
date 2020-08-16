@@ -591,7 +591,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     : ($request->perPage ?? static::$defaultPerPage)
             );
 
-        $items = $paginator->getCollection()->map(function ($value) {
+        $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
             return static::resolveWith($value);
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
@@ -602,7 +602,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     $request, $items->map(fn (self $repository) => $repository->resource), RepositoryCollection::meta($paginator->toArray())
                 ) ?? RepositoryCollection::meta($paginator->toArray()),
             'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
-            'data' => $this->indexCollection($request, $items)->map(fn (self $repository) => $repository->serializeForIndex($request)),
+            'data' => $items->map(fn (self $repository) => $repository->serializeForIndex($request)),
         ]);
     }
 
