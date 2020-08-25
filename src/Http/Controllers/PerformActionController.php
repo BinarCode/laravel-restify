@@ -8,6 +8,10 @@ class PerformActionController extends RepositoryController
 {
     public function __invoke(ActionRequest $request)
     {
+        $request->validate([
+            'repositories' => 'required',
+        ]);
+
         $action = $request->action();
 
         return $action->handleRequest(
