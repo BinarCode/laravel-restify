@@ -56,5 +56,7 @@
                 "Restify": "Binaryk\\LaravelRestify\\RestifyFacade"
             }
         }
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
