@@ -136,7 +136,7 @@ abstract class Action extends RestController implements JsonSerializable
         }
 
         if ($this->isStandalone()) {
-            return Transaction::run(fn() => $this->handle($request));
+            return Transaction::run(fn () => $this->handle($request));
         }
 
         $response = null;
