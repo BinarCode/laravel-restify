@@ -34,7 +34,7 @@ Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
 Route::get('/{repository}/actions', '\\'.ListActionsController::class);
 Route::get('/{repository}/{repositoryId}/actions', '\\'.ListRepositoryActionsController::class);
 Route::post('/{repository}/action', '\\'.PerformActionController::class);
-Route::post('/{repository}/actions', '\\'.PerformActionController::class);// alias to the previous route
+Route::post('/{repository}/actions', '\\'.PerformActionController::class); // alias to the previous route
 Route::post('/{repository}/{repositoryId}/action', '\\'.PerformRepositoryActionController::class);
 Route::post('/{repository}/{repositoryId}/actions', '\\'.PerformRepositoryActionController::class); // alias to the previous route
 
