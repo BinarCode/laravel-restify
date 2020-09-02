@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests\Actions;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\ActivateAction;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\DisableProfileAction;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class PerformActionsControllerTest extends IntegrationTest
@@ -63,5 +64,16 @@ class PerformActionsControllerTest extends IntegrationTest
             ]);
 
         $this->assertEquals(1, ActivateAction::$applied[0]->id);
+    }
+
+    public function test_could_perform_standalone_action()
+    {
+        $this->post('/restify-api/users/action?action='.(new DisableProfileAction())->uriKey())
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                'data',
+            ]);
+
+        $this->assertEquals('foo', DisableProfileAction::$applied[0]);
     }
 }
