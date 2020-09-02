@@ -14,9 +14,7 @@ use Binaryk\LaravelRestify\Visibility;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
@@ -24,7 +22,25 @@ abstract class Action extends RestController implements JsonSerializable
 {
     use AuthorizedToSee, ProxiesCanSeeToGate, Make, Visibility;
 
+    /**
+     * Number of models into a chunk when action for 'all'.
+     *
+     * @var int
+     */
     public static int $chunkCount = 200;
+
+    /**
+     * Indicated if this action don't require any models.
+     *
+     * @var bool
+     */
+    public bool $standalone = false;
+
+    /**
+     * Default uri key for the action.
+     * @var string
+     */
+    public static $uriKey;
 
     public static function indexQuery(RestifyRequest $request, $query)
     {
@@ -50,7 +66,7 @@ abstract class Action extends RestController implements JsonSerializable
      */
     public function uriKey()
     {
-        return Str::slug($this->name(), '-', null);
+        return static::$uriKey ?? Str::slug($this->name(), '-', null);
     }
 
     /**
@@ -88,12 +104,39 @@ abstract class Action extends RestController implements JsonSerializable
         return [];
     }
 
+    /**
+     * Make current action being standalone. No model query will be performed.
+     *
+     * @param bool $standalone
+     * @return self
+     */
+    public function standalone(bool $standalone = true): self
+    {
+        $this->standalone = $standalone;
+
+        return $this;
+    }
+
+    /**
+     * Check if the action is standalone.
+     *
+     * @return bool
+     */
+    public function isStandalone(): bool
+    {
+        return $this->standalone;
+    }
+
 //    abstract public function handle(ActionRequest $request, Collection $models): JsonResponse;
 
     public function handleRequest(ActionRequest $request)
     {
         if (! method_exists($this, 'handle')) {
             throw new Exception('Missing handle method from the action.');
+        }
+
+        if ($this->isStandalone()) {
+            return Transaction::run(fn () => $this->handle($request));
         }
 
         $response = null;

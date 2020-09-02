@@ -236,3 +236,44 @@ public function handle(ActionRequest $request, Post $post): JsonResponse
     //
 }
 ```
+
+## Standalone actions
+
+Sometimes you don't need to have an action with models. Let's say for example the authenticated user wants to disable his account. For this we have `standalone` actions:
+
+
+```php
+// UserRepository
+
+    public function actions(RestifyRequest $request)
+    {
+        return [
+            DisableProfileAction::new()->standalone(),
+        ];
+    }
+```
+
+Just mark it as standalone with `->standalone` or override the property directly into the action: 
+
+```php
+class DisableProfileAction extends Action
+{
+    public $standalone = true;
+
+    //...
+}
+```
+
+
+## URI Key
+
+Usually the URL for the action is make based on the action name. You can use your own URI key if you want: 
+
+```php
+class DisableProfileAction extends Action
+{
+    public static $uriKey = 'disable_profile';
+
+    //...
+}
+```

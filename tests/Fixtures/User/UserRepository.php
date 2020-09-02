@@ -44,6 +44,8 @@ class UserRepository extends Repository
     {
         return [
             ActivateAction::new(),
+
+            DisableProfileAction::new()->standalone(),
         ];
     }
 
