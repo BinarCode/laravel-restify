@@ -14,7 +14,7 @@ class RepositoryAttachController extends RepositoryController
     public function __invoke(RepositoryAttachRequest $request)
     {
         $model = $request->findModelOrFail();
-        $repository = $request->repository()->allowToUpdate($request);
+        $repository = $request->repository();
 
         if (is_callable($method = $this->guessMethodName($request, $repository))) {
             return call_user_func($method, $request, $repository, $model);
@@ -23,6 +23,7 @@ class RepositoryAttachController extends RepositoryController
         return $repository->attach(
             $request, $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))
+                ->filter(fn($relatedRepositoryId) => $request->repository()->allowToAttach($request, $request->attachRelatedModels()))
                 ->map(fn ($relatedRepositoryId) => $this->initializePivot(
                     $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
                 ))
@@ -76,7 +77,7 @@ class RepositoryAttachController extends RepositoryController
             return $cb;
         }
 
-        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'attach' . Str::studly($request->relatedRepository);
 
         if (method_exists($repository, $methodGuesser)) {
             return [$repository, $methodGuesser];

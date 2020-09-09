@@ -52,7 +52,7 @@ class Restify
     }
 
     /**
-     * Get the repository class name for a given key.
+     * Get the repository class name for a given model.
      *
      * @param string $model
      * @return string
@@ -65,6 +65,19 @@ class Restify
             }
 
             return $value::$model === $model;
+        });
+    }
+
+    /**
+     * Get the repository class name for a given table name.
+     *
+     * @param string $table
+     * @return string
+     */
+    public static function repositoryForTable($table)
+    {
+        return collect(static::$repositories)->first(function ($value) use ($table) {
+            return app($value::$model)->getTable() === $table;
         });
     }
 
