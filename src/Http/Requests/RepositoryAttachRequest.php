@@ -14,11 +14,11 @@ class RepositoryAttachRequest extends RestifyRequest
             Restify::repositoryForTable($table = $this->relatedRepository)::uriKey()
         );
 
-        if(is_null($relatedRepository)) {
+        if (is_null($relatedRepository)) {
             abort(400, "Missing repository for the [$table] table");
         }
 
         return collect(Arr::wrap($this->input($this->relatedRepository)))
-            ->map(fn($id) => $relatedRepository->model()->newModelQuery()->whereKey($id)->first());
+            ->map(fn ($id) => $relatedRepository->model()->newModelQuery()->whereKey($id)->first());
     }
 }

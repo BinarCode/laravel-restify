@@ -17,7 +17,7 @@ class RepositoryDetachController extends RepositoryController
         return $repository->detach(
             $request, $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))
-                ->filter(fn($relatedRepositoryId) => $request->repository()->allowToDetach($request, $request->detachRelatedModels()))
+                ->filter(fn ($relatedRepositoryId) => $request->repository()->allowToDetach($request, $request->detachRelatedModels()))
                 ->map(fn ($relatedRepositoryId) => $this->initializePivot(
                 $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
             ))

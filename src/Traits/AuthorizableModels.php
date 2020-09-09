@@ -23,7 +23,7 @@ trait AuthorizableModels
      */
     public static function authorizable()
     {
-        return !is_null(Gate::getPolicyFor(static::newModel()));
+        return ! is_null(Gate::getPolicyFor(static::newModel()));
     }
 
     /**
@@ -35,7 +35,7 @@ trait AuthorizableModels
      */
     public function authorizeToUseRepository(Request $request)
     {
-        if (!static::authorizable()) {
+        if (! static::authorizable()) {
             return;
         }
 
@@ -52,7 +52,7 @@ trait AuthorizableModels
      */
     public static function authorizedToUseRepository(Request $request)
     {
-        if (!static::authorizable()) {
+        if (! static::authorizable()) {
             return true;
         }
 
@@ -93,14 +93,14 @@ trait AuthorizableModels
      */
     public static function authorizeToStore(Request $request)
     {
-        if (!static::authorizedToStore($request)) {
+        if (! static::authorizedToStore($request)) {
             throw new AuthorizationException('Unauthorized to store.');
         }
     }
 
     public static function authorizeToStoreBulk(Request $request)
     {
-        if (!static::authorizedToStoreBulk($request)) {
+        if (! static::authorizedToStoreBulk($request)) {
             throw new AuthorizationException('Unauthorized to store bulk.');
         }
     }

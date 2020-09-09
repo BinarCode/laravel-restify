@@ -19,6 +19,6 @@ class RepositoryDetachRequest extends RestifyRequest
         }
 
         return collect(Arr::wrap($this->input($this->relatedRepository)))
-            ->map(fn($id) => $relatedRepository->model()->newModelQuery()->whereKey($id)->first());
+            ->map(fn ($id) => $relatedRepository->model()->newModelQuery()->whereKey($id)->first());
     }
 }
