@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures\Company;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
-use Illuminate\Support\Collection;
 
 class CompanyPolicy
 {
@@ -12,7 +11,7 @@ class CompanyPolicy
 
     /**
      * Determine whether the user can use restify feature for each CRUD operation.
-     * So if this is not allowed, all operations will be disabled
+     * So if this is not allowed, all operations will be disabled.
      * @param User $user
      * @return mixed
      */
