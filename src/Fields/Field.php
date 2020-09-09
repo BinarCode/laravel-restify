@@ -139,6 +139,7 @@ class Field extends OrganicField implements JsonSerializable
         if ($attribute instanceof Closure || (is_callable($attribute) && is_object($attribute))) {
             $this->computedCallback = $attribute;
             $this->attribute = 'Computed';
+            $this->readonly();
         } else {
             $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($attribute));
         }
