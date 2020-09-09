@@ -226,7 +226,7 @@ class Field extends OrganicField implements JsonSerializable
         }
 
         if ($request->isStoreRequest() && is_callable($this->storeCallback)) {
-            return $model->{$this->attribute} = call_user_func(
+            return call_user_func(
                 $this->storeCallback, $request, $model, $this->attribute, $bulkRow
             );
         }
@@ -238,7 +238,7 @@ class Field extends OrganicField implements JsonSerializable
         }
 
         if ($request->isUpdateRequest() && is_callable($this->updateCallback)) {
-            return $model->{$this->attribute} = call_user_func(
+            return call_user_func(
                 $this->updateCallback, $request, $model, $this->attribute, $bulkRow
             );
         }

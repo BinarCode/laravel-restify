@@ -690,6 +690,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return $this->resource;
         });
 
+        $this->updateFields($request)->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
+
         return $this->response()
             ->data($this->serializeForShow($request))
             ->success();
@@ -750,6 +752,24 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $validator = static::validatorForUpdate($request, $this, $payload);
 
         $validator->validate();
+
+        return $this;
+    }
+
+    public function allowToAttach(RestifyRequest $request, Collection $attachers): self
+    {
+        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
+
+        $attachers->each(fn ($model) => $this->authorizeToAttach($request, $methodGuesser, $model));
+
+        return $this;
+    }
+
+    public function allowToDetach(RestifyRequest $request, Collection $attachers): self
+    {
+        $methodGuesser = 'detach'.Str::studly($request->relatedRepository);
+
+        $attachers->each(fn ($model) => $this->authorizeToDetach($request, $methodGuesser, $model));
 
         return $this;
     }

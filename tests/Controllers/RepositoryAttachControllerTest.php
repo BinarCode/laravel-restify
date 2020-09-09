@@ -3,7 +3,10 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Support\Facades\Gate;
 
 class RepositoryAttachControllerTest extends IntegrationTest
 {
@@ -62,5 +65,65 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $usersFromCompany = $this->getJson('/restify-api/users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(1, $usersFromCompany->json('data'));
+    }
+
+    public function test_policy_to_attach_a_user_to_a_company()
+    {
+        Gate::policy(Company::class, CompanyPolicy::class);
+
+        $user = $this->mockUsers(2)->first();
+        $company = factory(Company::class)->create();
+        $this->authenticate(
+            factory(User::class)->create()
+        );
+
+        $_SERVER['allow_attach_users'] = false;
+
+        $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
+            'users' => $user->id,
+            'is_admin' => true,
+        ])
+            ->assertForbidden();
+
+        $_SERVER['allow_attach_users'] = true;
+
+        $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
+            'users' => $user->id,
+            'is_admin' => true,
+        ])
+            ->assertCreated();
+    }
+
+    public function test_policy_to_detach_a_user_to_a_company()
+    {
+        Gate::policy(Company::class, CompanyPolicy::class);
+
+        $user = $this->mockUsers(2)->first();
+        $company = factory(Company::class)->create();
+        $this->authenticate(
+            factory(User::class)->create()
+        );
+
+        $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
+            'users' => $user->id,
+            'is_admin' => true,
+        ])
+            ->assertCreated();
+
+        $_SERVER['allow_detach_users'] = false;
+
+        $this->postJson('restify-api/companies/'.$company->id.'/detach/users', [
+            'users' => $user->id,
+            'is_admin' => true,
+        ])
+            ->assertForbidden();
+
+        $_SERVER['allow_detach_users'] = true;
+
+        $this->postJson('restify-api/companies/'.$company->id.'/detach/users', [
+            'users' => $user->id,
+            'is_admin' => true,
+        ])
+            ->assertNoContent();
     }
 }

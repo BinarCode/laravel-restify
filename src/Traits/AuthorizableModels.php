@@ -142,6 +142,36 @@ trait AuthorizableModels
         $this->authorizeTo($request, 'update');
     }
 
+    public function authorizeToAttach(Request $request, $method, $model)
+    {
+        if (! static::authorizable()) {
+            return true;
+        }
+
+        $authorized = method_exists(Gate::getPolicyFor($this->model()), $method)
+            ? Gate::check($method, [$this->model(), $model])
+            : true;
+
+        if (false === $authorized) {
+            throw new AuthorizationException();
+        }
+    }
+
+    public function authorizeToDetach(Request $request, $method, $model)
+    {
+        if (! static::authorizable()) {
+            return true;
+        }
+
+        $authorized = method_exists(Gate::getPolicyFor($this->model()), $method)
+            ? Gate::check($method, [$this->model(), $model])
+            : true;
+
+        if (false === $authorized) {
+            throw new AuthorizationException();
+        }
+    }
+
     public function authorizeToUpdateBulk(Request $request)
     {
         $this->authorizeTo($request, 'updateBulk');
