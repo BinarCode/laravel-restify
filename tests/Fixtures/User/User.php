@@ -82,6 +82,11 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail, Rest
         return $this->hasMany(Post::class);
     }
 
+    public function post()
+    {
+        return $this->hasOne(Post::class);
+    }
+
     public function companies()
     {
         return $this->belongsToMany(Company::class, 'company_user', 'user_id', 'company_id')->withPivot([
