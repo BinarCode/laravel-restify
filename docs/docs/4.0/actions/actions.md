@@ -60,7 +60,7 @@ The `$models` represents a collection with all of the models for this query.
 The frontend which consume your API could check available actions by using exposed endpoint: 
 
 ```http request
-GET: api/restify-api/posts/actions
+GET: api/api/restify/posts/actions
 ```
 
 This will answer with a json like:
@@ -141,7 +141,7 @@ The usage of an action, means the `handle` method implementation. The first argu
 
 
 ```http request
-POST: api/restify-api/posts/actions?action=publish-posts-action
+POST: api/api/restify/posts/actions?action=publish-posts-action
 ```
 
 Payload:
@@ -166,7 +166,7 @@ public function handle(ActionRequest $request, Collection $models): JsonResponse
 You can apply any filter or eager loadings as for an usual request: 
 
 ```http request
-POST: api/restify-api/posts/actions?action=publish-posts-action&id=1&filters=
+POST: api/api/restify/posts/actions?action=publish-posts-action&id=1&filters=
 ```
 
 This will apply the match for the `id = 1` and `filtetr` along with the match for the `repositories` payload you're sending.
@@ -204,7 +204,7 @@ public function actions(RestifyRequest $request)
 And available actions only for a specific repository id could be listed like:
 
 ```http request
-GET: api/restify-api/posts/1/actions
+GET: api/api/restify/posts/1/actions
 ```
 
 Having this in place, you now have access to the current repository in the `actions` method: 
@@ -223,7 +223,7 @@ public function actions(RestifyRequest $request)
 Performing this action, you can only for a single repository: 
 
 ```http request
-POST: api/restify-api/posts/1/actions?action=publish-posts-action
+POST: api/api/restify/posts/1/actions?action=publish-posts-action
 ```
 
 And you don't have to pass the `repositories` array in that case, since it's present in the query.

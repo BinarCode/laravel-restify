@@ -13,7 +13,7 @@ class UserRepository extends Repository
      *
      * @var string
      */
-    public static $model = 'App\\User';
+    public static $model = 'App\\Models\\User';
 
     /**
      * @param  RestifyRequest  $request

@@ -2,7 +2,7 @@
 
 [[toc]]
 
-Laravel Restify expose the user profile via `GET: /restify-api/profile` endpoint.
+Laravel Restify expose the user profile via `GET: /api/restify/profile` endpoint.
 
 ## Get profile
 
@@ -11,7 +11,7 @@ Get profile:
 // GET
 
 ```http request
-/restify-api/profile
+/api/restify/profile
 ```
 
 ### Additional information
@@ -38,7 +38,7 @@ Restify will update only `fillable` user attributes present in the request paylo
 // PUT
 
 ```http request
-/restify-api/profile
+/api/restify/profile
 ```
 
 
@@ -49,7 +49,7 @@ If your user has an avatar, you can use the Restify endpoints to update the avat
 // POST
 
 ```http request
-restify-api/profile/avatar
+api/restify/profile/avatar
 ```
 
 The payload could be a form data, with an image under `avatar` key.
@@ -117,7 +117,7 @@ If the `UserRepository` is used to get the user profile, the format of the data 
 You can specify related entities as for an usual request: 
 
 ```http request
-GET: restify-api/profile?related=posts
+GET: api/restify/profile?related=posts
 ```
 
 So Restify will attach the relationships to the response: 

@@ -40,15 +40,15 @@ You have available the follow endpoints:
 
 | Verb          | URI                            | Action  | 
 | :------------- |:----------------------------- | :-------|
-| GET            | `/restify-api/posts`          | index   |
-| GET            | `/restify-api/posts/{post}`   | show    |
-| POST           | `/restify-api/posts`          | store   |
-| POST           | `/restify-api/posts/bulk`     | store multiple   |
-| POST           | `/restify-api/posts/bulk/update`     | store multiple   |
-| PATCH          | `/restify-api/posts/{post}`   | update  |
-| PUT            | `/restify-api/posts/{post}`   | update  |
-| POST           | `/restify-api/posts/{post}`   | update  |
-| DELETE         | `/restify-api/posts/{post}`   | destroy |
+| GET            | `/api/restify/posts`          | index   |
+| GET            | `/api/restify/posts/{post}`   | show    |
+| POST           | `/api/restify/posts`          | store   |
+| POST           | `/api/restify/posts/bulk`     | store multiple   |
+| POST           | `/api/restify/posts/bulk/update`     | store multiple   |
+| PATCH          | `/api/restify/posts/{post}`   | update  |
+| PUT            | `/api/restify/posts/{post}`   | update  |
+| POST           | `/api/restify/posts/{post}`   | update  |
+| DELETE         | `/api/restify/posts/{post}`   | destroy |
 
 ### Fields
 When storing or updating a model - Restify will get from the request all of the attributes matching by key
@@ -419,7 +419,7 @@ Laravel Restify has its own "CRUD" routes, however you're able to define your ow
 /**
  * Defining custom routes
  * 
- * The default prefix of this route is the uriKey (e.g. 'restify-api/posts'),
+ * The default prefix of this route is the uriKey (e.g. 'api/restify/posts'),
  * 
  * The default namespace is AppNamespace/Http/Controllers
  * 
@@ -451,7 +451,7 @@ Lets diving into a more "real life" example. Let's take the Post repository we h
 
 :::tip
 The `$wrap` argument is the one who says to your route to be wrapped in the default middlewares, controllers namespace and 
-prefix your routes with the base of the repository (ie `/restify-api/posts/`).
+prefix your routes with the base of the repository (ie `/api/restify/posts/`).
 :::
 
 ```php
@@ -462,7 +462,7 @@ class PostRepository extends Repository
 {
    public static function routes(\Illuminate\Routing\Router $router, $attributes = [], $wrap = true)
    {
-       $router->get('/{id}/kpi', 'PostController@kpi'); // /restify-api/posts/1/kpi
+       $router->get('/{id}/kpi', 'PostController@kpi'); // /api/restify/posts/1/kpi
    }
 }
 ```
@@ -470,7 +470,7 @@ class PostRepository extends Repository
 At this moment Restify built the new route as a child of the `posts`, so it has the route:
 
 ```http request
-GET: /restify-api/posts/{id}/kpi
+GET: /api/restify/posts/{id}/kpi
 ```
 
 This route is pointing to the `PostsController@kpi`, let's define it:
@@ -575,7 +575,7 @@ If `$wrap` is false, your routes will have any Route group `$attributes`, that m
 
 Example of how to attach users posts to users with `is_owner` extra pivot:
 ```javascript
-axios.post('restify-api/users/1/attach/posts', [
+axios.post('api/restify/users/1/attach/posts', [
     'posts': [1, 2],
     'is_owner': true
 ])
@@ -589,7 +589,7 @@ axios.post('restify-api/users/1/attach/posts', [
 Example of how to remove posts from user:
 
 ```javascript
-axios.post('restify-api/users/1/detach/posts', [
+axios.post('api/restify/users/1/detach/posts', [
     'users': [1, 2]
 ]);
 ```
@@ -617,7 +617,7 @@ public function attachRoles(RestifyRequest $request, UserRepository $repository,
 The javascript request will remain the same:
 
 ```javascript
-axios.post('restify-api/users/1/attach/roles', [
+axios.post('api/restify/users/1/attach/roles', [
     'roles': [1, 2]
 ])
 ```
@@ -666,7 +666,7 @@ by using native Laravel validator, so you will have exactly the same experience.
 The payload for a bulk store should contain an array of objects: 
 
 ```http request
-POST: /restify-api/posts/bulk/update
+POST: /api/restify/posts/bulk/update
 ```
 
 Payload:
@@ -708,7 +708,7 @@ As the store bulk, the update bulk uses DB transaction to perform the action. So
 The payload for a bulk update should contain an array of objects. Each object SHOULD contain an `id` key, based on this, the Laravel Restify will find the entity: 
 
 ```http request
-POST: /restify-api/posts/bulk/update
+POST: /api/restify/posts/bulk/update
 ```
 
 Payload: 

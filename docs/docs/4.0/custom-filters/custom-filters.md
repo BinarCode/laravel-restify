@@ -43,7 +43,7 @@ const filters = btoa(JSON.stringify([
     }
 ]))
 
-const  response = await axios.get('restify-api/posts?filters=' + filters);
+const  response = await axios.get('api/restify/posts?filters=' + filters);
 ```
 
 
@@ -99,7 +99,7 @@ const filters = btoa(JSON.stringify([
     }
 ]))
 
-const  response = await axios.get('restify-api/posts?filters=' + filters);
+const  response = await axios.get('api/restify/posts?filters=' + filters);
 ```
 
 ## Boolean filter
@@ -149,7 +149,7 @@ const filters = btoa(JSON.stringify([
     }
 ]))
 
-const  response = await axios.get('restify-api/posts?filters=' + filters);
+const  response = await axios.get('api/restify/posts?filters=' + filters);
 ```
 
 ## Filters authorization
@@ -184,7 +184,7 @@ const filters = btoa(JSON.stringify([
     },
 ]))
 
-const  response = await axios.get('restify-api/posts?filters=' + filters);
+const  response = await axios.get('api/restify/posts?filters=' + filters);
 ```
 
 ## Get available filters

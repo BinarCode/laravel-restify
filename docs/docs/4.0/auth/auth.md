@@ -6,7 +6,7 @@ You'll finally enjoy the auth setup (`register`, `login`, `forgot` and `reset pa
 
 :::tip
 
-Firstly make sure you have the setup the desired provider in the `restify.auth.provider`. Make sure you have installed and configured the [Laravel Sanctum](https://laravel.com/docs/7.x/sanctum#introduction) (or Passport) properly. 
+Firstly make sure you have the setup the desired provider in the `restify.auth.provider`. Make sure you have installed and configured the [Laravel Sanctum](https://laravel.com/docs/sanctum#api-token-authentication) (or [Passport](https://laravel.com/docs/passport)) properly. 
 
 The passport check could be done easily by using the follow Restify command: 
 
