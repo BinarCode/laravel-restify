@@ -3,18 +3,18 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Closure;
 use Illuminate\Database\Eloquent\Model;
 
-class BelongsTo extends EagerField
+class HasOne extends EagerField
 {
-    public ?Closure $storeParentCallback;
+    public $storeParentCallback;
 
     public function __construct($attribute, $relation, $parentRepository)
     {
         if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
+            abort(500, "Invalid HasOne repository [{$parentRepository}]. Expended instance of ".Repository::class);
         }
 
         parent::__construct($attribute);
@@ -23,21 +23,33 @@ class BelongsTo extends EagerField
         $this->parentRepository = $parentRepository;
     }
 
-    public function storeParent(RestifyRequest $request, Model $child): self
+    public function storeChild(RestifyRequest $request, Model $parent): self
     {
         if (is_callable($this->storeParentCallback)) {
             call_user_func_array($this->storeParentCallback, [
                 $request,
-                $child,
+                $parent,
             ]);
 
             return $this;
         }
 
-        $child->{$this->attribute} = null;
+        $parent->{$this->attribute} = null;
 
-        $child->{$this->attribute} = $child->{$this->relation}()->create(
-            $request->input($this->attribute)
+        $repository = $this->parentRepository::resolveWith(
+            $model = $parent->{$this->relation}()->getModel()
+        )->allowToStore($request, $request->input($this->attribute));
+
+        $model = new $model;
+
+        if ($model instanceof CreationAware) {
+            $model::createWithAttributes($request->input($this->attribute));
+
+            return $this;
+        }
+
+        $parent->{$this->attribute} = $repository::resolveWith(
+            $model->create($request->input($this->attribute))
         );
 
         return $this;

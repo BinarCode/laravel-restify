@@ -5,8 +5,10 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
+use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
+use Binaryk\LaravelRestify\Fields\HasOne;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -319,7 +321,16 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     private function storeFields(RestifyRequest $request)
     {
         return $this->collectFields($request)
+            ->filter(fn (Field $field) => ! $field instanceof EagerField)
             ->forStore($request, $this)
+            ->authorizedStore($request);
+    }
+
+    private function hasOneFields(RestifyRequest $request)
+    {
+        return $this->collectFields($request)
+            ->forStore($request, $this)
+            ->filter(fn (Field $field) => $field instanceof HasOne)
             ->authorizedStore($request);
     }
 
@@ -640,6 +651,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     $this->resource->save();
                 }
             }
+
+            $this->hasOneFields($request)
+                ->each(fn (HasOne $field) => $field->storeChild($request, $this->resource));
 
             $this->storeFields($request)->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
         });
