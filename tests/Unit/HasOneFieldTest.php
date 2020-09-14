@@ -28,15 +28,15 @@ class HasOneFieldTest extends IntegrationTest
             'user_id' => $user->id,
         ]);
 
-        $this->getJson('/restify-api/' . UserWithPostRepository::uriKey())
+        $this->getJson('/restify-api/'.UserWithPostRepository::uriKey())
         ->assertJsonStructure([
             'data' => [
                 [
                     'attributes' => [
                         'name',
-                        'post'
-                    ]
-                ]
+                        'post',
+                    ],
+                ],
             ],
         ]);
     }
@@ -47,7 +47,7 @@ class HasOneFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->postJson('/restify-api/' . UserWithPostRepository::uriKey(), [
+        $this->postJson('/restify-api/'.UserWithPostRepository::uriKey(), [
             'name' => 'Eduard Lupacescu',
             'email' => 'eduard.lupacescu@binarcode.com',
             'password' => 'secret!',
@@ -82,7 +82,8 @@ class UserWithPostRepository extends Repository
     }
 }
 
-class PostRepository extends Repository {
+class PostRepository extends Repository
+{
     public static $model = Post::class;
 
     public function fields(RestifyRequest $request)

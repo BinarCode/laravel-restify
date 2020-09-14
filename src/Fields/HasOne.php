@@ -13,8 +13,8 @@ class HasOne extends EagerField
 
     public function __construct($attribute, $relation, $parentRepository)
     {
-        if (!is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid HasOne repository [{$parentRepository}]. Expended instance of " . Repository::class);
+        if (! is_a(app($parentRepository), Repository::class)) {
+            abort(500, "Invalid HasOne repository [{$parentRepository}]. Expended instance of ".Repository::class);
         }
 
         parent::__construct($attribute);
@@ -44,6 +44,7 @@ class HasOne extends EagerField
 
         if ($model instanceof CreationAware) {
             $model::createWithAttributes($request->input($this->attribute));
+
             return $this;
         }
 
