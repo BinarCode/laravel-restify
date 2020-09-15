@@ -18,17 +18,17 @@ composer require binaryk/laravel-restify
 ## Setup Laravel Restify
 After the installation, the package requires a setup process: 
 
+```shell script
+php artisan restify:setup
+```
+
+The command above does: 
+
 - [ ] publish the `config/restify.php` configuration file
 - [ ] create the `providers/RestifyServiceProvider` and will add it in your `config/app.php` 
 - [ ] create a new `app/Restify` directory
 - [ ] create an abstract `app/Restif/Repository.php`
 - [ ] scaffolding a `app/Restify/UserRepository` repository for users CRUD
-
-This could be done by running:
-
-```shell script
-php artisan restify:setup
-```
 
 :::tip Package Stability
 
@@ -69,6 +69,8 @@ One important configuration is the restify default middlewares:
     Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify::class,
 ]
 ```
+
+### Sanctum authorization
 
 Usually you want to authorize your api (allow access only to authenticated users). For this purpose you can simply add another middleware. For the `sanctum`, Restify provides `Binaryk\LaravelRestify\Http\Middleware\RestifySanctumAuthenticate` middleware.
 

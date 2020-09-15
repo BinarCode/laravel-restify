@@ -5,6 +5,21 @@ module.exports = [
         children: ['quickstart']
     },
     {
+        title: 'Authentication',
+        collapsable: true,
+        children: [
+            'auth/auth',
+            'auth/profile'
+        ],
+    },
+    {
+        title: 'Authorization',
+        collapsable: true,
+        children: [
+            'auth/authorization',
+        ],
+    },
+    {
         title: "Repository",
         collapsable: true,
         children: ['repository-pattern/repository-pattern']
@@ -33,14 +48,6 @@ module.exports = [
         title: 'Rest Controller',
         collapsable: true,
         children: ['rest-methods/rest-methods'],
-    },
-    {
-        title: 'Auth',
-        collapsable: true,
-        children: [
-            'auth/auth',
-            'auth/profile'
-        ],
     },
     {
         title: 'Error handler',
