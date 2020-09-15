@@ -23,7 +23,7 @@ class RestifySanctumAuthenticate extends BaseAuthenticationMiddleware
         try {
             $guard = 'sanctum';
 
-            if (!empty($guard)) {
+            if (! empty($guard)) {
                 $guards[] = $guard;
             }
 
