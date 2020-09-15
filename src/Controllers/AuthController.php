@@ -24,9 +24,9 @@ class AuthController extends RestController
         return $this->authService->register($request);
     }
 
-    public function verify(Request $request)
+    public function verify(Request $request, $id, $hash = null)
     {
-        return $this->authService->verify($request);
+        return $this->authService->verify($request, $id, $hash);
     }
 
     public function forgotPassword(Request $request)

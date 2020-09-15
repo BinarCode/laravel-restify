@@ -2,6 +2,7 @@
 
 use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
+use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
 
 return [
     'auth' => [
@@ -25,7 +26,7 @@ return [
         | this will be used for the verification of the authenticatable model and provide the
         | authorizable functionality
         |
-        | Supported: "passport", "sanctum"
+        | Supported: "sanctum"
         */
 
         'provider' => 'sanctum',
@@ -43,6 +44,8 @@ return [
         'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),
 
         'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
+
+        'user_verify_url' => env('FRONTEND_APP_URL').'/verify?id={id}&hash={emailHash}',
     ],
 
     /*
@@ -70,6 +73,7 @@ return [
 
     'middleware' => [
         'api',
+        EnsureJsonApiHeaderMiddleware::class,
         DispatchRestifyStartingEvent::class,
         AuthorizeRestify::class,
     ],
@@ -89,5 +93,5 @@ return [
     | will return the exceptions in an API pretty format.
     |
     */
-    'exception_handler' => \Binaryk\LaravelRestify\Exceptions\RestifyHandler::class,
+    'exception_handler' => null,
 ];

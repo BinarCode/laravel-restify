@@ -127,7 +127,7 @@ class AuthServiceRegisterTest extends IntegrationTest
         $lastUser = User::query()->get()->last();
 
         $this->expectException(AuthorizationException::class);
-        $this->authService->verify($lastUser->id, sha1('random@email.com'));
+        $this->authService->verify($request, $lastUser->id, sha1('random@email.com'));
     }
 
     public function test_verify_user_successfully()
@@ -155,7 +155,7 @@ class AuthServiceRegisterTest extends IntegrationTest
         $lastUser = User::query()->get()->last();
 
         $this->assertNull($lastUser->email_verified_at);
-        $this->authService->verify($lastUser->id, sha1('eduard.lupacescu@binarcode.com'));
+        $this->authService->verify($request, $lastUser->id, sha1('eduard.lupacescu@binarcode.com'));
         $lastUser->refresh();
         $this->assertNotNull($lastUser->email_verified_at);
         Event::assertDispatched(Verified::class, function ($e) use ($user) {

@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Controllers\AuthController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use ReflectionClass;
@@ -17,11 +18,17 @@ class RestifyCustomRoutesProvider extends ServiceProvider
         $this->registerRoutes();
     }
 
+    public function register()
+    {
+        parent::register();
+
+    }
+
     protected function registerRoutes()
     {
         collect(Restify::$repositories)->each(function ($repository) {
             $config = [
-                'namespace' => trim(app()->getNamespace(), '\\').'\Http\Controllers',
+                'namespace' => trim(app()->getNamespace(), '\\') . '\Http\Controllers',
                 'as' => '',
                 'prefix' => Restify::path($repository::uriKey()),
                 'middleware' => config('restify.middleware', []),

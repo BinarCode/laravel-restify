@@ -23,6 +23,7 @@ class RestifyRegisterRequestTest extends IntegrationTest
     public function testRules()
     {
         $this->assertEquals([
+            'name' => 'required',
             'email' => 'required|email|max:255|unique:'.config('restify.auth.table', 'users'),
             'password' => 'required|confirmed|min:6',
         ],

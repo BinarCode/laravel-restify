@@ -76,10 +76,10 @@ class AuthServiceForgotPasswordTest extends IntegrationTest
     {
         Notification::fake();
         $user = $this->register();
-        $this->authService->verify($user->id, sha1($user->email));
 
         $request = new Request([], []);
         $request->merge(['email' => $user->email]);
+        $this->authService->verify($request, $user->id, sha1($user->email));
 
         $this->authService->forgotPassword($request);
 

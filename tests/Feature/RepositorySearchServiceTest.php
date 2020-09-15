@@ -53,7 +53,6 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(3, 'data');
 
         $this->getJson('restify-api/users?-id=1,2,3')
-            ->dump()
             ->assertJsonCount(1, 'data');
     }
 

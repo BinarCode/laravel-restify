@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Services;
 
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
 use Illuminate\Http\Request;
 
@@ -33,6 +34,10 @@ class LoginService
         }
 
         if ($this->attemptLogin($request)) {
+            if (($user = $this->guard()->user()) instanceof MustVerifyEmail && !$user->hasVerifiedEmail()) {
+                return abort(401, 'User must verify email.');
+            }
+
             event(new UserLoggedIn($this->guard()->user()));
 
             return $this->guard()->user()->createToken('login');

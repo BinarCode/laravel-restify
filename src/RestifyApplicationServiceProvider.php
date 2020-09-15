@@ -2,7 +2,10 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Controllers\AuthController;
+use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 
 class RestifyApplicationServiceProvider extends ServiceProvider
@@ -14,6 +17,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     {
         $this->authorization();
         $this->repositories();
+        $this->authRoutes();
     }
 
     /**
@@ -65,6 +69,35 @@ class RestifyApplicationServiceProvider extends ServiceProvider
             return in_array($user->email, [
                 //
             ]);
+        });
+    }
+
+    protected function authRoutes()
+    {
+        Route::macro('restifyAuth', function ($prefix = '/') {
+            Route::group([
+                'prefix' => $prefix,
+                'middleware' => [EnsureJsonApiHeaderMiddleware::class],
+            ], function() {
+                Route::post('register', [AuthController::class, 'register'])
+                    ->name('restify.register');
+
+                Route::post('login', [AuthController::class, 'login'])
+                    ->middleware('throttle:6,1')
+                    ->name('restify.login');
+
+                Route::post('verify/{id}/{hash}', [AuthController::class, 'verify'])
+                    ->middleware('throttle:6,1')
+                    ->name('restify.verify');
+
+                Route::post('forgotPassword', [AuthController::class, 'forgotPassword'])
+                    ->middleware('throttle:6,1')
+                    ->name('restify.forgotPassword');
+
+                Route::post('resetPassword', [AuthController::class, 'resetPassword'])
+                    ->middleware('throttle:6,1')
+                    ->name('restify.resetPassword');
+            });
         });
     }
 }

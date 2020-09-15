@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Controllers\AuthController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Route;

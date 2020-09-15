@@ -25,6 +25,7 @@ class RestifyRegisterRequest extends FormRequest
     public function rules()
     {
         return [
+            'name' => 'required',
             'email' => 'required|email|max:255|unique:'.Config::get('config.auth.table', 'users'),
             'password' => 'required|confirmed|min:6',
         ];

@@ -20,9 +20,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Password;
 use ReflectionException;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class AuthService extends RestifyService
 {
     public function login(Request $request)
@@ -54,12 +51,12 @@ class AuthService extends RestifyService
      * @throws EntityNotFoundException
      * @throws PassportUserException
      */
-    public function verify($id, $hash = null)
+    public function verify(Request  $request, $id, $hash = null)
     {
         /**
          * @var Authenticatable
          */
-        $user = $this->userQuery()->query()->find($id);
+        $user = $this->userQuery()->query()->findOrFail($id);
 
         if ($user instanceof Sanctumable && ! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
             throw new AuthorizationException('Invalid hash');

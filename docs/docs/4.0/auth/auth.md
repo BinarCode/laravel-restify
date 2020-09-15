@@ -1,24 +1,41 @@
 # Authentication setup
 
-Laravel Restify has support for authentication with Passport or Laravel Sanctum.
+Laravel Restify has support for authentication with [Laravel Sanctum](https://laravel.com/docs/sanctum#api-token-authentication).
 
 You'll finally enjoy the auth setup (`register`, `login`, `forgot` and `reset password`).
 
-:::tip
-
-Firstly make sure you have the setup the desired provider in the `restify.auth.provider`. Make sure you have installed and configured the [Laravel Sanctum](https://laravel.com/docs/sanctum#api-token-authentication) (or [Passport](https://laravel.com/docs/passport)) properly. 
-
-The passport check could be done easily by using the follow Restify command: 
-
-`php artisan restify:check-passport`
-
-This command will become with suggestions if any setup is invalid.
-:::
-
 ## Prerequisites
-- When using the Restify authentication service, you will need to migrate the `users` and `password_resets` table (these 2 migrations are by default in a fresh laravel app, however you may modify the users table as you prefer)
+- Migrate the `users`, `password_resets` table (they already exists into a fresh Laravel app).
 
-- Make sure your authenticatable entity (usually `User`) implements: `Illuminate\Contracts\Auth\Authenticatable` (or `Illuminate\Contracts\Auth\Restifyable`)
+- Migrate the `personal_access_tokens` table, provided by sanctum.
+
+- Make sure your authenticatable entity (usually `App\Models\User`) implements: `Illuminate\Contracts\Auth\Authenticatable` (or simply extends the `Illuminate\Foundation\Auth\User` class as it does into a fresh laravel app.)
+
+- Make sure the `App\Models\User` model implements the `Binaryk\LaravelRestify\Contracts\Sanctumable` contract.
+
+## Define routes
+
+Restify provides you a simple way to all of your auth routes ready. Simply add in your `routes/api.php`:
+
+```php
+Route::restifyAuth();
+```
+
+And voila, now you have auth routes ready to be used.
+
+These are default routes provided by restify: 
+
+| Verb           | URI                                      | Action           | 
+| :------------- |:-----------------------------------------| :----------------|
+| POST           | `/api/register`                          | register         |
+| POST           | `/api/login`                             | login            |
+| POST           | `/api/restify/forgotPassword`            | forgot password  |
+| POST           | `/api/restify/resetPassword`             | reset password   |
+| POST           | `/api/restify/verify/{id}/{emailHash}`   | verify user      |
+
+All of these routes are handle by default, so you can just use them. However, you can customize each of them by defining your own auth routes, and still benefit of the Restify AuthController by extending it. 
+
+Let's take a closer look over each route in part.
 
 ## Register users
 
@@ -80,7 +97,7 @@ public function register(UserRegisterRequest $request)
 }
 ```
 
-Or you could simply override the `$registerFormRequest` with custom FormRequest:
+Or you could simply set the `$registerFormRequest` with your custom FormRequest:
 
 ```php
 public function register(Request $request)
@@ -97,8 +114,6 @@ public function register(Request $request)
 
 If something went wrong inside the register method, the AuthService will thrown few suggestive exceptions you can handle in the controller:
 
- > `Binaryk\LaravelRestify\Exceptions\PassportUserException` - Make sure your authenticatable entity (usually `User`) is implementing the `Binaryk\LaravelRestify\Contracts\Passportable` interface.
- 
  > `\Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException` - Make sure your authenticatable entity (usually `User`) is implementing the `Illuminate\Contracts\Auth\Authenticatable` interface.
  
  > `\Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException` - Class (usually `App\User`) defined in the configuration `auth.providers.users.model` could not been instantiated (may be abstract or missing at all)
@@ -136,59 +151,30 @@ so your frontend application could easily make a verify call to the API with thi
 Example of notification:
 
 ```php
+namespace Binaryk\LaravelRestify\Notifications;
+
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Facades\URL;
+use Illuminate\Auth\Notifications\VerifyEmail as VerifyEmailLaravel;
 
-class VerifyEmail extends Notification
+class VerifyEmail extends VerifyEmailLaravel
 {
-    /**
-     * Get the notification's channels.
-     *
-     * @param mixed $notifiable
-     * @return array|string
-     */
-    public function via($notifiable)
-    {
-        return ['mail'];
-    }
-
-    /**
-     * Build the mail representation of the notification.
-     *
-     * @param mixed $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
-    public function toMail($notifiable)
-    {
-        $verificationUrl = $this->verificationUrl($notifiable);
-
-        return (new MailMessage)
-            ->subject(Lang::get('Verify Email Address'))
-            ->line(Lang::get('Please click the button below to verify your email address.'))
-            ->action(Lang::get('Verify Email Address'), $verificationUrl)
-            ->line(Lang::get('If you did not create an account, no further action is required.'));
-    }
-
     /**
      * Get the verification URL for the given notifiable.
      *
-     * @param mixed $notifiable // the User entity in our case
+     * @param mixed $notifiable
      * @return string
      */
     protected function verificationUrl($notifiable)
     {
-        return URL::temporarySignedRoute(
-            'register.verify',
-            Carbon::now()->addMinutes(Config::get('auth.verification.expire', 60)),
-            [
-                'id' => $notifiable->getKey(),
-                'hash' => sha1($notifiable->getEmailForVerification()),
-            ]
-        );
+        $withToken = str_replace(['{id}'], $notifiable->getKey(), config('restify.auth.user_verify_url'));
+        $withEmail = str_replace(['{emailHash}'], sha1($notifiable->getEmailForVerification()), $withToken);
+
+        return url($withEmail);
     }
 }
 ```
@@ -196,13 +182,12 @@ class VerifyEmail extends Notification
 As you may noticed it uses a route, let's scaffolding an verify route example as well:
 
 ```php
-Route::get('email/verify/{id}/{hash}', 'AuthController@verify')
+Route::get('api/verify/{id}/{hash}', 'AuthController@verify')
     ->name('register.verify')
-    ->middleware([ 'signed', 'throttle:6,1' ]);
+    ->middleware([ 'throttle:6,1' ]);
 ```
 
-In a real life use case, the email content will look a bit different, because the `action` URL you want to send to the user
-should match your frontend domain, not the API domain, and request to the API should be done from the frontend application.
+So your frontend could call this route with the `id` and `hash` received into verify email.
 
 - Next let's define the controller action:
 
@@ -229,12 +214,11 @@ class AuthController
      * @param Request $request
      * @return JsonResponse
      * @throws AuthorizationException - thrown if hash or id doesn't match
-     * @throws PassportUserException - thrown if the User don't implements Passportable
      * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException - thrown if the user not found
      */
-    public function verify(Request $request)
+    public function verify(Request $request, $id, $hash = null)
     {
-        $user = $this->authService->verify($request->route('id'), $request->route('hash'));
+        $user = $this->authService->verify($request, $id, $hash);
 
         return Response::make(['data' => $user]);
     }
@@ -260,7 +244,6 @@ use Illuminate\Http\Response;
 use Binaryk\LaravelRestify\Services\AuthService;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
 use Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch;
-use Binaryk\LaravelRestify\Exceptions\PassportUserException;
 
 class AuthController
 {
@@ -283,10 +266,10 @@ class AuthController
     public function login(Request $request)
     {
         try {
-            $token = $this->authService->login($request->only('email', 'password'));
+            $token = $this->authService->login($request);
 
             return Response::make(compact('token'));
-        } catch (CredentialsDoesntMatch | UnverifiedUser | PassportUserException $e) {
+        } catch (CredentialsDoesntMatch | UnverifiedUser) {
             return Response::make('Something went wrong.', 401);
         }
     }
@@ -298,9 +281,6 @@ The login method will thrown few exceptions:
 
 > `Binaryk\LaravelRestify\Exceptions\UnverifiedUser` - when `User` model implements `Illuminate\Contracts\Auth\MustVerifyEmail` 
 and he did not verified the email
-
-> `Binaryk\LaravelRestify\Exceptions\PassportUserException` - when `User` didn't implement `Binaryk\LaravelRestify\Contracts\Passportable`, the 
-authenticatable entity should implement this contract, this way Restify will take the control over generating tokens.
 
 - After login with success a personal token is issued and an `Binaryk\LaravelRestify\Events\UserLoggedIn` event is dispatched.
 
@@ -325,68 +305,18 @@ This contract requires the `sendPasswordResetNotification` to be implemented. It
  */
 public function sendPasswordResetNotification($token)
 {
-    $this->notify(new ResetPassword($token));
+        Illuminate\Auth\Notifications\ResetPassword::createUrlUsing(function ($notifiable, $token) {
+            $withToken = str_replace(['{token}'], $token, config('restify.auth.password_reset_url'));
+            $withEmail = str_replace(['{email}'], $notifiable->getEmailForPasswordReset(), $withToken);
+
+            return url($withEmail);
+        });
+        
+    $this->notify(new Illuminate\Auth\Notifications\ResetPassword($token));
 }
 ```
 
-Next let's define the `ResetPassword` notification. It should include a unique token, and should provide some information about the 
-user email. The token will be resolved by the Laravel Restify and injected into your notification, so you don't have to worry about it:
-
-```php
-use Illuminate\Notifications\Messages\MailMessage;
-use Illuminate\Notifications\Notification;
-use Illuminate\Support\Facades\Lang;
-
-class ResetPassword extends Notification
-{
-    /**
-     * The password reset token.
-     *
-     * @var string
-     */
-    public $token;
-
-    /**
-     * The token is generated by the Restify through the Broker class
-     *
-     * @param string $token
-     * @return void
-     */
-    public function __construct($token)
-    {
-        $this->token = $token;
-    }
-
-    /**
-     * Get the notification's channels.
-     *
-     * @param mixed $notifiable
-     * @return array|string
-     */
-    public function via($notifiable)
-    {
-        return ['mail'];
-    }
-
-    /**
-     * Build the mail representation of the notification.
-     *
-     * @param mixed $notifiable
-     * @return \Illuminate\Notifications\Messages\MailMessage
-     */
-    public function toMail($notifiable)
-    {
-    
-        $frontendUrl = url(config('app.url') . '/reset-password?';
-
-        return (new MailMessage)
-            ->subject(Lang::get('Reset Password Notification'))
-            ->line(Lang::get('You are receiving this email because we received a password reset request for your account.'))
-            ->action(Lang::get('Reset Password'), $frontendUrl . http_build_query(['token' => $this->token, 'email' => $notifiable->getEmailForPasswordReset()])))
-            ->line(Lang::get('This password reset link will expire in :count minutes.', ['count' => config('auth.passwords.' . config('auth.defaults.passwords') . '.expire')]))
-            ->line(Lang::get('If you did not request a password reset, no further action is required.'));
-    }
-```
+As you can see, you can simply use the `ResetPassword` builtin notification.
 
 The `getEmailForPasswordReset` method simply returns the user email:
 
@@ -403,7 +333,7 @@ public function getEmailForPasswordReset()
 - Define a forgot password route to an action controller:
 
 ```php
-Route::post('password/email', 'AuthController@sendResetLinkEmail');
+Route::post('api/forgotPassword', 'AuthController@forgotPassword');
 ```
 
 - Inject the AuthService into your controller and call the `sendResetPasswordLinkEmail` method:
@@ -431,10 +361,10 @@ class AuthController
       * @param Request $request
       * @return JsonResponse
       */
-     public function sendResetLinkEmail(Request $request)
+     public function forgotPassword(Request $request)
      {
         try {
-         $this->authService->sendResetPasswordLinkEmail($request->get('email'));
+         $this->authService->forgotPassword($request);
  
          return Response::make('', 204);
         } catch (EntityNotFoundException $e) {
@@ -454,7 +384,7 @@ Finally we have to reset the users passwords. This can easily be done by using R
 - Define a reset password route to an action controller:
 
 ```php
-Route::post('password/reset', 'AuthController@resetPassword')->name('password.reset');
+Route::post('api/resetPassword', 'AuthController@resetPassword')->name('password.reset');
 ```
 
 - Inject the AuthService into your controller and call the resetPassword method:
