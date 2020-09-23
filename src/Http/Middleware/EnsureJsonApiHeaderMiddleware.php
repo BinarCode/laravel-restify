@@ -23,10 +23,9 @@ class EnsureJsonApiHeaderMiddleware
     {
         dump('second restify middleware');
         if (! collect($this->acceptHeaders)->contains($request->header('Accept'))) {
-            abort(400, "Missing or invalid Accept header.");
+            abort(400, 'Missing or invalid Accept header.');
         }
 
         return $next($request);
     }
-
 }
