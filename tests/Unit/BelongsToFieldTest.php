@@ -66,7 +66,7 @@ class PostWithUserRepository extends Repository
     public function fields(RestifyRequest $request)
     {
         return [
-            Field::make('title'),
+            field('title'),
 
             BelongsTo::make('user', 'user', UserRepository::class),
         ];

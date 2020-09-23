@@ -19,6 +19,7 @@ class RestifyServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        dump('RestifyServiceProvider -> load api routes');
         $this->registerRoutes();
         $this->registerExceptionHandler();
     }

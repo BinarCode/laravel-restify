@@ -18,17 +18,17 @@ composer require binaryk/laravel-restify
 ## Setup Laravel Restify
 After the installation, the package requires a setup process: 
 
+```shell script
+php artisan restify:setup
+```
+
+The command above does: 
+
 - [ ] publish the `config/restify.php` configuration file
 - [ ] create the `providers/RestifyServiceProvider` and will add it in your `config/app.php` 
 - [ ] create a new `app/Restify` directory
 - [ ] create an abstract `app/Restif/Repository.php`
 - [ ] scaffolding a `app/Restify/UserRepository` repository for users CRUD
-
-This could be done by running:
-
-```shell script
-php artisan restify:setup
-```
 
 :::tip Package Stability
 
@@ -50,11 +50,15 @@ This should return the users list paginated and formatted according to [JSON:API
 
 ## Configurations
 
+### Prefix
+
 As you notice the default prefix for the restify api is `/api/restify`. This can be changed from the `app/restify.php` file:
 
 ```php
-'base' => '/restify-api/'
+'base' => '/api/restify',
 ```
+
+### Middleware
 
 One important configuration is the restify default middlewares: 
 
@@ -66,7 +70,11 @@ One important configuration is the restify default middlewares:
 ]
 ```
 
+### Sanctum authorization
+
 Usually you want to authorize your api (allow access only to authenticated users). For this purpose you can simply add another middleware. For the `sanctum`, Restify provides `Binaryk\LaravelRestify\Http\Middleware\RestifySanctumAuthenticate` middleware.
+
+### Exception Handling
 
 The `exception_handler` configuration allow you to use another default Exception Handler instead of the one Laravel provides by default. If you want to keep the default one, just left this configuration as `null`.
 
@@ -81,7 +89,7 @@ php artisan restify:repository PostRepository
 If you want to generate the `Policy`, `Model` and `migration` as well, then you can use the `--all` option:
 
 ```shell script
-php artisan restify:repository Post --all
+php artisan restify:repository PostRepository --all
 ```
 ## Generate policy 
 

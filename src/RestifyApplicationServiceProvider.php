@@ -15,6 +15,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        dump('RestifyApplicationServiceProvider -> devine main gate, load repositories, make auth macrto');
         $this->authorization();
         $this->repositories();
         $this->authRoutes();

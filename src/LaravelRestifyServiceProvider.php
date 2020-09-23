@@ -23,6 +23,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        dump('LaravelRestifyServiceProvider -> push the injector at the end of the middlewares stack and load commands');
         if ($this->app->runningInConsole()) {
             $this->commands([
                 CheckPassport::class,

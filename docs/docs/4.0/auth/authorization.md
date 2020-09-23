@@ -2,6 +2,25 @@
 
 After setting up the Restify configuration, and the authentication. The next logical step is to protect your API Repositories against unauthorized users. 
 
+## Request lifecycle
+
+Before diving in details about authorization, it's important for you to understand what is the actual lifecycle of the request. So you can know what to expect, and how to debug your app at any point.
+
+### Booting
+
+When you run a request (ie via Postman), it hits the Laravel application. Laravel will load every single Service Provider it has defined into `config/app.php` and [auto discovered ](https://laravel.com/docs/packages#package-discovery) providers as well.
+
+Restify injects the `RestifyApplicationServiceProvider`, it is injected in your `config/app.php` and it also has an auto discovered provider called `LaravelRestify\LaravelRestifyServiceProvider`.
+
+- The `LaravelRestifyServiceProvider` is booted firstly, this will push the `RestifyInjector` middleware at the end of the middleware stack. 
+
+- Then `RestifyApplicationServiceProvider` is booted, this will define the gate, will load repositories and make the auth routes macro. You have the full control over this provider.
+
+### Restify injector
+
+This middleware is pushed at the end of the `$middleware` list of your application. This middleware has the 2 responsibilities. It will boot the `RestifyCustomRoutesProvider` (which will load routes you define in `routes` method of your repositories).
+
+
 ## View Restify
 
 Firstly, let's take a closer look to the package general gate:

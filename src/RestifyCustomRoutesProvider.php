@@ -15,6 +15,7 @@ class RestifyCustomRoutesProvider extends ServiceProvider
 {
     public function boot()
     {
+        dump('RestifyCustomRoutesProvider -> load routes from repositories (defined with static routes method)');
         $this->registerRoutes();
     }
 
