@@ -16,14 +16,18 @@ Restify injects the `RestifyApplicationServiceProvider`, it is injected in your 
 
 - Then `RestifyApplicationServiceProvider` is booted, this will define the gate, will load repositories and make the auth routes macro. You have the full control over this provider.
 
-### Restify injector
+- The `RestifyInjector` will be handled. It will register `RestifyCustomRoutesProvider` which load all the custom routes (defined in the `routes` static method in repositories) and will check if this request is a restify one - in which case it will register a new service provider `RestifyServiceProvider`
 
-This middleware is pushed at the end of the `$middleware` list of your application. This middleware has the 2 responsibilities. It will boot the `RestifyCustomRoutesProvider` (which will load routes you define in `routes` method of your repositories).
+- If the `RestifyServiceProvider` was registered, it will load all the other CRUD routes Restify provides and will try to bind a custom exception handler defined in the `restify.php` configuration.
+
+- If the request route is a Restify route, Laravel will handle other middlewares defined in the `restify.php` -> `middleware`.
 
 
 ## View Restify
 
-Firstly, let's take a closer look to the package general gate:
+Since we are now aware of how Restify boot itself, let's see how to guard it.
+
+Let's take a closer look to the package global gate:
 
 ```php
 // app/Providers/RestifyServiceProvider.php
@@ -409,6 +413,8 @@ POST: api/restify/users/{id}/attach/posts
 In this case, Restify will guess the policy name, by the related entity, in this case it will be `attachPost`:
 
 ```php
+    // UserPolicy.php
+
     /**
      * Determine if the post could be attached to the user.
      *

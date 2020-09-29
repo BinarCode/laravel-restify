@@ -23,7 +23,6 @@ class RestifyInjector
      */
     public function handle($request, Closure $next)
     {
-        dump('RestifyInjector -> inject custom routes loader and conditionally the api routes');
         $path = trim(Restify::path(), '/') ?: '/';
 
         $isRestify = $request->is($path) ||
