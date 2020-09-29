@@ -51,7 +51,7 @@ class AuthService extends RestifyService
      * @throws EntityNotFoundException
      * @throws PassportUserException
      */
-    public function verify(Request  $request, $id, $hash = null)
+    public function verify(Request $request, $id, $hash = null)
     {
         /**
          * @var Authenticatable
