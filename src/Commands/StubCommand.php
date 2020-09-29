@@ -86,10 +86,15 @@ class StubCommand extends Command
                 case 'boolean':
                     $data[$column] = $this->faker->boolean;
                     break;
-                case 'biging':
+                case 'bigint':
                 case 'int':
-                    if (false === Str::endsWith($column, 'id')) {
-                        $data[$column] = $this->faker->id;
+                    if (Str::endsWith($column, '_id')) {
+                        $guessTable = Str::pluralStudly(Str::beforeLast($column, '_id'));
+                        if (Schema::hasTable($guessTable)) {
+                            $data[$column] = optional(DB::table($guessTable)->inRandomOrder()->first())->id ?? $this->faker->randomNumber(4);
+                        }
+                    } else {
+                        $data[$column] = $this->faker->randomNumber(4);
                     }
                     break;
             }
