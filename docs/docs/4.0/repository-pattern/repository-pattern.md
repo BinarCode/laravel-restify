@@ -882,6 +882,14 @@ You should add the policy method against attaching in the policy. Let's think of
     }
 ```
 
+The attach method could be attached to the `BelongsTo` field as well, it should return true or false:
+
+```php
+BelongsTo::make('owner', 'user', UserRepository::class)
+->canAttach(function(RestifyRequest $request, PostRepository $repository, User  $user) {
+    return Auth::user()->is($user);
+})
+```
 
 ## Attach related
 
