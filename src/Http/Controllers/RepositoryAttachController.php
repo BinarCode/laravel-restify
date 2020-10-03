@@ -20,12 +20,13 @@ class RepositoryAttachController extends RepositoryController
             return call_user_func($method, $request, $repository, $model);
         }
 
-        dd(            collect(Arr::wrap($request->input($request->relatedRepository)))
+        dd(collect(Arr::wrap($request->input($request->relatedRepository)))
             ->filter(fn ($relatedRepositoryId) => $request->repository()->allowToAttach($request, $request->attachRelatedModels()))
             ->map(fn ($relatedRepositoryId) => $this->initializePivot(
                 $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
             ))
         );
+
         return $repository->attach(
             $request, $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))

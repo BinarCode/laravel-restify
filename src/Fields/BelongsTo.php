@@ -17,8 +17,8 @@ class BelongsTo extends EagerField
 
     public function __construct($attribute, $relation, $parentRepository)
     {
-        if (!is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
+        if (! is_a(app($parentRepository), Repository::class)) {
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
         }
 
         parent::__construct($attribute);
@@ -72,8 +72,7 @@ class BelongsTo extends EagerField
             $request->input($this->attribute)
         )->firstOrFail();
 
-
-        $methodGuesser = 'attach' . Str::studly(class_basename($relatedModel));
+        $methodGuesser = 'attach'.Str::studly(class_basename($relatedModel));
 
         $this->repository->authorizeToAttach(
             $request,
