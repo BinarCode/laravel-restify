@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Commands;
 
 use Carbon\Carbon;
+use Doctrine\DBAL\Schema\Column;
 use Faker\Generator as Faker;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
@@ -58,7 +59,11 @@ class StubCommand extends Command
         $data = [];
 
         collect(Schema::getColumnListing($table))->each(function ($column) use (&$data, $table) {
-            $type = Schema::getColumnType($table, $column);
+            $connection = Schema::getConnection();
+            /** * @var Column $columnDefinition */
+            $columnDefinition = $connection->getDoctrineColumn($table, $column);
+
+            $type = $columnDefinition->getType()->getName();
 
             switch ($type) {
                 case 'string':
@@ -88,6 +93,11 @@ class StubCommand extends Command
                     break;
                 case 'bigint':
                 case 'int':
+                    if ($columnDefinition->getAutoincrement() === true) {
+                        //primary key
+                        return;
+                    }
+
                     if (Str::endsWith($column, '_id')) {
                         $guessTable = Str::pluralStudly(Str::beforeLast($column, '_id'));
                         if (Schema::hasTable($guessTable)) {

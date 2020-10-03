@@ -348,7 +348,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     private function storeFields(RestifyRequest $request)
     {
         return $this->collectFields($request)
-            ->filter(fn(Field $field) => !$field instanceof EagerField)
+//            ->filter(fn(Field $field) => !$field instanceof EagerField)
             ->forStore($request, $this)
             ->authorizedStore($request);
     }
@@ -964,9 +964,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     protected static function fillFields(RestifyRequest $request, Model $model, Collection $fields)
     {
-        return $fields->map(function (Field $field) use ($request, $model) {
-            return $field->fillAttribute($request, $model);
-        });
+        return $fields
+            ->map(fn(Field  $field) => $field->setRepository($request->newRepositoryWith($model)))
+            ->map(fn (Field $field) => $field->fillAttribute($request, $model));
     }
 
     protected static function fillBulkFields(RestifyRequest $request, Model $model, Collection $fields, int $bulkRow = null)

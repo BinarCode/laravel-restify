@@ -4,8 +4,11 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Traits\AuthorizableModels;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class BelongsTo extends EagerField
 {
@@ -13,8 +16,8 @@ class BelongsTo extends EagerField
 
     public function __construct($attribute, $relation, $parentRepository)
     {
-        if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
+        if (!is_a(app($parentRepository), Repository::class)) {
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
         }
 
         parent::__construct($attribute);
@@ -56,6 +59,29 @@ class BelongsTo extends EagerField
 
         $this->value = $this->parentRepository::resolveWith(
             $model->{$this->relation}()->first()
+        );
+    }
+
+    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
+    {
+        /** * @var Model $relatedModel */
+        $relatedModel = $model->{$this->relation}()->getModel();
+
+        $belongsToModel = $relatedModel->newQuery()->whereKey(
+            $request->input($this->attribute)
+        )->firstOrFail();
+
+
+        $methodGuesser = 'attach' . Str::studly(class_basename($relatedModel));
+
+        $this->repository->authorizeToAttach(
+            $request,
+            $methodGuesser,
+            $belongsToModel,
+        );
+
+        $model->{$this->relation}()->associate(
+            $belongsToModel
         );
     }
 }

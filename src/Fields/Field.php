@@ -599,4 +599,11 @@ class Field extends OrganicField implements JsonSerializable
 
         return $this;
     }
+
+    public function setRepository(Repository $repository): Field
+    {
+        $this->repository = $repository;
+
+        return $this;
+    }
 }
