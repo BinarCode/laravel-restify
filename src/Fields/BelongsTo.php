@@ -97,6 +97,4 @@ class BelongsTo extends EagerField
 
         return $this;
     }
-
-
 }
