@@ -41,7 +41,7 @@ class PostRepository extends Repository
         ];
     }
 
-    public function fieldsForStore(RestifyRequest $request)
+    public function fieldsForStore(RestifyRequest $request): array
     {
         return [
             Field::new('user_id'),

@@ -106,6 +106,11 @@ class Post extends Repository
 }
 ```
 
+:::tip
+`Field` class has many mutations, validators and interactions you can use, these are
+documented [here](/docs/4.0/repository-pattern/field)
+:::
+
 ## Show request
 
 Now, your `GET` endpoint will expose the `title` and the `description` of the Post. Let's take a look of the json
@@ -341,61 +346,122 @@ public function fieldsForIndex(RestifyRequest $request): array
 }
 ```
 
-
-## 
-
 :::tip Specific fields
 Similar with the specific fields for the `index` request, you can define methods to return specific fields for other requests, so we have: `fieldsForIndex`, `fieldsForShow`, `fieldsForStore` and `fieldsForUpdate`.
 :::
 
--------
 
+## Store request
 
+Let's take a closer look at the fields list for the `PostRepository`:
 
-
-
-When storing or updating a model - Restify will get from the request all attributes matching by the key with those from
-the `fillable` array of the model definition. Restify will fill these fields with the value from the request. However,
-if you want to transform some attributes before they are filled into the model you can do that by defining the `fields`
-method:
-
-```php
-use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-
-class Post extends Repository
-{
-    /**
-     * The model the repository corresponds to.
-     *
-     * @var string
-     */
-    public static $model = 'App\\Post';
-
-  /**
-     * Resolvable attributes before storing/updating
-     * 
-     * @param  RestifyRequest  $request
-     * @return array
-     */
+```php 
     public function fields(RestifyRequest $request) 
     {
         return [
-            Field::new('title')->storeCallback(function ($requestValue) {
-                return is_string($requestValue) ? $requestValue : `N/A`; 
-            })  
+            Field::new('title'),
+            
+            Field::new('description'),
         ];
+    }
+```
+
+Well, for the `store` request, Restify will use the same fields, and will assign the value from the request matching the attribute name.
+
+:::warning Fillable
+Restify will fill your model attributes (defined in the `fields` method) even if they are listed as `$guarded`. 
+:::
+
+Let's take an example, here is the payload:
+
+```json
+{
+    "title": "Beautiful day!",
+    "description": "Comming soon..."
+}
+```
+
+Then we have the request:
+
+```http request
+POST: http://restify-app.test/api/restify/posts
+```
+
+Restify will store the new post, and will return an `201` (created) status, a `Location` header containing the url to the newly created entity: `/api/restify/posts/1`, and a `data` object with the newly created entity: 
+
+```json
+{
+    "data": {
+        "id": "91ad557d-5780-4e4b-bedc-c35d400d8594",
+        "type": "posts",
+        "attributes": {
+            "title": "Beautiful day!",
+            "description": "Comming soon..."
+        },
+        "meta": {
+            "authorizedToShow": true,
+            "authorizedToStore": true,
+            "authorizedToUpdate": false,
+            "authorizedToDelete": false
+        }
     }
 }
 ```
 
-:::tip
 
-`Field` class has many mutations, validators and interactions you can use, these are
-documented [here](/laravel-restify/docs/repository-pattern/field)
+## Update request
 
+Taking the same example as we had before, the update will use `title` and the `description` attributes from the request:
+
+```json
+{
+    "description": "Ready to be published!"
+}
+```
+
+Endpoint:
+
+```http request
+PUT: http://restify-app.test/api/restify/posts/1
+```
+
+:::warning Policy
+As we saw before, we were denied from the policy for the update operation ( "authorizedToUpdate": false), we have to update the policy `update` method to return `true`.
 :::
+
+The Restify response contains the http 200 status, and the following response:
+
+```json
+{
+    "data": {
+        "id": "91ad557d-5780-4e4b-bedc-c35d400d8594",
+        "type": "posts",
+        "attributes": {
+            "title": "Beautiful day!",
+            "description": "Ready to be published!"
+        },
+        "meta": {
+            "authorizedToShow": true,
+            "authorizedToStore": true,
+            "authorizedToUpdate": true,
+            "authorizedToDelete": false
+        }
+    }
+}
+```
+
+## Delete request
+
+This request is a simple one (don't forget to allow the policy):
+
+```http request
+DELETE: http://restify-app.test/api/restify/posts/1
+```
+
+If you're allowed to delete the resource, you will get back an `204 No content` response.
+
+
+-------
 
 ## Repository prefix
 
@@ -405,8 +471,7 @@ Restify generates the URI for the repository in the following way:
 config('restify.base') . '/' . UserRepository::uriKey() . '/'
 ```
 
-For example, let's assume we have the `restify.base` equal with: `api/restify`, the default URI generated for the
-UserRepository is:
+For example, let's assume we have the `restify.base` equal with: `api/restify`, the default URI generated for the UserRepository is: 
 
 ```http request
 GET: /api/restify/users
@@ -432,13 +497,12 @@ Keep in mind that this custom prefix, will be used for all the endpoints related
 
 ## Repository middleware
 
-Each repository has the `restify.middleware` out of the box for the CRUD methods. However, you're free to add your own
-middlewares for a specific repository.
+Each repository has the middlewares from the config `restify.middleware` out of the box for the CRUD methods. However, you're free to add your own middlewares for a specific repository.
 
 ```php
     // PostRepository.php
 
-    public static $middlewares = [
+    public static $middleware = [
         NeedsCompanyMiddleware::class,
     ];
 

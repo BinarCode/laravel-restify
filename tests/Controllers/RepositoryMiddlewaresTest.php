@@ -25,7 +25,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
             ->expects('handle')
             ->once();
 
-        PostWithCustomMiddlewareRepository::$middlewares = [
+        PostWithCustomMiddlewareRepository::$middleware = [
             $middleware,
         ];
 
@@ -39,7 +39,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
 
     public function test_request_fails_if_middleware_abort()
     {
-        PostWithCustomMiddlewareRepository::$middlewares = [
+        PostWithCustomMiddlewareRepository::$middleware = [
             PostAbortMiddleware::class,
         ];
 
@@ -61,7 +61,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
             ->expects('handle')
             ->never();
 
-        PostWithCustomMiddlewareRepository::$middlewares = [
+        PostWithCustomMiddlewareRepository::$middleware = [
             $middleware,
         ];
 

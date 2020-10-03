@@ -118,7 +118,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      *
      * @var array
      */
-    public static $middlewares = [];
+    public static $middleware = [];
 
     /**
      * The list of attach callable's.
@@ -701,8 +701,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         return $this->response()
             ->created()
-            ->model($this->resource)
-            ->header('Location', static::uriTo($this->resource));
+            ->header('Location', static::uriTo($this->resource))
+            ->data($this->serializeForShow(
+                $request,
+            ));
     }
 
     public function storeBulk(RepositoryStoreBulkRequest $request)
@@ -987,7 +989,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public static function collectMiddlewares(RestifyRequest $request): ?Collection
     {
-        return collect(static::$middlewares);
+        return collect(static::$middleware);
     }
 
     public static function getAttachers(): array

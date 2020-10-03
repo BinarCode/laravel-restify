@@ -10,7 +10,7 @@ class PostWithCustomMiddlewareRepository extends Repository
 {
     public static $model = Post::class;
 
-    public static $middlewares = [
+    public static $middleware = [
         PostAbortMiddleware::class,
     ];
 

@@ -17,11 +17,11 @@ class RepositoryCollection
         return [
             'first' => $paginated['first_page_url'] ?? null,
             'last' => $paginated['last_page_url'] ?? null,
-            'prev' => $paginated['prev_page_url']
-                ?? collect(collect($paginated['links'])->firstWhere('label', 'Previous'))->get('url')
+            'prev' => array_key_exists('prev_page_url', $paginated) ? $paginated['prev_page_url'] :
+                collect(collect($paginated['links'])->firstWhere('label', 'Previous'))->get('url')
                 ?? null,
-            'next' => $paginated['next_page_url']
-                ?? collect(collect($paginated['links'])->firstWhere('label', 'Previous'))->get('url')
+            'next' => array_key_exists('prev_page_url', $paginated) ? $paginated['prev_page_url'] :
+                collect(collect($paginated['links'])->firstWhere('label', 'Previous'))->get('url')
                 ?? null,
         ];
     }
