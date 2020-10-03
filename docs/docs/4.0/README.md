@@ -77,24 +77,3 @@ Usually you want to authorize your api (allow access only to authenticated users
 ### Exception Handling
 
 The `exception_handler` configuration allow you to use another default Exception Handler instead of the one Laravel provides by default. If you want to keep the default one, just left this configuration as `null`.
-
-## Generate repository
-
-Creating a new repository can be done via restify command: 
-
-```shell script
-php artisan restify:repository PostRepository
-```
-
-If you want to generate the `Policy`, `Model` and `migration` as well, then you can use the `--all` option:
-
-```shell script
-php artisan restify:repository PostRepository --all
-```
-## Generate policy 
-
-Since the authorization is using the Laravel Policies, a good way of generating a complete policy for an entity is by using the restify command:
-
-```shell script
-php artisan restify:policy PostPolicy
-```
