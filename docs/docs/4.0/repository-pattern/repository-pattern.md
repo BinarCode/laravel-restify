@@ -882,7 +882,7 @@ You should add the policy method against attaching in the policy. Let's think of
     }
 ```
 
-The attach method could be attached to the `BelongsTo` field as well, it should return true or false:
+The `attach` policy could be used to the `BelongsTo` field as well, it should return true or false:
 
 ```php
 BelongsTo::make('owner', 'user', UserRepository::class)
