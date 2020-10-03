@@ -858,9 +858,33 @@ Now look, the response of the `api/restify/posts/1` will have this format:
 
 How cool is that :-)
 
+Sure, having a BelongsTo relationship, you have to attach posts to the user. This is when the Restify become very handy. You only have to put the same attribute field with the id of the related resource in the payload:
+
+```http request
+POST: http://restify-app.test/api/restify/posts
+```
+
+Payload:
+
+```json
+{
+    "description": "Ready to be published!",
+    "owner": 1
+}
+```
+
+You should add the policy method against attaching in the policy. Let's think of it like this, we want to attach a user to a newly created post, this means we need to add the policy into the PostPolicy with the name `attachUser`
+
+```php
+    public function attachUser(User $authenticatedUser, Post $createdPost, User $userToBeAttached) 
+    {
+        return $authenticatedUser->is($userToBeAttached);
+    }
+```
+
+
 ## Attach related
 
-Sure, having a BelongsTo relationship, you have to attach posts to the user. This is when the Restify become very handy.
 
 Example of how to attach posts to users:
 
