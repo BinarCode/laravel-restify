@@ -886,8 +886,8 @@ The `attach` policy could be used to the `BelongsTo` field as well, it should re
 
 ```php
 BelongsTo::make('owner', 'user', UserRepository::class)
-->canAttach(function(RestifyRequest $request, PostRepository $repository, User  $user) {
-    return Auth::user()->is($user);
+->canAttach(function(RestifyRequest $request, PostRepository $repository, User  $userToBeAttached) {
+    return Auth::user()->is($userToBeAttached);
 })
 ```
 
