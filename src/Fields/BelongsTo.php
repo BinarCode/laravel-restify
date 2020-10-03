@@ -4,8 +4,6 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Traits\AuthorizableModels;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -16,8 +14,8 @@ class BelongsTo extends EagerField
 
     public function __construct($attribute, $relation, $parentRepository)
     {
-        if (!is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
+        if (! is_a(app($parentRepository), Repository::class)) {
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
         }
 
         parent::__construct($attribute);
@@ -71,8 +69,7 @@ class BelongsTo extends EagerField
             $request->input($this->attribute)
         )->firstOrFail();
 
-
-        $methodGuesser = 'attach' . Str::studly(class_basename($relatedModel));
+        $methodGuesser = 'attach'.Str::studly(class_basename($relatedModel));
 
         $this->repository->authorizeToAttach(
             $request,
