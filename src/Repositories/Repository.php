@@ -472,8 +472,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->filter(fn (Field $field) => $field->authorize($request))
             ->when(
                 $this->eagerState,
-                function($items) {
-                    return $items->filter(fn (Field $field) => !$field instanceof EagerField);
+                function ($items) {
+                    return $items->filter(fn (Field $field) => ! $field instanceof EagerField);
                 }
             )
             ->each(fn (Field $field) => $field->resolveForShow($this))
@@ -520,8 +520,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->filter(fn (Field $field) => $field->authorize($request))
             ->when(
                 $this->eagerState,
-                function($items) {
-                    return $items->filter(fn (Field $field) => !$field instanceof EagerField);
+                function ($items) {
+                    return $items->filter(fn (Field $field) => ! $field instanceof EagerField);
                 }
             )
             ->each(fn (Field $field) => $field->resolveForIndex($this))
