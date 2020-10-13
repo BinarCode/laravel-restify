@@ -8,6 +8,8 @@ use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
+use Binaryk\LaravelRestify\Fields\HasField;
+use Binaryk\LaravelRestify\Fields\HasMany;
 use Binaryk\LaravelRestify\Fields\HasOne;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
@@ -126,6 +128,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var array
      */
     public static $attachers = [];
+
+    /**
+     * Indicates if the repository is serializing for a eager relationship.
+     * @var bool
+     */
+    public $eagerState = false;
 
     /**
      * The relationships that should be eager loaded when performing an index query.
@@ -261,6 +269,16 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this->fields($request);
     }
 
+    public function hasFields(RestifyRequest $request): array
+    {
+        return $this->showFields($request)
+            ->merge($this->indexFields($request))
+            ->filter(fn (Field $field) => $field->authorize($request))
+            ->filter(fn (Field $field) => $field instanceof HasField)
+            ->unique()
+            ->all();
+    }
+
     /**
      * Resolvable filters for the repository.
      *
@@ -324,10 +342,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->values();
     }
 
-    private function showFields(RestifyRequest $request): Collection
+    protected function showFields(RestifyRequest $request): Collection
     {
         return $this->collectFields($request)
             ->filter(fn (Field $field) => ! $field->isHiddenOnShow($request, $this))
+            ->filter(fn (Field $field) => ! $field instanceof HasField)
             ->values();
     }
 
@@ -451,6 +470,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         $fields = $this->showFields($request)
             ->filter(fn (Field $field) => $field->authorize($request))
+            ->when(
+                $this->eagerState,
+                function($items) {
+                    return $items->filter(fn (Field $field) => !$field instanceof EagerField);
+                }
+            )
             ->each(fn (Field $field) => $field->resolveForShow($this))
             ->map(fn (Field $field) => $field->serializeToValue($request))
             ->mapWithKeys(fn ($value) => $value)
@@ -493,6 +518,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         // Resolve the show method, and attach the value to the array
         $fields = $this->indexFields($request)
             ->filter(fn (Field $field) => $field->authorize($request))
+            ->when(
+                $this->eagerState,
+                function($items) {
+                    return $items->filter(fn (Field $field) => !$field instanceof EagerField);
+                }
+            )
             ->each(fn (Field $field) => $field->resolveForIndex($this))
             ->map(fn (Field $field) => $field->serializeToValue($request))
             ->mapWithKeys(fn ($value) => $value)
@@ -550,6 +581,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         with(explode(',', $request->get('related')), function ($relations) use ($request, &$withs) {
             foreach ($relations as $relation) {
+                if (in_array($relation, collect($this->hasFields($request))->map->attribute->all())) {
+                    /** * @var HasMany $has */
+                    $has = collect($this->hasFields($request))->firstWhere('attribute', $relation);
+                    $withs[$relation] = $has->resolve($this);
+                }
+
                 if (in_array($relation, static::getRelated())) {
                     if ($this->resource->relationLoaded($relation)) {
                         $paginator = $this->resource->{$relation};
@@ -995,5 +1032,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static function getAttachers(): array
     {
         return static::$attachers;
+    }
+
+    public function eagerState($state = true): Repository
+    {
+        $this->eagerState = $state;
+
+        return $this;
     }
 }

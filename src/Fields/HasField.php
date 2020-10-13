@@ -2,15 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
-class EagerField extends Field
+class HasField extends EagerField
 {
-    /**
-     * @var string
-     */
-    protected $relation;
-
-    /**
-     * @var string
-     */
-    protected $parentRepository;
 }
