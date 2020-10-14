@@ -15,7 +15,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers(2)->first();
         $company = factory(Company::class)->create();
 
-        $response = $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $response = $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -33,7 +33,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers(2)->first();
         $company = factory(Company::class)->create();
 
-        $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
         ])
             ->assertStatus(400);
@@ -46,7 +46,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $usersFromCompany = $this->getJson('/restify-api/users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(0, $usersFromCompany->json('data'));
 
-        $response = $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $response = $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => [1, 2],
             'is_admin' => true,
         ])
@@ -70,7 +70,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $this->getJson('/restify-api/users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users')
             ->assertJsonCount(0, 'data');
 
-        $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ]);
@@ -91,7 +91,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $_SERVER['allow_attach_users'] = false;
 
-        $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -99,7 +99,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $_SERVER['allow_attach_users'] = true;
 
-        $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -116,7 +116,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
             factory(User::class)->create()
         );
 
-        $this->postJson('restify-api/companies/' . $company->id . '/attach/users', [
+        $this->postJson('restify-api/companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -124,7 +124,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $_SERVER['allow_detach_users'] = false;
 
-        $this->postJson('restify-api/companies/' . $company->id . '/detach/users', [
+        $this->postJson('restify-api/companies/'.$company->id.'/detach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -132,7 +132,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $_SERVER['allow_detach_users'] = true;
 
-        $this->postJson('restify-api/companies/' . $company->id . '/detach/users', [
+        $this->postJson('restify-api/companies/'.$company->id.'/detach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])

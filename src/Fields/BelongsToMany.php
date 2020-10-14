@@ -17,8 +17,8 @@ class BelongsToMany extends HasField
 
     public function __construct($attribute, $relation, $parentRepository)
     {
-        if (!is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
+        if (! is_a(app($parentRepository), Repository::class)) {
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
         }
 
         parent::__construct($attribute);
@@ -39,7 +39,7 @@ class BelongsToMany extends HasField
             return $this->repositoryClass::resolveWith($item)
                 ->withExtraFields(
                     collect($this->pivotFields)->each(function (Field $field) use ($item) {
-                        return $field->resolveCallback(fn() => $item->pivot->{$field->attribute});
+                        return $field->resolveCallback(fn () => $item->pivot->{$field->attribute});
                     })->all()
                 )
                 ->eagerState();

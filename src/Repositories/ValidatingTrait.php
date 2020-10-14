@@ -37,7 +37,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute . '.' . $ruleFor] = $message;
+                $messages[$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
@@ -57,7 +57,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages['*' . $k->attribute . '.' . $ruleFor] = $message;
+                $messages['*'.$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
@@ -87,7 +87,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute . '.' . $ruleFor] = $message;
+                $messages[$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
@@ -116,7 +116,7 @@ trait ValidatingTrait
         $messages = $pivotFields->flatMap(function ($field) {
             $messages = [];
             foreach ($field->messages as $ruleFor => $message) {
-                $messages[$field->attribute . '.' . $ruleFor] = $message;
+                $messages[$field->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
@@ -142,7 +142,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages['*' . $k->attribute . '.' . $ruleFor] = $message;
+                $messages['*'.$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
