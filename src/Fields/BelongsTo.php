@@ -13,7 +13,6 @@ class BelongsTo extends EagerField
     public ?Closure $storeParentCallback;
 
     /**
-     *
      * @var Closure
      */
     private Closure $canAttachCallback;
