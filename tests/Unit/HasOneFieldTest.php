@@ -24,40 +24,20 @@ class HasOneFieldTest extends IntegrationTest
     public function test_has_one_will_be_returned_in_relations()
     {
         $user = factory(User::class)->create();
+
         factory(Post::class)->create([
             'user_id' => $user->id,
         ]);
 
-        $this->getJson('/restify-api/'.UserWithPostRepository::uriKey())
-        ->assertJsonStructure([
+        $this->getJson('/restify-api/' . UserWithPostRepository::uriKey())->assertJsonStructure([
             'data' => [
                 [
-                    'attributes' => [
-                        'name',
+                    'relationships' => [
                         'post',
                     ],
                 ],
             ],
         ]);
-    }
-
-    public function test_has_one_field_is_saved_when_storing()
-    {
-        factory(Post::class)->create([
-            'user_id' => factory(User::class),
-        ]);
-
-        $this->postJson('/restify-api/'.UserWithPostRepository::uriKey(), [
-            'name' => 'Eduard Lupacescu',
-            'email' => 'eduard.lupacescu@binarcode.com',
-            'password' => 'secret!',
-            'post' => [
-                'title' => 'New Post with user',
-                'description' => 'New Post description',
-            ],
-        ])
-            ->dump()
-            ->assertCreated();
     }
 }
 

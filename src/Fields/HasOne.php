@@ -7,7 +7,7 @@ use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Model;
 
-class HasOne extends EagerField
+class HasOne extends HasField
 {
     public $storeParentCallback;
 
@@ -69,5 +69,7 @@ class HasOne extends EagerField
         $this->value = $this->repositoryClass::resolveWith(
             $model->{$this->relation}()->first()
         );
+
+        return $this;
     }
 }

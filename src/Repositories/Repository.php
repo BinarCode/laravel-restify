@@ -339,7 +339,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $fields = $fields->merge($fillable);
         }
 
-        return $fields->merge($this->extraFields($request));
+        return $fields->merge($this->extraFields($request))->each->setRepository($this);
     }
 
     public function extraFields(RestifyRequest $request): array
@@ -710,7 +710,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         DB::transaction(function () use ($request) {
             static::fillFields(
-                $request, $this->resource, $this->storeFields($request)
+                $request, $this->resource,
+                $this->storeFields($request)
             );
 
             if ($request->isViaRepository()) {
@@ -1023,9 +1024,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     protected static function fillFields(RestifyRequest $request, Model $model, Collection $fields)
     {
-        return $fields
-            ->map(fn(Field $field) => $field->setRepository($request->newRepositoryWith($model)))
-            ->map(fn(Field $field) => $field->fillAttribute($request, $model));
+        return $fields->map(fn(Field $field) => $field->fillAttribute($request, $model));
     }
 
     protected static function fillBulkFields(RestifyRequest $request, Model $model, Collection $fields, int $bulkRow = null)

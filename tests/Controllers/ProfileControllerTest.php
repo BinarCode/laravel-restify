@@ -159,7 +159,7 @@ class ProfileControllerTest extends IntegrationTest
                 'relationships' => [
                     'posts' => [
                         [
-                            'attributes',
+                            'id',
                         ],
                     ],
                 ],

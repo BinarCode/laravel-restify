@@ -16,7 +16,7 @@ class BelongsTo extends EagerField
      *
      * @var Closure
      */
-    private Closure $canAttachCallback;
+    private $canAttachCallback;
 
     public function __construct($attribute, $relation, $parentRepository)
     {

@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
-use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
@@ -17,6 +16,7 @@ class BelongsToFieldTest extends IntegrationTest
     protected function setUp(): void
     {
         parent::setUp();
+
         Restify::repositories([
             PostWithUserRepository::class,
         ]);
@@ -28,7 +28,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->getJson('/restify-api/'.PostWithUserRepository::uriKey())
+        $this->getJson('/restify-api/' . PostWithUserRepository::uriKey())
             ->assertJsonStructure([
                 'data' => [
                     [
@@ -42,19 +42,18 @@ class BelongsToFieldTest extends IntegrationTest
             ]);
     }
 
-    public function test_belongs_to_field_is_ignored_when_storing()
+    public function test_belongs_to_field_is_used_when_storing()
     {
+        $user = factory(User::class)->create();
+
         factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]);
 
-        $this->postJson('/restify-api/'.PostWithUserRepository::uriKey(), [
-            'title' => 'New Post with user',
-            'user' => [
-                'name' => 'Eduard Lupacescu',
-                'email' => 'eduard.lupacescu@binarcode.com',
-            ],
-        ])
+        $this->postJson('/restify-api/' . PostWithUserRepository::uriKey(), [
+                'title' => 'New Post with user',
+                'user' => [$user->id],
+            ])
             ->assertCreated();
     }
 }

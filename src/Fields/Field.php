@@ -462,6 +462,8 @@ class Field extends OrganicField implements JsonSerializable
                 $this->value = call_user_func($this->resolveCallback, $value, $repository, $attribute);
             });
         }
+
+        return $this;
     }
 
     /**
