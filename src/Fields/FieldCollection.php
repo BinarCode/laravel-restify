@@ -84,4 +84,11 @@ class FieldCollection extends Collection
             return $field->isShownOnUpdateBulk($request, $repository);
         })->values();
     }
+
+    public function filterForManyToManyRelations(): self
+    {
+        return $this->filter(function ($field) {
+            return $field instanceof BelongsToMany || $field instanceof MorphToMany;
+        });
+    }
 }

@@ -893,16 +893,88 @@ return Auth::user()->is($userToBeAttached);
 
 ## HasMany
 
-The HasMany relationship give you the ability to get the related entities via `related`. 
+The HasMany relationship simply will return a list of related entities.
 
 
-## Attach related
+```php
+    // UserRepository -> fields()
+    HasMany::make('posts', 'posts', PostRepository::class),
+```
+
+So you will get back the `posts` relationship: 
+
+```json
+{
+    "data": {
+        "id": "1",
+        "type": "users",
+        "attributes": {
+            "name": "Et maxime voluptatem cumque accusamus sit."
+        },
+        "relationships": {
+            "posts": [
+                {
+                    "id": "91c2bdd0-ccf6-49ec-9ae9-8bae1d39c100",
+                    "type": "posts",
+                    "attributes": {
+                        "title": "Rem suscipit tempora ullam accusantium in rerum.",
+                        "description": "Vero nostrum quasi velit molestiae animi neque."
+                    },
+                    "meta": {
+                        "authorizedToShow": true,
+                        "authorizedToStore": true,
+                        "authorizedToUpdate": true,
+                        "authorizedToDelete": true
+                    }
+                }
+            ]
+        },
+        "meta": {
+            "authorizedToShow": true,
+            "authorizedToStore": true,
+            "authorizedToUpdate": false,
+            "authorizedToDelete": false
+        }
+    }
+}
+```
 
 
-Example of how to attach posts to users:
+## BelongsToMany
+
+The `BelongsToMany` field corresponds to a `belongsToMany` Eloquent relationship. For example, let's assume a User model belongsToMany Role models. We may add the relationship to our UserRepository like so:
+
+```php
+    BelongsToMany::make('roles', 'roles', RoleRepository::class),
+```
+
+### Pivot fields
+
+If your `belongsToMany` relationship interacts with additional "pivot" attributes that are stored on the intermediate table of the `many-to-many` relationship, you may also attach those to your `BelongsToMany` Restify Field. Once these fields are attached to the relationship field, and the relationship has been defined on both sides, they will be displayed on the request.
+
+For example, let's assume our User model `belongsToMany` Role models. On our `user_role` intermediate table, let's imagine we have a `policy` field that contains some simple text about the relationship. We can attach this pivot field to the `BelongsToMany` field using the fields method:
+
+```php
+BelongsToMany::make('roles', 'roles', RoleRepository::class)->withPivot(
+    Field::make('policy')
+),
+```
+
+And you also have to define this in the `User` model: 
+
+```php
+public function roles()
+{
+   return $this->belongsToMany(Role::class, 'user_role')->withPivot('policy');
+}
+```
+
+### Attach related
+
+Once you have defined a `belongsToRelationship` you can now attach Role to a User like so:
 
 ```http request
-POST: api/restify/users/1/attach/posts
+POST: api/restify/users/1/attach/roles
 ```
 
 Payload:

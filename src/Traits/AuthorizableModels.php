@@ -155,6 +155,8 @@ trait AuthorizableModels
         if (false === $authorized) {
             throw new AuthorizationException();
         }
+
+        return true;
     }
 
     public function authorizeToDetach(Request $request, $method, $model)

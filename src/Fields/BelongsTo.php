@@ -12,8 +12,11 @@ class BelongsTo extends EagerField
 {
     public ?Closure $storeParentCallback;
 
-    /** * @var Closure */
-    private $canAttachCallback;
+    /**
+     *
+     * @var Closure
+     */
+    private Closure $canAttachCallback;
 
     public function __construct($attribute, $relation, $parentRepository)
     {
@@ -24,7 +27,7 @@ class BelongsTo extends EagerField
         parent::__construct($attribute);
 
         $this->relation = $relation;
-        $this->parentRepository = $parentRepository;
+        $this->repositoryClass = $parentRepository;
     }
 
     public function storeParent(RestifyRequest $request, Model $child): self
@@ -58,7 +61,7 @@ class BelongsTo extends EagerField
     {
         $model = $repository->resource;
 
-        $this->value = $this->parentRepository::resolveWith(
+        $this->value = $this->repositoryClass::resolveWith(
             $model->{$this->relation}()->first()
         );
     }

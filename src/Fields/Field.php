@@ -247,6 +247,8 @@ class Field extends OrganicField implements JsonSerializable
         $this->fillAttributeFromRequest(
             $request, $model, $this->attribute, $bulkRow
         );
+
+        return $this;
     }
 
     /**

@@ -4,16 +4,15 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Support\Collection;
 
-class BelongsToMany extends HasField
+class MorphToMany extends HasField
 {
     /**
      * The pivot table columns to retrieve.
      *
      * @var array
      */
-    public $pivotFields = [];
+    protected $pivotFields = [];
 
     public function __construct($attribute, $relation, $parentRepository)
     {
@@ -38,7 +37,7 @@ class BelongsToMany extends HasField
         $this->value = $paginator->map(function ($item) {
             return $this->repositoryClass::resolveWith($item)
                 ->withExtraFields(
-                    collect($this->pivotFields)->each(function (Field $field) use ($item) {
+                    collect($this->pivotFields)->each(function(Field  $field) use ($item){
                         return $field->resolveCallback(fn() => $item->pivot->{$field->attribute});
                     })->all()
                 )
@@ -61,10 +60,5 @@ class BelongsToMany extends HasField
         );
 
         return $this;
-    }
-
-    public function collectPivotFields(): Collection
-    {
-        return collect($this->pivotFields);
     }
 }

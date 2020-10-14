@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
+use Binaryk\LaravelRestify\Fields\HasMany;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryAttachRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -20,18 +22,11 @@ class RepositoryAttachController extends RepositoryController
             return call_user_func($method, $request, $repository, $model);
         }
 
-        dd(collect(Arr::wrap($request->input($request->relatedRepository)))
-            ->filter(fn ($relatedRepositoryId) => $request->repository()->allowToAttach($request, $request->attachRelatedModels()))
-            ->map(fn ($relatedRepositoryId) => $this->initializePivot(
-                $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
-            ))
-        );
-
         return $repository->attach(
             $request, $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))
-                ->filter(fn ($relatedRepositoryId) => $request->repository()->allowToAttach($request, $request->attachRelatedModels()))
-                ->map(fn ($relatedRepositoryId) => $this->initializePivot(
+                ->filter(fn($relatedRepositoryId) => $request->repository()->allowToAttach($request, $request->attachRelatedModels()))
+                ->map(fn($relatedRepositoryId) => $this->initializePivot(
                     $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
                 ))
         );
@@ -42,6 +37,8 @@ class RepositoryAttachController extends RepositoryController
      *
      * @param RestifyRequest $request
      * @param $relationship
+     * @param $relatedKey
+     * @param BelongsToMany|HasMany $field
      * @return mixed
      * @throws \Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException
      * @throws \Binaryk\LaravelRestify\Exceptions\UnauthorizedException
@@ -84,7 +81,7 @@ class RepositoryAttachController extends RepositoryController
             return $cb;
         }
 
-        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'attach' . Str::studly($request->relatedRepository);
 
         if (method_exists($repository, $methodGuesser)) {
             return [$repository, $methodGuesser];

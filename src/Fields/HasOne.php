@@ -20,7 +20,7 @@ class HasOne extends EagerField
         parent::__construct($attribute);
 
         $this->relation = $relation;
-        $this->parentRepository = $parentRepository;
+        $this->repositoryClass = $parentRepository;
     }
 
     public function storeChild(RestifyRequest $request, Model $parent): self
@@ -36,7 +36,7 @@ class HasOne extends EagerField
 
         $parent->{$this->attribute} = null;
 
-        $repository = $this->parentRepository::resolveWith(
+        $repository = $this->repositoryClass::resolveWith(
             $model = $parent->{$this->relation}()->getModel()
         )->allowToStore($request, $request->input($this->attribute));
 
@@ -66,7 +66,7 @@ class HasOne extends EagerField
     {
         $model = $repository->resource;
 
-        $this->value = $this->parentRepository::resolveWith(
+        $this->value = $this->repositoryClass::resolveWith(
             $model->{$this->relation}()->first()
         );
     }
