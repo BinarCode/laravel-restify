@@ -28,7 +28,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->getJson('/restify-api/' . PostWithUserRepository::uriKey())
+        $this->getJson('/restify-api/'.PostWithUserRepository::uriKey())
             ->assertJsonStructure([
                 'data' => [
                     [
@@ -50,7 +50,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->postJson('/restify-api/' . PostWithUserRepository::uriKey(), [
+        $this->postJson('/restify-api/'.PostWithUserRepository::uriKey(), [
             'title' => 'Create post with owner.',
             'user' => $user->id,
         ])->assertCreated();
@@ -64,7 +64,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->put('/restify-api/' . PostWithUserRepository::uriKey() . '/' . $post->id, [
+        $this->put('/restify-api/'.PostWithUserRepository::uriKey().'/'.$post->id, [
             'title' => 'Can change post owner.',
             'user' => $user->id,
         ])->assertOk();
