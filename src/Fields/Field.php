@@ -216,7 +216,7 @@ class Field extends OrganicField implements JsonSerializable
             );
         }
 
-        if ($this->isHidden($request) && !isset($this->appendCallback)) {
+        if ($this->isHidden($request) && ! isset($this->appendCallback)) {
             return $this;
         }
 
@@ -245,7 +245,7 @@ class Field extends OrganicField implements JsonSerializable
             ? $attribute
             : "{$bulkRow}.{$attribute}";
 
-        tap(($request->input($attribute) ?? $request[$attribute]), fn($value) => $model->{Str::after($attribute, '.')} = is_callable($cb = $this->guessFillableMethod($request))
+        tap(($request->input($attribute) ?? $request[$attribute]), fn ($value) => $model->{Str::after($attribute, '.')} = is_callable($cb = $this->guessFillableMethod($request))
             ? call_user_func($cb, $value, $request, $model, $attribute, $bulkRow)
             : ($request->has($attribute) ? $value : $model->{$attribute})
         );
@@ -271,8 +271,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * @return callable|string|null
      */
-    public
-    function getAttribute()
+    public function getAttribute()
     {
         return $this->attribute;
     }
@@ -282,24 +281,21 @@ class Field extends OrganicField implements JsonSerializable
      * @param $rules
      * @return Field
      */
-    public
-    function storingRules($rules)
+    public function storingRules($rules)
     {
         $this->storingRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
         return $this;
     }
 
-    public
-    function storeBulkRules($rules)
+    public function storeBulkRules($rules)
     {
         $this->storingBulkRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
         return $this;
     }
 
-    public
-    function updateBulkRules($rules)
+    public function updateBulkRules($rules)
     {
         $this->updateBulkRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
@@ -312,8 +308,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param $rules
      * @return $this
      */
-    public
-    function storeRules($rules)
+    public function storeRules($rules)
     {
         return $this->storingRules($rules);
     }
@@ -324,8 +319,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param $rules
      * @return Field
      */
-    public
-    function updatingRules($rules)
+    public function updatingRules($rules)
     {
         $this->updatingRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
@@ -337,42 +331,36 @@ class Field extends OrganicField implements JsonSerializable
      * @param $rules
      * @return Field
      */
-    public
-    function rules($rules)
+    public function rules($rules)
     {
         $this->rules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
         return $this;
     }
 
-    public
-    function messages(array $messages)
+    public function messages(array $messages)
     {
         $this->messages = $messages;
 
         return $this;
     }
 
-    public
-    function getStoringRules(): array
+    public function getStoringRules(): array
     {
         return array_merge($this->rules, $this->storingRules);
     }
 
-    public
-    function getStoringBulkRules(): array
+    public function getStoringBulkRules(): array
     {
         return array_merge($this->rules, $this->storingBulkRules);
     }
 
-    public
-    function getUpdatingRules(): array
+    public function getUpdatingRules(): array
     {
         return array_merge($this->rules, $this->updatingRules);
     }
 
-    public
-    function getUpdatingBulkRules(): array
+    public function getUpdatingBulkRules(): array
     {
         return array_merge($this->rules, $this->updateBulkRules);
     }
@@ -384,8 +372,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param string|null $attribute
      * @return Field|void
      */
-    public
-    function resolveForShow($repository, $attribute = null)
+    public function resolveForShow($repository, $attribute = null)
     {
         $attribute = $attribute ?? $this->attribute;
 
@@ -395,7 +382,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (!$this->showCallback) {
+        if (! $this->showCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->showCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -406,8 +393,7 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    public
-    function resolveForIndex($repository, $attribute = null)
+    public function resolveForIndex($repository, $attribute = null)
     {
         $this->repository = $repository;
 
@@ -419,7 +405,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (!$this->indexCallback) {
+        if (! $this->indexCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->indexCallback)) {
             tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -430,8 +416,7 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    public
-    function resolve($repository, $attribute = null)
+    public function resolve($repository, $attribute = null)
     {
         $this->repository = $repository;
         if ($attribute === 'Computed') {
@@ -440,7 +425,7 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (!$this->resolveCallback) {
+        if (! $this->resolveCallback) {
             $this->value = $this->resolveAttribute($repository, $attribute);
         } elseif (is_callable($this->resolveCallback)) {
             tap($this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -458,22 +443,19 @@ class Field extends OrganicField implements JsonSerializable
      * @param string $attribute
      * @return mixed
      */
-    protected
-    function resolveAttribute($repository, $attribute)
+    protected function resolveAttribute($repository, $attribute)
     {
         return data_get($repository, str_replace('->', '.', $attribute));
     }
 
-    protected
-    function resolveValueBeforeUpdate(RestifyRequest $request, $repository)
+    protected function resolveValueBeforeUpdate(RestifyRequest $request, $repository)
     {
         if ($request->isUpdateRequest()) {
             $this->valueBeforeUpdate = $this->resolveAttribute($repository, $this->attribute);
         }
     }
 
-    public
-    function jsonSerialize()
+    public function jsonSerialize()
     {
         return with(app(RestifyRequest::class), function ($request) {
             return [
@@ -483,16 +465,14 @@ class Field extends OrganicField implements JsonSerializable
         });
     }
 
-    public
-    function label($label)
+    public function label($label)
     {
         $this->label = $label;
 
         return $this;
     }
 
-    public
-    function serializeToValue($request)
+    public function serializeToValue($request)
     {
         return [
             $this->label ?? $this->attribute => $this->resolveDefaultValue($request) ?? $this->value,
@@ -505,8 +485,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param $callback
      * @return $this
      */
-    public
-    function default($callback)
+    public function default($callback)
     {
         $this->defaultCallback = $callback;
 

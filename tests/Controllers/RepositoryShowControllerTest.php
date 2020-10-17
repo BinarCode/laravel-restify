@@ -101,7 +101,7 @@ class RepositoryShowControllerTest extends IntegrationTest
     {
         factory(Post::class)->create(['title' => 'Eduard']);
 
-        $response = $this->getJson(PostWithHiddenFieldRepository::uriKey(). '/1');
+        $response = $this->getJson(PostWithHiddenFieldRepository::uriKey().'/1');
 
         $this->assertArrayNotHasKey('user_id', $response->json('data.attributes'));
     }
@@ -112,7 +112,7 @@ class RepositoryShowControllerTest extends IntegrationTest
 
         $oldUserId = $post->user_id;
 
-        $this->putJson(PostWithHiddenFieldRepository::uriKey(). '/1', [
+        $this->putJson(PostWithHiddenFieldRepository::uriKey().'/1', [
             'title' => 'Updated title',
             'user_id' => 1,
         ]);
@@ -124,7 +124,7 @@ class RepositoryShowControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create(['user_id' => 2, 'title' => 'Eduard', 'category' => 'Hidden category before update.']);
 
-        $this->putJson(PostWithHiddenFieldRepository::uriKey(). '/1', [
+        $this->putJson(PostWithHiddenFieldRepository::uriKey().'/1', [
             'title' => 'Updated title',
             'category' => 'Trying to update hidden category.',
         ]);
