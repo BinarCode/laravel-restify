@@ -49,22 +49,22 @@ class RepositoryStoreControllerTest extends IntegrationTest
     public function test_success_storing()
     {
         $user = $this->mockUsers()->first();
-        $r = $this->postJson('posts', [
+        $response = $this->postJson('posts', [
             'user_id' => $user->id,
             'title' => 'Some post title',
         ])->assertStatus(201)
             ->assertHeader('Location', '/posts/1');
 
-        $this->assertEquals('Some post title', $r->json('data.attributes.title'));
-        $this->assertEquals(1, $r->json('data.attributes.user_id'));
-        $this->assertEquals(1, $r->json('data.id'));
-        $this->assertEquals('posts', $r->json('data.type'));
+        $this->assertEquals('Some post title', $response->json('data.attributes.title'));
+        $this->assertEquals(1, $response->json('data.attributes.user_id'));
+        $this->assertEquals(1, $response->json('data.id'));
+        $this->assertEquals('posts', $response->json('data.type'));
     }
 
     public function test_will_store_only_defined_fields_from_fieldsForStore()
     {
         $user = $this->mockUsers()->first();
-        $r = $this->postJson('posts', [
+        $response = $this->postJson('posts', [
             'user_id' => $user->id,
             'title' => 'Some post title',
             'description' => 'A very short description',
@@ -72,14 +72,14 @@ class RepositoryStoreControllerTest extends IntegrationTest
             ->assertStatus(201)
             ->assertHeader('Location', '/posts/1');
 
-        $this->assertEquals('Some post title', $r->json('data.attributes.title'));
-        $this->assertNull($r->json('data.attributes.description'));
+        $this->assertEquals('Some post title', $response->json('data.attributes.title'));
+        $this->assertNull($response->json('data.attributes.description'));
     }
 
     public function test_will_not_store_unauthorized_fields()
     {
         $user = $this->mockUsers()->first();
-        $r = $this->postJson('posts-unauthorized-fields', [
+        $response = $this->postJson('posts-unauthorized-fields', [
             'user_id' => $user->id,
             'title' => 'Some post title',
             'description' => 'A very short description',
@@ -87,14 +87,14 @@ class RepositoryStoreControllerTest extends IntegrationTest
 
         $_SERVER['posts.description.authorized'] = false;
 
-        $this->assertEquals('Some post title', $r->json('data.attributes.title'));
-        $this->assertNull($r->json('data.attributes.description'));
+        $this->assertEquals('Some post title', $response->json('data.attributes.title'));
+        $this->assertNull($response->json('data.attributes.description'));
     }
 
     public function test_will_not_store_readonly_fields()
     {
         $user = $this->mockUsers()->first();
-        $r = $this->postJson('posts-unauthorized-fields', [
+        $response = $this->postJson('posts-unauthorized-fields', [
             'user_id' => $user->id,
             'image' => 'avatar.png',
             'title' => 'Some post title',
@@ -102,6 +102,6 @@ class RepositoryStoreControllerTest extends IntegrationTest
         ])
             ->assertStatus(201);
 
-        $this->assertNull($r->json('data.attributes.image'));
+        $this->assertNull($response->json('data.attributes.image'));
     }
 }
