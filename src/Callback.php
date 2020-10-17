@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-
 use Illuminate\Http\Request;
 
 interface Callback
