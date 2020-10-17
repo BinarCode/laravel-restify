@@ -10,8 +10,6 @@ use Illuminate\Support\Str;
 
 class BelongsTo extends EagerField
 {
-    public ?Closure $storeParentCallback;
-
     /**
      *
      * @var Closure
@@ -20,41 +18,14 @@ class BelongsTo extends EagerField
 
     public function __construct($attribute, $relation, $parentRepository)
     {
-        if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
+        if (!is_a(app($parentRepository), Repository::class)) {
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
         }
 
         parent::__construct($attribute);
 
         $this->relation = $relation;
         $this->repositoryClass = $parentRepository;
-    }
-
-    public function storeParent(RestifyRequest $request, Model $child): self
-    {
-        if (is_callable($this->storeParentCallback)) {
-            call_user_func_array($this->storeParentCallback, [
-                $request,
-                $child,
-            ]);
-
-            return $this;
-        }
-
-        $child->{$this->attribute} = null;
-
-        $child->{$this->attribute} = $child->{$this->relation}()->create(
-            $request->input($this->attribute)
-        );
-
-        return $this;
-    }
-
-    public function storeParentCallback(callable $callback)
-    {
-        $this->storeParentCallback = $callback;
-
-        return $this;
     }
 
     public function resolve($repository, $attribute = null)
@@ -64,6 +35,8 @@ class BelongsTo extends EagerField
         $this->value = $this->repositoryClass::resolveWith(
             $model->{$this->relation}()->first()
         );
+
+        return $this;
     }
 
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
@@ -75,7 +48,7 @@ class BelongsTo extends EagerField
             $request->input($this->attribute)
         )->firstOrFail();
 
-        $methodGuesser = 'attach'.Str::studly(class_basename($relatedModel));
+        $methodGuesser = 'attach' . Str::studly(class_basename($relatedModel));
 
         $this->repository->authorizeToAttach(
             $request,
@@ -84,7 +57,7 @@ class BelongsTo extends EagerField
         );
 
         if (is_callable($this->canAttachCallback)) {
-            if (! call_user_func($this->canAttachCallback, $request, $this->repository, $belongsToModel)) {
+            if (!call_user_func($this->canAttachCallback, $request, $this->repository, $belongsToModel)) {
                 abort(401, 'Unauthorized to attach.');
             }
         }

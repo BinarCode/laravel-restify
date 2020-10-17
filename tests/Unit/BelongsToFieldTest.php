@@ -29,10 +29,11 @@ class BelongsToFieldTest extends IntegrationTest
         ]);
 
         $this->getJson('/restify-api/' . PostWithUserRepository::uriKey())
+            ->dump()
             ->assertJsonStructure([
                 'data' => [
                     [
-                        'attributes' => [
+                        'relationships' => [
                             'user' => [
                                 'attributes',
                             ],

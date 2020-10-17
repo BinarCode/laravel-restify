@@ -10,7 +10,6 @@ use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Fields\HasField;
-use Binaryk\LaravelRestify\Fields\HasOne;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -48,7 +47,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         DelegatesToResource,
         ResolvesActions,
         RepositoryEvents,
-        WithRoutePrefix;
+        WithRoutePrefix,
+        InteractWithFields;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -65,6 +65,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var array
      */
     public static $related;
+
+    /**
+     * The relationships that should be eager loaded when performing an index query.
+     *
+     * @var array
+     */
+    public static $with = [];
 
     /**
      * The list of searchable fields.
@@ -142,13 +149,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var bool
      */
     public $extraFields = [];
-
-    /**
-     * The relationships that should be eager loaded when performing an index query.
-     *
-     * @var array
-     */
-    public static $with = [];
 
     public function __construct()
     {
@@ -247,46 +247,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * Resolvable attributes.
-     *
-     * @param RestifyRequest $request
-     * @return array
-     */
-    public function fields(RestifyRequest $request)
-    {
-        return [];
-    }
-
-    public function fieldsForIndex(RestifyRequest $request): array
-    {
-        return $this->fields($request);
-    }
-
-    public function fieldsForShow(RestifyRequest $request): array
-    {
-        return $this->fields($request);
-    }
-
-    public function fieldsForUpdate(RestifyRequest $request): array
-    {
-        return $this->fields($request);
-    }
-
-    public function fieldsForStore(RestifyRequest $request): array
-    {
-        return $this->fields($request);
-    }
-
-    public function hasFields(RestifyRequest $request): array
-    {
-        return $this->collectFields($request)
-            ->filter(fn(Field $field) => $field->authorize($request))
-            ->filter(fn(Field $field) => $field instanceof HasField)
-            ->unique()
-            ->all();
-    }
-
-    /**
      * Resolvable filters for the repository.
      *
      * @param RestifyRequest $request
@@ -352,58 +312,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $this->extraFields = $fields;
 
         return $this;
-    }
-
-    private function indexFields(RestifyRequest $request): Collection
-    {
-        return $this->collectFields($request)
-            ->filter(fn(Field $field) => !$field->isHiddenOnIndex($request, $this))
-            ->filter(fn(Field $field) => !$field instanceof HasField)
-            ->values();
-    }
-
-    protected function showFields(RestifyRequest $request): Collection
-    {
-        return $this->collectFields($request)
-            ->filter(fn(Field $field) => !$field->isHiddenOnShow($request, $this))
-            ->filter(fn(Field $field) => !$field instanceof HasField)
-            ->values();
-    }
-
-    private function updateFields(RestifyRequest $request)
-    {
-        return $this->collectFields($request)
-            ->forUpdate($request, $this)
-            ->authorizedUpdate($request);
-    }
-
-    private function updateBulkFields(RestifyRequest $request)
-    {
-        return $this->collectFields($request)
-            ->forUpdateBulk($request, $this)
-            ->authorizedUpdateBulk($request);
-    }
-
-    private function storeFields(RestifyRequest $request)
-    {
-        return $this->collectFields($request)
-            ->forStore($request, $this)
-            ->authorizedStore($request);
-    }
-
-    private function hasOneFields(RestifyRequest $request)
-    {
-        return $this->collectFields($request)
-            ->forStore($request, $this)
-            ->filter(fn(Field $field) => $field instanceof HasOne)
-            ->authorizedStore($request);
-    }
-
-    private function storeBulkFields(RestifyRequest $request)
-    {
-        return $this->collectFields($request)
-            ->forStoreBulk($request, $this)
-            ->authorizedStore($request);
     }
 
     public function withResource($resource)
@@ -484,7 +392,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveShowAttributes(RestifyRequest $request)
     {
-        $fields = $this->showFields($request)
+        $fields = $this->collectFields($request)
+            ->forShow($request, $this)
             ->filter(fn(Field $field) => $field->authorize($request))
             ->when(
                 $this->eagerState,
@@ -532,7 +441,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function resolveIndexAttributes($request)
     {
         // Resolve the show method, and attach the value to the array
-        $fields = $this->indexFields($request)
+        $fields = $this
+            ->collectFields($request)
+            ->forIndex($request, $this)
             ->filter(fn(Field $field) => $field->authorize($request))
             ->when(
                 $this->eagerState,
@@ -591,7 +502,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         $withs = collect();
 
-        collect($this->hasFields($request))->each(fn(HasField $field) => $withs->put($field->attribute, $field->resolve($this)->value));
+        $this->collectFields($request)
+            ->forEager($request)
+            ->each(fn(EagerField $field) => $withs->put($field->attribute, $field->resolve($this)->value));
 
         collect(str_getcsv($request->input('related')))
             ->filter(fn($relation) => in_array($relation, static::getRelated()))
@@ -711,7 +624,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         DB::transaction(function () use ($request) {
             static::fillFields(
                 $request, $this->resource,
-                $this->storeFields($request)
+                $fields = $this->collectFields($request)
+                    ->forStore($request)
+                    ->authorizedStore($request)
             );
 
             if ($request->isViaRepository()) {
@@ -727,10 +642,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 }
             }
 
-            $this->hasOneFields($request)
-                ->each(fn(HasOne $field) => $field->storeChild($request, $this->resource));
-
-            $this->storeFields($request)->each(fn(Field $field) => $field->invokeAfter($request, $this->resource));
+            $fields->each(fn(Field $field) => $field->invokeAfter($request, $this->resource));
         });
 
         static::stored($this->resource, $request);
@@ -751,12 +663,17 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     $this->resource = static::newModel();
 
                     static::fillBulkFields(
-                        $request, $this->resource, $this->storeBulkFields($request), $row
+                        $request,
+                        $this->resource,
+                        $fields = $this->collectFields($request)
+                            ->forStoreBulk($request, $this)
+                            ->authorizedUpdateBulk($request),
+                        $row
                     );
 
                     $this->resource->save();
 
-                    $this->storeBulkFields($request)->each(fn(Field $field) => $field->invokeAfter($request, $this->resource));
+                    $fields->each(fn(Field $field) => $field->invokeAfter($request, $this->resource));
 
                     return $this->resource;
                 });
@@ -771,17 +688,19 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function update(RestifyRequest $request, $repositoryId)
     {
-        $this->resource = DB::transaction(function () use ($request) {
-            $fields = $this->updateFields($request);
+        DB::transaction(function () use ($request) {
+            $fields = $this->collectFields($request)
+                ->forUpdate($request)
+                ->authorizedUpdate();
 
             static::fillFields($request, $this->resource, $fields);
 
             $this->resource->save();
 
-            return $this->resource;
-        });
-
-        $this->updateFields($request)->each(fn(Field $field) => $field->invokeAfter($request, $this->resource));
+            return $fields;
+        })->each(
+            fn(Field $field) => $field->invokeAfter($request, $this->resource)
+        );
 
         return $this->response()
             ->data($this->serializeForShow($request))
@@ -790,7 +709,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
-        $fields = $this->updateBulkFields($request);
+        $fields = $this->collectFields($request)
+            ->forUpdateBulk($request, $this)
+            ->authorizedUpdateBulk($request);
 
         static::fillBulkFields($request, $this->resource, $fields, $row);
 
@@ -972,8 +893,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         ]);
     }
 
-    public
-    function serializeForIndex(RestifyRequest $request): array
+    public function serializeForIndex(RestifyRequest $request): array
     {
         return $this->filter([
             'id' => $this->when($id = $this->getId($request), $id),

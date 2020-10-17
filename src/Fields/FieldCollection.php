@@ -45,23 +45,29 @@ class FieldCollection extends Collection
 
     public function forIndex(RestifyRequest $request, $repository): self
     {
-        return $this->filter(function (Field $field) use ($repository, $request) {
-            return $field->isShownOnIndex($request, $repository);
-        })->values();
+        return $this
+            ->filter(fn(Field $field) => !$field instanceof EagerField)
+            ->filter(function (Field $field) use ($repository, $request) {
+                return $field->isShownOnIndex($request, $repository);
+            })->values();
     }
 
     public function forShow(RestifyRequest $request, $repository): self
     {
-        return $this->filter(function (Field $field) use ($repository, $request) {
-            return $field->isShownOnShow($request, $repository);
-        })->values();
+        return $this
+            ->filter(fn(Field $field) => !$field instanceof EagerField)
+            ->filter(function (Field $field) use ($repository, $request) {
+                return $field->isShownOnShow($request, $repository);
+            })->values();
     }
 
     public function forStore(RestifyRequest $request, $repository): self
     {
-        return $this->filter(function (Field $field) use ($repository, $request) {
-            return $field->isShownOnStore($request, $repository);
-        })->values();
+        return $this
+            ->filter(fn(Field $field) => !$field instanceof EagerField)
+            ->filter(function (Field $field) use ($repository, $request) {
+                return $field->isShownOnStore($request, $repository);
+            })->values();
     }
 
     public function forStoreBulk(RestifyRequest $request, $repository): self
@@ -73,9 +79,11 @@ class FieldCollection extends Collection
 
     public function forUpdate(RestifyRequest $request, $repository): self
     {
-        return $this->filter(function (Field $field) use ($repository, $request) {
-            return $field->isShownOnUpdate($request, $repository);
-        })->values();
+        return $this
+            ->filter(fn(Field $field) => !$field instanceof EagerField)
+            ->filter(function (Field $field) use ($repository, $request) {
+                return $field->isShownOnUpdate($request, $repository);
+            })->values();
     }
 
     public function forUpdateBulk(RestifyRequest $request, $repository): self
@@ -90,5 +98,14 @@ class FieldCollection extends Collection
         return $this->filter(function ($field) {
             return $field instanceof BelongsToMany || $field instanceof MorphToMany;
         });
+    }
+
+    public function forEager(RestifyRequest $request): self
+    {
+        return $this
+            ->filter(fn(Field $field) => $field instanceof EagerField)
+            ->filter(fn(Field $field) => $field->authorize($request))
+            ->unique();
+
     }
 }

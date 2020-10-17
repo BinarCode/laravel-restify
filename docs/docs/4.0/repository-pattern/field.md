@@ -172,3 +172,252 @@ Field can be setup as hidden:
 ```
 Field::new('token')->hidden(); // this will not be visible 
 ```
+
+# Variations
+
+Bellow we have a list of fields used for the related resources.
+
+## BelongsTo
+
+Let's assume each post belongs to a user. If we want to return the post owner we can do this from the fields:
+
+```php
+    public function fields(RestifyRequest $request)
+    {
+        return [
+            Field::new('title'),
+
+            Field::new('description'),
+
+            BelongsTo::make('owner', 'user', UserRepository::class),
+        ];
+    }
+```
+
+Now look, the response of the `api/restify/posts/1` will have this format:
+
+```json
+{
+    "data": {
+        "id": "91ad693b-a270-428f-bc6c-9f7eabc1b16d",
+        "type": "posts",
+        "attributes": {
+            "title": "Est laudantium dolore dolores laudantium.",
+            "description": "Debitis nihil esse corrupti veniam.",
+            "owner": {
+                "id": "17",
+                "type": "users",
+                "attributes": {
+                    "name": "Eveniet ex excepturi ipsum.",
+                    "email": "darren.skiles@fritsch.com"
+                },
+                "meta": {
+                    "authorizedToShow": true,
+                    "authorizedToStore": true,
+                    "authorizedToUpdate": false,
+                    "authorizedToDelete": false
+                }
+            }
+        },
+        "meta": {
+            "authorizedToShow": true,
+            "authorizedToStore": true,
+            "authorizedToUpdate": true,
+            "authorizedToDelete": true
+        }
+    }
+}
+```
+
+How cool is that :-)
+
+Sure, having a BelongsTo relationship, you have to attach posts to the user. This is when the Restify become very handy. You only have to put the same attribute field with the id of the related resource in the payload:
+
+```http request
+POST: http://restify-app.test/api/restify/posts
+```
+
+Payload:
+
+```json
+{
+    "description": "Ready to be published!",
+    "owner": 1
+}
+```
+
+You should add the policy method against attaching in the policy. Let's think of it like this, we want to attach a user to a newly created post, this means we need to add the policy into the PostPolicy with the name `attachUser`
+
+```php
+    public function attachUser(User $authenticatedUser, Post $createdPost, User $userToBeAttached) 
+    {
+        return $authenticatedUser->is($userToBeAttached);
+    }
+```
+
+The `attach` policy could be used to the `BelongsTo` field as well, it should return true or false:
+
+```php
+BelongsTo::make('owner', 'user', UserRepository::class)
+->canAttach(function(RestifyRequest $request, PostRepository $repository, User  $userToBeAttached) {
+return Auth::user()->is($userToBeAttached);
+})
+```
+
+## HasOne
+
+The `HasOne` field corresponds to a `hasOne` Eloquent relationship. For example, let's assume a `User` model `hasOne` `Phone` model. We may add the relationship to our `UserRepository` like so:
+
+```php
+
+```
+
+
+## HasMany
+
+The HasMany relationship simply will return a list of related entities.
+
+
+```php
+    // UserRepository -> fields()
+    HasMany::make('posts', 'posts', PostRepository::class),
+```
+
+So you will get back the `posts` relationship: 
+
+```json
+{
+    "data": {
+        "id": "1",
+        "type": "users",
+        "attributes": {
+            "name": "Et maxime voluptatem cumque accusamus sit."
+        },
+        "relationships": {
+            "posts": [
+                {
+                    "id": "91c2bdd0-ccf6-49ec-9ae9-8bae1d39c100",
+                    "type": "posts",
+                    "attributes": {
+                        "title": "Rem suscipit tempora ullam accusantium in rerum.",
+                        "description": "Vero nostrum quasi velit molestiae animi neque."
+                    },
+                    "meta": {
+                        "authorizedToShow": true,
+                        "authorizedToStore": true,
+                        "authorizedToUpdate": true,
+                        "authorizedToDelete": true
+                    }
+                }
+            ]
+        },
+        "meta": {
+            "authorizedToShow": true,
+            "authorizedToStore": true,
+            "authorizedToUpdate": false,
+            "authorizedToDelete": false
+        }
+    }
+}
+```
+
+
+## BelongsToMany
+
+The `BelongsToMany` field corresponds to a `belongsToMany` Eloquent relationship. For example, let's assume a User model belongsToMany Role models. We may add the relationship to our UserRepository like so:
+
+```php
+    BelongsToMany::make('roles', 'roles', RoleRepository::class),
+```
+
+### Pivot fields
+
+If your `belongsToMany` relationship interacts with additional "pivot" attributes that are stored on the intermediate table of the `many-to-many` relationship, you may also attach those to your `BelongsToMany` Restify Field. Once these fields are attached to the relationship field, and the relationship has been defined on both sides, they will be displayed on the request.
+
+For example, let's assume our User model `belongsToMany` Role models. On our `user_role` intermediate table, let's imagine we have a `policy` field that contains some simple text about the relationship. We can attach this pivot field to the `BelongsToMany` field using the fields method:
+
+```php
+BelongsToMany::make('roles', 'roles', RoleRepository::class)->withPivot(
+    Field::make('policy')
+),
+```
+
+And you also have to define this in the `User` model: 
+
+```php
+public function roles()
+{
+   return $this->belongsToMany(Role::class, 'user_role')->withPivot('policy');
+}
+```
+
+### Attach related
+
+Once you have defined the `BelongsToMany` field, you can now attach Role to a User like so:
+
+```http request
+POST: api/restify/users/1/attach/roles
+```
+
+Payload:
+
+```json
+{
+    "roles": [1, 2],
+    "policy": "Some message."
+}
+```
+
+### Detach related
+
+We can also detach a role from the user, it could be done like so:
+
+```http request
+POST: api/restify/users/1/detach/roles
+```
+
+Using the payload:
+
+```json
+{
+  "roles": [1]
+}
+```
+
+### Custom attach method
+
+If you want to implement attach method for such relationship on your own, Laravel Restify provides you an easy way to do so. Restify will look for a method which starts with `attach` and concatenated with `Str::studly($relation)` where the `$relation` is the name of the last segment in the attach URL, `roles` in our case.  Let's say you have to attach roles to user:
+
+```php
+// app/Restify/UserRepository.php
+
+public function attachRoles(RestifyRequest $request, UserRepository $repository, User $user)
+{
+    $roles = collect($request->get('roles'))->map(fn($role) => Role::findByName($role, 'web'));
+
+    if ($id = $request->get('company_id')) {
+        $user->assignCompanyRoles(
+            Company::find($id),
+            $roles
+        );
+    }
+
+    return $this->response()->created();
+}
+```
+
+The first argument is the request, then we get the repository we use for attach, and the parent model (`User` in this case). Then you are free to have a custom implementation.
+
+If you don't like this kind of `magic` stuff, you can override the `getAttachers` method, and return an associative array, where the key is the name of the related resource, and the value should be a closure which handle the action:
+
+```php
+// UserRepository.php
+
+public static function getAttachers(): array
+{
+    'roles' => function(RestifyRequest $request, UserRepository $repository, User $user) {
+        // custom implementation
+    },
+}
+```
+
