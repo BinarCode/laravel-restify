@@ -29,7 +29,7 @@ class HasOneFieldTest extends IntegrationTest
             'user_id' => $user->id,
         ]);
 
-        $this->getJson('/restify-api/' . UserWithPostRepository::uriKey())->assertJsonStructure([
+        $this->getJson('/restify-api/'.UserWithPostRepository::uriKey())->assertJsonStructure([
             'data' => [
                 [
                     'relationships' => [
