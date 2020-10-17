@@ -12,19 +12,15 @@ use Illuminate\Support\Facades\Hash;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
-/**
- * @param  RestifyRequest  $request
- * @return array
- */
 public function fields(RestifyRequest $request)
 {
     return [
         Field::new('email')->rules('required')->storingRules('unique:users')->messages([
             'required' => 'This field is required.',
         ]),
-        Field::new('password')->storeCallback(function ($value) {
-                return Hash::make($value);
-            })->rules('required')->storingRules('confirmed'),
+        Field::new('password')->storeCallback(function (RestifyRequest $request, $model, $attribute) {
+            $model->password = Hash::make($request->input($attribute));
+        })->rules('required')->storingRules('confirmed'),
     ];
 }
 ```
