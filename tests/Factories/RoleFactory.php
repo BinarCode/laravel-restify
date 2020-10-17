@@ -1,6 +1,5 @@
 <?php
 
-use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Faker\Generator as Faker;
 

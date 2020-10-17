@@ -112,13 +112,12 @@ class FieldCollection extends Collection
     public function forBelongsTo(RestifyRequest $request): self
     {
         return $this
-            ->filter(fn(Field $field) => $field instanceof BelongsTo)
+            ->filter(fn (Field $field) => $field instanceof BelongsTo)
             ->unique();
-
     }
 
     public function setRepository(Repository $repository): self
     {
-        return $this->each(fn(Field $field) => $field->setRepository($repository));
+        return $this->each(fn (Field $field) => $field->setRepository($repository));
     }
 }

@@ -36,7 +36,7 @@ class MorphToManyFieldTest extends IntegrationTest
                 'data' => [[
                     'relationships' => [
                         'roles' => [],
-                    ],],
+                    ], ],
                 ],
             ])->assertJsonCount(3, 'data.0.relationships.roles');
     }
