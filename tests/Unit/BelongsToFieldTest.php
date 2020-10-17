@@ -64,7 +64,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->put(PostWithUserRepository::uriKey() . '/' . $post->id, [
+        $this->put(PostWithUserRepository::uriKey().'/'.$post->id, [
             'title' => 'Can change post owner.',
             'user' => $user->id,
         ])->assertOk();
