@@ -146,18 +146,17 @@ Field::new('password')->showRequest(function ($value) {
 
 ## Append Callback
 
-Very often there is necessary to store a field as `auth()->user()->id`. This field could not be passed from the 
-frontend:
+Usually, there is necessary to store a field as `Auth::id()`. This field will be automatically populated by Restify if you specify the `append` value for it:
 
 ```php
-Field::new('user_id')->hidden()->append(auth()->user()->id);
+Field::new('user_id')->append(Auth::id());
 ```
 
 or using a closure:
 
 ```php
 Field::new('user_id')->hidden()->append(function(RestifyRequest $request, $model, $attribute) {
-    return auth()->user()->id;    
+    return $request->user()->id;
 });
 ```
 

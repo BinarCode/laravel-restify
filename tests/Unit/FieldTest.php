@@ -18,10 +18,10 @@ class FieldTest extends IntegrationTest
             return strtoupper($value);
         });
 
-        $field->resolveForIndex((object) ['name' => 'Binaryk'], 'name');
+        $field->resolveForIndex((object)['name' => 'Binaryk'], 'name');
         $this->assertEquals('BINARYK', $field->value);
 
-        $field->resolveForShow((object) ['name' => 'Binaryk'], 'name');
+        $field->resolveForShow((object)['name' => 'Binaryk'], 'name');
         $this->assertEquals('Binaryk', $field->value);
     }
 
@@ -31,10 +31,10 @@ class FieldTest extends IntegrationTest
             return strtoupper($value);
         });
 
-        $field->resolveForShow((object) ['name' => 'Binaryk'], 'name');
+        $field->resolveForShow((object)['name' => 'Binaryk'], 'name');
         $this->assertEquals('BINARYK', $field->value);
 
-        $field->resolveForIndex((object) ['name' => 'Binaryk'], 'name');
+        $field->resolveForIndex((object)['name' => 'Binaryk'], 'name');
         $this->assertEquals('Binaryk', $field->value);
     }
 
@@ -44,7 +44,7 @@ class FieldTest extends IntegrationTest
             return strtoupper($value);
         });
 
-        $field->resolve((object) ['name' => 'Eduard'], 'name');
+        $field->resolve((object)['name' => 'Eduard'], 'name');
 
         $this->assertEquals('EDUARD', $field->value);
     }
@@ -55,7 +55,7 @@ class FieldTest extends IntegrationTest
             return 'Computed';
         });
 
-        $field->resolveForIndex((object) []);
+        $field->resolveForIndex((object)[]);
 
         $this->assertEquals('Computed', $field->value);
     }
@@ -66,7 +66,7 @@ class FieldTest extends IntegrationTest
             return 'Resolved Title';
         });
 
-        $field->resolveForIndex((object) []);
+        $field->resolveForIndex((object)[]);
 
         $this->assertEquals('Resolved Title', $field->value);
     }
@@ -75,7 +75,7 @@ class FieldTest extends IntegrationTest
     {
         $field = Field::make('title')->default('Title');
 
-        $field->resolveForIndex((object) []);
+        $field->resolveForIndex((object)[]);
 
         $this->assertEquals('Title', data_get($field->jsonSerialize(), 'value'));
     }
@@ -189,6 +189,35 @@ class FieldTest extends IntegrationTest
         $this->assertEquals('title from request', $model->title);
     }
 
+    public function test_append_overwrite_the_request_value()
+    {
+        $request = new RepositoryStoreRequest([], []);
+
+        $request->setRouteResolver(function () use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {
+            }), function (Route $route) use ($request) {
+                $route->bind($request);
+                $route->setParameter('repository', PostRepository::uriKey());
+            });
+        });
+
+        $request->merge([
+            'title' => 'title from request',
+        ]);
+
+        $model = new class extends Model {
+            protected $fillable = ['title'];
+        };
+
+        /** * @var Field $field */
+        $field = Field::new('title')->append('Append value.');
+
+        $field->fillAttribute($request, $model);
+
+        $this->assertEquals('Append value.', $model->title);
+    }
+
+
     public function test_field_after_store_called()
     {
         $request = new RepositoryStoreRequest([], []);
@@ -265,13 +294,13 @@ class FieldTest extends IntegrationTest
     {
         $field = Field::make('name')->label('custom_label');
 
-        $field->resolveForIndex((object) ['name' => 'Binaryk'], 'name');
+        $field->resolveForIndex((object)['name' => 'Binaryk'], 'name');
 
         $this->assertEquals('custom_label', $field->label);
         $this->assertEquals('custom_label', $field->jsonSerialize()['attribute']);
     }
 
-    public function test_only_hidden_field_can_be_filled_from_the_append_value()
+    public function test_field_can_be_filled_from_the_append_value()
     {
         $request = new RepositoryStoreRequest([], []);
 
@@ -294,11 +323,12 @@ class FieldTest extends IntegrationTest
         $this->assertEquals('Append title', $model->title);
 
         /** * @var Field $field */
-        $field = Field::new('title')->append('Ignored title.');
+        $field = Field::new('title')->append('Visible title.');
 
-        $this->assertEquals('Append title', $model->title);
 
         $field->fillAttribute($request, $model);
+
+        $this->assertEquals('Visible title.', $model->title);
     }
 
     public function test_field_can_be_filled_from_the_append_callback()
@@ -317,7 +347,7 @@ class FieldTest extends IntegrationTest
         /** * @var Field $field */
         $field = Field::new('title')
             ->hidden()
-            ->append(fn () => 'Append title');
+            ->append(fn() => 'Append title');
 
         $field->fillAttribute($request, $model);
 
