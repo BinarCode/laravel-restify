@@ -25,6 +25,11 @@ public function fields(RestifyRequest $request)
 }
 ```
 
+:::tip `field` helper
+Instead of using the `Field` class, you can use the `field` helper. 
+For example: `Field::new('email')` => `field('email')`
+:::
+
 # Validation
 
 There is a gold rule saying - catch the exception as soon as possible on its request way. 
@@ -106,17 +111,17 @@ Another handy interceptor is the `storeCallback`, this is the step immediately b
 This interceptor may be useful for modifying the value passed through the `$request`.
 
 ```php
-Field::new('password')->storeCallback(function ($value) {
-        return Hash::new($value);
-    });
+Field::new('password')->storeCallback(function (RestifyRequest $request) {
+    return Hash::new($request->input('password'));
+});
 ```
 
 ## Update callback
 
 ```php
-Field::new('password')->updateCallback(function ($value) {
-        return Hash::new($value);
-    });
+Field::new('password')->updateCallback(function (RestifyRequest $request) { 
+    return Hash::new($request->input('password'));
+});
 ```
 ## Index Callback
 
