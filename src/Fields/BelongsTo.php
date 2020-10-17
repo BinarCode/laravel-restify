@@ -11,7 +11,6 @@ use Illuminate\Support\Str;
 class BelongsTo extends EagerField
 {
     /**
-     *
      * @var Closure
      */
     private $canAttachCallback;
