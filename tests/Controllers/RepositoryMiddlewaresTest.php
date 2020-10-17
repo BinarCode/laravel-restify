@@ -33,7 +33,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
             PostWithCustomMiddlewareRepository::class,
         ]);
 
-        $this->getJson('restify-api/post-with-middleware')
+        $this->getJson('post-with-middleware')
             ->assertStatus(200);
     }
 
@@ -47,7 +47,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
             PostWithCustomMiddlewareRepository::class,
         ]);
 
-        $this->getJson('restify-api/post-with-middleware')
+        $this->getJson('post-with-middleware')
             ->assertStatus(404);
     }
 
@@ -69,7 +69,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
             PostWithCustomMiddlewareRepository::class,
         ]);
 
-        $this->getJson('restify-api/posts')
+        $this->getJson('posts')
             ->assertStatus(200);
     }
 }

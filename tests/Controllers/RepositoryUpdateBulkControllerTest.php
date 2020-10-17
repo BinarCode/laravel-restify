@@ -21,7 +21,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
             'title' => 'First title',
         ]);
 
-        $this->post('/restify-api/posts/bulk/update', [
+        $this->post('posts/bulk/update', [
             [
                 'id' => $post1->id,
                 'title' => null,
@@ -41,7 +41,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
             'title' => 'Second title',
         ]);
 
-        $this->post('/restify-api/posts/bulk/update', [
+        $this->post('posts/bulk/update', [
             [
                 'id' => $post1->id,
                 'title' => 'Updated first title',

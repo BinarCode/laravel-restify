@@ -18,11 +18,11 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         PostRepository::$defaultPerPage = 5;
 
-        $response = $this->getJson('restify-api/posts');
+        $response = $this->getJson('posts');
 
         $this->assertCount(5, $response->json('data'));
 
-        $response = $this->getJson('restify-api/posts?perPage=10');
+        $response = $this->getJson('posts?perPage=10');
 
         $this->assertCount(10, $response->json('data'));
     }
@@ -47,7 +47,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         PostRepository::$search = ['title'];
 
-        $response = $this->getJson('restify-api/posts?search=code');
+        $response = $this->getJson('posts?search=code');
 
         $this->assertCount(2, $response->json('data'));
     }
@@ -67,7 +67,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         ]);
 
         $response = $this
-            ->getJson('restify-api/posts?title=Another one')
+            ->getJson('posts?title=Another one')
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -84,14 +84,14 @@ class RepositoryIndexControllerTest extends IntegrationTest
         factory(Post::class)->create(['title' => 'zzz']);
 
         $response = $this
-            ->getJson('restify-api/posts?sort=-title')
+            ->getJson('posts?sort=-title')
             ->assertStatus(200);
 
         $this->assertEquals('zzz', $response->json('data.0.attributes.title'));
         $this->assertEquals('aaa', $response->json('data.1.attributes.title'));
 
         $response = $this
-            ->getJson('restify-api/posts?order=-title')
+            ->getJson('posts?order=-title')
             ->assertStatus(200);
 
         $this->assertEquals('zzz', $response->json('data.1.attributes.title'));
@@ -106,7 +106,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         factory(Post::class)->create(['user_id' => $user->id]);
 
-        $response = $this->getJson('/restify-api/posts?related=user')
+        $response = $this->getJson('posts?related=user')
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data.0.relationships.user'));
@@ -121,7 +121,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         factory(Post::class, 20)->create(['user_id' => $user->id]);
 
-        $response = $this->getJson('/restify-api/posts?related=user&page=2')
+        $response = $this->getJson('posts?related=user&page=2')
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data.0.relationships.user'));
@@ -132,7 +132,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
     {
         factory(Post::class)->create();
 
-        $response = $this->get('/restify-api/posts')
+        $response = $this->get('posts')
             ->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [[
@@ -151,7 +151,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
     {
         factory(Post::class)->create();
 
-        $this->get('/restify-api/posts-mergeable')
+        $this->get('posts-mergeable')
             ->assertJsonStructure([
                 'data' => [[
                     'attributes' => [
@@ -170,7 +170,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             'title' => 'Post Title',
         ]);
 
-        $response = $this->get('/restify-api/posts')
+        $response = $this->get('posts')
             ->assertStatus(200)
             ->assertJsonStructure([
                 'meta' => [

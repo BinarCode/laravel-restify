@@ -12,13 +12,13 @@ class RepositoryDetachControllerTest extends IntegrationTest
         $user = $this->mockUsers(2)->first();
         $company = factory(Company::class)->create();
         $company->users()->attach($user->id);
-        $usersFromCompany = $this->getJson('/restify-api/users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
+        $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(1, $usersFromCompany->json('data'));
-        $this->postJson('restify-api/companies/'.$company->id.'/detach/users', [
+        $this->postJson('companies/'.$company->id.'/detach/users', [
             'users' => $user->id,
         ])
             ->assertStatus(204);
-        $usersFromCompany = $this->getJson('/restify-api/users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
+        $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(0, $usersFromCompany->json('data'));
     }
 
@@ -28,15 +28,15 @@ class RepositoryDetachControllerTest extends IntegrationTest
         $company = factory(Company::class)->create();
         $company->users()->attach($users->pluck('id'));
 
-        $usersFromCompany = $this->getJson('/restify-api/users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
+        $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(3, $usersFromCompany->json('data'));
 
-        $this->postJson('restify-api/companies/'.$company->id.'/detach/users', [
+        $this->postJson('companies/'.$company->id.'/detach/users', [
             'users' => [1, 2],
         ])
             ->assertStatus(204);
 
-        $usersFromCompany = $this->getJson('/restify-api/users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
+        $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(1, $usersFromCompany->json('data'));
     }
 }

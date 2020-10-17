@@ -12,7 +12,7 @@ class RepositoryAttachInterceptorTest extends IntegrationTest
         $role = factory(Role::class)->create();
         $user = $this->mockUsers()->first();
 
-        $this->postJson('restify-api/roles/'.$role->id.'/attach/users', [
+        $this->postJson('roles/'.$role->id.'/attach/users', [
             'users' => $user->id,
         ])
             ->assertCreated();

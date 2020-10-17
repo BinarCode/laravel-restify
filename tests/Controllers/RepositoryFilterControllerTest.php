@@ -16,7 +16,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
     {
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('restify-api/posts/filters');
+            ->getJson('posts/filters');
 
         $this->assertCount(4, $response->json('data'));
     }
@@ -34,7 +34,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('restify-api/posts?filters='.$filters)
+            ->getJson('posts?filters='.$filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -56,7 +56,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('restify-api/posts?filters='.$filters)
+            ->getJson('posts?filters='.$filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -76,7 +76,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withExceptionHandling()
-            ->getJson('restify-api/posts?filters='.$filters)
+            ->getJson('posts?filters='.$filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -100,7 +100,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withExceptionHandling()
-            ->getJson('restify-api/posts')
+            ->getJson('posts')
             ->assertStatus(200);
 
         $this->assertCount(2, $response->json('data'));

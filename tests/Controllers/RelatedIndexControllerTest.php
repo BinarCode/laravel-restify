@@ -19,7 +19,7 @@ class RelatedIndexControllerTest extends IntegrationTest
             factory(User::class)->create()->id
         );
 
-        $response = $this->getJson('restify-api/posts?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
+        $response = $this->getJson('posts?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
             ->assertStatus(200);
 
         $this->assertCount(10, $response->json('data'));
@@ -34,7 +34,7 @@ class RelatedIndexControllerTest extends IntegrationTest
             factory(User::class)->create()->id
         );
 
-        $response = $this->getJson('restify-api/posts?viaRepository=users&viaRepositoryId=1')
+        $response = $this->getJson('posts?viaRepository=users&viaRepositoryId=1')
             ->assertStatus(200);
 
         $this->assertCount(10, $response->json('data'));
@@ -55,10 +55,10 @@ class RelatedIndexControllerTest extends IntegrationTest
             'title' => 'Second Post',
         ]);
 
-        $this->getJson('restify-api/posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
+        $this->getJson('posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
             ->assertStatus(404);
 
-        $count = $this->getJson('restify-api/posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
+        $count = $this->getJson('posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
             ->assertStatus(200);
 
         $this->assertCount(1, $count->json());
@@ -70,15 +70,15 @@ class RelatedIndexControllerTest extends IntegrationTest
 
         factory(User::class)->create();
 
-        $this->postJson('restify-api/posts?viaRepository=users&viaRepositoryId=1&viaRelationship=posts', [
+        $this->postJson('posts?viaRepository=users&viaRepositoryId=1&viaRelationship=posts', [
             'title' => 'Created for the user 1',
         ])
             ->assertStatus(201);
 
-        $belongsFirst = $this->getJson('restify-api/posts?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
+        $belongsFirst = $this->getJson('posts?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
             ->assertStatus(200);
 
-        $belongsSecond = $this->getJson('restify-api/posts?viaRepository=users&viaRepositoryId=2&viaRelationship=posts')
+        $belongsSecond = $this->getJson('posts?viaRepository=users&viaRepositoryId=2&viaRelationship=posts')
             ->assertStatus(200);
 
         $this->assertCount(1, $belongsFirst->json('data'));
@@ -94,11 +94,11 @@ class RelatedIndexControllerTest extends IntegrationTest
 
         factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
 
-        $response = $this->putJson('restify-api/posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts', [
+        $response = $this->putJson('posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts', [
             'title' => 'Post updated title',
         ])->assertStatus(200);
 
-        $this->putJson('restify-api/posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts', [
+        $this->putJson('posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts', [
             'title' => 'Post updated title',
         ])->assertStatus(404);
 
@@ -114,9 +114,9 @@ class RelatedIndexControllerTest extends IntegrationTest
 
         factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
 
-        $this->deleteJson('restify-api/posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(204);
+        $this->deleteJson('posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(204);
 
-        $this->deleteJson('restify-api/posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(404);
+        $this->deleteJson('posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(404);
     }
 
     public function test_policy_check_before_destroy_post_belongs_to_a_user()
@@ -133,8 +133,8 @@ class RelatedIndexControllerTest extends IntegrationTest
 
         factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
 
-        $this->deleteJson('restify-api/posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(403);
+        $this->deleteJson('posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(403);
 
-        $this->deleteJson('restify-api/posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(404);
+        $this->deleteJson('posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(404);
     }
 }

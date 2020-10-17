@@ -9,9 +9,9 @@ class RepositoryCustomPrefixTest extends IntegrationTest
 {
     protected function setUp(): void
     {
-        PostRepository::$prefix = 'api/restify-api/v1';
+        PostRepository::$prefix = 'api/v1';
 
-        PostRepository::$indexPrefix = 'api/restify-api/index';
+        PostRepository::$indexPrefix = 'api/index';
 
         parent::setUp();
     }
@@ -26,19 +26,19 @@ class RepositoryCustomPrefixTest extends IntegrationTest
 
     public function test_repository_can_have_custom_prefix()
     {
-        $this->getJson('api/restify-api/index/'.PostRepository::uriKey())
+        $this->getJson('api/index/'.PostRepository::uriKey())
             ->assertSuccessful();
     }
 
     public function test_repository_prefix_block_default_route()
     {
-        $this->getJson('/restify-api/'.PostRepository::uriKey())
+        $this->getJson(PostRepository::uriKey())
             ->assertForbidden();
 
-        $this->getJson('api/restify-api/index/'.PostRepository::uriKey())
+        $this->getJson('api/index/'.PostRepository::uriKey())
             ->assertSuccessful();
 
-        $this->postJson('/restify-api/'.PostRepository::uriKey())
+        $this->postJson(PostRepository::uriKey())
             ->assertForbidden();
     }
 }

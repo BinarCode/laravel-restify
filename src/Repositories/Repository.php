@@ -951,7 +951,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public static function uriTo(Model $model)
     {
-        return Restify::path() . '/' . static::uriKey() . '/' . $model->getKey();
+        return Str::replaceFirst('//', '/', Restify::path() . '/' . static::uriKey() . '/' . $model->getKey());
     }
 
     public function availableFilters(RestifyRequest $request)
