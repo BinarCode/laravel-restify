@@ -6,10 +6,7 @@ use Binaryk\LaravelRestify\Models\LaravelRestifyModel;
 use Illuminate\Database\Query\Builder;
 use Mockery;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
-class SimpleUser extends LaravelRestifyModel
+class SampleUser extends LaravelRestifyModel
 {
     protected $guarded = [];
 

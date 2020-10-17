@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -107,5 +108,18 @@ class FieldCollection extends Collection
             ->filter(fn(Field $field) => $field->authorize($request))
             ->unique();
 
+    }
+
+    public function forBelongsTo(RestifyRequest $request): self
+    {
+        return $this
+            ->filter(fn(Field $field) => $field instanceof BelongsTo)
+            ->unique();
+
+    }
+
+    public function setRepository(Repository $repository): self
+    {
+        return $this->each(fn(Field $field) => $field->setRepository($repository));
     }
 }

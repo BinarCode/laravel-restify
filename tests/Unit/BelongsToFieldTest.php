@@ -29,7 +29,6 @@ class BelongsToFieldTest extends IntegrationTest
         ]);
 
         $this->getJson('/restify-api/' . PostWithUserRepository::uriKey())
-            ->dump()
             ->assertJsonStructure([
                 'data' => [
                     [
@@ -52,10 +51,25 @@ class BelongsToFieldTest extends IntegrationTest
         ]);
 
         $this->postJson('/restify-api/' . PostWithUserRepository::uriKey(), [
-                'title' => 'New Post with user',
-                'user' => [$user->id],
-            ])
-            ->assertCreated();
+            'title' => 'Create post with owner.',
+            'user' => $user->id,
+        ])->assertCreated();
+    }
+
+    public function test_belongs_to_field_is_used_when_updating()
+    {
+        $user = factory(User::class)->create();
+
+        $post = factory(Post::class)->create([
+            'user_id' => factory(User::class),
+        ]);
+
+        $this->put('/restify-api/' . PostWithUserRepository::uriKey() . '/' . $post->id, [
+            'title' => 'Can change post owner.',
+            'user' => $user->id,
+        ])->assertOk();
+
+        $this->assertSame($post->fresh()->user->id, $user->id);
     }
 }
 

@@ -11,6 +11,13 @@ class RoleRepository extends Repository
 {
     public static $model = Role::class;
 
+    public function fields(RestifyRequest $request)
+    {
+        return [
+            field('name'),
+        ];
+    }
+
     public function attachUsers(RestifyRequest $request, Repository $repository, Model $model)
     {
         ModelHasRole::create([

@@ -15,6 +15,8 @@ class CompanyRepository extends Repository
     public function fields(RestifyRequest $request)
     {
         return [
+            field('name'),
+
             BelongsToMany::make('users', 'users', UserRepository::class)->withPivot(
                 Field::make('is_admin')->rules('required')
             ),

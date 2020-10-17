@@ -9,7 +9,6 @@ use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
-use Binaryk\LaravelRestify\Fields\HasField;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -289,17 +288,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $method = 'fieldsForUpdateBulk';
         }
 
-        $fields = FieldCollection::make(array_values($this->filter($this->{$method}($request))));
-
-        if ($this instanceof Mergeable) {
-            $fillable = collect($this->resource->getFillable())
-                ->filter(fn($attribute) => $fields->contains('attribute', $attribute) === false)
-                ->map(fn($attribute) => Field::new($attribute));
-
-            $fields = $fields->merge($fillable);
-        }
-
-        return $fields->merge($this->extraFields($request))->each->setRepository($this);
+        return FieldCollection::make(
+            array_values($this->filter($this->{$method}($request)))
+        )->merge(
+            $this->extraFields($request)
+        )->setRepository($this);
     }
 
     public function extraFields(RestifyRequest $request): array
@@ -625,8 +618,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             static::fillFields(
                 $request, $this->resource,
                 $fields = $this->collectFields($request)
-                    ->forStore($request)
+                    ->forStore($request, $this)
                     ->authorizedStore($request)
+                    ->merge($this->collectFields($request)->forBelongsTo($request))
             );
 
             if ($request->isViaRepository()) {
@@ -690,8 +684,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         DB::transaction(function () use ($request) {
             $fields = $this->collectFields($request)
-                ->forUpdate($request)
-                ->authorizedUpdate();
+                ->forUpdate($request, $this)
+                ->authorizedUpdate($request)
+                ->merge($this->collectFields($request)->forBelongsTo($request));
 
             static::fillFields($request, $this->resource, $fields);
 

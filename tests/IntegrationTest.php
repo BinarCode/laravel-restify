@@ -67,6 +67,7 @@ abstract class IntegrationTest extends TestCase
     {
         $app['config']->set('database.default', 'sqlite');
         $app['config']->set('auth.providers.users.model', User::class);
+        $app['config']->set('restify.base', '/');
 
         $app['config']->set('database.connections.sqlite', [
             'driver' => 'sqlite',
