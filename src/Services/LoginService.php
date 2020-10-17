@@ -34,7 +34,7 @@ class LoginService
         }
 
         if ($this->attemptLogin($request)) {
-            if (($user = $this->guard()->user()) instanceof MustVerifyEmail && !$user->hasVerifiedEmail()) {
+            if (($user = $this->guard()->user()) instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
                 return abort(401, 'User must verify email.');
             }
 

@@ -22,10 +22,9 @@ class EnsureJsonApiHeaderMiddleware
     public function handle($request, Closure $next, $guard = null)
     {
         if (! collect($this->acceptHeaders)->contains($request->header('Accept'))) {
-            abort(400, "Missing or invalid Accept header.");
+            abort(400, 'Missing or invalid Accept header.');
         }
 
         return $next($request);
     }
-
 }
