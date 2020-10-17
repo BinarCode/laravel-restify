@@ -35,7 +35,7 @@ class BelongsToManyFieldTest extends IntegrationTest
                 'data' => [[
                     'relationships' => [
                         'users' => [],
-                    ],],
+                    ], ],
                 ],
             ])->assertJsonCount(5, 'data.0.relationships.users');
     }
@@ -56,8 +56,8 @@ class BelongsToManyFieldTest extends IntegrationTest
             'data' => [
                 'relationships' => [
                     'users' => [],
-                ]
-            ]
+                ],
+            ],
         ]);
     }
 }
