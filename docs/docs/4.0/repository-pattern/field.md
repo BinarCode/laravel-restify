@@ -163,9 +163,12 @@ Field::new('user_id')->hidden()->append(function(RestifyRequest $request, $model
 ## Field label
 
 Field label, so you can replace a field attribute spelling when it is returned to the frontend:
+
 ```
 Field::new('created_at')->label('sent_at')
 ```
+
+Of course if you want to populate this value from a frontend request, you can use the label as a payload key.
 
 ## Hidden field
 Field can be setup as hidden:

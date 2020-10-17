@@ -212,22 +212,22 @@ class Field extends OrganicField implements JsonSerializable
 
         if (is_callable($this->fillCallback)) {
             return call_user_func(
-                $this->fillCallback, $request, $model, $this->attribute, $bulkRow
+                $this->fillCallback, $request, $model, $this->label ?? $this->attribute, $bulkRow
             );
         }
 
         if ($this->isHidden($request)) {
             return $this->fillAttributeFromAppend(
-                $request, $model, $this->attribute
+                $request, $model, $this->label ?? $this->attribute
             );
         }
 
         $this->fillAttributeFromRequest(
-            $request, $model, $this->attribute, $bulkRow
+            $request, $model, $this->label ?? $this->attribute, $bulkRow
         );
 
         $this->fillAttributeFromAppend(
-            $request, $model, $this->attribute, $bulkRow
+            $request, $model, $this->label ?? $this->attribute, $bulkRow
         );
 
         return $this;
@@ -247,9 +247,9 @@ class Field extends OrganicField implements JsonSerializable
             ? $attribute
             : "{$bulkRow}.{$attribute}";
 
-        tap(($request->input($attribute) ?? $request[$attribute]), fn($value) => $model->{Str::after($attribute, '.')} = is_callable($cb = $this->guessFillableMethod($request))
+        tap(($request->input($attribute) ?? $request[$attribute]), fn($value) => $model->{$this->attribute} = is_callable($cb = $this->guessFillableMethod($request))
             ? call_user_func($cb, $value, $request, $model, $attribute, $bulkRow)
-            : ($request->has($attribute) ? $value : $model->{$attribute})
+            : ($request->has($attribute) ? $value : $model->{$this->attribute})
         );
     }
 

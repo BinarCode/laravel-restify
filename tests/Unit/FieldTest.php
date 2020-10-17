@@ -300,6 +300,35 @@ class FieldTest extends IntegrationTest
         $this->assertEquals('custom_label', $field->jsonSerialize()['attribute']);
     }
 
+    public function test_fill_field_using_label_key()
+    {
+        $request = new RepositoryStoreRequest([], []);
+
+        $request->setRouteResolver(function () use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {
+            }), function (Route $route) use ($request) {
+                $route->bind($request);
+                $route->setParameter('repository', PostRepository::uriKey());
+            });
+        });
+
+        $request->merge([
+            'custom_title' => 'title from request',
+        ]);
+
+        $model = new class extends Model {
+            protected $fillable = ['title'];
+        };
+
+        /** * @var Field $field */
+        $field = Field::new('title')->label('custom_title');
+
+        $field->fillAttribute($request, $model);
+
+        $this->assertEquals('title from request', $model->title);
+    }
+
+
     public function test_field_can_be_filled_from_the_append_value()
     {
         $request = new RepositoryStoreRequest([], []);
