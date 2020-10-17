@@ -19,7 +19,6 @@ class HasOne extends HasField
         $this->repositoryClass = $parentRepository;
     }
 
-
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
         //

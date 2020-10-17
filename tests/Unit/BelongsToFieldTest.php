@@ -28,7 +28,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->getJson('/restify-api/' . PostWithUserRepository::uriKey())
+        $this->getJson('/restify-api/'.PostWithUserRepository::uriKey())
             ->dump()
             ->assertJsonStructure([
                 'data' => [
@@ -51,10 +51,10 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->postJson('/restify-api/' . PostWithUserRepository::uriKey(), [
-                'title' => 'New Post with user',
-                'user' => [$user->id],
-            ])
+        $this->postJson('/restify-api/'.PostWithUserRepository::uriKey(), [
+            'title' => 'New Post with user',
+            'user' => [$user->id],
+        ])
             ->assertCreated();
     }
 }
