@@ -973,6 +973,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function isEagerState(): bool
     {
-       return $this->eagerState === true;
+        return $this->eagerState === true;
     }
 }
