@@ -101,7 +101,7 @@ class FieldCollection extends Collection
         });
     }
 
-    public function forEager(RestifyRequest $request): self
+    public function forEager(RestifyRequest $request, Repository  $repository): self
     {
         return $this
             ->filter(fn (Field $field) => $field instanceof EagerField)

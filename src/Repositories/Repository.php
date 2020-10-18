@@ -495,9 +495,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         $withs = collect();
 
-        $this->collectFields($request)
-            ->forEager($request)
-            ->each(fn (EagerField $field) => $withs->put($field->attribute, $field->resolve($this)->value));
+        /** * To avoid circular relationships and deep stack calls, we will do not load eager fields. */
+        if (! $this->isEagerState()) {
+            $this->collectFields($request)
+                ->forEager($request, $this)
+                ->each(fn (EagerField $field) => $withs->put($field->attribute, $field->resolve($this)->value));
+        }
 
         collect(str_getcsv($request->input('related')))
             ->filter(fn ($relation) => in_array($relation, static::getRelated()))
@@ -966,5 +969,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $this->eagerState = $state;
 
         return $this;
+    }
+
+    public function isEagerState(): bool
+    {
+       return $this->eagerState === true;
     }
 }

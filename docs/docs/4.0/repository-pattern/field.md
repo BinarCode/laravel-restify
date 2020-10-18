@@ -172,8 +172,14 @@ Of course if you want to populate this value from a frontend request, you can us
 
 ## Hidden field
 Field can be setup as hidden:
-```
+```php
 Field::new('token')->hidden(); // this will not be visible 
+```
+
+However, you can populate the field value when the entity is stored, by using `append`:
+
+```php
+Field::new('token')->append(Str::random(32))->hidden();
 ```
 
 # Variations
@@ -185,6 +191,7 @@ Bellow we have a list of fields used for the related resources.
 Let's assume each post belongs to a user. If we want to return the post owner we can do this from the fields:
 
 ```php
+    // PostRepository
     public function fields(RestifyRequest $request)
     {
         return [
@@ -202,17 +209,19 @@ Now look, the response of the `api/restify/posts/1` will have this format:
 ```json
 {
     "data": {
-        "id": "91ad693b-a270-428f-bc6c-9f7eabc1b16d",
+        "id": "91c2bdd0-bf6f-4717-b1c4-a6131843ba56",
         "type": "posts",
         "attributes": {
-            "title": "Est laudantium dolore dolores laudantium.",
-            "description": "Debitis nihil esse corrupti veniam.",
+            "title": "Culpa qui accusamus eaque sint.",
+            "description": "Id illo et quidem nobis reiciendis molestiae."
+        },
+        "relationships": {
             "owner": {
-                "id": "17",
+                "id": "3",
                 "type": "users",
                 "attributes": {
-                    "name": "Eveniet ex excepturi ipsum.",
-                    "email": "darren.skiles@fritsch.com"
+                    "name": "Laborum vel esse dolorem amet consequatur.",
+                    "email": "jacobi.ferne@gmail.com",
                 },
                 "meta": {
                     "authorizedToShow": true,
@@ -272,9 +281,16 @@ return Auth::user()->is($userToBeAttached);
 The `HasOne` field corresponds to a `hasOne` Eloquent relationship. For example, let's assume a `User` model `hasOne` `Phone` model. We may add the relationship to our `UserRepository` like so:
 
 ```php
+// UserRepository
+ public function fields(RestifyRequest $request)
+    {
+        return [
+            Field::new('name'),
 
+            HasOne::new('phone', 'phone', PhoneRepository::class),
+        ];
+    }
 ```
-
 
 ## HasMany
 

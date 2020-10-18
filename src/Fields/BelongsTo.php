@@ -33,7 +33,7 @@ class BelongsTo extends EagerField
 
         $this->value = $this->repositoryClass::resolveWith(
             $model->{$this->relation}()->first()
-        );
+        )->eagerState();
 
         return $this;
     }
