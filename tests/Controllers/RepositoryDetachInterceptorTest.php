@@ -35,12 +35,11 @@ class RepositoryDetachInterceptorTest extends IntegrationTest
         $user = $this->mockUsers()->first();
         $role->users()->attach($user->id);
 
-
         $_SERVER['roles.canDetach.users'] = true;
 
         $this->assertCount(1, $role->users()->get());
 
-        $this->postJson('roles/' . $role->id . '/detach/users', [
+        $this->postJson('roles/'.$role->id.'/detach/users', [
             'users' => $user->id,
         ])->assertSuccessful();
 
@@ -48,7 +47,7 @@ class RepositoryDetachInterceptorTest extends IntegrationTest
 
         $_SERVER['roles.canDetach.users'] = false;
 
-        $this->postJson('roles/' . $role->id . '/detach/users', [
+        $this->postJson('roles/'.$role->id.'/detach/users', [
             'users' => $user->id,
         ])->assertForbidden();
     }
@@ -64,6 +63,7 @@ class RepositoryDetachInterceptorTest extends IntegrationTest
                     ->canDetach(function ($request, $pivot) {
                         $this->assertInstanceOf(RestifyRequest::class, $request);
                         $this->assertInstanceOf(Pivot::class, $pivot);
+
                         return true;
                     })
                     ->detachCallback(function ($request, $repository, Role $model) {
@@ -72,7 +72,7 @@ class RepositoryDetachInterceptorTest extends IntegrationTest
                         $this->assertInstanceOf(Model::class, $model);
 
                         $model->users()->detach($request->input('users'));
-                    })
+                    }),
             ]);
 
         $role = factory(Role::class)->create();
@@ -81,18 +81,16 @@ class RepositoryDetachInterceptorTest extends IntegrationTest
 
         $this->assertCount(1, $role->users()->get());
 
-
-        $this->postJson('roles/' . $role->id . '/detach/users', [
+        $this->postJson('roles/'.$role->id.'/detach/users', [
             'users' => $user->id,
-        ]) ->assertSuccessful();
-
+        ])->assertSuccessful();
 
         $this->assertCount(0, $role->users()->get());
     }
 
-        public function test_detach_uses_repository_resolver()
-        {
-            RoleRepository::partialMock()
+    public function test_detach_uses_repository_resolver()
+    {
+        RoleRepository::partialMock()
                 ->expects('getDetachers')
                 ->twice()
                 ->andReturn([
@@ -105,16 +103,16 @@ class RepositoryDetachInterceptorTest extends IntegrationTest
                     },
                 ]);
 
-            $role = factory(Role::class)->create();
-            $user = $this->mockUsers()->first();
-            $role->users()->attach($user->id);
+        $role = factory(Role::class)->create();
+        $user = $this->mockUsers()->first();
+        $role->users()->attach($user->id);
 
-            $this->assertCount(1, $role->users()->get());
+        $this->assertCount(1, $role->users()->get());
 
-            $this->postJson('roles/' . $role->id . '/detach/users', [
-                'users' => $user->id,
-            ])->assertSuccessful();
+        $this->postJson('roles/'.$role->id.'/detach/users', [
+            'users' => $user->id,
+        ])->assertSuccessful();
 
-            $this->assertCount(0, $role->users()->get());
-        }
+        $this->assertCount(0, $role->users()->get());
+    }
 }

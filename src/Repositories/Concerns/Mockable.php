@@ -21,7 +21,6 @@ trait Mockable
      */
     public static $resolvedInstance;
 
-
     /**
      * Initiate a partial mock on the facade.
      *

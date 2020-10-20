@@ -212,14 +212,14 @@ trait InteractWithRepositories
     {
         $parent = $this->repository($this->viaRepository);
 
-        return once(fn() => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
+        return once(fn () => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
     }
 
     public function scopedViaParentModel()
     {
         $parent = $this->repository($this->viaRepository);
 
-        return once(fn() => $parent::newModel()->newQuery()->whereKey($this->viaRepositoryId)->firstOrFail());
+        return once(fn () => $parent::newModel()->newQuery()->whereKey($this->viaRepositoryId)->firstOrFail());
     }
 
     public function viaQuery()

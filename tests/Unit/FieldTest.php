@@ -327,7 +327,6 @@ class FieldTest extends IntegrationTest
         $this->assertEquals('title from request', $model->title);
     }
 
-
     public function test_field_can_be_filled_from_the_append_value()
     {
         $request = new RepositoryStoreRequest([], []);
