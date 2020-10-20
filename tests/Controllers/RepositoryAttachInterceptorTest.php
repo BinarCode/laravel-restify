@@ -28,7 +28,7 @@ class RepositoryAttachInterceptorTest extends IntegrationTest
 
         $_SERVER['roles.canAttach.users'] = true;
 
-        $this->postJson('roles/' . $role->id . '/attach/users', [
+        $this->postJson('roles/'.$role->id.'/attach/users', [
             'users' => $user->id,
         ])->assertCreated();
 
@@ -36,7 +36,7 @@ class RepositoryAttachInterceptorTest extends IntegrationTest
 
         $_SERVER['roles.canAttach.users'] = false;
 
-        $this->postJson('roles/' . $role->id . '/attach/users', [
+        $this->postJson('roles/'.$role->id.'/attach/users', [
             'users' => $user->id,
         ])->assertForbidden();
     }
@@ -54,6 +54,7 @@ class RepositoryAttachInterceptorTest extends IntegrationTest
                     ->canAttach(function ($request, $pivot) {
                         $this->assertInstanceOf(RestifyRequest::class, $request);
                         $this->assertInstanceOf(Pivot::class, $pivot);
+
                         return true;
                     })
                     ->attachCallback(function ($request, $repository, Role $model) {
@@ -62,7 +63,7 @@ class RepositoryAttachInterceptorTest extends IntegrationTest
                         $this->assertInstanceOf(Model::class, $model);
 
                         $model->users()->attach($request->input('users'));
-                    })
+                    }),
             ]);
 
         $role = factory(Role::class)->create();
@@ -71,7 +72,7 @@ class RepositoryAttachInterceptorTest extends IntegrationTest
 
         $user = $this->mockUsers()->first();
 
-        $this->postJson('roles/' . $role->id . '/attach/users', [
+        $this->postJson('roles/'.$role->id.'/attach/users', [
             'users' => $user->id,
         ])->assertSuccessful();
 

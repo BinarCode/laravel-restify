@@ -15,14 +15,14 @@ class BelongsToMany extends EagerField
     /**
      * Callback used to attach.
      *
-     * @var Closure $attachCallback
+     * @var Closure
      */
     public $attachCallback;
 
     /**
      * Callback used to detach.
      *
-     * @var Closure $detachCallback
+     * @var Closure
      */
     public $detachCallback;
 

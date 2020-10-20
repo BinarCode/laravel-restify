@@ -24,7 +24,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
         $company->users()->attach($user->id);
         $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(1, $usersFromCompany->json('data'));
-        $this->postJson('companies/' . $company->id . '/detach/users', [
+        $this->postJson('companies/'.$company->id.'/detach/users', [
             'users' => $user->id,
         ])->assertStatus(204);
 
@@ -41,7 +41,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
         $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(3, $usersFromCompany->json('data'));
 
-        $this->postJson('companies/' . $company->id . '/detach/users', [
+        $this->postJson('companies/'.$company->id.'/detach/users', [
             'users' => [1, 2],
         ])->assertStatus(204);
 
@@ -57,7 +57,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
         $company = factory(Company::class)->create();
         $company->users()->attach($users->pluck('id'));
 
-        $this->postJson('companies/' . $company->id . '/detach/users', [
+        $this->postJson('companies/'.$company->id.'/detach/users', [
             'users' => [1, 2],
         ])->assertForbidden();
     }
@@ -72,7 +72,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
             factory(User::class)->create()
         );
 
-        $this->postJson('companies/' . $company->id . '/attach/users', [
+        $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -80,7 +80,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
 
         $_SERVER['allow_detach_users'] = false;
 
-        $this->postJson('companies/' . $company->id . '/detach/users', [
+        $this->postJson('companies/'.$company->id.'/detach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -88,7 +88,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
 
         $_SERVER['allow_detach_users'] = true;
 
-        $this->postJson('companies/' . $company->id . '/detach/users', [
+        $this->postJson('companies/'.$company->id.'/detach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
