@@ -15,11 +15,10 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers(2)->first();
         $company = factory(Company::class)->create();
 
-        $response = $this->postJson('companies/'.$company->id.'/attach/users', [
+        $response = $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
-        ])
-            ->assertStatus(201);
+        ])->assertStatus(201);
 
         $response->assertJsonFragment([
             'company_id' => '1',
@@ -33,7 +32,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers(2)->first();
         $company = factory(Company::class)->create();
 
-        $this->postJson('companies/'.$company->id.'/attach/users', [
+        $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
         ])
             ->assertStatus(400);
@@ -46,7 +45,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(0, $usersFromCompany->json('data'));
 
-        $response = $this->postJson('companies/'.$company->id.'/attach/users', [
+        $response = $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => [1, 2],
             'is_admin' => true,
         ])
@@ -70,7 +69,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users')
             ->assertJsonCount(0, 'data');
 
-        $this->postJson('companies/'.$company->id.'/attach/users', [
+        $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ]);
@@ -91,7 +90,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $_SERVER['allow_attach_users'] = false;
 
-        $this->postJson('companies/'.$company->id.'/attach/users', [
+        $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -99,43 +98,10 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $_SERVER['allow_attach_users'] = true;
 
-        $this->postJson('companies/'.$company->id.'/attach/users', [
+        $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
             ->assertCreated();
-    }
-
-    public function test_policy_to_detach_a_user_to_a_company()
-    {
-        Gate::policy(Company::class, CompanyPolicy::class);
-
-        $user = $this->mockUsers(2)->first();
-        $company = factory(Company::class)->create();
-        $this->authenticate(
-            factory(User::class)->create()
-        );
-
-        $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
-            'is_admin' => true,
-        ])
-            ->assertCreated();
-
-        $_SERVER['allow_detach_users'] = false;
-
-        $this->postJson('companies/'.$company->id.'/detach/users', [
-            'users' => $user->id,
-            'is_admin' => true,
-        ])
-            ->assertForbidden();
-
-        $_SERVER['allow_detach_users'] = true;
-
-        $this->postJson('companies/'.$company->id.'/detach/users', [
-            'users' => $user->id,
-            'is_admin' => true,
-        ])
-            ->assertNoContent();
     }
 }

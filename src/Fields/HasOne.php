@@ -5,7 +5,7 @@ namespace Binaryk\LaravelRestify\Fields;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
-class HasOne extends HasField
+class HasOne extends EagerField
 {
     public function __construct($attribute, $relation, $parentRepository)
     {

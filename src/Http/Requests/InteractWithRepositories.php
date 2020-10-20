@@ -63,7 +63,9 @@ trait InteractWithRepositories
                 ->thenReturn();
         });
 
-        return $repository::resolveWith($repository::newModel());
+        return $repository::isMock()
+            ? $repository::getMock()
+            : $repository::resolveWith($repository::newModel());
     }
 
     /**
@@ -210,14 +212,14 @@ trait InteractWithRepositories
     {
         $parent = $this->repository($this->viaRepository);
 
-        return once(fn () => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
+        return once(fn() => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
     }
 
     public function scopedViaParentModel()
     {
         $parent = $this->repository($this->viaRepository);
 
-        return once(fn () => $parent::newModel()->newQuery()->whereKey($this->viaRepositoryId)->firstOrFail());
+        return once(fn() => $parent::newModel()->newQuery()->whereKey($this->viaRepositoryId)->firstOrFail());
     }
 
     public function viaQuery()

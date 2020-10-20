@@ -9,9 +9,6 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryDestroyControllerTest extends IntegrationTest
 {
     protected function setUp(): void

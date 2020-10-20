@@ -243,7 +243,7 @@ Now look, the response of the `api/restify/posts/1` will have this format:
 
 How cool is that :-)
 
-Sure, having a BelongsTo relationship, you have to attach posts to the user. This is when the Restify become very handy. You only have to put the same attribute field with the id of the related resource in the payload:
+Sure, having a `BelongsTo` relationship, you have to attach posts to the user. This is when the Restify become very handy. You only have to put the same attribute field with the id of the related resource in the payload:
 
 ```http request
 POST: http://restify-app.test/api/restify/posts
@@ -258,16 +258,16 @@ Payload:
 }
 ```
 
-You should add the policy method against attaching in the policy. Let's think of it like this, we want to attach a user to a newly created post, this means we need to add the policy into the PostPolicy with the name `attachUser`
+You should add the policy method against attaching in the policy. Let's think of it like this, we want to attach a user to a newly created post, this means we need to add the policy into the `PostPolicy` called `attachUser`:
 
 ```php
-    public function attachUser(User $authenticatedUser, Post $createdPost, User $userToBeAttached) 
-    {
-        return $authenticatedUser->is($userToBeAttached);
-    }
+public function attachUser(User $authenticatedUser, Post $createdPost, User $userToBeAttached) 
+{
+    return $authenticatedUser->is($userToBeAttached);
+}
 ```
 
-The `attach` policy could be used to the `BelongsTo` field as well, it should return true or false:
+The `attach` policy could be used to the `BelongsTo` field as well, it should return `true` or `false`:
 
 ```php
 BelongsTo::make('owner', 'user', UserRepository::class)
@@ -283,23 +283,22 @@ The `HasOne` field corresponds to a `hasOne` Eloquent relationship. For example,
 ```php
 // UserRepository
  public function fields(RestifyRequest $request)
-    {
-        return [
-            Field::new('name'),
+{
+    return [
+        Field::new('name'),
 
-            HasOne::new('phone', 'phone', PhoneRepository::class),
-        ];
-    }
+        HasOne::new('phone', 'phone', PhoneRepository::class),
+    ];
+}
 ```
 
 ## HasMany
 
-The HasMany relationship simply will return a list of related entities.
-
+The `HasMany` relationship simply will return a list of related entities.
 
 ```php
-    // UserRepository -> fields()
-    HasMany::make('posts', 'posts', PostRepository::class),
+// UserRepository@fields()
+HasMany::make('posts', 'posts', PostRepository::class),
 ```
 
 So you will get back the `posts` relationship: 
@@ -340,20 +339,31 @@ So you will get back the `posts` relationship:
 }
 ```
 
+`HasMany` field returns 15 entries in the `relationships`. This could be customizable from the repository class using: 
+
+```php
+public static $defaultRelatablePerPage = 100;
+```
+
+You can also use the query `?relatablePerPage=100`.
+
+:::warning Relatable per page
+When using `relatablePerPage` query param, it will paginate all relatable entities with that size.
+:::
 
 ## BelongsToMany
 
 The `BelongsToMany` field corresponds to a `belongsToMany` Eloquent relationship. For example, let's assume a User model belongsToMany Role models. We may add the relationship to our UserRepository like so:
 
 ```php
-    BelongsToMany::make('roles', 'roles', RoleRepository::class),
+BelongsToMany::make('roles', 'roles', RoleRepository::class),
 ```
 
 ### Pivot fields
 
 If your `belongsToMany` relationship interacts with additional "pivot" attributes that are stored on the intermediate table of the `many-to-many` relationship, you may also attach those to your `BelongsToMany` Restify Field. Once these fields are attached to the relationship field, and the relationship has been defined on both sides, they will be displayed on the request.
 
-For example, let's assume our User model `belongsToMany` Role models. On our `user_role` intermediate table, let's imagine we have a `policy` field that contains some simple text about the relationship. We can attach this pivot field to the `BelongsToMany` field using the fields method:
+For example, let's assume our `User` model `belongsToMany` Role models. On our `user_role` intermediate table, let's imagine we have a `policy` field that contains some simple text about the relationship. We can attach this pivot field to the `BelongsToMany` field using the fields method:
 
 ```php
 BelongsToMany::make('roles', 'roles', RoleRepository::class)->withPivot(
@@ -402,6 +412,8 @@ Using the payload:
   "roles": [1]
 }
 ```
+
+### 
 
 ### Custom attach method
 

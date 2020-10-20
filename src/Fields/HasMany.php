@@ -5,12 +5,12 @@ namespace Binaryk\LaravelRestify\Fields;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
-class HasMany extends HasField
+class HasMany extends EagerField
 {
     public function __construct($attribute, $relation, $parentRepository)
     {
-        if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
+        if (!is_a(app($parentRepository), Repository::class)) {
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
         }
 
         parent::__construct($attribute);
