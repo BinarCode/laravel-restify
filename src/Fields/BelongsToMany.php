@@ -3,11 +3,29 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Closure;
 use Illuminate\Support\Collection;
 
-class BelongsToMany extends HasField
+class BelongsToMany extends EagerField
 {
+    use Attachable;
+
+    /**
+     * Callback used to attach.
+     *
+     * @var Closure
+     */
+    public $attachCallback;
+
+    /**
+     * Callback used to detach.
+     *
+     * @var Closure
+     */
+    public $detachCallback;
+
     /**
      * The pivot table columns to retrieve.
      *
@@ -66,5 +84,19 @@ class BelongsToMany extends HasField
     public function collectPivotFields(): Collection
     {
         return collect($this->pivotFields);
+    }
+
+    public function attachCallback(Closure $callback)
+    {
+        $this->attachCallback = $callback;
+
+        return $this;
+    }
+
+    public function detachCallback(Closure $callback)
+    {
+        $this->detachCallback = $callback;
+
+        return $this;
     }
 }

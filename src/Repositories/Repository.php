@@ -13,6 +13,8 @@ use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\CreationAware;
+use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
+use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
@@ -47,7 +49,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         ResolvesActions,
         RepositoryEvents,
         WithRoutePrefix,
-        InteractWithFields;
+        InteractWithFields,
+        InteractsWithAttachers,
+        Mockable;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -134,6 +138,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var array
      */
     public static $attachers = [];
+
+    /**
+     * The list of detach callable's.
+     *
+     * @var array
+     */
+    public static $detachers = [];
 
     /**
      * Indicates if the repository is serializing for a eager relationship.
@@ -322,6 +333,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public static function resolveWith($model)
     {
+        if (static::isMock()) {
+            return static::getMock();
+        }
+
         /** * @var Repository $self */
         $self = resolve(static::class);
 
@@ -718,25 +733,17 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function attach(RestifyRequest $request, $repositoryId, Collection $pivots)
     {
-        /**
-         * @var BelongsToMany $field
-         */
-        $field = $request->newRepository()
-            ->collectFields($request)
-            ->filterForManyToManyRelations()
-            ->firstWhere('attribute', $request->relatedRepository);
+        $eagerField = $this->authorizeBelongsToMany($request)->belongsToManyField($request);
 
-        if (is_null($field)) {
-            $class = class_basename($request->repository());
-            abort(400, "Missing BelongsToMany or MorphToMany field for [{$request->relatedRepository}]. This field should be in the [{$class}] class.");
-        }
+        DB::transaction(function () use ($request, $pivots, $eagerField) {
+            $fields = $eagerField->collectPivotFields()->filter(fn ($pivotField) => $request->has($pivotField->attribute))->values();
 
-        DB::transaction(function () use ($request, $pivots, $field) {
-            $fields = collect($field->pivotFields)->filter(fn ($pivotField) => $request->has($pivotField->attribute))->values();
-
-            $pivots->map(function ($pivot) use ($request, $fields) {
+            $pivots->map(function ($pivot) use ($request, $fields, $eagerField) {
                 static::validatorForAttach($request)->validate();
+
                 static::fillFields($request, $pivot, $fields);
+
+                $eagerField->authorizeToAttach($request, $pivot);
 
                 return $pivot;
             })->each->save();
@@ -749,8 +756,20 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
     {
-        $deleted = DB::transaction(function () use ($pivots) {
-            return $pivots->map(fn ($pivot) => $pivot->delete());
+        /** * @var BelongsToMany $eagerField */
+        $eagerField = $request->newRepository()
+            ->collectFields($request)
+            ->filterForManyToManyRelations($request)
+            ->firstWhere('attribute', $request->relatedRepository);
+
+        if (is_null($eagerField)) {
+            $class = class_basename($request->repository());
+            abort(400, "Missing BelongsToMany or MorphToMany field for [{$request->relatedRepository}]. This field should be in the [{$class}] class.");
+        }
+
+        $deleted = DB::transaction(function () use ($pivots, $eagerField, $request) {
+            return $pivots
+                ->map(fn ($pivot) => $eagerField->authorizeToDetach($request, $pivot) && $pivot->delete());
         });
 
         return $this->response()
@@ -962,6 +981,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static function getAttachers(): array
     {
         return static::$attachers;
+    }
+
+    public static function getDetachers(): array
+    {
+        return static::$detachers;
     }
 
     public function eagerState($state = true): Repository

@@ -18,8 +18,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $response = $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
-        ])
-            ->assertStatus(201);
+        ])->assertStatus(201);
 
         $response->assertJsonFragment([
             'company_id' => '1',
@@ -104,38 +103,5 @@ class RepositoryAttachControllerTest extends IntegrationTest
             'is_admin' => true,
         ])
             ->assertCreated();
-    }
-
-    public function test_policy_to_detach_a_user_to_a_company()
-    {
-        Gate::policy(Company::class, CompanyPolicy::class);
-
-        $user = $this->mockUsers(2)->first();
-        $company = factory(Company::class)->create();
-        $this->authenticate(
-            factory(User::class)->create()
-        );
-
-        $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
-            'is_admin' => true,
-        ])
-            ->assertCreated();
-
-        $_SERVER['allow_detach_users'] = false;
-
-        $this->postJson('companies/'.$company->id.'/detach/users', [
-            'users' => $user->id,
-            'is_admin' => true,
-        ])
-            ->assertForbidden();
-
-        $_SERVER['allow_detach_users'] = true;
-
-        $this->postJson('companies/'.$company->id.'/detach/users', [
-            'users' => $user->id,
-            'is_admin' => true,
-        ])
-            ->assertNoContent();
     }
 }

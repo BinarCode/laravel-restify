@@ -2,18 +2,15 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class BelongsTo extends EagerField
 {
-    /**
-     * @var Closure
-     */
-    private $canAttachCallback;
+    use Attachable;
 
     public function __construct($attribute, $relation, $parentRepository)
     {
@@ -64,12 +61,5 @@ class BelongsTo extends EagerField
         $model->{$this->relation}()->associate(
             $belongsToModel
         );
-    }
-
-    public function canAttach(Closure $callback)
-    {
-        $this->canAttachCallback = $callback;
-
-        return $this;
     }
 }

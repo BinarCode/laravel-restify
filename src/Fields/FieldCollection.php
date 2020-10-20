@@ -94,11 +94,11 @@ class FieldCollection extends Collection
         })->values();
     }
 
-    public function filterForManyToManyRelations(): self
+    public function filterForManyToManyRelations(RestifyRequest $request): self
     {
         return $this->filter(function ($field) {
             return $field instanceof BelongsToMany || $field instanceof MorphToMany;
-        });
+        })->filter(fn (EagerField $field) => $field->authorize($request));
     }
 
     public function forEager(RestifyRequest $request, Repository $repository): self

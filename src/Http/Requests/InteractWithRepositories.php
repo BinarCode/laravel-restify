@@ -63,7 +63,9 @@ trait InteractWithRepositories
                 ->thenReturn();
         });
 
-        return $repository::resolveWith($repository::newModel());
+        return $repository::isMock()
+            ? $repository::getMock()
+            : $repository::resolveWith($repository::newModel());
     }
 
     /**

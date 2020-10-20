@@ -5,7 +5,7 @@ namespace Binaryk\LaravelRestify\Fields;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
-class HasMany extends HasField
+class HasMany extends EagerField
 {
     public function __construct($attribute, $relation, $parentRepository)
     {

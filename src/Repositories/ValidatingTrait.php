@@ -8,9 +8,6 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 trait ValidatingTrait
 {
     /**
@@ -109,7 +106,7 @@ trait ValidatingTrait
          */
         $pivotFields = $on
             ->collectFields($request)
-            ->filterForManyToManyRelations()
+            ->filterForManyToManyRelations($request)
             ->firstWhere('attribute', $request->relatedRepository)
             ->collectPivotFields();
 
