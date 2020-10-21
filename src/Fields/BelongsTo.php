@@ -5,7 +5,10 @@ namespace Binaryk\LaravelRestify\Fields;
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
 class BelongsTo extends EagerField
@@ -15,7 +18,7 @@ class BelongsTo extends EagerField
     public function __construct($attribute, $relation, $parentRepository)
     {
         if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
         }
 
         parent::__construct($attribute);
@@ -28,9 +31,18 @@ class BelongsTo extends EagerField
     {
         $model = $repository->resource;
 
-        $this->value = $this->repositoryClass::resolveWith(
-            $model->{$this->relation}()->first()
-        )->eagerState();
+        $relatedModel = $model->{$this->relation}()->first();
+
+        try {
+            $this->value = $this->repositoryClass::resolveWith($relatedModel)
+                ->allowToShow(app(Request::class))
+                ->eagerState();
+        } catch (AuthorizationException $e) {
+            $class = get_class($relatedModel);
+            $policy = get_class(Gate::getPolicyFor($relatedModel));
+
+            abort(403, "You are not authorized to see the [{$class}] relationship from the BelongsTo field from the BelongsTo field. Check the [show] method from the [$policy]");
+        }
 
         return $this;
     }
@@ -44,7 +56,7 @@ class BelongsTo extends EagerField
             $request->input($this->attribute)
         )->firstOrFail();
 
-        $methodGuesser = 'attach'.Str::studly(class_basename($relatedModel));
+        $methodGuesser = 'attach' . Str::studly(class_basename($relatedModel));
 
         $this->repository->authorizeToAttach(
             $request,

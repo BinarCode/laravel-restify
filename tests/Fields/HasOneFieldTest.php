@@ -16,6 +16,7 @@ class HasOneFieldTest extends IntegrationTest
     protected function setUp(): void
     {
         parent::setUp();
+
         Restify::repositories([
             UserWithPostRepository::class,
         ]);

@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
@@ -26,6 +27,7 @@ class BelongsToFieldTest extends IntegrationTest
 
         unset($_SERVER['restify.post.store']);
         unset($_SERVER['restify.post.allowRestify']);
+        unset($_SERVER['restify.users.show']);
     }
 
     protected function tearDown(): void
@@ -40,7 +42,8 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->get(PostWithUserRepository::uriKey())
+
+        $this->getJson(PostWithUserRepository::uriKey())
             ->assertJsonStructure([
                 'data' => [
                     [
@@ -52,6 +55,20 @@ class BelongsToFieldTest extends IntegrationTest
                     ],
                 ],
             ]);
+    }
+
+    public function test_unauthorized_see_relationship()
+    {
+        $_SERVER['restify.users.show'] = false;
+
+        Gate::policy(User::class, UserPolicy::class);
+
+        tap(factory(User::class)->create(), function ($user) {
+            factory(Post::class)->create(['user_id' => $user->id]);
+
+            $this->get(PostWithUserRepository::uriKey())
+                ->assertForbidden();
+        });
     }
 
     public function test_field_used_when_storing()
@@ -133,7 +150,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]), function ($post) {
             $newOwner = factory(User::class)->create();
-            $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
+            $this->put(PostWithUserRepository::uriKey() . "/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertOk();
@@ -153,7 +170,7 @@ class BelongsToFieldTest extends IntegrationTest
         ]), function ($post) {
             $firstOwnerId = $post->user->id;
             $newOwner = factory(User::class)->create();
-            $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
+            $this->put(PostWithUserRepository::uriKey() . "/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertForbidden();
