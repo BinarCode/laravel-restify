@@ -155,7 +155,7 @@ trait AuthorizableModels
             : abort(403, "Missing method [$method] in your [$policyClass] policy.");
 
         if (false === $authorized) {
-            abort(403, "You cannot attach model:".get_class($model).", to the model:".get_class($this->model()).", check your permissions.");
+            abort(403, 'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.');
         }
 
         return true;
