@@ -286,16 +286,21 @@ public function attachUser(User $authenticatedUser, Post $createdPost, User $use
 The `attach` policy could be used to the `BelongsTo` field as well, it should return `true` or `false`:
 
 ```php
-BelongsTo::make('owner', 'user', UserRepository::class)
-->canAttach(function(RestifyRequest $request, PostRepository $repository, User  $userToBeAttached) {
-    return Auth::user()->is($userToBeAttached);
+BelongsTo::make('owner', 'user', UserRepository::class)->canAttach(function(
+            RestifyRequest $request, 
+            PostRepository $repository, 
+            User  $userToBeAttached 
+) {
+            return Auth::user()->is($userToBeAttached);
 })
 ```
 
 As for the [other fields](#authorization), you can easily show / hide the field depending on the user role for example:
 
 ```php
-BelongsTo::new('owner', 'user', UserRepository::class)->canSee(fn($request) => $request->user()->isAdmin());
+BelongsTo::new('owner', 'user', UserRepository::class)->canSee(
+           fn($request) => $request->user()->isAdmin()
+);
 ```
 
 ## HasOne
