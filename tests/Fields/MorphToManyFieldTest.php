@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Tests\Unit;
+namespace Binaryk\LaravelRestify\Tests\Fields;
 
 use Binaryk\LaravelRestify\Fields\MorphToMany;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;

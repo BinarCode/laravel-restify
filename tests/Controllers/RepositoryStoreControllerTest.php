@@ -35,7 +35,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
 
     public function test_unauthorized_store()
     {
-        $_SERVER['restify.post.creatable'] = false;
+        $_SERVER['restify.post.store'] = false;
 
         Gate::policy(Post::class, PostPolicy::class);
 

@@ -54,7 +54,7 @@ class BelongsTo extends EagerField
 
         if (is_callable($this->canAttachCallback)) {
             if (! call_user_func($this->canAttachCallback, $request, $this->repository, $belongsToModel)) {
-                abort(401, 'Unauthorized to attach.');
+                abort(403, 'Unauthorized to attach.');
             }
         }
 

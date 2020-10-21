@@ -133,8 +133,10 @@ class RelatedIndexControllerTest extends IntegrationTest
 
         factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
 
-        $this->deleteJson('posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(403);
+        $this->deleteJson('posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
+            ->assertForbidden();
 
-        $this->deleteJson('posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(404);
+        $this->deleteJson('posts/2?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
+            ->assertNotFound();
     }
 }
