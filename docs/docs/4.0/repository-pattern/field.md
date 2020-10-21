@@ -30,6 +30,20 @@ Instead of using the `Field` class, you can use the `field` helper.
 For example: `Field::new('email')` => `field('email')`
 :::
 
+## Authorization
+
+Sometimes you may want to hide certain fields from a group of users. You may easily accomplish this by chaining the `canSee` method onto your field definition. The `canSee` method accepts a `Closure` which should return `true` or `false`. The `Closure` will receive the incoming `HTTP` request:
+
+```php
+    public function fields(RestifyRequest $request)
+    {
+        return [
+            field('name'),
+
+            field('role_id')->canSee(fn($request) => $request->user()->isAdmin());
+    }
+```
+
 # Validation
 
 There is a gold rule saying - catch the exception as soon as possible on its request way. 
@@ -258,7 +272,7 @@ Payload:
 }
 ```
 
-### Authorize attach
+### Authorization
 
 You should add the policy method against attaching in the policy. Let's think of it like this, we want to attach a user to a newly created post, this means we need to add the policy into the `PostPolicy` called `attachUser`:
 
@@ -276,6 +290,28 @@ BelongsTo::make('owner', 'user', UserRepository::class)
 ->canAttach(function(RestifyRequest $request, PostRepository $repository, User  $userToBeAttached) {
     return Auth::user()->is($userToBeAttached);
 })
+```
+
+As for the [other fields](#authorization), you can easily show / hide the field depending on the user role for example:
+
+```php
+BelongsTo::new('owner', 'user', UserRepository::class)->canSee(fn($request) => $request->user()->isAdmin());
+```
+
+## HasOne
+
+The `HasOne` field corresponds to a `hasOne` Eloquent relationship. For example, let's assume a `User` model `hasOne` `Phone` model. We may add the relationship to our `UserRepository` like so:
+
+```php
+// UserRepository
+ public function fields(RestifyRequest $request)
+{
+    return [
+        Field::new('name'),
+
+        HasOne::new('phone', 'phone', PhoneRepository::class),
+    ];
+}
 ```
 
 The json response structure will be the same as previously:
@@ -306,22 +342,6 @@ The json response structure will be the same as previously:
 ```
 
 For the `HasOne` field, there is no way to attach it from Restify, it works the other way around, so you should create the `Phone` and attach it to the `User` by using the `BelongsTo` field.
-
-## HasOne
-
-The `HasOne` field corresponds to a `hasOne` Eloquent relationship. For example, let's assume a `User` model `hasOne` `Phone` model. We may add the relationship to our `UserRepository` like so:
-
-```php
-// UserRepository
- public function fields(RestifyRequest $request)
-{
-    return [
-        Field::new('name'),
-
-        HasOne::new('phone', 'phone', PhoneRepository::class),
-    ];
-}
-```
 
 ## HasMany
 
