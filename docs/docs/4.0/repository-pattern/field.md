@@ -188,7 +188,7 @@ Bellow we have a list of fields used for the related resources.
 
 ## BelongsTo
 
-Let's assume each post belongs to a user. If we want to return the post owner we can do this from the fields:
+Let's assume each `Post` `belongsTo` a `User`. If we want to return the post owner we can do this from the fields:
 
 ```php
     // PostRepository
@@ -243,7 +243,7 @@ Now look, the response of the `api/restify/posts/1` will have this format:
 
 How cool is that :-)
 
-Sure, having a `BelongsTo` relationship, you have to attach posts to the user. This is when the Restify become very handy. You only have to put the same attribute field with the id of the related resource in the payload:
+Sure, having a `BelongsTo` relationship, you have to attach posts to the user when creating the `Post`. This is when the Restify become very handy. You only have to put the same field attribute, with the `key` (usually `id`) of the related resource in the payload:
 
 ```http request
 POST: http://restify-app.test/api/restify/posts
@@ -257,6 +257,8 @@ Payload:
     "owner": 1
 }
 ```
+
+### Authorize attach
 
 You should add the policy method against attaching in the policy. Let's think of it like this, we want to attach a user to a newly created post, this means we need to add the policy into the `PostPolicy` called `attachUser`:
 
@@ -272,7 +274,7 @@ The `attach` policy could be used to the `BelongsTo` field as well, it should re
 ```php
 BelongsTo::make('owner', 'user', UserRepository::class)
 ->canAttach(function(RestifyRequest $request, PostRepository $repository, User  $userToBeAttached) {
-return Auth::user()->is($userToBeAttached);
+    return Auth::user()->is($userToBeAttached);
 })
 ```
 
