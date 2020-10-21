@@ -278,6 +278,35 @@ BelongsTo::make('owner', 'user', UserRepository::class)
 })
 ```
 
+The json response structure will be the same as previously:
+
+```json
+{
+    "data": {
+        "id": "1",
+        "type": "users",
+        "attributes": {
+            "name": "Et maxime voluptatem cumque accusamus sit."
+        },
+        "relationships": {
+            "phone": {
+                "id": "2",
+                "type": "phones",
+                "attributes": {
+                    "phone": "+40 766 444 22"
+                },
+                "meta": {
+                    "authorizedToShow": false,
+                    "authorizedToStore": true,
+                    "authorizedToUpdate": false,
+                    "authorizedToDelete": false
+                }
+            },
+...
+```
+
+For the `HasOne` field, there is no way to attach it from Restify, it works the other way around, so you should create the `Phone` and attach it to the `User` by using the `BelongsTo` field.
+
 ## HasOne
 
 The `HasOne` field corresponds to a `hasOne` Eloquent relationship. For example, let's assume a `User` model `hasOne` `Phone` model. We may add the relationship to our `UserRepository` like so:
