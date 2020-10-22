@@ -38,7 +38,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $post = factory(Post::class)->create(['user_id' => 1]);
 
-        $_SERVER['restify.post.deletable'] = false;
+        $_SERVER['restify.post.delete'] = false;
 
         $this->delete('posts/'.$post->id, [
             'title' => 'Updated title',

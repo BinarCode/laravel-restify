@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
+use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -17,6 +18,10 @@ class PostRepository extends Repository
     public static $search = [
         'id',
         'title',
+    ];
+
+    public static $match = [
+        'title' => RestifySearchable::MATCH_TEXT,
     ];
 
     public static function indexQuery(RestifyRequest $request, $query)

@@ -121,7 +121,7 @@ class RelatedIndexControllerTest extends IntegrationTest
 
     public function test_policy_check_before_destroy_post_belongs_to_a_user()
     {
-        $_SERVER['restify.post.deletable'] = false;
+        $_SERVER['restify.post.delete'] = false;
 
         Gate::policy(Post::class, PostPolicy::class);
 

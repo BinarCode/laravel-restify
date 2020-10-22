@@ -350,10 +350,12 @@ For the `HasOne` field, there is no way to attach it from Restify, it works the 
 
 ## HasMany
 
-The `HasMany` relationship simply will return a list of related entities.
+The `HasMany` field corresponds to a `hasMany` Eloquent relationship. For example, let's assume a User model `hasMany` `Post` models. We may add the relationship to our `UserRepository` like so:
 
 ```php
 // UserRepository@fields()
+use Binaryk\LaravelRestify\Fields\HasMany;
+
 HasMany::make('posts', 'posts', PostRepository::class),
 ```
 
@@ -395,7 +397,9 @@ So you will get back the `posts` relationship:
 }
 ```
 
-`HasMany` field returns 15 entries in the `relationships`. This could be customizable from the repository class using: 
+### Paginate
+
+`HasMany` field returns 15 entries in the `relationships`. This could be customizable from the repository (the repository being in this case the class of the related resource) class using: 
 
 ```php
 public static $defaultRelatablePerPage = 100;
@@ -409,7 +413,7 @@ When using `relatablePerPage` query param, it will paginate all relatable entiti
 
 ## BelongsToMany
 
-The `BelongsToMany` field corresponds to a `belongsToMany` Eloquent relationship. For example, let's assume a User model belongsToMany Role models. We may add the relationship to our UserRepository like so:
+The `BelongsToMany` field corresponds to a `belongsToMany` Eloquent relationship. For example, let's assume a `User` model `belongsToMany` Role models. We may add the relationship to our UserRepository like so:
 
 ```php
 BelongsToMany::make('roles', 'roles', RoleRepository::class),

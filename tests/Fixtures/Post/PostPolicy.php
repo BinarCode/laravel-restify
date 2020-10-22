@@ -44,12 +44,12 @@ class PostPolicy
 
     public function update($user, $post)
     {
-        return $_SERVER['restify.post.updateable'] ?? true;
+        return $_SERVER['restify.post.update'] ?? true;
     }
 
     public function delete($user, $post)
     {
-        return $_SERVER['restify.post.deletable'] ?? true;
+        return $_SERVER['restify.post.delete'] ?? true;
     }
 
     public function attachUser($user = null, Post $post, User $userToAttach)

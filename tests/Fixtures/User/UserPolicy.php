@@ -46,6 +46,6 @@ class UserPolicy
 
     public function delete($user, $model)
     {
-        return $_SERVER['restify.users.deletable'] ?? true;
+        return $_SERVER['restify.users.delete'] ?? true;
     }
 }

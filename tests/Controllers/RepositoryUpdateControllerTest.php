@@ -48,7 +48,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $post = factory(Post::class)->create();
 
-        $_SERVER['restify.post.updateable'] = false;
+        $_SERVER['restify.post.update'] = false;
 
         $this->patch('posts/'.$post->id, [
             'title' => 'Updated title',
