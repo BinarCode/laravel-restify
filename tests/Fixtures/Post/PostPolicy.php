@@ -18,6 +18,15 @@ class PostPolicy
     }
 
     /**
+     * Determine if post can be show.
+     */
+    public function show($user = null)
+    {
+        return $_SERVER['restify.post.show'] ?? true;
+    }
+
+
+    /**
      * Determine if posts can be created.
      */
     public function store($user = null)

@@ -42,14 +42,12 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $this->getJson(PostWithUserRepository::uriKey())
+        $this->get(PostWithUserRepository::uriKey())
             ->assertJsonStructure([
                 'data' => [
                     [
                         'relationships' => [
-                            'user' => [
-                                'attributes',
-                            ],
+                            'user',
                         ],
                     ],
                 ],
@@ -62,10 +60,10 @@ class BelongsToFieldTest extends IntegrationTest
 
         Gate::policy(User::class, UserPolicy::class);
 
-        tap(factory(User::class)->create(), function ($user) {
-            factory(Post::class)->create(['user_id' => $user->id]);
-
-            $this->get(PostWithUserRepository::uriKey())
+        tap(factory(Post::class)->create([
+            'user_id' => factory(User::class)
+        ]), function ($post) {
+            $this->get(PostWithUserRepository::uriKey() . "/{$post->id}")
                 ->assertForbidden();
         });
     }

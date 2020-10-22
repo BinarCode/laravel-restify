@@ -2,7 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class EagerField extends Field
 {
@@ -31,5 +33,25 @@ class EagerField extends Field
         return call_user_func(
                 [$this->repositoryClass, 'authorizedToUseRepository'], $request
             ) && parent::authorize($request);
+    }
+
+    public function resolve($repository, $attribute = null)
+    {
+        $model = $repository->resource;
+
+        $relatedModel = $model->{$this->relation}()->first();
+
+        try {
+            $this->value = $this->repositoryClass::resolveWith($relatedModel)
+                ->allowToShow(app(Request::class))
+                ->eagerState();
+        } catch (AuthorizationException $e) {
+            $class = get_class($relatedModel);
+            $policy = get_class(Gate::getPolicyFor($relatedModel));
+
+            abort(403, "You are not authorized to see the [{$class}] relationship from the BelongsTo field from the BelongsTo field. Check the [show] method from the [$policy]");
+        }
+
+        return $this;
     }
 }

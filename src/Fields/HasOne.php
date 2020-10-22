@@ -10,7 +10,7 @@ class HasOne extends EagerField
     public function __construct($attribute, $relation, $parentRepository)
     {
         if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid HasOne repository [{$parentRepository}]. Expended instance of ".Repository::class);
+            abort(500, "Invalid HasOne repository [{$parentRepository}]. Expended instance of " . Repository::class);
         }
 
         parent::__construct($attribute);
@@ -22,16 +22,5 @@ class HasOne extends EagerField
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
         //
-    }
-
-    public function resolve($repository, $attribute = null)
-    {
-        $model = $repository->resource;
-
-        $this->value = $this->repositoryClass::resolveWith(
-            $model->{$this->relation}()->first()
-        );
-
-        return $this;
     }
 }

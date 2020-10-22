@@ -27,26 +27,6 @@ class BelongsTo extends EagerField
         $this->repositoryClass = $parentRepository;
     }
 
-    public function resolve($repository, $attribute = null)
-    {
-        $model = $repository->resource;
-
-        $relatedModel = $model->{$this->relation}()->first();
-
-        try {
-            $this->value = $this->repositoryClass::resolveWith($relatedModel)
-                ->allowToShow(app(Request::class))
-                ->eagerState();
-        } catch (AuthorizationException $e) {
-            $class = get_class($relatedModel);
-            $policy = get_class(Gate::getPolicyFor($relatedModel));
-
-            abort(403, "You are not authorized to see the [{$class}] relationship from the BelongsTo field from the BelongsTo field. Check the [show] method from the [$policy]");
-        }
-
-        return $this;
-    }
-
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
         /** * @var Model $relatedModel */
