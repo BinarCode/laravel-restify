@@ -61,9 +61,9 @@ class BelongsToFieldTest extends IntegrationTest
         Gate::policy(User::class, UserPolicy::class);
 
         tap(factory(Post::class)->create([
-            'user_id' => factory(User::class)
+            'user_id' => factory(User::class),
         ]), function ($post) {
-            $this->get(PostWithUserRepository::uriKey() . "/{$post->id}")
+            $this->get(PostWithUserRepository::uriKey()."/{$post->id}")
                 ->assertForbidden();
         });
     }

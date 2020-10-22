@@ -25,7 +25,6 @@ class PostPolicy
         return $_SERVER['restify.post.show'] ?? true;
     }
 
-
     /**
      * Determine if posts can be created.
      */
