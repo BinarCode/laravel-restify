@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Fields;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -17,7 +16,7 @@ class HasMany extends EagerField
     public function __construct($attribute, $relation, $parentRepository)
     {
         if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
         }
 
         parent::__construct($attribute);
@@ -46,7 +45,6 @@ class HasMany extends EagerField
                 abort(403, "You are not authorized to see the [{$class}] relationship from the HasMany field from the BelongsTo field. Check the [show] method from the [$policy]");
             }
         });
-
 
         return $this;
     }
