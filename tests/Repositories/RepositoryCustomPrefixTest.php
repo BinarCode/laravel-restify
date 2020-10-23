@@ -9,9 +9,9 @@ class RepositoryCustomPrefixTest extends IntegrationTest
 {
     protected function setUp(): void
     {
-        PostRepository::$prefix = 'api/v1';
+        PostRepository::setPrefix('api/v1');
 
-        PostRepository::$indexPrefix = 'api/index';
+        PostRepository::setIndexPrefix('api/index');
 
         parent::setUp();
     }
@@ -27,6 +27,7 @@ class RepositoryCustomPrefixTest extends IntegrationTest
     public function test_repository_can_have_custom_prefix()
     {
         $this->getJson('api/index/'.PostRepository::uriKey())
+            ->dump()
             ->assertSuccessful();
     }
 

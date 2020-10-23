@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
+use Binaryk\LaravelRestify\Restify;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\App;
 
@@ -70,6 +71,15 @@ class RestifyRequest extends FormRequest
 
     public function isViaRepository()
     {
+        // todo another implementation for prefixes
+        $matchSomePrefixes = collect(Restify::$repositories)
+                ->some(fn($repository) => $repository::prefix() === "$this->viaRepository/$this->viaRepositoryId")
+            || collect(Restify::$repositories)->some(fn($repository) => $repository::indexPrefix() === "$this->viaRepository/$this->viaRepositoryId");
+
+        if ($matchSomePrefixes) {
+            return false;
+        }
+
         return $this->viaRepository && $this->viaRepositoryId;
     }
 }

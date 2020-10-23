@@ -202,4 +202,9 @@ class Restify
 
         return Str::title(Str::snake($value, ' '));
     }
+
+    public static function mountingRepositories()
+    {
+        collect(static::$repositories)->each(fn(string $repository) => $repository::mounting());
+    }
 }
