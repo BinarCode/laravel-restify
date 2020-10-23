@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Str;
-use Mockery\MockInterface;
 
 trait WithRoutePrefix
 {
@@ -16,7 +15,7 @@ trait WithRoutePrefix
     public static $prefix;
 
     /**
-     * List of index prefixes by uriKey
+     * List of index prefixes by uriKey.
      * @var array
      */
     public static $indexPrefixes;
@@ -93,15 +92,15 @@ trait WithRoutePrefix
         if ($request->isForRepositoryRequest()) {
             // index
             if (static::indexPrefix()) {
-                return $request->is(static::indexPrefix() . '/*');
+                return $request->is(static::indexPrefix().'/*');
             }
 
             if (static::prefix()) {
-                return $request->is(static::prefix() . '/*');
+                return $request->is(static::prefix().'/*');
             }
         } else {
             // the rest
-            return $request->is(static::prefix() . '/*');
+            return $request->is(static::prefix().'/*');
         }
     }
 
@@ -110,7 +109,7 @@ trait WithRoutePrefix
         return collect([
             static::prefix(),
             static::indexPrefix(),
-        ])->some(fn($prefix) => (bool)$prefix);
+        ])->some(fn ($prefix) => (bool) $prefix);
     }
 
     public static function setPrefix(string $prefix, string $uriKey = null)

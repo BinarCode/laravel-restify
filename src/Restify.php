@@ -205,6 +205,6 @@ class Restify
 
     public static function mountingRepositories()
     {
-        collect(static::$repositories)->each(fn(string $repository) => $repository::mounting());
+        collect(static::$repositories)->each(fn (string $repository) => $repository::mounting());
     }
 }

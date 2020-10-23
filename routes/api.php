@@ -60,4 +60,3 @@ Route::get('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', '\\
 Route::post('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
 Route::put('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
 Route::delete('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', '\\'.RepositoryDestroyController::class);
-

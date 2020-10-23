@@ -2,10 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
-use Binaryk\LaravelRestify\Fields\BelongsToMany;
-use Binaryk\LaravelRestify\Fields\HasMany;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryAttachRequest;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
 use Illuminate\Support\Arr;
 
@@ -27,8 +24,8 @@ class RepositoryAttachController extends RepositoryController
         return $repository->attach(
             $request, $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))
-                ->filter(fn($relatedRepositoryId) => $request->repository()->allowToAttach($request, $request->attachRelatedModels()))
-                ->map(fn($relatedRepositoryId) => $this->belongsToManyField($request)
+                ->filter(fn ($relatedRepositoryId) => $request->repository()->allowToAttach($request, $request->attachRelatedModels()))
+                ->map(fn ($relatedRepositoryId) => $this->belongsToManyField($request)
                     ->initializePivot(
                         $request, $model->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
                     ))
