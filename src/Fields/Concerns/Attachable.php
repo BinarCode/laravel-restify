@@ -22,7 +22,6 @@ trait Attachable
      */
     private $canDetachCallback;
 
-
     /**
      * The pivot table columns to retrieve.
      *
@@ -121,7 +120,6 @@ trait Attachable
 
         return $pivot;
     }
-
 
     /**
      * Set the columns on the pivot table to retrieve.

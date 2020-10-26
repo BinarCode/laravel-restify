@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
-use Illuminate\Support\Collection;
 
 class BelongsToMany extends EagerField
 {
