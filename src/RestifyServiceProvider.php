@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
-use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -51,7 +50,7 @@ class RestifyServiceProvider extends ServiceProvider
     public function defaultRoutes($config)
     {
         Route::group($config, function () {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
         });
 
         return $this;
@@ -64,11 +63,11 @@ class RestifyServiceProvider extends ServiceProvider
     public function registerPrefixed($config)
     {
         collect(Restify::$repositories)
-            ->filter(fn($repository) => $repository::prefix())
+            ->filter(fn ($repository) => $repository::prefix())
             ->each(function (string $repository) use ($config) {
                 $config['prefix'] = $repository::prefix();
                 Route::group($config, function () {
-                    $this->loadRoutesFrom(__DIR__ . '/../routes/api.php');
+                    $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
                 });
             });
 
@@ -78,11 +77,11 @@ class RestifyServiceProvider extends ServiceProvider
     public function registerIndexPrefixed($config)
     {
         collect(Restify::$repositories)
-            ->filter(fn($repository) => $repository::hasIndexPrefix())
+            ->filter(fn ($repository) => $repository::hasIndexPrefix())
             ->each(function ($repository) use ($config) {
                 $config['prefix'] = $repository::indexPrefix();
                 Route::group($config, function () {
-                    Route::get('/{repository}', '\\' . RepositoryIndexController::class);
+                    Route::get('/{repository}', '\\'.RepositoryIndexController::class);
                 });
             });
 

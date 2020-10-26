@@ -73,8 +73,8 @@ class RestifyRequest extends FormRequest
     {
         // todo another implementation for prefixes
         $matchSomePrefixes = collect(Restify::$repositories)
-                ->some(fn($repository) => $repository::prefix() === "$this->viaRepository/$this->viaRepositoryId")
-            || collect(Restify::$repositories)->some(fn($repository) => $repository::indexPrefix() === "$this->viaRepository/$this->viaRepositoryId");
+                ->some(fn ($repository) => $repository::prefix() === "$this->viaRepository/$this->viaRepositoryId")
+            || collect(Restify::$repositories)->some(fn ($repository) => $repository::indexPrefix() === "$this->viaRepository/$this->viaRepositoryId");
 
         if ($matchSomePrefixes) {
             return false;
