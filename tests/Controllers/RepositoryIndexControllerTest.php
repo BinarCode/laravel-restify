@@ -52,27 +52,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->assertCount(2, $response->json('data'));
     }
 
-    public function test_repository_filter_works()
-    {
-        PostRepository::$match = [
-            'title' => RestifySearchable::MATCH_TEXT,
-        ];
-
-        factory(Post::class)->create([
-            'title' => 'Some title',
-        ]);
-
-        factory(Post::class)->create([
-            'title' => 'Another one',
-        ]);
-
-        $response = $this
-            ->getJson('posts?title=Another one')
-            ->assertStatus(200);
-
-        $this->assertCount(1, $response->json('data'));
-    }
-
     public function test_repository_order()
     {
         PostRepository::$sort = [

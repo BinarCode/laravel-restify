@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Services\Search;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Matchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
@@ -99,7 +100,15 @@ class RepositorySearchService extends Searchable
                     default:
                         if (is_callable($this->repository->getMatchByFields($request)[$key])) {
                             call_user_func_array($this->repository->getMatchByFields($request)[$key], [
-                                $request, $query,
+                                $request, $query
+                            ]);
+                        }
+
+                        if (is_subclass_of($this->repository->getMatchByFields($request)[$key], Matchable::class)) {
+                            call_user_func_array([
+                                app($this->repository->getMatchByFields($request)[$key]), 'handle'
+                            ], [
+                                $request, $query
                             ]);
                         }
                 }

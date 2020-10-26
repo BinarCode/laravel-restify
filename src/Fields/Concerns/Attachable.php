@@ -8,6 +8,7 @@ use DateTime;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 trait Attachable
 {
@@ -20,6 +21,14 @@ trait Attachable
      * @var Closure
      */
     private $canDetachCallback;
+
+
+    /**
+     * The pivot table columns to retrieve.
+     *
+     * @var array
+     */
+    public $pivotFields = [];
 
     public function canAttach(Closure $callback)
     {
@@ -104,6 +113,33 @@ trait Attachable
             ]);
         }
 
+        $fields = $this->collectPivotFields()->filter(fn ($pivotField) => $request->has($pivotField->attribute))->values();
+
+        $repository = $request->repository();
+
+        $repository::fillFields($request, $pivot, $fields);
+
         return $pivot;
+    }
+
+
+    /**
+     * Set the columns on the pivot table to retrieve.
+     *
+     * @param array|mixed $fields
+     * @return $this
+     */
+    public function withPivot($fields)
+    {
+        $this->pivotFields = array_merge(
+            $this->pivotFields, is_array($fields) ? $fields : func_get_args()
+        );
+
+        return $this;
+    }
+
+    public function collectPivotFields(): Collection
+    {
+        return collect($this->pivotFields);
     }
 }

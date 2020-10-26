@@ -130,33 +130,65 @@ This will return all posts that doesn't contain `Some title` substring.
 
 ### Match closure
 
-There may be situations when the filter you want to apply not necessarily is a database attributes. You can use a Closure to handle this easily:
+There may be situations when the filter you want to apply not necessarily is a database attributes. In your `booted` method you can add more filters for the `$match` where the key represents the field used as query param, and value should be a `Closure` which gets the request and current query `Builder`:
 
 ```php
 // UserRepository
-public static function getMatchByFields()
+protected static function booted() 
 {
-    return [
-        'is_active' => function ($request, $query) {
-            if ($request->boolean('is_active')) {
-               $query->whereNotNull('email_verified_at');
-           } else {
-               $query->whereNull('email_verified_at');
-            }       
-        }
-    ];
+    static::$match['active'] => function ($request, $query) {
+        if ($request->boolean('active')) {
+           $query->whereNotNull('email_verified_at');
+       } else {
+           $query->whereNull('email_verified_at');
+        }       
+    }
 }
 ```
 
 So now you can query this: 
 
 ```http request
-GET: /api/restify/users?is_active=true
+GET: /api/restify/users?active=true
+```
+
+
+### Matchable
+
+Sometimes you may have a large logic into a match `Closure`, and the booted method could become a mess. To prevent this, `Restify` provides a declarative way to define `matchers`. For this purpose you should define a class, and implement the `Binaryk\LaravelRestify\Repositories\Matchable` contract. You can use the following command to generate that:
+
+```shell script
+php artisan restify:match ActiveMatch
+```
+
+Then you will get the `ActiveMatch` class in `app/Restify/Matchers` folder:
+
+```php
+namespace App\Restify\Matchers;
+
+use Binaryk\LaravelRestify\Repositories\Matchable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+
+class ActiveMatch implements Matchable
+{
+    public function handle(Request $request, Builder $query)
+    {
+        $query->where('is_active', $request->boolean('active'));
+    }
+}
+```
+
+The next step is to associate this class with the match key name in your `$match` array:
+
+```php
+ public static $match = [
+    'active' => ActiveMatch::class,
+];
 ```
 
 ## Sort 
 When index query entities, usually we have to sort by specific attributes. 
-
 This requires the `$sort` configuration:
 
 ```php

@@ -26,13 +26,6 @@ class BelongsToMany extends EagerField
      */
     public $detachCallback;
 
-    /**
-     * The pivot table columns to retrieve.
-     *
-     * @var array
-     */
-    public $pivotFields = [];
-
     public function __construct($attribute, $relation, $parentRepository)
     {
         if (! is_a(app($parentRepository), Repository::class)) {
@@ -64,26 +57,6 @@ class BelongsToMany extends EagerField
         });
 
         return $this;
-    }
-
-    /**
-     * Set the columns on the pivot table to retrieve.
-     *
-     * @param array|mixed $fields
-     * @return $this
-     */
-    public function withPivot($fields)
-    {
-        $this->pivotFields = array_merge(
-            $this->pivotFields, is_array($fields) ? $fields : func_get_args()
-        );
-
-        return $this;
-    }
-
-    public function collectPivotFields(): Collection
-    {
-        return collect($this->pivotFields);
     }
 
     public function attachCallback(Closure $callback)

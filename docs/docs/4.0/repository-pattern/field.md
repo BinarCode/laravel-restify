@@ -473,8 +473,6 @@ Using the payload:
 }
 ```
 
-### 
-
 ### Custom attach method
 
 If you want to implement attach method for such relationship on your own, Laravel Restify provides you an easy way to do so. Restify will look for a method which starts with `attach` and concatenated with `Str::studly($relation)` where the `$relation` is the name of the last segment in the attach URL, `roles` in our case.  Let's say you have to attach roles to user:

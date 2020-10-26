@@ -22,7 +22,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         ]);
     }
 
-    public function test_belongs_to_many_displays_in_relationships()
+    public function test_displays_on_relationships()
     {
         tap(factory(Company::class)->create(), function (Company $company) {
             $company->users()->attach(
@@ -40,7 +40,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             ])->assertJsonCount(5, 'data.0.relationships.users');
     }
 
-    public function test_belongs_to_many_ignored_when_store()
+    public function test_ignored_when_storing()
     {
         /** * @var User $user */
         $user = factory(User::class)->create();
@@ -57,7 +57,7 @@ class BelongsToManyFieldTest extends IntegrationTest
                 'relationships' => [
                     'users' => [],
                 ],
-            ],
+           ],
         ]);
     }
 }

@@ -6,9 +6,9 @@ tagline: The fastest way to implement JSON:API with Laravel
 actionText: See how →
 actionLink: /docs/4.0/
 features:
-- title: Magic CRUD over entities
+- title: CRUD over entities
   details: Enjoy powerful "CRUD" over your entities in seconds
-- title: Authentication with Passport
+- title: Authentication with Sanctum
   details: Login, register, reset password, forgot password emails - served for you
 - title: Handy Response maker
   details: Enjoy the dev experience of Restify API by using consistent response helpers

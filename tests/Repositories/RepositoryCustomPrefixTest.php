@@ -27,7 +27,6 @@ class RepositoryCustomPrefixTest extends IntegrationTest
     public function test_repository_can_have_custom_prefix()
     {
         $this->getJson('api/index/'.PostRepository::uriKey())
-            ->dump()
             ->assertSuccessful();
     }
 
