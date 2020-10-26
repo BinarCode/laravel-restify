@@ -54,4 +54,9 @@ module.exports = [
         collapsable: true,
         children: ['exception-handler/exception-handler'],
     },
+    {
+        title: 'Testing',
+        collapsable: true,
+        children: ['testing/testing'],
+    },
 ];

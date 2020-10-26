@@ -19,4 +19,4 @@ features:
 - title: JSON:API consistency
   details: Maintain your API consistent accordingly with https://jsonapi.org
   
-footer: MIT Lice
+footer: MIT License (MIT
