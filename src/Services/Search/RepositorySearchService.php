@@ -100,15 +100,15 @@ class RepositorySearchService extends Searchable
                     default:
                         if (is_callable($this->repository->getMatchByFields($request)[$key])) {
                             call_user_func_array($this->repository->getMatchByFields($request)[$key], [
-                                $request, $query
+                                $request, $query,
                             ]);
                         }
 
                         if (is_subclass_of($this->repository->getMatchByFields($request)[$key], Matchable::class)) {
                             call_user_func_array([
-                                app($this->repository->getMatchByFields($request)[$key]), 'handle'
+                                app($this->repository->getMatchByFields($request)[$key]), 'handle',
                             ], [
-                                $request, $query
+                                $request, $query,
                             ]);
                         }
                 }
