@@ -46,7 +46,7 @@ class MatcherCommand extends GeneratorCommand
 
     protected function getStub()
     {
-        return __DIR__ . '/stubs/match.stub';
+        return __DIR__.'/stubs/match.stub';
     }
 
     protected function getPath($name)
@@ -60,6 +60,6 @@ class MatcherCommand extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace . '\Restify\Matchers';
+        return $rootNamespace.'\Restify\Matchers';
     }
 }
