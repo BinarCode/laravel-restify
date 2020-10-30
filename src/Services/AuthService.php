@@ -43,26 +43,10 @@ use ReflectionException;
  */
 class AuthService extends RestifyService
 {
-    /**
-     * @var string
-     */
     public static $registerFormRequest = RestifyRegisterRequest::class;
 
-    /**
-     * The callback that should be used to create the registered user.
-     *
-     * @var Closure|null
-     */
     public static $creating;
 
-    /**
-     * @param array $credentials
-     * @return string|null
-     * @throws CredentialsDoesntMatch
-     * @throws UnverifiedUser
-     * @throws PassportUserException
-     * @throws AirlockUserException
-     */
     public function login(array $credentials = [])
     {
         $token = null;
@@ -71,9 +55,6 @@ class AuthService extends RestifyService
             throw new CredentialsDoesntMatch("Credentials doesn't match");
         }
 
-        /**
-         * @var Authenticatable|Passportable|Airlockable
-         */
         $user = Auth::user();
 
         if ($user instanceof MustVerifyEmail && $user->hasVerifiedEmail() === false) {
@@ -90,16 +71,6 @@ class AuthService extends RestifyService
         return $token;
     }
 
-    /**
-     * @param array $payload
-     * @return \Illuminate\Database\Eloquent\Builder|Model|mixed
-     * @throws AuthenticatableUserException
-     * @throws EntityNotFoundException
-     * @throws PassportUserException
-     * @throws ValidationException
-     * @throws BindingResolutionException
-     * @throws AirlockUserException
-     */
     public function register(array $payload)
     {
         $this->validateRegister($payload);
@@ -124,14 +95,6 @@ class AuthService extends RestifyService
         return $user;
     }
 
-    /**
-     * @param $id
-     * @param null $hash
-     * @return Builder|Builder[]|\Illuminate\Database\Eloquent\Collection|Model|null
-     * @throws AuthorizationException
-     * @throws EntityNotFoundException
-     * @throws PassportUserException
-     */
     public function verify($id, $hash = null)
     {
         /**
@@ -150,14 +113,6 @@ class AuthService extends RestifyService
         return $user;
     }
 
-    /**
-     * @param $email
-     * @return string
-     * @throws EntityNotFoundException
-     * @throws PasswordResetInvalidTokenException
-     * @throws ValidationException
-     * @throws PasswordResetException
-     */
     public function sendResetPasswordLinkEmail($email)
     {
         $validator = Validator::make(compact('email'), (new RestifyPasswordEmailRequest)->rules(), (new RestifyPasswordEmailRequest)->messages());
@@ -174,14 +129,6 @@ class AuthService extends RestifyService
         return $response;
     }
 
-    /**
-     * @param array $credentials
-     * @return JsonResponse
-     * @throws PasswordResetInvalidTokenException
-     * @throws ValidationException
-     * @throws EntityNotFoundException
-     * @throws PasswordResetException
-     */
     public function resetPassword(array $credentials = [])
     {
         $validator = Validator::make($credentials, (new ResetPasswordRequest())->rules(), (new ResetPasswordRequest())->messages());
@@ -209,22 +156,11 @@ class AuthService extends RestifyService
         return $response;
     }
 
-    /**
-     * @return PasswordBroker
-     */
     public function broker()
     {
         return Password::broker();
     }
 
-    /**
-     * Returns query for User model and validate if it exists.
-     *
-     * @throws EntityNotFoundException
-     * @throws PassportUserException
-     * @throws AirlockUserException
-     * @return Model
-     */
     public function userQuery()
     {
         $userClass = Config::get('auth.providers.users.model');
@@ -241,11 +177,6 @@ class AuthService extends RestifyService
         }
     }
 
-    /**
-     * @param $userInstance
-     * @throws PassportUserException
-     * @throws AirlockUserException
-     */
     public function validateUserModel($userInstance)
     {
         if (config('restify.auth.provider') === 'passport' && false === $userInstance instanceof Passportable) {
@@ -257,13 +188,6 @@ class AuthService extends RestifyService
         }
     }
 
-    /**
-     * @param $response
-     * @param null $case
-     * @throws EntityNotFoundException
-     * @throws PasswordResetException
-     * @throws PasswordResetInvalidTokenException
-     */
     protected function resolveBrokerResponse($response, $case = null)
     {
         if ($response === PasswordBroker::INVALID_TOKEN) {
@@ -278,12 +202,6 @@ class AuthService extends RestifyService
         }
     }
 
-    /**
-     * @param array $payload
-     * @return bool
-     * @throws ValidationException
-     * @throws BindingResolutionException
-     */
     public function validateRegister(array $payload)
     {
         try {
@@ -301,11 +219,6 @@ class AuthService extends RestifyService
         return true;
     }
 
-    /**
-     * Revoke tokens for user.
-     *
-     * @throws AuthenticatableUserException
-     */
     public function logout()
     {
         /**
