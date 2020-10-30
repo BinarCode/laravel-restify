@@ -21,6 +21,7 @@ class FieldResolversTest extends IntegrationTest
             $field->showCallback(function ($value, $repo) use ($book, $repository) {
                 $this->assertInstanceOf(get_class($repository), $repo);
                 $this->assertSame($value, $book->title); //assert that the value is read from the database
+
                 return 'something else';
             });
 

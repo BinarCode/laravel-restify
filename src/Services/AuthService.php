@@ -18,7 +18,6 @@ use Binaryk\LaravelRestify\Http\Requests\ResetPasswordRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyPasswordEmailRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRegisterRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\User;
-use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
