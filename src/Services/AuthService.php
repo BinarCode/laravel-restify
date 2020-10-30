@@ -20,9 +20,6 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Password;
 use ReflectionException;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class AuthService extends RestifyService
 {
     public function login(Request $request)
@@ -46,22 +43,12 @@ class AuthService extends RestifyService
         return ForgotPasswordService::make($request);
     }
 
-    /*
-     * @param $id
-     * @param null $hash
-     * @return Builder|Builder[]|\Illuminate\Database\Eloquent\Collection|Model|null
-     * @throws AuthorizationException
-     * @throws EntityNotFoundException
-     * @throws PassportUserException
-     */
     public function verify($id, $hash = null)
     {
-        /**
-         * @var Authenticatable
-         */
+        /** * @var Authenticatable */
         $user = $this->userQuery()->query()->find($id);
 
-        if ($user instanceof Sanctumable && ! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
+        if ($user instanceof Sanctumable && ! hash_equals((string)$hash, sha1($user->getEmailForVerification()))) {
             throw new AuthorizationException('Invalid hash');
         }
 
