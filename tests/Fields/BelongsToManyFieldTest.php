@@ -57,7 +57,7 @@ class BelongsToManyFieldTest extends IntegrationTest
                 'relationships' => [
                     'users' => [],
                 ],
-           ],
+            ],
         ]);
     }
 }

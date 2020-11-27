@@ -95,7 +95,7 @@ class AuthServiceRegisterTest extends IntegrationTest
         Event::assertDispatched(Registered::class, function ($e) use ($user) {
             $this->assertEquals($e->user->email, $user['email']);
 
-            return $e->user instanceof \ Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+            return $e->user instanceof \Binaryk\LaravelRestify\Tests\Fixtures\User\User;
         });
 
         $lastUser = User::query()->get()->last();
@@ -161,7 +161,7 @@ class AuthServiceRegisterTest extends IntegrationTest
         Event::assertDispatched(Verified::class, function ($e) use ($user) {
             $this->assertEquals($e->user->email, $user['email']);
 
-            return $e->user instanceof \ Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+            return $e->user instanceof \Binaryk\LaravelRestify\Tests\Fixtures\User\User;
         });
     }
 }
