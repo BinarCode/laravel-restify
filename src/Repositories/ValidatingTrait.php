@@ -2,14 +2,12 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 trait ValidatingTrait
 {
     /**
@@ -103,16 +101,31 @@ trait ValidatingTrait
         /** * @var Repository $on */
         $on = $resource ?? static::resolveWith(static::newModel());
 
-        $messages = $on->collectFields($request)->flatMap(function ($k) {
+        /**
+         * @var BelongsToMany $field
+         */
+        $pivotFields = $on
+            ->collectFields($request)
+            ->filterForManyToManyRelations($request)
+            ->firstWhere('attribute', $request->relatedRepository)
+            ->collectPivotFields();
+
+        $messages = $pivotFields->flatMap(function ($field) {
             $messages = [];
-            foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute.'.'.$ruleFor] = $message;
+            foreach ($field->messages as $ruleFor => $message) {
+                $messages[$field->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
-        })->toArray();
+        })->all();
 
-        return Validator::make($plainPayload ?? $request->all(), $on->getUpdatingRules($request), $messages)->after(function ($validator) use ($request) {
+        $rules = $pivotFields->mapWithKeys(function (Field $k) {
+            return [
+                $k->attribute => $k->getStoringRules(),
+            ];
+        })->all();
+
+        return Validator::make($plainPayload ?? $request->all(), $rules, $messages)->after(function ($validator) use ($request) {
             static::afterValidation($request, $validator);
             static::afterUpdatingValidation($request, $validator);
         });

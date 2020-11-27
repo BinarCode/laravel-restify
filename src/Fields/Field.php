@@ -210,43 +210,27 @@ class Field extends OrganicField implements JsonSerializable
     {
         $this->resolveValueBeforeUpdate($request, $model);
 
+        if (is_callable($this->fillCallback)) {
+            return call_user_func(
+                $this->fillCallback, $request, $model, $this->label ?? $this->attribute, $bulkRow
+            );
+        }
+
         if ($this->isHidden($request)) {
-            if (! isset($this->appendCallback)) {
-                return;
-            }
-        }
-
-        if (! $this->isHidden($request) && isset($this->fillCallback)) {
-            return call_user_func(
-                $this->fillCallback, $request, $model, $this->attribute, $bulkRow
-            );
-        }
-
-        if (isset($this->appendCallback)) {
-            return $this->fillAttributeFromAppend($request, $model, $this->attribute, $bulkRow);
-        }
-
-        if ($request->isStoreRequest() && is_callable($this->storeCallback)) {
-            return call_user_func(
-                $this->storeCallback, $request, $model, $this->attribute, $bulkRow
-            );
-        }
-
-        if ($request->isStoreBulkRequest() && is_callable($this->storeBulkCallback)) {
-            return call_user_func(
-                $this->storeBulkCallback, $request, $model, $this->attribute, $bulkRow
-            );
-        }
-
-        if ($request->isUpdateRequest() && is_callable($this->updateCallback)) {
-            return call_user_func(
-                $this->updateCallback, $request, $model, $this->attribute, $bulkRow
+            return $this->fillAttributeFromAppend(
+                $request, $model, $this->label ?? $this->attribute
             );
         }
 
         $this->fillAttributeFromRequest(
-            $request, $model, $this->attribute, $bulkRow
+            $request, $model, $this->label ?? $this->attribute, $bulkRow
         );
+
+        $this->fillAttributeFromAppend(
+            $request, $model, $this->label ?? $this->attribute, $bulkRow
+        );
+
+        return $this;
     }
 
     /**
@@ -259,27 +243,23 @@ class Field extends OrganicField implements JsonSerializable
      */
     protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
     {
-        if (is_null($bulkRow)) {
-            if ($request->exists($attribute) || $request->input($attribute)) {
-                $model->{$attribute} = $request[$attribute] ?? $request->input($attribute);
-            }
+        $attribute = is_null($bulkRow)
+            ? $attribute
+            : "{$bulkRow}.{$attribute}";
 
-            return;
-        }
-
-        $bulkableAttribute = $bulkRow.'.'.$attribute;
-
-        if ($request->exists($bulkableAttribute) || $request->get($bulkableAttribute)) {
-            $model->{$attribute} = $request[$bulkableAttribute] ?? $request->get($bulkableAttribute);
-        }
+        tap(($request->input($attribute) ?? $request[$attribute]), fn ($value) => $model->{$this->attribute} = is_callable($cb = $this->guessFillableMethod($request))
+            ? call_user_func($cb, $value, $request, $model, $attribute, $bulkRow)
+            : ($request->has($attribute) ? $value : $model->{$this->attribute})
+        );
     }
 
     /**
-     * Fill the model with the default value.
+     * Fill the model with the value from append.
      *
      * @param RestifyRequest $request
      * @param $model
      * @param $attribute
+     * @return Field
      */
     protected function fillAttributeFromAppend(RestifyRequest $request, $model, $attribute)
     {
@@ -287,13 +267,11 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (is_callable($this->appendCallback)) {
-            return $model->{$attribute} = call_user_func(
-                $this->appendCallback, $request, $model, $attribute
-            );
-        }
+        $model->{$attribute} = is_callable($this->appendCallback)
+            ? call_user_func($this->appendCallback, $request, $model, $attribute)
+            : $this->appendCallback;
 
-        $model->{$attribute} = $this->appendCallback;
+        return $this;
     }
 
     /**
@@ -460,6 +438,8 @@ class Field extends OrganicField implements JsonSerializable
                 $this->value = call_user_func($this->resolveCallback, $value, $repository, $attribute);
             });
         }
+
+        return $this;
     }
 
     /**
@@ -598,5 +578,25 @@ class Field extends OrganicField implements JsonSerializable
         $this->appendCallback = $value;
 
         return $this;
+    }
+
+    public function setRepository(Repository $repository): Field
+    {
+        $this->repository = $repository;
+
+        return $this;
+    }
+
+    private function guessFillableMethod(RestifyRequest $request): ?Closure
+    {
+        if ($request->isUpdateRequest()) {
+            return $this->updateCallback;
+        }
+
+        if ($request->isStoreBulkRequest()) {
+            $this->storeBulkCallback;
+        }
+
+        return $this->storeCallback;
     }
 }

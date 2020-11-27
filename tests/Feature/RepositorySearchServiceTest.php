@@ -34,10 +34,10 @@ class RepositorySearchServiceTest extends IntegrationTest
             'created_at' => RestifySearchable::MATCH_DATETIME,
         ];
 
-        $this->getJson('restify-api/users?created_at=null')
+        $this->getJson('users?created_at=null')
             ->assertJsonCount(1, 'data');
 
-        $this->getJson('restify-api/users?created_at=2020-12-01')
+        $this->getJson('users?created_at=2020-12-01')
             ->assertJsonCount(1, 'data');
     }
 
@@ -49,10 +49,10 @@ class RepositorySearchServiceTest extends IntegrationTest
             'id' => RestifySearchable::MATCH_ARRAY,
         ];
 
-        $this->getJson('restify-api/users?id=1,2,3')
+        $this->getJson('users?id=1,2,3')
             ->assertJsonCount(3, 'data');
 
-        $this->getJson('restify-api/users?-id=1,2,3')
+        $this->getJson('users?-id=1,2,3')
             ->assertJsonCount(1, 'data');
     }
 
@@ -67,6 +67,6 @@ class RepositorySearchServiceTest extends IntegrationTest
             },
         ];
 
-        $this->getJson('restify-api/users?is_active=true');
+        $this->getJson('users?is_active=true');
     }
 }

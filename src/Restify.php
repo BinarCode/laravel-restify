@@ -191,7 +191,7 @@ class Restify
     /**
      * Humanize the given value into a proper name.
      *
-     * @param  string  $value
+     * @param string $value
      * @return string
      */
     public static function humanize($value)
@@ -201,5 +201,10 @@ class Restify
         }
 
         return Str::title(Str::snake($value, ' '));
+    }
+
+    public static function mountingRepositories()
+    {
+        collect(static::$repositories)->each(fn (string $repository) => $repository::mounting());
     }
 }

@@ -17,7 +17,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
 
     public function test_basic_validation_works()
     {
-        $this->postJson('/restify-api/posts/bulk', [
+        $this->postJson('posts/bulk', [
             [
                 'title' => null,
             ],
@@ -31,7 +31,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        $this->postJson('/restify-api/posts/bulk', [
+        $this->postJson('posts/bulk', [
             [
                 'title' => 'Title',
                 'description' => 'Title',
@@ -43,8 +43,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
     public function test_user_can_bulk_create_posts()
     {
         $user = $this->mockUsers()->first();
-
-        $r = $this->postJson('/restify-api/posts/bulk', [
+        $this->postJson('posts/bulk', [
             [
                 'user_id' => $user->id,
                 'title' => 'First post.',
@@ -53,8 +52,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
                 'user_id' => $user->id,
                 'title' => 'Second post.',
             ],
-        ])
-            ->assertSuccessful();
+        ])->assertSuccessful();
 
         $this->assertDatabaseCount('posts', 2);
     }

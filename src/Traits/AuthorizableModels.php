@@ -45,7 +45,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the resource should be available for the given request.
+     * Determine if the repository should be available for the given request.
      *
      * @param \Illuminate\Http\Request $request
      * @return bool
@@ -58,7 +58,7 @@ trait AuthorizableModels
 
         return method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
             ? Gate::check('allowRestify', get_class(static::newModel()))
-            : true;
+            : false;
     }
 
     /**
@@ -148,13 +148,17 @@ trait AuthorizableModels
             return true;
         }
 
-        $authorized = method_exists(Gate::getPolicyFor($this->model()), $method)
+        $policyClass = get_class(Gate::getPolicyFor($this->model()));
+
+        $authorized = method_exists($policy = Gate::getPolicyFor($this->model()), $method)
             ? Gate::check($method, [$this->model(), $model])
-            : true;
+            : abort(403, "Missing method [$method] in your [$policyClass] policy.");
 
         if (false === $authorized) {
-            throw new AuthorizationException();
+            abort(403, 'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.');
         }
+
+        return true;
     }
 
     public function authorizeToDetach(Request $request, $method, $model)

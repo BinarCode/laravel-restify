@@ -19,7 +19,7 @@ class PerformActionsControllerTest extends IntegrationTest
     {
         $post = $this->mockPosts(1, 2);
 
-        $this->post('/restify-api/posts/action?action='.(new PublishPostAction())->uriKey(), [
+        $this->post('posts/action?action='.(new PublishPostAction())->uriKey(), [
             'repositories' => [
                 $post->first()->id,
                 $post->last()->id,
@@ -41,7 +41,7 @@ class PerformActionsControllerTest extends IntegrationTest
         $_SERVER['actions.posts.invalidate'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->post('/restify-api/posts/action?action='.(new PublishPostAction())->uriKey(), [
+        $this->post('posts/action?action='.(new PublishPostAction())->uriKey(), [
             'repositories' => [
                 $post->first()->id,
                 $post->last()->id,
@@ -57,7 +57,7 @@ class PerformActionsControllerTest extends IntegrationTest
     {
         $users = $this->mockUsers();
 
-        $this->post('/restify-api/users/'.$users->first()->id.'/action?action='.(new ActivateAction)->uriKey())
+        $this->post('users/'.$users->first()->id.'/action?action='.(new ActivateAction)->uriKey())
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',
@@ -68,7 +68,7 @@ class PerformActionsControllerTest extends IntegrationTest
 
     public function test_could_perform_standalone_action()
     {
-        $this->post('/restify-api/users/action?action='.(new DisableProfileAction())->uriKey())
+        $this->post('users/action?action='.(new DisableProfileAction())->uriKey())
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',

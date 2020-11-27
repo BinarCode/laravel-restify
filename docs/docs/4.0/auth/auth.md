@@ -15,7 +15,7 @@ You'll finally enjoy the auth setup (`register`, `login`, `forgot` and `reset pa
 
 ## Define routes
 
-Restify provides you a simple way to all of your auth routes ready. Simply add in your `routes/api.php`:
+Restify provides you a simple way to add all of your auth routes ready. Simply add in your `routes/api.php`:
 
 ```php
 Route::restifyAuth();

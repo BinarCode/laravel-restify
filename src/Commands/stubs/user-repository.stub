@@ -22,11 +22,14 @@ class UserRepository extends Repository
     public function fields(RestifyRequest $request)
     {
         return [
+            Field::make('name')->rules('required'),
+
             Field::make('email')->rules('required')->storingRules('unique:users')->messages([
                 'required' => 'This field is required.',
             ]),
-            Field::make('password')->storeCallback(function ($value) {
-                    return Hash::make($value);
+
+            Field::make('password')->storeCallback(function ($request, $model, $attribute) {
+                    $model->{$attribute} = Hash::make($value);
                 })->rules('required')->storingRules('confirmed'),
         ];
     }

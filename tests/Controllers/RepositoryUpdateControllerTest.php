@@ -9,9 +9,6 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryUpdateControllerTest extends IntegrationTest
 {
     protected function setUp(): void
@@ -23,30 +20,24 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
     public function test_basic_update_works()
     {
-        $post = factory(Post::class)->create(['user_id' => 1]);
+        $post = factory(Post::class)->create();
 
-        $this->withoutExceptionHandling()->patch('/restify-api/posts/'.$post->id, [
+        $this->patch('posts/'.$post->id, [
             'title' => 'Updated title',
-        ])
-            ->assertStatus(200);
+        ])->assertStatus(200);
 
-        $updatedPost = Post::find($post->id);
-
-        $this->assertEquals($updatedPost->title, 'Updated title');
+        $this->assertEquals('Updated title', Post::find($post->id)->title);
     }
 
     public function test_put_works()
     {
-        $post = factory(Post::class)->create(['user_id' => 1]);
+        $post = factory(Post::class)->create();
 
-        $this->withoutExceptionHandling()->put('/restify-api/posts/'.$post->id, [
+        $this->withoutExceptionHandling()->put('posts/'.$post->id, [
             'title' => 'Updated title',
-        ])
-            ->assertStatus(200);
+        ])->assertStatus(200);
 
-        $updatedPost = Post::find($post->id);
-
-        $this->assertEquals($updatedPost->title, 'Updated title');
+        $this->assertEquals('Updated title', Post::find($post->id)->title);
     }
 
     public function test_unathorized_to_update()
@@ -55,11 +46,11 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        $post = factory(Post::class)->create(['user_id' => 1]);
+        $post = factory(Post::class)->create();
 
-        $_SERVER['restify.post.updateable'] = false;
+        $_SERVER['restify.post.update'] = false;
 
-        $this->patch('/restify-api/posts/'.$post->id, [
+        $this->patch('posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertStatus(403)
             ->assertJson([
@@ -73,7 +64,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['posts.authorizable.title'] = false;
 
-        $response = $this->putJson('/restify-api/post-with-unathorized-fields/'.$post->id, [
+        $response = $this->putJson('post-with-unathorized-fields/'.$post->id, [
             'title' => 'Updated title',
             'user_id' => 2,
         ])
@@ -83,27 +74,13 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         $this->assertEquals(2, $response->json('data.attributes.user_id'));
     }
 
-    public function test_update_fillable_fields_for_mergeable_repository()
-    {
-        $post = factory(Post::class)->create(['user_id' => 1, 'title' => 'Title', 'image' => 'red.png']);
-
-        $response = $this->putJson('/restify-api/posts-mergeable/'.$post->id, [
-            'title' => 'Updated title',
-            'image' => 'image.png', // via mergeable
-        ])
-            ->assertStatus(200);
-
-        $this->assertEquals('Updated title', $response->json('data.attributes.title'));
-        $this->assertEquals('image.png', $response->json('data.attributes.image')); // via extra
-    }
-
     public function test_will_not_update_readonly_fields()
     {
         $user = $this->mockUsers()->first();
 
         $post = factory(Post::class)->create(['image' => null]);
 
-        $r = $this->putJson('/restify-api/posts-unauthorized-fields/'.$post->id, [
+        $r = $this->putJson('posts-unauthorized-fields/'.$post->id, [
             'user_id' => $user->id,
             'image' => 'avatar.png',
             'title' => 'Some post title',

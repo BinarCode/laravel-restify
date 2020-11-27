@@ -18,6 +18,8 @@ class RestifyServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        Restify::mountingRepositories();
+
         $this->registerRoutes();
         $this->registerExceptionHandler();
     }
@@ -62,7 +64,7 @@ class RestifyServiceProvider extends ServiceProvider
     {
         collect(Restify::$repositories)
             ->filter(fn ($repository) => $repository::prefix())
-            ->each(function ($repository) use ($config) {
+            ->each(function (string $repository) use ($config) {
                 $config['prefix'] = $repository::prefix();
                 Route::group($config, function () {
                     $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
@@ -75,7 +77,7 @@ class RestifyServiceProvider extends ServiceProvider
     public function registerIndexPrefixed($config)
     {
         collect(Restify::$repositories)
-            ->filter(fn ($repository) => $repository::indexPrefix())
+            ->filter(fn ($repository) => $repository::hasIndexPrefix())
             ->each(function ($repository) use ($config) {
                 $config['prefix'] = $repository::indexPrefix();
                 Route::group($config, function () {

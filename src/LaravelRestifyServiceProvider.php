@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\CheckPassport;
 use Binaryk\LaravelRestify\Commands\DevCommand;
+use Binaryk\LaravelRestify\Commands\MatcherCommand;
 use Binaryk\LaravelRestify\Commands\PolicyCommand;
 use Binaryk\LaravelRestify\Commands\Refresh;
 use Binaryk\LaravelRestify\Commands\RepositoryCommand;
@@ -61,6 +62,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         $this->commands([
             RepositoryCommand::class,
             ActionCommand::class,
+            MatcherCommand::class,
             DevCommand::class,
         ]);
     }

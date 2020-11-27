@@ -26,7 +26,7 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_returns_authenticated_user()
     {
-        $response = $this->getJson('/restify-api/profile')
+        $response = $this->getJson('profile')
             ->assertStatus(200)
             ->assertJsonStructure([
                 'data',
@@ -39,7 +39,7 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_returns_authenticated_user_with_related_posts()
     {
-        $this->getJson('/restify-api/profile?related=posts')
+        $this->getJson('profile?related=posts')
             ->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
@@ -54,7 +54,7 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_returns_authenticated_user_with_meta_profile_data()
     {
-        $this->getJson('/restify-api/profile')
+        $this->getJson('profile')
             ->assertStatus(200)
             ->assertJsonStructure([
                 'data',
@@ -66,7 +66,7 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_update()
     {
-        $response = $this->putJson('restify-api/profile', [
+        $response = $this->putJson('profile', [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
         ])
@@ -80,7 +80,7 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_update_password()
     {
-        $this->putJson('restify-api/profile', [
+        $this->putJson('profile', [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
             'password' => 'secret',
@@ -97,7 +97,7 @@ class ProfileControllerTest extends IntegrationTest
             'email' => 'existing@gmail.com',
         ]);
 
-        $this->putJson('restify-api/profile', [
+        $this->putJson('profile', [
             'email' => 'existing@gmail.com',
             'name' => 'Eduard',
         ])
@@ -108,7 +108,7 @@ class ProfileControllerTest extends IntegrationTest
     {
         $file = UploadedFile::fake()->image($this->getTestJpg())->size(100);
 
-        $this->postJson('restify-api/profile/avatar', [
+        $this->postJson('profile/avatar', [
             'avatar' => $file,
         ])
             ->assertStatus(200);
@@ -118,7 +118,7 @@ class ProfileControllerTest extends IntegrationTest
     {
         UserRepository::$canUseForProfileUpdate = true;
 
-        $this->putJson('/restify-api/profile', [
+        $this->putJson('profile', [
             'email' => 'contact@binarschool.com',
             'name' => 'Ed',
         ])
@@ -136,7 +136,7 @@ class ProfileControllerTest extends IntegrationTest
     {
         UserRepository::$canUseForProfile = true;
 
-        $response = $this->getJson('/restify-api/profile')
+        $response = $this->getJson('profile')
             ->assertStatus(200)
             ->assertJsonStructure([
                 'attributes',
@@ -152,14 +152,14 @@ class ProfileControllerTest extends IntegrationTest
     {
         UserRepository::$canUseForProfile = true;
 
-        $response = $this->getJson('/restify-api/profile?related=posts')
+        $response = $this->getJson('profile?related=posts')
             ->assertStatus(200)
             ->assertJsonStructure([
                 'attributes',
                 'relationships' => [
                     'posts' => [
                         [
-                            'attributes',
+                            'id',
                         ],
                     ],
                 ],
@@ -178,7 +178,7 @@ class ProfileControllerTest extends IntegrationTest
             'roles' => '',
         ];
 
-        $this->getJson('/restify-api/profile')
+        $this->getJson('profile')
             ->assertStatus(200)
             ->assertJsonStructure([
                 'attributes',
@@ -192,7 +192,7 @@ class ProfileControllerTest extends IntegrationTest
     {
         UserRepository::$canUseForProfileUpdate = true;
 
-        $response = $this->putJson('restify-api/profile', [
+        $response = $this->putJson('profile', [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
         ])

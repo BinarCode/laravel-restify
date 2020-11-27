@@ -7,7 +7,7 @@ use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Models\LaravelRestifyModel;
 use Binaryk\LaravelRestify\Services\AuthService;
-use Binaryk\LaravelRestify\Tests\Fixtures\User\SimpleUser;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\SampleUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -37,7 +37,7 @@ class AuthServiceRegisterTest extends IntegrationTest
 
     public function test_register_throw_user_not_authenticatable()
     {
-        $this->app->instance(User::class, (new class extends SimpleUser implements Passportable {
+        $this->app->instance(User::class, (new class extends SampleUser implements Passportable {
         }));
 
         $user = [

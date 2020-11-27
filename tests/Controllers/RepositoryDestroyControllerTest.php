@@ -9,9 +9,6 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryDestroyControllerTest extends IntegrationTest
 {
     protected function setUp(): void
@@ -27,7 +24,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $this->assertInstanceOf(Post::class, Post::find($post->id));
 
-        $this->withoutExceptionHandling()->delete('/restify-api/posts/'.$post->id, [
+        $this->withoutExceptionHandling()->delete('posts/'.$post->id, [
             'title' => 'Updated title',
         ])
             ->assertStatus(204);
@@ -41,9 +38,9 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $post = factory(Post::class)->create(['user_id' => 1]);
 
-        $_SERVER['restify.post.deletable'] = false;
+        $_SERVER['restify.post.delete'] = false;
 
-        $this->delete('/restify-api/posts/'.$post->id, [
+        $this->delete('posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertStatus(403)
             ->assertJson([

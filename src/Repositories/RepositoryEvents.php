@@ -30,6 +30,17 @@ trait RepositoryEvents
         }
     }
 
+    public static function mounting()
+    {
+        if (static::$prefix) {
+            static::setPrefix(static::$prefix, static::uriKey());
+        }
+
+        if (static::$indexPrefix) {
+            static::setIndexPrefix(static::$indexPrefix, static::uriKey());
+        }
+    }
+
     /**
      * Clear the list of booted repositories so they will be re-booted.
      *
