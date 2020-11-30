@@ -30,7 +30,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(CompanyWithUsersRepository::uriKey() . "/{$company->id}")
+        $this->get(CompanyWithUsersRepository::uriKey()."/{$company->id}")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -50,14 +50,14 @@ class BelongsToManyFieldTest extends IntegrationTest
 
         $_SERVER['hide_users_from_show'] = true;
 
-        $this->get(CompanyWithUsersRepository::uriKey() . "/{$company->id}")
+        $this->get(CompanyWithUsersRepository::uriKey()."/{$company->id}")
             ->assertJsonStructure([
                 'data' => [],
             ])->assertJsonMissing([
                 [
                     'relationships' => [
                         'users' => [],
-                    ]]
+                    ], ],
             ]);
     }
 
@@ -77,7 +77,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             [
                 'relationships' => [
                     'users' => [],
-                ]]
+                ], ],
         ]);
     }
 }
