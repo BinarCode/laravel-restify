@@ -22,22 +22,43 @@ class BelongsToManyFieldTest extends IntegrationTest
         ]);
     }
 
-    public function test_displays_on_relationships()
+    public function test_displays_on_relationships_show()
     {
-        tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(factory(Company::class)->create(), function (Company $company) {
             $company->users()->attach(
                 factory(User::class, 5)->create()
             );
         });
 
-        $this->get(CompanyWithUsersRepository::uriKey())
+        $this->get(CompanyWithUsersRepository::uriKey() . "/{$company->id}")
             ->assertJsonStructure([
-                'data' => [[
+                'data' => [
                     'relationships' => [
                         'users' => [],
-                    ], ],
+                    ],
                 ],
-            ])->assertJsonCount(5, 'data.0.relationships.users');
+            ])->assertJsonCount(5, 'data.relationships.users');
+    }
+
+    public function test_can_hide_relationships()
+    {
+        $company = tap(factory(Company::class)->create(), function (Company $company) {
+            $company->users()->attach(
+                factory(User::class, 5)->create()
+            );
+        });
+
+        $_SERVER['hide_users_from_show'] = true;
+
+        $this->get(CompanyWithUsersRepository::uriKey() . "/{$company->id}")
+            ->assertJsonStructure([
+                'data' => [],
+            ])->assertJsonMissing([
+                [
+                    'relationships' => [
+                        'users' => [],
+                    ]]
+            ]);
     }
 
     public function test_ignored_when_storing()
@@ -52,12 +73,11 @@ class BelongsToManyFieldTest extends IntegrationTest
         $this->postJson(CompanyWithUsersRepository::uriKey(), [
             'name' => 'Binar Code',
             'users' => [1, 2],
-        ])->assertJsonStructure([
-            'data' => [
+        ])->assertJsonMissing([
+            [
                 'relationships' => [
                     'users' => [],
-                ],
-            ],
+                ]]
         ]);
     }
 }
@@ -71,7 +91,10 @@ class CompanyWithUsersRepository extends Repository
         return [
             field('name'),
 
-            BelongsToMany::make('users', 'users', UserRepository::class),
+            BelongsToMany::make('users', 'users', UserRepository::class)
+                ->hideFromShow(function () {
+                    return $_SERVER['hide_users_from_show'] ?? false;
+                }),
         ];
     }
 

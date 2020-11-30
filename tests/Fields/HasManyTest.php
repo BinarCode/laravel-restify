@@ -38,17 +38,15 @@ class HasManyTest extends IntegrationTest
 
     public function test_present_on_relations()
     {
-        factory(Post::class)->create([
+        $post = factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]);
 
-        $this->get(UserWithPosts::uriKey())
+        $this->get(UserWithPosts::uriKey() . "/$post->id")
             ->assertJsonStructure([
                 'data' => [
-                    [
-                        'relationships' => [
-                            'posts',
-                        ],
+                    'relationships' => [
+                        'posts',
                     ],
                 ],
             ]);
@@ -56,12 +54,12 @@ class HasManyTest extends IntegrationTest
 
     public function test_paginated_on_relation()
     {
-        tap($this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 20);
+        $user = tap($this->mockUsers()->first(), function ($user) {
+            $this->mockPosts($user->id, 22);
         });
 
-        $this->get(UserWithPosts::uriKey().'?relatablePerPage=20')
-            ->assertJsonCount(20, 'data.0.relationships.posts');
+        $this->get(UserWithPosts::uriKey() . "/{$user->id}?relatablePerPage=20")
+            ->assertJsonCount(20, 'data.relationships.posts');
     }
 
     public function test_unauthorized_see_relationship_posts()
@@ -69,11 +67,11 @@ class HasManyTest extends IntegrationTest
         $_SERVER['restify.post.show'] = false;
 
         Gate::policy(Post::class, PostPolicy::class);
-        tap($this->mockUsers()->first(), function ($user) {
+        $user = tap($this->mockUsers()->first(), function ($user) {
             $this->mockPosts($user->id, 20);
         });
 
-        $this->get(UserWithPosts::uriKey())
+        $this->get(UserWithPosts::uriKey() . "/$user->id")
             ->assertForbidden();
     }
 
@@ -105,7 +103,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', 'posts', PostRepository::class),
             ]);
 
-        $this->get(UserWithPosts::uriKey()."/{$u->id}/posts?perPage=5")
+        $this->get(UserWithPosts::uriKey() . "/{$u->id}/posts?perPage=5")
             ->assertJsonCount(5, 'data');
     }
 
@@ -129,7 +127,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', 'posts', PostRepository::class),
             ]);
 
-        $this->get(UserWithPosts::uriKey()."/{$u->id}/posts?title=wew")
+        $this->get(UserWithPosts::uriKey() . "/{$u->id}/posts?title=wew")
             ->assertJsonCount(1, 'data');
     }
 
@@ -153,12 +151,12 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', 'posts', PostRepository::class),
             ]);
 
-        $this->get(UserWithPosts::uriKey()."/{$u->id}/posts")
+        $this->get(UserWithPosts::uriKey() . "/{$u->id}/posts")
             ->assertJsonCount(0, 'data');
 
         $_SERVER['restify.post.allowRestify'] = false;
 
-        $this->get(UserWithPosts::uriKey()."/{$u->id}/posts")
+        $this->get(UserWithPosts::uriKey() . "/{$u->id}/posts")
             ->assertForbidden();
     }
 
@@ -181,7 +179,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', 'posts', PostRepository::class),
             ]);
 
-        $this->post(UserWithPosts::uriKey()."/{$u->id}/posts", [
+        $this->post(UserWithPosts::uriKey() . "/{$u->id}/posts", [
             'title' => 'Test',
         ])->assertCreated();
 
@@ -202,7 +200,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', 'posts', PostRepository::class),
             ]);
 
-        $this->get(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->get(UserWithPosts::uriKey() . "/{$userId}/posts/{$post->id}", [
             'title' => 'Test',
         ])->assertJsonStructure([
             'data' => ['attributes'],
@@ -216,7 +214,7 @@ class HasManyTest extends IntegrationTest
 
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
 
-        $this->get(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->get(UserWithPosts::uriKey() . "/{$userId}/posts/{$post->id}", [
             'title' => 'Test',
         ])->assertForbidden();
     }
@@ -229,7 +227,7 @@ class HasManyTest extends IntegrationTest
         $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
         $secondPost = $this->mockPosts($secondUserId = $this->mockUsers()->first()->id, 1)->first();
 
-        $this->get(UserWithPosts::uriKey()."/{$userId}/posts/{$secondPost->id}")
+        $this->get(UserWithPosts::uriKey() . "/{$userId}/posts/{$secondPost->id}")
             ->assertNotFound();
     }
 
@@ -240,7 +238,7 @@ class HasManyTest extends IntegrationTest
 
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
 
-        $this->post(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->post(UserWithPosts::uriKey() . "/{$userId}/posts/{$post->id}", [
             'title' => 'Test',
         ])->assertOk();
 
@@ -256,7 +254,7 @@ class HasManyTest extends IntegrationTest
 
         $this->assertDatabaseCount('posts', 1);
 
-        $this->delete(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->delete(UserWithPosts::uriKey() . "/{$userId}/posts/{$post->id}", [
             'title' => 'Test',
         ])->assertNoContent();
 
@@ -272,7 +270,7 @@ class HasManyTest extends IntegrationTest
 
         $this->assertDatabaseCount('posts', 1);
 
-        $this->delete(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->delete(UserWithPosts::uriKey() . "/{$userId}/posts/{$post->id}", [
             'title' => 'Test',
         ])->assertForbidden();
 
@@ -282,7 +280,7 @@ class HasManyTest extends IntegrationTest
     public function test_it_validates_fields_when_storing_related()
     {
         $userId = $this->mockUsers()->first()->id;
-        $this->post(UserWithPosts::uriKey()."/{$userId}/posts", [
+        $this->post(UserWithPosts::uriKey() . "/{$userId}/posts", [
             /*'title' => 'Wew',*/
         ])->assertStatus(400);
     }

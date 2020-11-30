@@ -38,17 +38,15 @@ class BelongsToFieldTest extends IntegrationTest
 
     public function test_present_on_relations()
     {
-        factory(Post::class)->create([
+        $post = factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]);
 
-        $this->get(PostWithUserRepository::uriKey())
+        $this->get(PostWithUserRepository::uriKey() . "/$post->id")
             ->assertJsonStructure([
                 'data' => [
-                    [
-                        'relationships' => [
-                            'user',
-                        ],
+                    'relationships' => [
+                        'user',
                     ],
                 ],
             ]);
@@ -63,7 +61,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]), function ($post) {
-            $this->get(PostWithUserRepository::uriKey()."/{$post->id}")
+            $this->get(PostWithUserRepository::uriKey() . "/{$post->id}")
                 ->assertForbidden();
         });
     }
@@ -147,7 +145,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]), function ($post) {
             $newOwner = factory(User::class)->create();
-            $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
+            $this->put(PostWithUserRepository::uriKey() . "/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertOk();
@@ -167,7 +165,7 @@ class BelongsToFieldTest extends IntegrationTest
         ]), function ($post) {
             $firstOwnerId = $post->user->id;
             $newOwner = factory(User::class)->create();
-            $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
+            $this->put(PostWithUserRepository::uriKey() . "/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertForbidden();

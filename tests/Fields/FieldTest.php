@@ -143,7 +143,7 @@ class FieldTest extends IntegrationTest
 
         /** * @var Field $field */
         $field = Field::new('title')
-            ->append(function () {
+            ->value(function () {
                 return 'from append callback';
             })
             ->fillCallback(function ($request, $model) {
@@ -210,7 +210,7 @@ class FieldTest extends IntegrationTest
         };
 
         /** * @var Field $field */
-        $field = Field::new('title')->append('Append value.');
+        $field = Field::new('title')->value('Append value.');
 
         $field->fillAttribute($request, $model);
 
@@ -343,14 +343,14 @@ class FieldTest extends IntegrationTest
         /** * @var Field $field */
         $hiddenField = Field::new('title')
             ->hidden()
-            ->append('Append title');
+            ->value('Append title');
 
         $hiddenField->fillAttribute($request, $model);
 
         $this->assertEquals('Append title', $model->title);
 
         /** * @var Field $field */
-        $field = Field::new('title')->append('Visible title.');
+        $field = Field::new('title')->value('Visible title.');
 
         $field->fillAttribute($request, $model);
 
@@ -373,7 +373,7 @@ class FieldTest extends IntegrationTest
         /** * @var Field $field */
         $field = Field::new('title')
             ->hidden()
-            ->append(fn () => 'Append title');
+            ->value(fn () => 'Append title');
 
         $field->fillAttribute($request, $model);
 

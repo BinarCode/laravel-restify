@@ -24,20 +24,20 @@ class MorphToManyFieldTest extends IntegrationTest
 
     public function test_morph_to_many_displays_in_relationships()
     {
-        tap(factory(User::class)->create(), function (User $user) {
+        $user = tap(factory(User::class)->create(), function (User $user) {
             $user->roles()->attach(
                 factory(Role::class, 3)->create()
             );
         });
 
-        $this->get(UserWithRolesRepository::uriKey())
+        $this->get(UserWithRolesRepository::uriKey() . "/$user->id")
             ->assertJsonStructure([
-                'data' => [[
+                'data' => [
                     'relationships' => [
                         'roles' => [],
-                    ], ],
+                    ],
                 ],
-            ])->assertJsonCount(3, 'data.0.relationships.roles');
+            ])->assertJsonCount(3, 'data.relationships.roles');
     }
 
     public function test_morph_to_many_ignored_when_store()

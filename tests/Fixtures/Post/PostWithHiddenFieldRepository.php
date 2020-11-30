@@ -19,7 +19,7 @@ class PostWithHiddenFieldRepository extends Repository
         return [
             Field::new('user_id')->hidden(),
 
-            Field::new('category')->hidden()->append('Append category for a hidden field.'),
+            Field::new('category')->hidden()->value('Append category for a hidden field.'),
 
             Field::new('title'),
         ];

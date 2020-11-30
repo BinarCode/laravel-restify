@@ -106,7 +106,7 @@ class Field extends OrganicField implements JsonSerializable
      *
      * @var callable
      */
-    protected $appendCallback;
+    protected $valueCallback;
 
     /**
      * Closure be used to be called after the field value stored.
@@ -217,7 +217,7 @@ class Field extends OrganicField implements JsonSerializable
         }
 
         if ($this->isHidden($request)) {
-            return $this->fillAttributeFromAppend(
+            return $this->fillAttributeFromValue(
                 $request, $model, $this->label ?? $this->attribute
             );
         }
@@ -226,7 +226,11 @@ class Field extends OrganicField implements JsonSerializable
             $request, $model, $this->label ?? $this->attribute, $bulkRow
         );
 
-        $this->fillAttributeFromAppend(
+        $this->fillAttributeFromCallback(
+            $request, $model, $this->label ?? $this->attribute, $bulkRow
+        );
+
+        $this->fillAttributeFromValue(
             $request, $model, $this->label ?? $this->attribute, $bulkRow
         );
 
@@ -247,29 +251,48 @@ class Field extends OrganicField implements JsonSerializable
             ? $attribute
             : "{$bulkRow}.{$attribute}";
 
-        tap(($request->input($attribute) ?? $request[$attribute]), fn ($value) => $model->{$this->attribute} = is_callable($cb = $this->guessFillableMethod($request))
-            ? call_user_func($cb, $value, $request, $model, $attribute, $bulkRow)
-            : ($request->has($attribute) ? $value : $model->{$this->attribute})
+        if(! ($request->exists($attribute) || $request->input($attribute))) {
+            return;
+        }
+
+        tap(($request->input($attribute) ?? $request[$attribute]), fn ($value) => $model->{$this->attribute} = $request->has($attribute)
+            ? $value
+            : $model->{$this->attribute}
         );
     }
 
     /**
-     * Fill the model with the value from append.
+     * Fill the model with value from the callback.
+     *
+     * @param RestifyRequest $request
+     * @param $model
+     * @param $attribute
+     * @param int|null $bulkRow
+     */
+    protected function fillAttributeFromCallback(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
+    {
+        if (is_callable($cb = $this->guessFillableMethod($request))) {
+            $model->{$this->attribute} = call_user_func($cb, $request, $model, $attribute, $bulkRow);
+        }
+    }
+
+    /**
+     * Fill the model with the value from value.
      *
      * @param RestifyRequest $request
      * @param $model
      * @param $attribute
      * @return Field
      */
-    protected function fillAttributeFromAppend(RestifyRequest $request, $model, $attribute)
+    protected function fillAttributeFromValue(RestifyRequest $request, $model, $attribute)
     {
-        if (! isset($this->appendCallback)) {
+        if (! isset($this->valueCallback)) {
             return;
         }
 
-        $model->{$attribute} = is_callable($this->appendCallback)
-            ? call_user_func($this->appendCallback, $request, $model, $attribute)
-            : $this->appendCallback;
+        $model->{$attribute} = is_callable($this->valueCallback)
+            ? call_user_func($this->valueCallback, $request, $model, $attribute)
+            : $this->valueCallback;
 
         return $this;
     }
@@ -568,16 +591,26 @@ class Field extends OrganicField implements JsonSerializable
     }
 
     /**
-     * Append values when store/update.
+     * Force set values when store/update.
      *
      * @param callable|string $value
      * @return $this
      */
-    public function append($value)
+    public function value($value)
     {
-        $this->appendCallback = $value;
+        $this->valueCallback = $value;
 
         return $this;
+    }
+
+    /**
+     * @param $value
+     * @return $this
+     * @deprecated
+     */
+    public function append($value)
+    {
+        return $this->value($value);
     }
 
     public function setRepository(Repository $repository): Field

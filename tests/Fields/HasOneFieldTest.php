@@ -37,17 +37,15 @@ class HasOneFieldTest extends IntegrationTest
 
     public function test_present_on_relations()
     {
-        factory(Post::class)->create([
+        $post = factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]);
 
-        $this->get(UserWithPostRepository::uriKey())
+        $this->get(UserWithPostRepository::uriKey() . "/$post->id")
             ->assertJsonStructure([
                 'data' => [
-                    [
-                        'relationships' => [
-                            'post',
-                        ],
+                    'relationships' => [
+                        'post',
                     ],
                 ],
             ]);
@@ -62,7 +60,7 @@ class HasOneFieldTest extends IntegrationTest
         tap(factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]), function ($post) {
-            $this->get(UserWithPostRepository::uriKey()."/{$post->id}")
+            $this->get(UserWithPostRepository::uriKey() . "/{$post->id}")
                 ->assertForbidden();
         });
     }
