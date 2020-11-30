@@ -30,7 +30,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(UserWithRolesRepository::uriKey() . "/$user->id")
+        $this->get(UserWithRolesRepository::uriKey()."/$user->id")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [

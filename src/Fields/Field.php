@@ -251,7 +251,7 @@ class Field extends OrganicField implements JsonSerializable
             ? $attribute
             : "{$bulkRow}.{$attribute}";
 
-        if(! ($request->exists($attribute) || $request->input($attribute))) {
+        if (! ($request->exists($attribute) || $request->input($attribute))) {
             return;
         }
 
