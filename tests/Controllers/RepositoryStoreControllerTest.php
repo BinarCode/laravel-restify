@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
 
@@ -94,7 +95,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
     public function test_will_not_store_readonly_fields()
     {
         $user = $this->mockUsers()->first();
-        $response = $this->postJson('posts-unauthorized-fields', [
+        $response = $this->postJson(PostUnauthorizedFieldRepository::uriKey(), [
             'user_id' => $user->id,
             'image' => 'avatar.png',
             'title' => 'Some post title',
