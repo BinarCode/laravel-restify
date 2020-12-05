@@ -7,9 +7,6 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Mergeable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class PostUnauthorizedFieldRepository extends Repository implements Mergeable
 {
     public static $model = Post::class;

@@ -158,18 +158,18 @@ Field::new('password')->showRequest(function ($value) {
 });
 ```
 
-## Append Callback
+## Value Callback
 
-Usually, there is necessary to store a field as `Auth::id()`. This field will be automatically populated by Restify if you specify the `append` value for it:
+Usually, there is necessary to store a field as `Auth::id()`. This field will be automatically populated by Restify if you specify the `value` value for it:
 
 ```php
-Field::new('user_id')->append(Auth::id());
+Field::new('user_id')->value(Auth::id());
 ```
 
 or using a closure:
 
 ```php
-Field::new('user_id')->hidden()->append(function(RestifyRequest $request, $model, $attribute) {
+Field::new('user_id')->hidden()->value(function(RestifyRequest $request, $model, $attribute) {
     return $request->user()->id;
 });
 ```
@@ -190,10 +190,10 @@ Field can be setup as hidden:
 Field::new('token')->hidden(); // this will not be visible 
 ```
 
-However, you can populate the field value when the entity is stored, by using `append`:
+However, you can populate the field value when the entity is stored, by using `value`:
 
 ```php
-Field::new('token')->append(Str::random(32))->hidden();
+Field::new('token')->value(Str::random(32))->hidden();
 ```
 
 # Variations

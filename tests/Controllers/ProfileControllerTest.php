@@ -27,7 +27,7 @@ class ProfileControllerTest extends IntegrationTest
     public function test_profile_returns_authenticated_user()
     {
         $response = $this->getJson('profile')
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonStructure([
                 'data',
             ]);
@@ -40,7 +40,7 @@ class ProfileControllerTest extends IntegrationTest
     public function test_profile_returns_authenticated_user_with_related_posts()
     {
         $this->getJson('profile?related=posts')
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonStructure([
                 'data' => [
                     'posts' => [
@@ -55,7 +55,7 @@ class ProfileControllerTest extends IntegrationTest
     public function test_profile_returns_authenticated_user_with_meta_profile_data()
     {
         $this->getJson('profile')
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonStructure([
                 'data',
                 'meta' => [
@@ -69,8 +69,7 @@ class ProfileControllerTest extends IntegrationTest
         $response = $this->putJson('profile', [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
-        ])
-            ->assertStatus(200);
+        ])->assertOk();
 
         $response->assertJsonFragment([
             'email' => 'contact@binarschool.com',
@@ -85,8 +84,7 @@ class ProfileControllerTest extends IntegrationTest
             'name' => 'Eduard',
             'password' => 'secret',
             'password_confirmation' => 'secret',
-        ])
-            ->assertStatus(200);
+        ])->assertOk();
 
         $this->assertTrue(Hash::check('secret', $this->authenticatedAs->password));
     }
@@ -100,8 +98,7 @@ class ProfileControllerTest extends IntegrationTest
         $this->putJson('profile', [
             'email' => 'existing@gmail.com',
             'name' => 'Eduard',
-        ])
-            ->assertStatus(400);
+        ])->assertStatus(400);
     }
 
     public function test_profile_upload_avatar()
@@ -110,8 +107,7 @@ class ProfileControllerTest extends IntegrationTest
 
         $this->postJson('profile/avatar', [
             'avatar' => $file,
-        ])
-            ->assertStatus(200);
+        ])->assertOk();
     }
 
     public function test_profile_validation_from_repository()
@@ -153,7 +149,7 @@ class ProfileControllerTest extends IntegrationTest
         UserRepository::$canUseForProfile = true;
 
         $response = $this->getJson('profile?related=posts')
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonStructure([
                 'attributes',
                 'relationships' => [
@@ -179,7 +175,7 @@ class ProfileControllerTest extends IntegrationTest
         ];
 
         $this->getJson('profile')
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJsonStructure([
                 'attributes',
                 'meta' => [
@@ -195,8 +191,7 @@ class ProfileControllerTest extends IntegrationTest
         $response = $this->putJson('profile', [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
-        ])
-            ->assertStatus(200);
+        ])->assertOk();
 
         $response->assertJsonFragment([
             'email' => 'contact@binarschool.com',

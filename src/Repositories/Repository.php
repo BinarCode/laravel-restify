@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\CreationAware;
@@ -511,9 +512,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $withs = collect();
 
         /** * To avoid circular relationships and deep stack calls, we will do not load eager fields. */
-        if (! $this->isEagerState()) {
+        if (! $this->isEagerState() && $request instanceof RepositoryShowRequest) {
             $this->collectFields($request)
                 ->forEager($request, $this)
+                ->filter(fn (EagerField $field) => $field->isShownOnShow($request, $this))
                 ->each(fn (EagerField $field) => $withs->put($field->attribute, $field->resolve($this)->value));
         }
 

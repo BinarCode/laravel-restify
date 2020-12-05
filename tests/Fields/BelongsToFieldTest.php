@@ -38,17 +38,15 @@ class BelongsToFieldTest extends IntegrationTest
 
     public function test_present_on_relations()
     {
-        factory(Post::class)->create([
+        $post = factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]);
 
-        $this->get(PostWithUserRepository::uriKey())
+        $this->get(PostWithUserRepository::uriKey()."/$post->id")
             ->assertJsonStructure([
                 'data' => [
-                    [
-                        'relationships' => [
-                            'user',
-                        ],
+                    'relationships' => [
+                        'user',
                     ],
                 ],
             ]);

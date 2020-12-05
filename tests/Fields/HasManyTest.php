@@ -38,17 +38,15 @@ class HasManyTest extends IntegrationTest
 
     public function test_present_on_relations()
     {
-        factory(Post::class)->create([
+        $post = factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]);
 
-        $this->get(UserWithPosts::uriKey())
+        $this->get(UserWithPosts::uriKey()."/$post->id")
             ->assertJsonStructure([
                 'data' => [
-                    [
-                        'relationships' => [
-                            'posts',
-                        ],
+                    'relationships' => [
+                        'posts',
                     ],
                 ],
             ]);
@@ -56,12 +54,12 @@ class HasManyTest extends IntegrationTest
 
     public function test_paginated_on_relation()
     {
-        tap($this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 20);
+        $user = tap($this->mockUsers()->first(), function ($user) {
+            $this->mockPosts($user->id, 22);
         });
 
-        $this->get(UserWithPosts::uriKey().'?relatablePerPage=20')
-            ->assertJsonCount(20, 'data.0.relationships.posts');
+        $this->get(UserWithPosts::uriKey()."/{$user->id}?relatablePerPage=20")
+            ->assertJsonCount(20, 'data.relationships.posts');
     }
 
     public function test_unauthorized_see_relationship_posts()
@@ -69,11 +67,11 @@ class HasManyTest extends IntegrationTest
         $_SERVER['restify.post.show'] = false;
 
         Gate::policy(Post::class, PostPolicy::class);
-        tap($this->mockUsers()->first(), function ($user) {
+        $user = tap($this->mockUsers()->first(), function ($user) {
             $this->mockPosts($user->id, 20);
         });
 
-        $this->get(UserWithPosts::uriKey())
+        $this->get(UserWithPosts::uriKey()."/$user->id")
             ->assertForbidden();
     }
 
