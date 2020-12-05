@@ -191,8 +191,7 @@ class ProfileControllerTest extends IntegrationTest
         $response = $this->putJson('profile', [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
-        ])
-            ->assertOk()
+        ])->assertOk();
 
         $response->assertJsonFragment([
             'email' => 'contact@binarschool.com',
