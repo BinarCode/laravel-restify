@@ -28,11 +28,17 @@ class RepositoryFilterControllerTest extends IntegrationTest
             'title',
         ];
 
-        $response = $this->getJson('posts/filters?include=matches,sortable')
+        PostRepository::$search = [
+            'id',
+            'title',
+        ];
+
+        $response = $this->getJson('posts/filters?include=matches,sortables,searchables')
             // 5 custom filters
             // 1 match filter
             // 1 sort
-            ->assertJsonCount(6, 'data');
+            // 2 searchable
+            ->assertJsonCount(8, 'data');
 
 
         $this->assertSame(
@@ -46,6 +52,12 @@ class RepositoryFilterControllerTest extends IntegrationTest
         );
         $this->assertSame(
             $response->json('data.5.column'), 'title'
+        );
+        $this->assertSame(
+            $response->json('data.6.key'), 'searchables'
+        );
+        $this->assertSame(
+            $response->json('data.6.column'), 'id'
         );
     }
 

@@ -11,6 +11,8 @@ class SortableFilter extends Filter
 {
     public $column = 'id';
 
+    public static $uriKey = 'sortables';
+
     public function filter(RestifyRequest $request, $query, $direction)
     {
         //@todo improve this

@@ -7,38 +7,36 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
 
-class MatchFilter extends Filter
+class SearchableFilter extends Filter
 {
     public $column = 'id';
 
-    public static $uriKey = 'matches';
+    public static $uriKey = 'searchables';
 
     public function filter(RestifyRequest $request, $query, $value)
     {
         //@todo improve this
-        $query->where($this->column, $value);
+        $query->where($this->column, 'LIKE', "%{$value}%");
     }
 
-    public static function makeFromSimple($column, $type): self
+    public static function makeFromSimple($column): self
     {
-        return tap(new static, function (MatchFilter $filter) use ($column, $type) {
-            $filter->type = $type;
+        return tap(new static, function (SearchableFilter $filter) use ($column) {
             $filter->column = $column;
         });
     }
 
     public static function makeForRepository(Repository $repository): Collection
     {
-        return collect($repository::getMatchByFields())->map(function ($type, $column) {
-            return static::makeFromSimple($column, $type);
-        })->values();
+        return collect($repository::getSearchableFields())->map(function ($column) {
+            return static::makeFromSimple($column);
+        });
     }
 
     public function jsonSerialize()
     {
         return [
             'class' => static::class,
-            'type' => $this->getType(),
             'key' => static::uriKey(),
             'column' => $this->column,
         ];

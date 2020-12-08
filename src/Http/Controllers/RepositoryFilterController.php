@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryFiltersRequest;
 use Illuminate\Support\Collection;
@@ -16,14 +17,19 @@ class RepositoryFilterController extends RepositoryController
 
         return $this->response()->data(
             $repository->availableFilters($request)
-                ->when(Str::contains($request->input('include'), 'matches'), function (Collection  $collection) use ($repository) {
+                ->when(Str::contains($request->input('include'), MatchFilter::uriKey()), function (Collection  $collection) use ($repository) {
                     return $collection->merge(
                         MatchFilter::makeForRepository($repository)
                     );
                 })
-                ->when(Str::contains($request->input('include'), 'sortable'), function (Collection  $collection) use ($repository) {
+                ->when(Str::contains($request->input('include'), SortableFilter::uriKey()), function (Collection  $collection) use ($repository) {
                     return $collection->merge(
                         SortableFilter::makeForRepository($repository)
+                    );
+                })
+                ->when(Str::contains($request->input('include'), SearchableFilter::uriKey()), function (Collection  $collection) use ($repository) {
+                    return $collection->merge(
+                        SearchableFilter::makeForRepository($repository)
                     );
                 })
         );
