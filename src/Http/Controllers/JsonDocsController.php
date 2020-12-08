@@ -9,8 +9,7 @@ class JsonDocsController extends RepositoryController
 {
     public function __invoke(RestifyRequest $request)
     {
-        collect(Restify::$repositories)->each(function($repository) {
-
+        collect(Restify::$repositories)->each(function ($repository) {
         });
     }
 }

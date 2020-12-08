@@ -28,7 +28,7 @@ Route::get('/profile', '\\'.ProfileController::class);
 Route::put('/profile', '\\'.ProfileUpdateController::class);
 Route::post('/profile/avatar', '\\'.ProfileAvatarController::class);
 
-Route::get('/json-docs', '\\' . JsonDocsController::class);
+Route::get('/json-docs', '\\'.JsonDocsController::class);
 
 // Filters
 Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
