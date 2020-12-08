@@ -17,17 +17,17 @@ class RepositoryFilterController extends RepositoryController
 
         return $this->response()->data(
             $repository->availableFilters($request)
-                ->when(Str::contains($request->input('include'), MatchFilter::uriKey()), function (Collection  $collection) use ($repository) {
+                ->when(Str::contains($request->input('include'), MatchFilter::uriKey()), function (Collection $collection) use ($repository) {
                     return $collection->merge(
                         MatchFilter::makeForRepository($repository)
                     );
                 })
-                ->when(Str::contains($request->input('include'), SortableFilter::uriKey()), function (Collection  $collection) use ($repository) {
+                ->when(Str::contains($request->input('include'), SortableFilter::uriKey()), function (Collection $collection) use ($repository) {
                     return $collection->merge(
                         SortableFilter::makeForRepository($repository)
                     );
                 })
-                ->when(Str::contains($request->input('include'), SearchableFilter::uriKey()), function (Collection  $collection) use ($repository) {
+                ->when(Str::contains($request->input('include'), SearchableFilter::uriKey()), function (Collection $collection) use ($repository) {
                     return $collection->merge(
                         SearchableFilter::makeForRepository($repository)
                     );
