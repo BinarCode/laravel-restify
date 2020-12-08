@@ -16,12 +16,12 @@ class RepositoryFilterController extends RepositoryController
 
         return $this->response()->data(
             $repository->availableFilters($request)
-                ->when(Str::contains($request->input('include'), 'matches'), function (Collection  $collection) use ($repository) {
+                ->when(Str::contains($request->input('include'), 'matches'), function (Collection $collection) use ($repository) {
                     return $collection->merge(
                         MatchFilter::makeForRepository($repository)
                     );
                 })
-                ->when(Str::contains($request->input('include'), 'sortable'), function (Collection  $collection) use ($repository) {
+                ->when(Str::contains($request->input('include'), 'sortable'), function (Collection $collection) use ($repository) {
                     return $collection->merge(
                         SortableFilter::makeForRepository($repository)
                     );

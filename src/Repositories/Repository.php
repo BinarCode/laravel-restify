@@ -525,6 +525,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->each(function ($relation) use ($request, $withs) {
                 if (Str::contains($relation, '.')) {
                     $this->resource->loadMissing($relation);
+
                     return $withs->put($key = Str::before($relation, '.'), Arr::get($this->resource->relationsToArray(), $key));
                 }
 
