@@ -40,7 +40,6 @@ class RepositoryFilterControllerTest extends IntegrationTest
             // 2 searchable
             ->assertJsonCount(8, 'data');
 
-
         $this->assertSame(
             $response->json('data.4.key'), 'matches'
         );
@@ -74,7 +73,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('posts?filters=' . $filters)
+            ->getJson('posts?filters='.$filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -96,7 +95,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('posts?filters=' . $filters)
+            ->getJson('posts?filters='.$filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -116,7 +115,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withExceptionHandling()
-            ->getJson('posts?filters=' . $filters)
+            ->getJson('posts?filters='.$filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
