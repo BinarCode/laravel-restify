@@ -29,6 +29,7 @@ use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -177,7 +178,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * Get the URI key for the resource.
+     * Get the URI key for the repository.
      *
      * @return string
      */
@@ -522,6 +523,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         collect(str_getcsv($request->input('related')))
             ->filter(fn ($relation) => in_array($relation, static::getRelated()))
             ->each(function ($relation) use ($request, $withs) {
+                if (Str::contains($relation, '.')) {
+                    $this->resource->loadMissing($relation);
+                    return $withs->put($key = Str::before($relation, '.'), Arr::get($this->resource->relationsToArray(), $key));
+                }
+
                 $paginator = $this->resource->relationLoaded($relation)
                     ? $this->resource->{$relation}
                     : $this->resource->{$relation}();

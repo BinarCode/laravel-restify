@@ -45,7 +45,7 @@ return [
 
         'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
 
-        'user_verify_url' => env('FRONTEND_APP_URL').'/verify?id={id}&hash={emailHash}',
+        'user_verify_url' => env('FRONTEND_APP_URL').'/verify/{id}/{emailHash}',
     ],
 
     /*

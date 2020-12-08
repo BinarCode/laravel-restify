@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use JsonSerializable;
 
 abstract class Filter implements JsonSerializable
@@ -17,6 +18,8 @@ abstract class Filter implements JsonSerializable
     public $value;
 
     public $canSeeCallback;
+
+    public static $uriKey;
 
     public function __construct()
     {
@@ -73,10 +76,31 @@ abstract class Filter implements JsonSerializable
         $this->value = $filter;
     }
 
+    /**
+     * Get the URI key for the filter.
+     *
+     * @return string
+     */
+    public static function uriKey()
+    {
+        if (property_exists(static::class, 'uriKey') && is_string(static::$uriKey)) {
+            return static::$uriKey;
+        }
+
+        $kebabWithoutRepository = Str::kebab(Str::replaceLast('Filter', '', class_basename(get_called_class())));
+
+        /**
+         * e.g. UserRepository => users
+         * e.g. LaravelEntityRepository => laravel-entities.
+         */
+        return Str::plural($kebabWithoutRepository);
+    }
+
     public function jsonSerialize()
     {
         return [
             'class' => static::class,
+            'key' => static::uriKey(),
             'type' => $this->getType(),
             'options' => collect($this->options(app(Request::class)))->map(function ($value, $key) {
                 return is_array($value) ? ($value + ['property' => $key]) : ['label' => $key, 'property' => $value];

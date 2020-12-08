@@ -12,6 +12,10 @@ class CompanyRepository extends Repository
 {
     public static $model = Company::class;
 
+    public static $related = [
+        'users',
+    ];
+
     public function fields(RestifyRequest $request)
     {
         return [

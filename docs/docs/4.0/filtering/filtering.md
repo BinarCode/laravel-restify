@@ -220,7 +220,7 @@ GET: /api/restify/posts?sort=+id
 ## Eager loading - aka withs
 
 When get a repository index or details about a single entity, often we have to get the related entities (we have access to).
-This eager loading is configurable by Restify as follow: 
+This eager loading is configurable by Restify as following: 
 
 ```php
 public static $related = ['posts'];
@@ -229,7 +229,7 @@ public static $related = ['posts'];
 This means that we could use `posts` query for eager loading posts:
 
 ```http request
-GET: /api/restify/users?with=posts
+GET: /api/restify/users?related=posts
 ```
 
 ## Pagination
