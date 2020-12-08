@@ -230,3 +230,9 @@ The response will look like this:
   ]
 ```
 
+Along with custom filters, you can also include in the response the primary filters (as matches), by using `?include` query param: 
+
+```http request
+/api/restify/posts/filters?include=matches,searchables,sortables
+```
+

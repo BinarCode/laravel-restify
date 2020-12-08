@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\ActiveBooleanFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\CreatedAfterDateFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\InactiveFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\SelectCategoryFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
@@ -14,11 +15,77 @@ class RepositoryFilterControllerTest extends IntegrationTest
 {
     public function test_can_get_available_filters()
     {
-        $response = $this
-            ->withoutExceptionHandling()
-            ->getJson('posts/filters');
+        $this->getJson('posts/filters')->assertJsonCount(4, 'data');
+    }
 
-        $this->assertCount(4, $response->json('data'));
+    public function test_available_filters_contains_matches_sortables_searches()
+    {
+        PostRepository::$match = [
+            'title' => 'text',
+        ];
+
+        PostRepository::$sort = [
+            'title',
+        ];
+
+        PostRepository::$search = [
+            'id',
+            'title',
+        ];
+
+        $response = $this->getJson('posts/filters?include=matches,sortables,searchables')
+            // 5 custom filters
+            // 1 match filter
+            // 1 sort
+            // 2 searchable
+            ->assertJsonCount(8, 'data');
+
+        $this->assertSame(
+            $response->json('data.4.key'), 'matches'
+        );
+        $this->assertSame(
+            $response->json('data.4.column'), 'title'
+        );
+        $this->assertSame(
+            $response->json('data.5.key'), 'sortables'
+        );
+        $this->assertSame(
+            $response->json('data.5.column'), 'title'
+        );
+        $this->assertSame(
+            $response->json('data.6.key'), 'searchables'
+        );
+        $this->assertSame(
+            $response->json('data.6.column'), 'id'
+        );
+    }
+
+    public function test_available_filters_returns_only_matches_sortables_searches()
+    {
+        PostRepository::$match = [
+            'title' => 'text',
+        ];
+
+        PostRepository::$sort = [
+            'title',
+        ];
+
+        PostRepository::$search = [
+            'id',
+            'title',
+        ];
+
+        $response = $this->getJson('posts/filters?only=matches,sortables,searchables')
+            ->assertJsonCount(4, 'data');
+
+        $response = $this->getJson('posts/filters?only=matches')
+            ->assertJsonCount(1, 'data');
+
+        $response = $this->getJson('posts/filters?only=sortables')
+            ->assertJsonCount(1, 'data');
+
+        $response = $this->getJson('posts/filters?only=searchables')
+            ->assertJsonCount(2, 'data');
     }
 
     public function test_value_filter_doesnt_require_value()

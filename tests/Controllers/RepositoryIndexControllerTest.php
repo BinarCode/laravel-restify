@@ -2,8 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -89,6 +92,27 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->assertCount(1, $response->json('data.0.relationships.user'));
         $this->assertArrayNotHasKey('user', $response->json('data.0.attributes'));
+    }
+
+    public function test_repository_with_deep_relations()
+    {
+        CompanyRepository::$related = ['users.posts'];
+
+        tap(factory(Company::class)->create(), function (Company $company) {
+            tap($company->users()->create(
+                array_merge(factory(User::class)->make()->toArray(), [
+                    'password' => 'secret',
+                ])
+            ), function (User $user) {
+                factory(Post::class)->create(['user_id' => $user->id]);
+            });
+        });
+
+        $response = $this->getJson(CompanyRepository::uriKey().'?related=users.posts')
+            ->assertOk();
+
+        $this->assertCount(1, $response->json('data.0.relationships.users'));
+        $this->assertCount(1, $response->json('data.0.relationships.users.0.posts'));
     }
 
     public function test_paginated_repository_with_relations()

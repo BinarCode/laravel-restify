@@ -56,10 +56,10 @@ Having this in place you're basically ready for the CRUD actions over posts. You
 | GET            | `/api/restify/posts/{post}`   | show    |
 | POST           | `/api/restify/posts`          | store   |
 | POST           | `/api/restify/posts/bulk`     | store multiple   |
-| POST           | `/api/restify/posts/bulk/update`     | store multiple   |
-| PATCH          | `/api/restify/posts/{post}`   | update  | 
-| PUT            | `/api/restify/posts/{post}`   | update  |
-| POST           | `/api/restify/posts/{post}`   | update  | 
+| POST           | `/api/restify/posts/bulk/update`     | update multiple   |
+| PATCH          | `/api/restify/posts/{post}`   | partial update  | 
+| PUT            | `/api/restify/posts/{post}`   | full update  |
+| POST           | `/api/restify/posts/{post}`   | partial of full update including attachments  | 
 | DELETE         | `/api/restify/posts/{post}`   | destroy |
 
 :::tip Update with files As you can see we provide 3 Verbs for the model update (PUT, PATCH, POST), the reason of that
@@ -195,14 +195,14 @@ You can customize the `meta` by creating your own `resolveShowMeta` method:
     }
 ```
 
-:::tip Resource property In the previous example we have used the `$this->resource` call, well, keep in mind, that you
+:::tip $resource property
+In the previous example we have used the `$this->resource` call, well, keep in mind, that you
 always have access to the current resource in your not static methods of the repository, were the resource is the actual
 current model. In the case above, the `$this->resource` represents the `Post` model with the `id=1`, because we're
 looking for the route: `/api/restify/posts/1`. A similar way to get the model is the `$this->model()` method.
 :::
 
-Well, a lot of methods to modify the serialization partials, however, you are free to customize the entire response at
-once by defining:
+As we saw before, there are many ways to partially modify the response (ie separate way to modify meta), however, you are free to customize the entire response at once by defining:
 
 ```php
     // PostRepository.php
