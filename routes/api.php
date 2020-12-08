@@ -1,6 +1,7 @@
 <?php
 
 use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
+use Binaryk\LaravelRestify\Http\Controllers\JsonDocsController;
 use Binaryk\LaravelRestify\Http\Controllers\ListActionsController;
 use Binaryk\LaravelRestify\Http\Controllers\ListRepositoryActionsController;
 use Binaryk\LaravelRestify\Http\Controllers\PerformActionController;
@@ -26,6 +27,8 @@ Route::get('/search', '\\'.GlobalSearchController::class);
 Route::get('/profile', '\\'.ProfileController::class);
 Route::put('/profile', '\\'.ProfileUpdateController::class);
 Route::post('/profile/avatar', '\\'.ProfileAvatarController::class);
+
+Route::get('/json-docs', '\\' . JsonDocsController::class);
 
 // Filters
 Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
