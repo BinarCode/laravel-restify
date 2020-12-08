@@ -20,6 +20,14 @@ request:
 GET: /api/restify/posts?search="Test title"
 ```
 
+### Get available searchables
+
+You can use the following request to available searchable attributes for a repository: 
+
+```http request
+/api/restify/posts/filters?only=searchables
+```
+
 ## Match
 
 Matching by specific attributes may be useful if you want an exact matching. 
@@ -187,6 +195,14 @@ The next step is to associate this class with the match key name in your `$match
 ];
 ```
 
+### Get available matches
+
+You can use the following request to get all repository matches:
+
+```http request
+/api/restify/posts/filters?only=matches
+```
+
 ## Sort 
 When index query entities, usually we have to sort by specific attributes. 
 This requires the `$sort` configuration:
@@ -216,6 +232,18 @@ or with plus sign before the field:
  ```http request
 GET: /api/restify/posts?sort=+id
 ```
+
+### Get available sorts
+
+You can use the following request to get sortable attributes for a repository: 
+
+```http request
+/api/restify/posts/filters?only=sortables
+```
+
+:::tip All filters
+You can use `/api/restify/posts/filters?only=sortables` request, and concatenate: `?only=sortables,matches, searchables` to get all of them at once.
+:::
 
 ## Eager loading - aka withs
 
