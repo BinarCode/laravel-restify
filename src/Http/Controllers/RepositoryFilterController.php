@@ -2,13 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
-use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryFiltersRequest;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class RepositoryFilterController extends RepositoryController
 {
@@ -21,19 +19,19 @@ class RepositoryFilterController extends RepositoryController
                 // After
                 ->when($request->has('include'), function (Collection $collection) use ($repository, $request) {
                     return $collection->merge(
-                        collect(str_getcsv($request->input('include')))->map(fn($key) => collect([
+                        collect(str_getcsv($request->input('include')))->map(fn ($key) => collect([
                             SearchableFilter::uriKey() => SearchableFilter::class,
                             MatchFilter::uriKey() => MatchFilter::class,
                             SortableFilter::uriKey() => SortableFilter::class,
-                        ])->get($key))->flatMap(fn($filterable) => $filterable::makeForRepository($repository))
+                        ])->get($key))->flatMap(fn ($filterable) => $filterable::makeForRepository($repository))
                     );
                 })
                 ->when($request->has('only'), function (Collection $collection) use ($repository, $request) {
-                    return collect(str_getcsv($request->input('only')))->map(fn($key) => collect([
+                    return collect(str_getcsv($request->input('only')))->map(fn ($key) => collect([
                         SearchableFilter::uriKey() => SearchableFilter::class,
                         MatchFilter::uriKey() => MatchFilter::class,
                         SortableFilter::uriKey() => SortableFilter::class,
-                    ])->get($key))->flatMap(fn($filterable) => $filterable::makeForRepository($repository));
+                    ])->get($key))->flatMap(fn ($filterable) => $filterable::makeForRepository($repository));
                 })
         );
     }
