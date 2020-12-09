@@ -543,7 +543,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     Model::class => fn () => fn () => $withs->put($relation, $paginator),
 
                 ])->first(fn ($fn, $class) => $paginator instanceof $class,
-                    fn () => $withs->put($relation, $paginator)
+                    fn () => fn () => $withs->put($relation, $paginator)
                 )();
             });
 
