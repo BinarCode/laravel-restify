@@ -100,7 +100,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         PostRepository::$related = ['user'];
 
         config([
-            'restify.casts.related' => RelatedCastWithAttributes::class
+            'restify.casts.related' => RelatedCastWithAttributes::class,
         ]);
 
         $user = $this->mockUsers(1)->first();
@@ -114,11 +114,11 @@ class RepositoryIndexControllerTest extends IntegrationTest
                     [
                         'relationships' => [
                             'user' => [
-                                ['attributes']
+                                ['attributes'],
                             ],
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ]);
     }
 
@@ -136,7 +136,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             });
         });
 
-        $response = $this->getJson(CompanyRepository::uriKey() . '?related=users.posts')
+        $response = $this->getJson(CompanyRepository::uriKey().'?related=users.posts')
             ->assertOk();
 
         $this->assertCount(1, $response->json('data.0.relationships.users'));
