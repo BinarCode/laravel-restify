@@ -533,9 +533,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     : $this->resource->{$relation}();
 
                 collect([
-                    Builder::class => fn () => $withs->put($relation, (static::$relatedCast)::fromBuilder($request, $paginator)),
+                    Builder::class => fn () => $withs->put($relation, (static::$relatedCast)::fromBuilder($request, $paginator, $this)),
 
-                    Relation::class => fn () => $withs->put($relation, (static::$relatedCast)::fromRelation($request, $paginator)),
+                    Relation::class => fn () => $withs->put($relation, (static::$relatedCast)::fromRelation($request, $paginator, $this)),
 
                     Collection::class => fn () => $withs->put($relation, $paginator),
 
