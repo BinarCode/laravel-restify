@@ -22,7 +22,7 @@ class ProfileController extends RepositoryController
             $user->{ProfileAvatarRequest::$userAvatarAttribute} = url($user->{ProfileAvatarRequest::$userAvatarAttribute});
         }
 
-        if ($related = $request->get('related')) {
+        if ($related = $request->input('related')) {
             $user->load(explode(',', $related));
         }
 
