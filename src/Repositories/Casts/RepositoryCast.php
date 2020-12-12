@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Repositories\Casts;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
 abstract class RepositoryCast
