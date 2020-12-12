@@ -70,15 +70,13 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     protected function registerPublishing()
     {
         $this->publishes([
-            __DIR__.'/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
+            __DIR__ . '/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
         ], 'restify-provider');
 
         $this->publishes([
-            __DIR__.'/../config/config.php' => config_path('restify.php'),
+            __DIR__ . '/../config/config.php' => config_path('restify.php'),
         ], 'restify-config');
 
-        if (! $this->app->configurationIsCached()) {
-            $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-restify');
-        }
+        $this->mergeConfigFrom(__DIR__ . '/../config/config.php', 'restify');
     }
 }

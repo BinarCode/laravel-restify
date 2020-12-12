@@ -10,7 +10,6 @@ use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Filter;
-use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\CreationAware;
@@ -513,7 +512,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $withs = collect();
 
         /** * To avoid circular relationships and deep stack calls, we will do not load eager fields. */
-        if (! $this->isEagerState() && $request instanceof RepositoryShowRequest) {
+        if (! $this->isEagerState()) {
             $this->collectFields($request)
                 ->forEager($request, $this)
                 ->filter(fn (EagerField $field) => $field->isShownOnShow($request, $this))
@@ -534,9 +533,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     : $this->resource->{$relation}();
 
                 collect([
-                    Builder::class => fn () => $withs->put($relation, $paginator->take($request->input('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get()),
+                    Builder::class => fn () => $withs->put($relation, (static::$relatedCast)::fromBuilder($request, $paginator)),
 
-                    Relation::class => fn () => $withs->put($relation, $paginator->take($request->input('relatablePerPage') ?? (static::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get()),
+                    Relation::class => fn () => $withs->put($relation, (static::$relatedCast)::fromRelation($request, $paginator)),
 
                     Collection::class => fn () => $withs->put($relation, $paginator),
 

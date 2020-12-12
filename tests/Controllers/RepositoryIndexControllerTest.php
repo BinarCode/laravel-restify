@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\RelatedCastWithAttributes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -66,14 +67,14 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $response = $this
             ->getJson('posts?sort=-title')
-            ->assertStatus(200);
+            ->assertOk();
 
         $this->assertEquals('zzz', $response->json('data.0.attributes.title'));
         $this->assertEquals('aaa', $response->json('data.1.attributes.title'));
 
         $response = $this
             ->getJson('posts?order=-title')
-            ->assertStatus(200);
+            ->assertOk();
 
         $this->assertEquals('zzz', $response->json('data.1.attributes.title'));
         $this->assertEquals('aaa', $response->json('data.0.attributes.title'));
@@ -88,10 +89,37 @@ class RepositoryIndexControllerTest extends IntegrationTest
         factory(Post::class)->create(['user_id' => $user->id]);
 
         $response = $this->getJson('posts?related=user')
-            ->assertStatus(200);
+            ->assertOk();
 
         $this->assertCount(1, $response->json('data.0.relationships.user'));
         $this->assertArrayNotHasKey('user', $response->json('data.0.attributes'));
+    }
+
+    public function test_using_custom_related_casts()
+    {
+        PostRepository::$related = ['user'];
+
+        config([
+            'restify.casts.related' => RelatedCastWithAttributes::class
+        ]);
+
+        $user = $this->mockUsers(1)->first();
+
+        factory(Post::class)->create(['user_id' => $user->id]);
+
+        $this->getJson('posts?related=user')
+            ->assertOk()
+            ->assertJsonStructure([
+                'data' => [
+                    [
+                        'relationships' => [
+                            'user' => [
+                                ['attributes']
+                            ],
+                        ]
+                    ]
+                ]
+            ]);
     }
 
     public function test_repository_with_deep_relations()
@@ -108,7 +136,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             });
         });
 
-        $response = $this->getJson(CompanyRepository::uriKey().'?related=users.posts')
+        $response = $this->getJson(CompanyRepository::uriKey() . '?related=users.posts')
             ->assertOk();
 
         $this->assertCount(1, $response->json('data.0.relationships.users'));
@@ -124,7 +152,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         factory(Post::class, 20)->create(['user_id' => $user->id]);
 
         $response = $this->getJson('posts?related=user&page=2')
-            ->assertStatus(200);
+            ->assertOk();
 
         $this->assertCount(1, $response->json('data.0.relationships.user'));
         $this->assertArrayNotHasKey('user', $response->json('data.0.attributes'));

@@ -35,27 +35,6 @@ class AuthServiceRegisterTest extends IntegrationTest
         $this->authService = resolve(AuthService::class);
     }
 
-    public function test_register_throw_user_not_authenticatable()
-    {
-        $this->app->instance(User::class, (new class extends SampleUser implements Passportable {
-        }));
-
-        $user = [
-            'name' => 'Eduard Lupacescu',
-            'email' => 'eduard.lupacescu@binarcode.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-            'remember_token' => Str::random(10),
-        ];
-
-        $request = new Request([], []);
-
-        $request->merge($user);
-
-        $this->expectException(AuthenticatableUserException::class);
-        $this->authService->register($request);
-    }
-
     public function test_user_query_throw_container_does_not_have_model_reflection_exception()
     {
         $this->app['config']->set('auth.providers.users.model', null);
