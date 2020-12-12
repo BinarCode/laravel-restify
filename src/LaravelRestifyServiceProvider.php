@@ -77,8 +77,6 @@ class LaravelRestifyServiceProvider extends ServiceProvider
             __DIR__.'/../config/config.php' => config_path('restify.php'),
         ], 'restify-config');
 
-        if (! $this->app->configurationIsCached()) {
-            $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-restify');
-        }
+        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'restify');
     }
 }

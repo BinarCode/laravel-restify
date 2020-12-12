@@ -55,6 +55,10 @@ abstract class IntegrationTest extends TestCase
         $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
         $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
+
+        Restify::$authUsing = function () {
+            return true;
+        };
     }
 
     protected function tearDown(): void

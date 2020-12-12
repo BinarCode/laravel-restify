@@ -260,6 +260,45 @@ This means that we could use `posts` query for eager loading posts:
 GET: /api/restify/users?related=posts
 ```
 
+## Custom data
+
+You are not limited to add only relations under the `related` array. You can use whatever you want, for instance you can return a simple model, or a collection. Basically any serializable data could be added there. For example: 
+
+
+```php
+public static $related = [
+    'foo'
+];
+```
+
+Then in the `Post` model we can define this method as: 
+
+```php
+public function foo() {
+    return collect([1, 2]);
+}
+```
+
+### Custom data format
+
+You can use a custom related cast class (aka transformer). You can do so by modifying the `restify.casts.related` property. The default related cast is `Binaryk\LaravelRestify\Repositories\Casts\RelatedCast`. 
+
+The cast class should extends the `Binaryk\LaravelRestify\Repositories\Casts\RepositoryCast` abstract class.
+
+This is the default cast:
+
+```php
+    'casts' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Casting the related entities format.
+        |--------------------------------------------------------------------------
+        |
+        */
+        'related' => \Binaryk\LaravelRestify\Repositories\Casts\RelatedCast::class,
+    ],
+```
+
 ## Pagination
 
 Laravel Restify has returns `index` items paginates. The default `perPage` is 15.
