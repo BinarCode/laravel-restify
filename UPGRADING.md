@@ -20,3 +20,5 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 now requires to have a `Binaryk\LaravelRestify\Fields\BelongsToMany` or `Binaryk\LaravelRestify\Fields\MorphToMany` field to be defined in the repository.
 
 - Field method `append` renamed to `value`.
+
+- The relations from the Repository `$related`, which are resolved via a `Illuminate\Database\Eloquent\Relations\Relation` or `Illuminate\Database\Eloquent\Builder` will do not have anymore the `attributes` property in the relations. To support this format, you can configure a custom Cast on `restify.php`, see the `Binaryk\LaravelRestify\Tests\Fixtures\Post\RelatedCastWithAttributes::class`, it returns the old 3.x format.
