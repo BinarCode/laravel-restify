@@ -56,7 +56,7 @@ abstract class IntegrationTest extends TestCase
         $this->injectTranslator();
         $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
 
-        Restify::$authUsing = function() {
+        Restify::$authUsing = function () {
             return true;
         };
     }

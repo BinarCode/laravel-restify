@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
-
 class RelatedCast extends RepositoryCast
 {
     public static function fromBuilder(Request $request, Builder $builder): Collection
