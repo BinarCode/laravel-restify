@@ -26,6 +26,8 @@ abstract class Filter implements JsonSerializable
 
     public $relatedRepositoryKey;
 
+    public Repository $repository;
+
     public function __construct()
     {
         $this->booted();
@@ -65,6 +67,13 @@ abstract class Filter implements JsonSerializable
         return $this->column;
     }
 
+    public function setColumn(string $column): self
+    {
+        $this->column = $column;
+
+        return $this;
+    }
+
     public function setType(string $type): self
     {
         $this->type = $type;
@@ -101,6 +110,13 @@ abstract class Filter implements JsonSerializable
     public function setRelatedRepositoryKey(string $repositoryKey): self
     {
         $this->relatedRepositoryKey = $repositoryKey;
+
+        return $this;
+    }
+
+    public function setRepository(Repository $repository): self
+    {
+        $this->repository = $repository;
 
         return $this;
     }

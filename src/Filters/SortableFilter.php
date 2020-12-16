@@ -11,7 +11,10 @@ class SortableFilter extends Filter
 
     public function filter(RestifyRequest $request, $query, $direction)
     {
-        //@todo improve this
-        $query->orderBy($this->column, $direction);
+        $query->orderBy($this->column,
+            $direction === '-'
+                ? 'desc'
+                : 'asc'
+        );
     }
 }

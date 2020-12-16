@@ -2,13 +2,12 @@
 
 namespace DummyNamespace;
 
-use Binaryk\LaravelRestify\Repositories\Matchable;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Http\Request;
+use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
-class DummyClass implements Matchable
+class DummyClass extends Filter
 {
-    public function handle(Request $request, Builder $query)
+    public function filter(RestifyRequest $request, $query, $value)
     {
         // $query->where('{{ attribute }}', $request->input('{{ query }}'));
     }

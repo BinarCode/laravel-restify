@@ -2,8 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Services\Search;
 
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Filters\SearchableFilter;
+use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Matchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -34,15 +36,15 @@ class RepositorySearchService extends Searchable
         foreach ($this->repository->getMatchByFields($request) as $key => $type) {
             $negation = false;
 
-            if ($request->has('-'.$key)) {
+            if ($request->has('-' . $key)) {
                 $negation = true;
             }
 
-            if (! $request->has($negation ? '-'.$key : $key) && ! data_get($extra, "match.$key")) {
+            if (! $request->has($negation ? '-' . $key : $key) && ! data_get($extra, "match.$key")) {
                 continue;
             }
 
-            $match = $request->input($negation ? '-'.$key : $key, data_get($extra, "match.$key"));
+            $match = $request->input($negation ? '-' . $key : $key, data_get($extra, "match.$key"));
 
             if ($negation) {
                 $key = Str::after($key, '-');
@@ -52,67 +54,38 @@ class RepositorySearchService extends Searchable
                 continue;
             }
 
-            $field = $model->qualifyColumn($key);
+            if (is_callable($type)) {
+                call_user_func_array($type, [
+                    $request, $query,
+                ]);
 
-            if ($match === 'null') {
-                if ($negation) {
-                    $query->whereNotNull($field);
-                } else {
-                    $query->whereNull($field);
-                }
-            } else {
-                switch ($this->repository->getMatchByFields()[$key]) {
-                    case RestifySearchable::MATCH_TEXT:
-                    case 'string':
-                        $query->where($field, $negation ? '!=' : '=', $match);
-                        break;
-                    case RestifySearchable::MATCH_BOOL:
-                    case 'boolean':
-                        if ($match === 'false') {
-                            $query->where(function ($query) use ($field, $negation) {
-                                if ($negation) {
-                                    return $query->where($field, true);
-                                } else {
-                                    return $query->where($field, '=', false)->orWhereNull($field);
-                                }
-                            });
-                            break;
-                        }
-                        $query->where($field, $negation ? '!=' : '=', true);
-                        break;
-                    case RestifySearchable::MATCH_INTEGER:
-                    case 'number':
-                    case 'int':
-                        $query->where($field, $negation ? '!=' : '=', (int) $match);
-                        break;
-                    case RestifySearchable::MATCH_DATETIME:
-                        $query->whereDate($field, $negation ? '!=' : '=', $match);
-                        break;
-                    case RestifySearchable::MATCH_ARRAY:
-                        $match = explode(',', $match);
-
-                        if ($negation) {
-                            $query->whereNotIn($field, $match);
-                        } else {
-                            $query->whereIn($field, $match);
-                        }
-                        break;
-                    default:
-                        if (is_callable($this->repository->getMatchByFields($request)[$key])) {
-                            call_user_func_array($this->repository->getMatchByFields($request)[$key], [
-                                $request, $query,
-                            ]);
-                        }
-
-                        if (is_subclass_of($this->repository->getMatchByFields($request)[$key], Matchable::class)) {
-                            call_user_func_array([
-                                app($this->repository->getMatchByFields($request)[$key]), 'handle',
-                            ], [
-                                $request, $query,
-                            ]);
-                        }
-                }
+                continue;
             }
+
+            if (is_subclass_of($type, Matchable::class)) {
+                call_user_func_array([
+                    app($type), 'handle',
+                ], [
+                    $request, $query,
+                ]);
+
+                continue;
+            }
+
+            $filter = $type instanceof Filter
+                ? $type
+                : MatchFilter::make()->setType($type);
+
+            $filter->setRepository($this->repository)
+                ->setColumn(
+                    $filter->column ?? $model->qualifyColumn($key)
+                );
+
+            call_user_func_array([
+                $filter, 'filter',
+            ], [
+                $request, $query, $match
+            ]);
         }
 
         return $query;
@@ -126,16 +99,17 @@ class RepositorySearchService extends Searchable
             $orderings = $extra['sort'];
         }
 
+
         $params = array_filter($orderings);
 
         if (is_array($params) === true && empty($params) === false) {
             foreach ($params as $param) {
-                $this->setOrder($query, $param);
+                $this->setOrder($request, $query, $param);
             }
         }
 
         if (empty($params) === true) {
-            $this->setOrder($query, '+'.$this->repository->newModel()->getKeyName());
+            $this->setOrder($request, $query, '+' . $this->repository->newModel()->getKeyName());
         }
 
         return $query;
@@ -164,7 +138,7 @@ class RepositorySearchService extends Searchable
 
         $model = $query->getModel();
 
-        $query->where(function ($query) use ($search, $model) {
+        $query->where(function ($query) use ($search, $model, $request) {
             $connectionType = $model->getConnection()->getDriverName();
 
             $canSearchPrimaryKey = is_numeric($search) &&
@@ -176,17 +150,28 @@ class RepositorySearchService extends Searchable
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
             }
 
-            $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
-            foreach ($this->repository->getSearchableFields() as $column) {
-                $query->orWhere($model->qualifyColumn($column), $likeOperator, '%'.$search.'%');
+            foreach ($this->repository->getSearchableFields() as $key => $column) {
+                $filter = $column instanceof Filter
+                    ? $column
+                    : SearchableFilter::make()->setColumn(
+                        $model->qualifyColumn(is_numeric($key) ? $column : $key)
+                    );
+
+                $filter
+                    ->setRepository($this->repository)
+                    ->setColumn(
+                        $filter->column ?? $model->qualifyColumn(is_numeric($key) ? $column : $key)
+                    );
+
+                $filter->filter($request, $query, $search);
             }
         });
 
         return $query;
     }
 
-    public function setOrder($query, $param)
+    public function setOrder(RestifyRequest $request, $query, $param)
     {
         if ($param === 'random') {
             $query->inRandomOrder();
@@ -212,19 +197,23 @@ class RepositorySearchService extends Searchable
         $field = $field ?? $this->repository->newModel()->getKeyName();
 
         if (isset($field)) {
-            if (in_array($field, $this->repository->getOrderByFields()) === true) {
-                if ($order === '-') {
-                    $query->orderBy($field, 'desc');
-                }
+            foreach ($this->repository->getOrderByFields() as $column => $definitionField) {
+                $filter = $definitionField instanceof Filter
+                    ? $definitionField
+                    : SortableFilter::make();
 
-                if ($order === '+') {
-                    $query->orderBy($field, 'asc');
-                }
+                $filter->setRepository($this->repository)
+                    ->setColumn(
+                        $filter->column ?? $query->qualifyColumn($field)
+                    );
+
+                $filter->filter($request, $query, $order);
             }
 
             if ($field === 'random') {
                 $query->orderByRaw('RAND()');
             }
+
         }
 
         return $query;
@@ -232,12 +221,12 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::indexQuery($request, $query);
+        return fn($query) => $repository::indexQuery($request, $query);
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
+        return fn($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
@@ -268,7 +257,7 @@ class RepositorySearchService extends Searchable
                     return $matchingFilter;
                 })
                 ->filter()
-                ->each(fn (Filter $filter) => $filter->filter($request, $query, $filter->value));
+                ->each(fn(Filter $filter) => $filter->filter($request, $query, $filter->value));
         }
 
         return $query;

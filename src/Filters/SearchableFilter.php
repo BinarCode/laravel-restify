@@ -11,7 +11,10 @@ class SearchableFilter extends Filter
 
     public function filter(RestifyRequest $request, $query, $value)
     {
-        //@todo improve this
-        $query->where($this->column, 'LIKE', "%{$value}%");
+        $connectionType = $this->repository->model()->getConnection()->getDriverName();
+
+        $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
+
+        $query->orWhere($this->column, $likeOperator, '%' . $value . '%');
     }
 }
