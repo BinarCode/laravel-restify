@@ -17,7 +17,7 @@ class FilterDefinitionTest extends IntegrationTest
             'title' => 'string',
             'user_id' => MatchFilter::make()
                 ->setType('int')
-                ->setRelatedRepositoryKey(UserRepository::uriKey())
+                ->setRelatedRepositoryKey(UserRepository::uriKey()),
         ];
 
         PostRepository::$search = [

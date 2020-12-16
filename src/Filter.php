@@ -2,14 +2,11 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Filters\FilterDefinition;
-use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
