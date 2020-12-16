@@ -36,15 +36,15 @@ class RepositorySearchService extends Searchable
         foreach ($this->repository->getMatchByFields($request) as $key => $type) {
             $negation = false;
 
-            if ($request->has('-' . $key)) {
+            if ($request->has('-'.$key)) {
                 $negation = true;
             }
 
-            if (! $request->has($negation ? '-' . $key : $key) && ! data_get($extra, "match.$key")) {
+            if (! $request->has($negation ? '-'.$key : $key) && ! data_get($extra, "match.$key")) {
                 continue;
             }
 
-            $match = $request->input($negation ? '-' . $key : $key, data_get($extra, "match.$key"));
+            $match = $request->input($negation ? '-'.$key : $key, data_get($extra, "match.$key"));
 
             if ($negation) {
                 $key = Str::after($key, '-');
@@ -84,7 +84,7 @@ class RepositorySearchService extends Searchable
             call_user_func_array([
                 $filter, 'filter',
             ], [
-                $request, $query, $match
+                $request, $query, $match,
             ]);
         }
 
@@ -99,7 +99,6 @@ class RepositorySearchService extends Searchable
             $orderings = $extra['sort'];
         }
 
-
         $params = array_filter($orderings);
 
         if (is_array($params) === true && empty($params) === false) {
@@ -109,7 +108,7 @@ class RepositorySearchService extends Searchable
         }
 
         if (empty($params) === true) {
-            $this->setOrder($request, $query, '+' . $this->repository->newModel()->getKeyName());
+            $this->setOrder($request, $query, '+'.$this->repository->newModel()->getKeyName());
         }
 
         return $query;
@@ -149,7 +148,6 @@ class RepositorySearchService extends Searchable
             if ($canSearchPrimaryKey) {
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
             }
-
 
             foreach ($this->repository->getSearchableFields() as $key => $column) {
                 $filter = $column instanceof Filter
@@ -213,7 +211,6 @@ class RepositorySearchService extends Searchable
             if ($field === 'random') {
                 $query->orderByRaw('RAND()');
             }
-
         }
 
         return $query;
@@ -221,12 +218,12 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn($query) => $repository::indexQuery($request, $query);
+        return fn ($query) => $repository::indexQuery($request, $query);
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
+        return fn ($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
@@ -257,7 +254,7 @@ class RepositorySearchService extends Searchable
                     return $matchingFilter;
                 })
                 ->filter()
-                ->each(fn(Filter $filter) => $filter->filter($request, $query, $filter->value));
+                ->each(fn (Filter $filter) => $filter->filter($request, $query, $filter->value));
         }
 
         return $query;
