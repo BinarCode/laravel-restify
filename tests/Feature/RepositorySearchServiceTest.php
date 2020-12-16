@@ -64,7 +64,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         factory(User::class, 4)->create();
 
         UserRepository::$match = [
-            'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY)
+            'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY),
         ];
 
         $this->getJson('users?id=1,2,3')
@@ -85,7 +85,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         UserRepository::$search = [
-            'name' => SearchableFilter::make()
+            'name' => SearchableFilter::make(),
         ];
 
         $this->getJson('users?search=John')
@@ -103,7 +103,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         UserRepository::$sort = [
-            'name' => SortableFilter::make()->setColumn('name')
+            'name' => SortableFilter::make()->setColumn('name'),
         ];
 
         $this->assertSame('Alisa', $this->getJson('users?sort=name')
