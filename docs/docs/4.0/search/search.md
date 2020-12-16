@@ -159,12 +159,14 @@ GET: /api/restify/users?is_active=true
 You can implement a match filter definition, and specify for example related repository:
 
 ```php
-  public static $match = [
+ protected static function booted()
+    static::$match = [
         'title' => 'string',
         'user_id' => MatchFilter::make()
             ->setType('int')
             ->setRelatedRepositoryKey(UserRepository::uriKey()),
-];
+    ];
+ }
 ```
 When you will list this filter (with `posts/filters?only=matches`), you will get: 
 
