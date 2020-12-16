@@ -16,7 +16,7 @@ class MatchFilter extends Filter
         $key = Str::afterLast($this->column, '.');
         $negation = false;
 
-        if ($request->has('-' . $key)) {
+        if ($request->has('-'.$key)) {
             $negation = true;
         }
 
@@ -61,7 +61,7 @@ class MatchFilter extends Filter
                 case RestifySearchable::MATCH_INTEGER:
                 case 'number':
                 case 'int':
-                    $query->where($field, $negation ? '!=' : '=', (int)$match);
+                    $query->where($field, $negation ? '!=' : '=', (int) $match);
                     break;
                 case RestifySearchable::MATCH_DATETIME:
                     $query->whereDate($field, $negation ? '!=' : '=', $match);

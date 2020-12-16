@@ -15,6 +15,6 @@ class SearchableFilter extends Filter
 
         $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
-        $query->orWhere($this->column, $likeOperator, '%' . $value . '%');
+        $query->orWhere($this->column, $likeOperator, '%'.$value.'%');
     }
 }
