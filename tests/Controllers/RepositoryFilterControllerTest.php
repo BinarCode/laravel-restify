@@ -88,39 +88,6 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ->assertJsonCount(2, 'data');
     }
 
-    public function test_available_filters_contains_repository_key()
-    {
-        PostRepository::$match = [
-            'title' => 'text',
-        ];
-
-        PostRepository::$sort = [
-            'title',
-        ];
-
-        PostRepository::$search = [
-            'id',
-            'title',
-        ];
-
-        $response = $this->getJson('posts/filters?only=matches,sortables,searchables')->assertJsonFragment([
-            'repository_key' => 'posts',
-        ]);
-
-        $this->getJson('posts/filters?only=matches')->assertJsonFragment([
-            'repository_key' => 'posts',
-        ]);
-
-
-        $this->getJson('posts/filters?only=sortables')->assertJsonFragment([
-            'repository_key' => 'posts',
-        ]);
-
-        $this->getJson('posts/filters?only=searchables')->assertJsonFragment([
-            'repository_key' => 'posts',
-        ]);
-    }
-
     public function test_value_filter_doesnt_require_value()
     {
         factory(Post::class)->create(['is_active' => false]);
