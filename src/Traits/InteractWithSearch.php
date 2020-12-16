@@ -2,6 +2,12 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Filters\SearchableFilter;
+use Binaryk\LaravelRestify\Filters\SortableFilter;
+use Illuminate\Support\Collection;
+
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
@@ -54,5 +60,42 @@ trait InteractWithSearch
         return empty(static::$sort)
             ? [static::newModel()->getQualifiedKeyName()]
             : static::$sort;
+    }
+
+    public static function collectFilters($type): Collection
+    {
+        $filters = collect([
+            SearchableFilter::uriKey() => static::getSearchableFields(),
+            MatchFilter::uriKey() => static::getMatchByFields(),
+            SortableFilter::uriKey() => static::getOrderByFields(),
+        ])->get($type);
+
+        $base = collect([
+            SearchableFilter::uriKey() => SearchableFilter::class,
+            MatchFilter::uriKey() => MatchFilter::class,
+            SortableFilter::uriKey() => SortableFilter::class,
+        ])->get($type);
+
+        if (! is_subclass_of($base, Filter::class)) {
+            return collect([]);
+        }
+
+        return collect($filters)->map(function ($type, $column) use ($base) {
+            if (is_numeric($column)) {
+                /*
+                 * This will handle for example searchables/sortables, where the definition is:
+                 * $search = ['title']
+                 * */
+                $column = $type;
+                $type = null;
+            }
+
+            return $type instanceof Filter
+                ? tap($type, fn ($filter) => $filter->column = $filter->column ?? $column)
+                : tap(new $base, function ($filter) use ($column, $type) {
+                    $filter->type = $type;
+                    $filter->column = $column;
+                });
+        })->values();
     }
 }

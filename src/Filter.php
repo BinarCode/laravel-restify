@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Http\Request;
@@ -15,11 +16,17 @@ abstract class Filter implements JsonSerializable
 
     public $type = 'value';
 
+    public $column;
+
     public $value;
 
     public $canSeeCallback;
 
     public static $uriKey;
+
+    public $relatedRepositoryKey;
+
+    public Repository $repository;
 
     public function __construct()
     {
@@ -55,6 +62,25 @@ abstract class Filter implements JsonSerializable
         return $this->type;
     }
 
+    public function getColumn(): ?string
+    {
+        return $this->column;
+    }
+
+    public function setColumn(string $column): self
+    {
+        $this->column = $column;
+
+        return $this;
+    }
+
+    public function setType(string $type): self
+    {
+        $this->type = $type;
+
+        return $this;
+    }
+
     public function options(Request $request)
     {
         // noop
@@ -76,6 +102,36 @@ abstract class Filter implements JsonSerializable
         $this->value = $filter;
     }
 
+    public function getRelatedRepositoryKey(): ?string
+    {
+        return $this->relatedRepositoryKey;
+    }
+
+    public function setRelatedRepositoryKey(string $repositoryKey): self
+    {
+        $this->relatedRepositoryKey = $repositoryKey;
+
+        return $this;
+    }
+
+    public function setRepository(Repository $repository): self
+    {
+        $this->repository = $repository;
+
+        return $this;
+    }
+
+    public function getRelatedRepositoryUrl(): ?string
+    {
+        return ($key = $this->getRelatedRepositoryKey())
+            ? with(Restify::repositoryForKey($key), function ($repository = null) {
+                if (is_subclass_of($repository, Repository::class)) {
+                    return Restify::path($repository::uriKey());
+                }
+            })
+            : null;
+    }
+
     /**
      * Get the URI key for the filter.
      *
@@ -87,24 +143,28 @@ abstract class Filter implements JsonSerializable
             return static::$uriKey;
         }
 
-        $kebabWithoutRepository = Str::kebab(Str::replaceLast('Filter', '', class_basename(get_called_class())));
+        $kebabWithoutFilter = Str::kebab(Str::replaceLast('Filter', '', class_basename(get_called_class())));
 
-        /**
-         * e.g. UserRepository => users
-         * e.g. LaravelEntityRepository => laravel-entities.
-         */
-        return Str::plural($kebabWithoutRepository);
+        return Str::plural($kebabWithoutFilter);
     }
 
     public function jsonSerialize()
     {
-        return [
+        return with([
             'class' => static::class,
             'key' => static::uriKey(),
             'type' => $this->getType(),
+            'column' => $this->getColumn(),
             'options' => collect($this->options(app(Request::class)))->map(function ($value, $key) {
                 return is_array($value) ? ($value + ['property' => $key]) : ['label' => $key, 'property' => $value];
             })->values()->all(),
-        ];
+        ], function (array $initial) {
+            return $this->relatedRepositoryKey
+                ? array_merge($initial, [
+                    'related_repository_key' => $this->getRelatedRepositoryKey(),
+                    'related_repository_url' => $this->getRelatedRepositoryUrl(),
+                ])
+                : $initial;
+        });
     }
 }

@@ -154,6 +154,38 @@ So now you can query this:
 GET: /api/restify/users?is_active=true
 ```
 
+### Match definition
+
+You can implement a match filter definition, and specify for example related repository:
+
+```php
+  public static $match = [
+        'title' => 'string',
+        'user_id' => MatchFilter::make()
+            ->setType('int')
+            ->setRelatedRepositoryKey(UserRepository::uriKey()),
+];
+```
+When you will list this filter (with `posts/filters?only=matches`), you will get: 
+
+```json
+  {
+      "class": "Binaryk\LaravelRestify\Filters\MatchFilter"
+      "key": "matches"
+      "type": "string"
+      "column": "title"
+      "options": []
+    },
+    {
+      "class": "Binaryk\LaravelRestify\Filters\MatchFilter"
+      "key": "matches"
+      "type": "int"
+      "column": "user_id"
+      "options": []
+      "related_repository_key": "users"
+      "related_repository_url": "//users"
+    }
+```
 ## Sort 
 When index query entities, usually we have to sort by specific attributes. 
 
