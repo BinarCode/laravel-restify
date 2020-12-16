@@ -88,6 +88,39 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ->assertJsonCount(2, 'data');
     }
 
+    public function test_available_filters_contains_repository_key()
+    {
+        PostRepository::$match = [
+            'title' => 'text',
+        ];
+
+        PostRepository::$sort = [
+            'title',
+        ];
+
+        PostRepository::$search = [
+            'id',
+            'title',
+        ];
+
+        $response = $this->getJson('posts/filters?only=matches,sortables,searchables')->assertJsonFragment([
+            'repository_key' => 'posts',
+        ]);
+
+        $this->getJson('posts/filters?only=matches')->assertJsonFragment([
+            'repository_key' => 'posts',
+        ]);
+
+
+        $this->getJson('posts/filters?only=sortables')->assertJsonFragment([
+            'repository_key' => 'posts',
+        ]);
+
+        $this->getJson('posts/filters?only=searchables')->assertJsonFragment([
+            'repository_key' => 'posts',
+        ]);
+    }
+
     public function test_value_filter_doesnt_require_value()
     {
         factory(Post::class)->create(['is_active' => false]);
@@ -101,7 +134,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('posts?filters='.$filters)
+            ->getJson('posts?filters=' . $filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -123,7 +156,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('posts?filters='.$filters)
+            ->getJson('posts?filters=' . $filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -143,7 +176,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withExceptionHandling()
-            ->getJson('posts?filters='.$filters)
+            ->getJson('posts?filters=' . $filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));

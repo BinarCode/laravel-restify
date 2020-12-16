@@ -87,13 +87,9 @@ abstract class Filter implements JsonSerializable
             return static::$uriKey;
         }
 
-        $kebabWithoutRepository = Str::kebab(Str::replaceLast('Filter', '', class_basename(get_called_class())));
+        $kebabWithoutFilter = Str::kebab(Str::replaceLast('Filter', '', class_basename(get_called_class())));
 
-        /**
-         * e.g. UserRepository => users
-         * e.g. LaravelEntityRepository => laravel-entities.
-         */
-        return Str::plural($kebabWithoutRepository);
+        return Str::plural($kebabWithoutFilter);
     }
 
     public function jsonSerialize()

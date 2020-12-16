@@ -11,6 +11,8 @@ class SearchableFilter extends Filter
 {
     public $column = 'id';
 
+    public Repository $repository;
+
     public static $uriKey = 'searchables';
 
     public function filter(RestifyRequest $request, $query, $value)
@@ -19,17 +21,18 @@ class SearchableFilter extends Filter
         $query->where($this->column, 'LIKE', "%{$value}%");
     }
 
-    public static function makeFromSimple($column): self
+    public static function makeFromSimple(Repository $repository, $column): self
     {
-        return tap(new static, function (SearchableFilter $filter) use ($column) {
+        return tap(new static, function (SearchableFilter $filter) use ($column, $repository) {
             $filter->column = $column;
+            $filter->repository = $repository;
         });
     }
 
     public static function makeForRepository(Repository $repository): Collection
     {
-        return collect($repository::getSearchableFields())->map(function ($column) {
-            return static::makeFromSimple($column);
+        return collect($repository::getSearchableFields())->map(function ($column) use ($repository) {
+            return static::makeFromSimple($repository, $column);
         });
     }
 
@@ -39,6 +42,7 @@ class SearchableFilter extends Filter
             'class' => static::class,
             'key' => static::uriKey(),
             'column' => $this->column,
+            'repository_key' => $this->repository::uriKey(),
         ];
     }
 }

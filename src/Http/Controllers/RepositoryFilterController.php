@@ -16,7 +16,6 @@ class RepositoryFilterController extends RepositoryController
 
         return $this->response()->data(
             $repository->availableFilters($request)
-                // After
                 ->when($request->has('include'), function (Collection $collection) use ($repository, $request) {
                     return $collection->merge(
                         collect(str_getcsv($request->input('include')))->map(fn ($key) => collect([
