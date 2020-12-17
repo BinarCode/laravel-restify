@@ -51,7 +51,7 @@ class BelongsToFieldTest extends IntegrationTest
 //
 //        $this->assertNull($relationships);
 
-        $relationships = $this->get(PostWithUserRepository::uriKey() . "/$post->id?related=user")
+        $relationships = $this->get(PostWithUserRepository::uriKey()."/$post->id?related=user")
             ->json('data.relationships');
 
         dd($relationships);
@@ -66,7 +66,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]), function ($post) {
-            $this->get(PostWithUserRepository::uriKey() . "/{$post->id}")
+            $this->get(PostWithUserRepository::uriKey()."/{$post->id}")
                 ->assertForbidden();
         });
     }
@@ -150,7 +150,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]), function ($post) {
             $newOwner = factory(User::class)->create();
-            $this->put(PostWithUserRepository::uriKey() . "/{$post->id}", [
+            $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertOk();
@@ -170,7 +170,7 @@ class BelongsToFieldTest extends IntegrationTest
         ]), function ($post) {
             $firstOwnerId = $post->user->id;
             $newOwner = factory(User::class)->create();
-            $this->put(PostWithUserRepository::uriKey() . "/{$post->id}", [
+            $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertForbidden();
