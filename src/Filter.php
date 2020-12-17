@@ -26,6 +26,8 @@ abstract class Filter implements JsonSerializable
 
     public $relatedRepositoryKey;
 
+    public $relatedRepositoryTitle;
+
     public Repository $repository;
 
     public function __construct()
@@ -114,6 +116,13 @@ abstract class Filter implements JsonSerializable
         return $this;
     }
 
+    public function setRelatedRepositoryTitle(string $title): self
+    {
+        $this->relatedRepositoryTitle = $title;
+
+        return $this;
+    }
+
     public function setRepository(Repository $repository): self
     {
         $this->repository = $repository;
@@ -121,12 +130,17 @@ abstract class Filter implements JsonSerializable
         return $this;
     }
 
-    public function getRelatedRepositoryUrl(): ?string
+    public function getRelatedRepository(): ?array
     {
         return ($key = $this->getRelatedRepositoryKey())
             ? with(Restify::repositoryForKey($key), function ($repository = null) {
                 if (is_subclass_of($repository, Repository::class)) {
-                    return Restify::path($repository::uriKey());
+                    return [
+                        'key' => $repository::uriKey(),
+                        'url' => Restify::path($repository::uriKey()),
+                        'display_key' => $this->relatedRepositoryTitle ?? $repository::$title,
+                        'label' => $repository::label(),
+                    ];
                 }
             })
             : null;
@@ -161,8 +175,7 @@ abstract class Filter implements JsonSerializable
         ], function (array $initial) {
             return $this->relatedRepositoryKey
                 ? array_merge($initial, [
-                    'related_repository_key' => $this->getRelatedRepositoryKey(),
-                    'related_repository_url' => $this->getRelatedRepositoryUrl(),
+                    'repository' => $this->getRelatedRepository(),
                 ])
                 : $initial;
         });

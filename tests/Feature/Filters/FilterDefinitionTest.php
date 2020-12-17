@@ -31,7 +31,33 @@ class FilterDefinitionTest extends IntegrationTest
 
         $this->getJson('posts/filters?only=matches,searchables,sortables')
             ->assertJsonFragment([
-                'related_repository_key' => 'users',
+                'key' => 'users',
+            ]);
+    }
+
+    public function test_match_definitions_includes_title()
+    {
+        PostRepository::$match = [
+            'user_id' => MatchFilter::make()
+                ->setType('int')
+                ->setRelatedRepositoryKey(UserRepository::uriKey()),
+
+            'title' => 'string',
+        ];
+
+        $this->getJson('posts/filters?only=matches')
+            ->dump()
+            ->assertJsonStructure([
+                'data' => [
+                    [
+                        'repository' => [
+                            'key',
+                            'url',
+                            'display_key',
+                            'label',
+                        ],
+                    ],
+                ],
             ]);
     }
 }
