@@ -42,6 +42,14 @@ trait InteractWithSearch
         return static::$related ?? [];
     }
 
+    public static function gerRelatedKeys(): array
+    {
+        return collect(static::getRelated())
+            ->map(fn($value, $key) => is_numeric($key) ? $value : $key)
+            ->values()
+            ->all();
+    }
+
     /**
      * @return array
      */
