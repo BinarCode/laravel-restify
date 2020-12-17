@@ -41,6 +41,8 @@ class FilterDefinitionTest extends IntegrationTest
             'user_id' => MatchFilter::make()
                 ->setType('int')
                 ->setRelatedRepositoryKey(UserRepository::uriKey()),
+
+            'title' => 'string',
         ];
 
         $this->getJson('posts/filters?only=matches')
