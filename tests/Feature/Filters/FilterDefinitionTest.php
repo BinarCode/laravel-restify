@@ -53,9 +53,9 @@ class FilterDefinitionTest extends IntegrationTest
                             'url',
                             'display_key',
                             'label',
-                        ]
-                    ]
-                ]
+                        ],
+                    ],
+                ],
             ]);
     }
 }
