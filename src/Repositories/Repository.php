@@ -533,7 +533,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 }
 
                 if (! $this->isEagerState()) {
-                    $field = $definedEagers->first(fn(EagerField $field) => $field->attribute === $relation);
+                    $field = $definedEagers->first(fn (EagerField $field) => $field->attribute === $relation);
                     dd(get_class($field));
                     dd($field->resolve());
                 }
