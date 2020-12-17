@@ -534,7 +534,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 }
 
                 if (! $this->isEagerState()) {
-                    dd(4);
+                    $field = $definedEagers->first(fn(EagerField $field) => $field->attribute === $relation);
+                    dd(get_class($field));
+                    dd($field->resolve());
                 }
 
                 $paginator = $this->resource->relationLoaded($relation)
