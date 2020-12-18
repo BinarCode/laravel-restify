@@ -36,20 +36,32 @@ class BelongsToFieldTest extends IntegrationTest
         Repository::clearResolvedInstances();
     }
 
-    public function test_present_on_relations()
+    public function test_present_on_show_when_specified_related()
     {
         $post = factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]);
 
-        $this->get(PostWithUserRepository::uriKey()."/$post->id")
+        $relationships = $this->get(PostWithUserRepository::uriKey()."/$post->id?related=user")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
-                        'user',
+                        'user' => [
+                            'id',
+                            'type',
+                            'attributes',
+                        ],
                     ],
                 ],
-            ]);
+            ])
+            ->json('data.relationships');
+
+        $this->assertNotNull($relationships);
+
+        $relationships = $this->get(PostWithUserRepository::uriKey()."/$post->id")
+            ->json('data.relationships');
+
+        $this->assertNull($relationships);
     }
 
     public function test_unauthorized_see_relationship()
@@ -61,7 +73,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]), function ($post) {
-            $this->get(PostWithUserRepository::uriKey()."/{$post->id}")
+            $this->get(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
                 ->assertForbidden();
         });
     }
@@ -178,6 +190,13 @@ class BelongsToFieldTest extends IntegrationTest
 class PostWithUserRepository extends Repository
 {
     public static $model = Post::class;
+
+    public static function getRelated()
+    {
+        return [
+            'user' => BelongsTo::make('user', 'user', UserRepository::class),
+        ];
+    }
 
     public function fields(RestifyRequest $request)
     {

@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Repositories\Concerns;
 
 use Mockery;
 use Mockery\MockInterface;
+use RuntimeException;
 
 trait Mockable
 {
@@ -151,7 +152,7 @@ trait Mockable
      *
      * @return string
      *
-     * @throws \RuntimeException
+     * @throws RuntimeException
      */
     public static function uriKey()
     {

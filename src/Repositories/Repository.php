@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
+use Binaryk\LaravelRestify\Eager\Related;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -511,21 +512,22 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         $withs = collect();
 
-        /** * To avoid circular relationships and deep stack calls, we will do not load eager fields. */
-        if (! $this->isEagerState()) {
-            $this->collectFields($request)
-                ->forEager($request, $this)
-                ->filter(fn (EagerField $field) => $field->isShownOnShow($request, $this))
-                ->each(fn (EagerField $field) => $withs->put($field->attribute, $field->resolve($this)->value));
-        }
+        static::collectRelated()
+            ->authorized($request)
+            ->inRequest($request)
+            ->mapIntoRelated($request)
+            ->each(function (Related $related) use ($request, $withs) {
+                $relation = $related->getRelation();
 
-        collect(str_getcsv($request->input('related')))
-            ->filter(fn ($relation) => in_array($relation, static::getRelated()))
-            ->each(function ($relation) use ($request, $withs) {
                 if (Str::contains($relation, '.')) {
                     $this->resource->loadMissing($relation);
 
                     return $withs->put($key = Str::before($relation, '.'), Arr::get($this->resource->relationsToArray(), $key));
+                }
+
+                /** * To avoid circular relationships and deep stack calls, we will do not load eager fields. */
+                if ($related->isEager() && $this->isEagerState() === false) {
+                    return $withs->put($relation, $related->resolveField($this)->value);
                 }
 
                 $paginator = $this->resource->relationLoaded($relation)
@@ -861,6 +863,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this;
     }
 
+    /**
+     * @param $request
+     * @return $this
+     * @throws \Illuminate\Auth\Access\AuthorizationException
+     */
     public function allowToShow($request): self
     {
         $this->authorizeToShow($request);

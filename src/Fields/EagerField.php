@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -18,7 +19,7 @@ class EagerField extends Field
     /**
      * The class name of the related repository.
      *
-     * @var string
+     * @var Repository
      */
     public string $repositoryClass;
 
@@ -55,9 +56,10 @@ class EagerField extends Field
                 ->eagerState();
         } catch (AuthorizationException $e) {
             $class = get_class($relatedModel);
+            $field = class_basename(get_called_class());
             $policy = get_class(Gate::getPolicyFor($relatedModel));
 
-            abort(403, "You are not authorized to see the [{$class}] relationship from the BelongsTo field from the BelongsTo field. Check the [show] method from the [$policy]");
+            abort(403, "You are not authorized to see the [{$class}] relationship from the {$field} field from the {$field} field. Check the [show] method from the [$policy]");
         }
 
         return $this;

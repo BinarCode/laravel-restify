@@ -35,13 +35,13 @@ class HasOneFieldTest extends IntegrationTest
         Repository::clearResolvedInstances();
     }
 
-    public function test_present_on_relations()
+    public function test_has_one_present_on_relations()
     {
         $post = factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]);
 
-        $this->get(UserWithPostRepository::uriKey()."/$post->id")
+        $this->get(UserWithPostRepository::uriKey()."/$post->id?related=post")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -51,7 +51,7 @@ class HasOneFieldTest extends IntegrationTest
             ]);
     }
 
-    public function test_unauthorized_see_relationship()
+    public function test_has_one_field_unauthorized_see_relationship()
     {
         $_SERVER['restify.post.show'] = false;
 
@@ -60,7 +60,7 @@ class HasOneFieldTest extends IntegrationTest
         tap(factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]), function ($post) {
-            $this->get(UserWithPostRepository::uriKey()."/{$post->id}")
+            $this->get(UserWithPostRepository::uriKey()."/{$post->id}?related=post")
                 ->assertForbidden();
         });
     }
@@ -88,14 +88,19 @@ class UserWithPostRepository extends Repository
 {
     public static $model = User::class;
 
+    public static function getRelated()
+    {
+        return [
+            'post' => HasOne::make('post', 'post', PostRepository::class),
+        ];
+    }
+
     public function fields(RestifyRequest $request)
     {
         return [
             Field::new('name'),
             Field::new('email'),
             Field::new('password'),
-
-            HasOne::make('post', 'post', PostRepository::class),
         ];
     }
 

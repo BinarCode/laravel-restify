@@ -93,6 +93,7 @@ class StubCommand extends Command
                     break;
                 case 'bigint':
                 case 'int':
+                case 'integer':
                     if ($columnDefinition->getAutoincrement() === true) {
                         //primary key
                         return;

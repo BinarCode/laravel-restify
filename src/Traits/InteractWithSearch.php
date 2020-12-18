@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
@@ -40,6 +41,11 @@ trait InteractWithSearch
     public static function getRelated()
     {
         return static::$related ?? [];
+    }
+
+    public static function collectRelated(): RelatedCollection
+    {
+        return RelatedCollection::make(static::getRelated());
     }
 
     /**
