@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Eager\Related;
-use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -19,10 +18,8 @@ use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
 use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
-use Binaryk\LaravelRestify\Tests\Fields\PostWithUserRepository;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
-use Exception;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -37,8 +34,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
-use Symfony\Component\HttpKernel\Exception\HttpException;
-use Throwable;
 
 /**
  * This class serve as repository collection and repository single model
@@ -515,7 +510,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveRelationships($request): array
     {
-
         $withs = collect();
 
         static::collectRelated()
