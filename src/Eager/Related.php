@@ -22,7 +22,7 @@ class Related
 
     public function isEager(): bool
     {
-        return !is_null($this->field);
+        return ! is_null($this->field);
     }
 
     public function getRelation(): string

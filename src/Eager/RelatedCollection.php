@@ -13,23 +13,22 @@ class RelatedCollection extends Collection
     {
         return $this->mapWithKeys(function ($value, $key) {
             return [
-                is_numeric($key) ? $value : $key => $value
+                is_numeric($key) ? $value : $key => $value,
             ];
         });
     }
 
     public function forEager(RestifyRequest $request): self
     {
-        return $this->filter(fn($value, $key) => $value instanceof EagerField)
-            ->filter(fn(Field $field) => $field->authorize($request))
+        return $this->filter(fn ($value, $key) => $value instanceof EagerField)
+            ->filter(fn (Field $field) => $field->authorize($request))
             ->unique('attribute');
     }
-
 
     public function inRequest(RestifyRequest $request): self
     {
         return $this
-            ->filter(fn($field, $key) => in_array($key, str_getcsv($request->input('related'))))
+            ->filter(fn ($field, $key) => in_array($key, str_getcsv($request->input('related'))))
             ->unique();
     }
 
@@ -43,6 +42,6 @@ class RelatedCollection extends Collection
     public function authorized(RestifyRequest $request)
     {
         return $this->intoAssoc()
-            ->filter(fn($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
+            ->filter(fn ($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
     }
 }
