@@ -42,19 +42,27 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-//        PostWithUserRepository::$related = [
-//            'user',
-//        ];
-
-//        $relationships = $this->get(PostWithUserRepository::uriKey() . "/$post->id")
-//            ->json('data.relationships');
-//
-//        $this->assertNull($relationships);
-
         $relationships = $this->get(PostWithUserRepository::uriKey()."/$post->id?related=user")
+            ->assertJsonStructure([
+                'data' => [
+                    'relationships' => [
+                        'user' => [
+                            'id',
+                            'type',
+                            'attributes'
+                        ]
+                    ],
+                ],
+            ])
             ->json('data.relationships');
 
-        dd($relationships);
+        $this->assertNotNull($relationships);
+
+
+        $relationships = $this->get(PostWithUserRepository::uriKey() . "/$post->id")
+            ->json('data.relationships');
+
+        $this->assertNull($relationships);
     }
 
     public function test_unauthorized_see_relationship()
@@ -66,7 +74,8 @@ class BelongsToFieldTest extends IntegrationTest
         tap(factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]), function ($post) {
-            $this->get(PostWithUserRepository::uriKey()."/{$post->id}")
+            $this->get(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
+                ->dump()
                 ->assertForbidden();
         });
     }
@@ -187,7 +196,6 @@ class PostWithUserRepository extends Repository
     public static function getRelated()
     {
         return [
-            'title',
             'user' => BelongsTo::make('user', 'user', UserRepository::class),
         ];
     }

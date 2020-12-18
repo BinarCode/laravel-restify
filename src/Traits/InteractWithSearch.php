@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
@@ -42,12 +43,9 @@ trait InteractWithSearch
         return static::$related ?? [];
     }
 
-    public static function gerRelatedKeys(): array
+    public static function collectRelated(): RelatedCollection
     {
-        return collect(static::getRelated())
-            ->map(fn ($value, $key) => is_numeric($key) ? $value : $key)
-            ->values()
-            ->all();
+        return RelatedCollection::make(static::getRelated());
     }
 
     /**
