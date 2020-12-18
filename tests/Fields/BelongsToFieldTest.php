@@ -49,8 +49,8 @@ class BelongsToFieldTest extends IntegrationTest
                         'user' => [
                             'id',
                             'type',
-                            'attributes'
-                        ]
+                            'attributes',
+                        ],
                     ],
                 ],
             ])
@@ -58,8 +58,7 @@ class BelongsToFieldTest extends IntegrationTest
 
         $this->assertNotNull($relationships);
 
-
-        $relationships = $this->get(PostWithUserRepository::uriKey() . "/$post->id")
+        $relationships = $this->get(PostWithUserRepository::uriKey()."/$post->id")
             ->json('data.relationships');
 
         $this->assertNull($relationships);
