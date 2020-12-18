@@ -30,7 +30,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(UserWithRolesRepository::uriKey()."/$user->id")
+        $this->get(UserWithRolesRepository::uriKey()."/$user->id?related=roles")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -58,14 +58,19 @@ class UserWithRolesRepository extends Repository
 {
     public static $model = User::class;
 
+    public static function getRelated()
+    {
+        return [
+            'roles' => MorphToMany::make('roles', 'roles', RoleRepository::class),
+        ];
+    }
+
     public function fields(RestifyRequest $request)
     {
         return [
             field('name'),
             field('email'),
             field('password'),
-
-            MorphToMany::make('roles', 'roles', RoleRepository::class),
         ];
     }
 

@@ -75,7 +75,6 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]), function ($post) {
             $this->get(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
-                ->dump()
                 ->assertForbidden();
         });
     }

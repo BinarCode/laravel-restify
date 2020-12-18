@@ -22,7 +22,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         ]);
     }
 
-    public function test_displays_on_relationships_show()
+    public function test_belongs_to_many_displays_on_relationships_show()
     {
         $company = tap(factory(Company::class)->create(), function (Company $company) {
             $company->users()->attach(
@@ -30,7 +30,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(CompanyWithUsersRepository::uriKey()."/{$company->id}")
+        $this->get(CompanyWithUsersRepository::uriKey()."/{$company->id}?related=users")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -86,15 +86,20 @@ class CompanyWithUsersRepository extends Repository
 {
     public static $model = Company::class;
 
+    public static function getRelated()
+    {
+        return [
+            'users' => BelongsToMany::make('users', 'users', UserRepository::class)
+                ->hideFromShow(function () {
+                    return $_SERVER['hide_users_from_show'] ?? false;
+                }),
+        ];
+    }
+
     public function fields(RestifyRequest $request)
     {
         return [
             field('name'),
-
-            BelongsToMany::make('users', 'users', UserRepository::class)
-                ->hideFromShow(function () {
-                    return $_SERVER['hide_users_from_show'] ?? false;
-                }),
         ];
     }
 

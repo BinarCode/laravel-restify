@@ -36,13 +36,13 @@ class HasManyTest extends IntegrationTest
         Repository::clearResolvedInstances();
     }
 
-    public function test_present_on_relations()
+    public function test_has_many_present_on_relations()
     {
         $post = factory(Post::class)->create([
             'user_id' => factory(User::class),
         ]);
 
-        $this->get(UserWithPosts::uriKey()."/$post->id")
+        $this->get(UserWithPosts::uriKey()."/$post->id?related=posts")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -52,17 +52,17 @@ class HasManyTest extends IntegrationTest
             ]);
     }
 
-    public function test_paginated_on_relation()
+    public function test_has_many_paginated_on_relation()
     {
         $user = tap($this->mockUsers()->first(), function ($user) {
             $this->mockPosts($user->id, 22);
         });
 
-        $this->get(UserWithPosts::uriKey()."/{$user->id}?relatablePerPage=20")
+        $this->get(UserWithPosts::uriKey()."/{$user->id}?related=posts&relatablePerPage=20")
             ->assertJsonCount(20, 'data.relationships.posts');
     }
 
-    public function test_unauthorized_see_relationship_posts()
+    public function test_has_many_unauthorized_see_relationship_posts()
     {
         $_SERVER['restify.post.show'] = false;
 
@@ -71,7 +71,7 @@ class HasManyTest extends IntegrationTest
             $this->mockPosts($user->id, 20);
         });
 
-        $this->get(UserWithPosts::uriKey()."/$user->id")
+        $this->get(UserWithPosts::uriKey()."/$user->id?related=posts")
             ->assertForbidden();
     }
 
@@ -290,14 +290,19 @@ class UserWithPosts extends Repository
 {
     public static $model = User::class;
 
+    public static function getRelated()
+    {
+        return [
+            'posts' => HasMany::make('posts', 'posts', PostRepository::class),
+        ];
+    }
+
     public function fields(RestifyRequest $request)
     {
         return [
             field('name'),
             field('email'),
             field('password'),
-
-            HasMany::make('posts', 'posts', PostRepository::class),
         ];
     }
 }
