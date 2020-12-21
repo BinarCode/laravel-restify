@@ -302,10 +302,9 @@ You can use the following request to get sortable attributes for a repository:
 concatenate: `?only=sortables,matches, searchables` to get all of them at once.
 :::
 
-## Eager loading - aka withs
+## Related
 
-When get a repository index or details about a single entity, often we have to get the related entities (we have access
-to). This eager loading is configurable by Restify as following:
+When get a repository index or details about a single entity, often we have to get the related entities (we have access to). This eager loading is configurable by Restify as following:
 
 ```php
 public static $related = ['posts'];
@@ -336,7 +335,7 @@ public function foo() {
 }
 ```
 
-## Related eager
+## Related field
 
 You can define an eager field to represent and serialize your data:
 
@@ -355,6 +354,21 @@ public static function related(): array
 ```
 
 You have the following relations available: `MorphToMany`, `MorphOne` `BelongsTo`, `HasOne`, `HasMany`, `BelongsToMany`.
+
+This way you can restrict a specific relationship based on a user role:
+
+```php
+use Binaryk\LaravelRestify\Fields\BelongsTo;use Illuminate\Http\Request;
+
+public static function related(): array
+{
+    return [
+        'user' => BelongsTo::make('user', 'user', UserRepository::class)->canSee(function(Request $request) {
+            return $request->user()->hasRole('owner');
+        })
+    ];
+}
+```
 
 ### Custom data format
 
