@@ -36,7 +36,7 @@ class MorphOneFieldTest extends IntegrationTest
             'user_id' => factory(User::class),
         ]);
 
-        $relationships = $this->get(PostWithMophOneRepository::uriKey() . "/$post->id?related=user")
+        $relationships = $this->get(PostWithMophOneRepository::uriKey()."/$post->id?related=user")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -52,7 +52,7 @@ class MorphOneFieldTest extends IntegrationTest
 
         $this->assertNotNull($relationships);
 
-        $relationships = $this->get(PostWithMophOneRepository::uriKey() . "/$post->id")
+        $relationships = $this->get(PostWithMophOneRepository::uriKey()."/$post->id")
             ->json('data.relationships');
 
         $this->assertNull($relationships);
