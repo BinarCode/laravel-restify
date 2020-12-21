@@ -7,11 +7,11 @@ use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Sort\SortCollection;
 use Illuminate\Support\Collection;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 trait InteractWithSearch
 {
     use AuthorizableModels;
@@ -27,18 +27,23 @@ trait InteractWithSearch
             : static::$search;
     }
 
-    /**
-     * @return array
-     */
     public static function getWiths()
     {
         return static::$withs ?? [];
     }
 
     /**
+     * Use 'related' instead.
+     *
      * @return array
+     * @deprecated
      */
     public static function getRelated()
+    {
+        return static::$related ?? [];
+    }
+
+    public static function related(): array
     {
         return static::$related ?? [];
     }
@@ -60,12 +65,27 @@ trait InteractWithSearch
 
     /**
      * @return array
+     * @deprecated
      */
     public static function getOrderByFields()
+    {
+        return static::sorts();
+    }
+
+    public static function sorts(): array
     {
         return empty(static::$sort)
             ? [static::newModel()->getQualifiedKeyName()]
             : static::$sort;
+    }
+
+    public static function collectSorts(RestifyRequest $request, Repository $repository): SortCollection
+    {
+        return SortCollection::make(explode(',', $request->input('sort', '')))
+            ->normalize()
+            ->allowed($request, $repository)
+            ->hydrateDefinition($repository)
+            ->hydrateRepository($repository);
     }
 
     public static function collectFilters($type): Collection
@@ -82,7 +102,7 @@ trait InteractWithSearch
             SortableFilter::uriKey() => SortableFilter::class,
         ])->get($type);
 
-        if (! is_subclass_of($base, Filter::class)) {
+        if (!is_subclass_of($base, Filter::class)) {
             return collect([]);
         }
 
@@ -97,7 +117,7 @@ trait InteractWithSearch
             }
 
             return $type instanceof Filter
-                ? tap($type, fn ($filter) => $filter->column = $filter->column ?? $column)
+                ? tap($type, fn($filter) => $filter->column = $filter->column ?? $column)
                 : tap(new $base, function ($filter) use ($column, $type) {
                     $filter->type = $type;
                     $filter->column = $column;

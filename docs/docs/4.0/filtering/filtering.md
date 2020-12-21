@@ -4,7 +4,7 @@ Laravel Restify provides configurable and powerful way of filtering over entitie
 
 ## Search
 
-If you want search for some specific fields from a model, you have to define these fields in the `$search` static 
+If you want search for some specific fields from a model, you have to define these fields in the `$search` static
 property:
 
 ```php
@@ -13,8 +13,7 @@ class PostRepository extends Repository
     public static $search = ['id', 'title'];
 ```
 
-Now `posts` are searchable by `id` and `title`, so you could use `search` query param for filtering the index 
-request: 
+Now `posts` are searchable by `id` and `title`, so you could use `search` query param for filtering the index request:
 
 ```http request
 GET: /api/restify/posts?search="Test title"
@@ -22,7 +21,7 @@ GET: /api/restify/posts?search="Test title"
 
 ### Get available searchables
 
-You can use the following request to available searchable attributes for a repository: 
+You can use the following request to available searchable attributes for a repository:
 
 ```http request
 /api/restify/posts/filters?only=searchables
@@ -30,7 +29,7 @@ You can use the following request to available searchable attributes for a repos
 
 ## Match
 
-Matching by specific attributes may be useful if you want an exact matching. 
+Matching by specific attributes may be useful if you want an exact matching.
 
 Repository configuration:
 
@@ -44,7 +43,7 @@ class PostRepository extends Repository
 }
 ```
 
-As we may notice the match configuration is an associative array, defining the attribute name and type mapping. 
+As we may notice the match configuration is an associative array, defining the attribute name and type mapping.
 
 Available types:
 
@@ -68,7 +67,7 @@ GET: /api/restify/posts?title="Some title"
 
 ### Match datetime
 
-The `datetime` filter add behind the scene an `whereDate` query. 
+The `datetime` filter add behind the scene an `whereDate` query.
 
 ```php
 class PostRepository extends Repository
@@ -79,7 +78,7 @@ class PostRepository extends Repository
 }
 ```
 
-Request: 
+Request:
 
 ```http request
 GET: /api/restify/posts?published_at=2020-12-01
@@ -106,7 +105,7 @@ class PostRepository extends Repository
 }
 ```
 
-Request: 
+Request:
 
 ```http request
 GET: /api/restify/posts?id=1,2,3
@@ -128,7 +127,7 @@ GET: /api/restify/posts?-id=1,2,3
 
 This will return all posts where doesn't have the `id` in the `[1,2,3]` list.
 
-You can apply `-` (negation) for every match: 
+You can apply `-` (negation) for every match:
 
 ```http request
 GET: /api/restify/posts?-title="Some title"
@@ -138,7 +137,9 @@ This will return all posts that doesn't contain `Some title` substring.
 
 ### Match closure
 
-There may be situations when the filter you want to apply not necessarily is a database attributes. In your `booted` method you can add more filters for the `$match` where the key represents the field used as query param, and value should be a `Closure` which gets the request and current query `Builder`:
+There may be situations when the filter you want to apply not necessarily is a database attributes. In your `booted`
+method you can add more filters for the `$match` where the key represents the field used as query param, and value
+should be a `Closure` which gets the request and current query `Builder`:
 
 ```php
 // UserRepository
@@ -154,16 +155,18 @@ protected static function booted()
 }
 ```
 
-So now you can query this: 
+So now you can query this:
 
 ```http request
 GET: /api/restify/users?active=true
 ```
 
-
 ### Matchable
 
-Sometimes you may have a large logic into a match `Closure`, and the booted method could become a mess. To prevent this, `Restify` provides a declarative way to define `matchers`. For this purpose you should define a class, and implement the `Binaryk\LaravelRestify\Repositories\Matchable` contract. You can use the following command to generate that:
+Sometimes you may have a large logic into a match `Closure`, and the booted method could become a mess. To prevent
+this, `Restify` provides a declarative way to define `matchers`. For this purpose you should define a class, and
+implement the `Binaryk\LaravelRestify\Repositories\Matchable` contract. You can use the following command to generate
+that:
 
 ```shell script
 php artisan restify:match ActiveMatch
@@ -203,26 +206,26 @@ You can use the following request to get all repository matches:
 /api/restify/posts/filters?only=matches
 ```
 
-## Sort 
-When index query entities, usually we have to sort by specific attributes. 
-This requires the `$sort` configuration:
+## Sort
+
+When index query entities, usually we have to sort by specific attributes. This requires the `$sort` configuration:
 
 ```php
 class PostRepository extends Repository
 {
     public static $sort = ['id'];
 ```
- 
- Performing request requires the sort query param: 
- 
- Sorting DESC requires a minus (`-`) sign before the attribute name:
- 
+
+Performing request requires the sort query param:
+
+Sorting DESC requires a minus (`-`) sign before the attribute name:
+
  ```http request
 GET: /api/restify/posts?sort=-id
 ```
 
- Sorting ASC:
- 
+Sorting ASC:
+
  ```http request
 GET: /api/restify/posts?sort=id
 ```
@@ -233,22 +236,58 @@ or with plus sign before the field:
 GET: /api/restify/posts?sort=+id
 ```
 
+### Sort using BelongsTo
+
+Sometimes you may need to sort by a `belongsTo` relationship. This become a breeze with Restify. Firstly you have to
+instruct your sort to use a relationship:
+
+```php
+// PostRepository
+use Binaryk\LaravelRestify\Fields\BelongsTo;
+use Binaryk\LaravelRestify\Filters\SortableFilter;
+
+public static function sorts(): array
+{
+    return [
+        'users.name' => SortableFilter::make()
+            ->setColumn('users.name')
+            ->usingBelongsTo(
+                BelongsTo::make('user', 'user', UserRepository::class),
+        )
+    ];
+}
+```
+
+Make sure that the column is fully qualified (include the table name).
+
+The request could look like:
+
+```http request
+GET: /api/restify/posts?sort=-users.name
+```
+
+This will return all posts, sorted descending by users name.
+
+:::tip Set column optional
+As you may notice we have typed twice the `users.name` (on the array key, and as argument in the `setColumn` method). As soon as you use the fully qualified key name, you can avoid the `setColumn` call, since the column will be injected automatically based on the `sorts` key.
+:::
+
 ### Get available sorts
 
-You can use the following request to get sortable attributes for a repository: 
+You can use the following request to get sortable attributes for a repository:
 
 ```http request
 /api/restify/posts/filters?only=sortables
 ```
 
-:::tip All filters
-You can use `/api/restify/posts/filters?only=sortables` request, and concatenate: `?only=sortables,matches, searchables` to get all of them at once.
+:::tip All filters You can use `/api/restify/posts/filters?only=sortables` request, and
+concatenate: `?only=sortables,matches, searchables` to get all of them at once.
 :::
 
 ## Eager loading - aka withs
 
-When get a repository index or details about a single entity, often we have to get the related entities (we have access to).
-This eager loading is configurable by Restify as following: 
+When get a repository index or details about a single entity, often we have to get the related entities (we have access
+to). This eager loading is configurable by Restify as following:
 
 ```php
 public static $related = ['posts'];
@@ -262,8 +301,8 @@ GET: /api/restify/users?related=posts
 
 ## Custom data
 
-You are not limited to add only relations under the `related` array. You can use whatever you want, for instance you can return a simple model, or a collection. Basically any serializable data could be added there. For example: 
-
+You are not limited to add only relations under the `related` array. You can use whatever you want, for instance you can
+return a simple model, or a collection. Basically any serializable data could be added there. For example:
 
 ```php
 public static $related = [
@@ -271,7 +310,7 @@ public static $related = [
 ];
 ```
 
-Then in the `Post` model we can define this method as: 
+Then in the `Post` model we can define this method as:
 
 ```php
 public function foo() {
@@ -281,7 +320,8 @@ public function foo() {
 
 ### Custom data format
 
-You can use a custom related cast class (aka transformer). You can do so by modifying the `restify.casts.related` property. The default related cast is `Binaryk\LaravelRestify\Repositories\Casts\RelatedCast`. 
+You can use a custom related cast class (aka transformer). You can do so by modifying the `restify.casts.related`
+property. The default related cast is `Binaryk\LaravelRestify\Repositories\Casts\RelatedCast`.
 
 The cast class should extends the `Binaryk\LaravelRestify\Repositories\Casts\RepositoryCast` abstract class.
 

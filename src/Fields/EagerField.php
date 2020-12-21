@@ -4,6 +4,8 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
@@ -63,5 +65,28 @@ class EagerField extends Field
         }
 
         return $this;
+    }
+
+    public function getRelation(Repository $repository): Relation
+    {
+        return $repository->resource->newQuery()
+            ->getRelation($this->relation);
+    }
+
+    public function getRelatedModel(Repository $repository): ?Model
+    {
+        return $this->getRelation($repository)->getRelated();
+    }
+
+    public function getRelatedKey(Repository $repository): string
+    {
+        return $repository->resource->qualifyColumn(
+            $this->getRelation($repository)->getRelated()->getForeignKey()
+        );
+    }
+
+    public function getQualifiedKey(Repository $repository): string
+    {
+        return $this->getRelation($repository)->getRelated()->getQualifiedKeyName();
     }
 }

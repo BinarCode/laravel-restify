@@ -9,11 +9,15 @@ use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Matchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Sort\SortCollection;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
 class RepositorySearchService extends Searchable
 {
+    /**
+     * @var Repository $repository
+     */
     protected $repository;
 
     public function search(RestifyRequest $request, Repository $repository)
@@ -33,18 +37,18 @@ class RepositorySearchService extends Searchable
     {
         /** * @var Builder $query */
         $model = $query->getModel();
-        foreach ($this->repository->getMatchByFields($request) as $key => $type) {
+        foreach ($this->repository->getMatchByFields() as $key => $type) {
             $negation = false;
 
-            if ($request->has('-'.$key)) {
+            if ($request->has('-' . $key)) {
                 $negation = true;
             }
 
-            if (! $request->has($negation ? '-'.$key : $key) && ! data_get($extra, "match.$key")) {
+            if (! $request->has($negation ? '-' . $key : $key) && ! data_get($extra, "match.$key")) {
                 continue;
             }
 
-            $match = $request->input($negation ? '-'.$key : $key, data_get($extra, "match.$key"));
+            $match = $request->input($negation ? '-' . $key : $key, data_get($extra, "match.$key"));
 
             if ($negation) {
                 $key = Str::after($key, '-');
@@ -91,25 +95,26 @@ class RepositorySearchService extends Searchable
         return $query;
     }
 
-    public function prepareOrders(RestifyRequest $request, $query, $extra = [])
+    /**
+     * Resolve orders.
+     *
+     * @param RestifyRequest $request
+     * @param Builder $query
+     * @return Builder
+     */
+    public function prepareOrders(RestifyRequest $request, $query)
     {
-        $orderings = explode(',', $request->input('sort', ''));
+        $collection = $this->repository::collectSorts($request, $this->repository);
 
-        if (isset($extra['sort'])) {
-            $orderings = $extra['sort'];
+        if ($collection->isEmpty()) {
+            return empty($query->getQuery()->orders)
+                ? $query->latest($query->getModel()->getQualifiedKeyName())
+                : $query;
         }
 
-        $params = array_filter($orderings);
-
-        if (is_array($params) === true && empty($params) === false) {
-            foreach ($params as $param) {
-                $this->setOrder($request, $query, $param);
-            }
-        }
-
-        if (empty($params) === true) {
-            $this->setOrder($request, $query, '+'.$this->repository->newModel()->getKeyName());
-        }
+        $collection->each(function (SortableFilter $filter) use ($request, $query) {
+            $filter->filter($request, $query, $filter->direction());
+        });
 
         return $query;
     }
@@ -169,61 +174,14 @@ class RepositorySearchService extends Searchable
         return $query;
     }
 
-    public function setOrder(RestifyRequest $request, $query, $param)
-    {
-        if ($param === 'random') {
-            $query->inRandomOrder();
-
-            return $query;
-        }
-
-        $order = substr($param, 0, 1);
-
-        if ($order === '-') {
-            $field = substr($param, 1);
-        }
-
-        if ($order === '+') {
-            $field = substr($param, 1);
-        }
-
-        if ($order !== '-' && $order !== '+') {
-            $order = '+';
-            $field = $param;
-        }
-
-        $field = $field ?? $this->repository->newModel()->getKeyName();
-
-        if (isset($field)) {
-            foreach ($this->repository->getOrderByFields() as $column => $definitionField) {
-                $filter = $definitionField instanceof Filter
-                    ? $definitionField
-                    : SortableFilter::make();
-
-                $filter->setRepository($this->repository)
-                    ->setColumn(
-                        $filter->column ?? $query->qualifyColumn($field)
-                    );
-
-                $filter->filter($request, $query, $order);
-            }
-
-            if ($field === 'random') {
-                $query->orderByRaw('RAND()');
-            }
-        }
-
-        return $query;
-    }
-
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::indexQuery($request, $query);
+        return fn($query) => $repository::indexQuery($request, $query);
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
+        return fn($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
@@ -254,7 +212,7 @@ class RepositorySearchService extends Searchable
                     return $matchingFilter;
                 })
                 ->filter()
-                ->each(fn (Filter $filter) => $filter->filter($request, $query, $filter->value));
+                ->each(fn(Filter $filter) => $filter->filter($request, $query, $filter->value));
         }
 
         return $query;

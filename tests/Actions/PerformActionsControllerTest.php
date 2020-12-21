@@ -19,7 +19,7 @@ class PerformActionsControllerTest extends IntegrationTest
     {
         $post = $this->mockPosts(1, 2);
 
-        $this->post('posts/action?action='.(new PublishPostAction())->uriKey(), [
+        $this->post('posts/action?action=' . (new PublishPostAction())->uriKey(), [
             'repositories' => [
                 $post->first()->id,
                 $post->last()->id,
@@ -30,8 +30,9 @@ class PerformActionsControllerTest extends IntegrationTest
                 'data',
             ]);
 
-        $this->assertEquals(1, PublishPostAction::$applied[0][0]->id);
-        $this->assertEquals(2, PublishPostAction::$applied[0][1]->id);
+        // Repositories are sorted desc by primary key.
+        $this->assertEquals(2, PublishPostAction::$applied[0][0]->id);
+        $this->assertEquals(1, PublishPostAction::$applied[0][1]->id);
     }
 
     public function test_cannot_apply_a_show_action_to_index()
@@ -41,7 +42,7 @@ class PerformActionsControllerTest extends IntegrationTest
         $_SERVER['actions.posts.invalidate'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->post('posts/action?action='.(new PublishPostAction())->uriKey(), [
+        $this->post('posts/action?action=' . (new PublishPostAction())->uriKey(), [
             'repositories' => [
                 $post->first()->id,
                 $post->last()->id,
@@ -57,7 +58,7 @@ class PerformActionsControllerTest extends IntegrationTest
     {
         $users = $this->mockUsers();
 
-        $this->post('users/'.$users->first()->id.'/action?action='.(new ActivateAction)->uriKey())
+        $this->post('users/' . $users->first()->id . '/action?action=' . (new ActivateAction)->uriKey())
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',
@@ -68,7 +69,7 @@ class PerformActionsControllerTest extends IntegrationTest
 
     public function test_could_perform_standalone_action()
     {
-        $this->post('users/action?action='.(new DisableProfileAction())->uriKey())
+        $this->post('users/action?action=' . (new DisableProfileAction())->uriKey())
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',
