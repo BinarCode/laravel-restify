@@ -57,6 +57,10 @@ class EagerField extends Field
                 ->allowToShow(app(Request::class))
                 ->eagerState();
         } catch (AuthorizationException $e) {
+            if(is_null($relatedModel)) {
+                abort(403, "Related model is null.");
+            }
+
             $class = get_class($relatedModel);
             $field = class_basename(get_called_class());
             $policy = get_class(Gate::getPolicyFor($relatedModel));
