@@ -272,6 +272,24 @@ This will return all posts, sorted descending by users name.
 As you may notice we have typed twice the `users.name` (on the array key, and as argument in the `setColumn` method). As soon as you use the fully qualified key name, you can avoid the `setColumn` call, since the column will be injected automatically based on the `sorts` key.
 :::
 
+### Sort using closure
+
+If you have a quick sort method, you can use a closure to sort your data:
+
+```php
+// PostRepository
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+
+public static function sorts(): array
+{
+    return [
+        'users.name' => function(RestifyRequest $request, $query, $direction) {
+            // custom sort
+        }
+    ];
+}
+```
+
 ### Get available sorts
 
 You can use the following request to get sortable attributes for a repository:
