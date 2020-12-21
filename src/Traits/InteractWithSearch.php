@@ -40,7 +40,7 @@ trait InteractWithSearch
      */
     public static function getRelated()
     {
-        return static::$related ?? [];
+        return static::related();
     }
 
     public static function related(): array
