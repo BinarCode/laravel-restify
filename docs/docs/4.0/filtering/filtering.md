@@ -336,6 +336,26 @@ public function foo() {
 }
 ```
 
+## Related eager
+
+You can define an eager field to represent and serialize your data:
+
+```php
+
+use Binaryk\LaravelRestify\Fields\BelongsTo;
+use Binaryk\LaravelRestify\Fields\MorphToMany;
+
+public static function related(): array
+{
+    return [
+        'user' => BelongsTo::make('user', 'user', UserRepository::class),
+        'comments' => MorphToMany::make('comments', 'comments', CommentRepository::class),
+    ];
+}
+```
+
+You have the following relations available: `MorphToMany`, `MorphOne` `BelongsTo`, `HasOne`, `HasMany`, `BelongsToMany`.
+
 ### Custom data format
 
 You can use a custom related cast class (aka transformer). You can do so by modifying the `restify.casts.related`
