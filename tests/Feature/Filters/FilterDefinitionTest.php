@@ -7,14 +7,12 @@ use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Tests\Fields\PostWithUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Arr;
 
 class FilterDefinitionTest extends IntegrationTest
 {
@@ -70,7 +68,7 @@ class FilterDefinitionTest extends IntegrationTest
     public function test_can_filter_using_belongs_to_field()
     {
         PostRepository::$related = [
-            'user' => BelongsTo::make('user', 'user', UserRepository::class)
+            'user' => BelongsTo::make('user', 'user', UserRepository::class),
         ];
 
         PostRepository::$sort = [
@@ -87,16 +85,16 @@ class FilterDefinitionTest extends IntegrationTest
         factory(Post::class)->create([
             'user_id' => factory(User::class)->create([
                 'name' => 'Zez',
-            ])
+            ]),
         ]);
 
         factory(Post::class)->create([
             'user_id' => factory(User::class)->create([
                 'name' => 'Ame',
-            ])
+            ]),
         ]);
 
-        $json = $this->getJson(PostRepository::uriKey() . "?related=user&sort=-users.name")->json();
+        $json = $this->getJson(PostRepository::uriKey().'?related=user&sort=-users.name')->json();
 
         $this->assertSame(
             'Zez',
