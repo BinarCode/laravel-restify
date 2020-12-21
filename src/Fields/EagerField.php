@@ -58,7 +58,7 @@ class EagerField extends Field
                 ->eagerState();
         } catch (AuthorizationException $e) {
             if(is_null($relatedModel)) {
-                abort(403, "Related model is null.");
+                abort(403, "You are not authorized to perform this action.");
             }
 
             $class = get_class($relatedModel);
