@@ -65,19 +65,17 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         factory(Post::class)->create(['title' => 'zzz']);
 
-        $response = $this
-            ->getJson('posts?sort=-title')
+        $response = $this->getJson('posts?sort=-title')
             ->assertOk();
 
         $this->assertEquals('zzz', $response->json('data.0.attributes.title'));
         $this->assertEquals('aaa', $response->json('data.1.attributes.title'));
 
-        $response = $this
-            ->getJson('posts?order=-title')
+        $response = $this->getJson('posts?sort=title')
             ->assertOk();
 
-        $this->assertEquals('zzz', $response->json('data.1.attributes.title'));
         $this->assertEquals('aaa', $response->json('data.0.attributes.title'));
+        $this->assertEquals('zzz', $response->json('data.1.attributes.title'));
     }
 
     public function test_repository_with_relations()

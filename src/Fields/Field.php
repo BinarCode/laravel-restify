@@ -121,6 +121,13 @@ class Field extends OrganicField implements JsonSerializable
     public $label;
 
     /**
+     * Indicates if the field should be sortable.
+     *
+     * @var bool
+     */
+    public $sortable = false;
+
+    /**
      * Create a new field.
      *
      * @param string|callable|null $attribute
@@ -395,7 +402,43 @@ class Field extends OrganicField implements JsonSerializable
     }
 
     /**
-     * Resolve the field's value for display.
+     * Determine if the attribute is computed.
+     *
+     * @return bool
+     */
+    public function computed()
+    {
+        return (is_callable($this->attribute) && ! is_string($this->attribute)) ||
+            is_callable($this->computedCallback) || $this->attribute == 'Computed';
+    }
+
+    /**
+     * Specify that this attribute should be sortable.
+     *
+     * @param  bool  $value
+     * @return $this
+     */
+    public function sortable($value = true)
+    {
+        if (! $this->computed()) {
+            $this->sortable = $value;
+        }
+
+        return $this;
+    }
+
+    /**
+     * Indicates if this attribute is sortable.
+     *
+     * @return bool
+     */
+    public function isSortable()
+    {
+        return $this->sortable;
+    }
+
+    /**
+     * Resolve the attribute's value for display.
      *
      * @param mixed $repository
      * @param string|null $attribute

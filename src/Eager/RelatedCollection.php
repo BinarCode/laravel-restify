@@ -2,8 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Eager;
 
+use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Collection;
 
@@ -23,6 +25,14 @@ class RelatedCollection extends Collection
         return $this->filter(fn ($value, $key) => $value instanceof EagerField)
             ->filter(fn (Field $field) => $field->authorize($request))
             ->unique('attribute');
+    }
+
+    public function mapIntoSortable(RestifyRequest $request): self
+    {
+        return $this->filter(fn (EagerField $field) => $field->isSortable())
+            //Now we support only belongs to sort from related.
+            ->filter(fn (EagerField $field) => $field instanceof BelongsTo)
+            ->map(fn (BelongsTo $field) => SortableFilter::make()->usingBelongsTo($field));
     }
 
     public function inRequest(RestifyRequest $request): self

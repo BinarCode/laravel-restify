@@ -107,12 +107,12 @@ class RepositorySearchServiceTest extends IntegrationTest
         ];
 
         $this->assertSame('Alisa', $this->getJson('users?sort=name')
-        ->json('data.0.attributes.name'));
-        $this->assertSame('Zoro', $this->getJson('users?sort=name')
-        ->json('data.1.attributes.name'));
+            ->json('data.0.attributes.name'));
 
+        $this->assertSame('Zoro', $this->getJson('users?sort=name')
+            ->json('data.1.attributes.name'));
         $this->assertSame('Zoro', $this->getJson('users?sort=-name')
-        ->json('data.0.attributes.name'));
+            ->json('data.0.attributes.name'));
         $this->assertSame('Alisa', $this->getJson('users?sort=-name')
             ->json('data.1.attributes.name'));
     }

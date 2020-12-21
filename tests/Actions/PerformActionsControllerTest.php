@@ -30,8 +30,9 @@ class PerformActionsControllerTest extends IntegrationTest
                 'data',
             ]);
 
-        $this->assertEquals(1, PublishPostAction::$applied[0][0]->id);
-        $this->assertEquals(2, PublishPostAction::$applied[0][1]->id);
+        // Repositories are sorted desc by primary key.
+        $this->assertEquals(2, PublishPostAction::$applied[0][0]->id);
+        $this->assertEquals(1, PublishPostAction::$applied[0][1]->id);
     }
 
     public function test_cannot_apply_a_show_action_to_index()
