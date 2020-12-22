@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
-use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -55,7 +54,7 @@ class BelongsToMany extends EagerField
                     ->allowToShow(app(Request::class))
                     ->withExtraFields(
                         collect($this->pivotFields)->each(function (Field $field) use ($item) {
-                            return $field->resolveCallback(fn() => $item->pivot->{$field->attribute});
+                            return $field->resolveCallback(fn () => $item->pivot->{$field->attribute});
                         })->all()
                     )
                     ->eagerState();
