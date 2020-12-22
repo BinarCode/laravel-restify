@@ -6,6 +6,10 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
+use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class BelongsToMany extends EagerField
 {
@@ -46,13 +50,21 @@ class BelongsToMany extends EagerField
         $paginator = $paginator->take(request('relatablePerPage') ?? ($repository::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
 
         $this->value = $paginator->map(function ($item) {
-            return $this->repositoryClass::resolveWith($item)
-                ->withExtraFields(
-                    collect($this->pivotFields)->each(function (Field $field) use ($item) {
-                        return $field->resolveCallback(fn () => $item->pivot->{$field->attribute});
-                    })->all()
-                )
-                ->eagerState();
+            try {
+                return $this->repositoryClass::resolveWith($item)
+                    ->allowToShow(app(Request::class))
+                    ->withExtraFields(
+                        collect($this->pivotFields)->each(function (Field $field) use ($item) {
+                            return $field->resolveCallback(fn() => $item->pivot->{$field->attribute});
+                        })->all()
+                    )
+                    ->eagerState();
+            } catch (AuthorizationException $e) {
+                $class = get_class($item);
+                $policy = get_class(Gate::getPolicyFor($item));
+
+                abort(403, "You are not authorized to see the [{$class}] relationship from the HasMany field from the BelongsTo field. Check the [show] method from the [$policy]");
+            }
         });
 
         return $this;

@@ -38,15 +38,22 @@ class HasManyTest extends IntegrationTest
 
     public function test_has_many_present_on_relations()
     {
-        $post = factory(Post::class)->create([
-            'user_id' => factory(User::class),
+        $user = factory(User::class)->create();
+
+        factory(Post::class)->times(2)->create([
+            'user_id' => $user->id
         ]);
 
-        $this->get(UserWithPosts::uriKey()."/$post->id?related=posts")
+        $this->get(UserWithPosts::uriKey()."/$user->id?related=posts")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
-                        'posts',
+                        'posts' => [
+                            [
+                                'id',
+                                'attributes'
+                            ]
+                        ],
                     ],
                 ],
             ]);

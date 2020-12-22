@@ -35,7 +35,7 @@ class HasMany extends EagerField
 
         $this->value = $paginator->map(function ($item) {
             try {
-                $this->value = $this->repositoryClass::resolveWith($item)
+                return $this->repositoryClass::resolveWith($item)
                     ->allowToShow(app(Request::class))
                     ->eagerState();
             } catch (AuthorizationException $e) {
