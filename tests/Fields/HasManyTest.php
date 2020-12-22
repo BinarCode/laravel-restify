@@ -41,7 +41,7 @@ class HasManyTest extends IntegrationTest
         $user = factory(User::class)->create();
 
         factory(Post::class)->times(2)->create([
-            'user_id' => $user->id
+            'user_id' => $user->id,
         ]);
 
         $this->get(UserWithPosts::uriKey()."/$user->id?related=posts")
@@ -51,8 +51,8 @@ class HasManyTest extends IntegrationTest
                         'posts' => [
                             [
                                 'id',
-                                'attributes'
-                            ]
+                                'attributes',
+                            ],
                         ],
                     ],
                 ],
