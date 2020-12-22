@@ -78,6 +78,23 @@ class BelongsToFieldTest extends IntegrationTest
         });
     }
 
+    public function test_dont_show_key_when_nullable_related()
+    {
+        $_SERVER['restify.users.show'] = true;
+
+        Gate::policy(User::class, UserPolicy::class);
+
+        tap(factory(Post::class)->create([
+            'user_id' => null,
+        ]), function ($post) {
+            $this->get(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
+                ->assertJsonFragment([
+                    'user' => null,
+                ])
+                ->assertOk();
+        });
+    }
+
     public function test_field_used_when_storing()
     {
         tap(factory(User::class)->create(), function ($user) {

@@ -52,6 +52,12 @@ class EagerField extends Field
 
         $relatedModel = $model->{$this->relation}()->first();
 
+        if (is_null($relatedModel)) {
+            $this->value = null;
+
+            return $this;
+        }
+
         try {
             $this->value = $this->repositoryClass::resolveWith($relatedModel)
                 ->allowToShow(app(Request::class))
