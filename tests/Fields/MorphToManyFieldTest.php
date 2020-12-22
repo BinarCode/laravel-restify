@@ -2,10 +2,13 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fields;
 
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\MorphToMany;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -30,11 +33,35 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(UserWithRolesRepository::uriKey()."/$user->id?related=roles")
+        $this->get(UserWithRolesRepository::uriKey() . "/$user->id?related=roles")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
                         'roles' => [],
+                    ],
+                ],
+            ])->assertJsonCount(3, 'data.relationships.roles');
+    }
+
+    public function test_morph_to_many_works_with_belongs_to_many()
+    {
+        /** * @var User $user */
+        $user = factory(User::class)->create();
+
+        tap(factory(Company::class)->create(), function (Company $company) use ($user) {
+            $company->users()->attach($user->id);
+
+            $user->roles()->attach(
+                factory(Role::class, 3)->create()
+            );
+        });
+
+        $this->get(UserWithRolesRepository::uriKey() . "/$user->id?related=roles,companies")
+            ->assertJsonStructure([
+                'data' => [
+                    'relationships' => [
+                        'roles' => [],
+                        'companies' => [],
                     ],
                 ],
             ])->assertJsonCount(3, 'data.relationships.roles');
@@ -58,10 +85,11 @@ class UserWithRolesRepository extends Repository
 {
     public static $model = User::class;
 
-    public static function getRelated()
+    public static function related(): array
     {
         return [
             'roles' => MorphToMany::make('roles', 'roles', RoleRepository::class),
+            'companies' => BelongsToMany::make('companies', 'companies', CompanyRepository::class),
         ];
     }
 
