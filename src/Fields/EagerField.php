@@ -54,6 +54,7 @@ class EagerField extends Field
 
         if (is_null($relatedModel)) {
             $this->value = null;
+
             return $this;
         }
 
