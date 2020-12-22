@@ -57,8 +57,8 @@ class EagerField extends Field
                 ->allowToShow(app(Request::class))
                 ->eagerState();
         } catch (AuthorizationException $e) {
-            if(is_null($relatedModel)) {
-                abort(403, "You are not authorized to perform this action.");
+            if (is_null($relatedModel)) {
+                abort(403, 'You are not authorized to perform this action.');
             }
 
             $class = get_class($relatedModel);
