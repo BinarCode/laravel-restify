@@ -34,7 +34,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute.'.'.$ruleFor] = $message;
+                $messages[$k->attribute . '.' . $ruleFor] = $message;
             }
 
             return $messages;
@@ -54,7 +54,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages['*'.$k->attribute.'.'.$ruleFor] = $message;
+                $messages['*' . $k->attribute . '.' . $ruleFor] = $message;
             }
 
             return $messages;
@@ -84,7 +84,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute.'.'.$ruleFor] = $message;
+                $messages[$k->attribute . '.' . $ruleFor] = $message;
             }
 
             return $messages;
@@ -101,23 +101,15 @@ trait ValidatingTrait
         /** * @var Repository $on */
         $on = $resource ?? static::resolveWith(static::newModel());
 
-        /**
-         * @var BelongsToMany $field
-         */
-        $pivotFields = $on
-            ->collectFields($request)
-            ->filterForManyToManyRelations($request)
-            ->firstWhere('attribute', $request->relatedRepository)
-            ->collectPivotFields();
 
-        $messages = $pivotFields->flatMap(function ($field) {
-            $messages = [];
-            foreach ($field->messages as $ruleFor => $message) {
-                $messages[$field->attribute.'.'.$ruleFor] = $message;
-            }
+        /** * @var BelongsToMany $field */
+        $field = $on::collectRelated()
+            ->forManyToManyRelations($request)
+            ->firstWhere('attribute', $request->relatedRepository);
 
-            return $messages;
-        })->all();
+        $pivotFields = $field->collectPivotFields();
+
+        $messages = $pivotFields->flatMap(fn(Field $field) => $field->serializeMessages())->all();
 
         $rules = $pivotFields->mapWithKeys(function (Field $k) {
             return [
@@ -139,7 +131,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages['*'.$k->attribute.'.'.$ruleFor] = $message;
+                $messages['*' . $k->attribute . '.' . $ruleFor] = $message;
             }
 
             return $messages;

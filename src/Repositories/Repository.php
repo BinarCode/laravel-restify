@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Eager\Related;
+use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -545,7 +546,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Return a list with relationship for the current model.
      *
-     * @param $request
+     * @param RestifyRequest $request
      * @return array
      */
     public function resolveRelationships($request): array
@@ -555,6 +556,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         static::collectRelated()
             ->authorized($request)
             ->inRequest($request)
+            ->when($request->isShowRequest(), function (RelatedCollection $collection) use ($request) {
+                return $collection->forShow($request, $this);
+            })
+            ->when($request->isForRepositoryRequest(), function (RelatedCollection $collection) use ($request) {
+                return $collection->forIndex($request, $this);
+            })
             ->mapIntoRelated($request)
             ->each(function (Related $related) use ($request, $withs) {
                 $relation = $related->getRelation();
@@ -789,7 +796,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
                 static::fillFields($request, $pivot, $fields);
 
-                $eagerField->authorizeToAttach($request, $pivot);
+                $eagerField->authorizeToAttach($request);
 
                 return $pivot;
             })->each->save();
@@ -803,15 +810,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
     {
         /** * @var BelongsToMany $eagerField */
-        $eagerField = $request->newRepository()
-            ->collectFields($request)
-            ->filterForManyToManyRelations($request)
+        $eagerField = $request->newRepository()::collectRelated()
+            ->forManyToManyRelations($request)
             ->firstWhere('attribute', $request->relatedRepository);
-
-        if (is_null($eagerField)) {
-            $class = class_basename($request->repository());
-            abort(400, "Missing BelongsToMany or MorphToMany field for [{$request->relatedRepository}]. This field should be in the [{$class}] class.");
-        }
 
         $deleted = DB::transaction(function () use ($pivots, $eagerField, $request) {
             return $pivots

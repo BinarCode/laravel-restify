@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields\Concerns;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\PivotsCollection;
 use Closure;
 use DateTime;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -136,8 +137,8 @@ trait Attachable
         return $this;
     }
 
-    public function collectPivotFields(): Collection
+    public function collectPivotFields(): PivotsCollection
     {
-        return collect($this->pivotFields);
+        return PivotsCollection::make($this->pivotFields);
     }
 }

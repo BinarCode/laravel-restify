@@ -309,7 +309,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function getAttribute()
     {
-        return $this->attribute;
+        return $this->label ?? $this->attribute;
     }
 
     /**
@@ -379,6 +379,17 @@ class Field extends OrganicField implements JsonSerializable
         $this->messages = $messages;
 
         return $this;
+    }
+
+    public function serializeMessages(): array
+    {
+        $messages = [];
+
+        foreach ($this->messages as $ruleFor => $message) {
+            $messages[$this->getAttribute() . '.' . $ruleFor] = $message;
+        }
+
+        return $messages;
     }
 
     public function getStoringRules(): array
