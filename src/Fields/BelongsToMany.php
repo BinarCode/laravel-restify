@@ -31,8 +31,8 @@ class BelongsToMany extends EagerField
 
     public function __construct($attribute, $relation, $parentRepository)
     {
-        if (!is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
+        if (! is_a(app($parentRepository), Repository::class)) {
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
         }
 
         parent::__construct($attribute);
@@ -55,7 +55,7 @@ class BelongsToMany extends EagerField
                     ->allowToShow(app(Request::class))
                     ->withPivots(
                         PivotsCollection::make($this->pivotFields)
-                            ->map(fn(Field $field) => clone $field)
+                            ->map(fn (Field $field) => clone $field)
                             ->resolveFromPivot($item->pivot)
                     )
                     ->eagerState();
