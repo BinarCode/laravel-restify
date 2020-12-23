@@ -23,7 +23,6 @@ use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Testing\Assert as PHPUnit;
 use Mockery;
 use Orchestra\Testbench\TestCase;
 

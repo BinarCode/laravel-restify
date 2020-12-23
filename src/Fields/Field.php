@@ -386,7 +386,7 @@ class Field extends OrganicField implements JsonSerializable
         $messages = [];
 
         foreach ($this->messages as $ruleFor => $message) {
-            $messages[$this->getAttribute() . '.' . $ruleFor] = $message;
+            $messages[$this->getAttribute().'.'.$ruleFor] = $message;
         }
 
         return $messages;

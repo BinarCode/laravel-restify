@@ -34,7 +34,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute . '.' . $ruleFor] = $message;
+                $messages[$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
@@ -54,7 +54,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages['*' . $k->attribute . '.' . $ruleFor] = $message;
+                $messages['*'.$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
@@ -84,7 +84,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages[$k->attribute . '.' . $ruleFor] = $message;
+                $messages[$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;
@@ -101,7 +101,6 @@ trait ValidatingTrait
         /** * @var Repository $on */
         $on = $resource ?? static::resolveWith(static::newModel());
 
-
         /** * @var BelongsToMany $field */
         $field = $on::collectRelated()
             ->forManyToManyRelations($request)
@@ -109,7 +108,7 @@ trait ValidatingTrait
 
         $pivotFields = $field->collectPivotFields();
 
-        $messages = $pivotFields->flatMap(fn(Field $field) => $field->serializeMessages())->all();
+        $messages = $pivotFields->flatMap(fn (Field $field) => $field->serializeMessages())->all();
 
         $rules = $pivotFields->mapWithKeys(function (Field $k) {
             return [
@@ -131,7 +130,7 @@ trait ValidatingTrait
         $messages = $on->collectFields($request)->flatMap(function ($k) {
             $messages = [];
             foreach ($k->messages as $ruleFor => $message) {
-                $messages['*' . $k->attribute . '.' . $ruleFor] = $message;
+                $messages['*'.$k->attribute.'.'.$ruleFor] = $message;
             }
 
             return $messages;

@@ -17,7 +17,7 @@ class CompanyRepository extends Repository
         return [
             'users' => BelongsToMany::make('users', 'users', UserRepository::class)->withPivot(
                 Field::make('is_admin')->rules('required')
-            )->canDetach(fn($request, $pivot) => isset($_SERVER['roles.canDetach.users']) && $_SERVER['roles.canDetach.users']),
+            )->canDetach(fn ($request, $pivot) => isset($_SERVER['roles.canDetach.users']) && $_SERVER['roles.canDetach.users']),
         ];
     }
 
@@ -25,10 +25,10 @@ class CompanyRepository extends Repository
     {
         return [
             field('name'),
-//
-//            BelongsToMany::make('users', 'users', UserRepository::class)->withPivot(
-//                Field::make('is_admin')->rules('required')
-//            )->canDetach(fn($request, $pivot) => $_SERVER['roles.canDetach.users']),
+            //
+            //            BelongsToMany::make('users', 'users', UserRepository::class)->withPivot(
+            //                Field::make('is_admin')->rules('required')
+            //            )->canDetach(fn($request, $pivot) => $_SERVER['roles.canDetach.users']),
         ];
     }
 }
