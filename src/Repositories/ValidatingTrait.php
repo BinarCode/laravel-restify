@@ -101,23 +101,14 @@ trait ValidatingTrait
         /** * @var Repository $on */
         $on = $resource ?? static::resolveWith(static::newModel());
 
-        /**
-         * @var BelongsToMany $field
-         */
-        $pivotFields = $on
-            ->collectFields($request)
-            ->filterForManyToManyRelations($request)
-            ->firstWhere('attribute', $request->relatedRepository)
-            ->collectPivotFields();
+        /** * @var BelongsToMany $field */
+        $field = $on::collectRelated()
+            ->forManyToManyRelations($request)
+            ->firstWhere('attribute', $request->relatedRepository);
 
-        $messages = $pivotFields->flatMap(function ($field) {
-            $messages = [];
-            foreach ($field->messages as $ruleFor => $message) {
-                $messages[$field->attribute.'.'.$ruleFor] = $message;
-            }
+        $pivotFields = $field->collectPivotFields();
 
-            return $messages;
-        })->all();
+        $messages = $pivotFields->flatMap(fn (Field $field) => $field->serializeMessages())->all();
 
         $rules = $pivotFields->mapWithKeys(function (Field $k) {
             return [

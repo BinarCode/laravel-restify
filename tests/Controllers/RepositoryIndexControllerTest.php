@@ -122,7 +122,11 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
     public function test_repository_with_deep_relations()
     {
-        CompanyRepository::$related = ['users.posts'];
+        CompanyRepository::partialMock()
+            ->expects('related')
+            ->andReturn([
+                'users.posts',
+            ]);
 
         tap(factory(Company::class)->create(), function (Company $company) {
             tap($company->users()->create(

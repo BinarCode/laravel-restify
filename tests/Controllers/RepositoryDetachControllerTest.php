@@ -2,96 +2,138 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 
 class RepositoryDetachControllerTest extends IntegrationTest
 {
-    protected function setUp(): void
+    public function test_can_detach_repositories()
     {
-        parent::setUp();
-
         $_SERVER['roles.canDetach.users'] = true;
-    }
 
-    public function test_detach_a_user_from_a_company()
-    {
-        $user = $this->mockUsers(2)->first();
-        $company = factory(Company::class)->create();
-        $company->users()->attach($user->id);
-        $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
-        $this->assertCount(1, $usersFromCompany->json('data'));
-        $this->postJson('companies/'.$company->id.'/detach/users', [
-            'users' => $user->id,
-        ])->assertStatus(204);
+        $company = tap(factory(Company::class)->create(), function (Company $company) {
+            $company->users()->attach($this->mockUsers()->first()->id, [
+                'is_admin' => true,
+            ]);
+            $company->users()->attach($this->mockUsers()->first()->id);
+        });
 
-        $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
-        $this->assertCount(0, $usersFromCompany->json('data'));
-    }
-
-    public function test_detach_multiple_users_from_a_company()
-    {
-        $users = $this->mockUsers(3);
-        $company = factory(Company::class)->create();
-        $company->users()->attach($users->pluck('id'));
-
-        $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
-        $this->assertCount(3, $usersFromCompany->json('data'));
+        $this->assertCount(2, $company->users);
 
         $this->postJson('companies/'.$company->id.'/detach/users', [
             'users' => [1, 2],
-        ])->assertStatus(204);
+        ])->assertNoContent();
 
-        $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
-        $this->assertCount(1, $usersFromCompany->json('data'));
+        $this->assertCount(0, $company->fresh()->users);
     }
 
-    public function test_forbidden_detach_users_from_company()
+    public function test_cant_detach_repositories_not_authorized_to_detach()
     {
-        $_SERVER['roles.canDetach.users'] = false;
+        Gate::policy(Company::class, CompanyPolicy::class);
 
-        $users = $this->mockUsers(3);
-        $company = factory(Company::class)->create();
-        $company->users()->attach($users->pluck('id'));
+        $this->authenticate(
+            factory(User::class)->create()
+        );
+
+        $company = tap(factory(Company::class)->create(), function (Company $company) {
+            $company->users()->attach($this->mockUsers()->first()->id, [
+                'is_admin' => true,
+            ]);
+            $company->users()->attach($this->mockUsers()->first()->id);
+        });
+
+        $_SERVER['allow_detach_users'] = false;
 
         $this->postJson('companies/'.$company->id.'/detach/users', [
             'users' => [1, 2],
         ])->assertForbidden();
     }
 
-    public function test_policy_to_detach_a_user_to_a_company()
+    public function test_many_to_many_field_can_intercept_detach_authorization()
     {
-        Gate::policy(Company::class, CompanyPolicy::class);
+        CompanyRepository::partialMock()
+            ->shouldReceive('related')
+            ->andReturn([
+                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->canDetach(function ($request, $pivot) {
+                    $this->assertInstanceOf(Request::class, $request);
+                    $this->assertInstanceOf(Pivot::class, $pivot);
 
-        $user = $this->mockUsers(2)->first();
-        $company = factory(Company::class)->create();
-        $this->authenticate(
-            factory(User::class)->create()
-        );
+                    return false;
+                }),
+            ]);
 
-        $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
-            'is_admin' => true,
-        ])
-            ->assertCreated();
-
-        $_SERVER['allow_detach_users'] = false;
-
-        $this->postJson('companies/'.$company->id.'/detach/users', [
-            'users' => $user->id,
-            'is_admin' => true,
-        ])
-            ->assertForbidden();
-
-        $_SERVER['allow_detach_users'] = true;
+        $company = tap(factory(Company::class)->create(), function (Company $company) {
+            $company->users()->attach($this->mockUsers()->first()->id);
+        });
 
         $this->postJson('companies/'.$company->id.'/detach/users', [
-            'users' => $user->id,
-            'is_admin' => true,
-        ])
-            ->assertNoContent();
+            'users' => [1],
+        ])->assertForbidden();
+    }
+
+    public function test_many_to_many_field_can_intercept_detach_method()
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('related')
+            ->andReturn([
+                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->detachCallback(function ($request, $repository, $model) {
+                    $this->assertInstanceOf(Request::class, $request);
+                    $this->assertInstanceOf(CompanyRepository::class, $repository);
+                    $this->assertInstanceOf(Company::class, $model);
+
+                    $model->users()->detach($request->input('users'));
+
+                    return response()->noContent();
+                }),
+            ]);
+
+        $company = tap(factory(Company::class)->create(), function (Company $company) {
+            $company->users()->attach($this->mockUsers()->first()->id);
+        });
+
+        $this->postJson('companies/'.$company->id.'/detach/users', [
+            'users' => [1],
+        ])->assertNoContent();
+
+        $this->assertCount(0, $company->fresh()->users);
+    }
+
+    public function test_repository_can_intercept_detach()
+    {
+        $mock = CompanyRepository::partialMock();
+        $mock->shouldReceive('related')
+            ->andReturn([
+                'users' => BelongsToMany::make('users', 'users', UserRepository::class),
+            ]);
+
+        CompanyRepository::$detachers = [
+            'users' => function ($request, $repository, $model) {
+                $this->assertInstanceOf(Request::class, $request);
+                $this->assertInstanceOf(CompanyRepository::class, $repository);
+                $this->assertInstanceOf(Company::class, $model);
+
+                $model->users()->detach($request->input('users'));
+
+                return response()->noContent();
+            },
+        ];
+
+        $company = tap(factory(Company::class)->create(), function (Company $company) {
+            $company->users()->attach($this->mockUsers()->first()->id);
+        });
+
+        $this->postJson('companies/'.$company->id.'/detach/users', [
+            'users' => [1],
+        ])->assertNoContent();
+
+        $this->assertCount(0, $company->fresh()->users);
     }
 }

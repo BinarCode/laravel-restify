@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Eager\Related;
+use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -161,6 +162,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var bool
      */
     public $extraFields = [];
+
+    /**
+     * A collection of pivots for the nested relationships.
+     *
+     * @var PivotsCollection
+     */
+    private PivotsCollection $pivots;
 
     public function __construct()
     {
@@ -320,6 +328,20 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this;
     }
 
+    public function withPivots(PivotsCollection $pivots): self
+    {
+        $this->pivots = $pivots;
+
+        return $this;
+    }
+
+    public function getPivots(): ?PivotsCollection
+    {
+        return isset($this->pivots)
+            ? $this->pivots
+            : null;
+    }
+
     public function withResource($resource)
     {
         $this->resource = $resource;
@@ -406,7 +428,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->forShow($request, $this)
             ->filter(fn (Field $field) => $field->authorize($request))
             ->when(
-                $this->eagerState,
+                $this->isEagerState(),
                 function ($items) {
                     return $items->filter(fn (Field $field) => ! $field instanceof EagerField);
                 }
@@ -502,10 +524,29 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         ];
     }
 
+    public function resolveShowPivots(RestifyRequest $request): array
+    {
+        if (is_null($pivots = $this->getPivots())) {
+            return [];
+        }
+
+        return $pivots
+            ->filter(fn (Field $field) => $field->authorize($request))
+            ->each(fn (Field $field) => $field->resolve($this))
+            ->map(fn (Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn ($value) => $value)
+            ->all();
+    }
+
+    public function resolveIndexPivots(RestifyRequest $request): array
+    {
+        return $this->resolveShowPivots($request);
+    }
+
     /**
      * Return a list with relationship for the current model.
      *
-     * @param $request
+     * @param RestifyRequest $request
      * @return array
      */
     public function resolveRelationships($request): array
@@ -515,6 +556,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         static::collectRelated()
             ->authorized($request)
             ->inRequest($request)
+            ->when($request->isShowRequest(), function (RelatedCollection $collection) use ($request) {
+                return $collection->forShow($request, $this);
+            })
+            ->when($request->isForRepositoryRequest(), function (RelatedCollection $collection) use ($request) {
+                return $collection->forIndex($request, $this);
+            })
             ->mapIntoRelated($request)
             ->each(function (Related $related) use ($request, $withs) {
                 $relation = $related->getRelation();
@@ -749,7 +796,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
                 static::fillFields($request, $pivot, $fields);
 
-                $eagerField->authorizeToAttach($request, $pivot);
+                $eagerField->authorizeToAttach($request);
 
                 return $pivot;
             })->each->save();
@@ -763,15 +810,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
     {
         /** * @var BelongsToMany $eagerField */
-        $eagerField = $request->newRepository()
-            ->collectFields($request)
-            ->filterForManyToManyRelations($request)
+        $eagerField = $request->newRepository()::collectRelated()
+            ->forManyToManyRelations($request)
             ->firstWhere('attribute', $request->relatedRepository);
-
-        if (is_null($eagerField)) {
-            $class = class_basename($request->repository());
-            abort(400, "Missing BelongsToMany or MorphToMany field for [{$request->relatedRepository}]. This field should be in the [{$class}] class.");
-        }
 
         $deleted = DB::transaction(function () use ($pivots, $eagerField, $request) {
             return $pivots
@@ -913,6 +954,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
             'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
             'meta' => $this->when(value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)), $meta),
+            'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots),
         ]);
     }
 
@@ -924,6 +966,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             'attributes' => $this->when((bool) $attrs = $this->resolveIndexAttributes($request), $attrs),
             'relationships' => $this->when(value($related = $this->resolveIndexRelationships($request)), $related),
             'meta' => $this->when(value($meta = $this->resolveIndexMeta($request)), $meta),
+            'pivots' => $this->when(value($pivots = $this->resolveIndexPivots($request)), $pivots),
         ]);
     }
 

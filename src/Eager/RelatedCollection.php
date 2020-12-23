@@ -3,10 +3,13 @@
 namespace Binaryk\LaravelRestify\Eager;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Fields\MorphToMany;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
 
 class RelatedCollection extends Collection
@@ -27,12 +30,41 @@ class RelatedCollection extends Collection
             ->unique('attribute');
     }
 
+    public function forManyToManyRelations(RestifyRequest $request): self
+    {
+        return $this->filter(function ($field) {
+            return $field instanceof BelongsToMany || $field instanceof MorphToMany;
+        })->filter(fn (EagerField $field) => $field->authorize($request));
+    }
+
     public function mapIntoSortable(RestifyRequest $request): self
     {
         return $this->filter(fn (EagerField $field) => $field->isSortable())
             //Now we support only belongs to sort from related.
             ->filter(fn (EagerField $field) => $field instanceof BelongsTo)
             ->map(fn (BelongsTo $field) => SortableFilter::make()->usingBelongsTo($field));
+    }
+
+    public function forShow(RestifyRequest $request, Repository $repository): self
+    {
+        return $this->filter(function ($related) use ($request, $repository) {
+            if ($related instanceof Field) {
+                return $related->isShownOnShow($request, $repository);
+            }
+
+            return $related;
+        });
+    }
+
+    public function forIndex(RestifyRequest $request, Repository $repository): self
+    {
+        return $this->filter(function ($related) use ($request, $repository) {
+            if ($related instanceof Field) {
+                return $related->isShownOnIndex($request, $repository);
+            }
+
+            return $related;
+        });
     }
 
     public function inRequest(RestifyRequest $request): self

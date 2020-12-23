@@ -25,14 +25,6 @@ class EagerField extends Field
      */
     public string $repositoryClass;
 
-    public function __construct($attribute, callable $resolveCallback = null)
-    {
-        parent::__construct($attribute, $resolveCallback);
-
-        $this->showOnShow()
-            ->hideFromIndex();
-    }
-
     /**
      * Determine if the field should be displayed for the given request.
      *
