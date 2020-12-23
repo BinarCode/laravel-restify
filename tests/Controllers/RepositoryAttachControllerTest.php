@@ -15,7 +15,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers(2)->first();
         $company = factory(Company::class)->create();
 
-        $response = $this->postJson('companies/'.$company->id.'/attach/users', [
+        $response = $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])->assertStatus(201);
@@ -32,10 +32,32 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers(2)->first();
         $company = factory(Company::class)->create();
 
-        $this->postJson('companies/'.$company->id.'/attach/users', [
+        $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
         ])
             ->assertStatus(400);
+    }
+
+    public function test_pivot_field_present_when_show()
+    {
+        $company = tap(factory(Company::class)->create(), function (Company $company) {
+            $company->users()->attach($this->mockUsers()->first()->id, [
+                'is_admin' => true,
+            ]);
+            $company->users()->attach($this->mockUsers()->first()->id);
+        });
+
+        $response = $this->getJson('companies/' . $company->id . '?related=users')
+            ->assertOk();
+
+        $this->assertSame(
+            true,
+            $response->json('data.relationships.users.0.pivots.is_admin')
+        );
+        $this->assertSame(
+            false,
+            $response->json('data.relationships.users.1.pivots.is_admin')
+        );
     }
 
     public function test_attach_multiple_users_to_a_company()
@@ -45,7 +67,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $usersFromCompany = $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users');
         $this->assertCount(0, $usersFromCompany->json('data'));
 
-        $response = $this->postJson('companies/'.$company->id.'/attach/users', [
+        $response = $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => [1, 2],
             'is_admin' => true,
         ])
@@ -69,7 +91,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $this->getJson('users?viaRepository=companies&viaRepositoryId=1&viaRelationship=users')
             ->assertJsonCount(0, 'data');
 
-        $this->postJson('companies/'.$company->id.'/attach/users', [
+        $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ]);
@@ -90,7 +112,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $_SERVER['allow_attach_users'] = false;
 
-        $this->postJson('companies/'.$company->id.'/attach/users', [
+        $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
@@ -98,7 +120,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $_SERVER['allow_attach_users'] = true;
 
-        $this->postJson('companies/'.$company->id.'/attach/users', [
+        $this->postJson('companies/' . $company->id . '/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])

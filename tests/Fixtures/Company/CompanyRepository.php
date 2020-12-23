@@ -12,9 +12,14 @@ class CompanyRepository extends Repository
 {
     public static $model = Company::class;
 
-    public static $related = [
-        'users',
-    ];
+    public static function related(): array
+    {
+        return [
+            'users' => BelongsToMany::make('users', 'users', UserRepository::class)->withPivot(
+                Field::make('is_admin')->rules('required')
+            ),
+        ];
+    }
 
     public function fields(RestifyRequest $request)
     {
@@ -23,7 +28,7 @@ class CompanyRepository extends Repository
 
             BelongsToMany::make('users', 'users', UserRepository::class)->withPivot(
                 Field::make('is_admin')->rules('required')
-            )->canDetach(fn ($request, $pivot) => $_SERVER['roles.canDetach.users']),
+            )->canDetach(fn($request, $pivot) => $_SERVER['roles.canDetach.users']),
         ];
     }
 }

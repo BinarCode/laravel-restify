@@ -15,6 +15,7 @@ class Company extends Model
     public function users()
     {
         return $this->belongsToMany(User::class, 'company_user', 'company_id', 'user_id')
+            ->using(CompanyUserPivot::class)
             ->withPivot([
                 'is_admin',
             ])

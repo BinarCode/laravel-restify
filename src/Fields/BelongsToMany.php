@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
+use Binaryk\LaravelRestify\Repositories\PivotsCollection;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -30,8 +31,8 @@ class BelongsToMany extends EagerField
 
     public function __construct($attribute, $relation, $parentRepository)
     {
-        if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
+        if (!is_a(app($parentRepository), Repository::class)) {
+            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of " . Repository::class);
         }
 
         parent::__construct($attribute);
@@ -52,10 +53,10 @@ class BelongsToMany extends EagerField
             try {
                 return $this->repositoryClass::resolveWith($item)
                     ->allowToShow(app(Request::class))
-                    ->withExtraFields(
-                        collect($this->pivotFields)->each(function (Field $field) use ($item) {
-                            return $field->resolveCallback(fn () => $item->pivot->{$field->attribute});
-                        })->all()
+                    ->withPivots(
+                        PivotsCollection::make($this->pivotFields)
+                            ->map(fn(Field $field) => clone $field)
+                            ->resolveFromPivot($item->pivot)
                     )
                     ->eagerState();
             } catch (AuthorizationException $e) {

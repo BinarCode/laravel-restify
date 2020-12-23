@@ -446,6 +446,10 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function resolveForShow($repository, $attribute = null)
     {
+        if ($this->attribute === 'is_admin') {
+            dd('foo');
+        }
+
         $attribute = $attribute ?? $this->attribute;
 
         if ($attribute === 'Computed') {
@@ -474,7 +478,7 @@ class Field extends OrganicField implements JsonSerializable
         if ($attribute === 'Computed') {
             $this->value = call_user_func($this->computedCallback, $repository);
 
-            return;
+            return $this;
         }
 
         if (! $this->indexCallback) {
@@ -494,7 +498,7 @@ class Field extends OrganicField implements JsonSerializable
         if ($attribute === 'Computed') {
             $this->value = call_user_func($this->computedCallback, $repository);
 
-            return;
+            return $this;
         }
 
         if (! $this->resolveCallback) {
