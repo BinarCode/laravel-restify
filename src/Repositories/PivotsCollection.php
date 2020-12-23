@@ -11,7 +11,7 @@ class PivotsCollection extends Collection
     public function resolveFromPivot(Pivot $pivot): self
     {
         return $this->map(function (Field $field) use ($pivot) {
-            return $field->resolveCallback(fn() => $pivot->{$field->attribute});
+            return $field->resolveCallback(fn () => $pivot->{$field->attribute});
         });
     }
 }
