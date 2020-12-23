@@ -89,7 +89,6 @@ class BelongsToManyFieldTest extends IntegrationTest
         });
 
         $response = $this->get(CompanyRepository::uriKey()."/{$company->id}/users")
-            ->dump()
             ->assertOk();
 
         $this->assertSame(
