@@ -457,10 +457,6 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function resolveForShow($repository, $attribute = null)
     {
-        if ($this->attribute === 'is_admin') {
-            dd('foo');
-        }
-
         $attribute = $attribute ?? $this->attribute;
 
         if ($attribute === 'Computed') {

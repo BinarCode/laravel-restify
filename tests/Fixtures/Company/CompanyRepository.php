@@ -25,10 +25,6 @@ class CompanyRepository extends Repository
     {
         return [
             field('name'),
-//
-//            BelongsToMany::make('users', 'users', UserRepository::class)->withPivot(
-//                Field::make('is_admin')->rules('required')
-//            )->canDetach(fn($request, $pivot) => $_SERVER['roles.canDetach.users']),
         ];
     }
 }
