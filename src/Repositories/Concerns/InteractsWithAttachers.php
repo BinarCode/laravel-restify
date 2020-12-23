@@ -43,7 +43,7 @@ trait InteractsWithAttachers
             return $cb;
         }
 
-        $methodGuesser = 'attach' . Str::studly($request->relatedRepository);
+        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
 
         if (method_exists($repository, $methodGuesser)) {
             return [$repository, $methodGuesser];
@@ -66,7 +66,7 @@ trait InteractsWithAttachers
             return $cb;
         }
 
-        $methodGuesser = 'detach' . Str::studly($request->relatedRepository);
+        $methodGuesser = 'detach'.Str::studly($request->relatedRepository);
 
         if (method_exists($repository, $methodGuesser)) {
             return [$repository, $methodGuesser];

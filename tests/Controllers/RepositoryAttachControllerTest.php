@@ -21,7 +21,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers()->first();
         $company = factory(Company::class)->create();
 
-        $this->postJson('companies/' . $company->id . '/attach/users', [
+        $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])->assertCreated()->assertJsonFragment([
@@ -46,14 +46,14 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $_SERVER['allow_attach_users'] = false;
 
-        $this->postJson('companies/' . $company->id . '/attach/users', [
+        $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])->assertForbidden();
 
         $_SERVER['allow_attach_users'] = true;
 
-        $this->postJson('companies/' . $company->id . '/attach/users', [
+        $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])->assertCreated();
@@ -73,15 +73,15 @@ class RepositoryAttachControllerTest extends IntegrationTest
                     Field::make('is_admin')->rules('required')->messages([
                         'required' => $message = 'You should fill the is_admin information.',
                     ])
-                )
+                ),
             ]);
 
-        $this->postJson('companies/' . $company->id . '/attach/users', [
+        $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
         ])->assertStatus(400)->assertJsonFragment([
             'is_admin' => [
-                $message
-            ]]);
+                $message,
+            ], ]);
     }
 
     public function test_pivot_field_present_when_show()
@@ -93,7 +93,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
-        $response = $this->getJson('companies/' . $company->id . '?related=users')
+        $response = $this->getJson('companies/'.$company->id.'?related=users')
             ->assertOk();
 
         $this->assertSame(
@@ -136,7 +136,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $this->assertCount(0, $company->users);
 
-        $this->postJson('companies/' . $company->id . '/attach/users', [
+        $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => [1, 2],
             'is_admin' => true,
         ])->assertCreated()->assertJsonFragment([
@@ -162,10 +162,10 @@ class RepositoryAttachControllerTest extends IntegrationTest
                         $this->assertInstanceOf(Pivot::class, $pivot);
 
                         return false;
-                    })
+                    }),
             ]);
 
-        $this->postJson('companies/' . $company->id . '/attach/users', [
+        $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])->assertForbidden();
@@ -192,10 +192,10 @@ class RepositoryAttachControllerTest extends IntegrationTest
                         $this->assertInstanceOf(Company::class, $model);
 
                         $model->users()->attach($request->input('users'));
-                    })
+                    }),
             ]);
 
-        $this->postJson('companies/' . $company->id . '/attach/users', [
+        $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])->assertOk();
@@ -223,7 +223,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
             },
         ];
 
-        $this->postJson('companies/' . $company->id . '/attach/users', [
+        $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
         ])->assertOk();
 

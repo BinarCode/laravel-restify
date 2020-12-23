@@ -28,8 +28,8 @@ class RepositoryDetachControllerTest extends IntegrationTest
 
         $this->assertCount(2, $company->users);
 
-        $this->postJson('companies/' . $company->id . '/detach/users', [
-            'users' => [1, 2]
+        $this->postJson('companies/'.$company->id.'/detach/users', [
+            'users' => [1, 2],
         ])->assertNoContent();
 
         $this->assertCount(0, $company->fresh()->users);
@@ -52,8 +52,8 @@ class RepositoryDetachControllerTest extends IntegrationTest
 
         $_SERVER['allow_detach_users'] = false;
 
-        $this->postJson('companies/' . $company->id . '/detach/users', [
-            'users' => [1, 2]
+        $this->postJson('companies/'.$company->id.'/detach/users', [
+            'users' => [1, 2],
         ])->assertForbidden();
     }
 
@@ -74,8 +74,8 @@ class RepositoryDetachControllerTest extends IntegrationTest
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
-        $this->postJson('companies/' . $company->id . '/detach/users', [
-            'users' => [1]
+        $this->postJson('companies/'.$company->id.'/detach/users', [
+            'users' => [1],
         ])->assertForbidden();
     }
 
@@ -99,8 +99,8 @@ class RepositoryDetachControllerTest extends IntegrationTest
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
-        $this->postJson('companies/' . $company->id . '/detach/users', [
-            'users' => [1]
+        $this->postJson('companies/'.$company->id.'/detach/users', [
+            'users' => [1],
         ])->assertNoContent();
 
         $this->assertCount(0, $company->fresh()->users);
@@ -130,8 +130,8 @@ class RepositoryDetachControllerTest extends IntegrationTest
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
-        $this->postJson('companies/' . $company->id . '/detach/users', [
-            'users' => [1]
+        $this->postJson('companies/'.$company->id.'/detach/users', [
+            'users' => [1],
         ])->assertNoContent();
 
         $this->assertCount(0, $company->fresh()->users);
