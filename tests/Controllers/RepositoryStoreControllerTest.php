@@ -8,9 +8,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryStoreControllerTest extends IntegrationTest
 {
     protected function setUp(): void
@@ -50,16 +47,17 @@ class RepositoryStoreControllerTest extends IntegrationTest
     public function test_success_storing()
     {
         $user = $this->mockUsers()->first();
-        $response = $this->postJson('posts', [
+        $response = $this->postJson('posts', $data = [
             'user_id' => $user->id,
             'title' => 'Some post title',
-        ])->assertStatus(201)
-            ->assertHeader('Location', '/posts/1');
+        ])->assertCreated()->assertHeader('Location', '/posts/1');
 
         $this->assertEquals('Some post title', $response->json('data.attributes.title'));
         $this->assertEquals(1, $response->json('data.attributes.user_id'));
         $this->assertEquals(1, $response->json('data.id'));
         $this->assertEquals('posts', $response->json('data.type'));
+
+        $this->assertDatabaseHas('posts', $data);
     }
 
     public function test_will_store_only_defined_fields_from_fieldsForStore()
