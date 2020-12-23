@@ -125,7 +125,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users.posts'
+                'users.posts',
             ]);
 
         tap(factory(Company::class)->create(), function (Company $company) {
