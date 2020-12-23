@@ -15,13 +15,16 @@ class UserRepository extends Repository
         return [
             Field::make('name')->rules('required'),
 
-            Field::make('email')->rules('required')->storingRules('unique:users')->messages([
-                'required' => 'This field is required.',
-            ]),
+            Field::make('email')->rules('required')
+                ->storingRules('unique:users')->messages([
+                    'required' => 'This field is required.',
+                ]),
 
-            Field::make('password')->storeCallback(function ($request, $model, $attribute) {
-                    $model->{$attribute} = Hash::make($value);
-                })->rules('required')->storingRules('confirmed'),
+            Field::make('password')
+                ->value(fn(Request $request) => Hash::make($request->input('password')))
+                ->rules('required')
+                ->storingRules('confirmed')
+                ->hidden(),
         ];
     }
 }
