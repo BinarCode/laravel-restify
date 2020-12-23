@@ -8,17 +8,8 @@ use Illuminate\Support\Facades\Hash;
 
 class UserRepository extends Repository
 {
-    /**
-     * The model the repository corresponds to.
-     *
-     * @var string
-     */
     public static $model = 'App\\Models\\User';
 
-    /**
-     * @param  RestifyRequest  $request
-     * @return array
-     */
     public function fields(RestifyRequest $request)
     {
         return [
