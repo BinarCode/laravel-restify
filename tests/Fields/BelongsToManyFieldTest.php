@@ -3,9 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Fields;
 
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -22,7 +19,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(CompanyRepository::uriKey() . "/{$company->id}?related=users")
+        $this->get(CompanyRepository::uriKey()."/{$company->id}?related=users")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -46,11 +43,11 @@ class BelongsToManyFieldTest extends IntegrationTest
                 'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromShow(),
             ]);
 
-        $this->get(CompanyRepository::uriKey() . "/{$company->id}?related=users")
+        $this->get(CompanyRepository::uriKey()."/{$company->id}?related=users")
             ->assertJsonStructure([
                 'data' => [],
             ])->assertJsonMissing([
-                'users'
+                'users',
             ]);
     }
 
@@ -65,21 +62,21 @@ class BelongsToManyFieldTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromIndex()
+                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromIndex(),
             ]);
 
-        $this->get(CompanyRepository::uriKey() . "?related=users")->assertJsonMissing([
-            'users'
+        $this->get(CompanyRepository::uriKey().'?related=users')->assertJsonMissing([
+            'users',
         ]);
 
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromShow()
+                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromShow(),
             ]);
 
-        $this->get(CompanyRepository::uriKey() . "?related=users")->assertJsonFragment([
-            'users'
+        $this->get(CompanyRepository::uriKey().'?related=users')->assertJsonFragment([
+            'users',
         ]);
     }
 
@@ -91,7 +88,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $response = $this->get(CompanyRepository::uriKey() . "/{$company->id}/users")
+        $response = $this->get(CompanyRepository::uriKey()."/{$company->id}/users")
             ->dump()
             ->assertOk();
 
@@ -117,7 +114,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             [
                 'relationships' => [
                     'users' => [],
-                ],],
+                ], ],
         ]);
     }
 }

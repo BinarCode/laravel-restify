@@ -9,7 +9,6 @@ use DateTime;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Collection;
 
 trait Attachable
 {
