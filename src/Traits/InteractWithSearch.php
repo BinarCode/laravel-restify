@@ -20,7 +20,16 @@ trait InteractWithSearch
 
     public static $defaultRelatablePerPage = 15;
 
+    /**
+     * @return array
+     * @deprecated
+     */
     public static function getSearchableFields()
+    {
+        return static::searchables();
+    }
+
+    public static function searchables(): array
     {
         return empty(static::$search)
             ? [static::newModel()->getKeyName()]
@@ -55,8 +64,14 @@ trait InteractWithSearch
 
     /**
      * @return array
+     * @deprecated
      */
     public static function getMatchByFields()
+    {
+        return static::matches();
+    }
+
+    public static function matches(): array
     {
         return empty(static::$match)
             ? [static::newModel()->getKeyName()]
