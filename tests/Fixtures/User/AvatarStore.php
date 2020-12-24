@@ -11,7 +11,7 @@ class AvatarStore implements Storable
     public function handle(Request $request, Model $model, $attribute): array
     {
         return [
-            'avatar' => $request->file('avatar')->storeAs('/', 'avatar.jpg', 'customDisk')
+            'avatar' => $request->file('avatar')->storeAs('/', 'avatar.jpg', 'customDisk'),
         ];
     }
 }

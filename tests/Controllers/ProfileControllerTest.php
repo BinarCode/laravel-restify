@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\Fields\Image;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
@@ -220,7 +219,7 @@ class ProfileControllerTest extends IntegrationTest
                     ->disk('customDisk')
                     ->storeOriginalName('avatar_original')
                     ->storeSize('avatar_size')
-                    ->storeAs('avatar.jpg')
+                    ->storeAs('avatar.jpg'),
             ]);
 
         $this->post('profile', [

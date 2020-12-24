@@ -52,7 +52,7 @@ Route::post('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::cla
 Route::delete('/{repository}/{repositoryId}', '\\'.RepositoryDestroyController::class);
 
 // Fields
-Route::delete('/{repository}/{repositoryId}/field/{field}', '\\' . FieldDestroyController::class);
+Route::delete('/{repository}/{repositoryId}/field/{field}', '\\'.FieldDestroyController::class);
 
 // Attach related repository id
 Route::post('/{repository}/{repositoryId}/attach/{relatedRepository}', '\\'.RepositoryAttachController::class);
