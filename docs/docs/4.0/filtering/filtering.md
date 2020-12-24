@@ -130,7 +130,7 @@ This will return all posts that doesn't contain `Some title` substring.
 
 ### Match closure
 
-There may be situations when the filter you want to apply not necessarily is a database attributes. You can use a Closure to handle this easily:
+There may be situations when the filter you want to apply is not necessarily a database attribute. You can use a Closure to handle this easily:
 
 ```php
 // UserRepository
