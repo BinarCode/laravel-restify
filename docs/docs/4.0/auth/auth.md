@@ -9,13 +9,23 @@ You'll finally enjoy the auth setup (`register`, `login`, `forgot` and `reset pa
 
 - Migrate the `personal_access_tokens` table, provided by sanctum.
 
+- Install laravel sanctum. See the docs [here](https://laravel.com/docs/sanctum#installation). You don't need to add `\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,` in your `'api'` middleware group. So you only need to run these 3 commands: 
+
+```shell script
+composer require laravel/sanctum
+php artisan vendor:publish --provider="Laravel\Sanctum\SanctumServiceProvider"
+php artisan migrate
+```
+
 - Make sure your authenticatable entity (usually `App\Models\User`) implements: `Illuminate\Contracts\Auth\Authenticatable` (or simply extends the `Illuminate\Foundation\Auth\User` class as it does into a fresh laravel app.)
 
 - Make sure the `App\Models\User` model implements the `Binaryk\LaravelRestify\Contracts\Sanctumable` contract.
 
+- Add `\Laravel\Sanctum\HasApiTokens` trait to your `User` model.
+
 ## Define routes
 
-Restify provides you a simple way to all of your auth routes ready. Simply add in your `routes/api.php`:
+Restify provides you a simple way to add all of your auth routes ready. Simply add in your `routes/api.php`:
 
 ```php
 Route::restifyAuth();
@@ -137,7 +147,7 @@ This method could look like this:
 
 public function sendEmailVerificationNotification()
 {
-    $this->notify(new VerifyEmail);
+    $this->notify(new \Binaryk\LaravelRestify\Notifications\VerifyEmail);
 }
 ```
 

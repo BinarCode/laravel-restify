@@ -1,0 +1,14 @@
+<?php
+
+namespace DummyNamespace;
+
+use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+
+class DummyClass extends Filter
+{
+    public function filter(RestifyRequest $request, $query, $value)
+    {
+        // $query->where('{{ attribute }}', $request->input('{{ query }}'));
+    }
+}

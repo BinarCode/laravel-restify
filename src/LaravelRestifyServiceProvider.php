@@ -6,6 +6,8 @@ use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\CheckPassport;
 use Binaryk\LaravelRestify\Commands\DevCommand;
+use Binaryk\LaravelRestify\Commands\FilterCommand;
+use Binaryk\LaravelRestify\Commands\MatcherCommand;
 use Binaryk\LaravelRestify\Commands\PolicyCommand;
 use Binaryk\LaravelRestify\Commands\Refresh;
 use Binaryk\LaravelRestify\Commands\RepositoryCommand;
@@ -61,6 +63,8 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         $this->commands([
             RepositoryCommand::class,
             ActionCommand::class,
+            MatcherCommand::class,
+            FilterCommand::class,
             DevCommand::class,
         ]);
     }
@@ -75,8 +79,6 @@ class LaravelRestifyServiceProvider extends ServiceProvider
             __DIR__.'/../config/config.php' => config_path('restify.php'),
         ], 'restify-config');
 
-        if (! $this->app->configurationIsCached()) {
-            $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'laravel-restify');
-        }
+        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'restify');
     }
 }

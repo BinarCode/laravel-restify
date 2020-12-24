@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
@@ -54,6 +55,17 @@ abstract class IntegrationTest extends TestCase
         $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
         $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
+
+        Restify::$authUsing = function () {
+            return true;
+        };
+    }
+
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        Repository::clearResolvedInstances();
     }
 
     protected function getPackageProviders($app)
@@ -67,6 +79,7 @@ abstract class IntegrationTest extends TestCase
     {
         $app['config']->set('database.default', 'sqlite');
         $app['config']->set('auth.providers.users.model', User::class);
+        $app['config']->set('restify.base', '/');
 
         $app['config']->set('database.connections.sqlite', [
             'driver' => 'sqlite',

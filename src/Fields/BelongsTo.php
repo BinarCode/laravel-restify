@@ -2,14 +2,15 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Closure;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class BelongsTo extends EagerField
 {
-    public ?Closure $storeParentCallback;
+    use Attachable;
 
     public function __construct($attribute, $relation, $parentRepository)
     {
@@ -20,42 +21,34 @@ class BelongsTo extends EagerField
         parent::__construct($attribute);
 
         $this->relation = $relation;
-        $this->parentRepository = $parentRepository;
+        $this->repositoryClass = $parentRepository;
     }
 
-    public function storeParent(RestifyRequest $request, Model $child): self
+    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
-        if (is_callable($this->storeParentCallback)) {
-            call_user_func_array($this->storeParentCallback, [
-                $request,
-                $child,
-            ]);
+        /** * @var Model $relatedModel */
+        $relatedModel = $model->{$this->relation}()->getModel();
 
-            return $this;
-        }
-
-        $child->{$this->attribute} = null;
-
-        $child->{$this->attribute} = $child->{$this->relation}()->create(
+        $belongsToModel = $relatedModel->newQuery()->whereKey(
             $request->input($this->attribute)
+        )->firstOrFail();
+
+        $methodGuesser = 'attach'.Str::studly(class_basename($relatedModel));
+
+        $this->repository->authorizeToAttach(
+            $request,
+            $methodGuesser,
+            $belongsToModel,
         );
 
-        return $this;
-    }
+        if (is_callable($this->canAttachCallback)) {
+            if (! call_user_func($this->canAttachCallback, $request, $this->repository, $belongsToModel)) {
+                abort(403, 'Unauthorized to attach.');
+            }
+        }
 
-    public function storeParentCallback(callable $callback)
-    {
-        $this->storeParentCallback = $callback;
-
-        return $this;
-    }
-
-    public function resolve($repository, $attribute = null)
-    {
-        $model = $repository->resource;
-
-        $this->value = $this->parentRepository::resolveWith(
-            $model->{$this->relation}()->first()
+        $model->{$this->relation}()->associate(
+            $belongsToModel
         );
     }
 }

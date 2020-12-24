@@ -16,7 +16,7 @@ class ListActionsControllerTest extends IntegrationTest
     {
         $_SERVER['actions.posts.invalidate'] = false;
 
-        $this->getJson('/restify-api/posts/actions')
+        $this->getJson('posts/actions')
             ->assertSuccessful()
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure([
@@ -36,7 +36,7 @@ class ListActionsControllerTest extends IntegrationTest
         $_SERVER['actions.posts.invalidate'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->getJson('/restify-api/posts/1/actions')
+        $this->getJson('posts/1/actions')
             ->assertSuccessful()
             ->assertJsonCount(2, 'data')
             ->assertJsonStructure([
@@ -56,12 +56,12 @@ class ListActionsControllerTest extends IntegrationTest
         $_SERVER['actions.posts.onlyOnShow'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = false;
 
-        $response = $this->getJson('/restify-api/posts/1/actions')
+        $response = $this->getJson('posts/1/actions')
             ->assertJsonCount(1, 'data');
 
         $this->assertEquals('invalidate-post-action', $response->json('data.0.uriKey'));
 
-        $response = $this->getJson('/restify-api/posts/actions')
+        $response = $this->getJson('posts/actions')
             ->assertJsonCount(1, 'data');
 
         $this->assertEquals('publish-post-action', $response->json('data.0.uriKey'));
@@ -69,10 +69,10 @@ class ListActionsControllerTest extends IntegrationTest
         $_SERVER['actions.posts.onlyOnShow'] = false;
         $_SERVER['actions.posts.publish.onlyOnShow'] = false;
 
-        $this->getJson('/restify-api/posts/1/actions')
+        $this->getJson('posts/1/actions')
             ->assertJsonCount(0, 'data');
 
-        $response = $this->getJson('/restify-api/posts/actions')
+        $response = $this->getJson('posts/actions')
             ->assertJsonCount(2, 'data');
 
         $this->assertEquals('publish-post-action', $response->json('data.0.uriKey'));

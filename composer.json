@@ -21,16 +21,20 @@
         "php": "^7.4",
         "ext-json": "*",
         "doctrine/dbal": "^2.10",
-        "illuminate/support": "^7.0 | ^8.0",
-        "laravel/ui": "^2.0",
+        "illuminate/support": "^7.0|^8.0",
+        "laravel/ui": "^2.0|^3.0",
         "spatie/once": "^2.2"
     },
     "require-dev": {
+        "laravel/legacy-factories": "^1.0.4",
         "mockery/mockery": "^1.3",
-        "orchestra/testbench": "^4.0|^5.0",
-        "phpunit/phpunit": "^8.0"
+        "orchestra/testbench": "^4.0|^5.0|^6.0",
+        "phpunit/phpunit": "^8.0|^9.0"
     },
     "autoload": {
+        "files": [
+            "src/helpers.php"
+        ],
         "psr-4": {
             "Binaryk\\LaravelRestify\\": "src"
         }

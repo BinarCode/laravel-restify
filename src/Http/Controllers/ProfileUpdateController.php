@@ -15,6 +15,8 @@ class ProfileUpdateController extends RepositoryController
 
         if ($repository = $this->guessRepository($request)) {
             $repository->allowToUpdate($request)->update($request, Auth::id());
+
+            return $repository->serializeForShow($request);
         } else {
             $request->validate([
                 'email' => 'sometimes|required|unique:users,email,'.$user->id,

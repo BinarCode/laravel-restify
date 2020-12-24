@@ -70,9 +70,11 @@ One important configuration is the restify default middlewares:
 ]
 ```
 
-### Sanctum authorization
+### Sanctum authentication
 
-Usually you want to authorize your api (allow access only to authenticated users). For this purpose you can simply add another middleware. For the `sanctum`, Restify provides `Binaryk\LaravelRestify\Http\Middleware\RestifySanctumAuthenticate` middleware.
+Usually you want to authenticate your api (allow access only to authenticated users). For this purpose you can simply add another middleware. For the `sanctum`, Restify provides `Binaryk\LaravelRestify\Http\Middleware\RestifySanctumAuthenticate::class` middleware. Make sure you put this right after `api` middleware.
+
+You may notice that Restify also use the `EnsureJsonApiHeaderMiddleware` middleware, which enforce you to use the `application/vnd.api+json` Accept header for your API requests. So make sure, even when using Postman (or something else) for making requests, that this `Accept header` is applied. 
 
 ### Exception Handling
 

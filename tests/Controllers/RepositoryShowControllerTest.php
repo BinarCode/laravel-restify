@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 /**
@@ -20,7 +21,7 @@ class RepositoryShowControllerTest extends IntegrationTest
     {
         factory(Post::class)->create(['user_id' => 1]);
 
-        $this->get('/restify-api/posts/1')
+        $this->get('posts/1')
             ->assertStatus(200)
             ->assertJsonStructure([
                 'data' => [
@@ -36,12 +37,12 @@ class RepositoryShowControllerTest extends IntegrationTest
         factory(Post::class)->create();
 
         $_SERVER['postAuthorize.can.see.title'] = false;
-        $response = $this->getJson('/restify-api/post-authorizes/1');
+        $response = $this->getJson('post-authorizes/1');
 
         $this->assertArrayNotHasKey('title', $response->json('data.attributes'));
 
         $_SERVER['postAuthorize.can.see.title'] = true;
-        $response = $this->getJson('/restify-api/post-authorizes/1');
+        $response = $this->getJson('post-authorizes/1');
 
         $this->assertArrayHasKey('title', $response->json('data.attributes'));
     }
@@ -52,7 +53,7 @@ class RepositoryShowControllerTest extends IntegrationTest
 
         factory(Post::class)->create(['title' => 'Eduard']);
 
-        $response = $this->getJson('/restify-api/post-authorizes/1');
+        $response = $this->getJson('post-authorizes/1');
 
         $this->assertSame('EDUARD', $response->json('data.attributes.title'));
     }
@@ -61,7 +62,7 @@ class RepositoryShowControllerTest extends IntegrationTest
     {
         factory(Post::class)->create(['title' => 'Eduard']);
 
-        $response = $this->getJson('/restify-api/posts/1')
+        $response = $this->getJson('posts/1')
             ->assertJsonStructure([
                 'data' => [
                     'attributes' => [
@@ -80,7 +81,7 @@ class RepositoryShowControllerTest extends IntegrationTest
     {
         factory(Post::class)->create(['title' => 'Eduard']);
 
-        $this->getJson('/restify-api/posts-mergeable/1')
+        $this->getJson('posts-mergeable/1')
             ->assertJsonStructure([
                 'data' => [
                     'attributes' => [
@@ -100,7 +101,7 @@ class RepositoryShowControllerTest extends IntegrationTest
     {
         factory(Post::class)->create(['title' => 'Eduard']);
 
-        $response = $this->getJson('/restify-api/post-with-hidden-fields/1');
+        $response = $this->getJson(PostWithHiddenFieldRepository::uriKey().'/1');
 
         $this->assertArrayNotHasKey('user_id', $response->json('data.attributes'));
     }
@@ -111,7 +112,7 @@ class RepositoryShowControllerTest extends IntegrationTest
 
         $oldUserId = $post->user_id;
 
-        $this->putJson('/restify-api/post-with-hidden-fields/1', [
+        $this->putJson(PostWithHiddenFieldRepository::uriKey().'/1', [
             'title' => 'Updated title',
             'user_id' => 1,
         ]);
@@ -123,7 +124,7 @@ class RepositoryShowControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create(['user_id' => 2, 'title' => 'Eduard', 'category' => 'Hidden category before update.']);
 
-        $this->putJson('/restify-api/post-with-hidden-fields/1', [
+        $this->putJson(PostWithHiddenFieldRepository::uriKey().'/1', [
             'title' => 'Updated title',
             'category' => 'Trying to update hidden category.',
         ]);

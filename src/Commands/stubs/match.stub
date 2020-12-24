@@ -1,0 +1,15 @@
+<?php
+
+namespace DummyNamespace;
+
+use Binaryk\LaravelRestify\Repositories\Matchable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
+
+class DummyClass implements Matchable
+{
+    public function handle(Request $request, Builder $query)
+    {
+        // $query->where('{{ attribute }}', $request->input('{{ query }}'));
+    }
+}

@@ -21,7 +21,7 @@ class RepositoryEventsTest extends IntegrationTest
     {
         UserRepository::$wasBooted = false;
 
-        $this->getJson('/restify-api/posts');
+        $this->getJson('posts');
 
         $this->assertFalse(UserRepository::$wasBooted);
     }
@@ -30,7 +30,7 @@ class RepositoryEventsTest extends IntegrationTest
     {
         UserRepository::$wasBooted = false;
 
-        $this->getJson('/restify-api/users');
+        $this->getJson('users');
 
         $this->assertTrue(UserRepository::$wasBooted);
     }

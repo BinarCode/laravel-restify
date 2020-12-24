@@ -55,7 +55,7 @@ trait PerformsQueries
     }
 
     /**
-     * Build a "relatable" query for the given repository.
+     * Build an "attach" query for the given repository.
      *
      * This query determines which instances of the model may be attached to other resources.
      *
@@ -63,7 +63,7 @@ trait PerformsQueries
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function relatableQuery(RestifyRequest $request, $query)
+    public static function attachQuery(RestifyRequest $request, $query)
     {
         return $query;
     }

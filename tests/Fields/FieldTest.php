@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Tests\Unit;
+namespace Binaryk\LaravelRestify\Tests\Fields;
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
@@ -90,7 +90,7 @@ class FieldTest extends IntegrationTest
 
         /** * @var Field $field */
         $field = Field::new('title')->storeCallback(function ($request, $model) {
-            $model->title = 'from store callback';
+            return 'from store callback';
         });
 
         $field->fillAttribute($request, $model);
@@ -98,7 +98,24 @@ class FieldTest extends IntegrationTest
         $this->assertEquals('from store callback', $model->title);
     }
 
-    public function test_field_can_have_custom_udpate_callback()
+    public function test_field_keep_its_value_if_request_empty()
+    {
+        $request = new RepositoryStoreRequest([], []);
+
+        $model = new class extends Model {
+            protected $fillable = ['title'];
+        };
+
+        $model->title = $old = 'Value';
+
+        $field = Field::new('title');
+
+        $field->fillAttribute($request, $model);
+
+        $this->assertEquals($old, $model->title);
+    }
+
+    public function test_field_can_have_custom_update_callback()
     {
         $request = new RepositoryUpdateRequest([], []);
 
@@ -108,7 +125,7 @@ class FieldTest extends IntegrationTest
 
         /** * @var Field $field */
         $field = Field::new('title')->updateCallback(function ($request, $model) {
-            $model->title = 'from update callback';
+            return 'from update callback';
         });
 
         $field->fillAttribute($request, $model);
@@ -126,14 +143,14 @@ class FieldTest extends IntegrationTest
 
         /** * @var Field $field */
         $field = Field::new('title')
-            ->append(function () {
+            ->value(function () {
                 return 'from append callback';
             })
             ->fillCallback(function ($request, $model) {
                 $model->title = 'from fill callback';
             })
             ->storeCallback(function ($request, $model) {
-                $model->title = 'from store callback';
+                return 'from store callback';
             })
             ->updateCallback(function ($request, $model) {
                 $model->title = 'from update callback';
@@ -170,6 +187,34 @@ class FieldTest extends IntegrationTest
         $field->fillAttribute($request, $model);
 
         $this->assertEquals('title from request', $model->title);
+    }
+
+    public function test_append_overwrite_the_request_value()
+    {
+        $request = new RepositoryStoreRequest([], []);
+
+        $request->setRouteResolver(function () use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {
+            }), function (Route $route) use ($request) {
+                $route->bind($request);
+                $route->setParameter('repository', PostRepository::uriKey());
+            });
+        });
+
+        $request->merge([
+            'title' => 'title from request',
+        ]);
+
+        $model = new class extends Model {
+            protected $fillable = ['title'];
+        };
+
+        /** * @var Field $field */
+        $field = Field::new('title')->value('Append value.');
+
+        $field->fillAttribute($request, $model);
+
+        $this->assertEquals('Append value.', $model->title);
     }
 
     public function test_field_after_store_called()
@@ -254,6 +299,34 @@ class FieldTest extends IntegrationTest
         $this->assertEquals('custom_label', $field->jsonSerialize()['attribute']);
     }
 
+    public function test_fill_field_using_label_key()
+    {
+        $request = new RepositoryStoreRequest([], []);
+
+        $request->setRouteResolver(function () use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {
+            }), function (Route $route) use ($request) {
+                $route->bind($request);
+                $route->setParameter('repository', PostRepository::uriKey());
+            });
+        });
+
+        $request->merge([
+            'custom_title' => 'title from request',
+        ]);
+
+        $model = new class extends Model {
+            protected $fillable = ['title'];
+        };
+
+        /** * @var Field $field */
+        $field = Field::new('title')->label('custom_title');
+
+        $field->fillAttribute($request, $model);
+
+        $this->assertEquals('title from request', $model->title);
+    }
+
     public function test_field_can_be_filled_from_the_append_value()
     {
         $request = new RepositoryStoreRequest([], []);
@@ -268,13 +341,20 @@ class FieldTest extends IntegrationTest
         };
 
         /** * @var Field $field */
-        $field = Field::new('title')->append('Append title');
+        $hiddenField = Field::new('title')
+            ->hidden()
+            ->value('Append title');
+
+        $hiddenField->fillAttribute($request, $model);
+
+        $this->assertEquals('Append title', $model->title);
+
+        /** * @var Field $field */
+        $field = Field::new('title')->value('Visible title.');
 
         $field->fillAttribute($request, $model);
 
-        $model->save();
-
-        $this->assertEquals($model->title, 'Append title');
+        $this->assertEquals('Visible title.', $model->title);
     }
 
     public function test_field_can_be_filled_from_the_append_callback()
@@ -291,7 +371,9 @@ class FieldTest extends IntegrationTest
         };
 
         /** * @var Field $field */
-        $field = Field::new('title')->append(fn () => 'Append title');
+        $field = Field::new('title')
+            ->hidden()
+            ->value(fn () => 'Append title');
 
         $field->fillAttribute($request, $model);
 

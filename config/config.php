@@ -45,7 +45,7 @@ return [
 
         'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
 
-        'user_verify_url' => env('FRONTEND_APP_URL').'/verify?id={id}&hash={emailHash}',
+        'user_verify_url' => env('FRONTEND_APP_URL').'/verify/{id}/{emailHash}',
     ],
 
     /*
@@ -76,6 +76,22 @@ return [
         EnsureJsonApiHeaderMiddleware::class,
         DispatchRestifyStartingEvent::class,
         AuthorizeRestify::class,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Used to format data.
+    |--------------------------------------------------------------------------
+    |
+    */
+    'casts' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Casting the related entities format.
+        |--------------------------------------------------------------------------
+        |
+        */
+        'related' => \Binaryk\LaravelRestify\Repositories\Casts\RelatedCast::class,
     ],
 
     /*

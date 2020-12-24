@@ -2,14 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
-use Carbon\Carbon;
+use Binaryk\LaravelRestify\Generators\DatabaseGenerator;
+use Doctrine\DBAL\Schema\Column;
 use Faker\Generator as Faker;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\ConnectionResolverInterface as Resolver;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -26,6 +26,11 @@ class StubCommand extends Command
      */
     private $faker;
 
+    /**
+     * @var Resolver
+     */
+    private $resolver;
+
     public function __construct(Resolver $resolver, Faker $faker)
     {
         parent::__construct();
@@ -39,18 +44,17 @@ class StubCommand extends Command
             return true;
         }
 
-        if (! $this->resolver->connection()->getSchemaBuilder()->hasTable($table = $this->argument('table'))) {
-            return false;
-        }
-
         DB::connection()->getDoctrineSchemaManager()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
 
-        $start = microtime(true);
-        Collection::times($count = $this->option('count') ?? 1)->each(fn () => $this->make($table));
+        collect(explode(',', $this->argument('table')))->each(function ($table) {
+            if (! $this->resolver->connection()->getSchemaBuilder()->hasTable($table)) {
+                return false;
+            }
 
-        $time = round(microtime(true) - $start, 2);
+            Collection::times($count = $this->option('count') ?? 1)->each(fn () => $this->make($table));
 
-        $this->info("Seeded {$count} {$table} in {$time} seconds");
+            $this->info("Seeded {$count} {$table}.");
+        });
     }
 
     protected function make($table)
@@ -58,40 +62,12 @@ class StubCommand extends Command
         $data = [];
 
         collect(Schema::getColumnListing($table))->each(function ($column) use (&$data, $table) {
-            $type = Schema::getColumnType($table, $column);
+            $connection = Schema::getConnection();
+            /** * @var Column $columnDefinition */
+            $columnDefinition = $connection->getDoctrineColumn($table, $column);
 
-            switch ($type) {
-                case 'string':
-                    $data[$column] = $this->faker->text(50);
-
-                    if (Str::contains($column, 'email')) {
-                        $data[$column] = $this->faker->email;
-                    }
-
-                    if (Str::contains($column, 'password')) {
-                        $data[$column] = Hash::make('secret');
-                    }
-
-                    if (Str::contains($column, 'uuid')) {
-                        $data[$column] = Str::orderedUuid();
-                    }
-
-                    if (Str::contains($column, 'image') || Str::contains($column, 'picture')) {
-                        $data[$column] = $this->faker->imageUrl();
-                    }
-                    break;
-                case 'datetime':
-                    $data[$column] = Carbon::now();
-                    break;
-                case 'boolean':
-                    $data[$column] = $this->faker->boolean;
-                    break;
-                case 'biging':
-                case 'int':
-                    if (false === Str::endsWith($column, 'id')) {
-                        $data[$column] = $this->faker->id;
-                    }
-                    break;
+            if ($value = DatabaseGenerator::make()->fake($columnDefinition)) {
+                $data[$column] = $value;
             }
         });
 

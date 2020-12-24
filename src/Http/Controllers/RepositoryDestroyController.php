@@ -8,7 +8,9 @@ class RepositoryDestroyController extends RepositoryController
 {
     public function __invoke(RepositoryDestroyRequest $request)
     {
-        $repository = $request->newRepositoryWith($request->findModelQuery()->firstOrFail())->allowToDestroy($request);
+        $repository = $request->newRepositoryWith(
+            $request->findModelQuery()->firstOrFail()
+        )->allowToDestroy($request);
 
         return $repository->destroy($request, request('repositoryId'));
     }

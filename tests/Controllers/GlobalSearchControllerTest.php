@@ -22,7 +22,7 @@ class GlobalSearchControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('/restify-api/search?search=Second');
+            ->getJson('search?search=Second');
 
         $this->assertCount(2, $response->json('data'));
         $this->assertEquals('users', $response->json('data.1.repositoryName'));
@@ -40,7 +40,7 @@ class GlobalSearchControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('/restify-api/search?search=1');
+            ->getJson('search?search=1');
 
         $this->assertCount(1, $response->json('data'));
 
@@ -58,7 +58,7 @@ class GlobalSearchControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('/restify-api/search?search=1');
+            ->getJson('search?search=1');
 
         $this->assertCount(1, $response->json('data'));
 

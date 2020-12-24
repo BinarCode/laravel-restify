@@ -2,12 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Tests\Feature\Authentication;
 
-use Binaryk\LaravelRestify\Contracts\Passportable;
-use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Models\LaravelRestifyModel;
 use Binaryk\LaravelRestify\Services\AuthService;
-use Binaryk\LaravelRestify\Tests\Fixtures\User\SimpleUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -33,27 +30,6 @@ class AuthServiceRegisterTest extends IntegrationTest
     {
         parent::setUp();
         $this->authService = resolve(AuthService::class);
-    }
-
-    public function test_register_throw_user_not_authenticatable()
-    {
-        $this->app->instance(User::class, (new class extends SimpleUser implements Passportable {
-        }));
-
-        $user = [
-            'name' => 'Eduard Lupacescu',
-            'email' => 'eduard.lupacescu@binarcode.com',
-            'password' => 'password',
-            'password_confirmation' => 'password',
-            'remember_token' => Str::random(10),
-        ];
-
-        $request = new Request([], []);
-
-        $request->merge($user);
-
-        $this->expectException(AuthenticatableUserException::class);
-        $this->authService->register($request);
     }
 
     public function test_user_query_throw_container_does_not_have_model_reflection_exception()
@@ -95,7 +71,7 @@ class AuthServiceRegisterTest extends IntegrationTest
         Event::assertDispatched(Registered::class, function ($e) use ($user) {
             $this->assertEquals($e->user->email, $user['email']);
 
-            return $e->user instanceof \ Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+            return $e->user instanceof \Binaryk\LaravelRestify\Tests\Fixtures\User\User;
         });
 
         $lastUser = User::query()->get()->last();
@@ -161,7 +137,7 @@ class AuthServiceRegisterTest extends IntegrationTest
         Event::assertDispatched(Verified::class, function ($e) use ($user) {
             $this->assertEquals($e->user->email, $user['email']);
 
-            return $e->user instanceof \ Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+            return $e->user instanceof \Binaryk\LaravelRestify\Tests\Fixtures\User\User;
         });
     }
 }

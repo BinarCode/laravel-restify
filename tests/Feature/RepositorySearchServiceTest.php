@@ -3,6 +3,9 @@
 namespace Binaryk\LaravelRestify\Tests\Feature;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Filters\SearchableFilter;
+use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
@@ -34,10 +37,10 @@ class RepositorySearchServiceTest extends IntegrationTest
             'created_at' => RestifySearchable::MATCH_DATETIME,
         ];
 
-        $this->getJson('restify-api/users?created_at=null')
+        $this->getJson('users?created_at=null')
             ->assertJsonCount(1, 'data');
 
-        $this->getJson('restify-api/users?created_at=2020-12-01')
+        $this->getJson('users?created_at=2020-12-01')
             ->assertJsonCount(1, 'data');
     }
 
@@ -49,11 +52,69 @@ class RepositorySearchServiceTest extends IntegrationTest
             'id' => RestifySearchable::MATCH_ARRAY,
         ];
 
-        $this->getJson('restify-api/users?id=1,2,3')
+        $this->getJson('users?id=1,2,3')
             ->assertJsonCount(3, 'data');
 
-        $this->getJson('restify-api/users?-id=1,2,3')
+        $this->getJson('users?-id=1,2,3')
             ->assertJsonCount(1, 'data');
+    }
+
+    public function test_match_definition_hit_filter_method()
+    {
+        factory(User::class, 4)->create();
+
+        UserRepository::$match = [
+            'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY),
+        ];
+
+        $this->getJson('users?id=1,2,3')
+            ->assertJsonCount(3, 'data');
+
+        $this->getJson('users?-id=1,2,3')
+            ->assertJsonCount(1, 'data');
+    }
+
+    public function test_can_search_using_filter_searchable_definition()
+    {
+        factory(User::class, 4)->create([
+            'name' => 'John Doe',
+        ]);
+
+        factory(User::class, 4)->create([
+            'name' => 'wew',
+        ]);
+
+        UserRepository::$search = [
+            'name' => SearchableFilter::make(),
+        ];
+
+        $this->getJson('users?search=John')
+            ->assertJsonCount(4, 'data');
+    }
+
+    public function test_can_order_using_filter_sortable_definition()
+    {
+        factory(User::class)->create([
+            'name' => 'Zoro',
+        ]);
+
+        factory(User::class)->create([
+            'name' => 'Alisa',
+        ]);
+
+        UserRepository::$sort = [
+            'name' => SortableFilter::make()->setColumn('name'),
+        ];
+
+        $this->assertSame('Alisa', $this->getJson('users?sort=name')
+            ->json('data.0.attributes.name'));
+
+        $this->assertSame('Zoro', $this->getJson('users?sort=name')
+            ->json('data.1.attributes.name'));
+        $this->assertSame('Zoro', $this->getJson('users?sort=-name')
+            ->json('data.0.attributes.name'));
+        $this->assertSame('Alisa', $this->getJson('users?sort=-name')
+            ->json('data.1.attributes.name'));
     }
 
     public function test_can_match_closure()
@@ -67,6 +128,6 @@ class RepositorySearchServiceTest extends IntegrationTest
             },
         ];
 
-        $this->getJson('restify-api/users?is_active=true');
+        $this->getJson('users?is_active=true');
     }
 }

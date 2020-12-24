@@ -52,3 +52,11 @@ Route::delete('/{repository}/{repositoryId}', '\\'.RepositoryDestroyController::
 // Attach related repository id
 Route::post('/{repository}/{repositoryId}/attach/{relatedRepository}', '\\'.RepositoryAttachController::class);
 Route::post('/{repository}/{repositoryId}/detach/{relatedRepository}', '\\'.RepositoryDetachController::class);
+
+// Relatable
+Route::get('/{viaRepository}/{viaRepositoryId}/{repository}', '\\'.RepositoryIndexController::class);
+Route::post('/{viaRepository}/{viaRepositoryId}/{repository}', '\\'.RepositoryStoreController::class);
+Route::get('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', '\\'.RepositoryShowController::class);
+Route::post('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
+Route::put('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
+Route::delete('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', '\\'.RepositoryDestroyController::class);

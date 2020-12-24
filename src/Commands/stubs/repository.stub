@@ -7,17 +7,8 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 class DummyClass extends Repository
 {
-    /**
-     * The model the repository corresponds to.
-     *
-     * @var string
-     */
     public static $model = '{{ model }}';
 
-    /**
-     * @param  RestifyRequest  $request
-     * @return array
-     */
     public function fields(RestifyRequest $request)
     {
         return [

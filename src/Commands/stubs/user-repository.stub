@@ -8,26 +8,22 @@ use Illuminate\Support\Facades\Hash;
 
 class UserRepository extends Repository
 {
-    /**
-     * The model the repository corresponds to.
-     *
-     * @var string
-     */
     public static $model = 'App\\Models\\User';
 
-    /**
-     * @param  RestifyRequest  $request
-     * @return array
-     */
     public function fields(RestifyRequest $request)
     {
         return [
-            Field::make('email')->rules('required')->storingRules('unique:users')->messages([
-                'required' => 'This field is required.',
-            ]),
-            Field::make('password')->storeCallback(function ($value) {
-                    return Hash::make($value);
-                })->rules('required')->storingRules('confirmed'),
+            Field::make('name')->rules('required'),
+
+            Field::make('email')->storingRules('required', ''unique:users')->messages([
+                    'required' => 'This field is required.',
+                ]),
+
+            Field::make('password')
+                ->value(fn(Request $request) => Hash::make($request->input('password')))
+                ->rules('required')
+                ->storingRules('confirmed')
+                ->hidden(),
         ];
     }
 }

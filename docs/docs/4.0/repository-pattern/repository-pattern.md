@@ -1,22 +1,24 @@
 # Repository
 
-[[toc]]
-
-## Introduction
-
-The Repository is the core of the Laravel Restify, included with Laravel provides an easy way of 
-managing (usually called "CRUD") your resources. 
+The Repository is the core of the Laravel Restify. In here you can define your logic for the model attributes
+manipulations for your CRUD operations.
 
 ## Quick start
-The follow command will generate the Repository which will take the control over the post resource.
+
+The follow command will generate the Repository which will manage `CRUD` for the `Post` model.
 
 ```shell script
-php artisan restify:repository PostRepository
+php artisan restify:repository PostRepository --all
 ```
 
 The newly created repository will be placed in the `app/Restify/PostRepository.php` file.
 
+The `--all` argument will also create the migrations, policy and model (in `app/Models`), however you can ignore
+the `--all` argument and create these manually.
+
 ## Defining Repositories
+
+The minimum repository definition will look like this.
 
 ```php
 
@@ -30,32 +32,63 @@ class PostRepository extends Repository
      * @var string
      */
     public static $model = 'App\\Models\\Post';
+    
+     /**
+     * Resolvable attributes.
+     *
+     * @param RestifyRequest $request
+     * @return array
+     */
+    public function fields(RestifyRequest $request)
+    {
+        return [];
+    }
 }
 ```
 
 ### Actions handled by the Repository
 
-Having this in place you're basically ready for the CRUD actions over posts. 
-You have available the follow endpoints:
+Having this in place you're basically ready for the CRUD actions over posts. You have available the follow endpoints:
 
-| Verb          | URI                            | Action  | 
+| Verb          | URI                            | Action  |
 | :------------- |:----------------------------- | :-------|
 | GET            | `/api/restify/posts`          | index   |
 | GET            | `/api/restify/posts/{post}`   | show    |
 | POST           | `/api/restify/posts`          | store   |
 | POST           | `/api/restify/posts/bulk`     | store multiple   |
-| POST           | `/api/restify/posts/bulk/update`     | store multiple   |
-| PATCH          | `/api/restify/posts/{post}`   | update  |
-| PUT            | `/api/restify/posts/{post}`   | update  |
-| POST           | `/api/restify/posts/{post}`   | update  |
+| POST           | `/api/restify/posts/bulk/update`     | update multiple   |
+| PATCH          | `/api/restify/posts/{post}`   | partial update  | 
+| PUT            | `/api/restify/posts/{post}`   | full update  |
+| POST           | `/api/restify/posts/{post}`   | partial of full update including attachments  | 
 | DELETE         | `/api/restify/posts/{post}`   | destroy |
 
-### Fields
-When storing or updating a model - Restify will get from the request all of the attributes matching by key
-with those from the `fillable` array of the model definition. 
-Restify will fill these fields with the value from the request.
-However if you want to transform some attributes before they are filled into the model
-you can do that by defining the `fields` method:
+:::tip Update with files As you can see we provide 3 Verbs for the model update (PUT, PATCH, POST), the reason of that
+is because you cannot send files via `PATCH` or `PUT` verbs, so we have `POST`. Where the `PUT` or `PATCH` could be used
+for full model update and respectively partial update.
+:::
+
+## Model name
+
+As we already noticed, each repository basically works as a wrapper over a specific resource. The fancy
+naming `resource` is nothing more than a database entity (posts, users etc.). Well, to make the repository aware of the
+entity it should take care of, we have to define the model property:
+
+```php
+/**
+* The model the repository corresponds to.
+*
+* @var string
+*/
+public static $model = 'App\\Models\\Post'; 
+```
+
+## Fields
+
+Fields are the main component of the Repository definition. These fields will be exposed through the endpoints the
+repository expose. A good practice for the API, is to expose as minimum fields as you can, so your API will be as
+private as possible.
+
+Let's define some fields for our Post model:
 
 ```php
 use Binaryk\LaravelRestify\Fields\Field;
@@ -69,9 +102,9 @@ class Post extends Repository
      *
      * @var string
      */
-    public static $model = 'App\\Post';
+    public static $model = 'App\\Models\\Post';
 
-  /**
+    /**
      * Resolvable attributes before storing/updating
      * 
      * @param  RestifyRequest  $request
@@ -80,23 +113,374 @@ class Post extends Repository
     public function fields(RestifyRequest $request) 
     {
         return [
-            Field::make('title')->storeCallback(function ($requestValue) {
-                return is_string($requestValue) ? $requestValue : `N/A`; 
-            })  
+            Field::new('title'),
+            
+            Field::new('description'),
         ];
     }
 }
 ```
 
 :::tip
-
-`Field` class has many mutations, validators and interactions you can use, these are documented [here](/laravel-restify/docs/repository-pattern/field)
-
+`Field` class has many mutations, validators and interactions you can use, these are
+documented [here](/docs/4.0/repository-pattern/field)
 :::
+
+## Show request
+
+Now, your `GET` endpoint will expose the `title` and the `description` of the Post. Let's take a look of the json
+response of the `api/restify/posts/1` route:
+
+```json
+{
+    "data": {
+        "id": "1",
+        "type": "posts",
+        "attributes": {
+            "title": "Amet ratione est quas quia ut nemo.",
+            "description": null
+        },
+        "meta": {
+            "authorizedToShow": true,
+            "authorizedToStore": true,
+            "authorizedToUpdate": false,
+            "authorizedToDelete": false
+        }
+    }
+}
+```
+
+Let's explain each piece of the response, and see how we can impact or modify it.
+
+The `id` field by default is the `id` of the response (your table primary key). You can modify this by defining your
+own `$id` property into the repository:
+
+```php
+    // PostRepository.php
+    
+    /**
+     * Attribute that should be used for displaying the `id` in the json:format
+     *
+     * @var string
+     */
+    public static $id = 'uuid';
+```
+
+The next piece is the resource type, this is the table name, however you can change that by overriding the `getType`
+repository method:
+
+```php
+    protected function getType(RestifyRequest $request): ?string
+    {
+        return 'articles';
+    }
+```
+
+Then we have the `attributes`, as we already saw, they are defined into the `fields` method.
+
+The last piece would be the `meta`, by default here we have some authorizations over the entity. Authorizations are
+computed based on the policy methods, for example the `authorizedToShow` represent the response of the `show` method
+from the related policy (PostPolicy in our example).
+
+You can customize the `meta` by creating your own `resolveShowMeta` method:
+
+```php
+    // PostRepository.php
+
+    public function resolveShowMeta($request)
+    {
+        return [
+            'is_published' => $this->resource->isPublished(),
+        ];
+    }
+```
+
+:::tip $resource property
+In the previous example we have used the `$this->resource` call, well, keep in mind, that you
+always have access to the current resource in your not static methods of the repository, were the resource is the actual
+current model. In the case above, the `$this->resource` represents the `Post` model with the `id=1`, because we're
+looking for the route: `/api/restify/posts/1`. A similar way to get the model is the `$this->model()` method.
+:::
+
+As we saw before, there are many ways to partially modify the response (ie separate way to modify meta), however, you are free to customize the entire response at once by defining:
+
+```php
+    // PostRepository.php
+    
+    public function serializeForShow(RestifyRequest $request): array
+    {
+        return [
+            // Your custom response for the `show` request.
+        ];
+    }
+```
+
+### Custom show
+
+If you want to override the `show` method, you can do it like that:
+
+```php
+    public function show(RestifyRequest $request, $repositoryId)
+    {
+        return response($this->model());
+    }
+```
+
+## Index request
+
+Since we already understood how the `show` method works, let's take a closer look over the endpoint which returns all
+your entities, and how it actually authorizes and serialize them.
+
+Let's take a closer look of what Restify returns for the index route `api/restify/posts`:
+
+```json
+{
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 4,
+        "path": "http://restify-app.test/api/restify/posts",
+        "per_page": 15,
+        "to": 15,
+        "total": 50
+    },
+    "links": {
+        "first": "http://restify-app.test/api/restify/posts?page=1",
+        "last": "http://restify-app.test/api/restify/posts?page=4",
+        "prev": null,
+        "next": "http://restify-app.test/api/restify/posts?page=2"
+    },
+    "data": [
+        {
+            "id": "91ad2f77-e30c-4090-a79c-49417540fdaa",
+            "type": "posts",
+            "attributes": {
+                "title": "Nihil assumenda sit pariatur.",
+                "description": null
+            },
+            "meta": {
+                "authorizedToShow": true,
+                "authorizedToStore": true,
+                "authorizedToUpdate": false,
+                "authorizedToDelete": false
+            }
+        },
+        ...
+        }
+    ]
+}
+```
+
+Firstly we have the `meta` object, by default this includes pagination information, so your frontend could be adapted
+accordingly.
+
+If you want to modify it, you can do so easily in the repository:
+
+```php
+public function resolveIndexMainMeta(
+    RestifyRequest $request, 
+    Illuminate\Support\Collection $items, 
+    array $paginationMeta
+): ?array
+{
+    return array_merge(
+    $paginationMeta,
+    [
+        'published_items_count' => $items->filter->isPublished()->count(),
+    ]
+    )
+}
+```
+
+In the `resolveIndexMainMeta` you get as arguments - the Restify request, a collection of items (matching the current request) and the original pagination metadata information.
+
+In the previous example, we append the property `published_items_count` which count published posts, so we have this meta:
+
+```json
+{
+    "meta": {
+        "current_page": 1,
+        "from": 1,
+        "last_page": 4,
+        "path": "http://restify-app.test/api/restify/posts",
+        "per_page": 15,
+        "to": 15,
+        "total": 50,
+        "published_items_count": 10
+    },
+...
+```
+
+You can return `null` if you don't need meta information.
+
+Next, we get an object called `links`, this one contain navigation links, they could be used in the frontend table component.
+
+You can customize it as well: 
+
+```php
+public function resolveIndexLinks(
+RestifyRequest $request, 
+Illuminate\Support\Collection $items,
+array $links): ?array
+{
+    return $links;
+}
+```
+
+You can return `null` if you don't need `links` information to be displayed at all.
+
+
+The next important property is the `data`. Here we have listed items matching the request query, and filtered by the `show` authorization. So in terms of see a model, you should be authorized by the model policy `show` method to do so, if not, it will be filtered out from this response.
+
+The individual item object format is pretty much the same as we have for the [show](#show-request). However, you can specify a custom metadata for these items by using:
+
+```php
+public function resolveIndexMeta($request)
+{
+    return $this->resolveShowMeta($request);
+}
+```
+
+You're also free to define your own index method:
+
+```php
+public function index(RestifyRequest $request)
+{
+    return response(Post::all());
+}
+```
+
+### Specific fields
+
+Sometimes, you have very different fields for the `index` request versus `show`. In this situations you can define a specific method for the index fields in your repository, which will return specific fields for that request:
+
+```php
+public function fieldsForIndex(RestifyRequest $request): array
+{
+    return $this->fields($request);
+}
+```
+
+:::tip Specific fields
+Similar with the specific fields for the `index` request, you can define methods to return specific fields for other requests, so we have: `fieldsForIndex`, `fieldsForShow`, `fieldsForStore` and `fieldsForUpdate`.
+:::
+
+
+## Store request
+
+Let's take a closer look at the fields list for the `PostRepository`:
+
+```php 
+    public function fields(RestifyRequest $request) 
+    {
+        return [
+            Field::new('title'),
+            
+            Field::new('description'),
+        ];
+    }
+```
+
+Well, for the `store` request, Restify will use the same fields, and will assign the value from the request matching the attribute name.
+
+:::warning Fillable
+Restify will fill your model attributes (defined in the `fields` method) even if they are listed as `$guarded`. 
+:::
+
+Let's take an example, here is the payload:
+
+```json
+{
+    "title": "Beautiful day!",
+    "description": "Comming soon..."
+}
+```
+
+Then we have the request:
+
+```http request
+POST: http://restify-app.test/api/restify/posts
+```
+
+Restify will store the new post, and will return an `201` (created) status, a `Location` header containing the url to the newly created entity: `/api/restify/posts/1`, and a `data` object with the newly created entity: 
+
+```json
+{
+    "data": {
+        "id": "91ad557d-5780-4e4b-bedc-c35d400d8594",
+        "type": "posts",
+        "attributes": {
+            "title": "Beautiful day!",
+            "description": "Comming soon..."
+        },
+        "meta": {
+            "authorizedToShow": true,
+            "authorizedToStore": true,
+            "authorizedToUpdate": false,
+            "authorizedToDelete": false
+        }
+    }
+}
+```
+
+
+## Update request
+
+Taking the same example as we had before, the update will use `title` and the `description` attributes from the request:
+
+```json
+{
+    "description": "Ready to be published!"
+}
+```
+
+Endpoint:
+
+```http request
+PUT: http://restify-app.test/api/restify/posts/1
+```
+
+:::warning Policy
+As we saw before, we were denied from the policy for the update operation ( "authorizedToUpdate": false), we have to update the policy `update` method to return `true`.
+:::
+
+The Restify response contains the http 200 status, and the following response:
+
+```json
+{
+    "data": {
+        "id": "91ad557d-5780-4e4b-bedc-c35d400d8594",
+        "type": "posts",
+        "attributes": {
+            "title": "Beautiful day!",
+            "description": "Ready to be published!"
+        },
+        "meta": {
+            "authorizedToShow": true,
+            "authorizedToStore": true,
+            "authorizedToUpdate": true,
+            "authorizedToDelete": false
+        }
+    }
+}
+```
+
+## Delete request
+
+This request is a simple one (don't forget to allow the policy):
+
+```http request
+DELETE: http://restify-app.test/api/restify/posts/1
+```
+
+If you're allowed to delete the resource, you will get back an `204 No content` response.
+
+
+-------
 
 ## Repository prefix
 
-Restify generates the URI for the repository in the following way: 
+Restify generates the URI for the repository in the following way:
 
 ```php
 config('restify.base') . '/' . UserRepository::uriKey() . '/'
@@ -108,33 +492,32 @@ For example, let's assume we have the `restify.base` equal with: `api/restify`, 
 GET: /api/restify/users
 ```
 
-However, you can prefix the repository with your own: 
+However, you can prefix the repository with your own:
 
 ```php
 // UserRepository
 public static $prefix = 'api/v1';
 ```
 
-Now, the generated URI will look like this: 
+Now, the generated URI will look like this:
 
 ```http request
 GET: /api/v1/users
 ```
 
-:::tip 
-For the rest of the repositories the prefix will stay as it is, the default one. 
+:::tip For the rest of the repositories the prefix will stay as it is, the default one.
 
 Keep in mind that this custom prefix, will be used for all the endpoints related to the user repository.
 :::
 
 ## Repository middleware
 
-Each repository has the `restify.middleware` out of the box for the CRUD methods. However, you're free to add your own middlewares for a specific repository.
+Each repository has the middlewares from the config `restify.middleware` out of the box for the CRUD methods. However, you're free to add your own middlewares for a specific repository.
 
 ```php
     // PostRepository.php
 
-    public static $middlewares = [
+    public static $middleware = [
         NeedsCompanyMiddleware::class,
     ];
 
@@ -167,12 +550,12 @@ public static function collectMiddlewares(RestifyRequest $request): ?Collection
 
 ## Dependency injection
 
-The Laravel [service container](https://laravel.com/docs/7.x/container) is used to resolve all Laravel Restify repositories. 
-As a result, you are able to type-hint any dependencies your `Repository` may need in its constructor. 
-The declared dependencies will automatically be resolved and injected into the repository instance:
+The Laravel [service container](https://laravel.com/docs/7.x/container) is used to resolve all Laravel Restify
+repositories. As a result, you are able to type-hint any dependencies your `Repository` may need in its constructor. The
+declared dependencies will automatically be resolved and injected into the repository instance:
 
-:::tip
-Don't forget to call the parent `contructor`
+:::tip Parent
+Don't forget to call the parent `contructor`.
 :::
 
 ```php
@@ -192,33 +575,16 @@ class PostRepository extends Repository
 }
 ```
 
-## Restify Repository Conventions
-Let diving deeper into the repository, and take step by step each of its available pieces and customizable 
-modules. Since this is just a helper, it should not break your normal development flow.
+## Custom CRUD
 
-### Model name
-As we already noticed, each repository basically works as a wrapper over a specific resource. 
-The fancy naming `resource` is nothing more than a database entity (posts, users etc.). Well, to make the 
-repository aware of the entity it should take care of, we have to define the model property: 
-
-```php
-/**
-* The model the repository corresponds to.
-*
-* @var string
-*/
-public static $model = 'App\\Models\\Post'; 
-```
-
-## CRUD Methods overriding 
-
-Laravel Restify magically made all "CRUD" operations for you. However, sometimes you may want to intercept, or override the
-entire logic of a specific action. Let's say your `save` method has to do something else besides action itself. In this case you can easily override each action ([defined here](#actions-handled-by-the-repository)) from the repository:
+Laravel Restify magically made all "CRUD" operations for you. However, sometimes you may want to intercept, or override
+the entire logic of a specific action. Let's say your `save` method has to do something else besides action itself. In
+this case you can easily override each action ([defined here](#actions-handled-by-the-repository)) from the repository:
 
 ### index
 
 ```php
-    public function index(Binaryk\LaravelRestify\Http\Requests $request)
+    public function index(RestifyRequest $request)
     {
         // Silence is golden
     }
@@ -227,7 +593,7 @@ entire logic of a specific action. Let's say your `save` method has to do someth
 ### show
 
 ```php
-    public function show(Binaryk\LaravelRestify\Http\Requests $request, $repositoryId)
+    public function show(RestifyRequest $request, $repositoryId)
     {
         // Silence is golden
     }
@@ -236,7 +602,7 @@ entire logic of a specific action. Let's say your `save` method has to do someth
 ### store
 
 ```php
-    public function store(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request)
+    public function store(RestifyRequest $request)
     {
         // Silence is golden
     }
@@ -245,7 +611,7 @@ entire logic of a specific action. Let's say your `save` method has to do someth
 ### store bulk
 
 ```php
-    public function storeBulk(Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest $request)
+    public function storeBulk(RepositoryStoreBulkRequest $request)
     {
         // Silence is golden
     }
@@ -254,7 +620,7 @@ entire logic of a specific action. Let's say your `save` method has to do someth
 ### update
 
 ```php
-    public function update(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request, $repositoryId)
+    public function update(RestifyRequest $request, $repositoryId)
     {
         // Silence is golden
     }
@@ -262,9 +628,8 @@ entire logic of a specific action. Let's say your `save` method has to do someth
 
 ### update bulk
 
-// $row is the payload row to be updated
-
 ```php
+    // $row is the payload row to be updated
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
         // Silence is golden
@@ -274,146 +639,15 @@ entire logic of a specific action. Let's say your `save` method has to do someth
 ### destroy
 
 ```php
-    public function destroy(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request, $repositoryId)
+    public function destroy(RestifyRequest $request, $repositoryId)
     {
         // Silence is golden
     }
 ```
 
-## Transformation layer
-
-When you call the `posts/{post}` endpoint, the repository will return  the following primary 
-data for a single resource object:
-
-```json
-{
-  "data": {
-    "type": "post",
-    "id": "1",
-    "attributes": {
-      // ... this post's attributes
-    },
-    "meta": {
-      // ... by default meta includes information about user authorizations over the entity
-      "authorizedToView":  true,
-      "authorizedToCreate": true,
-      "authorizedToUpdate":  true,
-      "authorizedToDelete": true
-    } 
-  }
-}
-```
-
-This response is accordingly to [JSON:API format](https://jsonapi.org/format/). You can change it for all 
-repositories at once by modifying the `serializeForShow` method of the abstract Repository, or for a specific
-repository by overriding it:
-
-```php
-/**
- * Resolve the response for the details.
- *
- * @param $request
- * @param $serialized
- * @return array
- */
-public function serializeForShow(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request): array
-{
-    // your own format
-    return [
-        'title' => $this->resource->title,
-    ];
-}
-```
-
-You can change the index response by modifying the `resolveIndex` method:
-
-```php
-/**
- * Resolve the response for the index.
- *
- * @param $request
- * @param $serialized
- * @return array
- */
-public function serializeForIndex(Binaryk\LaravelRestify\Http\Requests\RestifyRequest $request): array
-{
-    // your own format
-    return [
-        'title' => $this->resource->title,
-    ];
-}
-```
-
-### Index meta
-
-Index request returns a list with `meta` attribute. By default, this includes the permissions over the current list item. 
-You can customize the `meta` attributes adding `resolveIndexMeta`:
-
-```php
-public function resolveIndexMeta($request)
-{
-$default = parent::resolveIndexMeta($request);
-    return array_merge($default, [
-        'next_payment_at' => $this->resource->current_payment_at->addMonth(),
-    ]);
-}
-```
-
-### Index main meta
-
-You can also override the main `meta` object for the index, not the one for per item:
-
-```php
-public function resolveIndexMainMeta(RestifyRequest $request, Collection $items, array $paginatorMeta): array
-{
-    return array_merge($paginatorMeta, [
-        'next_payment_at' => $this->resource->current_payment_at->addMonth(),
-    ]);
-}
-```
-
-### Serialize show
-
-As well as for the index items, you can add custom attributes or change the format for the show request resolved by `/resource/{resourceKey}`:
-
-```php
-public function resolveForShow($repository, $attribute = null)
-{
-    //    
-}
-```
-
-### Show Meta
-
-You are free to customize the show meta information as well by defining the `resolveShowMeta` method:
-
-```php
-public function resolveShowMeta($request)
-{
-    //    
-}
-```
-
-
-## Merge all model attributes
-
-Laravel Restify will show and fill only attributes defined in the `fields` method of the repository. However, you can merge all of the model attributes by implementing `Mergeable` contract:
-
-```php
-
-use Binaryk\LaravelRestify\Repositories\Mergeable;
-
-class PostRepository extends Repository implements Mergeable
-{
-    //
-}
-```
-
-Even if you didn't specify any field in your `fields` method, the show/index requests will always return all the model attributes in this case. 
-
 ## Custom routes
 
-Laravel Restify has its own "CRUD" routes, however you're able to define your own routes right from your Repository class:
+Laravel Restify has its own "CRUD" routes, however you're able to define your custom routes right from your Repository class:
 
 ```php
 /**
@@ -443,19 +677,17 @@ public function makePrimary(Post $post)
 {
     // Handle         
     // ...
-    return $this->response()->forRepository($this);
+    return response('Done');
 }
 ```
 
 Lets diving into a more "real life" example. Let's take the Post repository we had above:
 
-:::tip
-The `$wrap` argument is the one who says to your route to be wrapped in the default middlewares, controllers namespace and 
-prefix your routes with the base of the repository (ie `/api/restify/posts/`).
+:::tip Route wrap
+The `$wrap` argument is the one who says to your route to be wrapped in the default `middlewares`, `controllers namespace` and `prefix` your routes with the base of the repository (ie `/api/restify/posts/`).
 :::
 
 ```php
-use Illuminate\Routing\Router;
 use App\Restify\Repository;
 
 class PostRepository extends Repository
@@ -502,9 +734,9 @@ class PostController extends RestController
 
 ### Route prefix
 
-As we noticed in the example above, the route is a child of the current repository,
-however sometimes you may want to have a separate prefix, which is out of the URI of the current repository. 
-Restify provide you an easy of doing that, by adding default value `prefix` for the second `$attributes` argument:
+As we noticed in the example above, the route is a child of the current repository, however sometimes you may want to
+have a separate prefix, which is out of the URI of the current repository. Restify provide you an easy of doing that, by
+adding default value `prefix` for the second `$attributes` argument:
 
 ```php
 /**
@@ -525,12 +757,12 @@ Now the generated route will look like this:
 GET: '/api/hello-world
 ```
 
-With `api` as a custom prefix. 
+With `api` as a custom prefix.
 
 ### Route middleware
 
-All routes declared in the `routes` method, will have the same middelwares defined in your `restify.middleware` configuration file.
-Overriding default middlewares is a breeze with Restify:
+All routes declared in the `routes` method, will have the same middelwares defined in your `restify.middleware`
+configuration file. Overriding default middlewares is a breeze with Restify:
 
 ```php
 /**
@@ -549,8 +781,8 @@ In that case, the single middleware of the route will be defined by the `CustomM
 
 ### Route Namespace
 
-By default, each route defined in the `routes` method, will have the namespace `AppRootNamespace\Http\Controllers`.
-You can override it easily by using `namespace` configuration key:
+By default, each route defined in the `routes` method, will have the namespace `AppRootNamespace\Http\Controllers`. You
+can override it easily by using `namespace` configuration key:
 
 ```php
 /**
@@ -563,82 +795,15 @@ public static function routes(Router $router, $attributes = ['namespace' => 'App
 }
 ````
 
-:::warning Clean routes
-If `$wrap` is false, your routes will have any Route group `$attributes`, that means no prefix, middleware, or namespace will be applied out of the box, even you defined that as a default argument in the `routes` method. So you should take care of that.
+:::warning Non wrapped route
+Clean routes if `$wrap` is false, your routes will have any Route group `$attributes`, that means no prefix,
+middleware, or namespace will be applied out of the box, even you defined that as a default argument in the `routes` method. So you should take care of that.
 :::
-
-## Attach related 
-
-- Attach related models to a model (check tests)
-- Attach multiple related model to a model
-- Attach extra information to the pivot
-
-Example of how to attach users posts to users with `is_owner` extra pivot:
-```javascript
-axios.post('api/restify/users/1/attach/posts', [
-    'posts': [1, 2],
-    'is_owner': true
-])
-```
-
-## Detach related
-
-- Detach repository
-- Detach multiple repositories
-
-Example of how to remove posts from user:
-
-```javascript
-axios.post('api/restify/users/1/detach/posts', [
-    'users': [1, 2]
-]);
-```
-
-## Write your own attach
-
-If you want to implement attach method for such relationship on your own, Laravel Restify provides you an easy way of doing that. Let's say you have to attach roles to user:
-
-```php
-// app/Restify/UserRepository.php
-public function attachRoles(RestifyRequest $request, UserRepository $repository, User $user)
-{
-    $roles = collect($request->get('roles'))->map(fn($role) => Role::findByName($role, 'web'));
-
-    if ($id = $request->get('company_id')) {
-        $user->assignCompanyRoles(
-            Company::find($id),
-            $roles
-        );
-    }
-
-    return $this->response()->created();
-}
-```
-The javascript request will remain the same:
-
-```javascript
-axios.post('api/restify/users/1/attach/roles', [
-    'roles': [1, 2]
-])
-```
-
-Based on your related resource, `roles`, Laravel Restify will automatically detect the `attachRoles` method.
-
-If you don't like this kind of `magic` stuff, you can override the `getAttachers` method, and return an associative array, where the key is the name of the related resource, and the value should be a closure which  handle the action:
-
-```php
-public static function getAttachers(): array
-{
-    'roles' => function(RestifyRequest $request, UserRepository $repository, User $user) {
-        //
-    },
-}
-```
 
 ## Force eager loading
 
-However, Laravel Restify [provides eager](/search/) loading based on the query `related` property, 
-you may want to force eager load a relationship in terms of using it in fields, or whatever else: 
+However, Laravel Restify [provides eager](/search/) loading based on the query `related` property, you may want to force
+eager load a relationship in terms of using it in fields, or whatever else:
 
 ```php
 // UserRepository.php
@@ -648,22 +813,23 @@ public static $with = ['posts'];
 
 ## Store bulk flow
 
-However, the `store` method is a common one, the `store bulk` requires a bit of attention. 
+However, the `store` method is a common one, the `store bulk` requires a bit of attention.
 
 ### Bulk field validations
 
-Similar with `store` and `update` methods, `bulk` rules has their own field rule definition: 
+Similar with `store` and `update` methods, `bulk` rules has their own field rule definition:
 
 ```php
 ->storeBulkRules('required', function () {}, Rule::in('posts:id'))
 ```
 
-The validation rules will be merged with the rules provided into the `rules()` method. The validation will be performed 
-by using native Laravel validator, so you will have exactly the same experience. The validation `messages` could still be used as usual. 
+The validation rules will be merged with the rules provided into the `rules()` method. The validation will be performed
+by using native Laravel validator, so you will have exactly the same experience. The validation `messages` could still
+be used as usual.
 
 ### Bulk Payload
 
-The payload for a bulk store should contain an array of objects: 
+The payload for a bulk store should contain an array of objects:
 
 ```http request
 POST: /api/restify/posts/bulk/update
@@ -673,18 +839,19 @@ Payload:
 
 ```json
 [
-  {
-  "title": "First post"
-  },
-  {
-  "title": "Second post"
-  }
+    {
+        "title": "First post"
+    },
+    {
+        "title": "Second post"
+    }
 ]
 ```
 
-### Bulk after store 
+### Bulk after store
 
-After storing an entity, the repository will call the static `bulkStored` method from the repository, so you can override:
+After storing an entity, the repository will call the static `bulkStored` method from the repository, so you can
+override:
 
 ```php
 public static function storedBulk(Collection $repositories, $request)
@@ -695,7 +862,8 @@ public static function storedBulk(Collection $repositories, $request)
 
 ## Update bulk flow
 
-As the store bulk, the update bulk uses DB transaction to perform the action. So you can make sure that even all entries, even no one where updated.
+As the store bulk, the update bulk uses DB transaction to perform the action. So you can make sure that even all
+entries, even no one where updated.
 
 ### Bulk update field validations
 
@@ -705,27 +873,27 @@ As the store bulk, the update bulk uses DB transaction to perform the action. So
 
 ### Bulk Payload
 
-The payload for a bulk update should contain an array of objects. Each object SHOULD contain an `id` key, based on this, the Laravel Restify will find the entity: 
+The payload for a bulk update should contain an array of objects. Each object SHOULD contain an `id` key, based on this,
+the Laravel Restify will find the entity:
 
 ```http request
 POST: /api/restify/posts/bulk/update
 ```
 
-Payload: 
+Payload:
 
 ```json
 [
-  {
-  "id": 1,
-  "title": "First post"
-  },
-  {
-  "id": 2,
-  "title": "Second post"
-  }
+    {
+        "id": 1,
+        "title": "First post"
+    },
+    {
+        "id": 2,
+        "title": "Second post"
+    }
 ]
 ```
-
 
 ## Repository boot
 

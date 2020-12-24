@@ -2,9 +2,32 @@
 
 After setting up the Restify configuration, and the authentication. The next logical step is to protect your API Repositories against unauthorized users. 
 
+## Request lifecycle
+
+Before diving in details about authorization, it's important for you to understand what is the actual lifecycle of the request. So you can know what to expect, and how to debug your app at any point.
+
+### Booting
+
+When you run a request (ie via Postman), it hits the Laravel application. Laravel will load every single Service Provider it has defined into `config/app.php` and [auto discovered ](https://laravel.com/docs/packages#package-discovery) providers as well.
+
+Restify injects the `RestifyApplicationServiceProvider`, it is injected in your `config/app.php` and it also has an auto discovered provider called `LaravelRestify\LaravelRestifyServiceProvider`.
+
+- The `LaravelRestifyServiceProvider` is booted firstly, this will push the `RestifyInjector` middleware at the end of the middleware stack. 
+
+- Then `RestifyApplicationServiceProvider` is booted, this will define the gate, will load repositories and make the auth routes macro. You have the full control over this provider.
+
+- The `RestifyInjector` will be handled. It will register `RestifyCustomRoutesProvider` which load all the custom routes (defined in the `routes` static method in repositories) and will check if this request is a restify one - in which case it will register a new service provider `RestifyServiceProvider`
+
+- If the `RestifyServiceProvider` was registered, it will load all the other CRUD routes Restify provides and will try to bind a custom exception handler defined in the `restify.php` configuration.
+
+- If the request route is a Restify route, Laravel will handle other middlewares defined in the `restify.php` -> `middleware`.
+
+
 ## View Restify
 
-Firstly, let's take a closer look to the package general gate:
+Since we are now aware of how Restify boot itself, let's see how to guard it.
+
+Let's take a closer look to the package global gate:
 
 ```php
 // app/Providers/RestifyServiceProvider.php
@@ -390,6 +413,8 @@ POST: api/restify/users/{id}/attach/posts
 In this case, Restify will guess the policy name, by the related entity, in this case it will be `attachPost`:
 
 ```php
+    // UserPolicy.php
+
     /**
      * Determine if the post could be attached to the user.
      *
