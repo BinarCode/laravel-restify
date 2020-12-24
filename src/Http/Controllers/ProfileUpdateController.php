@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Facades\Auth;
@@ -9,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 
 class ProfileUpdateController extends RepositoryController
 {
-    public function __invoke(RestifyRequest $request)
+    public function __invoke(RepositoryShowRequest $request)
     {
         $user = $request->user();
 

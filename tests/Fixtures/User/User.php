@@ -15,7 +15,9 @@ use Illuminate\Notifications\Notifiable;
 use Mockery;
 
 /**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
+ * @property string avatar
+ * @property string avatar_size
+ * @property string avatar_original
  */
 class User extends Authenticatable implements Sanctumable, MustVerifyEmail, RestifySearchable
 {
@@ -38,6 +40,8 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail, Rest
      */
     protected $fillable = [
         'name', 'email', 'password', 'email_verified_at', 'avatar', 'created_at',
+        'avatar_size',
+        'avatar_original'
     ];
 
     /**

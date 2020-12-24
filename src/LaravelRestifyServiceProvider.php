@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Commands\PolicyCommand;
 use Binaryk\LaravelRestify\Commands\Refresh;
 use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
+use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -64,6 +65,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
             RepositoryCommand::class,
             ActionCommand::class,
             MatcherCommand::class,
+            StoreCommand::class,
             FilterCommand::class,
             DevCommand::class,
         ]);

@@ -2,11 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Fields\File;
+use Binaryk\LaravelRestify\Fields\Image;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class ProfileControllerTest extends IntegrationTest
 {
@@ -197,5 +200,36 @@ class ProfileControllerTest extends IntegrationTest
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
         ]);
+    }
+
+    public function test_can_upload_avatar()
+    {
+        Storage::fake('customDisk');
+
+        $mock = UserRepository::partialMock()
+            ->shouldReceive('canUseForProfileUpdate')
+            ->andReturnTrue()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('name'),
+                field('avatar_size'),
+                field('avatar_original'),
+
+                Image::make('avatar')
+                    ->rules('required')
+                    ->disk('customDisk')
+                    ->storeOriginalName('avatar_original')
+                    ->storeSize('avatar_size')
+                    ->storeAs('avatar.jpg')
+            ]);
+
+        $this->post('profile', [
+            'avatar' => UploadedFile::fake()->image('image.jpg'),
+        ])->assertOk()->assertJsonFragment([
+            'avatar_original' => 'image.jpg',
+            'avatar' => '/storage/avatar.jpg',
+        ]);
+
+        Storage::disk('customDisk')->assertExists('avatar.jpg');
     }
 }

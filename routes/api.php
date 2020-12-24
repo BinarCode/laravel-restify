@@ -1,5 +1,6 @@
 <?php
 
+use Binaryk\LaravelRestify\Http\Controllers\FieldDestroyController;
 use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
 use Binaryk\LaravelRestify\Http\Controllers\ListActionsController;
 use Binaryk\LaravelRestify\Http\Controllers\ListRepositoryActionsController;
@@ -25,6 +26,7 @@ Route::get('/search', '\\'.GlobalSearchController::class);
 
 Route::get('/profile', '\\'.ProfileController::class);
 Route::put('/profile', '\\'.ProfileUpdateController::class);
+Route::post('/profile', '\\'.ProfileUpdateController::class);
 Route::post('/profile/avatar', '\\'.ProfileAvatarController::class);
 
 // Filters
@@ -48,6 +50,9 @@ Route::patch('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::cl
 Route::put('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
 Route::post('/{repository}/{repositoryId}', '\\'.RepositoryUpdateController::class);
 Route::delete('/{repository}/{repositoryId}', '\\'.RepositoryDestroyController::class);
+
+// Fields
+Route::delete('/{repository}/{repositoryId}/field/{field}', '\\' . FieldDestroyController::class);
 
 // Attach related repository id
 Route::post('/{repository}/{repositoryId}/attach/{relatedRepository}', '\\'.RepositoryAttachController::class);
