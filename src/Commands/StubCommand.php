@@ -40,18 +40,18 @@ class StubCommand extends Command
 
     public function handle()
     {
-        if (!$this->confirmToProceed()) {
+        if (! $this->confirmToProceed()) {
             return true;
         }
 
         DB::connection()->getDoctrineSchemaManager()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
 
-        collect(explode(',', $this->argument('table')))->each(function($table) {
-            if (!$this->resolver->connection()->getSchemaBuilder()->hasTable($table)) {
+        collect(explode(',', $this->argument('table')))->each(function ($table) {
+            if (! $this->resolver->connection()->getSchemaBuilder()->hasTable($table)) {
                 return false;
             }
 
-            Collection::times($count = $this->option('count') ?? 1)->each(fn() => $this->make($table));
+            Collection::times($count = $this->option('count') ?? 1)->each(fn () => $this->make($table));
 
             $this->info("Seeded {$count} {$table}.");
         });
@@ -73,6 +73,6 @@ class StubCommand extends Command
 
         $id = DB::table($table)->insertGetId($data);
 
-        $this->info('Created ' . Str::singular(Str::studly($table)) . ' with id:' . $id);
+        $this->info('Created '.Str::singular(Str::studly($table)).' with id:'.$id);
     }
 }
