@@ -2,8 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
-use Binaryk\LaravelRestify\Contracts\FileStorable as StorableContract;
 use Binaryk\LaravelRestify\Contracts\Deletable as DeletableContract;
+use Binaryk\LaravelRestify\Contracts\FileStorable as StorableContract;
 use Binaryk\LaravelRestify\Fields\Concerns\AcceptsTypes;
 use Binaryk\LaravelRestify\Fields\Concerns\Deletable;
 use Binaryk\LaravelRestify\Fields\Concerns\FileStorable;
@@ -82,10 +82,10 @@ class File extends Field implements StorableContract, DeletableContract
     protected function prepareStorageCallback(callable $storageCallback = null): void
     {
         $this->storageCallback = $storageCallback ?? function ($request, $model) {
-                return $this->mergeExtraStorageColumns($request, [
-                    $this->attribute => $this->storeFile($request, $this->attribute),
-                ]);
-            };
+            return $this->mergeExtraStorageColumns($request, [
+                $this->attribute => $this->storeFile($request, $this->attribute),
+            ]);
+        };
     }
 
     /**
@@ -116,7 +116,7 @@ class File extends Field implements StorableContract, DeletableContract
 
     protected function storeFile(Request $request, string $requestAttribute)
     {
-        if (!$this->storeAs) {
+        if (! $this->storeAs) {
             return $request->file($requestAttribute)->store($this->getStorageDir(), $this->getStorageDisk());
         }
 
@@ -141,7 +141,6 @@ class File extends Field implements StorableContract, DeletableContract
 
         return $this;
     }
-
 
     /**
      * Merge the specified extra file information columns into the storable attributes.
@@ -187,7 +186,7 @@ class File extends Field implements StorableContract, DeletableContract
 
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
-        if (is_null($file = $request->file($this->attribute)) || !$file->isValid()) {
+        if (is_null($file = $request->file($this->attribute)) || ! $file->isValid()) {
             return $this;
         }
 
@@ -208,7 +207,7 @@ class File extends Field implements StorableContract, DeletableContract
             return $result;
         }
 
-        if (!is_array($result)) {
+        if (! is_array($result)) {
             return $model->{$attribute} = $result;
         }
 

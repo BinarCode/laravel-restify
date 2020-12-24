@@ -34,7 +34,7 @@ class DeleteField
             return $model;
         }
 
-        if (!is_array($result)) {
+        if (! is_array($result)) {
             $model->{$field->getAttribute()} = $result;
         } else {
             foreach ($result as $key => $value) {

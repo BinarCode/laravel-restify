@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Contracts\Deletable;
-use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\DeleteField;
 use Illuminate\Routing\Controller;
@@ -20,7 +19,7 @@ class FieldDestroyController extends Controller
 
         $field = $repository->collectFields($request)
             ->whereInstanceOf(Deletable::class)
-            ->filter(fn(Deletable $field) => $field->isDeletable())
+            ->filter(fn (Deletable $field) => $field->isDeletable())
             ->resolve($repository)
             ->findFieldByAttribute($request->field, function () {
                 abort(404);

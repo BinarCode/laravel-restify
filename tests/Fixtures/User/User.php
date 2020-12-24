@@ -41,7 +41,7 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail, Rest
     protected $fillable = [
         'name', 'email', 'password', 'email_verified_at', 'avatar', 'created_at',
         'avatar_size',
-        'avatar_original'
+        'avatar_original',
     ];
 
     /**

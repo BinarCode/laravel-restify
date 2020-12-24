@@ -14,8 +14,8 @@ trait DeletesFields
         ($repository = $request->newRepositoryWith($model))
             ->collectFields($request)
             ->whereInstanceOf(Deletable::class)
-            ->filter(fn(Field $field) => $field instanceof Deletable)
-            ->filter(fn(Deletable $field) => $field->isPrunable())
+            ->filter(fn (Field $field) => $field instanceof Deletable)
+            ->filter(fn (Deletable $field) => $field->isPrunable())
             ->resolve($repository)
             ->each(function ($field) use ($request, $model) {
                 DeleteField::forRequest($request, $field, $model)->save();

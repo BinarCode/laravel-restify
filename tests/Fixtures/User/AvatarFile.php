@@ -6,5 +6,4 @@ use Binaryk\LaravelRestify\Fields\File;
 
 class AvatarFile extends File
 {
-
 }
