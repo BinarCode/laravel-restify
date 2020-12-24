@@ -17,9 +17,9 @@ class DatabaseGenerator
 
     private Faker $faker;
 
-    public function __construct(Faker $faker)
+    public function __construct()
     {
-        $this->faker = $faker;
+        $this->faker = app(Faker::class);
     }
 
     public function fake(Column $columnDefinition)

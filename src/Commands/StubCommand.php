@@ -44,18 +44,17 @@ class StubCommand extends Command
             return true;
         }
 
-        if (!$this->resolver->connection()->getSchemaBuilder()->hasTable($table = $this->argument('table'))) {
-            return false;
-        }
-
         DB::connection()->getDoctrineSchemaManager()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
 
-        $start = microtime(true);
-        Collection::times($count = $this->option('count') ?? 1)->each(fn() => $this->make($table));
+        collect(explode(',', $this->argument('table')))->each(function($table) {
+            if (!$this->resolver->connection()->getSchemaBuilder()->hasTable($table)) {
+                return false;
+            }
 
-        $time = round(microtime(true) - $start, 2);
+            Collection::times($count = $this->option('count') ?? 1)->each(fn() => $this->make($table));
 
-        $this->info("Seeded {$count} {$table} in {$time} seconds");
+            $this->info("Seeded {$count} {$table}.");
+        });
     }
 
     protected function make($table)
