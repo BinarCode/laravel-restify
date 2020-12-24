@@ -15,8 +15,7 @@ class UserRepository extends Repository
         return [
             Field::make('name')->rules('required'),
 
-            Field::make('email')->rules('required')
-                ->storingRules('unique:users')->messages([
+            Field::make('email')->storingRules('required', ''unique:users')->messages([
                     'required' => 'This field is required.',
                 ]),
 

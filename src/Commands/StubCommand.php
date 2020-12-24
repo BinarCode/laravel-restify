@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
-use Carbon\Carbon;
+use Binaryk\LaravelRestify\Generators\DatabaseGenerator;
 use Doctrine\DBAL\Schema\Column;
 use Faker\Generator as Faker;
 use Illuminate\Console\Command;
@@ -10,7 +10,6 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\ConnectionResolverInterface as Resolver;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
@@ -27,6 +26,11 @@ class StubCommand extends Command
      */
     private $faker;
 
+    /**
+     * @var Resolver
+     */
+    private $resolver;
+
     public function __construct(Resolver $resolver, Faker $faker)
     {
         parent::__construct();
@@ -36,18 +40,18 @@ class StubCommand extends Command
 
     public function handle()
     {
-        if (! $this->confirmToProceed()) {
+        if (!$this->confirmToProceed()) {
             return true;
         }
 
-        if (! $this->resolver->connection()->getSchemaBuilder()->hasTable($table = $this->argument('table'))) {
+        if (!$this->resolver->connection()->getSchemaBuilder()->hasTable($table = $this->argument('table'))) {
             return false;
         }
 
         DB::connection()->getDoctrineSchemaManager()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
 
         $start = microtime(true);
-        Collection::times($count = $this->option('count') ?? 1)->each(fn () => $this->make($table));
+        Collection::times($count = $this->option('count') ?? 1)->each(fn() => $this->make($table));
 
         $time = round(microtime(true) - $start, 2);
 
@@ -63,56 +67,13 @@ class StubCommand extends Command
             /** * @var Column $columnDefinition */
             $columnDefinition = $connection->getDoctrineColumn($table, $column);
 
-            $type = $columnDefinition->getType()->getName();
-
-            switch ($type) {
-                case 'string':
-                    $data[$column] = $this->faker->text(50);
-
-                    if (Str::contains($column, 'email')) {
-                        $data[$column] = $this->faker->email;
-                    }
-
-                    if (Str::contains($column, 'password')) {
-                        $data[$column] = Hash::make('secret');
-                    }
-
-                    if (Str::contains($column, 'uuid')) {
-                        $data[$column] = Str::orderedUuid();
-                    }
-
-                    if (Str::contains($column, 'image') || Str::contains($column, 'picture')) {
-                        $data[$column] = $this->faker->imageUrl();
-                    }
-                    break;
-                case 'datetime':
-                    $data[$column] = Carbon::now();
-                    break;
-                case 'boolean':
-                    $data[$column] = $this->faker->boolean;
-                    break;
-                case 'bigint':
-                case 'int':
-                case 'integer':
-                    if ($columnDefinition->getAutoincrement() === true) {
-                        //primary key
-                        return;
-                    }
-
-                    if (Str::endsWith($column, '_id')) {
-                        $guessTable = Str::pluralStudly(Str::beforeLast($column, '_id'));
-                        if (Schema::hasTable($guessTable)) {
-                            $data[$column] = optional(DB::table($guessTable)->inRandomOrder()->first())->id ?? $this->faker->randomNumber(4);
-                        }
-                    } else {
-                        $data[$column] = $this->faker->randomNumber(4);
-                    }
-                    break;
+            if ($value = DatabaseGenerator::make()->fake($columnDefinition)) {
+                $data[$column] = $value;
             }
         });
 
         $id = DB::table($table)->insertGetId($data);
 
-        $this->info('Created '.Str::singular(Str::studly($table)).' with id:'.$id);
+        $this->info('Created ' . Str::singular(Str::studly($table)) . ' with id:' . $id);
     }
 }
