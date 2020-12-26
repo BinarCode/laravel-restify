@@ -238,7 +238,7 @@ class Field extends OrganicField implements JsonSerializable
         );
 
         $this->fillAttributeFromValue(
-            $request, $model, $this->label ?? $this->attribute, $bulkRow
+            $request, $model, $this->label ?? $this->attribute
         );
 
         return $this;
@@ -294,7 +294,7 @@ class Field extends OrganicField implements JsonSerializable
     protected function fillAttributeFromValue(RestifyRequest $request, $model, $attribute)
     {
         if (! isset($this->valueCallback)) {
-            return;
+            return $this;
         }
 
         $model->{$attribute} = is_callable($this->valueCallback)
@@ -502,6 +502,9 @@ class Field extends OrganicField implements JsonSerializable
     public function resolve($repository, $attribute = null)
     {
         $this->repository = $repository;
+
+        $attribute = $attribute ?? $this->attribute;
+
         if ($attribute === 'Computed') {
             $this->value = call_user_func($this->computedCallback, $repository);
 
