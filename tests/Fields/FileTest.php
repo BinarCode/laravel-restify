@@ -187,4 +187,33 @@ class FileTest extends IntegrationTest
 
         Storage::disk('customDisk')->assertExists('avatar.jpg');
     }
+
+    public function test_model_updating_will_replace_file()
+    {
+        Storage::fake('customDisk');
+
+        $user = tap($this->mockUsers()->first(), function (User $user) {
+            $user->avatar = ($file = UploadedFile::fake()->image('image.jpg'))->storeAs('/', 'avatar.jpg', 'customDisk');
+            $user->avatar_size = $file->getSize();
+            $user->avatar_original = $file->getClientOriginalName();
+            $user->save();
+        });
+
+        Storage::disk('customDisk')->assertExists('avatar.jpg');
+
+        UserRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                Image::make('avatar')->disk('customDisk')->storeAs('newAvatar.jpg')->prunable()
+            ]);
+
+        $this->post(UserRepository::uriKey()."/{$user->id}", [
+            'avatar' => UploadedFile::fake()->image('image.jpg'),
+        ])->assertOk()->assertJsonFragment([
+            'avatar' => '/storage/newAvatar.jpg',
+        ]);
+
+        Storage::disk('customDisk')->assertMissing('avatar.jpg');
+        Storage::disk('customDisk')->assertExists('newAvatar.jpg');
+    }
 }

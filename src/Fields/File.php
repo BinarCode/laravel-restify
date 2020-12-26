@@ -51,9 +51,9 @@ class File extends Field implements StorableContract, DeletableContract
 
         $this->prepareStorageCallback();
 
-        $this->delete(function () {
-            if ($this->value) {
-                Storage::disk($this->getStorageDisk())->delete($this->value);
+        $this->delete(function ($request, $model, $disk, $path) {
+            if ($file = $this->value ?? $model->{$this->attribute}) {
+                Storage::disk($this->getStorageDisk())->delete($file);
 
                 return $this->columnsThatShouldBeDeleted();
             }
@@ -82,10 +82,10 @@ class File extends Field implements StorableContract, DeletableContract
     protected function prepareStorageCallback(callable $storageCallback = null): void
     {
         $this->storageCallback = $storageCallback ?? function ($request, $model) {
-            return $this->mergeExtraStorageColumns($request, [
-                $this->attribute => $this->storeFile($request, $this->attribute),
-            ]);
-        };
+                return $this->mergeExtraStorageColumns($request, [
+                    $this->attribute => $this->storeFile($request, $this->attribute),
+                ]);
+            };
     }
 
     /**
@@ -116,7 +116,7 @@ class File extends Field implements StorableContract, DeletableContract
 
     protected function storeFile(Request $request, string $requestAttribute)
     {
-        if (! $this->storeAs) {
+        if (!$this->storeAs) {
             return $request->file($requestAttribute)->store($this->getStorageDir(), $this->getStorageDisk());
         }
 
@@ -186,8 +186,21 @@ class File extends Field implements StorableContract, DeletableContract
 
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
-        if (is_null($file = $request->file($this->attribute)) || ! $file->isValid()) {
+        if (is_null($file = $request->file($this->attribute)) || !$file->isValid()) {
             return $this;
+        }
+
+        if ($this->isPrunable()) {
+            // Delete old file if exists.
+//            return function () use ($model, $request) {
+            call_user_func(
+                $this->deleteCallback,
+                $request,
+                $model,
+                $this->getStorageDisk(),
+                $this->getStoragePath()
+            );
+//            };
         }
 
         $result = call_user_func(
@@ -207,7 +220,7 @@ class File extends Field implements StorableContract, DeletableContract
             return $result;
         }
 
-        if (! is_array($result)) {
+        if (!is_array($result)) {
             return $model->{$attribute} = $result;
         }
 
@@ -215,18 +228,6 @@ class File extends Field implements StorableContract, DeletableContract
             if ($model->isFillable($key)) {
                 $model->{$key} = $value;
             }
-        }
-
-        if ($this->isPrunable()) {
-            return function () use ($model, $request) {
-                call_user_func(
-                    $this->deleteCallback,
-                    $request,
-                    $model,
-                    $this->getStorageDisk(),
-                    $this->getStoragePath()
-                );
-            };
         }
 
         return $this;
