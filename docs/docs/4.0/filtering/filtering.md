@@ -137,20 +137,20 @@ This will return all posts that doesn't contain `Some title` substring.
 
 ### Match closure
 
-There may be situations when the filter you want to apply not necessarily is a database attributes. In your `booted`
+There may be situations when the filter you want to apply is not necessarily a database attribute. In your `booted`
 method you can add more filters for the `$match` where the key represents the field used as query param, and value
 should be a `Closure` which gets the request and current query `Builder`:
 
 ```php
 // UserRepository
-protected static function booted() 
+protected static function booted()
 {
     static::$match['active'] => function ($request, $query) {
         if ($request->boolean('active')) {
            $query->whereNotNull('email_verified_at');
        } else {
            $query->whereNull('email_verified_at');
-        }       
+        }
     }
 }
 ```
