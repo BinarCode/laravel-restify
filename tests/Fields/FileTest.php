@@ -204,7 +204,7 @@ class FileTest extends IntegrationTest
         UserRepository::partialMock()
             ->shouldReceive('fields')
             ->andReturn([
-                Image::make('avatar')->disk('customDisk')->storeAs('newAvatar.jpg')->prunable()
+                Image::make('avatar')->disk('customDisk')->storeAs('newAvatar.jpg')->prunable(),
             ]);
 
         $this->post(UserRepository::uriKey()."/{$user->id}", [
