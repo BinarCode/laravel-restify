@@ -2,12 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Services;
 
-use Illuminate\Foundation\Auth\ResetsPasswords;
+use Binaryk\LaravelRestify\Services\Concerns\ResetsPasswords;
 use Illuminate\Http\Request;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class ResetPasswordService
 {
     use ResetsPasswords;
