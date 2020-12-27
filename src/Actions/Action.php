@@ -44,7 +44,7 @@ abstract class Action extends RestController implements JsonSerializable
 
     public static function indexQuery(RestifyRequest $request, $query)
     {
-       //
+        //
     }
 
     /**
