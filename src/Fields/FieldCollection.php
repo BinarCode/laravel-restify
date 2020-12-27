@@ -120,4 +120,15 @@ class FieldCollection extends Collection
     {
         return $this->each(fn (Field $field) => $field->setRepository($repository));
     }
+
+    public function findFieldByAttribute($attribute, $default = null)
+    {
+        foreach ($this->items as $field) {
+            if (isset($field->attribute) && $field->attribute === $attribute) {
+                return $field;
+            }
+        }
+
+        return null;
+    }
 }

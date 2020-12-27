@@ -10,9 +10,8 @@ trait InteractsWithAttachers
 {
     public function belongsToManyField(RestifyRequest $request): ?BelongsToMany
     {
-        return $request->newRepository()
-            ->collectFields($request)
-            ->filterForManyToManyRelations($request)
+        return $request->newRepository()::collectRelated()
+            ->forManyToManyRelations($request)
             ->firstWhere('attribute', $request->relatedRepository);
     }
 
@@ -20,7 +19,7 @@ trait InteractsWithAttachers
     {
         if (is_null($field = $this->belongsToManyField($request))) {
             $class = class_basename($request->repository());
-            abort(400, "Missing BelongsToMany or MorphToMany field for [{$request->relatedRepository}]. This field should be in the [{$class}] class. Or you are not authorized to use that repository (see `allowRestify` policy method).");
+            abort(400, "Missing BelongsToMany or MorphToMany field for [{$request->relatedRepository}]. This field should be in the related of the [{$class}] class. Or you are not authorized to use that repository (see `allowRestify` policy method).");
         }
 
         $field->authorizeToAttach(

@@ -2,10 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Tests\Actions;
 
+use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\ActivateAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\DisableProfileAction;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 
 class PerformActionsControllerTest extends IntegrationTest
 {
@@ -33,6 +37,32 @@ class PerformActionsControllerTest extends IntegrationTest
         // Repositories are sorted desc by primary key.
         $this->assertEquals(2, PublishPostAction::$applied[0][0]->id);
         $this->assertEquals(1, PublishPostAction::$applied[0][1]->id);
+    }
+
+    public function test_could_perform_action_using_all()
+    {
+        $this->assertDatabaseCount('posts', 0);
+
+        PostRepository::partialMock()
+            ->shouldReceive('actions')
+            ->andReturn([
+                new class extends Action {
+                    public static $uriKey = 'publish';
+
+                    public function handle(Request $request, Collection $collection)
+                    {
+                        return response()->json([
+                            'fromHandle' => $collection->count(),
+                        ]);
+                    }
+                },
+            ]);
+
+        $this->post('posts/action?action=publish', [
+            'repositories' => 'all',
+        ])->assertOk()->assertJsonFragment([
+            'fromHandle' => 0,
+        ]);
     }
 
     public function test_cannot_apply_a_show_action_to_index()

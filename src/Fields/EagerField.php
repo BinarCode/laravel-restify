@@ -25,14 +25,6 @@ class EagerField extends Field
      */
     public string $repositoryClass;
 
-    public function __construct($attribute, callable $resolveCallback = null)
-    {
-        parent::__construct($attribute, $resolveCallback);
-
-        $this->showOnShow()
-            ->hideFromIndex();
-    }
-
     /**
      * Determine if the field should be displayed for the given request.
      *
@@ -51,6 +43,12 @@ class EagerField extends Field
         $model = $repository->resource;
 
         $relatedModel = $model->{$this->relation}()->first();
+
+        if (is_null($relatedModel)) {
+            $this->value = null;
+
+            return $this;
+        }
 
         try {
             $this->value = $this->repositoryClass::resolveWith($relatedModel)

@@ -1,5 +1,7 @@
 # Field
 
+[[toc]]
+
 Field is basically the model attribute representation. Each Field generally extends the `Binaryk\LaravelRestify\Fields\Field` class from the Laravel Restify. 
 This class ships a variety of mutators, interceptors, validators chaining methods you can use for defining your attribute.
 
@@ -198,7 +200,158 @@ Field::new('token')->value(Str::random(32))->hidden();
 
 # Variations
 
-Bellow we have a list of fields used for the related resources.
+## File fields
+
+To illustrate the behavior of Restify file upload fields, let's assume our application's users can upload "avatar photos" to their account. So, our users database table will have an `avatar` column. This column will contain the path to the profile on disk, or, when using a cloud storage provider such as Amazon S3, the profile photo's path within its "bucket".
+
+### Defining the field
+
+Next, let's attach the file field to our `UserRepository`. In this example, we will create the field and instruct it to store the underlying file on the `public` disk. This disk name should correspond to a disk name in your `filesystems` configuration file:
+
+```php
+use Binaryk\LaravelRestify\Fields\File;
+
+public function fields(RestifyRequest $request)
+{
+    return [
+        File::make('avatar')->disk('public')
+    ];
+}
+```
+
+### How Files Are Stored
+
+When a file is uploaded using this field, Restify will use Laravel's [Filesystem integration](https://laravel.com/docs/filesystem) to store the file on the disk of your choosing with a randomly generated filename. Once the file is stored, Restify will store the relative path to the file in the file field's underlying database column.
+
+To illustrate the default behavior of the `File` field, let's take a look at an equivalent route that would store the file in the same way:
+
+```php
+use Illuminate\Http\Request;
+
+Route::post('/avatar', function (Request $request) {
+    $path = $request->avatar->store('/', 'public');
+
+    $request->user()->update([
+        'avatar' => $path,
+    ]);
+});
+```
+
+If you are using the `public` disk with the `local` driver, you should run the `php artisan storage:link` Artisan command to create a symbolic link from `public/storage` to `storage/app/public`. To learn more about file storage in Laravel, check out the [Laravel file storage documentation](https://laravel.com/docs/filesystem).
+
+### Image
+
+The `Image` field behaves exactly like the `File` field; however, it will instruct Restify to only accept mimetypes of type `image/*` for it:
+
+```php
+Image::make('avatar')->storeAs('avatar.jpg')
+```
+
+### Storing Metadata
+
+In addition to storing the path to the file within the storage system, you may also instruct Restify to store the original client filename and its size (in bytes). You may accomplish this using the `storeOriginalName` and `storeSize` methods. Each of these methods accept the name of the column you would like to store the file information:
+
+```php
+Image::make('avatar')
+    ->storeOriginalName('avatar_original')
+    ->storeSize('avatar_size')
+    ->storeAs('avatar.jpg')
+```
+
+The image above will store the file, with name `avatar.jpg` in the `avatar` column, the file original name into `avatar_original` column and file size in bytes under `avatar_size` column (only if these columns are fillable on your model).
+
+### Pruning & Deletion
+
+File fields are deletable by default, so considering the following field definition:
+
+```php
+File::make('avatar')
+```
+You have a request to delete the avatar of the user with the id 1:
+
+```http request
+DELETE: api/restify/users/1/field/avatar
+```
+
+You can override this behavior by using the `deletable` method:
+
+```php
+File::make('Photo')->disk('public')->deletable(false)
+```
+
+So now the field will do not be deletable anymore.
+
+### Customizing File Storage
+
+Previously we learned that, by default, Restify stores the file using the `store` method of the `Illuminate\Http\UploadedFile` class. However, you may fully customize this behavior based on your application's needs.
+
+#### Customizing The Name / Path
+
+If you only need to customize the name or path of the stored file on disk, you may use the `path` and `storeAs` methods of the `File` field:
+
+```php
+use Illuminate\Http\Request;
+
+File::make('avatar')
+    ->disk('s3')
+    ->path($request->user()->id.'-attachments')
+    ->storeAs(function (Request $request) {
+        return sha1($request->attachment->getClientOriginalName());
+    }),
+```
+
+#### Customizing The Entire Storage Process
+
+However, if you would like to take **total** control over the file storage logic of a field, you may use the `store` method. The `store` method accepts a callable which receives the incoming HTTP request and the model instance associated with the request:
+
+```php
+use Illuminate\Http\Request;
+
+File::make('avatar')
+    ->store(function (Request $request, $model) {
+        return [
+            'attachment' => $request->attachment->store('/', 's3'),
+            'attachment_name' => $request->attachment->getClientOriginalName(),
+            'attachment_size' => $request->attachment->getSize(),
+        ];
+    }),
+```
+
+As you can see in the example above, the `store` callback is returning an array of keys and values. These key / value pairs are mapped onto your model instance before it is saved to the database, allowing you to update one or many of the model's database columns after your file is stored.
+
+#### Storeables
+
+Of course, performing all of your file storage logic within a Closure can cause your resource to become bloated. For that reason, Restify allows you to pass an "Storable" class to the `store` method:
+
+```php
+File::make('avatar')->store(AvatarStore::class),
+```
+
+The storable class should be a simple PHP class and extends the `Binaryk\LaravelRestify\Repositories\Storable` contract:
+
+```php
+<?php
+
+namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
+
+use Binaryk\LaravelRestify\Repositories\Storable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
+
+class AvatarStore implements Storable
+{
+    public function handle(Request $request, Model $model, $attribute): array
+    {
+        return [
+            'avatar' => $request->file('avatar')->storeAs('/', 'avatar.jpg', 'customDisk')
+        ];
+    }
+}
+```
+
+:::tip Command
+You can use the `php artisan restify:store AvatarStore` command to generate a store file.
+:::
 
 ## BelongsTo
 
