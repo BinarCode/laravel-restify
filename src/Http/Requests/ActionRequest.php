@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Requests;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 
 class ActionRequest extends RestifyRequest
@@ -32,17 +33,26 @@ class ActionRequest extends RestifyRequest
         });
     }
 
+    public function builder(Action $action, int $size): Builder
+    {
+        return tap(RepositorySearchService::instance()->search($this, $this->repository()), function ($query) use ($action) {
+            $action::indexQuery($this, $query);
+        })
+            ->when($this->input('repositories') !== 'all', function ($query) {
+                $query->whereKey($this->input('repositories', []));
+            })
+            ->latest($this->model()->getKeyName());
+    }
+
     public function collectRepositories(Action $action, $count, Closure $callback)
     {
         $output = [];
 
-        tap(RepositorySearchService::instance()->search($this, $this->repository()), function ($query) use ($action) {
-            $action::indexQuery($this, $query);
-        })
-        ->when($this->input('repositories') !== 'all', function ($query) {
-            $query->whereKey($this->input('repositories', []));
-        })->latest($this->model()->getKeyName())
-        ->chunk($count, function ($chunk) use ($callback, &$output) {
+        if (($query = $this->builder($action, $count))->count() === 0) {
+            $output[] = $callback(Collection::make([]));
+        }
+
+        $query->chunk($count, function ($chunk) use ($callback, &$output) {
             $output[] = $callback(Collection::make($chunk));
         });
 
