@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
+use Binaryk\LaravelRestify\Contracts\ActionLogable;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Eager\Related;
@@ -689,6 +690,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     ->merge($this->collectFields($request)->forBelongsTo($request))
             );
 
+            $dirty = $this->resource->getDirty();
+
             if ($request->isViaRepository()) {
                 $this->resource = $request->viaQuery()
                     ->save($this->resource);
@@ -700,6 +703,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 } else {
                     $this->resource->save();
                 }
+            }
+
+            if ($this->resource instanceof ActionLogable) {
+                Restify::actionLog()
+                    ->forRepositoryStored($this->resource, $request->user(), $dirty)
+                    ->save();
             }
 
             $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
@@ -755,6 +764,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 ->merge($this->collectFields($request)->forBelongsTo($request));
 
             static::fillFields($request, $this->resource, $fields);
+
+            if ($this->resource instanceof ActionLogable) {
+                Restify::actionLog()
+                    ->forRepositoryUpdated($this->resource, $request->user())
+                    ->save();
+            }
 
             $this->resource->save();
 
@@ -826,7 +841,14 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function destroy(RestifyRequest $request, $repositoryId)
     {
-        $status = DB::transaction(function () {
+        $status = DB::transaction(function () use ($request) {
+
+            if ($this->resource instanceof ActionLogable) {
+                Restify::actionLog()
+                    ->forRepositoryDestroy($this->resource, $request->user())
+                    ->save();
+            }
+
             return $this->resource->delete();
         });
 

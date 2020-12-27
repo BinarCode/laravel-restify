@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
+use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
@@ -22,7 +23,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create();
 
-        $this->patch('posts/'.$post->id, [
+        $this->patch('posts/' . $post->id, [
             'title' => 'Updated title',
         ])->assertStatus(200);
 
@@ -33,7 +34,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create();
 
-        $this->withoutExceptionHandling()->put('posts/'.$post->id, [
+        $this->withoutExceptionHandling()->put('posts/' . $post->id, [
             'title' => 'Updated title',
         ])->assertStatus(200);
 
@@ -50,7 +51,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.update'] = false;
 
-        $this->patch('posts/'.$post->id, [
+        $this->patch('posts/' . $post->id, [
             'title' => 'Updated title',
         ])->assertStatus(403)
             ->assertJson([
@@ -64,7 +65,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['posts.authorizable.title'] = false;
 
-        $response = $this->putJson('post-with-unathorized-fields/'.$post->id, [
+        $response = $this->putJson('post-with-unathorized-fields/' . $post->id, [
             'title' => 'Updated title',
             'user_id' => 2,
         ])
@@ -80,7 +81,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $post = factory(Post::class)->create(['image' => null]);
 
-        $r = $this->putJson('posts-unauthorized-fields/'.$post->id, [
+        $r = $this->putJson('posts-unauthorized-fields/' . $post->id, [
             'user_id' => $user->id,
             'image' => 'avatar.png',
             'title' => 'Some post title',
@@ -89,5 +90,30 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             ->assertStatus(200);
 
         $this->assertNull($r->json('data.attributes.image'));
+    }
+
+    public function test_updating_repository_log_action()
+    {
+        $this->authenticate();
+
+        $post = factory(Post::class)->create([
+            'title' => 'Original',
+        ]);
+
+        $this->postJson("posts/$post->id", $data = [
+            'title' => 'Title changed',
+        ])->assertSuccessful();
+
+        $this->assertDatabaseHas('action_logs', [
+            'user_id' => $this->authenticatedAs->getAuthIdentifier(),
+            'name' => ActionLog::ACTION_UPDATED,
+            'actionable_type' => Post::class,
+            'actionable_id' => (string)$post->id
+        ]);
+
+        $log = ActionLog::latest()->first();
+
+        $this->assertSame($data, $log->changes);
+        $this->assertSame(['title' => 'Original'], $log->original);
     }
 }

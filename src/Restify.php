@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify;
 use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
 use Illuminate\Database\Eloquent\Model;
@@ -206,5 +207,15 @@ class Restify
     public static function mountingRepositories()
     {
         collect(static::$repositories)->each(fn (string $repository) => $repository::mounting());
+    }
+
+    public static function actionLog(): ActionLog
+    {
+        return static::actionRepository()::newModel();
+    }
+
+    public static function actionRepository(): Repository
+    {
+        return app(config('restify.logs.repository'));
     }
 }

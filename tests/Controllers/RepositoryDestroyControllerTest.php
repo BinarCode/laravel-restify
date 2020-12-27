@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
+use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
@@ -48,5 +49,27 @@ class RepositoryDestroyControllerTest extends IntegrationTest
             ]);
 
         $this->assertInstanceOf(Post::class, $post->refresh());
+    }
+
+    public function test_destroying_repository_log_action()
+    {
+        $this->authenticate();
+
+        $post = factory(Post::class)->create([
+            'title' => 'Original title',
+        ]);
+
+        $this->deleteJson("posts/$post->id")->assertNoContent();
+
+        $this->assertDatabaseHas('action_logs', [
+            'user_id' => $this->authenticatedAs->getAuthIdentifier(),
+            'name' => ActionLog::ACTION_DELETED,
+            'actionable_type' => Post::class,
+            'actionable_id' => $post->getKey(),
+        ]);
+
+        $log = ActionLog::latest()->first();
+
+        $this->assertSame($post->title, data_get($log->original, 'title'));
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
@@ -98,9 +99,27 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'image' => 'avatar.png',
             'title' => 'Some post title',
             'description' => 'A very short description',
-        ])
-            ->assertStatus(201);
+        ])->assertCreated();
 
         $this->assertNull($response->json('data.attributes.image'));
+    }
+
+    public function test_storing_repository_log_action()
+    {
+        $this->authenticate();
+
+        $this->postJson('posts', $data = [
+            'title' => 'Some post title',
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('action_logs', [
+            'user_id' => $this->authenticatedAs->getAuthIdentifier(),
+            'name' => ActionLog::ACTION_CREATED,
+            'actionable_type' => Post::class,
+        ]);
+
+        $log = ActionLog::latest()->first();
+
+        $this->assertSame($data, $log->changes);
     }
 }
