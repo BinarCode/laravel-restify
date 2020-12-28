@@ -2,12 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Fields\HasMany;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\RelatedCastWithAttributes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -120,7 +122,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ]);
     }
 
-    public function test_repository_with_deep_relations()
+    public function test_repository_with_nested_relations()
     {
         CompanyRepository::partialMock()
             ->expects('related')
@@ -139,6 +141,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         });
 
         $response = $this->getJson(CompanyRepository::uriKey().'?related=users.posts')
+            ->dump()
             ->assertOk();
 
         $this->assertCount(1, $response->json('data.0.relationships.users'));

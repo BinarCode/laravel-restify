@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class RelatedCollection extends Collection
 {
@@ -25,8 +26,8 @@ class RelatedCollection extends Collection
 
     public function forEager(RestifyRequest $request): self
     {
-        return $this->filter(fn ($value, $key) => $value instanceof EagerField)
-            ->filter(fn (Field $field) => $field->authorize($request))
+        return $this->filter(fn($value, $key) => $value instanceof EagerField)
+            ->filter(fn(Field $field) => $field->authorize($request))
             ->unique('attribute');
     }
 
@@ -34,15 +35,15 @@ class RelatedCollection extends Collection
     {
         return $this->filter(function ($field) {
             return $field instanceof BelongsToMany || $field instanceof MorphToMany;
-        })->filter(fn (EagerField $field) => $field->authorize($request));
+        })->filter(fn(EagerField $field) => $field->authorize($request));
     }
 
     public function mapIntoSortable(RestifyRequest $request): self
     {
-        return $this->filter(fn (EagerField $field) => $field->isSortable())
+        return $this->filter(fn(EagerField $field) => $field->isSortable())
             //Now we support only belongs to sort from related.
-            ->filter(fn (EagerField $field) => $field instanceof BelongsTo)
-            ->map(fn (BelongsTo $field) => SortableFilter::make()->usingBelongsTo($field));
+            ->filter(fn(EagerField $field) => $field instanceof BelongsTo)
+            ->map(fn(BelongsTo $field) => SortableFilter::make()->usingBelongsTo($field));
     }
 
     public function forShow(RestifyRequest $request, Repository $repository): self
@@ -84,6 +85,6 @@ class RelatedCollection extends Collection
     public function authorized(RestifyRequest $request)
     {
         return $this->intoAssoc()
-            ->filter(fn ($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
+            ->filter(fn($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
     }
 }
