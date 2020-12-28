@@ -41,9 +41,9 @@ class ActionLogRepositoryTest extends IntegrationTest
                             'name',
                             'user_id',
                             'actionable_type',
-                            'actionable_id'
+                            'actionable_id',
                         ],
-                    ]
+                    ],
                 ],
             ])->json('data');
     }

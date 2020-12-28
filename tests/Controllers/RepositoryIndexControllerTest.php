@@ -2,14 +2,12 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-use Binaryk\LaravelRestify\Fields\HasMany;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\RelatedCastWithAttributes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
