@@ -21,8 +21,8 @@ class RestifyJsSetupController extends Controller
     private function repositories(): array
     {
         return collect(Restify::$repositories)
-            ->map(fn(string $repository) => app($repository))
-            ->map(fn(Repository $repository) => $repository->restifyjsSerialize())
+            ->map(fn (string $repository) => app($repository))
+            ->map(fn (Repository $repository) => $repository->restifyjsSerialize())
             ->all();
     }
 
