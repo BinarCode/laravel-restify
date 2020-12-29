@@ -52,7 +52,7 @@ abstract class IntegrationTest extends TestCase
         $this->repositoryMock();
         $this->loadMigrations();
         $this->loadRoutes();
-        $this->withFactories(__DIR__ . '/Factories');
+        $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
         $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
 
@@ -87,7 +87,7 @@ abstract class IntegrationTest extends TestCase
             'prefix' => '',
         ]);
 
-        include_once __DIR__ . '/../database/migrations/create_action_logs_table.php';
+        include_once __DIR__.'/../database/migrations/create_action_logs_table.php';
         (new \CreateActionLogsTable())->up();
     }
 
@@ -100,7 +100,7 @@ abstract class IntegrationTest extends TestCase
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--path' => realpath(__DIR__ . DIRECTORY_SEPARATOR . 'Migrations'),
+            '--path' => realpath(__DIR__.DIRECTORY_SEPARATOR.'Migrations'),
         ]);
     }
 
@@ -237,7 +237,7 @@ abstract class IntegrationTest extends TestCase
         $i = 0;
         while ($i < $count) {
             $users->push(factory(User::class)->create());
-            $i ++;
+            $i++;
         }
 
         foreach ($predefinedEmails as $email) {
@@ -262,7 +262,7 @@ abstract class IntegrationTest extends TestCase
             $users->push(factory(Post::class)->create(
                 ['user_id' => $userId]
             ));
-            $i ++;
+            $i++;
         }
 
         return $users->shuffle(); // randomly shuffles the items in the collection
@@ -270,23 +270,21 @@ abstract class IntegrationTest extends TestCase
 
     public function getTempDirectory($suffix = ''): string
     {
-        return __DIR__ . '/TestSupport/temp' . ($suffix == '' ? '' : '/' . $suffix);
+        return __DIR__.'/TestSupport/temp'.($suffix == '' ? '' : '/'.$suffix);
     }
 
     public function getMediaDirectory($suffix = ''): string
     {
-        return $this->getTempDirectory() . '/media' . ($suffix == '' ? '' : '/' . $suffix);
+        return $this->getTempDirectory().'/media'.($suffix == '' ? '' : '/'.$suffix);
     }
 
     public function getTestFilesDirectory($suffix = ''): string
     {
-        return $this->getTempDirectory() . '/testfiles' . ($suffix == '' ? '' : '/' . $suffix);
+        return $this->getTempDirectory().'/testfiles'.($suffix == '' ? '' : '/'.$suffix);
     }
 
     public function getTestJpg(): string
     {
         return $this->getTestFilesDirectory('test.jpg');
     }
-
-
 }

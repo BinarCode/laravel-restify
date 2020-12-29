@@ -14,7 +14,7 @@ class ActionLogRepository extends Repository
         return [
             field('actionable_type'),
 
-            field('actionable_id')
+            field('actionable_id'),
         ];
     }
 }
