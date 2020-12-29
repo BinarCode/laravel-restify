@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Str;
 
 class RestifyJsSetupController extends Controller
 {
@@ -20,16 +21,29 @@ class RestifyJsSetupController extends Controller
     private function repositories(): array
     {
         return collect(Restify::$repositories)
-            ->map(fn (string $repository) => app($repository))
-            ->map(fn (Repository $repository) => $repository->restifyjsSerialize())
+            ->map(fn(string $repository) => app($repository))
+            ->map(fn(Repository $repository) => $repository->restifyjsSerialize())
             ->all();
     }
 
     private function config(): array
     {
         return [
-            'domain' => config('app.url'),
-            'base' => Restify::path(),
+            'domain' => $this->deleteFirstAndLastSlash(config('app.url')),
+            'base' => $this->deleteFirstAndLastSlash(Restify::path()),
         ];
+    }
+
+    private function deleteFirstAndLastSlash(string $domain): string
+    {
+        if (Str::startsWith($domain, '/')) {
+            $domain = Str::replaceFirst('/', '', $domain);
+        }
+
+        if (Str::endsWith($domain, '/')) {
+            $domain = Str::replaceLast('/', '', $domain);
+        }
+
+        return $domain;
     }
 }
