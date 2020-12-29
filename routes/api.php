@@ -30,9 +30,8 @@ Route::put('/profile', '\\'.ProfileUpdateController::class);
 Route::post('/profile', '\\'.ProfileUpdateController::class);
 Route::post('/profile/avatar', '\\'.ProfileAvatarController::class);
 
-
 // RestifyJS
-Route::get('/restifyjs/setup', '\\' . RestifyJsSetupController::class);
+Route::get('/restifyjs/setup', '\\'.RestifyJsSetupController::class);
 
 // Filters
 Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);
