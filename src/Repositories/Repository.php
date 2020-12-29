@@ -1075,4 +1075,15 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         return $this->eagerState === true;
     }
+
+    public function restifyjsSerialize(): array
+    {
+        return [
+            'uriKey' => static::uriKey(),
+            'related' => static::getRelated(),
+            'sort' => static::sorts(),
+            'match' => static::matches(),
+            'searchables' => static::searchables(),
+        ];
+    }
 }

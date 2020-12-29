@@ -6,7 +6,7 @@ use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
 
-class Related
+class Related implements \JsonSerializable
 {
     use Make;
 
@@ -22,7 +22,7 @@ class Related
 
     public function isEager(): bool
     {
-        return ! is_null($this->field);
+        return !is_null($this->field);
     }
 
     public function getRelation(): string
@@ -33,5 +33,15 @@ class Related
     public function resolveField(Repository $repository): EagerField
     {
         return $this->field->resolve($repository);
+    }
+
+    public function jsonSerialize()
+    {
+        return [
+            'relation' => $this->getRelation(),
+            'field' => isset($this->field)
+                ? $this->field->jsonSerialize()
+                : null
+        ];
     }
 }
