@@ -2,27 +2,27 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Str;
 
 class RestifyJsSetupController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(RestifyRequest $request)
     {
         return response()->json([
             'config' => $this->config(),
-            'repositories' => $this->repositories(),
+            'repositories' => $this->repositories($request),
         ]);
     }
 
-    private function repositories(): array
+    private function repositories(RestifyRequest $request): array
     {
         return collect(Restify::$repositories)
             ->map(fn(string $repository) => app($repository))
-            ->map(fn(Repository $repository) => $repository->restifyjsSerialize())
+            ->map(fn(Repository $repository) => $repository->restifyjsSerialize($request))
             ->all();
     }
 

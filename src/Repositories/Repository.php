@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
+use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\ActionLogable;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
@@ -1075,14 +1076,17 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this->eagerState === true;
     }
 
-    public function restifyjsSerialize(): array
+    public function restifyjsSerialize(RestifyRequest $request): array
     {
         return [
             'uriKey' => static::uriKey(),
-            'related' => static::getRelated(),
-            'sort' => static::sorts(),
-            'match' => static::matches(),
-            'searchables' => static::searchables(),
+            'related' => static::collectFilters('matches'),
+            'sort' => static::collectFilters('sortables'),
+            'match' => static::collectFilters('matches'),
+            'searchables' => static::collectFilters('searchables'),
+            'actions' => $this->resolveActions($request)->filter(fn (Action $action) => $action->isShownOnIndex(
+                $request, $this
+            ))->values()
         ];
     }
 }

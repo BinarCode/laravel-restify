@@ -21,6 +21,7 @@ class RestifyJsSetupControllerTest extends IntegrationTest
                         'sort',
                         'match',
                         'searchables',
+                        'actions',
                     ],
                 ],
             ])
