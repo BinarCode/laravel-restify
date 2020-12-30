@@ -31,11 +31,15 @@ class AuthController extends RestController
 
     public function forgotPassword(Request $request)
     {
-        return $this->authService->forgotPassword($request);
+        $this->authService->forgotPassword($request);
+
+        return response();
     }
 
     public function resetPassword(Request $request)
     {
-        return $this->authService->resetPassword($request);
+        $this->authService->resetPassword($request);
+
+        return response();
     }
 }
