@@ -23,7 +23,7 @@ class ForgotPasswordService
     /**
      * Send a reset link to the given user.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\RedirectResponse
      */
     public function sendResetLinkEmail(Request $request)
@@ -50,25 +50,31 @@ class ForgotPasswordService
     /**
      * Get the response for a successful password reset link.
      *
-     * @param  string  $response
+     * @param string $response
      * @return \Illuminate\Http\RedirectResponse
      */
     protected function sendResetLinkResponse($response)
     {
-        return back()->with('status', trans($response));
+        return response()->json([
+            'status' => trans($response),
+        ]);
     }
 
     /**
      * Get the response for a failed password reset link.
      *
-     * @param  \Illuminate\Http\Request
-     * @param  string  $response
+     * @param \Illuminate\Http\Request
+     * @param string $response
      * @return \Illuminate\Http\RedirectResponse
      */
     protected function sendResetLinkFailedResponse(Request $request, $response)
     {
-        return back()->withErrors(
-            ['email' => trans($response)]
-        );
+        return response()->json([
+            'errors' => [
+                'email' => [
+                    trans($response)
+                ]
+            ]
+        ])->setStatusCode(400);
     }
 }
