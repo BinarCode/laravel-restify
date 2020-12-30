@@ -120,7 +120,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ]);
     }
 
-    public function test_repository_with_deep_relations()
+    public function test_repository_with_nested_relations()
     {
         CompanyRepository::partialMock()
             ->expects('related')
@@ -139,6 +139,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         });
 
         $response = $this->getJson(CompanyRepository::uriKey().'?related=users.posts')
+            ->dump()
             ->assertOk();
 
         $this->assertCount(1, $response->json('data.0.relationships.users'));

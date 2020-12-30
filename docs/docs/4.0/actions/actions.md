@@ -169,7 +169,23 @@ You can apply any filter or eager loadings as for an usual request:
 POST: api/api/restify/posts/actions?action=publish-posts-action&id=1&filters=
 ```
 
-This will apply the match for the `id = 1` and `filtetr` along with the match for the `repositories` payload you're sending.
+This will apply the match for the `id = 1` and `filter` along with the match for the `repositories` payload you're sending. 
+
+### Modify query
+
+Similar with the way we can modify the query applied to the repository, we can do the same by adding the `indexQuery` method on the action: 
+
+```php
+class PublishPostAction extends Action
+{
+    public static function indexQuery(RestifyRequest $request, $query)
+    {
+        $query->whereNotNull('published_at');
+    }
+    
+    //...
+}
+```
 
 ## All
 
@@ -178,8 +194,6 @@ Sometimes you may need to apply an action for all models. For this you can send:
 ```http request
 repositories: 'all'
 ```
-
-## Chunk
 
 Under the hood Restify will take by 200 chunks entries from the database and the handle method for these in a DB transaction. You are free to modify this default number of chunks: 
 
@@ -199,7 +213,6 @@ public function actions(RestifyRequest $request)
     ];
 }
 ```
-
 
 And available actions only for a specific repository id could be listed like:
 
@@ -277,3 +290,59 @@ class DisableProfileAction extends Action
     //...
 }
 ```
+
+## Action Log
+
+It is often useful to view a log of the actions that have been run against a model, or seeing when the model was updated, deleted or created (and by whom). Thankfully, Restify makes it a breeze to add an action log to a model by attaching the `Binaryk\LaravelRestify\Models\Concerns\HasActionLogs`  trait to the repository's corresponding Eloquent model.
+
+Having `HasActionLogs` trait attached to your model, all of the actions and CRUD operations will be logged into the database into the `action_logs` table.
+
+You can display them by attaching to the repository related for example:
+
+```php
+// PostRepository.php
+use Binaryk\LaravelRestify\Fields\MorphToMany;
+use Binaryk\LaravelRestify\Repositories\ActionLogRepository;
+
+public static function related(): array
+{
+    return [
+        'logs' => MorphToMany::make('actionLogs', 'actionLogs', ActionLogRepository::class),
+    ];
+}
+```
+
+So now you can call the posts with logs `api/restify/posts/1?related=logs`, and it will return you the list of actions performed for posts:
+
+```json
+[
+  {
+    "id": "1",
+    "type": "action_logs",
+    "attributes": {
+      "batch_id": "048686bb-cd22-41a7-a6db-3eba29678d74",
+      "user_id": "1",
+      "name": "Stored",
+      "actionable_type": "App\\Models\\Post",
+      "actionable_id": "1",
+      "target_type": "App\\Models\\Post",
+      "target_id": "1",
+      "model_type": "App\\Models\\Post",
+      "model_id": "1",
+      "fields": "",
+      "status": "finished",
+      "original": "",
+      "changes": [],
+      "exception": ""
+    },
+    "meta": {
+      "authorizedToShow": true,
+      "authorizedToStore": true,
+      "authorizedToUpdate": true,
+      "authorizedToDelete": true
+    }
+  }
+]
+```
+
+Definitely you can use your own `ActionLogRepository` to represent the data returned, maybe you prefer to represent the user details or something else.
