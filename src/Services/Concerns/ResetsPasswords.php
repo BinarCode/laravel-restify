@@ -133,8 +133,9 @@ trait ResetsPasswords
      */
     protected function sendResetResponse($response)
     {
-        return redirect($this->redirectPath())
-            ->with('status', trans($response));
+        return response()->json([
+            'status' => trans($response),
+        ]);
     }
 
     /**
@@ -146,9 +147,9 @@ trait ResetsPasswords
      */
     protected function sendResetFailedResponse(Request $request, $response)
     {
-        return redirect()->back()
-            ->withInput($request->only('email'))
-            ->withErrors(['email' => trans($response)]);
+        return response()->json(['email' => [
+            trans($response),
+        ]])->setStatusCode(400);
     }
 
     /**

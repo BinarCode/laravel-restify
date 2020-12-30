@@ -2,8 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
-use Binaryk\LaravelRestify\Actions\Action;
-use Binaryk\LaravelRestify\Contracts\ActionLogable;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Eager\Related;
@@ -16,6 +14,7 @@ use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
 use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
@@ -706,7 +705,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 }
             }
 
-            if ($this->resource instanceof ActionLogable) {
+            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
                 Restify::actionLog()
                     ->forRepositoryStored($this->resource, $request->user(), $dirty)
                     ->save();
@@ -766,7 +765,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
             static::fillFields($request, $this->resource, $fields);
 
-            if ($this->resource instanceof ActionLogable) {
+            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
                 Restify::actionLog()
                     ->forRepositoryUpdated($this->resource, $request->user())
                     ->save();
@@ -843,7 +842,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function destroy(RestifyRequest $request, $repositoryId)
     {
         $status = DB::transaction(function () use ($request) {
-            if ($this->resource instanceof ActionLogable) {
+            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
                 Restify::actionLog()
                     ->forRepositoryDestroy($this->resource, $request->user())
                     ->save();
@@ -1074,19 +1073,5 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function isEagerState(): bool
     {
         return $this->eagerState === true;
-    }
-
-    public function restifyjsSerialize(RestifyRequest $request): array
-    {
-        return [
-            'uriKey' => static::uriKey(),
-            'related' => static::collectFilters('matches'),
-            'sort' => static::collectFilters('sortables'),
-            'match' => static::collectFilters('matches'),
-            'searchables' => static::collectFilters('searchables'),
-            'actions' => $this->resolveActions($request)->filter(fn (Action $action) => $action->isShownOnIndex(
-                $request, $this
-            ))->values(),
-        ];
     }
 }
