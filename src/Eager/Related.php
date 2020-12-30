@@ -5,8 +5,9 @@ namespace Binaryk\LaravelRestify\Eager;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
+use JsonSerializable;
 
-class Related implements \JsonSerializable
+class Related implements JsonSerializable
 {
     use Make;
 
