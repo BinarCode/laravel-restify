@@ -23,7 +23,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create();
 
-        $this->patch('posts/' . $post->id, [
+        $this->patch('posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertStatus(200);
 
@@ -34,7 +34,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = factory(Post::class)->create();
 
-        $this->withoutExceptionHandling()->put('posts/' . $post->id, [
+        $this->withoutExceptionHandling()->put('posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertStatus(200);
 
@@ -51,7 +51,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.update'] = false;
 
-        $this->patch('posts/' . $post->id, [
+        $this->patch('posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertStatus(403)
             ->assertJson([
@@ -65,7 +65,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['posts.authorizable.title'] = false;
 
-        $response = $this->putJson('post-with-unathorized-fields/' . $post->id, [
+        $response = $this->putJson('post-with-unathorized-fields/'.$post->id, [
             'title' => 'Updated title',
             'user_id' => 2,
         ])
@@ -81,7 +81,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $post = factory(Post::class)->create(['image' => null]);
 
-        $r = $this->putJson('posts-unauthorized-fields/' . $post->id, [
+        $r = $this->putJson('posts-unauthorized-fields/'.$post->id, [
             'user_id' => $user->id,
             'image' => 'avatar.png',
             'title' => 'Some post title',
@@ -108,7 +108,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             'user_id' => $this->authenticatedAs->getAuthIdentifier(),
             'name' => ActionLog::ACTION_UPDATED,
             'actionable_type' => Post::class,
-            'actionable_id' => (string)$post->id
+            'actionable_id' => (string) $post->id,
         ]);
 
         $log = ActionLog::latest()->first();

@@ -84,7 +84,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         $migrationFileName = 'create_action_logs_table.php';
         if (! $this->migrationFileExists($migrationFileName)) {
             $this->publishes([
-                __DIR__ . "/../database/migrations/{$migrationFileName}" => database_path('migrations/' . date('Y_m_d_His', time()) . '_' . $migrationFileName),
+                __DIR__."/../database/migrations/{$migrationFileName}" => database_path('migrations/'.date('Y_m_d_His', time()).'_'.$migrationFileName),
             ], 'restify-migrations');
         }
 
@@ -98,7 +98,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     public static function migrationFileExists(string $migrationFileName): bool
     {
         $len = strlen($migrationFileName);
-        foreach (glob(database_path("migrations/*.php")) as $filename) {
+        foreach (glob(database_path('migrations/*.php')) as $filename) {
             if ((substr($filename, -$len) === $migrationFileName)) {
                 return true;
             }

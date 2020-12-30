@@ -72,9 +72,9 @@ class ForgotPasswordService
         return response()->json([
             'errors' => [
                 'email' => [
-                    trans($response)
-                ]
-            ]
+                    trans($response),
+                ],
+            ],
         ])->setStatusCode(400);
     }
 }

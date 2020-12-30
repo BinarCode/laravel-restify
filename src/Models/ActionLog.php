@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 /**
- * Class ActionLog
+ * Class ActionLog.
  * @property string batch_id
  * @property string user_id
  * @property string name
@@ -22,7 +22,6 @@ use Illuminate\Support\Str;
  * @property string original
  * @property string changes
  * @property string exception
- * @package Binaryk\LaravelRestify\Models
  */
 class ActionLog extends Model
 {
@@ -44,7 +43,7 @@ class ActionLog extends Model
     public static function forRepositoryStored(Model $model, Authenticatable $user = null, array $dirty = null): self
     {
         return new static([
-            'batch_id' => (string)Str::uuid(),
+            'batch_id' => (string) Str::uuid(),
             'user_id' => optional($user)->getAuthIdentifier(),
             'name' => static::ACTION_CREATED,
             'actionable_type' => $model->getMorphClass(),
@@ -66,7 +65,7 @@ class ActionLog extends Model
     public static function forRepositoryUpdated(Model $model, Authenticatable $user = null): self
     {
         return new static([
-            'batch_id' => (string)Str::uuid(),
+            'batch_id' => (string) Str::uuid(),
             'user_id' => optional($user)->getAuthIdentifier(),
             'name' => static::ACTION_UPDATED,
             'actionable_type' => $model->getMorphClass(),
@@ -88,7 +87,7 @@ class ActionLog extends Model
     public static function forRepositoryDestroy(Model $model, Authenticatable $user = null): self
     {
         return new static([
-            'batch_id' => (string)Str::uuid(),
+            'batch_id' => (string) Str::uuid(),
             'user_id' => optional($user)->getAuthIdentifier(),
             'name' => static::ACTION_DELETED,
             'actionable_type' => $model->getMorphClass(),

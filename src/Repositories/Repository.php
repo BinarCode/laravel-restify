@@ -842,7 +842,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function destroy(RestifyRequest $request, $repositoryId)
     {
         $status = DB::transaction(function () use ($request) {
-
             if ($this->resource instanceof ActionLogable) {
                 Restify::actionLog()
                     ->forRepositoryDestroy($this->resource, $request->user())
