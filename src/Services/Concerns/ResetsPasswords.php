@@ -148,7 +148,7 @@ trait ResetsPasswords
     protected function sendResetFailedResponse(Request $request, $response)
     {
         return response()->json(['email' => [
-            trans($response)
+            trans($response),
         ]])->setStatusCode(400);
     }
 
