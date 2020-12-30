@@ -1086,7 +1086,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             'searchables' => static::collectFilters('searchables'),
             'actions' => $this->resolveActions($request)->filter(fn (Action $action) => $action->isShownOnIndex(
                 $request, $this
-            ))->values()
+            ))->values(),
         ];
     }
 }
