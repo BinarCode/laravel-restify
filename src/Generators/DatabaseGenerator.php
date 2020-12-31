@@ -57,7 +57,7 @@ class DatabaseGenerator
             return Str::orderedUuid();
         }
 
-        if (Str::contains($column, 'image') || Str::contains($column, 'picture')) {
+        if (Str::contains($column, 'image') || Str::contains($column, 'picture') || Str::contains($column, 'avatar')) {
             return $this->faker->imageUrl();
         }
 
