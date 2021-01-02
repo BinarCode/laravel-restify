@@ -378,7 +378,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public static function __callStatic($method, $parameters)
     {
-        return (new static)->$method(...$parameters);
+        return app(static::class)->$method(...$parameters);
     }
 
     /**
