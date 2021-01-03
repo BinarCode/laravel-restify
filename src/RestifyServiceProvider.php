@@ -18,8 +18,6 @@ class RestifyServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        Restify::mountingRepositories();
-
         $this->registerRoutes();
         $this->registerExceptionHandler();
     }

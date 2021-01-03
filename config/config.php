@@ -3,6 +3,7 @@
 use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
 use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
+use Binaryk\LaravelRestify\Repositories\ActionLogRepository;
 
 return [
     'auth' => [
@@ -110,4 +111,16 @@ return [
     |
     */
     'exception_handler' => null,
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restify Logs
+    |--------------------------------------------------------------------------
+    */
+    'logs' => [
+        /*
+        | Repository used to list logs.
+        */
+        'repository' => ActionLogRepository::class,
+    ],
 ];

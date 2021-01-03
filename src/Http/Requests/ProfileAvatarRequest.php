@@ -11,10 +11,9 @@ class ProfileAvatarRequest extends RestifyRequest
      */
     public static $pathCallback;
 
-    /**
-     * @var string
-     */
     public static string $path = 'avatars';
+
+    public static string $disk = 'public';
 
     /**
      * @var string
@@ -24,5 +23,15 @@ class ProfileAvatarRequest extends RestifyRequest
     public static function usingPath(callable $pathCallback)
     {
         static::$pathCallback = $pathCallback;
+    }
+
+    public static function usingDisk(string $disk = 'public')
+    {
+        static::$disk = $disk;
+    }
+
+    public static function disk(): string
+    {
+        return static::$disk;
     }
 }

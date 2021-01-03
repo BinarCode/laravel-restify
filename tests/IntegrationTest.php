@@ -32,7 +32,7 @@ use Orchestra\Testbench\TestCase;
 abstract class IntegrationTest extends TestCase
 {
     /**
-     * @var mixed
+     * @var Authenticatable
      */
     protected $authenticatedAs;
 
@@ -86,6 +86,9 @@ abstract class IntegrationTest extends TestCase
             'database' => ':memory:',
             'prefix' => '',
         ]);
+
+        include_once __DIR__.'/../database/migrations/create_action_logs_table.php';
+        (new \CreateActionLogsTable())->up();
     }
 
     /**
@@ -224,8 +227,8 @@ abstract class IntegrationTest extends TestCase
     }
 
     /**
-     * @param  int  $count
-     * @param  array  $predefinedEmails
+     * @param int $count
+     * @param array $predefinedEmails
      * @return \Illuminate\Support\Collection
      */
     public function mockUsers($count = 1, $predefinedEmails = [])
@@ -248,7 +251,7 @@ abstract class IntegrationTest extends TestCase
 
     /**
      * @param $userId
-     * @param  int  $count
+     * @param int $count
      * @return \Illuminate\Support\Collection
      */
     public function mockPosts($userId, $count = 1)

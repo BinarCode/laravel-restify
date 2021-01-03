@@ -18,6 +18,8 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         $this->authorization();
         $this->repositories();
         $this->authRoutes();
+
+        Restify::mountingRepositories();
     }
 
     /**

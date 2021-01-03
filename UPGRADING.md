@@ -2,6 +2,10 @@
 
 Because there are many breaking changes an upgrade is not that easy. There are many edge cases this guide does not cover. We accept PRs to improve this guide.
 
+## From 4.7.0 to 4.8.0 
+
+- Copy the `database/migrations/create_action_logs_table.php` migration to yours local migrations and run `php artisan migrate` to ensure you can benefit from the `action logs`.
+
 ## From v3 to v4
 
 - Dropped support for laravel passport
