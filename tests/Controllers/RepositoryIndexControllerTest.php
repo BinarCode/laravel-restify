@@ -139,7 +139,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
         });
 
         $response = $this->getJson(CompanyRepository::uriKey().'?related=users.posts')
-            ->dump()
             ->assertOk();
 
         $this->assertCount(1, $response->json('data.0.relationships.users'));
