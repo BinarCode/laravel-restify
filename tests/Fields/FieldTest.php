@@ -5,9 +5,11 @@ namespace Binaryk\LaravelRestify\Tests\Fields;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Route;
 
 class FieldTest extends IntegrationTest
@@ -76,8 +78,12 @@ class FieldTest extends IntegrationTest
         $field = Field::make('title')->default('Title');
 
         $field->resolveForIndex((object) []);
+        $field->resolveForShow((object) []);
+        $field->resolve((object) []);
+        $value = $field->serializeToValue(new RestifyRequest());
 
         $this->assertEquals('Title', data_get($field->jsonSerialize(), 'value'));
+        $this->assertEquals('Title', $value['title']);
     }
 
     public function test_field_can_have_custom_store_callback()
