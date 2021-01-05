@@ -546,7 +546,7 @@ class Field extends OrganicField implements JsonSerializable
         return with(app(RestifyRequest::class), function ($request) {
             return [
                 'attribute' => $this->label ?? $this->attribute,
-                'value' => $this->resolveDefaultValue($request) ?? $this->value,
+                'value' => $this->value ?? $this->resolveDefaultValue($request),
             ];
         });
     }
@@ -561,7 +561,7 @@ class Field extends OrganicField implements JsonSerializable
     public function serializeToValue($request)
     {
         return [
-            $this->label ?? $this->attribute => $this->resolveDefaultValue($request) ?? $this->value,
+            $this->label ?? $this->attribute => $this->value ?? $this->resolveDefaultValue($request),
         ];
     }
 

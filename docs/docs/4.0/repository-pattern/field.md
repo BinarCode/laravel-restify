@@ -215,6 +215,16 @@ However, you can populate the field value when the entity is stored, by using `v
 Field::new('token')->value(Str::random(32))->hidden();
 ```
 
+## Default value
+
+If you have a field which has `null` value into the database, however, you want to return a fallback default value for the frontend: 
+
+```php
+Field::new('description')->default('N/A');
+```
+
+So now, for fields which don't have a description into the database, it will return `N/A`.
+
 # Variations
 
 ## File fields
