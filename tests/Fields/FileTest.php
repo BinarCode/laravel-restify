@@ -94,7 +94,6 @@ class FileTest extends IntegrationTest
             ]);
 
         $this->delete(UserRepository::uriKey()."/{$user->id}")
-            ->dump()
             ->assertNoContent();
 
         Storage::disk('customDisk')->assertMissing('avatar.jpg');

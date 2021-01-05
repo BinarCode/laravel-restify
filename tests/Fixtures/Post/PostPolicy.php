@@ -51,7 +51,7 @@ class PostPolicy
         return $_SERVER['restify.post.delete'] ?? true;
     }
 
-    public function attachUser($user = null, Post $post, User $userToAttach)
+    public function attachUser(object $user = null, $post, $userToAttach)
     {
         return $_SERVER['restify.post.allowAttachUser'] ?? true;
     }
