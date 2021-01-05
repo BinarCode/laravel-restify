@@ -65,7 +65,7 @@ class Restify
                 $model = get_class($model);
             }
 
-            return $value::$model === $model;
+            return $value::guessModelClassName() === $model;
         });
     }
 
@@ -78,7 +78,7 @@ class Restify
     public static function repositoryForTable($table)
     {
         return collect(static::$repositories)->first(function ($value) use ($table) {
-            return app($value::$model)->getTable() === $table;
+            return app($value::guessModelClassName())->getTable() === $table;
         });
     }
 

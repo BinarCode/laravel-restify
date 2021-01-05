@@ -114,7 +114,7 @@ trait AuthorizableModels
     public static function authorizedToStore(Request $request)
     {
         if (static::authorizable()) {
-            return Gate::check('store', static::$model);
+            return Gate::check('store', static::guessModelClassName());
         }
 
         return true;
@@ -123,7 +123,7 @@ trait AuthorizableModels
     public static function authorizedToStoreBulk(Request $request)
     {
         if (static::authorizable()) {
-            return Gate::check('storeBulk', static::$model);
+            return Gate::check('storeBulk', static::guessModelClassName());
         }
 
         return true;
