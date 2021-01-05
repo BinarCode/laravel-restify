@@ -40,9 +40,26 @@ Sometimes you may want to hide certain fields from a group of users. You may eas
     public function fields(RestifyRequest $request)
     {
         return [
-            field('name'),
-
             field('role_id')->canSee(fn($request) => $request->user()->isAdmin());
+    }
+```
+
+The same is with `storing`:
+
+```php
+    public function fields(RestifyRequest $request)
+    {
+        return [
+            field('role_id')->canStore(fn($request) => $request->user()->isAdmin())
+    }
+```
+And `updating`:
+
+```php
+    public function fields(RestifyRequest $request)
+    {
+        return [
+            field('role_id')->canUpdate(fn($request) => $request->user()->isAdmin())
     }
 ```
 
