@@ -18,15 +18,6 @@ You can install the package via composer:
 composer require binaryk/laravel-restify
 ```
 
-## Key havings
-
-- "CRUD" over resources with 0 (zero) extra custom code
-- Passport checker (`php artisan restify:check-passport`)
-- Auth module with [Laravel Sanctum](https://laravel.com/docs/7.x/sanctum#introduction) (register, verify, login, reset + forgot password)
-- Beautiful response maker
-- Powerful and configurable searching/filtering over entities
-- API friendly Exception Handler
-
 ## Quick start
 
 Setup package:
