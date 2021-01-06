@@ -34,7 +34,7 @@ php artisan restify:repository UserRepository --all
 
 Now you have the REST CRUD over users and this beautiful repository:
 
-<p align="center"><img src="http://restify.binarcode.com/assets/userRepository.png"></p>
+<p align="center"><img src="https://restify.binarcode.com/assets/userRepository.png"></p>
 
 Now you can go into Postman and check it out: 
 
