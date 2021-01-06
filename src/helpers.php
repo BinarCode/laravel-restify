@@ -13,7 +13,7 @@ if (! function_exists('data')) {
     function data($data)
     {
         return response()->json([
-            'data' => $data
+            'data' => $data,
         ]);
     }
 }
