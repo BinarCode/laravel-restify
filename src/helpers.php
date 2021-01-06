@@ -8,3 +8,12 @@ if (! function_exists('field')) {
         return Field::new(...$args);
     }
 }
+
+if (! function_exists('data')) {
+    function data($data)
+    {
+        return response()->json([
+            'data' => $data
+        ]);
+    }
+}
