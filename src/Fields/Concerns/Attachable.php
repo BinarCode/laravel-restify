@@ -9,6 +9,8 @@ use DateTime;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
 
 trait Attachable
 {
@@ -16,6 +18,11 @@ trait Attachable
      * @var Closure
      */
     private $canAttachCallback;
+
+    /**
+     * @var Closure
+     */
+    private $validationCallback;
 
     /**
      * @var Closure
@@ -61,7 +68,7 @@ trait Attachable
                 $request, $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
             );
 
-            if (! $this->authorizedToAttach($request, $pivot)) {
+            if (!$this->authorizedToAttach($request, $pivot)) {
                 throw new AuthorizationException();
             }
         });
@@ -78,7 +85,7 @@ trait Attachable
 
     public function authorizeToDetach(RestifyRequest $request, Pivot $pivot)
     {
-        if (! $this->authorizedToDetach($request, $pivot)) {
+        if (!$this->authorizedToDetach($request, $pivot)) {
             throw new AuthorizationException();
         }
 
@@ -112,7 +119,7 @@ trait Attachable
             ]);
         }
 
-        $fields = $this->collectPivotFields()->filter(fn ($pivotField) => $request->has($pivotField->attribute))->values();
+        $fields = $this->collectPivotFields()->filter(fn($pivotField) => $request->has($pivotField->attribute))->values();
 
         $repository = $request->repository();
 
@@ -139,5 +146,39 @@ trait Attachable
     public function collectPivotFields(): PivotsCollection
     {
         return PivotsCollection::make($this->pivotFields);
+    }
+
+    public function validationCallback(Closure $validationCallback)
+    {
+        $this->validationCallback = $validationCallback;
+
+        return $this;
+    }
+
+    public function validate(RestifyRequest $request, $pivot): bool
+    {
+        if (is_callable($this->validationCallback)) {
+            throw_unless(
+                call_user_func($this->validationCallback, $request, $pivot),
+                ValidationException::withMessages([__('Invalid data.')])
+            );
+        }
+
+        return true;
+    }
+
+    public function unique(): self
+    {
+        $this->validationCallback = function (RestifyRequest $request, $pivot) {
+            $valid = $this->getRelation($request->repository())
+                    ->where($pivot->toArray())
+                    ->count() === 0;
+
+            throw_unless($valid, ValidationException::withMessages([__('Invalid data. The relation must be unique.')]));
+
+            return $valid;
+        };
+
+        return $this;
     }
 }

@@ -22,10 +22,6 @@ trait InteractsWithAttachers
             abort(400, "Missing BelongsToMany or MorphToMany field for [{$request->relatedRepository}]. This field should be in the related of the [{$class}] class. Or you are not authorized to use that repository (see `allowRestify` policy method).");
         }
 
-        $field->authorizeToAttach(
-            $request,
-        );
-
         return $this;
     }
 

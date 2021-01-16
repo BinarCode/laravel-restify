@@ -89,7 +89,6 @@ class Related implements JsonSerializable, Resolvable
                 $this->value = $paginator;
                 break;
             default:
-                dd('here');
                 $this->value = $paginator;
         }
 

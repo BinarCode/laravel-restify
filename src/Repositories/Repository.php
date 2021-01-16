@@ -798,6 +798,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $fields = $eagerField->collectPivotFields()->filter(fn($pivotField) => $request->has($pivotField->attribute))->values();
 
             $pivots->map(function ($pivot) use ($request, $fields, $eagerField) {
+                $eagerField->validate($request, $pivot);
+
                 static::validatorForAttach($request)->validate();
 
                 static::fillFields($request, $pivot, $fields);
