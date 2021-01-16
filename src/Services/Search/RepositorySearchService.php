@@ -23,7 +23,10 @@ class RepositorySearchService extends Searchable
     {
         $this->repository = $repository;
 
-        $query = $this->prepareMatchFields($request, $this->prepareSearchFields($request, $repository::query($request), $this->fixedInput), $this->fixedInput);
+        $query = $this->prepareMatchFields(
+            $request,
+            $this->prepareSearchFields($request, $this->prepareRelations($request, $repository::query($request)), $this->fixedInput),
+            $this->fixedInput);
 
         $query = $this->applyFilters($request, $repository, $query);
 
@@ -39,15 +42,15 @@ class RepositorySearchService extends Searchable
         foreach ($this->repository->getMatchByFields() as $key => $type) {
             $negation = false;
 
-            if ($request->has('-'.$key)) {
+            if ($request->has('-' . $key)) {
                 $negation = true;
             }
 
-            if (! $request->has($negation ? '-'.$key : $key) && ! data_get($extra, "match.$key")) {
+            if (!$request->has($negation ? '-' . $key : $key) && !data_get($extra, "match.$key")) {
                 continue;
             }
 
-            $match = $request->input($negation ? '-'.$key : $key, data_get($extra, "match.$key"));
+            $match = $request->input($negation ? '-' . $key : $key, data_get($extra, "match.$key"));
 
             if ($negation) {
                 $key = Str::after($key, '-');
@@ -118,17 +121,9 @@ class RepositorySearchService extends Searchable
         return $query;
     }
 
-    public function prepareRelations(RestifyRequest $request, $query, $extra = [])
+    public function prepareRelations(RestifyRequest $request, $query)
     {
-        $relations = array_merge($extra, explode(',', $request->input('related')));
-
-        foreach ($relations as $relation) {
-            if (in_array($relation, $this->repository->getWiths())) {
-                $query->with($relation);
-            }
-        }
-
-        return $query;
+        return $query->with($this->repository->getWiths());
     }
 
     public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])
@@ -175,17 +170,17 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::indexQuery($request, $query);
+        return fn($query) => $repository::indexQuery($request, $query);
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
+        return fn($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
     {
-        if (! empty($request->filters)) {
+        if (!empty($request->filters)) {
             $filters = json_decode(base64_decode($request->filters), true);
 
             collect($filters)
@@ -211,7 +206,7 @@ class RepositorySearchService extends Searchable
                     return $matchingFilter;
                 })
                 ->filter()
-                ->each(fn (Filter $filter) => $filter->filter($request, $query, $filter->value));
+                ->each(fn(Filter $filter) => $filter->filter($request, $query, $filter->value));
         }
 
         return $query;

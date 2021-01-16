@@ -94,7 +94,8 @@ class FilterDefinitionTest extends IntegrationTest
             ]),
         ]);
 
-        $json = $this->getJson(PostRepository::uriKey().'?related=user&sort=-users.name')->json();
+        $json = $this->getJson(PostRepository::uriKey().'?related=user&sort=-users.name')
+            ->json();
 
         $this->assertSame(
             'Zez',
