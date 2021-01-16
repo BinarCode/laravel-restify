@@ -42,15 +42,15 @@ class RepositorySearchService extends Searchable
         foreach ($this->repository->getMatchByFields() as $key => $type) {
             $negation = false;
 
-            if ($request->has('-' . $key)) {
+            if ($request->has('-'.$key)) {
                 $negation = true;
             }
 
-            if (!$request->has($negation ? '-' . $key : $key) && !data_get($extra, "match.$key")) {
+            if (! $request->has($negation ? '-'.$key : $key) && ! data_get($extra, "match.$key")) {
                 continue;
             }
 
-            $match = $request->input($negation ? '-' . $key : $key, data_get($extra, "match.$key"));
+            $match = $request->input($negation ? '-'.$key : $key, data_get($extra, "match.$key"));
 
             if ($negation) {
                 $key = Str::after($key, '-');
@@ -170,17 +170,17 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn($query) => $repository::indexQuery($request, $query);
+        return fn ($query) => $repository::indexQuery($request, $query);
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
+        return fn ($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
     {
-        if (!empty($request->filters)) {
+        if (! empty($request->filters)) {
             $filters = json_decode(base64_decode($request->filters), true);
 
             collect($filters)
@@ -206,7 +206,7 @@ class RepositorySearchService extends Searchable
                     return $matchingFilter;
                 })
                 ->filter()
-                ->each(fn(Filter $filter) => $filter->filter($request, $query, $filter->value));
+                ->each(fn (Filter $filter) => $filter->filter($request, $query, $filter->value));
         }
 
         return $query;
