@@ -37,7 +37,7 @@ class Related implements JsonSerializable, Resolvable
 
     public function isEager(): bool
     {
-        return !is_null($this->field);
+        return ! is_null($this->field);
     }
 
     public function getRelation(): string
@@ -94,7 +94,6 @@ class Related implements JsonSerializable, Resolvable
 
         return $this;
     }
-
 
     public function jsonSerialize()
     {
