@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
