@@ -817,8 +817,12 @@ eager load a relationship in terms of using it in fields, or whatever else:
 ```php
 // UserRepository.php
 
-public static $with = ['posts'];
+public static $withs = ['posts'];
 ```
+
+:::warn `withs` is not type
+Laravel uses the `with` property on models, on repositories we use `$withs`, it's not a typo.
+:::
 
 ## Store bulk flow
 

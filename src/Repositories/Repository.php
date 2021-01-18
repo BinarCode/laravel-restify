@@ -24,15 +24,12 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Routing\Router;
-use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -575,9 +572,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveRelationships($request): array
     {
-        $withs = collect();
-
-        static::collectRelated()
+        return static::collectRelated()
             ->authorized($request)
             ->inRequest($request)
             ->when($request->isShowRequest(), function (RelatedCollection $collection) use ($request) {
@@ -587,39 +582,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 return $collection->forIndex($request, $this);
             })
             ->mapIntoRelated($request)
-            ->each(function (Related $related) use ($request, $withs) {
-                $relation = $related->getRelation();
-
-                if (Str::contains($relation, '.')) {
-                    $this->resource->loadMissing($relation);
-
-                    return $withs->put($key = Str::before($relation, '.'), Arr::get($this->resource->relationsToArray(), $key));
-                }
-
-                /** * To avoid circular relationships and deep stack calls, we will do not load eager fields. */
-                if ($related->isEager() && $this->isEagerState() === false) {
-                    return $withs->put($relation, $related->resolveField($this)->value);
-                }
-
-                $paginator = $this->resource->relationLoaded($relation)
-                    ? $this->resource->{$relation}
-                    : $this->resource->{$relation}();
-
-                collect([
-                    Builder::class => fn () => $withs->put($relation, (static::$relatedCast)::fromBuilder($request, $paginator, $this)),
-
-                    Relation::class => fn () => $withs->put($relation, (static::$relatedCast)::fromRelation($request, $paginator, $this)),
-
-                    Collection::class => fn () => $withs->put($relation, $paginator),
-
-                    Model::class => fn () => fn () => $withs->put($relation, $paginator),
-
-                ])->first(fn ($fn, $class) => $paginator instanceof $class,
-                    fn () => fn () => $withs->put($relation, $paginator)
-                )();
-            });
-
-        return $withs->all();
+            ->map(function (Related $related) use ($request) {
+                return $related->resolve($request, $this)->getValue();
+            })->all();
     }
 
     /**
@@ -830,6 +795,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $fields = $eagerField->collectPivotFields()->filter(fn ($pivotField) => $request->has($pivotField->attribute))->values();
 
             $pivots->map(function ($pivot) use ($request, $fields, $eagerField) {
+                $eagerField->validate($request, $pivot);
+
                 static::validatorForAttach($request)->validate();
 
                 static::fillFields($request, $pivot, $fields);

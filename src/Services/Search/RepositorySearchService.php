@@ -23,7 +23,10 @@ class RepositorySearchService extends Searchable
     {
         $this->repository = $repository;
 
-        $query = $this->prepareMatchFields($request, $this->prepareSearchFields($request, $repository::query($request), $this->fixedInput), $this->fixedInput);
+        $query = $this->prepareMatchFields(
+            $request,
+            $this->prepareSearchFields($request, $this->prepareRelations($request, $repository::query($request)), $this->fixedInput),
+            $this->fixedInput);
 
         $query = $this->applyFilters($request, $repository, $query);
 
@@ -118,17 +121,9 @@ class RepositorySearchService extends Searchable
         return $query;
     }
 
-    public function prepareRelations(RestifyRequest $request, $query, $extra = [])
+    public function prepareRelations(RestifyRequest $request, $query)
     {
-        $relations = array_merge($extra, explode(',', $request->input('related')));
-
-        foreach ($relations as $relation) {
-            if (in_array($relation, $this->repository->getWiths())) {
-                $query->with($relation);
-            }
-        }
-
-        return $query;
+        return $query->with($this->repository->getWiths());
     }
 
     public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])

@@ -9,6 +9,7 @@ use DateTime;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Arr;
+use Illuminate\Validation\ValidationException;
 
 trait Attachable
 {
@@ -16,6 +17,11 @@ trait Attachable
      * @var Closure
      */
     private $canAttachCallback;
+
+    /**
+     * @var Closure
+     */
+    private $validationCallback;
 
     /**
      * @var Closure
@@ -139,5 +145,39 @@ trait Attachable
     public function collectPivotFields(): PivotsCollection
     {
         return PivotsCollection::make($this->pivotFields);
+    }
+
+    public function validationCallback(Closure $validationCallback)
+    {
+        $this->validationCallback = $validationCallback;
+
+        return $this;
+    }
+
+    public function validate(RestifyRequest $request, $pivot): bool
+    {
+        if (is_callable($this->validationCallback)) {
+            throw_unless(
+                call_user_func($this->validationCallback, $request, $pivot),
+                ValidationException::withMessages([__('Invalid data.')])
+            );
+        }
+
+        return true;
+    }
+
+    public function unique(): self
+    {
+        $this->validationCallback = function (RestifyRequest $request, $pivot) {
+            $valid = $this->getRelation($request->repository())
+                    ->where($pivot->toArray())
+                    ->count() === 0;
+
+            throw_unless($valid, ValidationException::withMessages([__('Invalid data. The relation must be unique.')]));
+
+            return $valid;
+        };
+
+        return $this;
     }
 }
