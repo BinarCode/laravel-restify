@@ -67,7 +67,7 @@ trait Attachable
                 $request, $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
             );
 
-            if (!$this->authorizedToAttach($request, $pivot)) {
+            if (! $this->authorizedToAttach($request, $pivot)) {
                 throw new AuthorizationException();
             }
         });
@@ -84,7 +84,7 @@ trait Attachable
 
     public function authorizeToDetach(RestifyRequest $request, Pivot $pivot)
     {
-        if (!$this->authorizedToDetach($request, $pivot)) {
+        if (! $this->authorizedToDetach($request, $pivot)) {
             throw new AuthorizationException();
         }
 
@@ -118,7 +118,7 @@ trait Attachable
             ]);
         }
 
-        $fields = $this->collectPivotFields()->filter(fn($pivotField) => $request->has($pivotField->attribute))->values();
+        $fields = $this->collectPivotFields()->filter(fn ($pivotField) => $request->has($pivotField->attribute))->values();
 
         $repository = $request->repository();
 
