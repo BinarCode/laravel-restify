@@ -20,7 +20,7 @@ composer require binaryk/laravel-restify
 
 ## Videos
 
-If you are a visual learner, checkout [our video course](https://deploy-preview-67--binarcode.netlify.app/learn/restify) for the Laravel Restify.
+If you are a visual learner, checkout [our video course](https://www.binarcode.com/learn/restify) for the Laravel Restify.
 
 ## Quick start
 
