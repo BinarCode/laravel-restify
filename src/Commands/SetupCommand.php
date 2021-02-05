@@ -9,7 +9,7 @@ class SetupCommand extends Command
 {
     protected $signature = 'restify:setup';
 
-    protected $description = 'Should be run when you firstly instal the package. It will setup everything for you.';
+    protected $description = 'Should be run when you firstly install the package. It will setup everything for you.';
 
     public function handle()
     {

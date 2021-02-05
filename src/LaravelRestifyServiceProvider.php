@@ -88,10 +88,6 @@ class LaravelRestifyServiceProvider extends ServiceProvider
             ], 'restify-migrations');
         }
 
-        $this->publishes([
-            __DIR__.'/../database/' => config_path('restify.php'),
-        ], 'restify-config');
-
         $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'restify');
     }
 
