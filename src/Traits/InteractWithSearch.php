@@ -117,7 +117,7 @@ trait InteractWithSearch
             SortableFilter::uriKey() => SortableFilter::class,
         ])->get($type);
 
-        if (!is_subclass_of($base, Filter::class)) {
+        if (! is_subclass_of($base, Filter::class)) {
             return collect([]);
         }
 
@@ -132,7 +132,7 @@ trait InteractWithSearch
             }
 
             return $type instanceof Filter
-                ? tap($type, fn($filter) => $filter->column = $filter->column ?? $column)
+                ? tap($type, fn ($filter) => $filter->column = $filter->column ?? $column)
                 : tap(new $base, function ($filter) use ($column, $type) {
                     $filter->type = $type;
                     $filter->column = $column;
