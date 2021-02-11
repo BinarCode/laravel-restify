@@ -6,13 +6,11 @@ use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Illuminate\Database\Eloquent\Builder;
 
 class FilterDefinitionTest extends IntegrationTest
 {
@@ -74,7 +72,7 @@ class FilterDefinitionTest extends IntegrationTest
         PostRepository::$sort = [
             'users.attributes.name' => SortableFilter::make()->setColumn('users.name')->usingBelongsTo(
                 BelongsTo::make('user', 'user', UserRepository::class),
-            )
+            ),
         ];
 
         factory(Post::class)->create([
@@ -91,7 +89,7 @@ class FilterDefinitionTest extends IntegrationTest
 
         $json = $this
             ->withoutExceptionHandling()
-            ->getJson(PostRepository::uriKey() . '?related=user&sort=-users.attributes.name')
+            ->getJson(PostRepository::uriKey().'?related=user&sort=-users.attributes.name')
             ->json();
 
         $this->assertSame(

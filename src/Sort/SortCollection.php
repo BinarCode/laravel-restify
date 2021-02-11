@@ -58,7 +58,6 @@ class SortCollection extends Collection
 
             $definition = Arr::get($repository::getOrderByFields(), $filter->getColumn());
 
-
             if (is_callable($definition)) {
                 return $filter->usingClosure($definition);
             }
