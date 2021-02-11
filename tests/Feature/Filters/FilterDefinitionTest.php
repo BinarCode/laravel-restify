@@ -72,14 +72,9 @@ class FilterDefinitionTest extends IntegrationTest
         ];
 
         PostRepository::$sort = [
-            'users.name' => SortableFilter::make()->usingBelongsTo(
+            'users.attributes.name' => SortableFilter::make()->setColumn('users.name')->usingBelongsTo(
                 BelongsTo::make('user', 'user', UserRepository::class),
             )
-            /*function (RestifyRequest $request, Builder $builder, $direction) {
-                    $builder->join('users', 'posts.user_id', '=', 'users.id')
-                        ->select('posts.*')
-                        ->orderBy('users.name', $direction);
-            }*/,
         ];
 
         factory(Post::class)->create([
@@ -94,7 +89,9 @@ class FilterDefinitionTest extends IntegrationTest
             ]),
         ]);
 
-        $json = $this->getJson(PostRepository::uriKey().'?related=user&sort=-users.name')
+        $json = $this
+            ->withoutExceptionHandling()
+            ->getJson(PostRepository::uriKey() . '?related=user&sort=-users.attributes.name')
             ->json();
 
         $this->assertSame(
