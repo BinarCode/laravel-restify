@@ -53,11 +53,9 @@ class SortableFilter extends Filter
         $query->orderBy($this->column, $direction);
     }
 
-    public function usingBelongsTo(BelongsTo $field)
+    public function usingBelongsTo(BelongsTo $field): self
     {
         $this->belongsToField = $field;
-
-//        $this->setColumn($field->attam ) //todo
 
         return $this;
     }

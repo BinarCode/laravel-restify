@@ -6,13 +6,11 @@ use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Illuminate\Database\Eloquent\Builder;
 
 class FilterDefinitionTest extends IntegrationTest
 {
@@ -72,14 +70,9 @@ class FilterDefinitionTest extends IntegrationTest
         ];
 
         PostRepository::$sort = [
-            'users.name' => SortableFilter::make()->usingBelongsTo(
+            'users.attributes.name' => SortableFilter::make()->setColumn('users.name')->usingBelongsTo(
                 BelongsTo::make('user', 'user', UserRepository::class),
-            )
-            /*function (RestifyRequest $request, Builder $builder, $direction) {
-                    $builder->join('users', 'posts.user_id', '=', 'users.id')
-                        ->select('posts.*')
-                        ->orderBy('users.name', $direction);
-            }*/,
+            ),
         ];
 
         factory(Post::class)->create([
@@ -94,7 +87,9 @@ class FilterDefinitionTest extends IntegrationTest
             ]),
         ]);
 
-        $json = $this->getJson(PostRepository::uriKey().'?related=user&sort=-users.name')
+        $json = $this
+            ->withoutExceptionHandling()
+            ->getJson(PostRepository::uriKey().'?related=user&sort=-users.attributes.name')
             ->json();
 
         $this->assertSame(

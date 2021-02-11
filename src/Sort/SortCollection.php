@@ -22,6 +22,11 @@ class SortCollection extends Collection
                 ? $item
                 : SortableFilter::make();
 
+            if ($queryKey instanceof SortableFilter) {
+                $unified[] = $queryKey;
+                continue;
+            }
+
             $definition->setColumn(
                 $definition->column ?? $queryKey
             );
@@ -34,7 +39,7 @@ class SortCollection extends Collection
 
     public function hydrateRepository(Repository $repository): self
     {
-        return $this->map(fn (Filter $filter) => $filter->setRepository($repository));
+        return $this->each(fn (Filter $filter) => $filter->setRepository($repository));
     }
 
     public function allowed(RestifyRequest $request, Repository $repository)
@@ -73,6 +78,6 @@ class SortCollection extends Collection
 
     public function normalize()
     {
-        return $this->map(fn (SortableFilter $filter) => $filter->syncDirection());
+        return $this->each(fn (SortableFilter $filter) => $filter->syncDirection());
     }
 }

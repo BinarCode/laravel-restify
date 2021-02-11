@@ -98,8 +98,8 @@ trait InteractWithSearch
     {
         return SortCollection::make(explode(',', $request->input('sort', '')))
             ->normalize()
-            ->allowed($request, $repository)
             ->hydrateDefinition($repository)
+            ->allowed($request, $repository)
             ->hydrateRepository($repository);
     }
 
