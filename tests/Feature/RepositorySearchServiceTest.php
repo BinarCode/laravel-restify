@@ -87,7 +87,6 @@ class RepositorySearchServiceTest extends IntegrationTest
 
         $twoMonthsAgo = now()->subMonths(2)->toISOString();
         $now = now()->toISOString();
-        dd("users?created_at={$twoMonthsAgo},{$now}");
         $this->getJson("users?created_at={$twoMonthsAgo},{$now}")
             ->assertJsonCount(2, 'data');
 
