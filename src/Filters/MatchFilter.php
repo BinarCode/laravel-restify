@@ -5,12 +5,19 @@ namespace Binaryk\LaravelRestify\Filters;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Str;
 
 class MatchFilter extends Filter
 {
     public static $uriKey = 'matches';
 
+    /**
+     * @param RestifyRequest $request
+     * @param Builder $query
+     * @param $value
+     * @return mixed
+     */
     public function filter(RestifyRequest $request, $query, $value)
     {
         $key = Str::afterLast($this->column, '.');
@@ -65,6 +72,13 @@ class MatchFilter extends Filter
                     break;
                 case RestifySearchable::MATCH_DATETIME:
                     $query->whereDate($field, $negation ? '!=' : '=', $match);
+                    break;
+                case RestifySearchable::MATCH_DATETIME_INTERVAL:
+                    if ($negation) {
+                        $query->whereNotBetween($field, explode(',', $match));
+                    } else {
+                        $query->whereBetween($field, explode(',', $match));
+                    }
                     break;
                 case RestifySearchable::MATCH_ARRAY:
                     $match = explode(',', $match);

@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\ActiveBooleanFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\CreatedAfterDateFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\InactiveFilter;
@@ -67,7 +68,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
         ];
 
         PostRepository::$sort = [
-            'title',
+            'title' => SortableFilter::make()->setColumn('posts.title'),
         ];
 
         PostRepository::$search = [
@@ -75,13 +76,14 @@ class RepositoryFilterControllerTest extends IntegrationTest
             'title',
         ];
 
-        $response = $this->getJson('posts/filters?only=matches,sortables,searchables')
-            ->assertJsonCount(4, 'data');
+//        $response = $this->getJson('posts/filters?only=matches,sortables,searchables')
+//            ->assertJsonCount(4, 'data');
 
-        $response = $this->getJson('posts/filters?only=matches')
-            ->assertJsonCount(1, 'data');
-
+//        $response = $this->getJson('posts/filters?only=matches')
+//            ->assertJsonCount(1, 'data');
+//
         $response = $this->getJson('posts/filters?only=sortables')
+            ->dump()
             ->assertJsonCount(1, 'data');
 
         $response = $this->getJson('posts/filters?only=searchables')

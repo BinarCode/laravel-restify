@@ -59,6 +59,41 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(1, 'data');
     }
 
+    public function test_can_match_datetime_interval()
+    {
+        $user = factory(User::class)->create();
+
+        $user->forceFill([
+            'created_at' => now()->subMonth(),
+        ]);
+        $user->save();
+        $user = factory(User::class)->create();
+
+        $user->forceFill([
+            'created_at' => now()->subWeek(),
+        ]);
+        $user->save();
+
+        $user = factory(User::class)->create();
+
+        $user->forceFill([
+            'created_at' => now()->addMonth(),
+        ]);
+        $user->save();
+
+        UserRepository::$match = [
+            'created_at' => RestifySearchable::MATCH_DATETIME_INTERVAL,
+        ];
+
+        $twoMonthsAgo = now()->subMonths(2)->toISOString();
+        $now = now()->toISOString();
+        $this->getJson("users?created_at={$twoMonthsAgo},{$now}")
+            ->assertJsonCount(2, 'data');
+
+        $this->getJson("users?-created_at={$twoMonthsAgo},{$now}")
+            ->assertJsonCount(1, 'data');
+    }
+
     public function test_match_definition_hit_filter_method()
     {
         factory(User::class, 4)->create();
