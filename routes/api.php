@@ -20,6 +20,7 @@ use Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController;
 use Binaryk\LaravelRestify\Http\Controllers\RestifyJsSetupController;
+use Binaryk\LaravelRestify\Http\Middleware\RestifySanctumAuthenticate;
 use Illuminate\Support\Facades\Route;
 
 // Global Search...
@@ -31,7 +32,9 @@ Route::post('/profile', '\\'.ProfileUpdateController::class);
 Route::post('/profile/avatar', '\\'.ProfileAvatarController::class);
 
 // RestifyJS
-Route::get('/restifyjs/setup', '\\'.RestifyJsSetupController::class);
+Route::get('/restifyjs/setup', '\\'.RestifyJsSetupController::class)->withoutMiddleware(
+    RestifySanctumAuthenticate::class,
+);
 
 // Filters
 Route::get('/{repository}/filters', '\\'.RepositoryFilterController::class);

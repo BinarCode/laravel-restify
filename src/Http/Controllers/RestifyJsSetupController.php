@@ -5,13 +5,19 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
 class RestifyJsSetupController extends Controller
 {
     public function __invoke(RestifyRequest $request)
     {
+        if (App::environment('production')) {
+            $this->authorize($request);
+        }
+
         return response()->json([
             'config' => $this->config(),
             'repositories' => $this->repositories($request),
@@ -45,5 +51,12 @@ class RestifyJsSetupController extends Controller
         }
 
         return $domain;
+    }
+
+    private function authorize(Request $request)
+    {
+        if ($request->input('token') !== config('restify.restifyjs.token')) {
+            abort(401, 'You are not authorized to see this request.');
+        }
     }
 }
