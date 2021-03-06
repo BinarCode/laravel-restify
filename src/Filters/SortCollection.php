@@ -56,8 +56,8 @@ class SortCollection extends Collection
 
     public function hydrateDefinition(Repository $repository): SortCollection
     {
-        return $this->map(function(SortableFilter $filter) use ($repository) {
-            if (!array_key_exists($filter->column, $repository::sorts())) {
+        return $this->map(function (SortableFilter $filter) use ($repository) {
+            if (! array_key_exists($filter->column, $repository::sorts())) {
                 return $filter;
             }
 
@@ -88,7 +88,7 @@ class SortCollection extends Collection
 
     public function apply(RestifyRequest $request, Builder $builder): self
     {
-        return $this->each(function(SortableFilter $filter) use ($request, $builder) {
+        return $this->each(function (SortableFilter $filter) use ($request, $builder) {
             $filter->filter($request, $builder, $filter->direction());
         });
     }

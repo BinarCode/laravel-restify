@@ -4,13 +4,10 @@ namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Filters\AdvancedFilter;
-use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
-use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 
 class RepositorySearchService extends Searchable
 {
@@ -79,7 +76,7 @@ class RepositorySearchService extends Searchable
 
         $model = $query->getModel();
 
-        $query->where(function($query) use ($search, $model, $request) {
+        $query->where(function ($query) use ($search, $model, $request) {
             $connectionType = $model->getConnection()->getDriverName();
 
             $canSearchPrimaryKey = is_numeric($search) &&

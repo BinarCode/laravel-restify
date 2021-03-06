@@ -2,8 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Filters\TimestampFilter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Http\Request;
 
 class CreatedAfterDateFilter extends TimestampFilter

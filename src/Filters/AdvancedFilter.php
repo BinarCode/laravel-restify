@@ -12,11 +12,11 @@ abstract class AdvancedFilter extends Filter
     /**
      * This is the value resolved from the frontend when applying the filter.
      *
-     * @var AdvancedFilterPayloadDto $value
+     * @var AdvancedFilterPayloadDto
      */
     public AdvancedFilterPayloadDto $value;
 
-    abstract function options(Request $request): array;
+    abstract public function options(Request $request): array;
 
     public function resolve(RestifyRequest $request, AdvancedFilterPayloadDto $dto): self
     {
@@ -27,7 +27,7 @@ abstract class AdvancedFilter extends Filter
 
     public function validatePayload(RestifyRequest $request, array $payload): self
     {
-        foreach(array_keys($payload) as $key) {
+        foreach (array_keys($payload) as $key) {
             throw_unless(
                 in_array($key, array_values($this->options($request))),
                 ValidationException::withMessages(['Filter values are invalid.'])

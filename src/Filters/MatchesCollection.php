@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 
@@ -56,8 +55,8 @@ class MatchesCollection extends Collection
 
     public function hydrateDefinition(RestifyRequest $request, Repository $repository): MatchesCollection
     {
-        return $this->each(function(MatchFilter $filter) use ($repository, $request) {
-            if ($request->has('-' . $filter->getColumn())) {
+        return $this->each(function (MatchFilter $filter) use ($repository, $request) {
+            if ($request->has('-'.$filter->getColumn())) {
                 $filter->negate();
             }
 
@@ -77,8 +76,8 @@ class MatchesCollection extends Collection
      */
     public function apply(RestifyRequest $request, $builder): self
     {
-        return $this->each(function(MatchFilter $filter) use ($request, $builder) {
-            $queryValue = $request->input($filter->negation ? '-' . $filter->getQueryKey() : $filter->getQueryKey());
+        return $this->each(function (MatchFilter $filter) use ($request, $builder) {
+            $queryValue = $request->input($filter->negation ? '-'.$filter->getQueryKey() : $filter->getQueryKey());
 
             $filter->filter($request, $builder, $queryValue);
         });
