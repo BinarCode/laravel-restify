@@ -92,7 +92,7 @@ class FilterCommand extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\\Restify\\'. $this->parent()['namespace'];
+        return $rootNamespace.'\\Restify\\'.$this->parent()['namespace'];
     }
 
     protected function getOptions()

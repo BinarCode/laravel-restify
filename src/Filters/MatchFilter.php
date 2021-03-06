@@ -5,9 +5,9 @@ namespace Binaryk\LaravelRestify\Filters;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Closure;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Str;
-use Closure;
 
 class MatchFilter extends Filter
 {

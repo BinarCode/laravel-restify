@@ -13,7 +13,7 @@ class InactiveFilter extends AdvancedFilter
         $query->where('is_active', false);
     }
 
-    function options(Request $request): array
+    public function options(Request $request): array
     {
         return [
             'Active' => 'is_active',
