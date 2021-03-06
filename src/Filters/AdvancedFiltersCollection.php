@@ -17,7 +17,7 @@ class AdvancedFiltersCollection extends Collection
     {
         $filters = json_decode(base64_decode($request->query('filters')), true);
 
-        return $this->filter(function(AdvancedFilter $filter) use ($filters) {
+        return $this->filter(function (AdvancedFilter $filter) use ($filters) {
             return collect($filters)->contains('key', $filter::uriKey());
         });
     }
@@ -26,9 +26,8 @@ class AdvancedFiltersCollection extends Collection
     {
         return $this
             ->inQuery($request)
-            ->each(function(AdvancedFilter $filter) use ($request) {
+            ->each(function (AdvancedFilter $filter) use ($request) {
                 $queryFilter = AdvancedFilterPayloadDto::makeFromRequest($request, $filter::uriKey());
-
 
                 $filter->validatePayload($request, $queryFilter->value())->resolve($request, $queryFilter);
             });

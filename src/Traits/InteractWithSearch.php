@@ -5,14 +5,13 @@ namespace Binaryk\LaravelRestify\Traits;
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
-use Binaryk\LaravelRestify\Filters\FiltersCollection;
 use Binaryk\LaravelRestify\Filters\MatchesCollection;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
+use Binaryk\LaravelRestify\Filters\SortCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Filters\SortCollection;
 use Illuminate\Support\Collection;
 
 trait InteractWithSearch
@@ -130,11 +129,11 @@ trait InteractWithSearch
             SortableFilter::uriKey() => SortableFilter::class,
         ])->get($type);
 
-        if (!is_subclass_of($base, Filter::class)) {
+        if (! is_subclass_of($base, Filter::class)) {
             return collect([]);
         }
 
-        return collect($filters)->map(function($type, $column) use ($base) {
+        return collect($filters)->map(function ($type, $column) use ($base) {
             if (is_numeric($column)) {
                 /*
                  * This will handle for example searchables/sortables, where the definition is:
@@ -146,7 +145,7 @@ trait InteractWithSearch
 
             return $type instanceof Filter
                 ? tap($type, fn ($filter) => $filter->column = $filter->column ?? $column)
-                : tap(new $base, function(Filter $filter) use ($column, $type) {
+                : tap(new $base, function (Filter $filter) use ($column, $type) {
                     if (is_null($type)) {
 //                        dd($filter);
                     }

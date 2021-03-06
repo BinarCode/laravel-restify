@@ -66,7 +66,7 @@ return [
         /*
         | The API base url.
         */
-        'api_url' => env('API_URL', env('APP_URL'))
+        'api_url' => env('API_URL', env('APP_URL')),
     ],
 
     /*

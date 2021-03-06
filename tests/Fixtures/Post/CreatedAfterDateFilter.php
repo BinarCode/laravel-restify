@@ -2,8 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Filters\TimestampFilter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Http\Request;
 
 class CreatedAfterDateFilter extends TimestampFilter
@@ -13,7 +13,7 @@ class CreatedAfterDateFilter extends TimestampFilter
         $query->whereDate('created_at', '>', $value);
     }
 
-    function options(Request $request): array
+    public function options(Request $request): array
     {
         return [
             'Created At' => 'created_at',
