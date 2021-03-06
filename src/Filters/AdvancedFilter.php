@@ -37,7 +37,7 @@ abstract class AdvancedFilter extends Filter
         return $this;
     }
 
-    protected function input(string $key, $default = null)
+    protected function input(string $key = null, $default = null)
     {
         return $this->value->input($key, $default);
     }

@@ -152,17 +152,14 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $filters = base64_encode(json_encode([
             [
-                'class' => SelectCategoryFilter::class,
+                'key' => SelectCategoryFilter::uriKey(),
                 'value' => 'article',
             ],
         ]));
 
-        $response = $this
-            ->withExceptionHandling()
-            ->getJson('posts?filters=' . $filters)
-            ->assertStatus(200);
-
-        $this->assertCount(1, $response->json('data'));
+        $this->getJson('posts?filters=' . $filters)
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     }
 
     public function test_the_timestamp_filter_is_applied()
@@ -172,20 +169,19 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $filters = base64_encode(json_encode([
             [
-                'class' => UserRepository::class,
+                'key' => UserRepository::uriKey(),
                 'value' => now()->addWeek()->timestamp,
             ],
             [
-                'class' => CreatedAfterDateFilter::class,
-                'value' => now()->addWeek()->timestamp,
+                'key' => CreatedAfterDateFilter::uriKey(),
+                'value' => [
+                    'created_at' => now()->addWeek()->timestamp,
+                ],
             ],
         ]));
 
-        $response = $this
-            ->withExceptionHandling()
-            ->getJson('posts')
-            ->assertStatus(200);
-
-        $this->assertCount(2, $response->json('data'));
+        $this->get('posts?filters=' . $filters)
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
     }
 }

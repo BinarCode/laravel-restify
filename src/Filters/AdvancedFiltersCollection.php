@@ -29,7 +29,6 @@ class AdvancedFiltersCollection extends Collection
             ->each(function(AdvancedFilter $filter) use ($request) {
                 $queryFilter = AdvancedFilterPayloadDto::makeFromRequest($request, $filter::uriKey());
 
-
                 $filter->validatePayload($request, $queryFilter->value())->resolve($request, $queryFilter);
             });
     }

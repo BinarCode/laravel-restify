@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Support\Arr;
 
 class AdvancedFilterPayloadDto
 {
@@ -13,7 +14,7 @@ class AdvancedFilterPayloadDto
     public function __construct(array $payload)
     {
         $this->key = $payload['key'];
-        $this->value = data_get($payload, 'value');
+        $this->value = Arr::wrap(data_get($payload, 'value'));
     }
 
     public static function makeFromRequest(RestifyRequest $request, string $key): self
@@ -27,11 +28,21 @@ class AdvancedFilterPayloadDto
 
     public function value(): array
     {
-        return $this->value ?? [];
+        $value = $this->value;
+
+        if (is_string($this->value)) {
+            $value = Arr::wrap($value);
+        }
+
+        return $value ?? [];
     }
 
-    public function input(string $key, $default = null)
+    public function input(string $key = null, $default = null)
     {
+        if (is_null($key)) {
+            return Arr::first($this->value());
+        }
+
         return data_get($this->value(), $key, $default);
     }
 }
