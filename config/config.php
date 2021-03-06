@@ -62,6 +62,11 @@ return [
         | Token to authorize the setup endpoint.
         */
         'token' => env('RESTIFYJS_TOKEN', 'testing'),
+
+        /*
+        | The API base url.
+        */
+        'api_url' => env('API_URL', env('APP_URL'))
     ],
 
     /*

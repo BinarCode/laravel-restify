@@ -75,6 +75,14 @@ class FilterDefinitionTest extends IntegrationTest
             ),
         ];
 
+        $randomUser = factory(User::class)->create([
+            'name' => 'John Doe',
+        ]);
+
+        factory(Post::class, 22)->create([
+            'user_id' => $randomUser->id,
+        ]);
+
         factory(Post::class)->create([
             'user_id' => factory(User::class)->create([
                 'name' => 'Zez',
@@ -89,7 +97,7 @@ class FilterDefinitionTest extends IntegrationTest
 
         $json = $this
             ->withoutExceptionHandling()
-            ->getJson(PostRepository::uriKey().'?related=user&sort=-users.attributes.name')
+            ->getJson(PostRepository::uriKey().'?related=user&sort=-users.attributes.name&perPage=5')
             ->json();
 
         $this->assertSame(
@@ -97,9 +105,34 @@ class FilterDefinitionTest extends IntegrationTest
             data_get($json, 'data.0.relationships.user.attributes.name')
         );
 
+        $json = $this
+            ->withoutExceptionHandling()
+            ->getJson(PostRepository::uriKey().'?related=user&sort=-users.attributes.name&perPage=6&page=4')
+            ->json();
+
         $this->assertSame(
             'Ame',
-            data_get($json, 'data.1.relationships.user.attributes.name')
+            data_get($json, 'data.5.relationships.user.attributes.name')
+        );
+
+        $json = $this
+            ->withoutExceptionHandling()
+            ->getJson(PostRepository::uriKey().'?related=user&sort=users.attributes.name&perPage=5')
+            ->json();
+
+        $this->assertSame(
+            'Ame',
+            data_get($json, 'data.0.relationships.user.attributes.name')
+        );
+
+        $json = $this
+            ->withoutExceptionHandling()
+            ->getJson(PostRepository::uriKey().'?related=user&sort=users.attributes.name&perPage=6&page=4')
+            ->json();
+
+        $this->assertSame(
+            'Zez',
+            data_get($json, 'data.5.relationships.user.attributes.name')
         );
     }
 }
