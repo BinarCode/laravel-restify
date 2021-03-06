@@ -2,6 +2,27 @@
 
 Because there are many breaking changes an upgrade is not that easy. There are many edge cases this guide does not cover. We accept PRs to improve this guide.
 
+## From 4.10.x to 5.x
+
+### Repository changes:
+- `filters` - explicit `array` returned type
+- `getSearchableFields()` - deprecated, to use `searchables`
+- `getMatchByFields()` - deprecated, to use `matches`
+- `getOrderByFields()` - deprecated, to use `sorts`
+- `availableFilters` now returns an instance of `FiltersCollection`, so if you overwrite this, make sure to adapt.
+- `uriTo` - explicit `string` returned type
+
+### Filters
+
+- `uriKey` - `string` returned type
+- `BooleanFilter` - changed namespace to `Binaryk\LaravelRestify\Filters`
+- `SelectFilter` - changed namespace to `Binaryk\LaravelRestify\Filters\SelectFilter` and must implement the `options` method and return an array
+- There is no more `class` property for the advanced filters, the frontend should only send they `key` of the filter.
+  
+- The `resolve` method for the advanced filters now requires a `AdvancedFilterPayloadDto` instance.
+- The `value` argument for the third parameter for `AdvancedFilters` will be resolved from the `AdvancedFilterPayloadDto@value` method
+
+
 ## From 4.7.0 to 4.8.0 
 
 - Copy the `database/migrations/create_action_logs_table.php` migration to yours local migrations and run `php artisan migrate` to ensure you can benefit from the `action logs`.

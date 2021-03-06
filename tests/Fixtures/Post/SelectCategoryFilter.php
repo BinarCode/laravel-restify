@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\SelectFilter;
+use Binaryk\LaravelRestify\Filters\SelectFilter;
 use Illuminate\Http\Request;
 
 class SelectCategoryFilter extends SelectFilter
@@ -14,7 +14,7 @@ class SelectCategoryFilter extends SelectFilter
         $query->where('category', $value);
     }
 
-    public function options(Request $request)
+    public function options(Request $request): array
     {
         return [
             'Movie category' => 'movie',

@@ -7,7 +7,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 class SearchableFilter extends Filter
 {
-    public static $uriKey = 'searchables';
+    const TYPE = 'searchable';
 
     public function filter(RestifyRequest $request, $query, $value)
     {

@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Commands;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\InputOption;
 
 class FilterCommand extends GeneratorCommand
 {
@@ -23,25 +24,56 @@ class FilterCommand extends GeneratorCommand
         }
     }
 
-    /**
-     * Build the class with the given name.
-     * This method should return the file class content.
-     *
-     * @param string $name
-     * @return string
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
-     */
     protected function buildClass($name)
     {
         if (false === Str::endsWith($name, 'Filter')) {
             $name .= 'Filter';
         }
 
-        return tap(parent::buildClass($name), function ($stub) use ($name) {
-            return str_replace(['{{ attribute }}', '{{ query }}'], Str::snake(
-                Str::beforeLast(class_basename($name), 'Filter')
-            ), $stub);
-        });
+        return $this->replaceUsage($this->replaceModel(parent::buildClass($name)));
+    }
+
+    protected function replaceModel($stub)
+    {
+        return str_replace(['{{ parent }}', '{{parent}}'], $this->parent()['parent'], $stub);
+    }
+
+    protected function replaceUsage($stub)
+    {
+        return str_replace(['{{ usage }}', '{{usage}}'], $this->parent()['usage'], $stub);
+    }
+
+    protected function parent(): array
+    {
+        if ($this->option('sort')) {
+            return [
+                'parent' => 'SortableFilter',
+                'usage' => 'use Binaryk\LaravelRestify\Filters\SortableFilter;',
+                'namespace' => 'Sortables',
+            ];
+        }
+
+        if ($this->option('search')) {
+            return [
+                'parent' => 'SearchableFilter',
+                'usage' => 'use Binaryk\LaravelRestify\Filters\SearchableFilter;',
+                'namespace' => 'Searchables',
+            ];
+        }
+
+        if ($this->option('match')) {
+            return [
+                'parent' => 'MatchFilter',
+                'usage' => 'use Binaryk\LaravelRestify\Filters\MatchFilter;',
+                'namespace' => 'Matchers',
+            ];
+        }
+
+        return [
+            'parent' => 'Filter',
+            'usage' => 'use Binaryk\LaravelRestify\Filter;',
+            'namespace' => 'Filters',
+        ];
     }
 
     protected function getStub()
@@ -60,6 +92,15 @@ class FilterCommand extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace)
     {
-        return $rootNamespace.'\Restify\Matchers';
+        return $rootNamespace.'\\Restify\\'. $this->parent()['namespace'];
+    }
+
+    protected function getOptions()
+    {
+        return [
+            ['match', 'match', InputOption::VALUE_NONE, 'Generates a filter for match.'],
+            ['sort', 'sort', InputOption::VALUE_NONE, 'Generates a filter for sorting.'],
+            ['search', 'search', InputOption::VALUE_NONE, 'Generates a filter for search.'],
+        ];
     }
 }

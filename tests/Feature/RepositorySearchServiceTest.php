@@ -102,11 +102,15 @@ class RepositorySearchServiceTest extends IntegrationTest
             'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY),
         ];
 
-        $this->getJson('users?id=1,2,3')
-            ->assertJsonCount(3, 'data');
-
         $this->getJson('users?-id=1,2,3')
             ->assertJsonCount(1, 'data');
+
+        UserRepository::$match = [
+            'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY),
+        ];
+
+        $this->getJson('users?id=1,2,3')
+            ->assertJsonCount(3, 'data');
     }
 
     public function test_can_search_using_filter_searchable_definition()

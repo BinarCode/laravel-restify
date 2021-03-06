@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
@@ -293,7 +294,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @param RestifyRequest $request
      * @return array
      */
-    public function filters(RestifyRequest $request)
+    public function filters(RestifyRequest $request): array
     {
         return [];
     }
@@ -1027,15 +1028,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         });
     }
 
-    public static function uriTo(Model $model)
+    public static function uriTo(Model $model): string
     {
         return Str::replaceFirst('//', '/', Restify::path().'/'.static::uriKey().'/'.$model->getKey());
-    }
-
-    public function availableFilters(RestifyRequest $request)
-    {
-        return collect($this->filter($this->filters($request)))->each(fn (Filter $filter) => $filter->authorizedToSee($request))
-            ->values();
     }
 
     public static function collectMiddlewares(RestifyRequest $request): ?Collection

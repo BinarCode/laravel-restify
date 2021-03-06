@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Feature;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Repositories\Matchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -83,13 +82,5 @@ class MatchTest extends IntegrationTest
         ]);
 
         return $this;
-    }
-}
-
-class ActiveMatch implements Matchable
-{
-    public function handle(Request $request, Builder $query)
-    {
-        $query->where('is_active', $request->boolean('active'));
     }
 }

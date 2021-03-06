@@ -79,7 +79,7 @@ class PostRepository extends Repository
         ];
     }
 
-    public function filters(RestifyRequest $request)
+    public function filters(RestifyRequest $request): array
     {
         return [
             ActiveBooleanFilter::new()->canSee(fn () => true),

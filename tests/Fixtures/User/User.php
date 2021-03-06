@@ -19,11 +19,10 @@ use Mockery;
  * @property string avatar_size
  * @property string avatar_original
  */
-class User extends Authenticatable implements Sanctumable, MustVerifyEmail, RestifySearchable
+class User extends Authenticatable implements Sanctumable, MustVerifyEmail
 {
     use \Illuminate\Auth\MustVerifyEmail;
-    use Notifiable,
-        InteractWithSearch;
+    use Notifiable;
 
     public static $search = ['id', 'email'];
 
