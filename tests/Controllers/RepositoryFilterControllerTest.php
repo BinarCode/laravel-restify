@@ -152,6 +152,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
         ]));
 
         $this->getJson('posts?filters=' . $filters)
+            ->dump()
             ->assertOk()
             ->assertJsonCount(1, 'data');
     }
