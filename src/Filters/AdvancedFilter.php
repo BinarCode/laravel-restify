@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
 
 abstract class AdvancedFilter extends Filter
