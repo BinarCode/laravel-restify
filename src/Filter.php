@@ -156,7 +156,7 @@ abstract class Filter implements JsonSerializable
     public function getRelatedRepository(): ?array
     {
         return ($key = $this->getRelatedRepositoryKey())
-            ? with(Restify::repositoryForKey($key), function($repository = null) {
+            ? with(Restify::repositoryForKey($key), function ($repository = null) {
                 if (is_subclass_of($repository, Repository::class)) {
                     return [
                         'key' => $repository::uriKey(),
@@ -195,7 +195,7 @@ abstract class Filter implements JsonSerializable
         $serialized = with([
             'type' => $this->getType(),
             'advanced' => $this->advanced,
-        ], function(array $initial) {
+        ], function (array $initial) {
             return $this->relatedRepositoryKey ? array_merge($initial, [
                 'repository' => $this->getRelatedRepository(),
             ]) : $initial;
@@ -209,7 +209,7 @@ abstract class Filter implements JsonSerializable
             $serialized = array_merge($serialized, [
                 'key' => static::uriKey(),
                 'options' => method_exists($this, 'options')
-                    ? collect($this->options(app(Request::class)))->map(function($key, $value) {
+                    ? collect($this->options(app(Request::class)))->map(function ($key, $value) {
                         return is_array($value) ? ($value + ['property' => $key]) : ['label' => $key, 'property' => $value];
                     })->values()->all()
                     : [],

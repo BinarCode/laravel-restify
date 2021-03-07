@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Filter;
-use Binaryk\LaravelRestify\Filters\AdvancedFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
