@@ -124,7 +124,7 @@ class RepositorySearchService extends Searchable
             ->collectAdvancedFilters($request)
             ->inQuery($request)
             ->resolve($request)
-            ->each(fn (AdvancedFilter $filter) => $filter->filter($request, $query, $filter->value->value()));
+            ->apply($request, $query);
 
         return $query;
     }

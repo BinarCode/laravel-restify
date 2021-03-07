@@ -10,16 +10,15 @@ class SelectCategoryFilter extends SelectFilter
 {
     public function filter(RestifyRequest $request, $query, $value)
     {
-        // $value could be 'movie' or 'article'
         $query->where('category', $value);
     }
 
     public function options(Request $request): array
     {
         return [
-            'Movie category' => 'movie',
+            'movie' => 'Movie category',
 
-            'Article Category' => 'article',
+            'article' => 'Article Category',
         ];
     }
 }

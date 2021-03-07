@@ -29,7 +29,13 @@ class AdvancedFiltersCollection extends Collection
             ->each(function (AdvancedFilter $filter) use ($request) {
                 $queryFilter = AdvancedFilterPayloadDto::makeFromRequest($request, $filter::uriKey());
 
-                $filter->validatePayload($request, $queryFilter->value())->resolve($request, $queryFilter);
+                $filter->validatePayload($request, $queryFilter->value())
+                    ->resolve($request, $queryFilter);
             });
+    }
+
+    public function apply(RestifyRequest $request, $query): self
+    {
+        return $this->each(fn (AdvancedFilter $filter) => $filter->filter($request, $query, $filter->value->input()));
     }
 }

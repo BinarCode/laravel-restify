@@ -9,7 +9,7 @@ class AdvancedFilterPayloadDto
 {
     public string $key;
 
-    public ?array $value = null;
+    public $value = null;
 
     public function __construct(array $payload)
     {
@@ -29,10 +29,6 @@ class AdvancedFilterPayloadDto
     public function value(): array
     {
         $value = $this->value;
-
-        if (is_string($this->value)) {
-            $value = Arr::wrap($value);
-        }
 
         return $value ?? [];
     }
