@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\ActiveBooleanFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\CreatedAfterDateFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\InactiveFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
@@ -18,7 +17,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 {
     public function test_can_get_available_filters()
     {
-        $this->get(PostRepository::uriKey() . '/filters')
+        $this->get(PostRepository::uriKey().'/filters')
             ->assertJsonCount(4, 'data');
     }
 
@@ -99,13 +98,13 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $filters = base64_encode(json_encode([
             [
-                'key' => InactiveFilter::uriKey()
+                'key' => InactiveFilter::uriKey(),
             ],
         ]));
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('posts?filters=' . $filters)
+            ->getJson('posts?filters='.$filters)
             ->assertOk();
 
         $this->assertCount(1, $response->json('data'));
@@ -117,7 +116,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
         factory(Post::class)->create(['is_active' => true]);
 
         $availableFilters = $this
-            ->get(PostRepository::uriKey() . '/filters?include=matches')
+            ->get(PostRepository::uriKey().'/filters?include=matches')
             ->assertOk()
             ->assertJsonFragment($booleanFilter = [
                 'key' => $key = 'active-booleans',
@@ -134,7 +133,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ],
         ]));
 
-        $this->getJson('posts?filters=' . $filters)
+        $this->getJson('posts?filters='.$filters)
             ->assertOk()
             ->assertJsonCount(1, 'data');
     }
@@ -151,7 +150,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ],
         ]));
 
-        $this->getJson('posts?filters=' . $filters)
+        $this->getJson('posts?filters='.$filters)
             ->assertOk()
             ->assertJsonCount(1, 'data');
     }
@@ -174,7 +173,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ],
         ]));
 
-        $this->get('posts?filters=' . $filters)
+        $this->get('posts?filters='.$filters)
             ->assertOk()
             ->assertJsonCount(2, 'data');
     }

@@ -18,8 +18,7 @@ class MatchesCollection extends Collection
         foreach ($items as $column => $matchType) {
             $definition = $matchType instanceof MatchFilter
                 ? $matchType
-                : tap(MatchFilter::make(), fn(MatchFilter $filter) => is_string($matchType) ? $filter->setType($matchType) : '');
-
+                : tap(MatchFilter::make(), fn (MatchFilter $filter) => is_string($matchType) ? $filter->setType($matchType) : '');
 
             if (is_callable($matchType)) {
                 $definition->usingClosure($matchType);
