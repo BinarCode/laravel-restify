@@ -86,7 +86,6 @@ class RepositoryFilterControllerTest extends IntegrationTest
 //            ->assertJsonCount(1, 'data');
 //
         $response = $this->getJson('posts/filters?only=sortables')
-            ->dump()
             ->assertJsonCount(1, 'data');
 
         $response = $this->getJson('posts/filters?only=searchables')
@@ -119,7 +118,6 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $availableFilters = $this
             ->get(PostRepository::uriKey() . '/filters?include=matches')
-            ->dump()
             ->assertOk()
             ->assertJsonFragment($booleanFilter = [
                 'key' => $key = 'active-booleans',
@@ -136,13 +134,9 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ],
         ]));
 
-        $response = $this
-            ->withoutExceptionHandling()
-            ->getJson('posts?filters=' . $filters)
-            ->dump()
-            ->assertStatus(200);
-
-        $this->assertCount(1, $response->json('data'));
+        $this->getJson('posts?filters=' . $filters)
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     }
 
     public function test_the_select_filter_is_applied()

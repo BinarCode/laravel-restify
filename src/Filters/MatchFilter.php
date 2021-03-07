@@ -27,6 +27,10 @@ class MatchFilter extends Filter
      */
     public function filter(RestifyRequest $request, $query, $value)
     {
+        if (isset($this->resolver)) {
+            return call_user_func($this->resolver, $request, $query, $value);
+        }
+
         $field = $this->column;
 
         if ($value === 'null') {
