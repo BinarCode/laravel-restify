@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Facades\Storage;
 
 class Image extends File
@@ -17,7 +18,11 @@ class Image extends File
     {
         parent::resolveForShow($repository, $attribute);
 
-        $this->value = Storage::disk($this->getStorageDisk())->url($this->value);
+        if (Storage::disk($this->getStorageDisk())->exists($this->value)) {
+            $this->value = Storage::disk($this->getStorageDisk())->url($this->value);
+        } else {
+            $this->value = $this->resolveDefaultValue(app(RestifyRequest::class));
+        }
 
         return $this;
     }
@@ -26,7 +31,11 @@ class Image extends File
     {
         parent::resolveForIndex($repository, $attribute);
 
-        $this->value = Storage::disk($this->getStorageDisk())->url($this->value);
+        if (Storage::disk($this->getStorageDisk())->exists($this->value)) {
+            $this->value = Storage::disk($this->getStorageDisk())->url($this->value);
+        } else {
+            $this->value = $this->resolveDefaultValue(app(RestifyRequest::class));
+        }
 
         return $this;
     }
