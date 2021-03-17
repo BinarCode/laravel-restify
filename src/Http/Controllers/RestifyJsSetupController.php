@@ -35,7 +35,7 @@ class RestifyJsSetupController extends Controller
     private function config(): array
     {
         return [
-            'domain' => $this->deleteFirstAndLastSlash(config('restify.restifyjs.api_url')),
+            'domain' => $this->deleteFirstAndLastSlash(config('restify.restifyjs.api_url') ?? ''),
             'base' => $this->deleteFirstAndLastSlash(Restify::path()),
         ];
     }
