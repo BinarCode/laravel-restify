@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Tests\Fields;
 
 use Binaryk\LaravelRestify\Fields\Image;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\AvatarFile;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\AvatarStore;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
