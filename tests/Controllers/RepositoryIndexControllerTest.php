@@ -97,7 +97,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
     public function test_repository_can_resolve_related_using_callables()
     {
-        PostRepository::$related = ['user' => function($request, $repository) {
+        PostRepository::$related = ['user' => function ($request, $repository) {
             $this->assertInstanceOf(Request::class, $request);
             $this->assertInstanceOf(Repository::class, $repository);
 
@@ -150,17 +150,17 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 'users.posts',
             ]);
 
-        tap(factory(Company::class)->create(), function(Company $company) {
+        tap(factory(Company::class)->create(), function (Company $company) {
             tap($company->users()->create(
                 array_merge(factory(User::class)->make()->toArray(), [
                     'password' => 'secret',
                 ])
-            ), function(User $user) {
+            ), function (User $user) {
                 factory(Post::class)->create(['user_id' => $user->id]);
             });
         });
 
-        $response = $this->getJson(CompanyRepository::uriKey() . '?related=users.posts')
+        $response = $this->getJson(CompanyRepository::uriKey().'?related=users.posts')
             ->assertOk();
 
         $this->assertCount(1, $response->json('data.0.relationships')['users.posts']);
