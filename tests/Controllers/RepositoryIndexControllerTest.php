@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
@@ -10,6 +11,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\RelatedCastWithAttributes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 
 class RepositoryIndexControllerTest extends IntegrationTest
 {
@@ -93,6 +95,26 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->assertArrayNotHasKey('user', $response->json('data.0.attributes'));
     }
 
+    public function test_repository_can_resolve_related_using_callables()
+    {
+        PostRepository::$related = ['user' => function($request, $repository) {
+            $this->assertInstanceOf(Request::class, $request);
+            $this->assertInstanceOf(Repository::class, $repository);
+
+            return 'foo';
+        }];
+
+        $user = $this->mockUsers(1)->first();
+
+        factory(Post::class)->create(['user_id' => $user->id]);
+
+        $this->getJson('posts?related=user')
+            ->assertJsonFragment([
+                'user' => 'foo',
+            ])
+            ->assertOk();
+    }
+
     public function test_using_custom_related_casts()
     {
         PostRepository::$related = ['user'];
@@ -128,17 +150,17 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 'users.posts',
             ]);
 
-        tap(factory(Company::class)->create(), function (Company $company) {
+        tap(factory(Company::class)->create(), function(Company $company) {
             tap($company->users()->create(
                 array_merge(factory(User::class)->make()->toArray(), [
                     'password' => 'secret',
                 ])
-            ), function (User $user) {
+            ), function(User $user) {
                 factory(Post::class)->create(['user_id' => $user->id]);
             });
         });
 
-        $response = $this->getJson(CompanyRepository::uriKey().'?related=users.posts')
+        $response = $this->getJson(CompanyRepository::uriKey() . '?related=users.posts')
             ->assertOk();
 
         $this->assertCount(1, $response->json('data.0.relationships')['users.posts']);

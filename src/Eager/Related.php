@@ -29,6 +29,11 @@ class Related implements JsonSerializable, Resolvable
 
     private ?EagerField $field;
 
+    /**
+     * @var callable
+     */
+    private $resolverCallback;
+
     public function __construct(string $relation, EagerField $field = null)
     {
         $this->relation = $relation;
@@ -57,6 +62,12 @@ class Related implements JsonSerializable, Resolvable
 
     public function resolve(RestifyRequest $request, Repository $repository): self
     {
+        if (is_callable($this->resolverCallback)) {
+            $this->value = call_user_func($this->resolverCallback, $request, $repository);
+
+            return $this;
+        }
+
         if (Str::contains($this->getRelation(), '.')) {
             $repository->resource->loadMissing($this->getRelation());
 
@@ -91,6 +102,13 @@ class Related implements JsonSerializable, Resolvable
             default:
                 $this->value = $paginator;
         }
+
+        return $this;
+    }
+
+    public function resolveUsing(callable $resolver): self
+    {
+        $this->resolverCallback = $resolver;
 
         return $this;
     }

@@ -74,10 +74,14 @@ class RelatedCollection extends Collection
             ->unique();
     }
 
-    public function mapIntoRelated(RestifyRequest $request)
+    public function mapIntoRelated(RestifyRequest $request): self
     {
         return $this->map(function ($value, $key) {
-            return Related::make($key, $value instanceof EagerField ? $value : null);
+            return tap(Related::make($key, $value instanceof EagerField ? $value : null), function(Related $related) use ($value) {
+                if (is_callable($value)) {
+                    $related->resolveUsing($value);
+                }
+            });
         });
     }
 
