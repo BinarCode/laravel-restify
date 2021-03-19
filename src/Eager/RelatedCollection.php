@@ -77,7 +77,7 @@ class RelatedCollection extends Collection
     public function mapIntoRelated(RestifyRequest $request): self
     {
         return $this->map(function ($value, $key) {
-            return tap(Related::make($key, $value instanceof EagerField ? $value : null), function(Related $related) use ($value) {
+            return tap(Related::make($key, $value instanceof EagerField ? $value : null), function (Related $related) use ($value) {
                 if (is_callable($value)) {
                     $related->resolveUsing($value);
                 }
