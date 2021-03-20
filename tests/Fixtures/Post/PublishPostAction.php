@@ -21,6 +21,6 @@ class PublishPostAction extends Action
     {
         static::$applied[] = $models;
 
-        return $this->response()->data(['succes' => 'true'])->respond();
+        return data(['succes' => 'true']);
     }
 }

@@ -4,8 +4,9 @@ namespace Binaryk\LaravelRestify\Controllers;
 
 use Binaryk\LaravelRestify\Services\AuthService;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
-class AuthController extends RestController
+class AuthController extends Controller
 {
     private AuthService $authService;
 

@@ -14,6 +14,6 @@ class ActivateAction extends Action
     {
         static::$applied[] = $user;
 
-        return $this->response()->data(['succes' => 'true'])->respond();
+        return data(['succes' => 'true']);
     }
 }
