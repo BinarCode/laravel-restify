@@ -173,7 +173,9 @@ class FileTest extends IntegrationTest
         UserRepository::partialMock()
             ->shouldReceive('fields')
             ->andReturn([
-                Image::make('avatar')->store(AvatarStore::class),
+                Image::make('avatar')
+                    ->disk('customDisk')
+                    ->store(AvatarStore::class),
             ]);
 
         $user = $this->mockUsers()->first();
