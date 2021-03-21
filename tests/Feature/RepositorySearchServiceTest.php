@@ -119,14 +119,14 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         UserRepository::$match = [
-            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->strict()
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->strict(),
         ];
 
         $this->getJson('users?name=John')->assertJsonCount(0, 'data');
         $this->getJson('users?-name=John')->assertJsonCount(2, 'data');
 
         UserRepository::$match = [
-            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->partial()
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->partial(),
         ];
 
         $this->getJson('users?name=John')->assertJsonCount(2, 'data');
