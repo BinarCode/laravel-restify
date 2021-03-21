@@ -19,12 +19,12 @@ class SearchableFilter extends Filter
         $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
         if (isset($this->belongsToField)) {
-            if (!$this->belongsToField->authorize($request)) {
+            if (! $this->belongsToField->authorize($request)) {
                 return $query;
             }
 
             // This approach could be rewritten using join.
-            collect($this->belongsToField->getSearchables())->each(function(string $attribute) use ($query, $likeOperator, $value) {
+            collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value) {
                 $query->orWhere(
                     $this->belongsToField->getRelatedModel($this->repository)::select($attribute)
                         ->whereColumn(
@@ -39,7 +39,7 @@ class SearchableFilter extends Filter
             return $query;
         }
 
-        $query->orWhere($this->column, $likeOperator, '%' . $value . '%');
+        $query->orWhere($this->column, $likeOperator, '%'.$value.'%');
     }
 
     public function usingBelongsTo(BelongsTo $field): self

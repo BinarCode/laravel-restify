@@ -170,8 +170,8 @@ class RepositorySearchServiceTest extends IntegrationTest
 
         PostRepository::$related = [
             'user' => BelongsTo::make('user', 'user', UserRepository::class)->searchable([
-                'users.name'
-            ])
+                'users.name',
+            ]),
         ];
 
         $this->getJson('posts?search=John')
@@ -208,7 +208,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         factory(User::class, 4)->create();
 
         UserRepository::$match = [
-            'is_active' => function($request, $query) {
+            'is_active' => function ($request, $query) {
                 $this->assertInstanceOf(Request::class, $request);
                 $this->assertInstanceOf(Builder::class, $query);
             },
