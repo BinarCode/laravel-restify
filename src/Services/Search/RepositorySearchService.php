@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Services\Search;
 
+use Binaryk\LaravelRestify\Fields\BelongsTo;
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
@@ -9,6 +11,7 @@ use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Matchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Couchbase\SearchSortField;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Str;
 
@@ -42,15 +45,15 @@ class RepositorySearchService extends Searchable
         foreach ($this->repository->getMatchByFields() as $key => $type) {
             $negation = false;
 
-            if ($request->has('-'.$key)) {
+            if ($request->has('-' . $key)) {
                 $negation = true;
             }
 
-            if (! $request->has($negation ? '-'.$key : $key) && ! data_get($extra, "match.$key")) {
+            if (!$request->has($negation ? '-' . $key : $key) && !data_get($extra, "match.$key")) {
                 continue;
             }
 
-            $match = $request->input($negation ? '-'.$key : $key, data_get($extra, "match.$key"));
+            $match = $request->input($negation ? '-' . $key : $key, data_get($extra, "match.$key"));
 
             if ($negation) {
                 $key = Str::after($key, '-');
@@ -114,7 +117,7 @@ class RepositorySearchService extends Searchable
                 : $query;
         }
 
-        $collection->each(function (SortableFilter $filter) use ($request, $query) {
+        $collection->each(function(SortableFilter $filter) use ($request, $query) {
             $filter->filter($request, $query, $filter->direction());
         });
 
@@ -136,7 +139,7 @@ class RepositorySearchService extends Searchable
 
         $model = $query->getModel();
 
-        $query->where(function ($query) use ($search, $model, $request) {
+        $query->where(function($query) use ($search, $model, $request) {
             $connectionType = $model->getConnection()->getDriverName();
 
             $canSearchPrimaryKey = is_numeric($search) &&
@@ -162,6 +165,14 @@ class RepositorySearchService extends Searchable
                     );
 
                 $filter->filter($request, $query, $search);
+
+                $this->repository::collectRelated()
+                    ->onlySearchable($request)
+                    ->map(function(BelongsTo $field) {
+                        return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
+                    })
+                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
+
             }
         });
 
@@ -180,13 +191,13 @@ class RepositorySearchService extends Searchable
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
     {
-        if (! empty($request->filters)) {
+        if (!empty($request->filters)) {
             $filters = json_decode(base64_decode($request->filters), true);
 
             collect($filters)
-                ->map(function ($filter) use ($request, $repository) {
+                ->map(function($filter) use ($request, $repository) {
                     /** * @var Filter $matchingFilter */
-                    $matchingFilter = $repository->availableFilters($request)->first(function ($availableFilter) use ($filter) {
+                    $matchingFilter = $repository->availableFilters($request)->first(function($availableFilter) use ($filter) {
                         return $filter['class'] === $availableFilter->key();
                     });
 
