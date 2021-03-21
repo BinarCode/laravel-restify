@@ -21,6 +21,5 @@ if (! function_exists('data')) {
 if (! function_exists('restify')) {
     function restify(...$args)
     {
-
     }
 }
