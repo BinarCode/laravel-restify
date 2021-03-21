@@ -82,9 +82,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 //        $response = $this->getJson('posts/filters?only=matches')
 //            ->assertJsonCount(1, 'data');
 //
-        $response = $this->getJson('posts/filters?only=sortables')
-            ->dump()
-            ->assertJsonCount(1, 'data');
+        $this->getJson('posts/filters?only=sortables')->assertJsonCount(1, 'data');
 
         $response = $this->getJson('posts/filters?only=searchables')
             ->assertJsonCount(2, 'data');
@@ -103,7 +101,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('posts?filters='.$filters)
+            ->getJson('posts?filters=' . $filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -125,7 +123,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('posts?filters='.$filters)
+            ->getJson('posts?filters=' . $filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));
@@ -145,7 +143,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $response = $this
             ->withExceptionHandling()
-            ->getJson('posts?filters='.$filters)
+            ->getJson('posts?filters=' . $filters)
             ->assertStatus(200);
 
         $this->assertCount(1, $response->json('data'));

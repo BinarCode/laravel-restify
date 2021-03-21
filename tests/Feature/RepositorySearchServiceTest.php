@@ -112,6 +112,27 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(1, 'data');
     }
 
+    public function test_match_partially()
+    {
+        factory(User::class, 2)->create([
+            'name' => 'John Doe',
+        ]);
+
+        UserRepository::$match = [
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->strict()
+        ];
+
+        $this->getJson('users?name=John')->assertJsonCount(0, 'data');
+        $this->getJson('users?-name=John')->assertJsonCount(2, 'data');
+
+        UserRepository::$match = [
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->partial()
+        ];
+
+        $this->getJson('users?name=John')->assertJsonCount(2, 'data');
+        $this->getJson('users?-name=John')->assertJsonCount(0, 'data');
+    }
+
     public function test_can_search_using_filter_searchable_definition()
     {
         factory(User::class, 4)->create([

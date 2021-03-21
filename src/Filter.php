@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Filters\HasMode;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -12,7 +13,8 @@ use JsonSerializable;
 
 abstract class Filter implements JsonSerializable
 {
-    use Make;
+    use Make,
+        HasMode;
 
     public $type = 'value';
 
