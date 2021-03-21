@@ -63,7 +63,7 @@ class BelongsTo extends EagerField
 
     public function isSearchable(): bool
     {
-        return !is_null($this->searchablesAttributes);
+        return ! is_null($this->searchablesAttributes);
     }
 
     public function getSearchables(): array

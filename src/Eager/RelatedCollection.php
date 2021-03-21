@@ -100,7 +100,7 @@ class RelatedCollection extends Collection
 
     public function onlySearchable(RestifyRequest $request): self
     {
-       return $this->forBelongsToRelations($request)
-           ->filter(fn(BelongsTo $field) => $field->isSearchable());
+        return $this->forBelongsToRelations($request)
+           ->filter(fn (BelongsTo $field) => $field->isSearchable());
     }
 }
