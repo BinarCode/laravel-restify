@@ -3,10 +3,13 @@
 namespace Binaryk\LaravelRestify\Tests\Feature;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
@@ -111,6 +114,27 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(3, 'data');
     }
 
+    public function test_match_partially()
+    {
+        factory(User::class, 2)->create([
+            'name' => 'John Doe',
+        ]);
+
+        UserRepository::$match = [
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->strict(),
+        ];
+
+        $this->getJson('users?name=John')->assertJsonCount(0, 'data');
+        $this->getJson('users?-name=John')->assertJsonCount(2, 'data');
+
+        UserRepository::$match = [
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->partial(),
+        ];
+
+        $this->getJson('users?name=John')->assertJsonCount(2, 'data');
+        $this->getJson('users?-name=John')->assertJsonCount(0, 'data');
+    }
+
     public function test_can_search_using_filter_searchable_definition()
     {
         factory(User::class, 4)->create([
@@ -125,8 +149,35 @@ class RepositorySearchServiceTest extends IntegrationTest
             'name' => SearchableFilter::make(),
         ];
 
-        $this->getJson('users?search=John')
-            ->assertJsonCount(4, 'data');
+        $this->getJson('users?search=John')->assertJsonCount(4, 'data');
+    }
+
+    public function test_can_search_using_belongs_to_field()
+    {
+        $foreignUser = factory(User::class)->create([
+            'name' => 'Curtis Dog',
+        ]);
+
+        factory(Post::class, 4)->create([
+            'user_id' => $foreignUser->id,
+        ]);
+
+        $john = factory(User::class)->create([
+            'name' => 'John Doe',
+        ]);
+
+        factory(Post::class, 2)->create([
+            'user_id' => $john->id,
+        ]);
+
+        PostRepository::$related = [
+            'user' => BelongsTo::make('user', 'user', UserRepository::class)->searchable([
+                'users.name',
+            ]),
+        ];
+
+        $this->getJson('posts?search=John')
+            ->assertJsonCount(2, 'data');
     }
 
     public function test_can_order_using_filter_sortable_definition()

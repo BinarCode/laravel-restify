@@ -37,6 +37,13 @@ class RelatedCollection extends Collection
         })->filter(fn (EagerField $field) => $field->authorize($request));
     }
 
+    public function forBelongsToRelations(RestifyRequest $request): self
+    {
+        return $this->filter(function ($field) {
+            return $field instanceof BelongsTo;
+        })->filter(fn (EagerField $field) => $field->authorize($request));
+    }
+
     public function mapIntoSortable(RestifyRequest $request): self
     {
         return $this->filter(fn (EagerField $field) => $field->isSortable())
@@ -89,5 +96,11 @@ class RelatedCollection extends Collection
     {
         return $this->intoAssoc()
             ->filter(fn ($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
+    }
+
+    public function onlySearchable(RestifyRequest $request): self
+    {
+        return $this->forBelongsToRelations($request)
+           ->filter(fn (BelongsTo $field) => $field->isSearchable());
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Services\Search;
 
+use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -101,6 +102,13 @@ class RepositorySearchService extends Searchable
                     );
 
                 $filter->filter($request, $query, $search);
+
+                $this->repository::collectRelated()
+                    ->onlySearchable($request)
+                    ->map(function (BelongsTo $field) {
+                        return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
+                    })
+                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
             }
         });
 

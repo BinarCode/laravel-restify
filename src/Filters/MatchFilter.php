@@ -43,7 +43,11 @@ class MatchFilter extends Filter
             switch ($this->getType()) {
                 case RestifySearchable::MATCH_TEXT:
                 case 'string':
-                    $query->where($field, $this->negation ? '!=' : '=', $value);
+                    if ($this->negation) {
+                        $query->where($field, $this->getNotLikeOperator(), $this->getNotLikeValue($value));
+                    } else {
+                        $query->where($field, $this->getLikeOperator(), $this->getLikeValue($value));
+                    }
                     break;
                 case RestifySearchable::MATCH_BOOL:
                 case 'boolean':

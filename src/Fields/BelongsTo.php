@@ -12,6 +12,8 @@ class BelongsTo extends EagerField
 {
     use Attachable;
 
+    public ?array $searchablesAttributes = null;
+
     public function __construct($attribute, $relation, $parentRepository)
     {
         if (! is_a(app($parentRepository), Repository::class)) {
@@ -50,5 +52,22 @@ class BelongsTo extends EagerField
         $model->{$this->relation}()->associate(
             $belongsToModel
         );
+    }
+
+    public function searchable(array $attributes): self
+    {
+        $this->searchablesAttributes = $attributes;
+
+        return $this;
+    }
+
+    public function isSearchable(): bool
+    {
+        return ! is_null($this->searchablesAttributes);
+    }
+
+    public function getSearchables(): array
+    {
+        return $this->searchablesAttributes;
     }
 }

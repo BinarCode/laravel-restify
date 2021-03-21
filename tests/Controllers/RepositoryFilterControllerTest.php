@@ -84,8 +84,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 //        $response = $this->getJson('posts/filters?only=matches')
 //            ->assertJsonCount(1, 'data');
 //
-        $response = $this->getJson('posts/filters?only=sortables')
-            ->assertJsonCount(1, 'data');
+        $this->getJson('posts/filters?only=sortables')->assertJsonCount(1, 'data');
 
         $response = $this->getJson('posts/filters?only=searchables')
             ->assertJsonCount(2, 'data');
