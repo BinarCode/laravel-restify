@@ -213,7 +213,7 @@ class RestResponse extends JsonResponse implements Responsable
             return $this->$key;
         }
 
-        $code = 'static::REST_RESPONSE_' . strtoupper($key) . '_CODE';
+        $code = 'static::REST_RESPONSE_'.strtoupper($key).'_CODE';
 
         return defined($code) ? constant($code) : null;
     }
@@ -228,7 +228,7 @@ class RestResponse extends JsonResponse implements Responsable
      */
     public function __call($func, $args)
     {
-        $code = 'static::REST_RESPONSE_' . strtoupper($func) . '_CODE';
+        $code = 'static::REST_RESPONSE_'.strtoupper($func).'_CODE';
 
         if (defined($code)) {
             return $this->code(constant($code));
@@ -246,7 +246,7 @@ class RestResponse extends JsonResponse implements Responsable
      */
     public function respond($response = null): JsonResponse
     {
-        if (!func_num_args()) {
+        if (! func_num_args()) {
             $response = new \stdClass();
             $response->data = new \stdClass();
 
@@ -264,7 +264,7 @@ class RestResponse extends JsonResponse implements Responsable
             }
         }
 
-        return tap(response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE), function($response) {
+        return tap(response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE), function ($response) {
             $this->withResponse($response, request());
         });
     }
@@ -561,10 +561,10 @@ class RestResponse extends JsonResponse implements Responsable
     public static function index(AbstractPaginator $paginator, array $meta = []): JsonResponse
     {
         return response()->json([
-                'meta' => array_merge(RepositoryCollection::meta($paginator->toArray()), $meta),
-                'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
-                'data' => $paginator->getCollection(),
-            ]
+            'meta' => array_merge(RepositoryCollection::meta($paginator->toArray()), $meta),
+            'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
+            'data' => $paginator->getCollection(),
+        ]
         );
     }
 }
