@@ -3,10 +3,10 @@
 namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Filters\AdvancedFilter;
+use Binaryk\LaravelRestify\Filters\HasMode;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
-use Binaryk\LaravelRestify\Filters\HasMode;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
