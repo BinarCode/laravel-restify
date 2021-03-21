@@ -15,7 +15,7 @@ trait HasMode
 
     public function partial(): self
     {
-        $this->mode  = 'partial';
+        $this->mode = 'partial';
 
         return $this;
     }
