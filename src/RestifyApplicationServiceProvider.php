@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Controllers\AuthController;
+use Binaryk\LaravelRestify\Http\Controllers\AuthController;
 use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;

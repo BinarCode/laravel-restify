@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Controllers;
+namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Services\AuthService;
 use Illuminate\Http\Request;

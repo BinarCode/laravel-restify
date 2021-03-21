@@ -1,11 +1,10 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Controllers;
+namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\RepositoryCollection;
-use Illuminate\Contracts\Routing\ResponseFactory;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
@@ -20,7 +19,6 @@ use Throwable;
  *
  * @method RestResponse auth() 401
  * @method RestResponse refresh()
- * @method RestResponse created()
  * @method RestResponse deleted()
  * @method RestResponse blank()
  * @method RestResponse notFound()
@@ -86,66 +84,44 @@ class RestResponse extends JsonResponse implements Responsable
     ];
 
     /**
-     * @var ResponseFactory
-     */
-    public $response;
-
-    /**
-     * @var int
-     */
-    protected $code;
-    /**
-     * @var int
-     */
-    protected $line;
-
-    /**
      * The value of the attributes key MUST be an object (an “attributes object”).
      * Members of the attributes object (“attributes”) represent information
      * about the resource object in which it’s defined.
      *
      * @var array
      */
-    protected $attributes;
+    protected array $attributes;
 
     /**
      * Where specified, a meta member can be used to include non-standard meta-information.
      * The value of each meta member MUST be an object (a “meta object”).
      * @var array
      */
-    protected $meta;
+    protected array $meta;
 
     /**
      * A links object containing links related to the resource.
-     * @var
+     * @var array
      */
-    protected $links;
+    protected array $links;
 
-    /**
-     * @var string
-     */
-    private $file;
+    protected string $type;
 
-    /**
-     * @var string|null
-     */
-    private $stack;
+    protected ?int $code;
 
-    /**
-     * @var array|null
-     */
-    private $errors;
+    protected ?int $line;
 
-    /**
-     * @var string
-     */
-    protected $type;
+    private ?string $file;
+
+    private ?string $stack;
+
+    private array $errors = [];
 
     /**
      * Key of the newly created resource.
-     * @var
      */
     protected $id;
+
     /**
      * Model related entities.
      * @var
@@ -156,15 +132,9 @@ class RestResponse extends JsonResponse implements Responsable
      * Indicate if response could include sensitive information (file, line).
      * @var bool
      */
-    public $debug = false;
+    public bool $debug = false;
 
-    /**
-     * Set response data.
-     *
-     * @param mixed $data
-     * @return $this|mixed
-     */
-    public function data($data = null)
+    public function data($data = null): self
     {
         if (func_num_args()) {
             $data = ($data instanceof Arrayable) ? $data->toArray() : $data;
@@ -183,13 +153,9 @@ class RestResponse extends JsonResponse implements Responsable
      * @param mixed $errors
      * @return $this|null
      */
-    public function errors($errors)
+    public function errors($errors): self
     {
-        if (func_num_args()) {
-            $this->errors = Arr::wrap($errors);
-
-            return $this;
-        }
+        $this->errors = Arr::wrap($errors);
 
         return $this;
     }
@@ -200,79 +166,39 @@ class RestResponse extends JsonResponse implements Responsable
      * @param mixed $message
      * @return $this
      */
-    public function addError($message)
+    public function addError($message): self
     {
-        if (! isset($this->errors)) {
-            $this->errors = [];
-        }
-
         $this->errors[] = $message;
 
         return $this;
     }
 
-    /**
-     * Set response Http code.
-     *
-     * @param int $code
-     * @return $this|int
-     */
-    public function code($code = self::REST_RESPONSE_SUCCESS_CODE)
+    public function code($code = self::REST_RESPONSE_SUCCESS_CODE): self
     {
-        if (func_num_args()) {
-            $this->code = $code;
+        $this->code = $code;
 
-            return $this;
-        }
-
-        return $this->code;
+        return $this;
     }
 
-    /**
-     * Set response Http code.
-     *
-     * @param int $line
-     * @return $this|int
-     */
-    public function line($line = null)
+    public function line($line): self
     {
-        if (func_num_args()) {
-            $this->line = $line;
+        $this->line = $line;
 
-            return $this;
-        }
-
-        return $this->line;
+        return $this;
     }
 
-    /**
-     * @param string $file
-     * @return $this|int
-     */
-    public function file(string $file = null)
+    public function file(string $file): self
     {
-        if (func_num_args()) {
-            $this->file = $file;
+        $this->file = $file;
 
-            return $this;
-        }
-
-        return $this->line;
+        return $this;
     }
 
-    /**
-     * @param string|null $stack
-     * @return $this|int
-     */
-    public function stack(string $stack = null)
+    public function stack(string $stack): self
     {
-        if (func_num_args()) {
-            $this->stack = $stack;
+        $this->stack = $stack;
 
-            return $this;
-        }
-
-        return $this->line;
+        return $this;
     }
 
     /**
@@ -287,7 +213,7 @@ class RestResponse extends JsonResponse implements Responsable
             return $this->$key;
         }
 
-        $code = 'static::REST_RESPONSE_'.strtoupper($key).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($key) . '_CODE';
 
         return defined($code) ? constant($code) : null;
     }
@@ -302,7 +228,7 @@ class RestResponse extends JsonResponse implements Responsable
      */
     public function __call($func, $args)
     {
-        $code = 'static::REST_RESPONSE_'.strtoupper($func).'_CODE';
+        $code = 'static::REST_RESPONSE_' . strtoupper($func) . '_CODE';
 
         if (defined($code)) {
             return $this->code(constant($code));
@@ -318,13 +244,13 @@ class RestResponse extends JsonResponse implements Responsable
      *
      * @return JsonResponse
      */
-    public function respond($response = null)
+    public function respond($response = null): JsonResponse
     {
-        if (! func_num_args()) {
+        if (!func_num_args()) {
             $response = new \stdClass();
             $response->data = new \stdClass();
 
-            foreach ($this->fillable() as $property) {
+            foreach (static::$RESPONSE_DEFAULT_ATTRIBUTES as $property) {
                 if (isset($this->{$property})) {
                     $response->{$property} = $this->{$property};
                 }
@@ -338,7 +264,7 @@ class RestResponse extends JsonResponse implements Responsable
             }
         }
 
-        return tap($this->response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE), function ($response) {
+        return tap(response()->json(static::beforeRespond($response), is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE), function($response) {
             $this->withResponse($response, request());
         });
     }
@@ -350,7 +276,7 @@ class RestResponse extends JsonResponse implements Responsable
      * @param $value
      * @return $this
      */
-    public function setMeta($name, $value)
+    public function setMeta($name, $value): self
     {
         $this->meta[$name] = $value;
 
@@ -363,7 +289,7 @@ class RestResponse extends JsonResponse implements Responsable
      * @param $meta
      * @return $this
      */
-    public function meta($meta)
+    public function meta($meta): self
     {
         if (func_num_args()) {
             $this->meta = ($meta instanceof Arrayable) ? $meta->toArray() : $meta;
@@ -380,7 +306,7 @@ class RestResponse extends JsonResponse implements Responsable
      * @param $links
      * @return $this
      */
-    public function links($links)
+    public function links($links): self
     {
         if (func_num_args()) {
             $this->links = ($links instanceof Arrayable) ? $links->toArray() : $links;
@@ -398,7 +324,7 @@ class RestResponse extends JsonResponse implements Responsable
      * @param $value
      * @return $this
      */
-    public function setLink($name, $value)
+    public function setLink($name, $value): self
     {
         $this->links[$name] = $value;
 
@@ -410,7 +336,7 @@ class RestResponse extends JsonResponse implements Responsable
      * @param $message
      * @return RestResponse
      */
-    public function message($message)
+    public function message($message): self
     {
         return $this->setMeta('message', $message);
     }
@@ -445,39 +371,14 @@ class RestResponse extends JsonResponse implements Responsable
      * @param $id
      * @return mixed
      */
-    public function id($id)
+    public function id($id): self
     {
         $this->id = $id;
 
         return $this;
     }
 
-    /**
-     * @return array
-     */
-    public function fillable(): array
-    {
-        return static::$RESPONSE_DEFAULT_ATTRIBUTES;
-    }
-
-    /**
-     * @return ResponseFactory
-     * @throws \Illuminate\Contracts\Container\BindingResolutionException
-     */
-    public function response()
-    {
-        if (is_null($this->response)) {
-            $this->response = app()->make(ResponseFactory::class);
-        }
-
-        return $this->response;
-    }
-
-    /**
-     * @param $type
-     * @return $this
-     */
-    public function type($type)
+    public function type(string $type): self
     {
         $this->type = $type;
 
@@ -492,7 +393,7 @@ class RestResponse extends JsonResponse implements Responsable
      * @param bool $withRelations
      * @return $this
      */
-    public function forRepository(Repository $repository, $withRelations = false)
+    public function forRepository(Repository $repository, $withRelations = false): self
     {
         $model = $repository->model();
 
@@ -599,7 +500,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * @return array|null
      */
-    public function getErrors()
+    public function getErrors(): ?array
     {
         return $this->errors instanceof Arrayable ? $this->errors->toArray() : $this->errors;
     }
@@ -630,7 +531,7 @@ class RestResponse extends JsonResponse implements Responsable
      * @param Throwable $exception
      * @return $this
      */
-    public function dumpLocal(Throwable $exception)
+    public function dumpLocal(Throwable $exception): self
     {
         return $this->dump($exception, App::environment('production') === false);
     }
@@ -643,7 +544,7 @@ class RestResponse extends JsonResponse implements Responsable
      * @param Model $model
      * @return $this
      */
-    public function model(Model $model)
+    public function model(Model $model): self
     {
         $this->setAttributes($model->jsonSerialize())
             ->type($model->getTable())
@@ -657,13 +558,13 @@ class RestResponse extends JsonResponse implements Responsable
         return (new self())->code(201);
     }
 
-    public static function index(AbstractPaginator $paginator, array $meta = [])
+    public static function index(AbstractPaginator $paginator, array $meta = []): JsonResponse
     {
         return response()->json([
-            'meta' => array_merge(RepositoryCollection::meta($paginator->toArray()), $meta),
-            'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
-            'data' => $paginator->getCollection(),
-        ]
+                'meta' => array_merge(RepositoryCollection::meta($paginator->toArray()), $meta),
+                'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
+                'data' => $paginator->getCollection(),
+            ]
         );
     }
 }
