@@ -135,11 +135,11 @@ class Restify
      */
     public static function path($plus = null)
     {
-        if (isset($plus)) {
+        if (!is_null($plus)) {
             return config('restify.base', '/restify-api').'/'.$plus;
-        } else {
-            return config('restify.base', '/restify-api');
         }
+
+        return config('restify.base', '/restify-api');
     }
 
     /**
