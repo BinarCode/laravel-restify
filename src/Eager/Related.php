@@ -89,6 +89,12 @@ class Related implements JsonSerializable, Resolvable
             ? $repository->resource->{$this->getRelation()}
             : $repository->resource->{$this->getRelation()}();
 
+        if (is_null($paginator)) {
+            $this->value = null;
+
+            return $this;
+        }
+
         switch ($paginator) {
             case $paginator instanceof Builder:
                 $this->value = ($repository::$relatedCast)::fromBuilder($request, $paginator, $repository);

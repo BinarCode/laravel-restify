@@ -629,19 +629,20 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         })->values();
 
         return $this->response(
-            $this->filter(
-                [
-                    'meta' => $this->when(
-                        $meta = $this->resolveIndexMainMeta(
-                            $request, $models = $items->map(fn (self $repository) => $repository->resource), RepositoryCollection::meta($paginator->toArray())
-                        ), $meta
-                    ),
-                    'links' => $this->when(
-                        $links = $this->resolveIndexLinks($request, $models, RepositoryCollection::paginationLinks($paginator->toArray())),
-                        $links
-                    ),
-                    'data' => $items->map(fn (self $repository) => $repository->serializeForIndex($request)),
-                ]
+            $this->filter([
+                'meta' => $this->when(
+                    $meta = $this->resolveIndexMainMeta(
+                        $request, $models = $items->map(fn (self $repository) => $repository->resource), RepositoryCollection::meta($paginator->toArray())
+                    ), $meta
+                ),
+                'links' => $this->when(
+                    $links = $this->resolveIndexLinks($request, $models, array_merge(RepositoryCollection::paginationLinks($paginator->toArray()), [
+                        'filters' => Restify::path(static::uriKey().'/filters'),
+                    ])),
+                    $links
+                ),
+                'data' => $items->map(fn (self $repository) => $repository->serializeForIndex($request)),
+            ]
             )
         );
     }
