@@ -105,7 +105,8 @@ abstract class IntegrationTest extends TestCase
 
     public function injectTranslator()
     {
-        $this->instance('translator', (new class implements Translator {
+        $this->instance('translator', (new class implements Translator
+        {
             public function get($key, array $replace = [], $locale = null)
             {
                 return $key;
@@ -246,8 +247,8 @@ abstract class IntegrationTest extends TestCase
 
     public function mockPosts($userId, $count = 1): Collection
     {
-        return Collection::times($count, fn() => factory(Post::class)->create([
-            'user_id' => $userId
+        return Collection::times($count, fn () => factory(Post::class)->create([
+            'user_id' => $userId,
         ]))->shuffle();
     }
 

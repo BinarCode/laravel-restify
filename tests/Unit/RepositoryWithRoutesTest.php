@@ -149,7 +149,7 @@ class WithCustomNamespace extends RepositoryWithRoutes
         $attributes['namespace'] = 'Binaryk\LaravelRestify\Tests\Unit';
 
         $router->group($attributes, function ($router) {
-            $router->get('custom-namespace', function() {
+            $router->get('custom-namespace', function () {
                 return response()->json([
                     'meta' => [
                         'message' => 'From the sayHello method',
@@ -164,7 +164,7 @@ class WithoutGroup extends RepositoryWithRoutes
 {
     public static function routes(Router $router, array $attributes, $wrap = true)
     {
-        $router->get('default-options', function() {
+        $router->get('default-options', function () {
             return response()->json([
                 'meta' => [
                     'message' => 'From the sayHello method',

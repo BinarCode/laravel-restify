@@ -42,7 +42,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'user_id' => ($user = $this->mockUsers()->first())->id,
             'title' => $title = 'Some post title',
         ])->assertCreated()->assertHeader('Location', '/posts/1')
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', $title)
                 ->where('data.attributes.user_id', 1)
                 ->where('data.id', '1')

@@ -10,7 +10,7 @@ class PerformActionController extends RepositoryController
     {
         $action = $request->action();
 
-        if (!$action->isStandalone()) {
+        if (! $action->isStandalone()) {
             $request->validate([
                 'repositories' => 'required',
             ]);
