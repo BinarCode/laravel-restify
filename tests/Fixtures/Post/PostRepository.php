@@ -33,7 +33,7 @@ class PostRepository extends Repository
         }
     }
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             Field::new('user_id'),

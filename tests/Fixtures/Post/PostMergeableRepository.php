@@ -8,7 +8,7 @@ use Binaryk\LaravelRestify\Repositories\Mergeable;
 
 class PostMergeableRepository extends PostRepository implements Mergeable
 {
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             Field::new('user_id'),
