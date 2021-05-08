@@ -17,7 +17,8 @@ class SampleUser extends LaravelRestifyModel
 
     public function createToken($name, array $scopes = [])
     {
-        return new class {
+        return new class
+        {
             public $accessToken = 'token';
         };
     }
