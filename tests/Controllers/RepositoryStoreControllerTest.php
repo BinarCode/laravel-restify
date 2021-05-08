@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -111,7 +110,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             );
     }
 
-    public function test_storing_repository_log_action()
+    public function test_storing_repository_log_action(): void
     {
         $this->authenticate();
 

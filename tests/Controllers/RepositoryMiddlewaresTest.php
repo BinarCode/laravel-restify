@@ -4,58 +4,34 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAbortMiddleware;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithCustomMiddlewareRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Mockery as m;
 
 class RepositoryMiddlewaresTest extends IntegrationTest
 {
     protected function tearDown(): void
     {
-        m::close();
+        parent::tearDown();
+
+        PostRepository::$middleware = [];
     }
 
-    public function test_repository_can_have_custom_middleware()
+    public function test_repository_can_have_custom_middleware(): void
     {
-        $middleware = m::mock(PostAbortMiddleware::class);
-
-        $nextParam = null;
-
-        $middleware
-            ->expects('handle')
-            ->once();
-
-        PostWithCustomMiddlewareRepository::$middleware = [
-            $middleware,
+        PostRepository::$middleware = [
+            function () {
+                abort(404);
+            }
         ];
 
-        Restify::repositories([
-            PostWithCustomMiddlewareRepository::class,
-        ]);
-
-        $this->getJson('post-with-middleware')
-            ->assertStatus(200);
+        $this->getJson(PostRepository::to())->assertNotFound();
     }
 
-    public function test_request_fails_if_middleware_abort()
+    public function test_foreign_repository_middleware_should_not_be_invoked(): void
     {
-        PostWithCustomMiddlewareRepository::$middleware = [
-            PostAbortMiddleware::class,
-        ];
-
-        Restify::repositories([
-            PostWithCustomMiddlewareRepository::class,
-        ]);
-
-        $this->getJson('post-with-middleware')
-            ->assertStatus(404);
-    }
-
-    public function test_foreign_repository_middleware_should_not_be_invoked()
-    {
-        $middleware = m::mock(PostAbortMiddleware::class);
-
-        $nextParam = null;
+        $middleware = $this->mock(PostAbortMiddleware::class);
 
         $middleware
             ->expects('handle')
@@ -69,7 +45,6 @@ class RepositoryMiddlewaresTest extends IntegrationTest
             PostWithCustomMiddlewareRepository::class,
         ]);
 
-        $this->getJson('posts')
-            ->assertStatus(200);
+        $this->getJson(PostRepository::to())->assertOk();
     }
 }

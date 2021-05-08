@@ -6,7 +6,7 @@ use Illuminate\Http\Request;
 
 class PostAbortMiddleware
 {
-    public function handle(Request $request, $next)
+    public function handle(Request $request, $next): void
     {
         abort(404);
 

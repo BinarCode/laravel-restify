@@ -38,6 +38,7 @@ abstract class IntegrationTest extends TestCase
     {
         parent::tearDown();
 
+        Mockery::close();
         Repository::clearResolvedInstances();
     }
 
@@ -82,7 +83,6 @@ abstract class IntegrationTest extends TestCase
             CompanyRepository::class,
             \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository::class,
             \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAuthorizeRepository::class,
-            \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository::class,
             \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository::class,
             RoleRepository::class,
         ]);

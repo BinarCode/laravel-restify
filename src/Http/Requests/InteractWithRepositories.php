@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pipeline\Pipeline;
 
 /**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
+ * @mixin RestifyRequest
  */
 trait InteractWithRepositories
 {
@@ -59,7 +59,7 @@ trait InteractWithRepositories
 
             app(Pipeline::class)
                 ->send($this)
-                ->through(optional($repository::collectMiddlewares($this))->toArray())
+                ->through(optional($repository::collectMiddlewares($this))->all())
                 ->thenReturn();
         });
 
