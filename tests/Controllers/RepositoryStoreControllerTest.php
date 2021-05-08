@@ -2,9 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
@@ -67,32 +69,46 @@ class RepositoryStoreControllerTest extends IntegrationTest
         $this->assertNull($response->json('data.attributes.description'));
     }
 
-    public function test_will_not_store_unauthorized_fields(): void
+    public function test_cannot_store_unauthorized_fields(): void
     {
-        $user = $this->mockUsers()->first();
-        $response = $this->postJson('posts-unauthorized-fields', [
-            'user_id' => $user->id,
-            'title' => 'Some post title',
-            'description' => 'A very short description',
-        ])->assertStatus(201);
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStore')
+            ->andreturn([
+                Field::new('title'),
 
-        $_SERVER['posts.description.authorized'] = false;
+                Field::new('description')->canStore(fn() => false),
+            ]);
 
-        $this->assertEquals('Some post title', $response->json('data.attributes.title'));
-        $this->assertNull($response->json('data.attributes.description'));
+        $this->postJson(PostRepository::to(), [
+            'description' => 'Description',
+            'title' => $updated = 'Title',
+        ])
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.attributes.title', $updated)
+                ->where('data.attributes.description', null)
+                ->etc()
+            );
     }
 
-    public function test_will_not_store_readonly_fields()
+    public function test_cannot_store_readonly_fields(): void
     {
-        $user = $this->mockUsers()->first();
-        $response = $this->postJson(PostUnauthorizedFieldRepository::uriKey(), [
-            'user_id' => $user->id,
-            'image' => 'avatar.png',
-            'title' => 'Some post title',
-            'description' => 'A very short description',
-        ])->assertCreated();
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStore')
+            ->andreturn([
+                Field::new('title'),
 
-        $this->assertNull($response->json('data.attributes.image'));
+                Field::new('description')->readonly(),
+            ]);
+
+        $this->postJson(PostRepository::to(), [
+            'description' => 'Description',
+            'title' => $updated = 'Title',
+        ])
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.attributes.title', $updated)
+                ->where('data.attributes.description', null)
+                ->etc()
+            );
     }
 
     public function test_storing_repository_log_action()
