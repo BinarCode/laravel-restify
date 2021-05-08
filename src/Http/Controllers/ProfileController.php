@@ -44,12 +44,12 @@ class ProfileController extends RepositoryController
     {
         $repository = $request->repository('users');
 
-        if (!$repository) {
+        if (! $repository) {
             return null;
         }
 
         if (method_exists($repository, 'canUseForProfile')) {
-            if (!call_user_func([$repository, 'canUseForProfile'], $request)) {
+            if (! call_user_func([$repository, 'canUseForProfile'], $request)) {
                 return null;
             }
         }
