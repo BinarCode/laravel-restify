@@ -89,7 +89,8 @@ class FieldTest extends IntegrationTest
     {
         $request = new RepositoryStoreRequest([], []);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $fillable = ['title'];
         };
 
@@ -107,7 +108,8 @@ class FieldTest extends IntegrationTest
     {
         $request = new RepositoryStoreRequest([], []);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $fillable = ['title'];
         };
 
@@ -124,7 +126,8 @@ class FieldTest extends IntegrationTest
     {
         $request = new RepositoryUpdateRequest([], []);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $fillable = ['title'];
         };
 
@@ -142,7 +145,8 @@ class FieldTest extends IntegrationTest
     {
         $request = new RepositoryStoreRequest([], []);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $fillable = ['title'];
         };
 
@@ -182,7 +186,8 @@ class FieldTest extends IntegrationTest
             'title' => 'title from request',
         ]);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $fillable = ['title'];
         };
 
@@ -210,7 +215,8 @@ class FieldTest extends IntegrationTest
             'title' => 'title from request',
         ]);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $fillable = ['title'];
         };
 
@@ -238,7 +244,8 @@ class FieldTest extends IntegrationTest
             'title' => 'After store title',
         ]);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $table = 'posts';
             protected $fillable = ['title'];
         };
@@ -258,7 +265,8 @@ class FieldTest extends IntegrationTest
 
     public function test_field_after_update_called()
     {
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $table = 'posts';
             protected $fillable = ['title'];
         };
@@ -320,7 +328,8 @@ class FieldTest extends IntegrationTest
             'custom_title' => 'title from request',
         ]);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $fillable = ['title'];
         };
 
@@ -340,7 +349,8 @@ class FieldTest extends IntegrationTest
             'title' => 'Title from the request.',
         ]);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $table = 'posts';
             protected $fillable = ['title'];
         };
@@ -370,7 +380,8 @@ class FieldTest extends IntegrationTest
             'title' => 'Title from the request.',
         ]);
 
-        $model = new class extends Model {
+        $model = new class extends Model
+        {
             protected $table = 'posts';
             protected $fillable = ['title'];
         };

@@ -186,7 +186,8 @@ class SearchServiceTest extends IntegrationTest
         $service = MockeryAlias::spy(SearchService::class);
         $this->instance(SearchService::class, $service);
         $request = MockeryAlias::mock(RestifyRequest::class);
-        $class = (new class extends Model {
+        $class = (new class extends Model
+        {
         });
         $resolvedService = resolve(SearchService::class);
         $resolvedService->search($request, $class);
