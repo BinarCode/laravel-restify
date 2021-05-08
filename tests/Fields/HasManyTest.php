@@ -284,10 +284,10 @@ class HasManyTest extends IntegrationTest
         $this->assertDatabaseCount('posts', 1);
     }
 
-    public function test_it_validates_fields_when_storing_related()
+    public function test_it_validates_fields_when_storing_related(): void
     {
         $userId = $this->mockUsers()->first()->id;
-        $this->post(UserWithPosts::uriKey()."/{$userId}/posts", [
+        $this->postJson(UserWithPosts::uriKey()."/{$userId}/posts", [
             /*'title' => 'Wew',*/
         ])->assertStatus(422);
     }

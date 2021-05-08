@@ -783,8 +783,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         static::updatedBulk($this->resource, $request);
 
-        return $this->response()
-            ->success();
+        return response()->json();
     }
 
     public function attach(RestifyRequest $request, $repositoryId, Collection $pivots)
@@ -1071,5 +1070,16 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 $request, $this
             ))->values(),
         ];
+    }
+
+    public static function to(string $path = null, array $query = []): string
+    {
+        $base = Restify::path().'/'.static::uriKey();
+
+        $route = $path
+            ? $base.'/'.$path
+            : $base;
+
+        return $route.'?'.http_build_query($query);
     }
 }

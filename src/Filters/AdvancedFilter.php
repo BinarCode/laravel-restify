@@ -25,9 +25,9 @@ abstract class AdvancedFilter extends Filter
     public function validatePayload(RestifyRequest $request, array $payload): self
     {
         if ($this instanceof SelectFilter) {
-            foreach (array_keys($payload) as $key) {
+            foreach (array_values($payload) as $key) {
                 throw_unless(
-                    in_array($key, array_values($this->options($request))),
+                    in_array($key, array_keys($this->options($request))),
                     ValidationException::withMessages(['Filter values are invalid.'])
                 );
             }

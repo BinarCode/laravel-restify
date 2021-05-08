@@ -137,7 +137,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ->assertJsonCount(1, 'data');
     }
 
-    public function test_the_select_filter_is_applied()
+    public function test_the_select_filter_is_applied(): void
     {
         factory(Post::class)->create(['category' => 'movie']);
         factory(Post::class)->create(['category' => 'article']);
@@ -147,14 +147,14 @@ class RepositoryFilterControllerTest extends IntegrationTest
                 'key' => SelectCategoryFilter::uriKey(),
                 'value' => 'article',
             ],
-        ]));
+        ], JSON_THROW_ON_ERROR));
 
-        $this->get('posts?filters='.$filters)
+        $this->getJson(PostRepository::to(null, ['filters' => $filters]))
             ->assertOk()
             ->assertJsonCount(1, 'data');
     }
 
-    public function test_the_timestamp_filter_is_applied()
+    public function test_the_timestamp_filter_is_applied(): void
     {
         factory(Post::class)->create(['created_at' => now()->addYear()]);
         factory(Post::class)->create(['created_at' => now()->subYear()]);

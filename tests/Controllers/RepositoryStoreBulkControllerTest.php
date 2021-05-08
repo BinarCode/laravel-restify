@@ -15,7 +15,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_basic_validation_works()
+    public function test_basic_validation_works(): void
     {
         $this->postJson('posts/bulk', [
             [
@@ -25,7 +25,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
             ->assertStatus(422);
     }
 
-    public function test_unauthorized_store_bulk()
+    public function test_unauthorized_store_bulk(): void
     {
         $_SERVER['restify.post.storeBulk'] = false;
 
@@ -36,11 +36,10 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
                 'title' => 'Title',
                 'description' => 'Title',
             ],
-        ])->assertStatus(403)
-            ->assertJson(['errors' => ['Unauthorized to store bulk.']]);
+        ])->assertStatus(403);
     }
 
-    public function test_user_can_bulk_create_posts()
+    public function test_user_can_bulk_create_posts(): void
     {
         $user = $this->mockUsers()->first();
         $this->postJson('posts/bulk', [

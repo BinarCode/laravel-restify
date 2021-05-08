@@ -114,7 +114,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(3, 'data');
     }
 
-    public function test_match_partially()
+    public function test_match_partially(): void
     {
         factory(User::class, 2)->create([
             'name' => 'John Doe',
@@ -125,6 +125,11 @@ class RepositorySearchServiceTest extends IntegrationTest
         ];
 
         $this->getJson('users?name=John')->assertJsonCount(0, 'data');
+
+        UserRepository::$match = [
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->strict(),
+        ];
+
         $this->getJson('users?-name=John')->assertJsonCount(2, 'data');
 
         UserRepository::$match = [
@@ -132,10 +137,14 @@ class RepositorySearchServiceTest extends IntegrationTest
         ];
 
         $this->getJson('users?name=John')->assertJsonCount(2, 'data');
+
+        UserRepository::$match = [
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->partial(),
+        ];
         $this->getJson('users?-name=John')->assertJsonCount(0, 'data');
     }
 
-    public function test_can_search_using_filter_searchable_definition()
+    public function test_can_search_using_filter_searchable_definition(): void
     {
         factory(User::class, 4)->create([
             'name' => 'John Doe',

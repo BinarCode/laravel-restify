@@ -23,7 +23,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $this->patch('posts/'.$post->id, [
             'title' => 'Updated title',
-        ])->assertStatus(200);
+        ])->assertOk();
 
         $this->assertEquals('Updated title', Post::find($post->id)->title);
     }
@@ -34,12 +34,12 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $this->withoutExceptionHandling()->put('posts/'.$post->id, [
             'title' => 'Updated title',
-        ])->assertStatus(200);
+        ])->assertOk();
 
         $this->assertEquals('Updated title', Post::find($post->id)->title);
     }
 
-    public function test_unathorized_to_update()
+    public function test_unauthorized_to_update(): void
     {
         Gate::policy(Post::class, PostPolicy::class);
 
@@ -47,15 +47,12 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.update'] = false;
 
-        $this->patch('posts/'.$post->id, [
+        $this->patchJson('posts/'.$post->id, [
             'title' => 'Updated title',
-        ])->assertStatus(403)
-            ->assertJson([
-                'errors' => ['This action is unauthorized.'],
-            ]);
+        ])->assertStatus(403);
     }
 
-    public function test_do_not_update_fields_without_permission()
+    public function test_do_not_update_fields_without_permission(): void
     {
         $post = factory(Post::class)->create(['user_id' => 1, 'title' => 'Title']);
 
@@ -65,13 +62,13 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             'title' => 'Updated title',
             'user_id' => 2,
         ])
-            ->assertStatus(200);
+            ->assertOk();
 
         $this->assertEquals('Title', $response->json('data.attributes.title'));
         $this->assertEquals(2, $response->json('data.attributes.user_id'));
     }
 
-    public function test_will_not_update_readonly_fields()
+    public function test_will_not_update_readonly_fields(): void
     {
         $user = $this->mockUsers()->first();
 
@@ -83,7 +80,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             'title' => 'Some post title',
             'description' => 'A very short description',
         ])
-            ->assertStatus(200);
+            ->assertOk();
 
         $this->assertNull($r->json('data.attributes.image'));
     }

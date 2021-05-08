@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class RepositoryStoreControllerTest extends IntegrationTest
 {
@@ -17,22 +18,13 @@ class RepositoryStoreControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_basic_validation_works()
+    public function test_basic_validation_works(): void
     {
         $this->postJson('posts', [])
-            ->assertStatus(422)
-            ->assertJson([
-                'errors' => [
-                    [
-                        'title' => [
-                            'This field is required',
-                        ],
-                    ],
-                ],
-            ]);
+            ->assertStatus(422);
     }
 
-    public function test_unauthorized_store()
+    public function test_unauthorized_store(): void
     {
         $_SERVER['restify.post.store'] = false;
 
@@ -41,27 +33,26 @@ class RepositoryStoreControllerTest extends IntegrationTest
         $this->postJson('posts', [
             'title' => 'Title',
             'description' => 'Title',
-        ])->assertStatus(403)
-            ->assertJson(['errors' => ['Unauthorized to store.']]);
+        ])->assertStatus(403);
     }
 
-    public function test_success_storing()
+    public function test_success_storing(): void
     {
-        $user = $this->mockUsers()->first();
-        $response = $this->postJson('posts', $data = [
-            'user_id' => $user->id,
-            'title' => 'Some post title',
-        ])->assertCreated()->assertHeader('Location', '/posts/1');
-
-        $this->assertEquals('Some post title', $response->json('data.attributes.title'));
-        $this->assertEquals(1, $response->json('data.attributes.user_id'));
-        $this->assertEquals(1, $response->json('data.id'));
-        $this->assertEquals('posts', $response->json('data.type'));
+        $this->postJson('posts', $data = [
+            'user_id' => ($user = $this->mockUsers()->first())->id,
+            'title' => $title = 'Some post title',
+        ])->assertCreated()->assertHeader('Location', '/posts/1')
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.attributes.title', $title)
+                ->where('data.attributes.user_id', 1)
+                ->where('data.id', '1')
+                ->where('data.type', 'posts')
+            );
 
         $this->assertDatabaseHas('posts', $data);
     }
 
-    public function test_will_store_only_defined_fields_from_fieldsForStore()
+    public function test_will_store_only_defined_fields_from_fieldsForStore(): void
     {
         $user = $this->mockUsers()->first();
         $response = $this->postJson('posts', [
@@ -76,7 +67,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
         $this->assertNull($response->json('data.attributes.description'));
     }
 
-    public function test_will_not_store_unauthorized_fields()
+    public function test_will_not_store_unauthorized_fields(): void
     {
         $user = $this->mockUsers()->first();
         $response = $this->postJson('posts-unauthorized-fields', [
