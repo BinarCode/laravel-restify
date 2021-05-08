@@ -110,7 +110,8 @@ abstract class IntegrationTest extends TestCase
 
     public function injectTranslator()
     {
-        $this->instance('translator', (new class implements Translator {
+        $this->instance('translator', (new class implements Translator
+        {
             public function get($key, array $replace = [], $locale = null)
             {
                 return $key;
