@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAbortMiddleware;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithCustomMiddlewareRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
@@ -31,20 +30,20 @@ class RepositoryMiddlewaresTest extends IntegrationTest
 
     public function test_foreign_repository_middleware_should_not_be_invoked(): void
     {
-        $middleware = $this->mock(PostAbortMiddleware::class);
-
-        $middleware
+        $middleware = $this->mock(PostAbortMiddleware::class)
             ->expects('handle')
             ->never();
 
-        PostWithCustomMiddlewareRepository::$middleware = [
+        UserRepository::$middleware = [
             $middleware,
         ];
 
         Restify::repositories([
-            PostWithCustomMiddlewareRepository::class,
+            UserRepository::class,
         ]);
 
         $this->getJson(PostRepository::to())->assertOk();
+
+        UserRepository::$middleware = [];
     }
 }

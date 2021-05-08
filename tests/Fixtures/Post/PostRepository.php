@@ -24,6 +24,8 @@ class PostRepository extends Repository
         'title' => RestifySearchable::MATCH_TEXT,
     ];
 
+    public static $middleware = [];
+
     public static function indexQuery(RestifyRequest $request, $query)
     {
         if (isset($_SERVER['restify.post.indexQueryCallback']) && is_callable($_SERVER['restify.post.indexQueryCallback'])) {
