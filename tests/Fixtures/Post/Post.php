@@ -2,15 +2,13 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Illuminate\Database\Eloquent\Model;
 
-class Post extends Model implements RestifySearchable
+class Post extends Model
 {
-    use InteractWithSearch, HasActionLogs;
+    use HasActionLogs;
 
     protected $fillable = [
         'id',

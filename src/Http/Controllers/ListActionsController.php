@@ -3,12 +3,13 @@
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
+use Illuminate\Http\JsonResponse;
 
 class ListActionsController extends RepositoryController
 {
-    public function __invoke(ActionRequest $request)
+    public function __invoke(ActionRequest $request): JsonResponse
     {
-        return $this->response()->data(
+        return data(
             $request->newRepository()->availableActions($request)
         );
     }

@@ -2,12 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
 
 class RepositoryDestroyControllerTest extends IntegrationTest
@@ -16,7 +15,6 @@ class RepositoryDestroyControllerTest extends IntegrationTest
     {
         parent::setUp();
         $this->authenticate();
-        $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
     }
 
     public function test_destroy_works()
@@ -33,7 +31,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
         $this->assertNull(Post::find($post->id));
     }
 
-    public function test_unathorized_to_destroy()
+    public function test_unauthorized_to_destroy(): void
     {
         Gate::policy(Post::class, PostPolicy::class);
 
@@ -41,17 +39,12 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.delete'] = false;
 
-        $this->delete('posts/'.$post->id, [
-            'title' => 'Updated title',
-        ])->assertStatus(403)
-            ->assertJson([
-                'errors' => ['This action is unauthorized.'],
-            ]);
+        $this->deleteJson(PostRepository::to($post->id))->assertStatus(403);
 
         $this->assertInstanceOf(Post::class, $post->refresh());
     }
 
-    public function test_destroying_repository_log_action()
+    public function test_destroying_repository_log_action(): void
     {
         $this->authenticate();
 

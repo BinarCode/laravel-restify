@@ -2,12 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Contracts\Sanctumable;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
-use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -15,15 +13,15 @@ use Illuminate\Notifications\Notifiable;
 use Mockery;
 
 /**
+ * @property string email
  * @property string avatar
  * @property string avatar_size
  * @property string avatar_original
  */
-class User extends Authenticatable implements Sanctumable, MustVerifyEmail, RestifySearchable
+class User extends Authenticatable implements Sanctumable, MustVerifyEmail
 {
     use \Illuminate\Auth\MustVerifyEmail;
-    use Notifiable,
-        InteractWithSearch;
+    use Notifiable;
 
     public static $search = ['id', 'email'];
 

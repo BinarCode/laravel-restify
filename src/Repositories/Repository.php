@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Eager\Related;
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
@@ -12,7 +11,7 @@ use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
-use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
@@ -293,7 +292,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @param RestifyRequest $request
      * @return array
      */
-    public function filters(RestifyRequest $request)
+    public function filters(RestifyRequest $request): array
     {
         return [];
     }
@@ -784,8 +783,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         static::updatedBulk($this->resource, $request);
 
-        return $this->response()
-            ->success();
+        return response()->json();
     }
 
     public function attach(RestifyRequest $request, $repositoryId, Collection $pivots)
@@ -1028,15 +1026,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         });
     }
 
-    public static function uriTo(Model $model)
+    public static function uriTo(Model $model): string
     {
         return Str::replaceFirst('//', '/', Restify::path().'/'.static::uriKey().'/'.$model->getKey());
-    }
-
-    public function availableFilters(RestifyRequest $request)
-    {
-        return collect($this->filter($this->filters($request)))->each(fn (Filter $filter) => $filter->authorizedToSee($request))
-            ->values();
     }
 
     public static function collectMiddlewares(RestifyRequest $request): ?Collection
@@ -1078,5 +1070,16 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 $request, $this
             ))->values(),
         ];
+    }
+
+    public static function to(string $path = null, array $query = []): string
+    {
+        $base = Restify::path().'/'.static::uriKey();
+
+        $route = $path
+            ? $base.'/'.$path
+            : $base;
+
+        return $route.'?'.http_build_query($query);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests;
 
-use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
@@ -18,21 +17,18 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Contracts\Translation\Translator;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use Mockery;
 use Orchestra\Testbench\TestCase;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 abstract class IntegrationTest extends TestCase
 {
     /**
-     * @var Authenticatable
+     * @var User
      */
     protected $authenticatedAs;
 
@@ -54,7 +50,6 @@ abstract class IntegrationTest extends TestCase
         $this->loadRoutes();
         $this->withFactories(__DIR__.'/Factories');
         $this->injectTranslator();
-        $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
 
         Restify::$authUsing = function () {
             return true;
@@ -195,7 +190,7 @@ abstract class IntegrationTest extends TestCase
         return end($queries);
     }
 
-    public function loadRepositories()
+    public function loadRepositories(): void
     {
         Restify::repositories([
             UserRepository::class,
@@ -212,7 +207,7 @@ abstract class IntegrationTest extends TestCase
 
     /**
      * Authenticate as an anonymous user.
-     * @param Authenticatable|null $user
+     * @param  Authenticatable|null  $user
      * @return IntegrationTest
      */
     protected function authenticate(Authenticatable $user = null)
@@ -228,8 +223,8 @@ abstract class IntegrationTest extends TestCase
     }
 
     /**
-     * @param int $count
-     * @param array $predefinedEmails
+     * @param  int  $count
+     * @param  array  $predefinedEmails
      * @return \Illuminate\Support\Collection
      */
     public function mockUsers($count = 1, $predefinedEmails = [])
@@ -250,23 +245,11 @@ abstract class IntegrationTest extends TestCase
         return $users->shuffle(); // randomly shuffles the items in the collection
     }
 
-    /**
-     * @param $userId
-     * @param int $count
-     * @return \Illuminate\Support\Collection
-     */
-    public function mockPosts($userId, $count = 1)
+    public function mockPosts($userId, $count = 1): Collection
     {
-        $users = collect([]);
-        $i = 0;
-        while ($i < $count) {
-            $users->push(factory(Post::class)->create(
-                ['user_id' => $userId]
-            ));
-            $i++;
-        }
-
-        return $users->shuffle(); // randomly shuffles the items in the collection
+        return Collection::times($count, fn () => factory(Post::class)->create([
+            'user_id' => $userId,
+        ]))->shuffle();
     }
 
     public function getTempDirectory($suffix = ''): string

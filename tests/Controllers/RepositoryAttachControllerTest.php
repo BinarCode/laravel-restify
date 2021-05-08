@@ -78,7 +78,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
-        ])->assertStatus(400)->assertJsonFragment([
+        ])->assertStatus(422)->assertJsonFragment([
             'is_admin' => [
                 $message,
             ], ]);

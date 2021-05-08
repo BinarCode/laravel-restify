@@ -2,11 +2,16 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Filters\AdvancedFilter;
 use Binaryk\LaravelRestify\Filters\HasMode;
+use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Filters\SearchableFilter;
+use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use JsonSerializable;
@@ -16,11 +21,9 @@ abstract class Filter implements JsonSerializable
     use Make,
         HasMode;
 
-    public $type = 'value';
+    public string $type = 'value';
 
     public $column;
-
-    public $value;
 
     public $canSeeCallback;
 
@@ -30,10 +33,28 @@ abstract class Filter implements JsonSerializable
 
     public $relatedRepositoryTitle;
 
+    public bool $advanced = false;
+
     public Repository $repository;
 
     public function __construct()
     {
+        if ($this instanceof AdvancedFilter) {
+            $this->setAdvanced();
+        }
+
+        if ($this instanceof SearchableFilter) {
+            $this->type = SearchableFilter::TYPE;
+        }
+
+        if ($this instanceof SortableFilter) {
+            $this->type = SortableFilter::TYPE;
+        }
+
+        if ($this instanceof MatchFilter) {
+            $this->type = MatchFilter::TYPE;
+        }
+
         $this->booted();
     }
 
@@ -42,7 +63,7 @@ abstract class Filter implements JsonSerializable
         //
     }
 
-    abstract public function filter(RestifyRequest $request, $query, $value);
+    abstract public function filter(RestifyRequest $request, Builder $query, $value);
 
     public function canSee(Closure $callback)
     {
@@ -51,7 +72,7 @@ abstract class Filter implements JsonSerializable
         return $this;
     }
 
-    public function authorizedToSee(RestifyRequest $request)
+    public function authorizedToSee(RestifyRequest $request): bool
     {
         return $this->canSeeCallback ? call_user_func($this->canSeeCallback, $request) : true;
     }
@@ -71,6 +92,11 @@ abstract class Filter implements JsonSerializable
         return $this->column;
     }
 
+    public function getQueryKey(): ?string
+    {
+        return Str::after($this->getColumn(), '.');
+    }
+
     public function setColumn(string $column): self
     {
         $this->column = $column;
@@ -85,11 +111,6 @@ abstract class Filter implements JsonSerializable
         return $this;
     }
 
-    public function options(Request $request)
-    {
-        // noop
-    }
-
     public function invalidPayloadValue(Request $request, $value)
     {
         if (is_array($value)) {
@@ -99,11 +120,6 @@ abstract class Filter implements JsonSerializable
         }
 
         return is_null($value);
-    }
-
-    public function resolve(RestifyRequest $request, $filter)
-    {
-        $this->value = $filter;
     }
 
     public function getRelatedRepositoryKey(): ?string
@@ -132,6 +148,13 @@ abstract class Filter implements JsonSerializable
         return $this;
     }
 
+    public function setAdvanced(bool $advanced = true): self
+    {
+        $this->advanced = true;
+
+        return $this;
+    }
+
     public function getRelatedRepository(): ?array
     {
         return ($key = $this->getRelatedRepositoryKey())
@@ -153,7 +176,7 @@ abstract class Filter implements JsonSerializable
      *
      * @return string
      */
-    public static function uriKey()
+    public static function uriKey(): string
     {
         if (property_exists(static::class, 'uriKey') && is_string(static::$uriKey)) {
             return static::$uriKey;
@@ -164,22 +187,44 @@ abstract class Filter implements JsonSerializable
         return Str::plural($kebabWithoutFilter);
     }
 
+    public function isAdvanced(): bool
+    {
+        return $this instanceof AdvancedFilter;
+    }
+
     public function jsonSerialize()
     {
-        return with([
-            'class' => static::class,
-            'key' => static::uriKey(),
+        $serialized = with([
             'type' => $this->getType(),
-            'column' => $this->getColumn(),
-            'options' => collect($this->options(app(Request::class)))->map(function ($value, $key) {
-                return is_array($value) ? ($value + ['property' => $key]) : ['label' => $key, 'property' => $value];
-            })->values()->all(),
+            'advanced' => $this->advanced,
         ], function (array $initial) {
-            return $this->relatedRepositoryKey
-                ? array_merge($initial, [
-                    'repository' => $this->getRelatedRepository(),
-                ])
-                : $initial;
+            return $this->relatedRepositoryKey ? array_merge($initial, [
+                'repository' => $this->getRelatedRepository(),
+            ]) : $initial;
         });
+
+        if ($this->isAdvanced() === false) {
+            $serialized = $serialized + ['column' => $this->getColumn()];
+        }
+
+        if ($this->isAdvanced()) {
+            $serialized = array_merge($serialized, [
+                'key' => static::uriKey(),
+                'options' => method_exists($this, 'options')
+                    ? collect($this->options(app(Request::class)))->map(function ($key, $value) {
+                        return is_array($value) ? ($value + ['property' => $key]) : ['label' => $key, 'property' => $value];
+                    })->values()->all()
+                    : [],
+            ]);
+        }
+
+        return $serialized;
+    }
+
+    public function dd(): self
+    {
+        dd($this);
+
+        return $this;
     }
 }

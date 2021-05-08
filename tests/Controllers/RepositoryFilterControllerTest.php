@@ -2,8 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\ActiveBooleanFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\CreatedAfterDateFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\InactiveFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
@@ -16,7 +17,8 @@ class RepositoryFilterControllerTest extends IntegrationTest
 {
     public function test_can_get_available_filters()
     {
-        $this->getJson('posts/filters')->assertJsonCount(4, 'data');
+        $this->get(PostRepository::uriKey().'/filters')
+            ->assertJsonCount(4, 'data');
     }
 
     public function test_available_filters_contains_matches_sortables_searches()
@@ -42,19 +44,19 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ->assertJsonCount(8, 'data');
 
         $this->assertSame(
-            $response->json('data.4.key'), 'matches'
+            $response->json('data.4.type'), MatchFilter::TYPE
         );
         $this->assertSame(
             $response->json('data.4.column'), 'title'
         );
         $this->assertSame(
-            $response->json('data.5.key'), 'sortables'
+            $response->json('data.5.type'), SortableFilter::TYPE
         );
         $this->assertSame(
             $response->json('data.5.column'), 'title'
         );
         $this->assertSame(
-            $response->json('data.6.key'), 'searchables'
+            $response->json('data.6.type'), SearchableFilter::TYPE
         );
         $this->assertSame(
             $response->json('data.6.column'), 'id'
@@ -95,14 +97,14 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $filters = base64_encode(json_encode([
             [
-                'class' => InactiveFilter::class,
+                'key' => InactiveFilter::uriKey(),
             ],
         ]));
 
         $response = $this
             ->withoutExceptionHandling()
             ->getJson('posts?filters='.$filters)
-            ->assertStatus(200);
+            ->assertOk();
 
         $this->assertCount(1, $response->json('data'));
     }
@@ -112,64 +114,66 @@ class RepositoryFilterControllerTest extends IntegrationTest
         factory(Post::class)->create(['is_active' => false]);
         factory(Post::class)->create(['is_active' => true]);
 
+        $availableFilters = $this
+            ->get(PostRepository::uriKey().'/filters?include=matches')
+            ->assertOk()
+            ->assertJsonFragment($booleanFilter = [
+                'key' => $key = 'active-booleans',
+                'type' => 'boolean',
+                'advanced' => true,
+            ]);
+
         $filters = base64_encode(json_encode([
             [
-                'class' => ActiveBooleanFilter::class,
+                'key' => $key,
                 'value' => [
                     'is_active' => false,
                 ],
             ],
         ]));
 
-        $response = $this
-            ->withoutExceptionHandling()
-            ->getJson('posts?filters='.$filters)
-            ->assertStatus(200);
-
-        $this->assertCount(1, $response->json('data'));
+        $this->getJson('posts?filters='.$filters)
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     }
 
-    public function test_the_select_filter_is_applied()
+    public function test_the_select_filter_is_applied(): void
     {
         factory(Post::class)->create(['category' => 'movie']);
         factory(Post::class)->create(['category' => 'article']);
 
         $filters = base64_encode(json_encode([
             [
-                'class' => SelectCategoryFilter::class,
+                'key' => SelectCategoryFilter::uriKey(),
                 'value' => 'article',
             ],
-        ]));
+        ], JSON_THROW_ON_ERROR));
 
-        $response = $this
-            ->withExceptionHandling()
-            ->getJson('posts?filters='.$filters)
-            ->assertStatus(200);
-
-        $this->assertCount(1, $response->json('data'));
+        $this->getJson(PostRepository::to(null, ['filters' => $filters]))
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
     }
 
-    public function test_the_timestamp_filter_is_applied()
+    public function test_the_timestamp_filter_is_applied(): void
     {
         factory(Post::class)->create(['created_at' => now()->addYear()]);
         factory(Post::class)->create(['created_at' => now()->subYear()]);
 
         $filters = base64_encode(json_encode([
             [
-                'class' => UserRepository::class,
+                'key' => UserRepository::uriKey(),
                 'value' => now()->addWeek()->timestamp,
             ],
             [
-                'class' => CreatedAfterDateFilter::class,
-                'value' => now()->addWeek()->timestamp,
+                'key' => CreatedAfterDateFilter::uriKey(),
+                'value' => [
+                    'created_at' => now()->addWeek()->timestamp,
+                ],
             ],
         ]));
 
-        $response = $this
-            ->withExceptionHandling()
-            ->getJson('posts')
-            ->assertStatus(200);
-
-        $this->assertCount(2, $response->json('data'));
+        $this->get('posts?filters='.$filters)
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
     }
 }

@@ -2,10 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
-use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Filters\AdvancedFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
-class InactiveFilter extends Filter
+class InactiveFilter extends AdvancedFilter
 {
     public function filter(RestifyRequest $request, $query, $value)
     {

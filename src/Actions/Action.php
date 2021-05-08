@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Actions;
 
 use Binaryk\LaravelRestify\AuthorizedToSee;
-use Binaryk\LaravelRestify\Controllers\RestController;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\ProxiesCanSeeToGate;
@@ -18,7 +17,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
-abstract class Action extends RestController implements JsonSerializable
+abstract class Action implements JsonSerializable
 {
     use AuthorizedToSee, ProxiesCanSeeToGate, Make, Visibility;
 

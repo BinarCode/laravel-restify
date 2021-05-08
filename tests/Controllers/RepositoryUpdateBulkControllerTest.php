@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class RepositoryUpdateBulkControllerTest extends IntegrationTest
@@ -14,23 +15,22 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_basic_update_validation_works()
+    public function test_basic_update_validation_works(): void
     {
-        $post1 = factory(Post::class)->create([
+        $post = factory(Post::class)->create([
             'user_id' => 1,
             'title' => 'First title',
         ]);
 
-        $this->post('posts/bulk/update', [
+        $this->postJson(PostRepository::to('bulk/update'), [
             [
-                'id' => $post1->id,
+                'id' => $post->id,
                 'title' => null,
             ],
-        ])
-            ->assertStatus(400);
+        ])->assertStatus(422);
     }
 
-    public function test_basic_update_works()
+    public function test_basic_update_works(): void
     {
         $post1 = factory(Post::class)->create([
             'user_id' => 1,
@@ -41,7 +41,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
             'title' => 'Second title',
         ]);
 
-        $this->post('posts/bulk/update', [
+        $this->postJson('posts/bulk/update', [
             [
                 'id' => $post1->id,
                 'title' => 'Updated first title',
@@ -51,7 +51,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
                 'title' => 'Updated second title',
             ],
         ])
-            ->assertStatus(200);
+            ->assertOk();
 
         $updatedPost = Post::find($post1->id);
         $updatedPost2 = Post::find($post2->id);

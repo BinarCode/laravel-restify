@@ -3,30 +3,26 @@
 namespace Binaryk\LaravelRestify\Services;
 
 use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
-use Binaryk\LaravelRestify\Tests\Fixtures\User;
+use Binaryk\LaravelRestify\Services\Concerns\AuthenticatesUsers;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Foundation\Auth\User;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class LogoutService
 {
     use AuthenticatesUsers;
 
-    public static function make(Request $request)
+    public static function make(Request $request): Response
     {
-        /**
-         * @var User
-         */
+        /** * @var User */
         $user = Auth::user();
 
         if ($user instanceof Authenticatable) {
             return resolve(static::class)->logout($request);
-        } else {
-            throw new AuthenticatableUserException(__('User is not authenticated.'));
         }
+
+        throw new AuthenticatableUserException(__('User is not authenticated.'));
     }
 }

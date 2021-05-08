@@ -10,15 +10,11 @@ use Binaryk\LaravelRestify\Exceptions\AuthenticatableUserException;
 use Binaryk\LaravelRestify\Exceptions\CredentialsDoesntMatch;
 use Binaryk\LaravelRestify\Exceptions\PassportUserException;
 use Binaryk\LaravelRestify\Exceptions\UnverifiedUser;
-use Binaryk\LaravelRestify\Tests\Fixtures\User;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Support\Facades\Auth;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
-class PassportService extends RestifyService
+class PassportService
 {
     /**
      * Create user token based on credentials.

@@ -20,6 +20,8 @@ class SortableFilter extends Filter
 
     private Closure $resolver;
 
+    const TYPE = 'sortable';
+
     /**
      * @param RestifyRequest $request
      * @param Builder $query

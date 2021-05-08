@@ -193,7 +193,7 @@ class HasManyTest extends IntegrationTest
         $this->assertDatabaseCount('posts', 1);
     }
 
-    public function test_can_show()
+    public function test_can_show(): void
     {
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
 
@@ -207,14 +207,14 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', 'posts', PostRepository::class),
             ]);
 
-        $this->get(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->getJson(UserWithPosts::to("$userId/posts/$post->id"), [
             'title' => 'Test',
         ])->assertJsonStructure([
             'data' => ['attributes'],
         ])->assertOk();
     }
 
-    public function test_unauthorized_show()
+    public function test_unauthorized_show(): void
     {
         $_SERVER['restify.post.show'] = false;
         Gate::policy(Post::class, PostPolicy::class);
@@ -226,7 +226,7 @@ class HasManyTest extends IntegrationTest
         ])->assertForbidden();
     }
 
-    public function test_404_post_from_different_owner()
+    public function test_404_post_from_different_owner(): void
     {
         $_SERVER['restify.post.show'] = true;
         Gate::policy(Post::class, PostPolicy::class);
@@ -284,12 +284,12 @@ class HasManyTest extends IntegrationTest
         $this->assertDatabaseCount('posts', 1);
     }
 
-    public function test_it_validates_fields_when_storing_related()
+    public function test_it_validates_fields_when_storing_related(): void
     {
         $userId = $this->mockUsers()->first()->id;
-        $this->post(UserWithPosts::uriKey()."/{$userId}/posts", [
+        $this->postJson(UserWithPosts::uriKey()."/{$userId}/posts", [
             /*'title' => 'Wew',*/
-        ])->assertStatus(400);
+        ])->assertStatus(422);
     }
 }
 
@@ -297,7 +297,7 @@ class UserWithPosts extends Repository
 {
     public static $model = User::class;
 
-    public static function getRelated()
+    public static function related(): array
     {
         return [
             'posts' => HasMany::make('posts', 'posts', PostRepository::class),

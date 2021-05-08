@@ -2,13 +2,13 @@
 
 namespace DummyNamespace;
 
-use Binaryk\LaravelRestify\Filter;
+{{ usage }}
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
-class DummyClass extends Filter
+class DummyClass extends {{ parent }}
 {
     public function filter(RestifyRequest $request, $query, $value)
     {
-        // $query->where('{{ attribute }}', $request->input('{{ query }}'));
+
     }
 }

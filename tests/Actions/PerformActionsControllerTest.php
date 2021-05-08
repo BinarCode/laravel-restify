@@ -19,7 +19,7 @@ class PerformActionsControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_could_perform_action_for_multiple_repositories()
+    public function test_could_perform_action_for_multiple_repositories(): void
     {
         $post = $this->mockPosts(1, 2);
 
@@ -66,23 +66,12 @@ class PerformActionsControllerTest extends IntegrationTest
         ]);
     }
 
-    public function test_cannot_apply_a_show_action_to_index()
+    public function test_cannot_apply_a_show_action_to_index(): void
     {
-        $post = $this->mockPosts(1, 2);
-
-        $_SERVER['actions.posts.invalidate'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->post('posts/action?action='.(new PublishPostAction())->uriKey(), [
-            'repositories' => [
-                $post->first()->id,
-                $post->last()->id,
-            ],
-        ])
-            ->assertNotFound()
-            ->assertJsonStructure([
-                'errors',
-            ]);
+        $this->postJson('posts/action?action='.(new PublishPostAction())->uriKey(), [])
+            ->assertNotFound();
     }
 
     public function test_show_action_not_need_repositories()

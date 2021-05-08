@@ -88,7 +88,7 @@ class UserWithPostRepository extends Repository
 {
     public static $model = User::class;
 
-    public static function getRelated()
+    public static function related(): array
     {
         return [
             'post' => HasOne::make('post', 'post', PostRepository::class),

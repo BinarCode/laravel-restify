@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Password;
 use ReflectionException;
 
-class AuthService extends RestifyService
+class AuthService
 {
     public function login(Request $request)
     {

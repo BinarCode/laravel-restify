@@ -8,7 +8,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 class SearchableFilter extends Filter
 {
-    public static $uriKey = 'searchables';
+    const TYPE = 'searchable';
 
     private BelongsTo $belongsToField;
 

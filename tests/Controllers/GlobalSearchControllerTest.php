@@ -13,7 +13,7 @@ class GlobalSearchControllerTest extends IntegrationTest
 {
     use RefreshDatabase;
 
-    public function test_global_search_returns_matches()
+    public function test_global_search_returns_matches(): void
     {
         factory(Post::class)->create(['title' => 'First post']);
         factory(Post::class)->create(['title' => 'Second post']);

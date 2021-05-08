@@ -20,7 +20,7 @@ class RelatedIndexControllerTest extends IntegrationTest
         );
 
         $response = $this->getJson('posts?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
-            ->assertStatus(200);
+            ->assertOk();
 
         $this->assertCount(10, $response->json('data'));
     }

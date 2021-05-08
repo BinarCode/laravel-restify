@@ -117,23 +117,6 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Restify Exception Handler
-    |--------------------------------------------------------------------------
-    |
-    | The exception handler will be attached to any Restify "CRUD" route.
-    | It will not be attached to custom routes defined in yours Restify Repositories,
-    | if you want to have it for all of the routes, can extend RestifyHandler
-    | from your application App\Exceptions\Handler.
-    |
-    | These will override the main application exception handler, set to null, it will not override it.
-    | Having RestifyHandler as a global exception handler is a good recommendation since it
-    | will return the exceptions in an API pretty format.
-    |
-    */
-    'exception_handler' => null,
-
-    /*
-    |--------------------------------------------------------------------------
     | Restify Logs
     |--------------------------------------------------------------------------
     */

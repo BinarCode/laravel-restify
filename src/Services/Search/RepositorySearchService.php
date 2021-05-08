@@ -4,14 +4,10 @@ namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filter;
-use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
-use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Matchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Str;
 
 class RepositorySearchService extends Searchable
 {
@@ -38,62 +34,7 @@ class RepositorySearchService extends Searchable
 
     public function prepareMatchFields(RestifyRequest $request, $query, $extra = [])
     {
-        /** * @var Builder $query */
-        $model = $query->getModel();
-        foreach ($this->repository->getMatchByFields() as $key => $type) {
-            $negation = false;
-
-            if ($request->has('-'.$key)) {
-                $negation = true;
-            }
-
-            if (! $request->has($negation ? '-'.$key : $key) && ! data_get($extra, "match.$key")) {
-                continue;
-            }
-
-            $match = $request->input($negation ? '-'.$key : $key, data_get($extra, "match.$key"));
-
-            if ($negation) {
-                $key = Str::after($key, '-');
-            }
-
-            if (empty($match)) {
-                continue;
-            }
-
-            if (is_callable($type)) {
-                call_user_func_array($type, [
-                    $request, $query,
-                ]);
-
-                continue;
-            }
-
-            if (is_subclass_of($type, Matchable::class)) {
-                call_user_func_array([
-                    app($type), 'handle',
-                ], [
-                    $request, $query,
-                ]);
-
-                continue;
-            }
-
-            $filter = $type instanceof Filter
-                ? $type
-                : MatchFilter::make()->setType($type);
-
-            $filter->setRepository($this->repository)
-                ->setColumn(
-                    $filter->column ?? $model->qualifyColumn($key)
-                );
-
-            call_user_func_array([
-                $filter, 'filter',
-            ], [
-                $request, $query, $match,
-            ]);
-        }
+        $this->repository::collectMatches($request, $this->repository)->apply($request, $query);
 
         return $query;
     }
@@ -115,9 +56,7 @@ class RepositorySearchService extends Searchable
                 : $query;
         }
 
-        $collection->each(function (SortableFilter $filter) use ($request, $query) {
-            $filter->filter($request, $query, $filter->direction());
-        });
+        $collection->apply($request, $query);
 
         return $query;
     }
@@ -188,34 +127,11 @@ class RepositorySearchService extends Searchable
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
     {
-        if (! empty($request->filters)) {
-            $filters = json_decode(base64_decode($request->filters), true);
-
-            collect($filters)
-                ->map(function ($filter) use ($request, $repository) {
-                    /** * @var Filter $matchingFilter */
-                    $matchingFilter = $repository->availableFilters($request)->first(function ($availableFilter) use ($filter) {
-                        return $filter['class'] === $availableFilter->key();
-                    });
-
-                    if (is_null($matchingFilter)) {
-                        return false;
-                    }
-
-                    if (array_key_exists('value', $filter) && $matchingFilter->invalidPayloadValue($request, $filter['value'])) {
-                        return false;
-                    }
-
-                    $matchingFilter->resolve(
-                        $request,
-                        array_key_exists('value', $filter) ? $filter['value'] : null
-                    );
-
-                    return $matchingFilter;
-                })
-                ->filter()
-                ->each(fn (Filter $filter) => $filter->filter($request, $query, $filter->value));
-        }
+        $repository
+            ->collectAdvancedFilters($request)
+            ->inQuery($request)
+            ->resolve($request)
+            ->apply($request, $query);
 
         return $query;
     }

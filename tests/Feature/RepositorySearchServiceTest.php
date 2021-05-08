@@ -40,11 +40,9 @@ class RepositorySearchServiceTest extends IntegrationTest
             'created_at' => RestifySearchable::MATCH_DATETIME,
         ];
 
-        $this->getJson('users?created_at=null')
-            ->assertJsonCount(1, 'data');
+        $this->get('users?created_at=null')->assertJsonCount(1, 'data');
 
-        $this->getJson('users?created_at=2020-12-01')
-            ->assertJsonCount(1, 'data');
+        $this->get('users?created_at=2020-12-01')->assertJsonCount(1, 'data');
     }
 
     public function test_can_match_array()
@@ -105,14 +103,18 @@ class RepositorySearchServiceTest extends IntegrationTest
             'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY),
         ];
 
-        $this->getJson('users?id=1,2,3')
-            ->assertJsonCount(3, 'data');
-
         $this->getJson('users?-id=1,2,3')
             ->assertJsonCount(1, 'data');
+
+        UserRepository::$match = [
+            'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY),
+        ];
+
+        $this->getJson('users?id=1,2,3')
+            ->assertJsonCount(3, 'data');
     }
 
-    public function test_match_partially()
+    public function test_match_partially(): void
     {
         factory(User::class, 2)->create([
             'name' => 'John Doe',
@@ -123,6 +125,11 @@ class RepositorySearchServiceTest extends IntegrationTest
         ];
 
         $this->getJson('users?name=John')->assertJsonCount(0, 'data');
+
+        UserRepository::$match = [
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->strict(),
+        ];
+
         $this->getJson('users?-name=John')->assertJsonCount(2, 'data');
 
         UserRepository::$match = [
@@ -130,10 +137,14 @@ class RepositorySearchServiceTest extends IntegrationTest
         ];
 
         $this->getJson('users?name=John')->assertJsonCount(2, 'data');
+
+        UserRepository::$match = [
+            'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->partial(),
+        ];
         $this->getJson('users?-name=John')->assertJsonCount(0, 'data');
     }
 
-    public function test_can_search_using_filter_searchable_definition()
+    public function test_can_search_using_filter_searchable_definition(): void
     {
         factory(User::class, 4)->create([
             'name' => 'John Doe',

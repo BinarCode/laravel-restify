@@ -16,6 +16,6 @@ class DisableProfileAction extends Action
     {
         static::$applied[] = $foo;
 
-        return $this->response()->data(['succes' => 'true'])->respond();
+        return data(['succes' => 'true']);
     }
 }
