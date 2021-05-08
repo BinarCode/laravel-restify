@@ -3,9 +3,11 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\RelatedCastWithAttributes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -97,12 +99,14 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
     public function test_repository_can_resolve_related_using_callables()
     {
-        PostRepository::$related = ['user' => function ($request, $repository) {
-            $this->assertInstanceOf(Request::class, $request);
-            $this->assertInstanceOf(Repository::class, $repository);
+        PostRepository::$related = [
+            'user' => function ($request, $repository) {
+                $this->assertInstanceOf(Request::class, $request);
+                $this->assertInstanceOf(Repository::class, $repository);
 
-            return 'foo';
-        }];
+                return 'foo';
+            }
+        ];
 
         $user = $this->mockUsers(1)->first();
 
@@ -182,43 +186,48 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->assertArrayNotHasKey('user', $response->json('data.0.attributes'));
     }
 
-    public function test_index_unmergeable_repository_containes_only_explicitly_defined_fields()
+    public function test_index_unmergeable_repository_contains_only_explicitly_defined_fields(): void
     {
         factory(Post::class)->create();
 
         $response = $this->get('posts')
             ->assertStatus(200)
             ->assertJsonStructure([
-                'data' => [[
-                    'attributes' => [
-                        'user_id',
-                        'title',
-                        'description',
-                    ],
-                ]],
+                'data' => [
+                    [
+                        'attributes' => [
+                            'user_id',
+                            'title',
+                            'description',
+                        ],
+                    ]
+                ],
             ]);
 
         $this->assertArrayNotHasKey('image', $response->json('data.0.attributes'));
     }
 
-    public function test_index_mergeable_repository_containes_model_attributes_and_local_fields()
+    public function test_index_mergeable_repository_contains_model_attributes_and_local_fields(): void
     {
-        factory(Post::class)->create();
+        Restify::repositories([
+            PostMergeableRepository::class,
+        ]);
 
-        $this->get('posts-mergeable')
-            ->assertJsonStructure([
-                'data' => [[
-                    'attributes' => [
-                        'user_id',
-                        'title',
-                        'description',
-                        'image',
-                    ],
-                ]],
-            ]);
+        $this->get(PostMergeableRepository::to(
+            $this->mockPost()->id
+        ))->assertJsonStructure([
+            'data' => [
+                'attributes' => [
+                    'user_id',
+                    'title',
+                    'description',
+                    'image',
+                ],
+            ],
+        ]);
     }
 
-    public function test_can_add_custom_index_main_meta_attributes()
+    public function test_can_add_custom_index_main_meta_attributes(): void
     {
         factory(Post::class)->create([
             'title' => 'Post Title',

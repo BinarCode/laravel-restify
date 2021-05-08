@@ -2,9 +2,12 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -47,7 +50,7 @@ class RepositoryShowControllerTest extends IntegrationTest
         $this->assertArrayHasKey('title', $response->json('data.attributes'));
     }
 
-    public function test_show_will_take_into_consideration_show_callback()
+    public function test_show_will_take_into_consideration_show_callback(): void
     {
         $_SERVER['postAuthorize.can.see.title'] = true;
 
@@ -58,30 +61,15 @@ class RepositoryShowControllerTest extends IntegrationTest
         $this->assertSame('EDUARD', $response->json('data.attributes.title'));
     }
 
-    public function test_show_unmergeable_repository_containes_only_explicitly_defined_fields()
+    public function test_show_merge_able_repository_contains_model_attributes_and_local_fields(): void
     {
-        factory(Post::class)->create(['title' => 'Eduard']);
+        Restify::repositories([
+            PostMergeableRepository::class,
+        ]);
 
-        $response = $this->getJson('posts/1')
-            ->assertJsonStructure([
-                'data' => [
-                    'attributes' => [
-                        'user_id',
-                        'title',
-                        'description',
-                    ],
-                ],
-            ]);
-
-        $this->assertArrayNotHasKey('id', $response->json('data.attributes'));
-        $this->assertArrayNotHasKey('created_at', $response->json('data.attributes'));
-    }
-
-    public function test_show_mergeable_repository_containes_model_attributes_and_local_fields()
-    {
-        factory(Post::class)->create(['title' => 'Eduard']);
-
-        $this->getJson('posts-mergeable/1')
+        $this->getJson(PostMergeableRepository::to(
+            $this->mockPost()->id
+        ))
             ->assertJsonStructure([
                 'data' => [
                     'attributes' => [
@@ -97,38 +85,74 @@ class RepositoryShowControllerTest extends IntegrationTest
             ]);
     }
 
-    public function test_repository_hidden_fields_are_not_visible()
+    public function test_repository_hidden_fields_are_not_visible(): void
     {
-        factory(Post::class)->create(['title' => 'Eduard']);
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForShow')
+            ->andReturn([
+                field('title'),
 
-        $response = $this->getJson(PostWithHiddenFieldRepository::uriKey().'/1');
+                field('description')->hidden(),
+            ]);
 
-        $this->assertArrayNotHasKey('user_id', $response->json('data.attributes'));
+        $this->getJson(PostRepository::to(
+            $this->mockPosts()->first()->id
+        ))
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->missing('data.attributes.description')
+                ->has('data.attributes.title')
+                ->etc()
+            );
+
     }
 
-    public function test_repository_hidden_fields_could_not_be_updated()
+    public function test_repository_hidden_fields_could_not_be_updated(): void
     {
-        $post = factory(Post::class)->create(['user_id' => 2, 'title' => 'Eduard']);
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
 
-        $oldUserId = $post->user_id;
+                field('description')->hidden(),
+            ]);
 
-        $this->putJson(PostWithHiddenFieldRepository::uriKey().'/1', [
-            'title' => 'Updated title',
-            'user_id' => 1,
-        ]);
+        $this->putJson(PostRepository::to(
+            $post = $this->mockPost(['description' => 'Description'])->id
+        ), [
+            'title' => $title = 'Updated title',
+            'description' => 'Updated description',
+        ])->assertJson(fn(AssertableJson $json) => $json
+            ->missing('data.attributes.description')
+            ->where('data.attributes.title', $title)
+            ->etc()
+        );
 
-        $this->assertEquals($oldUserId, Post::find($post->id)->user_id);
+        $this->assertSame(
+            'Description',
+            Post::find($post)->description
+        );
     }
 
-    public function test_repository_hidden_fields_could_be_updated_through_append()
+    public function test_repository_hidden_fields_could_be_updated_through_value(): void
     {
-        $post = factory(Post::class)->create(['user_id' => 2, 'title' => 'Eduard', 'category' => 'Hidden category before update.']);
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
 
-        $this->putJson(PostWithHiddenFieldRepository::uriKey().'/1', [
+                // A practical example could be `author_id` which gets Auth::id() as value.
+                field('description')->hidden()->value($default = 'Default description')
+            ]);
+
+        $this->putJson(PostRepository::to(
+            $post = $this->mockPost()->id
+        ), [
             'title' => 'Updated title',
-            'category' => 'Trying to update hidden category.',
-        ]);
+        ])->assertOk();
 
-        $this->assertEquals('Append category for a hidden field.', $post->fresh()->category);
+        $this->assertSame(
+            $default,
+            Post::find($post)->description
+        );
     }
 }

@@ -81,7 +81,6 @@ abstract class IntegrationTest extends TestCase
             UserRepository::class,
             PostRepository::class,
             CompanyRepository::class,
-            \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository::class,
             \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAuthorizeRepository::class,
             \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository::class,
             RoleRepository::class,
@@ -111,11 +110,16 @@ abstract class IntegrationTest extends TestCase
             ->shuffle();
     }
 
-    public function mockPosts($userId, $count = 1): Collection
+    public function mockPosts($userId = null, $count = 1): Collection
     {
         return Collection::times($count, fn() => factory(Post::class)->create([
             'user_id' => $userId,
         ]))->shuffle();
+    }
+
+    protected function mockPost(array $attributes = []): Post
+    {
+        return factory(Post::class)->create($attributes);
     }
 
     public function getTempDirectory($suffix = ''): string
