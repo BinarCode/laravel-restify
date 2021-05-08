@@ -7,19 +7,12 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAuthorizeRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithUnauthorizedFieldsRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
-use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Route;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
 use Orchestra\Testbench\TestCase;
@@ -87,11 +80,10 @@ abstract class IntegrationTest extends TestCase
             UserRepository::class,
             PostRepository::class,
             CompanyRepository::class,
-            PostMergeableRepository::class,
-            PostAuthorizeRepository::class,
-            PostWithUnauthorizedFieldsRepository::class,
-            PostUnauthorizedFieldRepository::class,
-            PostWithHiddenFieldRepository::class,
+            \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository::class,
+            \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAuthorizeRepository::class,
+            \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostUnauthorizedFieldRepository::class,
+            \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository::class,
             RoleRepository::class,
         ]);
 

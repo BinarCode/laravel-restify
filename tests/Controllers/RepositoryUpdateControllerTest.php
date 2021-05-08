@@ -2,11 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class RepositoryUpdateControllerTest extends IntegrationTest
 {
@@ -52,40 +55,55 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         ])->assertStatus(403);
     }
 
-    public function test_do_not_update_fields_without_permission(): void
+    public function test_cannot_update_unauthorized_fields(): void
     {
-        $post = factory(Post::class)->create(['user_id' => 1, 'title' => 'Title']);
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForUpdate')
+            ->andreturn([
+                Field::new('image')->canUpdate(fn() => false),
 
-        $_SERVER['posts.authorizable.title'] = false;
+                Field::new('title'),
+            ]);
 
-        $response = $this->putJson('post-with-unathorized-fields/'.$post->id, [
-            'title' => 'Updated title',
-            'user_id' => 2,
-        ])
-            ->assertOk();
-
-        $this->assertEquals('Title', $response->json('data.attributes.title'));
-        $this->assertEquals(2, $response->json('data.attributes.user_id'));
-    }
-
-    public function test_will_not_update_readonly_fields(): void
-    {
-        $user = $this->mockUsers()->first();
-
-        $post = factory(Post::class)->create(['image' => null]);
-
-        $r = $this->putJson('posts-unauthorized-fields/'.$post->id, [
-            'user_id' => $user->id,
+        $this->putJson(PostRepository::to(factory(Post::class)->create([
+            'image' => null,
+            'title' => 'Initial',
+        ])->id), [
             'image' => 'avatar.png',
-            'title' => 'Some post title',
-            'description' => 'A very short description',
+            'title' => $updated = 'Updated',
         ])
-            ->assertOk();
-
-        $this->assertNull($r->json('data.attributes.image'));
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.attributes.title', $updated)
+                ->where('data.attributes.image', null)
+                ->etc()
+            );
     }
 
-    public function test_updating_repository_log_action()
+    public function test_cannot_update_readonly_fields(): void
+    {
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForUpdate')
+            ->andreturn([
+                Field::new('image')->readonly(),
+
+                Field::new('title'),
+            ]);
+
+        $this->putJson(PostRepository::to(factory(Post::class)->create([
+            'image' => null,
+            'title' => 'Initial',
+        ])->id), [
+            'image' => 'avatar.png',
+            'title' => $updated = 'Updated',
+        ])
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.attributes.title', $updated)
+                ->where('data.attributes.image', null)
+                ->etc()
+            );
+    }
+
+    public function test_updating_repository_log_action(): void
     {
         $this->authenticate();
 
