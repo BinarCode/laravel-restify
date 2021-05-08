@@ -13,6 +13,7 @@ use Illuminate\Notifications\Notifiable;
 use Mockery;
 
 /**
+ * @property string email
  * @property string avatar
  * @property string avatar_size
  * @property string avatar_original

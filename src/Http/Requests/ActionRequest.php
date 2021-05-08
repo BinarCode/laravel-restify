@@ -19,17 +19,17 @@ class ActionRequest extends RestifyRequest
     {
         return once(function () {
             return $this->availableActions()->first(function ($action) {
-                return $action->uriKey() == $this->query('action');
+                return $this->query('action') === $action->uriKey();
             }) ?: abort(
                 $this->actionExists() ? 403 : 404, 'Action does not exists or you don\'t have enough permissions to perform it.'
             );
         });
     }
 
-    protected function actionExists()
+    protected function actionExists(): bool
     {
         return $this->availableActions()->contains(function (Action $action) {
-            return $action->uriKey() == $this->query('action');
+            return $action->uriKey() === $this->query('action');
         });
     }
 

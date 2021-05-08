@@ -4,7 +4,7 @@ namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Controllers\RestResponse;
+use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Eager\Related;
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;

@@ -2,12 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
 
 class RepositoryUpdateControllerTest extends IntegrationTest
@@ -43,8 +41,6 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
     public function test_unathorized_to_update()
     {
-        $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
-
         Gate::policy(Post::class, PostPolicy::class);
 
         $post = factory(Post::class)->create();

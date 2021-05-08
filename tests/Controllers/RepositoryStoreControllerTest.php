@@ -20,7 +20,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
     public function test_basic_validation_works()
     {
         $this->postJson('posts', [])
-            ->assertStatus(400)
+            ->assertStatus(422)
             ->assertJson([
                 'errors' => [
                     [

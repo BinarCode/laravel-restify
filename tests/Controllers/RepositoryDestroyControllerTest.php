@@ -2,12 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Support\Facades\Gate;
 
 class RepositoryDestroyControllerTest extends IntegrationTest
@@ -16,7 +14,6 @@ class RepositoryDestroyControllerTest extends IntegrationTest
     {
         parent::setUp();
         $this->authenticate();
-        $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
     }
 
     public function test_destroy_works()

@@ -27,7 +27,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
                 'title' => null,
             ],
         ])
-            ->assertStatus(400);
+            ->assertStatus(422);
     }
 
     public function test_basic_update_works()

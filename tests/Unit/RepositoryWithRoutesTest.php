@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
-use Binaryk\LaravelRestify\Controllers\RestController;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
@@ -150,7 +149,13 @@ class WithCustomNamespace extends RepositoryWithRoutes
         $attributes['namespace'] = 'Binaryk\LaravelRestify\Tests\Unit';
 
         $router->group($attributes, function ($router) {
-            $router->get('custom-namespace', 'HandleController@sayHello')->name('namespace.route');
+            $router->get('custom-namespace', function() {
+                return response()->json([
+                    'meta' => [
+                        'message' => 'From the sayHello method',
+                    ],
+                ]);
+            })->name('namespace.route');
         });
     }
 }
@@ -159,19 +164,12 @@ class WithoutGroup extends RepositoryWithRoutes
 {
     public static function routes(Router $router, array $attributes, $wrap = true)
     {
-        $router->get('default-options', '\\'.HandleController::class.'@sayHello')->name('no.group.default.options');
-    }
-}
-
-class HandleController extends RestController
-{
-    /**
-     * Just saying hello.
-     *
-     * @return \Binaryk\LaravelRestify\Controllers\RestResponse
-     */
-    public function sayHello()
-    {
-        return $this->response()->message('From the sayHello method');
+        $router->get('default-options', function() {
+            return response()->json([
+                'meta' => [
+                    'message' => 'From the sayHello method',
+                ],
+            ]);
+        })->name('no.group.default.options');
     }
 }

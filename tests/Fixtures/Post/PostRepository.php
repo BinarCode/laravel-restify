@@ -97,7 +97,7 @@ class PostRepository extends Repository
         ];
     }
 
-    public function actions(RestifyRequest $request)
+    public function actions(RestifyRequest $request): array
     {
         return [
             PublishPostAction::new()

@@ -22,7 +22,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
                 'title' => null,
             ],
         ])
-            ->assertStatus(400);
+            ->assertStatus(422);
     }
 
     public function test_unauthorized_store_bulk()

@@ -97,7 +97,7 @@ class RestResponse extends JsonResponse implements Responsable
      * The value of each meta member MUST be an object (a “meta object”).
      * @var array
      */
-    protected array $meta;
+    protected ?array $meta = null;
 
     /**
      * A links object containing links related to the resource.
@@ -107,7 +107,7 @@ class RestResponse extends JsonResponse implements Responsable
 
     protected string $type;
 
-    protected ?int $code;
+    protected int $code = 200;
 
     protected ?int $line;
 
@@ -450,8 +450,8 @@ class RestResponse extends JsonResponse implements Responsable
         }
 
         if ($this->code) {
-            if (in_array($this->code(), static::CODES)) {
-                $this->setStatusCode(is_int($this->code()) ? $this->code() : self::REST_RESPONSE_SUCCESS_CODE);
+            if (in_array($this->code, static::CODES)) {
+                $this->setStatusCode(is_int($this->code) ? $this->code : self::REST_RESPONSE_SUCCESS_CODE);
             }
         }
 

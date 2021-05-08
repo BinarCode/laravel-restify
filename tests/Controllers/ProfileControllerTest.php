@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class ProfileControllerTest extends IntegrationTest
 {
@@ -91,7 +92,7 @@ class ProfileControllerTest extends IntegrationTest
         $this->assertTrue(Hash::check('secret', $this->authenticatedAs->password));
     }
 
-    public function test_profile_update_unique_email()
+    public function test_profile_update_unique_email(): void
     {
         factory(User::class)->create([
             'email' => 'existing@gmail.com',
@@ -100,10 +101,10 @@ class ProfileControllerTest extends IntegrationTest
         $this->putJson('profile', [
             'email' => 'existing@gmail.com',
             'name' => 'Eduard',
-        ])->assertStatus(400);
+        ])->assertStatus(422);
     }
 
-    public function test_profile_upload_avatar()
+    public function test_profile_upload_avatar(): void
     {
         $file = UploadedFile::fake()->image($this->getTestJpg())->size(100);
 
@@ -112,7 +113,7 @@ class ProfileControllerTest extends IntegrationTest
         ])->assertOk();
     }
 
-    public function test_profile_validation_from_repository()
+    public function test_profile_validation_from_repository(): void
     {
         UserRepository::$canUseForProfileUpdate = true;
 
@@ -120,55 +121,42 @@ class ProfileControllerTest extends IntegrationTest
             'email' => 'contact@binarschool.com',
             'name' => 'Ed',
         ])
-            ->assertStatus(400)
-            ->assertJsonStructure([
-                'errors' => [
-                    [
-                        'name',
-                    ],
-                ],
-            ]);
+            ->assertStatus(422)
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->has('message')
+                ->has('errors')
+            );
     }
 
-    public function test_get_profile_can_use_repository()
+    public function test_get_profile_can_use_repository(): void
     {
         UserRepository::$canUseForProfile = true;
 
-        $response = $this->getJson('profile')
-            ->assertStatus(200)
-            ->assertJsonStructure([
-                'attributes',
-                'meta',
-            ]);
-
-        $response->assertJsonFragment([
-            'email' => $this->authenticatedAs->email,
-        ]);
-    }
-
-    public function test_profile_returns_authenticated_user_with_related_posts_via_repository()
-    {
-        UserRepository::$canUseForProfile = true;
-
-        $response = $this->getJson('profile?related=posts')
+        $this->getJson('profile')
             ->assertOk()
-            ->assertJsonStructure([
-                'attributes',
-                'relationships' => [
-                    'posts' => [
-                        [
-                            'id',
-                        ],
-                    ],
-                ],
-            ]);
-
-        $response->assertJsonFragment([
-            'email' => $this->authenticatedAs->email,
-        ]);
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->has('data')
+                ->where('data.attributes.email', $this->authenticatedAs->email)
+                ->etc()
+            );
     }
 
-    public function test_profile_returns_authenticated_user_with_meta_profile_data_via_repository()
+    public function test_profile_returns_authenticated_user_with_related_posts_via_repository(): void
+    {
+        UserRepository::$canUseForProfile = true;
+
+        $this->getJson('profile?related=posts')
+            ->assertOk()
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->has('data')
+                ->has('data.attributes')
+                ->has('data.relationships.posts')
+                ->where('data.attributes.email', $this->authenticatedAs->email)
+                ->etc()
+            );
+    }
+
+    public function test_profile_returns_authenticated_user_with_meta_profile_data_via_repository(): void
     {
         UserRepository::$canUseForProfile = true;
 
@@ -177,31 +165,26 @@ class ProfileControllerTest extends IntegrationTest
         ];
 
         $this->getJson('profile')
-            ->assertOk()
-            ->assertJsonStructure([
-                'attributes',
-                'meta' => [
-                    'roles',
-                ],
-            ]);
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->has('data.attributes')
+                ->has('data.meta.roles')
+                ->etc()
+            );
     }
 
-    public function test_profile_update_via_repository()
+    public function test_profile_update_via_repository(): void
     {
         UserRepository::$canUseForProfileUpdate = true;
 
-        $response = $this->putJson('profile', [
-            'email' => 'contact@binarschool.com',
-            'name' => 'Eduard',
-        ])->assertOk();
-
-        $response->assertJsonFragment([
-            'email' => 'contact@binarschool.com',
-            'name' => 'Eduard',
-        ]);
+        $this->putJson('profile', [
+            'email' => $email = 'contact@binarschool.com',
+        ])
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.attributes.email', $email)
+        );
     }
 
-    public function test_can_upload_avatar()
+    public function test_can_upload_avatar(): void
     {
         Storage::fake('customDisk');
 

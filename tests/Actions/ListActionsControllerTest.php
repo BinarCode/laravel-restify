@@ -12,11 +12,11 @@ class ListActionsControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_could_list_actions_for_repository()
+    public function test_could_list_actions_for_repository(): void
     {
         $_SERVER['actions.posts.invalidate'] = false;
 
-        $this->getJson('posts/actions')
+        $this->withoutExceptionHandling()->getJson('posts/actions')
             ->assertSuccessful()
             ->assertJsonCount(1, 'data')
             ->assertJsonStructure([
@@ -29,7 +29,7 @@ class ListActionsControllerTest extends IntegrationTest
             ]);
     }
 
-    public function test_could_list_actions_for_given_repository()
+    public function test_could_list_actions_for_given_repository(): void
     {
         $this->mockPosts(1, 2);
 

@@ -25,7 +25,6 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 ### RestController
 
 - RestController namespace was changed to `Binaryk\LaravelRestify\Http\Controllers` so you should refactor all of yours classes where you have used it (tip: you can use `data()` helper to wrap any response into json with `data` key)
-- `response` method was removed, you can use `response` Laravel helper.
 - `Action` base class doesn't extend anymore the `RestController`.
 - `RestifyHandler` was removed.
 

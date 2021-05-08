@@ -289,7 +289,7 @@ class HasManyTest extends IntegrationTest
         $userId = $this->mockUsers()->first()->id;
         $this->post(UserWithPosts::uriKey()."/{$userId}/posts", [
             /*'title' => 'Wew',*/
-        ])->assertStatus(400);
+        ])->assertStatus(422);
     }
 }
 
