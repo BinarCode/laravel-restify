@@ -2,6 +2,13 @@
 
 All notable changes to `laravel-restify` will be documented in this file
 
+## [5.0.0] 2021-05-23
+- Repositories CRUD + Bulk
+- Actions
+- Fields
+- Search
+...
+  
 ## [1.0.0] 2019-12-23
 
 ### Added

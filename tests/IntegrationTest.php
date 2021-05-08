@@ -19,39 +19,24 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Translation\Translator;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use JetBrains\PhpStorm\Pure;
 use Mockery;
 use Orchestra\Testbench\TestCase;
 
 abstract class IntegrationTest extends TestCase
 {
-    /**
-     * @var User
-     */
-    protected $authenticatedAs;
-
-    /**
-     * @var mixed
-     */
-    protected $repository;
+    protected Mockery\MockInterface|User $authenticatedAs;
 
     protected function setUp(): void
     {
-        $this->loadRepositories();
         parent::setUp();
-        DB::enableQueryLog();
 
-        Hash::driver('bcrypt')->setRounds(4);
+        $this->loadRepositories()
+            ->loadMigrations()
+            ->withFactories(__DIR__.'/Factories');
 
-        $this->repositoryMock();
-        $this->loadMigrations();
-        $this->loadRoutes();
-        $this->withFactories(__DIR__.'/Factories');
-        $this->injectTranslator();
-
-        Restify::$authUsing = function () {
+        Restify::$authUsing = static function () {
             return true;
         };
     }
@@ -63,14 +48,14 @@ abstract class IntegrationTest extends TestCase
         Repository::clearResolvedInstances();
     }
 
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             LaravelRestifyServiceProvider::class,
         ];
     }
 
-    protected function getEnvironmentSetUp($app)
+    protected function getEnvironmentSetUp($app): void
     {
         $app['config']->set('database.default', 'sqlite');
         $app['config']->set('auth.providers.users.model', User::class);
@@ -86,111 +71,17 @@ abstract class IntegrationTest extends TestCase
         (new \CreateActionLogsTable())->up();
     }
 
-    /**
-     * Load the migrations for the test environment.
-     *
-     * @return void
-     */
-    protected function loadMigrations()
+    protected function loadMigrations(): self
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
             '--path' => realpath(__DIR__.DIRECTORY_SEPARATOR.'Migrations'),
         ]);
+
+        return $this;
     }
 
-    public function repositoryMock()
-    {
-    }
-
-    public function injectTranslator()
-    {
-        $this->instance('translator', (new class implements Translator
-        {
-            public function get($key, array $replace = [], $locale = null)
-            {
-                return $key;
-            }
-
-            public function choice($key, $number, array $replace = [], $locale = null)
-            {
-                return $key;
-            }
-
-            /**
-             * {@inheritdoc}
-             */
-            public function trans($key, array $replace = [], $locale = null)
-            {
-                return $key;
-            }
-
-            /**
-             * {@inheritdoc}
-             */
-            public function getFromJson($key, array $replace = [], $locale = null)
-            {
-                return $key;
-            }
-
-            /**
-             * {@inheritdoc}
-             */
-            public function transChoice($key, $number, array $replace = [], $locale = null)
-            {
-                return $key;
-            }
-
-            /**
-             * {@inheritdoc}
-             */
-            public function getLocale()
-            {
-                return 'en';
-            }
-
-            /**
-             * {@inheritdoc}
-             */
-            public function setLocale($locale)
-            {
-            }
-        }));
-    }
-
-    public function loadRoutes()
-    {
-        Route::post('login', function () {
-            // AuthService->login
-        });
-        Route::post('register', function () {
-            // AuthService -> register
-        });
-        Route::get('email/verify/{id}/{hash}', function () {
-            // AuthService -> verify
-        })->name('verification.verify')->middleware([
-            'signed',
-            'throttle:6,1',
-        ]);
-        Route::post('password/email', function () {
-            // AuthService -> sendResetPasswordLinkEmail
-        });
-        Route::post('password/reset', function () {
-            // AuthPassport -> resetPassword
-        })->name('password.reset');
-    }
-
-    /**
-     * @return array
-     */
-    public function lastQuery()
-    {
-        $queries = DB::getQueryLog();
-
-        return end($queries);
-    }
-
-    public function loadRepositories(): void
+    public function loadRepositories(): self
     {
         Restify::repositories([
             UserRepository::class,
@@ -203,13 +94,10 @@ abstract class IntegrationTest extends TestCase
             PostWithHiddenFieldRepository::class,
             RoleRepository::class,
         ]);
+
+        return $this;
     }
 
-    /**
-     * Authenticate as an anonymous user.
-     * @param  Authenticatable|null  $user
-     * @return IntegrationTest
-     */
     protected function authenticate(Authenticatable $user = null)
     {
         $this->actingAs($this->authenticatedAs = $user ?? Mockery::mock(Authenticatable::class));
@@ -222,52 +110,38 @@ abstract class IntegrationTest extends TestCase
         return $this;
     }
 
-    /**
-     * @param  int  $count
-     * @param  array  $predefinedEmails
-     * @return \Illuminate\Support\Collection
-     */
-    public function mockUsers($count = 1, $predefinedEmails = [])
+    public function mockUsers($count = 1, array $predefinedEmails = []): Collection
     {
-        $users = collect([]);
-        $i = 0;
-        while ($i < $count) {
-            $users->push(factory(User::class)->create());
-            $i++;
-        }
-
-        foreach ($predefinedEmails as $email) {
-            $users->push(factory(User::class)->create([
-                'email' => $email,
-            ]));
-        }
-
-        return $users->shuffle(); // randomly shuffles the items in the collection
+        return Collection::times($count, fn($i) => factory(User::class)->create())
+            ->merge(collect($predefinedEmails)->each(fn(string $email) => factory(User::class)->create([
+                'email' => $email
+            ])))
+            ->shuffle();
     }
 
     public function mockPosts($userId, $count = 1): Collection
     {
-        return Collection::times($count, fn () => factory(Post::class)->create([
+        return Collection::times($count, fn() => factory(Post::class)->create([
             'user_id' => $userId,
         ]))->shuffle();
     }
 
     public function getTempDirectory($suffix = ''): string
     {
-        return __DIR__.'/TestSupport/temp'.($suffix == '' ? '' : '/'.$suffix);
+        return __DIR__.'/TestSupport/temp'.($suffix === '' ? '' : '/'.$suffix);
     }
 
-    public function getMediaDirectory($suffix = ''): string
+    #[Pure] public function getMediaDirectory($suffix = ''): string
     {
-        return $this->getTempDirectory().'/media'.($suffix == '' ? '' : '/'.$suffix);
+        return $this->getTempDirectory().'/media'.($suffix === '' ? '' : '/'.$suffix);
     }
 
-    public function getTestFilesDirectory($suffix = ''): string
+    #[Pure] public function getTestFilesDirectory($suffix = ''): string
     {
-        return $this->getTempDirectory().'/testfiles'.($suffix == '' ? '' : '/'.$suffix);
+        return $this->getTempDirectory().'/testfiles'.($suffix === '' ? '' : '/'.$suffix);
     }
 
-    public function getTestJpg(): string
+    #[Pure] public function getTestJpg(): string
     {
         return $this->getTestFilesDirectory('test.jpg');
     }
