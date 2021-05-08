@@ -9,23 +9,20 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryShowControllerTest extends IntegrationTest
 {
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->authenticate();
+        $this->mockPost();
     }
 
-    public function test_basic_show()
+    public function test_basic_show(): void
     {
-        factory(Post::class)->create(['user_id' => 1]);
-
-        $this->get('posts/1')
-            ->assertStatus(200)
+        $this->get(PostRepository::to(1))
+            ->assertOk()
             ->assertJsonStructure([
                 'data' => [
                     'id',
@@ -35,30 +32,49 @@ class RepositoryShowControllerTest extends IntegrationTest
             ]);
     }
 
-    public function test_show_will_authorize_fields()
+    public function test_show_will_authorize_fields(): void
     {
-        factory(Post::class)->create();
-
         $_SERVER['postAuthorize.can.see.title'] = false;
-        $response = $this->getJson('post-authorizes/1');
 
-        $this->assertArrayNotHasKey('title', $response->json('data.attributes'));
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title')->canSee(fn() => $_SERVER['postAuthorize.can.see.title']),
+
+                field('description')->hidden(),
+            ]);
+
+        $this->getJson(PostRepository::to(1))
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->missing('data.attributes.title')
+                ->etc()
+            );
 
         $_SERVER['postAuthorize.can.see.title'] = true;
-        $response = $this->getJson('post-authorizes/1');
 
-        $this->assertArrayHasKey('title', $response->json('data.attributes'));
+        $this->getJson(PostRepository::to(1))
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->has('data.attributes.title')
+                ->etc()
+            );
     }
 
     public function test_show_will_take_into_consideration_show_callback(): void
     {
-        $_SERVER['postAuthorize.can.see.title'] = true;
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title')->showCallback(fn($value) => strtoupper($value)),
+            ]);
 
-        factory(Post::class)->create(['title' => 'Eduard']);
-
-        $response = $this->getJson('post-authorizes/1');
-
-        $this->assertSame('EDUARD', $response->json('data.attributes.title'));
+        $this->getJson(PostRepository::to(
+            $this->mockPost([
+                'title' => 'wew',
+            ])->id
+        ))
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.attributes.title', 'WEW')
+            );
     }
 
     public function test_show_merge_able_repository_contains_model_attributes_and_local_fields(): void

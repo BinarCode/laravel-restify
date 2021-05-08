@@ -81,7 +81,6 @@ abstract class IntegrationTest extends TestCase
             UserRepository::class,
             PostRepository::class,
             CompanyRepository::class,
-            \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostAuthorizeRepository::class,
             \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository::class,
             RoleRepository::class,
         ]);
