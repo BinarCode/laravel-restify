@@ -27,8 +27,7 @@ abstract class IntegrationTest extends TestCase
         parent::setUp();
 
         $this->loadRepositories()
-            ->loadMigrations()
-            ->withFactories(__DIR__.'/Factories');
+            ->loadMigrations();
 
         Factory::guessFactoryNamesUsing(
             fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
