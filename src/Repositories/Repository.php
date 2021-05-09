@@ -307,7 +307,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         $method = 'fields';
 
-        if ($request->isForRepositoryRequest() && method_exists($this, 'fieldsForIndex')) {
+        if ($request->isIndexRequest() && method_exists($this, 'fieldsForIndex')) {
             $method = 'fieldsForIndex';
         }
 
@@ -576,7 +576,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->when($request->isShowRequest(), function (RelatedCollection $collection) use ($request) {
                 return $collection->forShow($request, $this);
             })
-            ->when($request->isForRepositoryRequest(), function (RelatedCollection $collection) use ($request) {
+            ->when($request->isIndexRequest(), function (RelatedCollection $collection) use ($request) {
                 return $collection->forIndex($request, $this);
             })
             ->mapIntoRelated($request)

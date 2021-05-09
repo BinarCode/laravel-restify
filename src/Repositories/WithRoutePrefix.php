@@ -89,7 +89,7 @@ trait WithRoutePrefix
             return true;
         }
 
-        if ($request->isForRepositoryRequest()) {
+        if ($request->isIndexRequest()) {
             // index
             if (static::indexPrefix()) {
                 return $request->is(static::indexPrefix().'/*');
