@@ -10,7 +10,7 @@ class ListActionsController extends RepositoryController
     public function __invoke(ActionRequest $request): JsonResponse
     {
         return data(
-            $request->newRepository()->availableActions($request)
+            $request->repository()->availableActions($request)
         );
     }
 }

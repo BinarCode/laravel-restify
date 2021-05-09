@@ -52,35 +52,18 @@ trait InteractWithRepositories
             : $repository::resolveWith($repository::newModel());
     }
 
-    public function newRepository(): Repository
-    {
-        $repository = $this->repository();
-
-        return $repository::resolveWith($repository::newModel());
-    }
-
-    public function newRelatedRepository(): Repository
-    {
-        $repository = $this->repository(
-            $this->route('relatedRepository')
-        );
-
-        return $repository::resolveWith($repository::newModel());
-    }
-
-    /**
-     * Get a new instance of the repository being requested.
-     * As a model it could accept either a model instance, a collection or even paginated collection.
-     *
-     * @param  $model
-     * @param  null  $uriKey
-     * @return Repository
-     */
-    public function newRepositoryWith($model, $uriKey = null): Repository
+    public function repositoryWith($model, $uriKey = null): Repository
     {
         $repository = $this->repository($uriKey);
 
         return $repository::resolveWith($model);
+    }
+
+    public function model($uriKey = null): Model
+    {
+        $repository = $this->repository($uriKey);
+
+        return $repository::newModel();
     }
 
     public function newQuery($uriKey = null): Builder|Relation
@@ -90,13 +73,6 @@ trait InteractWithRepositories
         }
 
         return $this->scopedViaParentModel();
-    }
-
-    public function model($uriKey = null): Model
-    {
-        $repository = $this->repository($uriKey);
-
-        return $repository::newModel();
     }
 
     public function findModelQuery(string $repositoryId = null, string $uriKey = null): Builder|Relation
@@ -143,8 +119,22 @@ trait InteractWithRepositories
         ));
     }
 
-    public function relatedRepository(): ?string
+    public function isViaRepository(): bool
     {
-        return Restify::repositoryForKey($this->route('relatedRepository'));
+        $viaRepository = $this->route('viaRepository');
+        $viaRepositoryId = $this->route('viaRepositoryId');
+
+        //TODO: Find another implementation for prefixes:
+        $matchSomePrefixes = collect(Restify::$repositories)
+                ->some(fn($repository) => $repository::prefix() === "$viaRepository/$viaRepositoryId")
+            || collect(Restify::$repositories)->some(fn(
+                $repository
+            ) => $repository::indexPrefix() === "$viaRepository/$viaRepositoryId");
+
+        if ($matchSomePrefixes) {
+            return false;
+        }
+
+        return $viaRepository && $viaRepositoryId;
     }
 }

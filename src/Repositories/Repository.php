@@ -825,7 +825,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
     {
         /** * @var BelongsToMany $eagerField */
-        $eagerField = $request->newRepository()::collectRelated()
+        $eagerField = $request->repository()::collectRelated()
             ->forManyToManyRelations($request)
             ->firstWhere('attribute', $request->relatedRepository);
 

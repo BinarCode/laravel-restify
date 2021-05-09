@@ -18,7 +18,7 @@ class RepositoryUpdateBulkController extends RepositoryController
                     )->lockForUpdate()->firstOrFail();
 
                     /** * @var Repository $repository */
-                    $repository = $request->newRepositoryWith($model);
+                    $repository = $request->repositoryWith($model);
 
                     return $repository
                         ->allowToUpdateBulk($request)

@@ -12,7 +12,7 @@ class RepositoryDestroyController extends RepositoryController
 
     public function __invoke(RepositoryDestroyRequest $request): JsonResponse
     {
-        $repository = $request->newRepositoryWith(
+        $repository = $request->repositoryWith(
             $model = $request->findModelQuery()->firstOrFail()
         )->allowToDestroy($request);
 

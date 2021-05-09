@@ -18,25 +18,6 @@ class RestifyRequest extends FormRequest
         return [];
     }
 
-    public function isViaRepository(): bool
-    {
-        $viaRepository = $this->route('viaRepository');
-        $viaRepositoryId = $this->route('viaRepositoryId');
-
-        //TODO: Find another implementation for prefixes:
-        $matchSomePrefixes = collect(Restify::$repositories)
-                ->some(fn($repository) => $repository::prefix() === "$viaRepository/$viaRepositoryId")
-            || collect(Restify::$repositories)->some(fn(
-                $repository
-            ) => $repository::indexPrefix() === "$viaRepository/$viaRepositoryId");
-
-        if ($matchSomePrefixes) {
-            return false;
-        }
-
-        return $viaRepository && $viaRepositoryId;
-    }
-
     public function relatedEagerField(): EagerField
     {
         $parentRepository = $this->repository(

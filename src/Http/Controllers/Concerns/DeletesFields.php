@@ -11,7 +11,7 @@ trait DeletesFields
 {
     protected function deleteFields(RestifyRequest $request, $model)
     {
-        ($repository = $request->newRepositoryWith($model))
+        ($repository = $request->repositoryWith($model))
             ->collectFields($request)
             ->whereInstanceOf(Deletable::class)
             ->filter(fn (Field $field) => $field instanceof Deletable)

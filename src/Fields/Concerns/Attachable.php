@@ -104,7 +104,7 @@ trait Attachable
             $parentKey = $request->findModelOrFail()->{$parentKeyName};
         }
 
-        if ($relatedKeyName !== ($request->newRelatedRepository()::newModel())->getKeyName()) {
+        if ($relatedKeyName !== ($request->repository($request->route('relatedRepository'))::newModel())->getKeyName()) {
             $relatedKey = $request->findRelatedModelOrFail()->{$relatedKeyName};
         }
 

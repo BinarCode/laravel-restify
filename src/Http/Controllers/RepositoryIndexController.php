@@ -9,6 +9,6 @@ class RepositoryIndexController extends RepositoryController
 {
     public function __invoke(RepositoryIndexRequest $request): JsonResponse
     {
-        return $request->newRepository()->index($request);
+        return $request->repository()->index($request);
     }
 }
