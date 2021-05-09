@@ -121,20 +121,20 @@ trait InteractWithRepositories
 
     public function isViaRepository(): bool
     {
-        $viaRepository = $this->route('viaRepository');
-        $viaRepositoryId = $this->route('viaRepositoryId');
+        $parentRepository = $this->route('parentRepository');
+        $parentRepositoryId = $this->route('parentRepositoryId');
 
         //TODO: Find another implementation for prefixes:
         $matchSomePrefixes = collect(Restify::$repositories)
-                ->some(fn($repository) => $repository::prefix() === "$viaRepository/$viaRepositoryId")
+                ->some(fn($repository) => $repository::prefix() === "$parentRepository/$parentRepositoryId")
             || collect(Restify::$repositories)->some(fn(
                 $repository
-            ) => $repository::indexPrefix() === "$viaRepository/$viaRepositoryId");
+            ) => $repository::indexPrefix() === "$parentRepository/$parentRepositoryId");
 
         if ($matchSomePrefixes) {
             return false;
         }
 
-        return $viaRepository && $viaRepositoryId;
+        return $parentRepository && $parentRepositoryId;
     }
 }
