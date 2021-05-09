@@ -96,20 +96,6 @@ trait InteractWithRepositories
             });
     }
 
-    public function findRelatedModelOrFail(): Model
-    {
-        return once(function () {
-            return $this->findRelatedQuery()->firstOrFail();
-        });
-    }
-
-    public function findRelatedQuery($relatedRepository = null, $relatedRepositoryId = null): Model|Builder
-    {
-        return $this->repository($relatedRepository ?? $this->route('relatedRepository'))::newModel()
-            ->newQuery()
-            ->whereKey($relatedRepositoryId ?? request('relatedRepositoryId'));
-    }
-
     public function isViaRepository(): bool
     {
         $parentRepository = $this->route('parentRepository');

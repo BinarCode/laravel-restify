@@ -105,7 +105,12 @@ trait Attachable
         }
 
         if ($relatedKeyName !== ($request->repository($request->route('relatedRepository'))::newModel())->getKeyName()) {
-            $relatedKey = $request->findRelatedModelOrFail()->{$relatedKeyName};
+            $relatedModel = $request->repository($request->route('relatedRepository'))::newModel()
+                ->newQuery()
+                ->whereKey(request('relatedRepositoryId'))
+                ->firstOrFail();
+
+            $relatedKey = $relatedModel->{$relatedKeyName};
         }
 
         ($pivot = $relationship->newPivot())->forceFill([
