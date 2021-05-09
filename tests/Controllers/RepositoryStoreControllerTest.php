@@ -75,14 +75,14 @@ class RepositoryStoreControllerTest extends IntegrationTest
             ->andreturn([
                 Field::new('title'),
 
-                Field::new('description')->canStore(fn() => false),
+                Field::new('description')->canStore(fn () => false),
             ]);
 
         $this->postJson(PostRepository::to(), [
             'description' => 'Description',
             'title' => $updated = 'Title',
         ])
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', $updated)
                 ->where('data.attributes.description', null)
                 ->etc()
@@ -103,7 +103,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'description' => 'Description',
             'title' => $updated = 'Title',
         ])
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', $updated)
                 ->where('data.attributes.description', null)
                 ->etc()

@@ -20,7 +20,6 @@ class UserFactory extends Factory
         ];
     }
 
-
     public static function one(array $attributes = []): User
     {
         return app(static::class)->create($attributes);

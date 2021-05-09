@@ -29,14 +29,14 @@ class RepositoryIndexControllerTest extends IntegrationTest
         PostRepository::$defaultPerPage = 5;
 
         $this->getJson(PostRepository::to())
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->count('data', 5)
                 ->etc()
             );
 
         $this->getJson(PostRepository::to(null, [
             'perPage' => 10,
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(fn (AssertableJson $json) => $json
             ->count('data', 10)
             ->etc()
         );
@@ -44,7 +44,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::to(null, [
             'perPage' => 10,
             'page' => '2',
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(fn (AssertableJson $json) => $json
             ->count('data', 5)
             ->etc()
         );
@@ -73,7 +73,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::to(null, [
             'search' => 'code',
-        ]))->assertJson(fn(AssertableJson $json) => $json->count('data', 2)->etc());
+        ]))->assertJson(fn (AssertableJson $json) => $json->count('data', 2)->etc());
     }
 
     /** * @test */
@@ -93,7 +93,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::to(null, [
             'sort' => '-title',
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(fn (AssertableJson $json) => $json
             ->where('data.0.attributes.title', 'ZZZ')
             ->where('data.1.attributes.title', 'AAA')
             ->etc()
@@ -101,7 +101,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::to(null, [
             'sort' => 'title',
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(fn (AssertableJson $json) => $json
             ->where('data.0.attributes.title', 'AAA')
             ->where('data.1.attributes.title', 'ZZZ')
             ->etc()
@@ -123,7 +123,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::to(null, [
             'related' => 'user',
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(fn (AssertableJson $json) => $json
             ->where('data.0.relationships.user.0.name', $name)
             ->etc()
         );
@@ -137,14 +137,14 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 $this->assertInstanceOf(Repository::class, $repository);
 
                 return 'foo';
-            }
+            },
         ];
 
         PostFactory::one();
 
         $this->getJson(PostRepository::to(null, [
             'related' => 'user',
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(fn (AssertableJson $json) => $json
             ->where('data.0.relationships.user', 'foo')
             ->etc()
         );
@@ -163,7 +163,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::to(null, [
             'related' => 'user',
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(fn (AssertableJson $json) => $json
             ->has('data.0.relationships.user.0.attributes')
             ->etc()
         );
@@ -186,7 +186,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $response = $this->getJson(CompanyRepository::to(null, [
             'related' => 'users.posts',
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(fn (AssertableJson $json) => $json
             ->has('data.0.relationships')
             ->etc()
         );
@@ -199,11 +199,11 @@ class RepositoryIndexControllerTest extends IntegrationTest
     public function it_can_paginate_keeping_relationships(): void
     {
         PostRepository::$related = [
-            'user'
+            'user',
         ];
 
         PostRepository::$sort = [
-            'id'
+            'id',
         ];
 
         PostFactory::many(5);
@@ -239,7 +239,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
                             'title',
                             'description',
                         ],
-                    ]
+                    ],
                 ],
             ]);
 
