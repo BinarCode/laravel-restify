@@ -123,6 +123,7 @@ trait InteractWithSearch
             SortableFilter::uriKey() => static::sorts(),
         ])->get($type);
 
+        /** * @var Filter $base */
         $base = collect([
             SearchableFilter::uriKey() => SearchableFilter::class,
             MatchFilter::uriKey() => MatchFilter::class,
@@ -146,9 +147,6 @@ trait InteractWithSearch
             return $type instanceof Filter
                 ? tap($type, fn ($filter) => $filter->column = $filter->column ?? $column)
                 : tap(new $base, function (Filter $filter) use ($column, $type) {
-                    if (is_null($type)) {
-//                        dd($filter);
-                    }
                     $filter->type = $filter->type ?? $type;
                     $filter->column = $column;
                 });
