@@ -28,7 +28,6 @@ trait ValidatingTrait
      */
     public static function validatorForStoring(RestifyRequest $request, array $plainPayload = null)
     {
-        /** * @var Repository $on */
         $on = static::resolveWith(static::newModel());
 
         $messages = $on->collectFields($request)->flatMap(function ($k) {
@@ -48,7 +47,6 @@ trait ValidatingTrait
 
     public static function validatorForStoringBulk(RestifyRequest $request, array $plainPayload = null)
     {
-        /** * @var Repository $on */
         $on = static::resolveWith(static::newModel());
 
         $messages = $on->collectFields($request)->flatMap(function ($k) {

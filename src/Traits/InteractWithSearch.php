@@ -123,7 +123,7 @@ trait InteractWithSearch
             SortableFilter::uriKey() => static::sorts(),
         ])->get($type);
 
-        /** * @var Filter $base */
+        /** * @var string $base */
         $base = collect([
             SearchableFilter::uriKey() => SearchableFilter::class,
             MatchFilter::uriKey() => MatchFilter::class,

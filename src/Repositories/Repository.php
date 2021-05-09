@@ -427,7 +427,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public static function routes(Router $router, array $attributes, $wrap = false)
     {
-        $router->group($attributes, function ($router) {
+        $router->group($attributes, function () {
             // override for custom routes
         });
     }

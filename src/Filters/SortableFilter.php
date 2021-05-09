@@ -25,13 +25,13 @@ class SortableFilter extends Filter
     /**
      * @param RestifyRequest $request
      * @param Builder $query
-     * @param $direction
-     * @return false|mixed
+     * @param string $value
+     * @return Builder
      */
-    public function filter(RestifyRequest $request, $query, $direction)
+    public function filter(RestifyRequest $request, Builder $query, $value)
     {
         if (isset($this->resolver) && is_callable($this->resolver)) {
-            return call_user_func($this->resolver, $request, $query, $direction);
+            return call_user_func($this->resolver, $request, $query, $value);
         }
 
         if (isset($this->belongsToField)) {
@@ -46,15 +46,15 @@ class SortableFilter extends Filter
                     $this->belongsToField->getQualifiedKey($this->repository),
                     $this->belongsToField->getRelatedKey($this->repository)
                 )
-                ->orderBy($this->getColumn(), $direction)
+                ->orderBy($this->getColumn(), $value)
                 ->take(1),
-                $direction
+                $value
             );
 
             return $query;
         }
 
-        $query->orderBy($this->column, $direction);
+        $query->orderBy($this->column, $value);
     }
 
     public function usingBelongsTo(BelongsTo $field): self

@@ -29,7 +29,7 @@ trait AuthorizedToSee
      * Set the callback to be run to authorize viewing the filter or action.
      *
      * @param Closure $callback
-     * @return AuthorizedToSee
+     * @return self
      */
     public function canSee(Closure $callback)
     {

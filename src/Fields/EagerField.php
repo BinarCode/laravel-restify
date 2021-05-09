@@ -77,7 +77,7 @@ class EagerField extends Field
         return $repository->resource->{$this->relation}();
     }
 
-    public function getRelatedModel(Repository $repository): ?Model
+    public function getRelatedModel(Repository $repository): Model
     {
         return $this->getRelation($repository)->getRelated();
     }
