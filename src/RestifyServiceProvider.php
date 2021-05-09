@@ -20,30 +20,21 @@ class RestifyServiceProvider extends ServiceProvider
         $this->registerRoutes();
     }
 
-    /**
-     * Register the package routes.
-     *
-     * @return void
-     */
-    protected function registerRoutes()
+    protected function registerRoutes(): self
     {
         $config = [
-            'namespace' => 'Binaryk\LaravelRestify\Http\Controllers',
+            'namespace' => null,
             'as' => 'restify.api.',
             'prefix' => Restify::path(),
             'middleware' => config('restify.middleware', []),
         ];
 
-        $this->defaultRoutes($config)
+        return $this->defaultRoutes($config)
             ->registerPrefixed($config)
             ->registerIndexPrefixed($config);
     }
 
-    /**
-     * @param $config
-     * @return RestifyServiceProvider
-     */
-    public function defaultRoutes($config)
+    public function defaultRoutes($config): self
     {
         Route::group($config, function () {
             $this->loadRoutesFrom(__DIR__.'/../routes/api.php');

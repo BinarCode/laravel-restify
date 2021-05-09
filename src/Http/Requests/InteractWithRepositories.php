@@ -3,10 +3,14 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
+use Binaryk\LaravelRestify\Exceptions\RepositoryNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
+use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pipeline\Pipeline;
 
 /**
@@ -29,29 +33,24 @@ trait InteractWithRepositories
         return true;
     }
 
-    /**
-     * Get the class name of the repository being requested.
-     *
-     * @param null $key
-     * @return Repository
-     */
-    public function repository($key = null): ?Repository
+    public function repository($key = null): Repository
     {
-        $repository = tap(Restify::repositoryForKey($key ?? $this->route('repository')), function ($repository) {
+        $repository = tap(Restify::repositoryForKey($key ?? $this->route('repository')), function (string $repository) {
             /** * @var Repository $repository */
             if (is_null($repository)) {
-                throw new EntityNotFoundException(__('Repository :name not found.', [
+                throw RepositoryNotFoundException::make(__('Repository :name not found.', [
                     'name' => $repository,
-                ]), 404);
+                ]));
             }
 
-            if (! $repository::authorizedToUseRepository($this)) {
-                throw new UnauthorizedException(__('Unauthorized to view repository :name. Check "allowRestify" policy.', [
-                    'name' => $repository,
-                ]), 403);
+            if (!$repository::authorizedToUseRepository($this)) {
+                abort(403, __('Unauthorized to view repository :name. Check "allowRestify" policy.',
+                    [
+                        'name' => $repository,
+                    ]));
             }
 
-            if (! $repository::authorizedToUseRoute($this)) {
+            if (!$repository::authorizedToUseRoute($this)) {
                 abort(403, __('Unauthorized to use the route :name. Check prefix.', [
                     'name' => $this->getRequestUri(),
                 ]));
@@ -83,8 +82,8 @@ trait InteractWithRepositories
     /**
      * Get the route handling the request.
      *
-     * @param string|null $param
-     * @param mixed $default
+     * @param  string|null  $param
+     * @param  mixed  $default
      * @return \Illuminate\Routing\Route|object|string
      */
     abstract public function route($param = null, $default = null);
@@ -108,7 +107,7 @@ trait InteractWithRepositories
      * As a model it could accept either a model instance, a collection or even paginated collection.
      *
      * @param  $model
-     * @param null $uriKey
+     * @param  null  $uriKey
      * @return Repository
      */
     public function newRepositoryWith($model, $uriKey = null)
@@ -118,44 +117,30 @@ trait InteractWithRepositories
         return $repository::resolveWith($model);
     }
 
-    /**
-     * Get a new, scopeless query builder for the underlying model.
-     *
-     * @param null $uriKey
-     * @return \Illuminate\Database\Eloquent\Builder
-     * @throws EntityNotFoundException
-     * @throws UnauthorizedException
-     */
-    public function newQueryWithoutScopes($uriKey = null)
+    /** * Get a new, scopeless query builder for the underlying model. */
+    public function newQueryWithoutScopes($uriKey = null): Builder|Relation
     {
-        if (! $this->isViaRepository()) {
+        if (!$this->isViaRepository()) {
             return $this->model($uriKey)->newQueryWithoutScopes();
         }
 
         return $this->viaQuery();
     }
 
-    /**
-     * Get a new query builder for the underlying model.
-     *
-     * @param null $uriKey
-     * @return \Illuminate\Database\Eloquent\Builder
-     * @throws EntityNotFoundException
-     * @throws UnauthorizedException
-     */
-    public function newQuery($uriKey = null)
+    /** * Get a new query builder for the underlying model. * */
+    public function newQuery($uriKey = null): Builder|Relation
     {
-        if (! $this->isViaRepository()) {
+        if (!$this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
         }
 
-        return $this->scopedViaQuery();
+        return $this->scopedViaParentModel();
     }
 
     /**
      * Get a new instance of the underlying model.
      *
-     * @param null $uriKey
+     * @param  null  $uriKey
      * @return \Illuminate\Database\Eloquent\Model
      * @throws EntityNotFoundException
      * @throws UnauthorizedException
@@ -170,8 +155,8 @@ trait InteractWithRepositories
     /**
      * Get the query to find the model instance for the request.
      *
-     * @param mixed|null $repositoryId
-     * @param null $uriKey
+     * @param  mixed|null  $repositoryId
+     * @param  null  $uriKey
      * @return \Illuminate\Database\Eloquent\Builder
      * @throws EntityNotFoundException
      * @throws UnauthorizedException
@@ -210,26 +195,22 @@ trait InteractWithRepositories
 
     public function viaParentModel()
     {
-        $parent = $this->repository($this->viaRepository);
+        $parent = $this->repository($this->route('viaRepository'));
 
-        return once(fn () => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->viaRepositoryId)->firstOrFail());
+        return once(fn(
+        ) => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->route('viaRepositoryId'))->firstOrFail());
     }
 
-    public function scopedViaParentModel()
+    public function scopedViaParentModel(): Relation
     {
-        $parent = $this->repository($this->viaRepository);
-
-        return once(fn () => $parent::newModel()->newQuery()->whereKey($this->viaRepositoryId)->firstOrFail());
+        return $this->relatedEagerField()->getRelation();
     }
 
-    public function viaQuery()
+    public function viaQuery(): Relation
     {
-        return $this->viaParentModel()->{$this->viaRelationship ?? request('repository')}();
-    }
-
-    public function scopedViaQuery()
-    {
-        return $this->scopedViaParentModel()->{$this->viaRelationship ?? request('repository')}();
+        return with($this->relatedEagerField(), fn(EagerField $field) => $field->getRelation(
+            $field->parentRepository
+        ));
     }
 
     /**

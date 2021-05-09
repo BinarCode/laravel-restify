@@ -59,7 +59,7 @@ class ActionRequest extends RestifyRequest
         return $output;
     }
 
-    public function isForRepositoryRequest()
+    public function isForRepositoryRequest(): bool
     {
         return $this instanceof RepositoryActionRequest;
     }

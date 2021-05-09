@@ -2,21 +2,16 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
+use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\App;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RestifyRequest extends FormRequest
 {
     use InteractWithRepositories;
 
-    /**
-     * @return bool
-     */
-    public function isProduction()
+    public function isProduction(): bool
     {
         return App::environment('production');
     }
@@ -24,7 +19,7 @@ class RestifyRequest extends FormRequest
     /**
      * @return bool
      */
-    public function isDev()
+    public function isDev(): bool
     {
         return false === $this->isProduction();
     }
@@ -34,7 +29,7 @@ class RestifyRequest extends FormRequest
      *
      * @return bool
      */
-    public function isForRepositoryRequest()
+    public function isForRepositoryRequest(): bool
     {
         return $this instanceof RepositoryIndexRequest;
     }
@@ -44,42 +39,72 @@ class RestifyRequest extends FormRequest
      * This will match any verbs (PATCH, DELETE or GET).
      * @return bool
      */
-    public function isShowRequest()
+    public function isShowRequest(): bool
     {
         return $this instanceof RepositoryShowRequest;
     }
 
-    public function isUpdateRequest()
+    public function isUpdateRequest(): bool
     {
         return $this instanceof RepositoryUpdateRequest;
     }
 
-    public function isStoreRequest()
+    public function isStoreRequest(): bool
     {
         return $this instanceof RepositoryStoreRequest;
     }
 
-    public function isStoreBulkRequest()
+    public function isStoreBulkRequest(): bool
     {
         return $this instanceof RepositoryStoreBulkRequest;
     }
 
-    public function isUpdateBulkRequest()
+    public function isUpdateBulkRequest(): bool
     {
         return $this instanceof RepositoryUpdateBulkRequest;
     }
 
-    public function isViaRepository()
+    public function isViaRepository(): bool
     {
-        // todo another implementation for prefixes
+        $viaRepository = $this->route('viaRepository');
+        $viaRepositoryId = $this->route('viaRepositoryId');
+
+        //TODO: Find another implementation for prefixes:
         $matchSomePrefixes = collect(Restify::$repositories)
-                ->some(fn ($repository) => $repository::prefix() === "$this->viaRepository/$this->viaRepositoryId")
-            || collect(Restify::$repositories)->some(fn ($repository) => $repository::indexPrefix() === "$this->viaRepository/$this->viaRepositoryId");
+                ->some(fn($repository) => $repository::prefix() === "$viaRepository/$viaRepositoryId")
+            || collect(Restify::$repositories)->some(fn($repository
+            ) => $repository::indexPrefix() === "$viaRepository/$viaRepositoryId");
 
         if ($matchSomePrefixes) {
             return false;
         }
 
-        return $this->viaRepository && $this->viaRepositoryId;
+        return $viaRepository && $viaRepositoryId;
+    }
+
+    public function relatedEagerField(): EagerField
+    {
+        $parentRepository = $this->repository(
+            $this->route('viaRepository')
+        );
+
+        $parentRepository->withResource(
+            $parentRepository::newModel()->newQuery()->whereKey(
+                $this->route('viaRepositoryId')
+            )->first()
+        );
+
+        /** * @var EagerField $eagerField */
+        $eagerField = $parentRepository::collectRelated()
+            ->forEager($this)
+            ->first(fn($field, $key) => $key === $this->route('repository'));
+
+        if (is_null($eagerField)) {
+            abort(403, 'Eager field missing from the parent ['.$this->route('viaRepository').'] related fields.');
+        }
+
+        $eagerField->setParentRepository($parentRepository);
+
+        return $eagerField;
     }
 }

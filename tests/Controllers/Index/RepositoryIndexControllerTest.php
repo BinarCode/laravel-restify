@@ -227,10 +227,10 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
     public function test_index_unmergeable_repository_contains_only_explicitly_defined_fields(): void
     {
-        Post::factory()->create();
+        PostFactory::one();
 
-        $response = $this->get('posts')
-            ->assertStatus(200)
+        $response = $this->get(PostRepository::to())
+            ->assertOk()
             ->assertJsonStructure([
                 'data' => [
                     [
@@ -252,7 +252,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             PostMergeableRepository::class,
         ]);
 
-        $this->get(PostMergeableRepository::to(
+        $this->getJson(PostMergeableRepository::to(
             $this->mockPost()->id
         ))->assertJsonStructure([
             'data' => [
@@ -272,8 +272,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             'title' => 'Post Title',
         ]);
 
-        $response = $this->get('posts')
-            ->assertStatus(200)
+        $response = $this->getJson(PostRepository::to())
             ->assertJsonStructure([
                 'meta' => [
                     'postKey',

@@ -5,10 +5,11 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
+use Illuminate\Http\JsonResponse;
 
 class RepositoryIndexController extends RepositoryController
 {
-    public function __invoke(RepositoryIndexRequest $request)
+    public function __invoke(RepositoryIndexRequest $request): JsonResponse
     {
         try {
             return $request->newRepository()->index($request);

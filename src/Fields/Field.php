@@ -22,6 +22,8 @@ class Field extends OrganicField implements JsonSerializable
      */
     public $repository;
 
+    public Repository $parentRepository;
+
     /**
      * Column name of the field.
      * @var string|callable|null
@@ -673,6 +675,13 @@ class Field extends OrganicField implements JsonSerializable
     public function setRepository(Repository $repository): Field
     {
         $this->repository = $repository;
+
+        return $this;
+    }
+
+    public function setParentRepository(Repository $repository): Field
+    {
+        $this->parentRepository = $repository;
 
         return $this;
     }

@@ -2,11 +2,12 @@
 
 namespace Binaryk\LaravelRestify\Exceptions;
 
-use Exception;
+use Illuminate\Auth\Access\AuthorizationException;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
-class UnauthorizedException extends Exception
+class UnauthorizedException extends AuthorizationException
 {
+    public static function make(string $message): self
+    {
+        return new static($message, 403);
+    }
 }
