@@ -1,2 +1,0 @@
-- name: action-scrutinizer
-  uses: sudo-bot/action-scrutinizer@latest
