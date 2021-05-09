@@ -72,7 +72,7 @@ trait InteractWithRepositories
             return $this->model($uriKey)->newQuery();
         }
 
-        return $this->relatedEagerField()->getRelation();
+        return $this->viaQuery();
     }
 
     public function viaQuery(): Relation

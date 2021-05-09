@@ -281,11 +281,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public static function query(RestifyRequest $request): Builder|Relation
     {
-        if (! $request->isViaRepository()) {
-            return static::newModel()->query();
-        }
-
-        return $request->viaQuery();
+        return $request->newQuery(static::uriKey());
     }
 
     /**
