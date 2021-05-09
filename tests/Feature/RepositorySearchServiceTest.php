@@ -28,11 +28,11 @@ class RepositorySearchServiceTest extends IntegrationTest
 
     public function test_can_match_date()
     {
-        factory(User::class)->create([
+        User::factory()->create([
             'created_at' => null,
         ]);
 
-        factory(User::class)->create([
+        User::factory()->create([
             'created_at' => '01-12-2020',
         ]);
 
@@ -47,7 +47,7 @@ class RepositorySearchServiceTest extends IntegrationTest
 
     public function test_can_match_array()
     {
-        factory(User::class, 4)->create();
+        User::factory(4)->create();
 
         UserRepository::$match = [
             'id' => RestifySearchable::MATCH_ARRAY,
@@ -62,20 +62,20 @@ class RepositorySearchServiceTest extends IntegrationTest
 
     public function test_can_match_datetime_interval()
     {
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
 
         $user->forceFill([
             'created_at' => now()->subMonth(),
         ]);
         $user->save();
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
 
         $user->forceFill([
             'created_at' => now()->subWeek(),
         ]);
         $user->save();
 
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
 
         $user->forceFill([
             'created_at' => now()->addMonth(),
@@ -97,7 +97,7 @@ class RepositorySearchServiceTest extends IntegrationTest
 
     public function test_match_definition_hit_filter_method()
     {
-        factory(User::class, 4)->create();
+        User::factory(4)->create();
 
         UserRepository::$match = [
             'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY),
@@ -116,7 +116,7 @@ class RepositorySearchServiceTest extends IntegrationTest
 
     public function test_match_partially(): void
     {
-        factory(User::class, 2)->create([
+        User::factory(2)->create([
             'name' => 'John Doe',
         ]);
 
@@ -146,11 +146,11 @@ class RepositorySearchServiceTest extends IntegrationTest
 
     public function test_can_search_using_filter_searchable_definition(): void
     {
-        factory(User::class, 4)->create([
+        User::factory(4)->create([
             'name' => 'John Doe',
         ]);
 
-        factory(User::class, 4)->create([
+        User::factory(4)->create([
             'name' => 'wew',
         ]);
 
@@ -163,19 +163,19 @@ class RepositorySearchServiceTest extends IntegrationTest
 
     public function test_can_search_using_belongs_to_field()
     {
-        $foreignUser = factory(User::class)->create([
+        $foreignUser = User::factory()->create([
             'name' => 'Curtis Dog',
         ]);
 
-        factory(Post::class, 4)->create([
+        Post::factory(4)->create([
             'user_id' => $foreignUser->id,
         ]);
 
-        $john = factory(User::class)->create([
+        $john = User::factory()->create([
             'name' => 'John Doe',
         ]);
 
-        factory(Post::class, 2)->create([
+        Post::factory(2)->create([
             'user_id' => $john->id,
         ]);
 
@@ -191,11 +191,11 @@ class RepositorySearchServiceTest extends IntegrationTest
 
     public function test_can_order_using_filter_sortable_definition()
     {
-        factory(User::class)->create([
+        User::factory()->create([
             'name' => 'Zoro',
         ]);
 
-        factory(User::class)->create([
+        User::factory()->create([
             'name' => 'Alisa',
         ]);
 
@@ -216,7 +216,7 @@ class RepositorySearchServiceTest extends IntegrationTest
 
     public function test_can_match_closure()
     {
-        factory(User::class, 4)->create();
+        User::factory(4)->create();
 
         UserRepository::$match = [
             'is_active' => function ($request, $query) {

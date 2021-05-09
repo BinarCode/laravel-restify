@@ -7,6 +7,8 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,6 +24,7 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
 {
     use \Illuminate\Auth\MustVerifyEmail;
     use Notifiable;
+    use HasFactory;
 
     public static $search = ['id', 'email'];
 
@@ -81,7 +84,7 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
         return Mockery::mock(Builder::class);
     }
 
-    public function posts()
+    public function posts(): HasMany
     {
         return $this->hasMany(Post::class);
     }

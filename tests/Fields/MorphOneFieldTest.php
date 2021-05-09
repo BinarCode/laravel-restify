@@ -32,8 +32,8 @@ class MorphOneFieldTest extends IntegrationTest
 
     public function test_morph_one_present_on_show_when_specified_related()
     {
-        $post = factory(Post::class)->create([
-            'user_id' => factory(User::class),
+        $post = Post::factory()->create([
+            'user_id' => User::factory(),
         ]);
 
         $relationships = $this->get(PostWithMophOneRepository::uriKey()."/$post->id?related=user")

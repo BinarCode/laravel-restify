@@ -17,7 +17,7 @@ class ProfileControllerTest extends IntegrationTest
     {
         parent::setUp();
 
-        $this->authenticate(factory(User::class)->create([
+        $this->authenticate(User::factory()->create([
             'name' => 'Eduard Lupacescu',
             'email' => 'eduard.lupacescu@binarcode.com',
         ]));
@@ -94,7 +94,7 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_update_unique_email(): void
     {
-        factory(User::class)->create([
+        User::factory()->create([
             'email' => 'existing@gmail.com',
         ]);
 

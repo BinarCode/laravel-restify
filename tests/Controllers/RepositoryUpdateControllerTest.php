@@ -22,7 +22,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
     public function test_basic_update_works()
     {
-        $post = factory(Post::class)->create();
+        $post = Post::factory()->create();
 
         $this->patch('posts/'.$post->id, [
             'title' => 'Updated title',
@@ -33,7 +33,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
     public function test_put_works()
     {
-        $post = factory(Post::class)->create();
+        $post = Post::factory()->create();
 
         $this->withoutExceptionHandling()->put('posts/'.$post->id, [
             'title' => 'Updated title',
@@ -46,7 +46,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         Gate::policy(Post::class, PostPolicy::class);
 
-        $post = factory(Post::class)->create();
+        $post = Post::factory()->create();
 
         $_SERVER['restify.post.update'] = false;
 
@@ -65,7 +65,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
                 Field::new('title'),
             ]);
 
-        $this->putJson(PostRepository::to(factory(Post::class)->create([
+        $this->putJson(PostRepository::to(Post::factory()->create([
             'image' => null,
             'title' => 'Initial',
         ])->id), [
@@ -89,7 +89,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
                 Field::new('title'),
             ]);
 
-        $this->putJson(PostRepository::to(factory(Post::class)->create([
+        $this->putJson(PostRepository::to(Post::factory()->create([
             'image' => null,
             'title' => 'Initial',
         ])->id), [
@@ -107,7 +107,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $this->authenticate();
 
-        $post = factory(Post::class)->create([
+        $post = Post::factory()->create([
             'title' => 'Original',
         ]);
 

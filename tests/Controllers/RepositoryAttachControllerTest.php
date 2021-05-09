@@ -19,7 +19,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
     public function test_can_attach_repositories()
     {
         $user = $this->mockUsers()->first();
-        $company = factory(Company::class)->create();
+        $company = Company::factory()->create();
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
@@ -38,10 +38,10 @@ class RepositoryAttachControllerTest extends IntegrationTest
         Gate::policy(Company::class, CompanyPolicy::class);
 
         $user = $this->mockUsers()->first();
-        $company = factory(Company::class)->create();
+        $company = Company::factory()->create();
 
         $this->authenticate(
-            factory(User::class)->create()
+            User::factory()->create()
         );
 
         $_SERVER['allow_attach_users'] = false;
@@ -64,7 +64,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
     public function test_attach_pivot_field_validation()
     {
         $user = $this->mockUsers()->first();
-        $company = factory(Company::class)->create();
+        $company = Company::factory()->create();
 
         CompanyRepository::partialMock()
             ->shouldReceive('related')
@@ -86,7 +86,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
     public function test_pivot_field_present_when_show()
     {
-        $company = tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id, [
                 'is_admin' => true,
             ]);
@@ -109,7 +109,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
     public function test_pivot_field_present_when_index()
     {
-        tap(factory(Company::class)->create(), function (Company $company) {
+        tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id, [
                 'is_admin' => true,
             ]);
@@ -132,7 +132,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
     public function test_attach_multiple_users_to_a_company()
     {
         $user = $this->mockUsers(2)->first();
-        $company = factory(Company::class)->create();
+        $company = Company::factory()->create();
 
         $this->assertCount(0, $company->users);
 
@@ -151,7 +151,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
     public function test_many_to_many_field_can_intercept_attach_authorization()
     {
         $user = $this->mockUsers()->first();
-        $company = factory(Company::class)->create();
+        $company = Company::factory()->create();
 
         CompanyRepository::partialMock()
             ->shouldReceive('related')
@@ -174,7 +174,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
     public function test_many_to_many_field_can_intercept_attach_method()
     {
         $user = $this->mockUsers()->first();
-        $company = factory(Company::class)->create();
+        $company = Company::factory()->create();
 
         CompanyRepository::partialMock()
             ->shouldReceive('related')
@@ -206,7 +206,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
     public function test_repository_can_intercept_attach()
     {
         $user = $this->mockUsers()->first();
-        $company = factory(Company::class)->create();
+        $company = Company::factory()->create();
 
         CompanyRepository::partialMock()->shouldReceive('related')
             ->andReturn([

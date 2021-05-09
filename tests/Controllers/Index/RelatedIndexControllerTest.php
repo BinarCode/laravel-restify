@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Tests\Controllers;
+namespace Binaryk\LaravelRestify\Tests\Controllers\Index;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
@@ -16,7 +16,7 @@ class RelatedIndexControllerTest extends IntegrationTest
         $this->mockPosts(1, 10);
 
         $this->mockPosts(
-            factory(User::class)->create()->id
+            User::factory()->create()->id
         );
 
         $response = $this->getJson('posts?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
@@ -31,7 +31,7 @@ class RelatedIndexControllerTest extends IntegrationTest
         $this->mockPosts(1, 10);
 
         $this->mockPosts(
-            factory(User::class)->create()->id
+            User::factory()->create()->id
         );
 
         $response = $this->getJson('posts?viaRepository=users&viaRepositoryId=1')
@@ -42,15 +42,15 @@ class RelatedIndexControllerTest extends IntegrationTest
 
     public function test_can_show_post_belongs_to_a_user()
     {
-        factory(User::class)->create();
-        factory(User::class)->create();
+        User::factory()->create();
+        User::factory()->create();
 
-        factory(Post::class)->create([
+        Post::factory()->create([
             'user_id' => 2,
             'title' => 'First Post',
         ]);
 
-        factory(Post::class)->create([
+        Post::factory()->create([
             'user_id' => 1,
             'title' => 'Second Post',
         ]);
@@ -66,9 +66,9 @@ class RelatedIndexControllerTest extends IntegrationTest
 
     public function test_can_store_post_belongs_to_a_user()
     {
-        factory(User::class)->create();
+        User::factory()->create();
 
-        factory(User::class)->create();
+        User::factory()->create();
 
         $this->postJson('posts?viaRepository=users&viaRepositoryId=1&viaRelationship=posts', [
             'title' => 'Created for the user 1',
@@ -87,12 +87,12 @@ class RelatedIndexControllerTest extends IntegrationTest
 
     public function test_can_update_post_belongs_to_a_user()
     {
-        factory(User::class)->create();
-        factory(User::class)->create();
+        User::factory()->create();
+        User::factory()->create();
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 1]);
+        Post::factory()->create(['title' => 'Post title', 'user_id' => 1]);
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
+        Post::factory()->create(['title' => 'Post title', 'user_id' => 2]);
 
         $response = $this->putJson('posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts', [
             'title' => 'Post updated title',
@@ -107,12 +107,12 @@ class RelatedIndexControllerTest extends IntegrationTest
 
     public function test_can_destroy_post_belongs_to_a_user()
     {
-        factory(User::class)->create();
-        factory(User::class)->create();
+        User::factory()->create();
+        User::factory()->create();
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 1]);
+        Post::factory()->create(['title' => 'Post title', 'user_id' => 1]);
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
+        Post::factory()->create(['title' => 'Post title', 'user_id' => 2]);
 
         $this->deleteJson('posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')->assertStatus(204);
 
@@ -125,13 +125,13 @@ class RelatedIndexControllerTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        factory(User::class)->create();
+        User::factory()->create();
 
-        factory(User::class)->create();
+        User::factory()->create();
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 1]);
+        Post::factory()->create(['title' => 'Post title', 'user_id' => 1]);
 
-        factory(Post::class)->create(['title' => 'Post title', 'user_id' => 2]);
+        Post::factory()->create(['title' => 'Post title', 'user_id' => 2]);
 
         $this->deleteJson('posts/1?viaRepository=users&viaRepositoryId=1&viaRelationship=posts')
             ->assertForbidden();

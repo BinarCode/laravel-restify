@@ -75,22 +75,22 @@ class FilterDefinitionTest extends IntegrationTest
             ),
         ];
 
-        $randomUser = factory(User::class)->create([
+        $randomUser = User::factory()->create([
             'name' => 'John Doe',
         ]);
 
-        factory(Post::class, 22)->create([
+        Post::factory(22)->create([
             'user_id' => $randomUser->id,
         ]);
 
-        factory(Post::class)->create([
-            'user_id' => factory(User::class)->create([
+        Post::factory()->create([
+            'user_id' => User::factory()->create([
                 'name' => 'Zez',
             ]),
         ]);
 
-        factory(Post::class)->create([
-            'user_id' => factory(User::class)->create([
+        Post::factory()->create([
+            'user_id' => User::factory()->create([
                 'name' => 'Ame',
             ]),
         ]);

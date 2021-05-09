@@ -31,7 +31,7 @@ class UserController extends RestController
      */
     public function store(Request $request)
     {
-        return $this->response()->data(factory(User::class)->create());
+        return $this->response()->data(User::factory()->create());
     }
 
     /**

@@ -66,17 +66,17 @@ class MatchTest extends IntegrationTest
 
     private function posts()
     {
-        factory(Post::class)->create([
+        Post::factory()->create([
             'is_active' => true,
             'title' => 'Post 1',
         ]);
 
-        factory(Post::class)->create([
+        Post::factory()->create([
             'is_active' => true,
             'title' => 'Post 2',
         ]);
 
-        factory(Post::class)->create([
+        Post::factory()->create([
             'is_active' => false,
             'title' => 'Another one',
         ]);

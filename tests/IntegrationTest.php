@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Collection;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
@@ -28,6 +29,10 @@ abstract class IntegrationTest extends TestCase
         $this->loadRepositories()
             ->loadMigrations()
             ->withFactories(__DIR__.'/Factories');
+
+        Factory::guessFactoryNamesUsing(
+            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
+        );
 
         Restify::$authUsing = static function () {
             return true;
@@ -102,8 +107,8 @@ abstract class IntegrationTest extends TestCase
 
     public function mockUsers($count = 1, array $predefinedEmails = []): Collection
     {
-        return Collection::times($count, fn($i) => factory(User::class)->create())
-            ->merge(collect($predefinedEmails)->each(fn(string $email) => factory(User::class)->create([
+        return Collection::times($count, fn($i) => User::factory()->create())
+            ->merge(collect($predefinedEmails)->each(fn(string $email) => User::factory()->create([
                 'email' => $email
             ])))
             ->shuffle();
@@ -111,14 +116,14 @@ abstract class IntegrationTest extends TestCase
 
     public function mockPosts($userId = null, $count = 1): Collection
     {
-        return Collection::times($count, fn() => factory(Post::class)->create([
+        return Collection::times($count, fn() => Post::factory()->create([
             'user_id' => $userId,
         ]))->shuffle();
     }
 
     protected function mockPost(array $attributes = []): Post
     {
-        return factory(Post::class)->create($attributes);
+        return Post::factory()->create($attributes);
     }
 
     public function getTempDirectory($suffix = ''): string

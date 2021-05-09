@@ -40,7 +40,8 @@
     },
     "autoload-dev": {
         "psr-4": {
-            "Binaryk\\LaravelRestify\\Tests\\": "tests"
+            "Binaryk\\LaravelRestify\\Tests\\": "tests",
+            "Binaryk\\LaravelRestify\\Tests\\Factories\\": "tests/Factories"
         }
     },
     "scripts": {

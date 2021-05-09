@@ -37,8 +37,8 @@ class HasOneFieldTest extends IntegrationTest
 
     public function test_has_one_present_on_relations()
     {
-        $post = factory(Post::class)->create([
-            'user_id' => factory(User::class),
+        $post = Post::factory()->create([
+            'user_id' => User::factory(),
         ]);
 
         $this->get(UserWithPostRepository::uriKey()."/$post->id?related=post")
@@ -57,8 +57,8 @@ class HasOneFieldTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        tap(factory(Post::class)->create([
-            'user_id' => factory(User::class),
+        tap(Post::factory()->create([
+            'user_id' => User::factory(),
         ]), function ($post) {
             $this->get(UserWithPostRepository::uriKey()."/{$post->id}?related=post")
                 ->assertForbidden();

@@ -19,7 +19,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
     {
         $_SERVER['roles.canDetach.users'] = true;
 
-        $company = tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id, [
                 'is_admin' => true,
             ]);
@@ -40,10 +40,10 @@ class RepositoryDetachControllerTest extends IntegrationTest
         Gate::policy(Company::class, CompanyPolicy::class);
 
         $this->authenticate(
-            factory(User::class)->create()
+            User::factory()->create()
         );
 
-        $company = tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id, [
                 'is_admin' => true,
             ]);
@@ -70,7 +70,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
                 }),
             ]);
 
-        $company = tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
@@ -95,7 +95,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
                 }),
             ]);
 
-        $company = tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
@@ -126,7 +126,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
             },
         ];
 
-        $company = tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
