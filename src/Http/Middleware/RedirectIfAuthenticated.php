@@ -2,8 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Http\Middleware;
 
-use Illuminate\Support\Facades\Auth;
 use Closure;
+use Illuminate\Support\Facades\Auth;
 
 class RedirectIfAuthenticated
 {
