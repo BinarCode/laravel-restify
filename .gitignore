@@ -8,4 +8,5 @@ output
 docs/node_modules
 docs/.vuepress/dist
 .phpunit.result.cache
+.php-cs-fixer.cache
 
