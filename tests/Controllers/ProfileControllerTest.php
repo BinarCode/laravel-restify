@@ -55,18 +55,6 @@ class ProfileControllerTest extends IntegrationTest
             ]);
     }
 
-    public function test_profile_returns_authenticated_user_with_meta_profile_data()
-    {
-        $this->getJson('profile')
-            ->assertOk()
-            ->assertJsonStructure([
-                'data',
-                'meta' => [
-                    'roles',
-                ],
-            ]);
-    }
-
     public function test_profile_update()
     {
         $response = $this->putJson('profile', [
@@ -102,15 +90,6 @@ class ProfileControllerTest extends IntegrationTest
             'email' => 'existing@gmail.com',
             'name' => 'Eduard',
         ])->assertStatus(422);
-    }
-
-    public function test_profile_upload_avatar(): void
-    {
-        $file = UploadedFile::fake()->image($this->getTestJpg())->size(100);
-
-        $this->postJson('profile/avatar', [
-            'avatar' => $file,
-        ])->assertOk();
     }
 
     public function test_profile_validation_from_repository(): void

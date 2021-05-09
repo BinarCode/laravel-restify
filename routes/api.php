@@ -6,7 +6,6 @@ Route::get('/search', \Binaryk\LaravelRestify\Http\Controllers\GlobalSearchContr
 Route::get('/profile', \Binaryk\LaravelRestify\Http\Controllers\ProfileController::class);
 Route::put('/profile', \Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController::class);
 Route::post('/profile', \Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController::class);
-Route::post('/profile/avatar', \Binaryk\LaravelRestify\Http\Controllers\ProfileAvatarController::class);
 
 // RestifyJS
 Route::get('/restifyjs/setup', \Binaryk\LaravelRestify\Http\Controllers\RestifyJsSetupController::class)->withoutMiddleware(

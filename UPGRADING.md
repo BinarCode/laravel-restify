@@ -24,6 +24,9 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 - The `resolve` method for the advanced filters now requires a `AdvancedFilterPayloadDto` instance.
 - The `value` argument for the third parameter for `AdvancedFilters` will be resolved from the `AdvancedFilterPayloadDto@value` method
 
+### Profile
+- POST `/profile/avatar` was deleted.
+
 ### RestController
 
 - RestController namespace was changed to `Binaryk\LaravelRestify\Http\Controllers` so you should refactor all of yours classes where you have used it (tip: you can use `data()` helper to wrap any response into json with `data` key)
