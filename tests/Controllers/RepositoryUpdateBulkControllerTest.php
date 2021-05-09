@@ -17,7 +17,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
 
     public function test_basic_update_validation_works(): void
     {
-        $post = factory(Post::class)->create([
+        $post = Post::factory()->create([
             'user_id' => 1,
             'title' => 'First title',
         ]);
@@ -32,11 +32,11 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
 
     public function test_basic_update_works(): void
     {
-        $post1 = factory(Post::class)->create([
+        $post1 = Post::factory()->create([
             'user_id' => 1,
             'title' => 'First title',
         ]);
-        $post2 = factory(Post::class)->create([
+        $post2 = Post::factory()->create([
             'user_id' => 1,
             'title' => 'Second title',
         ]);

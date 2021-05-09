@@ -27,9 +27,9 @@ class MorphToManyFieldTest extends IntegrationTest
 
     public function test_morph_to_many_displays_in_relationships()
     {
-        $user = tap(factory(User::class)->create(), function (User $user) {
+        $user = tap(User::factory()->create(), function (User $user) {
             $user->roles()->attach(
-                factory(Role::class, 3)->create()
+                Role::factory(3)->create()
             );
         });
 
@@ -46,13 +46,13 @@ class MorphToManyFieldTest extends IntegrationTest
     public function test_morph_to_many_works_with_belongs_to_many()
     {
         /** * @var User $user */
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
 
-        tap(factory(Company::class)->create(), function (Company $company) use ($user) {
+        tap(Company::factory()->create(), function (Company $company) use ($user) {
             $company->users()->attach($user->id);
 
             $user->roles()->attach(
-                factory(Role::class, 3)->create()
+                Role::factory(3)->create()
             );
         });
 
@@ -70,7 +70,7 @@ class MorphToManyFieldTest extends IntegrationTest
     public function test_morph_to_many_ignored_when_store()
     {
         /** * @var User $user */
-        $user = factory(User::class)->make();
+        $user = User::factory()->make();
 
         $id = $this->postJson(UserWithRolesRepository::uriKey(), array_merge($user->toArray(), [
             'password' => 'password',

@@ -29,7 +29,10 @@ use Illuminate\Support\Traits\ForwardsCalls;
  */
 abstract class RestController extends BaseController
 {
-    use AuthorizesRequests, DispatchesJobs, ValidatesRequests, ForwardsCalls;
+    use AuthorizesRequests;
+    use DispatchesJobs;
+    use ValidatesRequests;
+    use ForwardsCalls;
 
     protected RestResponse $response;
 

@@ -32,8 +32,10 @@ class CreateRolesTable extends Migration
                 ->on('roles')
                 ->onDelete('cascade');
 
-            $table->primary(['role_id', 'model_id', 'model_type'],
-                'model_has_roles_role_model_type_primary');
+            $table->primary(
+                ['role_id', 'model_id', 'model_type'],
+                'model_has_roles_role_model_type_primary'
+            );
         });
     }
 

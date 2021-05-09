@@ -2,10 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Services;
 
-use Binaryk\LaravelRestify\Contracts\Passportable;
 use Binaryk\LaravelRestify\Contracts\Sanctumable;
 use Binaryk\LaravelRestify\Exceptions\Eloquent\EntityNotFoundException;
-use Binaryk\LaravelRestify\Exceptions\PassportUserException;
 use Binaryk\LaravelRestify\Exceptions\SanctumUserException;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\Verified;
@@ -49,7 +47,6 @@ class AuthService
      * @return Builder|Builder[]|\Illuminate\Database\Eloquent\Collection|Model|null
      * @throws AuthorizationException
      * @throws EntityNotFoundException
-     * @throws PassportUserException
      */
     public function verify(Request $request, $id, $hash = null)
     {
@@ -86,13 +83,13 @@ class AuthService
      * Returns query for User model and validate if it exists.
      *
      * @return Model
-     * @throws PassportUserException
      * @throws SanctumUserException
      * @throws EntityNotFoundException
      */
     public function userQuery()
     {
         $userClass = Config::get('auth.providers.users.model');
+
         try {
             $container = Container::getInstance();
             $userInstance = $container->make($userClass);
@@ -108,22 +105,17 @@ class AuthService
 
     /**
      * @param $userInstance
-     * @throws PassportUserException
      * @throws SanctumUserException
      */
     public function validateUserModel($userInstance)
     {
-        if (config('restify.auth.provider') === 'passport' && false === $userInstance instanceof Passportable) {
-            throw new PassportUserException(__("User is not implementing Binaryk\LaravelRestify\Contracts\Passportable contract. User can use 'Laravel\Passport\HasApiTokens' trait"));
-        }
-
         if (config('restify.auth.provider') === 'sanctum' && false === $userInstance instanceof Sanctumable) {
             throw new SanctumUserException(__("User is not implementing Binaryk\LaravelRestify\Contracts\Sanctumable contract. User should use 'Laravel\Sanctum\HasApiTokens' trait to provide"));
         }
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        return LogoutService::make();
+        return LogoutService::make($request);
     }
 }

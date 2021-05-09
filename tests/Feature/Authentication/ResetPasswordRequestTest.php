@@ -22,7 +22,8 @@ class ResetPasswordRequestTest extends IntegrationTest
 
     public function testRules()
     {
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             'token' => 'required',
             'email' => 'required|email',
             'password' => 'required|confirmed|min:8',

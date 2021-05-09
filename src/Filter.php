@@ -18,8 +18,8 @@ use JsonSerializable;
 
 abstract class Filter implements JsonSerializable
 {
-    use Make,
-        HasMode;
+    use Make;
+    use HasMode;
 
     public string $type = 'value';
 

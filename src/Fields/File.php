@@ -15,7 +15,9 @@ use Illuminate\Support\Facades\Storage;
 
 class File extends Field implements StorableContract, DeletableContract
 {
-    use FileStorable, AcceptsTypes, Deletable;
+    use FileStorable;
+    use AcceptsTypes;
+    use Deletable;
 
     /**
      * The callback that should be used to determine the file's storage name.

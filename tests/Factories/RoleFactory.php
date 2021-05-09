@@ -1,21 +1,18 @@
 <?php
 
+namespace Binaryk\LaravelRestify\Tests\Factories;
+
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
-use Faker\Generator as Faker;
+use Illuminate\Database\Eloquent\Factories\Factory;
 
-/*
-|--------------------------------------------------------------------------
-| Model Factories
-|--------------------------------------------------------------------------
-|
-| This directory should contain each of the model factory definitions for
-| your application. Factories provide a convenient way to generate new
-| model instances for testing / seeding your application's database.
-|
-*/
+class RoleFactory extends Factory
+{
+    protected $model = Role::class;
 
-$factory->define(Role::class, function (Faker $faker) {
-    return [
-        'name' => $faker->word,
-    ];
-});
+    public function definition()
+    {
+        return [
+            'name' => $this->faker->word,
+        ];
+    }
+}

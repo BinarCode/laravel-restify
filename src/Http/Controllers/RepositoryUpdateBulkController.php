@@ -23,7 +23,9 @@ class RepositoryUpdateBulkController extends RepositoryController
                     return $repository
                         ->allowToUpdateBulk($request)
                         ->updateBulk(
-                            $request, $id, $row
+                            $request,
+                            $id,
+                            $row
                         );
                 });
         });

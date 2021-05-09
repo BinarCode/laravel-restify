@@ -44,22 +44,28 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ->assertJsonCount(8, 'data');
 
         $this->assertSame(
-            $response->json('data.4.type'), MatchFilter::TYPE
+            $response->json('data.4.type'),
+            MatchFilter::TYPE
         );
         $this->assertSame(
-            $response->json('data.4.column'), 'title'
+            $response->json('data.4.column'),
+            'title'
         );
         $this->assertSame(
-            $response->json('data.5.type'), SortableFilter::TYPE
+            $response->json('data.5.type'),
+            SortableFilter::TYPE
         );
         $this->assertSame(
-            $response->json('data.5.column'), 'title'
+            $response->json('data.5.column'),
+            'title'
         );
         $this->assertSame(
-            $response->json('data.6.type'), SearchableFilter::TYPE
+            $response->json('data.6.type'),
+            SearchableFilter::TYPE
         );
         $this->assertSame(
-            $response->json('data.6.column'), 'id'
+            $response->json('data.6.column'),
+            'id'
         );
     }
 
@@ -92,8 +98,8 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
     public function test_value_filter_doesnt_require_value()
     {
-        factory(Post::class)->create(['is_active' => false]);
-        factory(Post::class)->create(['is_active' => true]);
+        Post::factory()->create(['is_active' => false]);
+        Post::factory()->create(['is_active' => true]);
 
         $filters = base64_encode(json_encode([
             [
@@ -111,8 +117,8 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
     public function test_the_boolean_filter_is_applied()
     {
-        factory(Post::class)->create(['is_active' => false]);
-        factory(Post::class)->create(['is_active' => true]);
+        Post::factory()->create(['is_active' => false]);
+        Post::factory()->create(['is_active' => true]);
 
         $availableFilters = $this
             ->get(PostRepository::uriKey().'/filters?include=matches')
@@ -139,8 +145,8 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
     public function test_the_select_filter_is_applied(): void
     {
-        factory(Post::class)->create(['category' => 'movie']);
-        factory(Post::class)->create(['category' => 'article']);
+        Post::factory()->create(['category' => 'movie']);
+        Post::factory()->create(['category' => 'article']);
 
         $filters = base64_encode(json_encode([
             [
@@ -156,8 +162,8 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
     public function test_the_timestamp_filter_is_applied(): void
     {
-        factory(Post::class)->create(['created_at' => now()->addYear()]);
-        factory(Post::class)->create(['created_at' => now()->subYear()]);
+        Post::factory()->create(['created_at' => now()->addYear()]);
+        Post::factory()->create(['created_at' => now()->subYear()]);
 
         $filters = base64_encode(json_encode([
             [

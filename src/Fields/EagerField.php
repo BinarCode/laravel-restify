@@ -34,8 +34,9 @@ class EagerField extends Field
     public function authorize(Request $request)
     {
         return call_user_func(
-                [$this->repositoryClass, 'authorizedToUseRepository'], $request
-            ) && parent::authorize($request);
+            [$this->repositoryClass, 'authorizedToUseRepository'],
+            $request
+        ) && parent::authorize($request);
     }
 
     public function resolve($repository, $attribute = null)
@@ -69,13 +70,14 @@ class EagerField extends Field
         return $this;
     }
 
-    public function getRelation(Repository $repository): Relation
+    public function getRelation(Repository $repository = null): Relation
     {
-        return $repository->resource->newQuery()
-            ->getRelation($this->relation);
+        $repository = $repository ?? $this->parentRepository;
+
+        return $repository->resource->{$this->relation}();
     }
 
-    public function getRelatedModel(Repository $repository): ?Model
+    public function getRelatedModel(Repository $repository): Model
     {
         return $this->getRelation($repository)->getRelated();
     }

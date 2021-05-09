@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Repositories\Concerns;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Mockery;
 use Mockery\MockInterface;
 use RuntimeException;
@@ -55,7 +56,7 @@ trait Mockable
     /**
      * Hotswap the underlying instance behind the facade.
      *
-     * @param mixed $instance
+     * @param  mixed  $instance
      * @return void
      */
     public static function swap($instance)
@@ -105,7 +106,7 @@ trait Mockable
     /**
      * Set the application instance.
      *
-     * @param \Illuminate\Contracts\Foundation\Application $app
+     * @param  \Illuminate\Contracts\Foundation\Application  $app
      * @return void
      */
     public static function setApplication($app)
@@ -159,7 +160,7 @@ trait Mockable
         throw new RuntimeException('Repository does not implement uriKey method.');
     }
 
-    public static function getMock(): ?MockInterface
+    public static function getMock(): null | MockInterface | Repository
     {
         return static::isMock()
             ? static::$resolvedInstance[static::uriKey()]

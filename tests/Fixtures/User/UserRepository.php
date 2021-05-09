@@ -25,6 +25,8 @@ class UserRepository extends Repository
         'posts',
     ];
 
+    public static $middleware = [];
+
     public static $match = [
         'created_at' => RestifySearchable::MATCH_DATETIME,
     ];

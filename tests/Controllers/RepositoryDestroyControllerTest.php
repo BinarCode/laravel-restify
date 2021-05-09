@@ -19,7 +19,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
     public function test_destroy_works()
     {
-        $post = factory(Post::class)->create(['user_id' => 1]);
+        $post = Post::factory()->create(['user_id' => 1]);
 
         $this->assertInstanceOf(Post::class, Post::find($post->id));
 
@@ -35,7 +35,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
     {
         Gate::policy(Post::class, PostPolicy::class);
 
-        $post = factory(Post::class)->create(['user_id' => 1]);
+        $post = Post::factory()->create(['user_id' => 1]);
 
         $_SERVER['restify.post.delete'] = false;
 
@@ -48,7 +48,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
     {
         $this->authenticate();
 
-        $post = factory(Post::class)->create([
+        $post = Post::factory()->create([
             'title' => 'Original title',
         ]);
 

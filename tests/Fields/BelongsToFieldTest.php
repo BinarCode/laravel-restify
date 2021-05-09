@@ -38,8 +38,8 @@ class BelongsToFieldTest extends IntegrationTest
 
     public function test_present_on_show_when_specified_related()
     {
-        $post = factory(Post::class)->create([
-            'user_id' => factory(User::class),
+        $post = Post::factory()->create([
+            'user_id' => User::factory(),
         ]);
 
         $relationships = $this->get(PostWithUserRepository::uriKey()."/$post->id?related=user")
@@ -70,8 +70,8 @@ class BelongsToFieldTest extends IntegrationTest
 
         Gate::policy(User::class, UserPolicy::class);
 
-        tap(factory(Post::class)->create([
-            'user_id' => factory(User::class),
+        tap(Post::factory()->create([
+            'user_id' => User::factory(),
         ]), function ($post) {
             $this->get(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
                 ->assertForbidden();
@@ -84,7 +84,7 @@ class BelongsToFieldTest extends IntegrationTest
 
         Gate::policy(User::class, UserPolicy::class);
 
-        tap(factory(Post::class)->create([
+        tap(Post::factory()->create([
             'user_id' => null,
         ]), function ($post) {
             $this->get(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
@@ -97,7 +97,7 @@ class BelongsToFieldTest extends IntegrationTest
 
     public function test_field_used_when_storing()
     {
-        tap(factory(User::class)->create(), function ($user) {
+        tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
                 'user' => $user->id,
@@ -121,7 +121,7 @@ class BelongsToFieldTest extends IntegrationTest
                     }),
             ]);
 
-        tap(factory(User::class)->create(), function ($user) {
+        tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
                 'user' => $user->id,
@@ -137,7 +137,7 @@ class BelongsToFieldTest extends IntegrationTest
 
         $this->assertDatabaseCount('posts', 0);
 
-        tap(factory(User::class)->create(), function ($user) {
+        tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
                 'user' => $user->id,
@@ -160,7 +160,7 @@ class BelongsToFieldTest extends IntegrationTest
     {
         Gate::policy(Post::class, PostPolicyWithoutMethod::class);
 
-        tap(factory(User::class)->create(), function ($user) {
+        tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
                 'user' => $user->id,
@@ -170,10 +170,10 @@ class BelongsToFieldTest extends IntegrationTest
 
     public function test_field_used_when_updating()
     {
-        tap(factory(Post::class)->create([
-            'user_id' => factory(User::class),
+        tap(Post::factory()->create([
+            'user_id' => User::factory(),
         ]), function ($post) {
-            $newOwner = factory(User::class)->create();
+            $newOwner = User::factory()->create();
             $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
@@ -189,11 +189,11 @@ class BelongsToFieldTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        tap(factory(Post::class)->create([
-            'user_id' => factory(User::class),
+        tap(Post::factory()->create([
+            'user_id' => User::factory(),
         ]), function ($post) {
             $firstOwnerId = $post->user->id;
-            $newOwner = factory(User::class)->create();
+            $newOwner = User::factory()->create();
             $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,

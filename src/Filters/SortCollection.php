@@ -24,6 +24,7 @@ class SortCollection extends Collection
 
             if ($queryKey instanceof SortableFilter) {
                 $unified[] = $queryKey;
+
                 continue;
             }
 

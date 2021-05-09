@@ -30,7 +30,9 @@ class FieldDestroyController extends Controller
         }
 
         DeleteField::forRequest(
-            $request, $field, $repository->resource
+            $request,
+            $field,
+            $repository->resource
         )->save();
 
         return response()->noContent();

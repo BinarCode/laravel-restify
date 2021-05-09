@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
 
 class GlobalSearch
@@ -43,6 +44,7 @@ class GlobalSearch
     {
         $formatted = [];
 
+        /** * @var Repository $repository */
         foreach ($this->getSearchResults() as $repository => $models) {
             foreach ($models as $model) {
                 $instance = $repository::resolveWith($model);

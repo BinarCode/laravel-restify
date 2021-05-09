@@ -17,7 +17,8 @@ class RepositoryShowController extends RepositoryController
                 $request,
                 $repository::mainQuery($request, $query->with($repository::getWiths()))
             )),
-            fn ($query) => $repository::showQuery($request, $query))->firstOrFail())
+            fn ($query) => $repository::showQuery($request, $query)
+        )->firstOrFail())
             ->allowToShow($request)
             ->show($request, request('repositoryId'));
     }

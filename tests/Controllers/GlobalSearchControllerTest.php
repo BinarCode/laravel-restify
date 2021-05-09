@@ -15,10 +15,10 @@ class GlobalSearchControllerTest extends IntegrationTest
 
     public function test_global_search_returns_matches(): void
     {
-        factory(Post::class)->create(['title' => 'First post']);
-        factory(Post::class)->create(['title' => 'Second post']);
-        factory(User::class)->create(['name' => 'First user']);
-        factory(User::class)->create(['name' => 'Second user']);
+        Post::factory()->create(['title' => 'First post']);
+        Post::factory()->create(['title' => 'Second post']);
+        User::factory()->create(['name' => 'First user']);
+        User::factory()->create(['name' => 'Second user']);
 
         $response = $this
             ->withoutExceptionHandling()
@@ -35,8 +35,8 @@ class GlobalSearchControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.allowRestify'] = false;
 
-        factory(Post::class)->create();
-        factory(User::class)->create();
+        Post::factory()->create();
+        User::factory()->create();
 
         $response = $this
             ->withoutExceptionHandling()
@@ -53,8 +53,8 @@ class GlobalSearchControllerTest extends IntegrationTest
             $query->where('id', 2);
         };
 
-        factory(Post::class)->create(['title' => 'First post']);
-        factory(User::class)->create(['name' => 'First user']);
+        Post::factory()->create(['title' => 'First post']);
+        User::factory()->create(['name' => 'First user']);
 
         $response = $this
             ->withoutExceptionHandling()

@@ -11,10 +11,10 @@ trait ProxiesCanSeeToGate
      * Indicate that the entity can be seen when a given authorization ability is available.
      *
      * @param  string  $ability
-     * @param  array|mixed  $arguments
-     * @return ProxiesCanSeeToGate
+     * @param  null|array  $arguments
+     * @return self
      */
-    public function canSeeWhen($ability, $arguments = [])
+    public function canSeeWhen(string $ability, null | array $arguments = [])
     {
         $arguments = Arr::wrap($arguments);
 

@@ -19,7 +19,10 @@ use JsonSerializable;
 
 abstract class Action implements JsonSerializable
 {
-    use AuthorizedToSee, ProxiesCanSeeToGate, Make, Visibility;
+    use AuthorizedToSee;
+    use ProxiesCanSeeToGate;
+    use Make;
+    use Visibility;
 
     /**
      * Number of models into a chunk when action for 'all'.

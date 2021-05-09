@@ -22,7 +22,8 @@ class RestifyLoginRequestTest extends IntegrationTest
 
     public function testRules()
     {
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             'email' => 'required|email',
             'password' => 'required|min:6',
         ],

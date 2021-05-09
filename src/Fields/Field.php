@@ -22,6 +22,8 @@ class Field extends OrganicField implements JsonSerializable
      */
     public $repository;
 
+    public Repository $parentRepository;
+
     /**
      * Column name of the field.
      * @var string|callable|null
@@ -219,26 +221,40 @@ class Field extends OrganicField implements JsonSerializable
 
         if (is_callable($this->fillCallback)) {
             return call_user_func(
-                $this->fillCallback, $request, $model, $this->label ?? $this->attribute, $bulkRow
+                $this->fillCallback,
+                $request,
+                $model,
+                $this->label ?? $this->attribute,
+                $bulkRow
             );
         }
 
         if ($this->isHidden($request)) {
             return $this->fillAttributeFromValue(
-                $request, $model, $this->label ?? $this->attribute
+                $request,
+                $model,
+                $this->label ?? $this->attribute
             );
         }
 
         $this->fillAttributeFromRequest(
-            $request, $model, $this->label ?? $this->attribute, $bulkRow
+            $request,
+            $model,
+            $this->label ?? $this->attribute,
+            $bulkRow
         );
 
         $this->fillAttributeFromCallback(
-            $request, $model, $this->label ?? $this->attribute, $bulkRow
+            $request,
+            $model,
+            $this->label ?? $this->attribute,
+            $bulkRow
         );
 
         $this->fillAttributeFromValue(
-            $request, $model, $this->label ?? $this->attribute
+            $request,
+            $model,
+            $this->label ?? $this->attribute
         );
 
         return $this;
@@ -262,7 +278,9 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        tap(($request->input($attribute) ?? $request[$attribute]), fn ($value) => $model->{$this->attribute} = $request->has($attribute)
+        tap(
+            ($request->input($attribute) ?? $request[$attribute]),
+            fn ($value) => $model->{$this->attribute} = $request->has($attribute)
             ? $value
             : $model->{$this->attribute}
         );
@@ -673,6 +691,13 @@ class Field extends OrganicField implements JsonSerializable
     public function setRepository(Repository $repository): Field
     {
         $this->repository = $repository;
+
+        return $this;
+    }
+
+    public function setParentRepository(Repository $repository): Field
+    {
+        $this->parentRepository = $repository;
 
         return $this;
     }

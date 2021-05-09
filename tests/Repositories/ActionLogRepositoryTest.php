@@ -24,7 +24,7 @@ class ActionLogRepositoryTest extends IntegrationTest
         $this->authenticate();
 
         $log = ActionLog::forRepositoryStored(
-            factory(User::class)->create(),
+            User::factory()->create(),
             $this->authenticatedAs
         );
 

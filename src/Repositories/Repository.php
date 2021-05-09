@@ -23,7 +23,9 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
@@ -42,17 +44,17 @@ use JsonSerializable;
  */
 abstract class Repository implements RestifySearchable, JsonSerializable
 {
-    use InteractWithSearch,
-        ValidatingTrait,
-        PerformsQueries,
-        ConditionallyLoadsAttributes,
-        DelegatesToResource,
-        ResolvesActions,
-        RepositoryEvents,
-        WithRoutePrefix,
-        InteractWithFields,
-        InteractsWithAttachers,
-        Mockable;
+    use InteractWithSearch;
+    use ValidatingTrait;
+    use PerformsQueries;
+    use ConditionallyLoadsAttributes;
+    use DelegatesToResource;
+    use ResolvesActions;
+    use RepositoryEvents;
+    use WithRoutePrefix;
+    use InteractWithFields;
+    use InteractsWithAttachers;
+    use Mockable;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -277,7 +279,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return app(static::guessModelClassName());
     }
 
-    public static function query(RestifyRequest $request)
+    public static function query(RestifyRequest $request): Builder | Relation
     {
         if (! $request->isViaRepository()) {
             return static::newModel()->query();
@@ -289,7 +291,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Resolvable filters for the repository.
      *
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @return array
      */
     public function filters(RestifyRequest $request): array
@@ -298,7 +300,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @return FieldCollection
      */
     public function collectFields(RestifyRequest $request)
@@ -375,23 +377,20 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @param $model
      * @return Repository
      */
-    public static function resolveWith($model)
+    public static function resolveWith($model): Repository
     {
         if (static::isMock()) {
             return static::getMock()->withResource($model);
         }
 
-        /** * @var Repository $self */
-        $self = resolve(static::class);
-
-        return $self->withResource($model);
+        return resolve(static::class)->withResource($model);
     }
 
     /**
      * Handle dynamic static method calls into the method.
      *
-     * @param string $method
-     * @param array $parameters
+     * @param  string  $method
+     * @param  array  $parameters
      * @return mixed
      */
     public static function __callStatic($method, $parameters)
@@ -420,15 +419,15 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      *
      * However all options could be customized by passing an $options argument
      *
-     * @param Router $router
-     * @param array $attributes
-     * @param bool $wrap Choose the routes defined in the @routes method, should be wrapped in a group with attributes by default.
+     * @param  Router  $router
+     * @param  array  $attributes
+     * @param  bool  $wrap  Choose the routes defined in the @routes method, should be wrapped in a group with attributes by default.
      * If true then all routes will be grouped in a configuration attributes passed by restify, otherwise
      * you should take care of that, by adding $router->group($attributes) in the @routes method
      */
     public static function routes(Router $router, array $attributes, $wrap = false)
     {
-        $router->group($attributes, function ($router) {
+        $router->group($attributes, function () {
             // override for custom routes
         });
     }
@@ -487,7 +486,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Return the attributes list.
      *
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @return array
      */
     public function resolveIndexAttributes($request)
@@ -566,7 +565,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Return a list with relationship for the current model.
      *
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @return array
      */
     public function resolveRelationships($request): array
@@ -613,14 +612,17 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         // Check if the user has the policy allowRestify
 
         // Check if the model was set under the repository
-        throw_if($this->model() instanceof NullModel, InstanceOfException::because(__('Model is not defined in the repository.')));
+        throw_if(
+            $this->model() instanceof NullModel,
+            InstanceOfException::because(__('Model is not defined in the repository.'))
+        );
 
         /** *
          * Apply all of the query: search, match, sort, related.
          * @var AbstractPaginator $paginator
          */
         $paginator = RepositorySearchService::instance()->search($request, $this)
-            ->paginate($request->perPage ?? static::$defaultPerPage);
+            ->paginate($request->query('perPage') ?? static::$defaultPerPage);
 
         $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
             return static::resolveWith($value);
@@ -628,22 +630,28 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return $repository->authorizedToShow($request);
         })->values();
 
-        return $this->response(
+        return response()->json(
             $this->filter([
                 'meta' => $this->when(
                     $meta = $this->resolveIndexMainMeta(
-                        $request, $models = $items->map(fn (self $repository) => $repository->resource), RepositoryCollection::meta($paginator->toArray())
-                    ), $meta
+                        $request,
+                        $models = $items->map(fn (self $repository) => $repository->resource),
+                        RepositoryCollection::meta($paginator->toArray())
+                    ),
+                    $meta
                 ),
                 'links' => $this->when(
-                    $links = $this->resolveIndexLinks($request, $models, array_merge(RepositoryCollection::paginationLinks($paginator->toArray()), [
-                        'filters' => Restify::path(static::uriKey().'/filters'),
-                    ])),
+                    $links = $this->resolveIndexLinks(
+                        $request,
+                        $models,
+                        array_merge(RepositoryCollection::paginationLinks($paginator->toArray()), [
+                            'filters' => Restify::path(static::uriKey().'/filters'),
+                        ])
+                    ),
                     $links
                 ),
                 'data' => $items->map(fn (self $repository) => $repository->serializeForIndex($request)),
-            ]
-            )
+            ])
         );
     }
 
@@ -671,7 +679,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         DB::transaction(function () use ($request) {
             static::fillFields(
-                $request, $this->resource,
+                $request,
+                $this->resource,
                 $fields = $this->collectFields($request)
                     ->forStore($request, $this)
                     ->authorizedStore($request)
@@ -791,7 +800,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $eagerField = $this->authorizeBelongsToMany($request)->belongsToManyField($request);
 
         DB::transaction(function () use ($request, $pivots, $eagerField) {
-            $fields = $eagerField->collectPivotFields()->filter(fn ($pivotField) => $request->has($pivotField->attribute))->values();
+            $fields = $eagerField->collectPivotFields()->filter(fn (
+                $pivotField
+            ) => $request->has($pivotField->attribute))->values();
 
             $pivots->map(function ($pivot) use ($request, $fields, $eagerField) {
                 $eagerField->validate($request, $pivot);
@@ -963,7 +974,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
             'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
-            'meta' => $this->when(value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)), $meta),
+            'meta' => $this->when(
+                value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
+                $meta
+            ),
             'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots),
         ]);
     }
@@ -1009,9 +1023,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Fill each field separately.
      *
-     * @param RestifyRequest $request
-     * @param Model $model
-     * @param Collection $fields
+     * @param  RestifyRequest  $request
+     * @param  Model  $model
+     * @param  Collection  $fields
      * @return Collection
      */
     protected static function fillFields(RestifyRequest $request, Model $model, Collection $fields)
@@ -1019,8 +1033,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $fields->map(fn (Field $field) => $field->fillAttribute($request, $model));
     }
 
-    protected static function fillBulkFields(RestifyRequest $request, Model $model, Collection $fields, int $bulkRow = null)
-    {
+    protected static function fillBulkFields(
+        RestifyRequest $request,
+        Model $model,
+        Collection $fields,
+        int $bulkRow = null
+    ) {
         return $fields->map(function (Field $field) use ($request, $model, $bulkRow) {
             return $field->fillAttribute($request, $model, $bulkRow);
         });
@@ -1031,7 +1049,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return Str::replaceFirst('//', '/', Restify::path().'/'.static::uriKey().'/'.$model->getKey());
     }
 
-    public static function collectMiddlewares(RestifyRequest $request): ?Collection
+    public static function collectMiddlewares(RestifyRequest $request): Collection
     {
         return collect(static::$middleware);
     }
@@ -1067,7 +1085,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             'match' => static::collectFilters('matches'),
             'searchables' => static::collectFilters('searchables'),
             'actions' => $this->resolveActions($request)->filter(fn (Action $action) => $action->isShownOnIndex(
-                $request, $this
+                $request,
+                $this
             ))->values(),
         ];
     }

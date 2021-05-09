@@ -45,7 +45,7 @@ class Restify
      * @param string $key
      * @return string
      */
-    public static function repositoryForKey($key)
+    public static function repositoryForKey(string $key): ?string
     {
         return collect(static::$repositories)->first(function ($value) use ($key) {
             return $value::uriKey() === $key;
@@ -112,10 +112,10 @@ class Restify
 
         foreach ((new Finder)->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
-                    ['/', '.php'],
-                    ['\\', ''],
-                    Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
-                );
+                ['/', '.php'],
+                ['\\', ''],
+                Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+            );
 
             if (is_subclass_of($repository, Repository::class) && (new ReflectionClass($repository))->isInstantiable()) {
                 $repositories[] = $repository;

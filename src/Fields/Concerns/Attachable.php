@@ -64,7 +64,9 @@ trait Attachable
     {
         collect(Arr::wrap($request->input($request->relatedRepository)))->each(function ($relatedRepositoryId) use ($request) {
             $pivot = $this->initializePivot(
-                $request, $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(), $relatedRepositoryId
+                $request,
+                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(),
+                $relatedRepositoryId
             );
 
             if (! $this->authorizedToAttach($request, $pivot)) {
@@ -136,7 +138,8 @@ trait Attachable
     public function withPivot($fields)
     {
         $this->pivotFields = array_merge(
-            $this->pivotFields, is_array($fields) ? $fields : func_get_args()
+            $this->pivotFields,
+            is_array($fields) ? $fields : func_get_args()
         );
 
         return $this;

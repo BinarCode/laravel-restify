@@ -13,7 +13,7 @@ class ActionLogTest extends IntegrationTest
         $this->authenticate();
 
         $log = ActionLog::forRepositoryStored(
-            factory(User::class)->create(),
+            User::factory()->create(),
             $this->authenticatedAs
         );
 
@@ -34,7 +34,7 @@ class ActionLogTest extends IntegrationTest
     {
         $this->authenticate();
 
-        $user = factory(User::class)->create([
+        $user = User::factory()->create([
             'email' => 'initial@mail',
         ]);
 
@@ -70,7 +70,7 @@ class ActionLogTest extends IntegrationTest
     {
         $this->authenticate();
 
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
 
         $log = ActionLog::forRepositoryDestroy(
             $user,

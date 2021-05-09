@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 
 class RepositorySearchService extends Searchable
 {
@@ -16,19 +17,21 @@ class RepositorySearchService extends Searchable
      */
     protected $repository;
 
-    public function search(RestifyRequest $request, Repository $repository)
+    public function search(RestifyRequest $request, Repository $repository): Builder | Relation
     {
         $this->repository = $repository;
 
         $query = $this->prepareMatchFields(
             $request,
             $this->prepareSearchFields($request, $this->prepareRelations($request, $repository::query($request)), $this->fixedInput),
-            $this->fixedInput);
+            $this->fixedInput
+        );
 
         $query = $this->applyFilters($request, $repository, $query);
 
         return tap(
-            tap($this->prepareOrders($request, $query), $this->applyMainQuery($request, $repository)), $this->applyIndexQuery($request, $repository)
+            tap($this->prepareOrders($request, $query), $this->applyMainQuery($request, $repository)),
+            $this->applyIndexQuery($request, $repository)
         );
     }
 

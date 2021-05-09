@@ -32,7 +32,8 @@ trait MailTracking
     protected function assertEmailWasSent()
     {
         $this->assertNotEmpty(
-            $this->emails, 'No emails have been sent.'
+            $this->emails,
+            'No emails have been sent.'
         );
 
         return $this;
@@ -44,7 +45,8 @@ trait MailTracking
     protected function assertEmailWasNotSent()
     {
         $this->assertEmpty(
-            $this->emails, 'Did not expect any emails to have been sent.'
+            $this->emails,
+            'Did not expect any emails to have been sent.'
         );
 
         return $this;
@@ -61,7 +63,8 @@ trait MailTracking
         $emailsSent = count($this->emails);
 
         $this->assertCount(
-            $count, $this->emails,
+            $count,
+            $this->emails,
             "Expected $count emails to have been sent, but $emailsSent were."
         );
 
@@ -78,7 +81,8 @@ trait MailTracking
     protected function assertEmailEquals($body, Swift_Message $message = null)
     {
         $this->assertEquals(
-            $body, $this->getEmail($message)->getBody(),
+            $body,
+            $this->getEmail($message)->getBody(),
             'No email with the provided body was sent.'
         );
 
@@ -95,7 +99,8 @@ trait MailTracking
     protected function assertEmailContains($excerpt, Swift_Message $message = null)
     {
         $this->assertContains(
-            $excerpt, $this->getEmail($message)->getBody(),
+            $excerpt,
+            $this->getEmail($message)->getBody(),
             'No email containing the provided body was found.'
         );
 
@@ -112,7 +117,8 @@ trait MailTracking
     protected function assertEmailSubject($subject, Swift_Message $message = null)
     {
         $this->assertEquals(
-            $subject, $this->getEmail($message)->getSubject(),
+            $subject,
+            $this->getEmail($message)->getSubject(),
             "No email with a subject of $subject was found."
         );
 
@@ -129,7 +135,8 @@ trait MailTracking
     protected function assertEmailTo($recipient, Swift_Message $message = null)
     {
         $this->assertArrayHasKey(
-            $recipient, (array) $this->getEmail($message)->getTo(),
+            $recipient,
+            (array) $this->getEmail($message)->getTo(),
             "No email was sent to $recipient."
         );
 
@@ -146,7 +153,8 @@ trait MailTracking
     protected function assertEmailFrom($sender, Swift_Message $message = null)
     {
         $this->assertArrayHasKey(
-            $sender, (array) $this->getEmail($message)->getFrom(),
+            $sender,
+            (array) $this->getEmail($message)->getFrom(),
             "No email was sent from $sender."
         );
 

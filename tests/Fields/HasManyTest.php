@@ -38,9 +38,9 @@ class HasManyTest extends IntegrationTest
 
     public function test_has_many_present_on_relations()
     {
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
 
-        factory(Post::class)->times(2)->create([
+        Post::factory()->times(2)->create([
             'user_id' => $user->id,
         ]);
 
@@ -84,7 +84,7 @@ class HasManyTest extends IntegrationTest
 
     public function test_field_ignored_when_storing()
     {
-        tap(factory(User::class)->create(), function ($user) {
+        tap(User::factory()->create(), function ($user) {
             $this->postJson(UserWithPosts::uriKey(), [
                 'name' => 'Eduard Lupacescu',
                 'email' => 'eduard.lupacescu@binarcode.com',

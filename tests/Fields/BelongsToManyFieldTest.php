@@ -13,9 +13,9 @@ class BelongsToManyFieldTest extends IntegrationTest
 {
     public function test_belongs_to_many_displays_on_relationships_show()
     {
-        $company = tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach(
-                factory(User::class, 5)->create()
+                User::factory(5)->create()
             );
         });
 
@@ -31,9 +31,9 @@ class BelongsToManyFieldTest extends IntegrationTest
 
     public function test_belongs_to_many_can_hide_relationships_from_show()
     {
-        $company = tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach(
-                factory(User::class, 5)->create()
+                User::factory(5)->create()
             );
         });
 
@@ -53,9 +53,9 @@ class BelongsToManyFieldTest extends IntegrationTest
 
     public function test_belongs_to_many_can_hide_relationships_from_index()
     {
-        tap(factory(Company::class)->create(), function (Company $company) {
+        tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach(
-                factory(User::class)->create()
+                User::factory()->create()
             );
         });
 
@@ -82,9 +82,9 @@ class BelongsToManyFieldTest extends IntegrationTest
 
     public function test_belongs_to_many_generates_nested_uri()
     {
-        $company = tap(factory(Company::class)->create(), function (Company $company) {
+        $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach(
-                factory(User::class)->create()
+                User::factory()->create()
             );
         });
 
@@ -100,9 +100,9 @@ class BelongsToManyFieldTest extends IntegrationTest
     public function test_belongs_to_many_ignored_when_storing()
     {
         /** * @var User $user */
-        $user = factory(User::class)->create();
+        $user = User::factory()->create();
 
-        $companies = factory(Company::class, 5)->create();
+        $companies = Company::factory(5)->create();
 
         $user->companies()->attach($companies);
 
