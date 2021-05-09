@@ -22,7 +22,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
         PostRepository::$middleware = [
             function () {
                 abort(404);
-            }
+            },
         ];
 
         $this->getJson(PostRepository::to())->assertNotFound();

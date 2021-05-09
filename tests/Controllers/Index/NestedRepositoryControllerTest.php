@@ -8,7 +8,6 @@ use Binaryk\LaravelRestify\Tests\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
@@ -46,7 +45,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
         ];
 
         $this->getJson("users/$post->user_id/posts/$post->id")
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', 'Post.')
                 ->etc()
             );
@@ -69,7 +68,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
             'title' => $title = 'Post.',
         ])
             ->assertStatus(201)
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', $title)
                 ->etc()
             );
@@ -98,7 +97,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
         $this->putJson("users/$post->user_id/posts/$post->id", [
             'title' => $title = 'Updated.',
         ])
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', $title)
                 ->etc()
             );

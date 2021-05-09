@@ -60,7 +60,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         PostRepository::partialMock()
             ->shouldReceive('fieldsForUpdate')
             ->andreturn([
-                Field::new('image')->canUpdate(fn() => false),
+                Field::new('image')->canUpdate(fn () => false),
 
                 Field::new('title'),
             ]);
@@ -72,7 +72,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             'image' => 'avatar.png',
             'title' => $updated = 'Updated',
         ])
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', $updated)
                 ->where('data.attributes.image', null)
                 ->etc()
@@ -96,7 +96,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             'image' => 'avatar.png',
             'title' => $updated = 'Updated',
         ])
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', $updated)
                 ->where('data.attributes.image', null)
                 ->etc()
