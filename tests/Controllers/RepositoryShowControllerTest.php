@@ -39,13 +39,13 @@ class RepositoryShowControllerTest extends IntegrationTest
         PostRepository::partialMock()
             ->shouldReceive('fields')
             ->andReturn([
-                field('title')->canSee(fn() => $_SERVER['postAuthorize.can.see.title']),
+                field('title')->canSee(fn () => $_SERVER['postAuthorize.can.see.title']),
 
                 field('description')->hidden(),
             ]);
 
         $this->getJson(PostRepository::to(1))
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->missing('data.attributes.title')
                 ->etc()
             );
@@ -53,7 +53,7 @@ class RepositoryShowControllerTest extends IntegrationTest
         $_SERVER['postAuthorize.can.see.title'] = true;
 
         $this->getJson(PostRepository::to(1))
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->has('data.attributes.title')
                 ->etc()
             );
@@ -64,7 +64,7 @@ class RepositoryShowControllerTest extends IntegrationTest
         PostRepository::partialMock()
             ->shouldReceive('fields')
             ->andReturn([
-                field('title')->showCallback(fn($value) => strtoupper($value)),
+                field('title')->showCallback(fn ($value) => strtoupper($value)),
             ]);
 
         $this->getJson(PostRepository::to(
@@ -72,7 +72,7 @@ class RepositoryShowControllerTest extends IntegrationTest
                 'title' => 'wew',
             ])->id
         ))
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', 'WEW')
             );
     }
@@ -114,12 +114,11 @@ class RepositoryShowControllerTest extends IntegrationTest
         $this->getJson(PostRepository::to(
             $this->mockPosts()->first()->id
         ))
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(fn (AssertableJson $json) => $json
                 ->missing('data.attributes.description')
                 ->has('data.attributes.title')
                 ->etc()
             );
-
     }
 
     public function test_repository_hidden_fields_could_not_be_updated(): void
@@ -137,7 +136,7 @@ class RepositoryShowControllerTest extends IntegrationTest
         ), [
             'title' => $title = 'Updated title',
             'description' => 'Updated description',
-        ])->assertJson(fn(AssertableJson $json) => $json
+        ])->assertJson(fn (AssertableJson $json) => $json
             ->missing('data.attributes.description')
             ->where('data.attributes.title', $title)
             ->etc()
@@ -157,7 +156,7 @@ class RepositoryShowControllerTest extends IntegrationTest
                 field('title'),
 
                 // A practical example could be `author_id` which gets Auth::id() as value.
-                field('description')->hidden()->value($default = 'Default description')
+                field('description')->hidden()->value($default = 'Default description'),
             ]);
 
         $this->putJson(PostRepository::to(

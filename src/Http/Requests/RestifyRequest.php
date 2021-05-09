@@ -71,8 +71,8 @@ class RestifyRequest extends FormRequest
 
         //TODO: Find another implementation for prefixes:
         $matchSomePrefixes = collect(Restify::$repositories)
-                ->some(fn($repository) => $repository::prefix() === "$viaRepository/$viaRepositoryId")
-            || collect(Restify::$repositories)->some(fn($repository
+                ->some(fn ($repository) => $repository::prefix() === "$viaRepository/$viaRepositoryId")
+            || collect(Restify::$repositories)->some(fn ($repository
             ) => $repository::indexPrefix() === "$viaRepository/$viaRepositoryId");
 
         if ($matchSomePrefixes) {
@@ -97,7 +97,7 @@ class RestifyRequest extends FormRequest
         /** * @var EagerField $eagerField */
         $eagerField = $parentRepository::collectRelated()
             ->forEager($this)
-            ->first(fn($field, $key) => $key === $this->route('repository'));
+            ->first(fn ($field, $key) => $key === $this->route('repository'));
 
         if (is_null($eagerField)) {
             abort(403, 'Eager field missing from the parent ['.$this->route('viaRepository').'] related fields.');

@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * Class Post
+ * Class Post.
  * @property mixed $id
  * @property mixed $user_id
  * @property mixed $image
@@ -17,7 +17,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property mixed $description
  * @property mixed $category
  * @property mixed $is_active
- * @package Binaryk\LaravelRestify\Tests\Fixtures\Post
  */
 class Post extends Model
 {
