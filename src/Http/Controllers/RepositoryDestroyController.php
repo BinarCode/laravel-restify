@@ -13,7 +13,7 @@ class RepositoryDestroyController extends RepositoryController
     public function __invoke(RepositoryDestroyRequest $request): JsonResponse
     {
         $repository = $request->repositoryWith(
-            $model = $request->findModelQuery()->firstOrFail()
+            $model = $request->modelQuery()->firstOrFail()
         )->allowToDestroy($request);
 
         $this->deleteFields($request, $model);

@@ -72,51 +72,42 @@ trait InteractWithRepositories
             return $this->model($uriKey)->newQuery();
         }
 
-        return $this->scopedViaParentModel();
+        return $this->relatedEagerField()->getRelation();
     }
 
-    public function findModelQuery(string $repositoryId = null, string $uriKey = null): Builder|Relation
+    public function viaQuery(): Relation
+    {
+        return $this->relatedEagerField()->getRelation();
+    }
+
+    public function modelQuery(string $repositoryId = null, string $uriKey = null): Builder|Relation
     {
         return $this->newQuery($uriKey)->whereKey(
             $repositoryId ?? $this->route('repositoryId')
         );
     }
 
-    public function findModelOrFail($id = null)
+    public function findModelOrFail($id = null): Model
     {
-        if ($id) {
-            return $this->findModelQuery($id)->firstOrFail();
-        }
-
-        return once(function () {
-            return $this->findModelQuery()->firstOrFail();
-        });
+        return $id
+            ? $this->modelQuery($id)->firstOrFail()
+            : once(function () {
+                return $this->modelQuery()->firstOrFail();
+            });
     }
 
-    public function findRelatedModelOrFail()
+    public function findRelatedModelOrFail(): Model
     {
         return once(function () {
             return $this->findRelatedQuery()->firstOrFail();
         });
     }
 
-    public function findRelatedQuery($relatedRepository = null, $relatedRepositoryId = null)
+    public function findRelatedQuery($relatedRepository = null, $relatedRepositoryId = null): Model|Builder
     {
         return $this->repository($relatedRepository ?? $this->route('relatedRepository'))::newModel()
-            ->newQueryWithoutScopes()
+            ->newQuery()
             ->whereKey($relatedRepositoryId ?? request('relatedRepositoryId'));
-    }
-
-    public function scopedViaParentModel(): Relation
-    {
-        return $this->relatedEagerField()->getRelation();
-    }
-
-    public function viaQuery(): Relation
-    {
-        return with($this->relatedEagerField(), fn(EagerField $field) => $field->getRelation(
-            $field->parentRepository
-        ));
     }
 
     public function isViaRepository(): bool

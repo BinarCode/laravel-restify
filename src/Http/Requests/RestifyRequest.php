@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Http\Requests;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
-use Binaryk\LaravelRestify\Restify;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RestifyRequest extends FormRequest

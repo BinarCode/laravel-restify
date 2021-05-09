@@ -153,7 +153,7 @@ abstract class Action implements JsonSerializable
             Transaction::run(function () use ($request, &$response) {
                 $response = $this->handle(
                     $request,
-                    tap($request->findModelQuery(), function ($query) use ($request) {
+                    tap($request->modelQuery(), function ($query) use ($request) {
                         static::indexQuery($request, $query);
                     })->firstOrFail()
                 );

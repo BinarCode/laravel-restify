@@ -12,7 +12,7 @@ class RepositoryShowController extends RepositoryController
         $repository = $request->repository();
 
         return $request->repositoryWith(tap(
-            tap($request->findModelQuery(), fn ($query) => $repository::detailQuery(
+            tap($request->modelQuery(), fn ($query) => $repository::detailQuery(
                 $request,
                 $repository::mainQuery($request, $query->with($repository::getWiths()))
             )),

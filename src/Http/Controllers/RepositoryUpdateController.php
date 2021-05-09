@@ -9,7 +9,7 @@ class RepositoryUpdateController extends RepositoryController
 {
     public function __invoke(RepositoryUpdateRequest $request)
     {
-        $model = $request->findModelQuery()->lockForUpdate()->firstOrFail();
+        $model = $request->modelQuery()->lockForUpdate()->firstOrFail();
 
         /** * @var Repository $repository */
         $repository = $request->repositoryWith($model);
