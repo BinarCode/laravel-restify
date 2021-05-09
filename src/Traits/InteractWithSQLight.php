@@ -48,14 +48,17 @@ trait InteractWithSQLight
         switch (true) {
             case file_exists($cachePath) && filemtime($modelPath) === filemtime($cachePath):
                 $states['cache-file-found-and-up-to-date']();
+
                 break;
 
             case file_exists($cacheDirectory) && is_writable($cacheDirectory):
                 $states['cache-file-not-found-or-stale']();
+
                 break;
 
             default:
                 $states['no-caching-capabilities']();
+
                 break;
         }
     }
@@ -80,6 +83,7 @@ trait InteractWithSQLight
             foreach ($firstRow as $column => $value) {
                 if ($column === 'id') {
                     $table->increments('id');
+
                     continue;
                 }
 

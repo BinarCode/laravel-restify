@@ -93,6 +93,7 @@ class AuthService
     public function userQuery()
     {
         $userClass = Config::get('auth.providers.users.model');
+
         try {
             $container = Container::getInstance();
             $userInstance = $container->make($userClass);

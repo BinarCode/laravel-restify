@@ -46,8 +46,7 @@ class PerformActionsControllerTest extends IntegrationTest
         PostRepository::partialMock()
             ->shouldReceive('actions')
             ->andReturn([
-                new class extends Action
-                {
+                new class extends Action {
                     public static $uriKey = 'publish';
 
                     public function handle(Request $request, Collection $collection)

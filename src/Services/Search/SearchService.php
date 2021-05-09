@@ -56,6 +56,7 @@ class SearchService extends Searchable
                         case RestifySearchable::MATCH_TEXT:
                         case 'string':
                             $query->where($field, '=', $match);
+
                             break;
                         case RestifySearchable::MATCH_BOOL:
                         case 'boolean':
@@ -63,14 +64,17 @@ class SearchService extends Searchable
                                 $query->where(function ($query) use ($field) {
                                     return $query->where($field, '=', false)->orWhereNull($field);
                                 });
+
                                 break;
                             }
                             $query->where($field, '=', true);
+
                             break;
                         case RestifySearchable::MATCH_INTEGER:
                         case 'number':
                         case 'int':
                             $query->where($field, '=', (int) $match);
+
                             break;
                     }
                 }

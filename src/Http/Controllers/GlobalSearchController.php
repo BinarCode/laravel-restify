@@ -12,7 +12,8 @@ class GlobalSearchController extends RepositoryController
     public function __invoke(GlobalSearchRequest $request): JsonResponse
     {
         $results = (new GlobalSearch(
-            $request, Restify::globallySearchableRepositories($request)
+            $request,
+            Restify::globallySearchableRepositories($request)
         ))->get();
 
         return data($results);

@@ -34,8 +34,9 @@ class EagerField extends Field
     public function authorize(Request $request)
     {
         return call_user_func(
-                [$this->repositoryClass, 'authorizedToUseRepository'], $request
-            ) && parent::authorize($request);
+            [$this->repositoryClass, 'authorizedToUseRepository'],
+            $request
+        ) && parent::authorize($request);
     }
 
     public function resolve($repository, $attribute = null)

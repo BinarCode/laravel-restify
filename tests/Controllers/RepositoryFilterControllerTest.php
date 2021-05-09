@@ -44,22 +44,28 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ->assertJsonCount(8, 'data');
 
         $this->assertSame(
-            $response->json('data.4.type'), MatchFilter::TYPE
+            $response->json('data.4.type'),
+            MatchFilter::TYPE
         );
         $this->assertSame(
-            $response->json('data.4.column'), 'title'
+            $response->json('data.4.column'),
+            'title'
         );
         $this->assertSame(
-            $response->json('data.5.type'), SortableFilter::TYPE
+            $response->json('data.5.type'),
+            SortableFilter::TYPE
         );
         $this->assertSame(
-            $response->json('data.5.column'), 'title'
+            $response->json('data.5.column'),
+            'title'
         );
         $this->assertSame(
-            $response->json('data.6.type'), SearchableFilter::TYPE
+            $response->json('data.6.type'),
+            SearchableFilter::TYPE
         );
         $this->assertSame(
-            $response->json('data.6.column'), 'id'
+            $response->json('data.6.column'),
+            'id'
         );
     }
 

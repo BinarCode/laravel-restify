@@ -43,14 +43,16 @@ trait InteractWithRepositories
                 ]));
             }
 
-            if (!$repository::authorizedToUseRepository($this)) {
-                abort(403, __('Unauthorized to view repository :name. Check "allowRestify" policy.',
+            if (! $repository::authorizedToUseRepository($this)) {
+                abort(403, __(
+                    'Unauthorized to view repository :name. Check "allowRestify" policy.',
                     [
                         'name' => $repository,
-                    ]));
+                    ]
+                ));
             }
 
-            if (!$repository::authorizedToUseRoute($this)) {
+            if (! $repository::authorizedToUseRoute($this)) {
                 abort(403, __('Unauthorized to use the route :name. Check prefix.', [
                     'name' => $this->getRequestUri(),
                 ]));
@@ -118,9 +120,9 @@ trait InteractWithRepositories
     }
 
     /** * Get a new, scopeless query builder for the underlying model. */
-    public function newQueryWithoutScopes($uriKey = null): Builder|Relation
+    public function newQueryWithoutScopes($uriKey = null): Builder | Relation
     {
-        if (!$this->isViaRepository()) {
+        if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQueryWithoutScopes();
         }
 
@@ -128,9 +130,9 @@ trait InteractWithRepositories
     }
 
     /** * Get a new query builder for the underlying model. * */
-    public function newQuery($uriKey = null): Builder|Relation
+    public function newQuery($uriKey = null): Builder | Relation
     {
-        if (!$this->isViaRepository()) {
+        if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
         }
 
@@ -197,7 +199,7 @@ trait InteractWithRepositories
     {
         $parent = $this->repository($this->route('viaRepository'));
 
-        return once(fn(
+        return once(fn (
         ) => $parent::newModel()->newQueryWithoutScopes()->whereKey($this->route('viaRepositoryId'))->firstOrFail());
     }
 
@@ -208,7 +210,7 @@ trait InteractWithRepositories
 
     public function viaQuery(): Relation
     {
-        return with($this->relatedEagerField(), fn(EagerField $field) => $field->getRelation(
+        return with($this->relatedEagerField(), fn (EagerField $field) => $field->getRelation(
             $field->parentRepository
         ));
     }

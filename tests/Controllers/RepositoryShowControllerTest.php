@@ -45,7 +45,8 @@ class RepositoryShowControllerTest extends IntegrationTest
             ]);
 
         $this->getJson(PostRepository::to(1))
-            ->assertJson(fn (AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->missing('data.attributes.title')
                 ->etc()
             );
@@ -53,7 +54,8 @@ class RepositoryShowControllerTest extends IntegrationTest
         $_SERVER['postAuthorize.can.see.title'] = true;
 
         $this->getJson(PostRepository::to(1))
-            ->assertJson(fn (AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->has('data.attributes.title')
                 ->etc()
             );
@@ -72,7 +74,8 @@ class RepositoryShowControllerTest extends IntegrationTest
                 'title' => 'wew',
             ])->id
         ))
-            ->assertJson(fn (AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', 'WEW')
             );
     }
@@ -114,7 +117,8 @@ class RepositoryShowControllerTest extends IntegrationTest
         $this->getJson(PostRepository::to(
             $this->mockPosts()->first()->id
         ))
-            ->assertJson(fn (AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->missing('data.attributes.description')
                 ->has('data.attributes.title')
                 ->etc()
@@ -136,7 +140,8 @@ class RepositoryShowControllerTest extends IntegrationTest
         ), [
             'title' => $title = 'Updated title',
             'description' => 'Updated description',
-        ])->assertJson(fn (AssertableJson $json) => $json
+        ])->assertJson(
+            fn (AssertableJson $json) => $json
             ->missing('data.attributes.description')
             ->where('data.attributes.title', $title)
             ->etc()

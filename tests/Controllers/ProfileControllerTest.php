@@ -122,7 +122,8 @@ class ProfileControllerTest extends IntegrationTest
             'name' => 'Ed',
         ])
             ->assertStatus(422)
-            ->assertJson(fn (AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->has('message')
                 ->has('errors')
             );
@@ -134,7 +135,8 @@ class ProfileControllerTest extends IntegrationTest
 
         $this->getJson('profile')
             ->assertOk()
-            ->assertJson(fn (AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->has('data')
                 ->where('data.attributes.email', $this->authenticatedAs->email)
                 ->etc()
@@ -147,7 +149,8 @@ class ProfileControllerTest extends IntegrationTest
 
         $this->getJson('profile?related=posts')
             ->assertOk()
-            ->assertJson(fn (AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->has('data')
                 ->has('data.attributes')
                 ->has('data.relationships.posts')
@@ -165,7 +168,8 @@ class ProfileControllerTest extends IntegrationTest
         ];
 
         $this->getJson('profile')
-            ->assertJson(fn (AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->has('data.attributes')
                 ->has('data.meta.roles')
                 ->etc()
@@ -179,9 +183,10 @@ class ProfileControllerTest extends IntegrationTest
         $this->putJson('profile', [
             'email' => $email = 'contact@binarschool.com',
         ])
-            ->assertJson(fn (AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->where('data.attributes.email', $email)
-        );
+            );
     }
 
     public function test_can_upload_avatar(): void

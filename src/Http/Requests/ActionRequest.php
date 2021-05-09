@@ -21,7 +21,8 @@ class ActionRequest extends RestifyRequest
             return $this->availableActions()->first(function ($action) {
                 return $this->query('action') === $action->uriKey();
             }) ?: abort(
-                $this->actionExists() ? 403 : 404, 'Action does not exists or you don\'t have enough permissions to perform it.'
+                $this->actionExists() ? 403 : 404,
+                'Action does not exists or you don\'t have enough permissions to perform it.'
             );
         });
     }

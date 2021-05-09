@@ -22,7 +22,8 @@ class RestifyPasswordEmailRequestTest extends IntegrationTest
 
     public function testRules()
     {
-        $this->assertEquals([
+        $this->assertEquals(
+            [
             'email' => 'required|email',
         ],
             $this->subject->rules()

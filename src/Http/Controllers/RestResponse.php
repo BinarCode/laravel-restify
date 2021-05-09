@@ -560,7 +560,8 @@ class RestResponse extends JsonResponse implements Responsable
 
     public static function index(AbstractPaginator $paginator, array $meta = []): JsonResponse
     {
-        return response()->json([
+        return response()->json(
+            [
             'meta' => array_merge(RepositoryCollection::meta($paginator->toArray()), $meta),
             'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
             'data' => $paginator->getCollection(),

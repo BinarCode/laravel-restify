@@ -23,8 +23,8 @@ use Illuminate\Validation\ValidationException;
  */
 class AuthServiceForgotPasswordTest extends IntegrationTest
 {
-    use MailTracking,
-        InteractsWithContainer;
+    use MailTracking;
+    use InteractsWithContainer;
 
     /**
      * @var AuthService

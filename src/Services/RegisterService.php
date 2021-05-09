@@ -77,6 +77,7 @@ class RegisterService
             }
         } catch (ReflectionException $e) {
             $concrete = static::$registerFormRequest;
+
             throw new BindingResolutionException("Target class [$concrete] does not exist.", 0, $e);
         }
 

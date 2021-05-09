@@ -112,10 +112,10 @@ class Restify
 
         foreach ((new Finder)->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
-                    ['/', '.php'],
-                    ['\\', ''],
-                    Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
-                );
+                ['/', '.php'],
+                ['\\', ''],
+                Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+            );
 
             if (is_subclass_of($repository, Repository::class) && (new ReflectionClass($repository))->isInstantiable()) {
                 $repositories[] = $repository;

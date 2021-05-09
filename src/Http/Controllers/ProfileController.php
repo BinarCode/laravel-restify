@@ -55,7 +55,8 @@ class ProfileController extends RepositoryController
         }
 
         $user = tap(RepositorySearchService::instance()->search(
-            $request, $repository
+            $request,
+            $repository
         ), function ($query) use ($request, $repository) {
             $repository::indexQuery($request, $query);
         })->whereKey(Auth::id())->firstOrFail();

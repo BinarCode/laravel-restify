@@ -20,7 +20,7 @@ use Orchestra\Testbench\TestCase;
 
 abstract class IntegrationTest extends TestCase
 {
-    protected Mockery\MockInterface|User $authenticatedAs;
+    protected Mockery\MockInterface | User $authenticatedAs;
 
     protected function setUp(): void
     {
@@ -106,16 +106,16 @@ abstract class IntegrationTest extends TestCase
 
     public function mockUsers($count = 1, array $predefinedEmails = []): Collection
     {
-        return Collection::times($count, fn($i) => User::factory()->create())
-            ->merge(collect($predefinedEmails)->each(fn(string $email) => User::factory()->create([
-                'email' => $email
+        return Collection::times($count, fn ($i) => User::factory()->create())
+            ->merge(collect($predefinedEmails)->each(fn (string $email) => User::factory()->create([
+                'email' => $email,
             ])))
             ->shuffle();
     }
 
     public function mockPosts($userId = null, $count = 1): Collection
     {
-        return Collection::times($count, fn() => Post::factory()->create([
+        return Collection::times($count, fn () => Post::factory()->create([
             'user_id' => $userId,
         ]))->shuffle();
     }

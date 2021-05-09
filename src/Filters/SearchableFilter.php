@@ -29,7 +29,8 @@ class SearchableFilter extends Filter
                     $this->belongsToField->getRelatedModel($this->repository)::select($attribute)
                         ->whereColumn(
                             $this->belongsToField->getQualifiedKey($this->repository),
-                            $this->belongsToField->getRelatedKey($this->repository))
+                            $this->belongsToField->getRelatedKey($this->repository)
+                        )
                         ->take(1),
                     $likeOperator,
                     "%{$value}%"

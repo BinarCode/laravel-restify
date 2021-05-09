@@ -40,10 +40,12 @@ class SortableFilter extends Filter
             }
 
             // This approach could be rewritten using join.
-            $query->orderBy($this->belongsToField->getRelatedModel($this->repository)::select($this->getColumn())
+            $query->orderBy(
+                $this->belongsToField->getRelatedModel($this->repository)::select($this->getColumn())
                 ->whereColumn(
                     $this->belongsToField->getQualifiedKey($this->repository),
-                    $this->belongsToField->getRelatedKey($this->repository))
+                    $this->belongsToField->getRelatedKey($this->repository)
+                )
                 ->orderBy($this->getColumn(), $direction)
                 ->take(1),
                 $direction
