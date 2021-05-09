@@ -123,8 +123,8 @@ class AuthService
         }
     }
 
-    public function logout()
+    public function logout(Request $request)
     {
-        return LogoutService::make();
+        return LogoutService::make($request);
     }
 }

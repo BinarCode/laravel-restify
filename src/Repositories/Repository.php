@@ -377,16 +377,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @param $model
      * @return Repository
      */
-    public static function resolveWith($model)
+    public static function resolveWith($model): Repository
     {
         if (static::isMock()) {
             return static::getMock()->withResource($model);
         }
 
-        /** * @var Repository $self */
-        $self = resolve(static::class);
-
-        return $self->withResource($model);
+        return resolve(static::class)->withResource($model);
     }
 
     /**
