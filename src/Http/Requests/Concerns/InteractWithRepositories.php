@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
 use Binaryk\LaravelRestify\Exceptions\RepositoryNotFoundException;
-use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Builder;

@@ -104,7 +104,7 @@ class UserWithPostRepository extends Repository
         ];
     }
 
-    public static function uriKey()
+    public static function uriKey(): string
     {
         return 'user-with-post-repository';
     }

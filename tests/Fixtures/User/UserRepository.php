@@ -16,18 +16,18 @@ class UserRepository extends Repository
 
     public static $wasBooted = false;
 
-    public static $search = [
+    public static array $search = [
         'id',
         'name',
     ];
 
-    public static $related = [
+    public static array $related = [
         'posts',
     ];
 
-    public static $middleware = [];
+    public static array $middleware = [];
 
-    public static $match = [
+    public static array $match = [
         'created_at' => RestifySearchable::MATCH_DATETIME,
     ];
 

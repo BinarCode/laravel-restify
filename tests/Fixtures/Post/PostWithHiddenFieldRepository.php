@@ -12,7 +12,7 @@ class PostWithHiddenFieldRepository extends Repository
 
     public static $uriKey = 'post-with-hidden-fields';
 
-    public static $globallySearchable = false;
+    public static bool $globallySearchable = false;
 
     public function fields(RestifyRequest $request)
     {

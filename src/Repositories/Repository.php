@@ -17,6 +17,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
+use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithModel;
 use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
@@ -36,12 +37,6 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
-/**
- * This class serve as repository collection and repository single model
- * This allow you to use all of the Laravel default repositories features (as adding headers in the response, or customizing
- * response).
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 abstract class Repository implements RestifySearchable, JsonSerializable
 {
     use InteractWithSearch;
@@ -53,6 +48,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     use RepositoryEvents;
     use WithRoutePrefix;
     use InteractWithFields;
+    use InteractsWithModel;
     use InteractsWithAttachers;
     use Mockable;
 
@@ -60,115 +56,108 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
      * This may be a single model or a illuminate collection, or even a paginator instance.
      *
-     * @var Model|LengthAwarePaginator
+     * @var Model
      */
-    public $resource;
-
-//    /**
-//     * The model associated to repository.
-//     *
-//     * @var string
-//     */
-//    public static $model;
+    public Model $resource;
 
     /**
-     * The list of relations available for the details or index.
+     * The list of relations available for the show or index.
      *
      * e.g. ?related=users
      * @var array
      */
-    public static $related;
+    public static array $related;
 
     /**
      * The relationships that should be eager loaded when performing an index query.
      *
      * @var array
      */
-    public static $with = [];
+    public static array $with = [];
 
     /**
      * The list of searchable fields.
      *
      * @var array
      */
-    public static $search;
+    public static array $search;
 
     /**
      * The list of matchable fields.
      *
      * @var array
      */
-    public static $match;
+    public static array $match;
 
     /**
      * The list of fields to be sortable.
      *
      * @var array
      */
-    public static $sort;
+    public static array $sort;
 
     /**
      * Attribute that should be used for displaying single model.
      *
      * @var string
      */
-    public static $title = 'id';
+    public static string $title = 'id';
 
     /**
      * Attribute that should be used for displaying the `id` in the json:format.
      *
      * @var string
      */
-    public static $id = 'id';
+    public static string $id = 'id';
 
     /**
      * Indicates if the repository should be globally searchable.
      *
      * @var bool
      */
-    public static $globallySearchable = true;
+    public static bool $globallySearchable = true;
 
     /**
      * The number of results to display in the global search.
      *
      * @var int
      */
-    public static $globalSearchResults = 5;
+    public static int $globalSearchResults = 5;
 
     /**
      * The list of middlewares for the current repository.
      *
      * @var array
      */
-    public static $middleware = [];
+    public static array $middleware = [];
 
     /**
      * The list of attach callable's.
      *
      * @var array
      */
-    public static $attachers = [];
+    public static array $attachers = [];
 
     /**
      * The list of detach callable's.
      *
      * @var array
      */
-    public static $detachers = [];
+    public static array $detachers = [];
 
     /**
      * Indicates if the repository is serializing for a eager relationship.
      *
      * @var bool
      */
-    public $eagerState = false;
+    public bool $eagerState = false;
 
     /**
      * Extra fields attached to the repository. Useful when display pivot fields.
      *
      * @var bool
      */
-    public $extraFields = [];
+    public array|bool $extraFields = [];
 
     /**
      * A collection of pivots for the nested relationships.
@@ -183,42 +172,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * Get the underlying model instance for the resource.
-     *
-     * @return \Illuminate\Database\Eloquent\Model|LengthAwarePaginator
-     */
-    public function model()
-    {
-        return $this->resource ?? static::newModel();
-    }
-
-    public static function guessModelClassName(): string
-    {
-        if (property_exists(static::class, 'model')) {
-            return static::$model;
-        }
-
-        $prefix = Str::singular(
-            Str::studly(Str::replaceLast('Repository', '', class_basename(get_called_class())))
-        );
-
-        if (class_exists($model = "App\\Models\\{$prefix}")) {
-            return $model;
-        }
-
-        if (class_exists($model = "App\\{$prefix}")) {
-            return $model;
-        }
-
-        return NullModel::class;
-    }
-
-    /**
      * Get the URI key for the repository.
      *
      * @return string
      */
-    public static function uriKey()
+    public static function uriKey(): string
     {
         if (property_exists(static::class, 'uriKey') && is_string(static::$uriKey)) {
             return static::$uriKey;
@@ -254,7 +212,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      *
      * @return string
      */
-    public function title()
+    public function title(): string
     {
         return $this->{static::$title};
     }
@@ -264,25 +222,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      *
      * @return string|null
      */
-    public function subtitle()
+    public function subtitle(): ?string
     {
-        //
+        return null;
     }
 
-    /**
-     * Get a fresh instance of the model represented by the resource.
-     *
-     * @return Model
-     */
-    public static function newModel(): Model
-    {
-        return app(static::guessModelClassName());
-    }
-
-    public static function query(RestifyRequest $request): Builder|Relation
-    {
-        return $request->newQuery(static::uriKey());
-    }
 
     /**
      * Resolvable filters for the repository.

@@ -7,9 +7,6 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Routing\Router;
 
-/**
- * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
- */
 class RepositoryWithRoutesTest extends IntegrationTest
 {
     protected function setUp(): void
@@ -94,7 +91,7 @@ class RepositoryWithRoutes extends Repository
         });
     }
 
-    public static function uriKey()
+    public static function uriKey(): string
     {
         return 'posts';
     }

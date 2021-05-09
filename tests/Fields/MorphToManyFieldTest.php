@@ -102,7 +102,7 @@ class UserWithRolesRepository extends Repository
         ];
     }
 
-    public static function uriKey()
+    public static function uriKey(): string
     {
         return 'users-with-roles-repository';
     }
