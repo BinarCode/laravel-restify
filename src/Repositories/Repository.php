@@ -155,9 +155,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Extra fields attached to the repository. Useful when display pivot fields.
      *
-     * @var bool
+     * @var array
      */
-    public array|bool $extraFields = [];
+    public array $extraFields = [];
 
     /**
      * A collection of pivots for the nested relationships.
@@ -227,23 +227,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return null;
     }
 
-
-    /**
-     * Resolvable filters for the repository.
-     *
-     * @param  RestifyRequest  $request
-     * @return array
-     */
     public function filters(RestifyRequest $request): array
     {
         return [];
     }
 
-    /**
-     * @param  RestifyRequest  $request
-     * @return FieldCollection
-     */
-    public function collectFields(RestifyRequest $request)
+    public function collectFields(RestifyRequest $request): FieldCollection
     {
         $method = 'fields';
 
