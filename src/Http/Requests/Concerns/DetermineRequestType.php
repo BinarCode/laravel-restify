@@ -3,7 +3,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
-
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;

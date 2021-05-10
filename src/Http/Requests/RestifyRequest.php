@@ -32,7 +32,7 @@ class RestifyRequest extends FormRequest
         /** * @var EagerField $eagerField */
         $eagerField = $parentRepository::collectRelated()
             ->forEager($this)
-            ->first(fn($field, $key) => $key === $this->route('repository'));
+            ->first(fn ($field, $key) => $key === $this->route('repository'));
 
         if (is_null($eagerField)) {
             abort(403, 'Eager field missing from the parent ['.$this->route('parentRepository').'] related fields.');

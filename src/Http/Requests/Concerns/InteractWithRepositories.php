@@ -25,7 +25,7 @@ trait InteractWithRepositories
                 ]));
             }
 
-            if (!$repository::authorizedToUseRepository($this)) {
+            if (! $repository::authorizedToUseRepository($this)) {
                 abort(403, __(
                     'Unauthorized to view repository :name. Check "allowRestify" policy.',
                     [
@@ -34,7 +34,7 @@ trait InteractWithRepositories
                 ));
             }
 
-            if (!$repository::authorizedToUseRoute($this)) {
+            if (! $repository::authorizedToUseRoute($this)) {
                 abort(403, __('Unauthorized to use the route :name. Check prefix.', [
                     'name' => $this->getRequestUri(),
                 ]));
@@ -65,9 +65,9 @@ trait InteractWithRepositories
         return $repository::newModel();
     }
 
-    public function newQuery($uriKey = null): Builder|Relation
+    public function newQuery($uriKey = null): Builder | Relation
     {
-        if (!$this->isViaRepository()) {
+        if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
         }
 
@@ -79,7 +79,7 @@ trait InteractWithRepositories
         return $this->relatedEagerField()->getRelation();
     }
 
-    public function modelQuery(string $repositoryId = null, string $uriKey = null): Builder|Relation
+    public function modelQuery(string $repositoryId = null, string $uriKey = null): Builder | Relation
     {
         return $this->newQuery($uriKey)->whereKey(
             $repositoryId ?? $this->route('repositoryId')
@@ -102,8 +102,8 @@ trait InteractWithRepositories
 
         //TODO: Find another implementation for prefixes:
         $matchSomePrefixes = collect(Restify::$repositories)
-                ->some(fn($repository) => $repository::prefix() === "$parentRepository/$parentRepositoryId")
-            || collect(Restify::$repositories)->some(fn(
+                ->some(fn ($repository) => $repository::prefix() === "$parentRepository/$parentRepositoryId")
+            || collect(Restify::$repositories)->some(fn (
                 $repository
             ) => $repository::indexPrefix() === "$parentRepository/$parentRepositoryId");
 

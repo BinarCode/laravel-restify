@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 trait PerformsQueries
 {
-    public static function query(RestifyRequest $request): Builder|Relation
+    public static function query(RestifyRequest $request): Builder | Relation
     {
         return $request->newQuery(static::uriKey());
     }
