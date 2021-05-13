@@ -10,7 +10,7 @@ class PostAuthorizeRepository extends Repository
 {
     public static $model = Post::class;
 
-    public static $globallySearchable = false;
+    public static bool $globallySearchable = false;
 
     public function fields(RestifyRequest $request)
     {

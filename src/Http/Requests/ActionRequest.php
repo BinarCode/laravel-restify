@@ -12,7 +12,7 @@ class ActionRequest extends RestifyRequest
 {
     protected function availableActions()
     {
-        return $this->newRepository()->availableActions($this);
+        return $this->repository()->availableActions($this);
     }
 
     public function action(): Action

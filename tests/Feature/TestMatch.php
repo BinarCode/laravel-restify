@@ -10,7 +10,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 
-class MatchTest extends IntegrationTest
+class TestMatch extends IntegrationTest
 {
     protected function tearDown(): void
     {

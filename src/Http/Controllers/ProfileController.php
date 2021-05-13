@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
-use Binaryk\LaravelRestify\Http\Requests\ProfileAvatarRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -20,24 +19,11 @@ class ProfileController extends RepositoryController
 
         $user = $request->user();
 
-        if (isset($user->{ProfileAvatarRequest::$userAvatarAttribute})) {
-            $user->{ProfileAvatarRequest::$userAvatarAttribute} = url($user->{ProfileAvatarRequest::$userAvatarAttribute});
-        }
-
         if ($related = $request->input('related')) {
             $user->load(explode(',', $related));
         }
 
-        $meta = [];
-
-        if (method_exists($user, 'profile')) {
-            $meta = (array) call_user_func([$user, 'profile'], $request);
-        }
-
-        return response()->json([
-            'data' => $user,
-            'meta' => $meta,
-        ]);
+        return data($user);
     }
 
     public function guessRepository(RestifyRequest $request): ?Repository

@@ -11,8 +11,8 @@ class FieldDestroyController extends Controller
 {
     public function __invoke(RestifyRequest $request)
     {
-        $repository = $request->newRepositoryWith(
-            $model = $request->findModelQuery()->firstOrFail()
+        $repository = $request->repositoryWith(
+            $model = $request->modelQuery()->firstOrFail()
         );
 
         $repository->authorizeToUpdate($request);

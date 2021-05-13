@@ -29,7 +29,7 @@ trait ResolvesActions
     {
         return $this->resolveActions($request)->filter(fn ($action) => $action->isShownOnShow(
             $request,
-            $request->newRepositoryWith(
+            $request->repositoryWith(
                 $request->findModelOrFail()
             )
         ))->values();

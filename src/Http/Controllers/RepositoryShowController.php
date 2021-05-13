@@ -3,17 +3,16 @@
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
-use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Http\JsonResponse;
 
 class RepositoryShowController extends RepositoryController
 {
-    public function __invoke(RepositoryShowRequest $request)
+    public function __invoke(RepositoryShowRequest $request): JsonResponse
     {
-        /** * @var Repository $repository */
         $repository = $request->repository();
 
-        return $request->newRepositoryWith(tap(
-            tap($request->findModelQuery(), fn ($query) => $repository::detailQuery(
+        return $request->repositoryWith(tap(
+            tap($request->modelQuery(), fn ($query) => $repository::detailQuery(
                 $request,
                 $repository::mainQuery($request, $query->with($repository::getWiths()))
             )),

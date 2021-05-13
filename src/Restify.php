@@ -42,8 +42,8 @@ class Restify
     /**
      * Get the repository class name for a given key.
      *
-     * @param string $key
-     * @return string
+     * @param  string  $key
+     * @return string|null
      */
     public static function repositoryForKey(string $key): ?string
     {

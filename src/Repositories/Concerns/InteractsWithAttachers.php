@@ -10,7 +10,7 @@ trait InteractsWithAttachers
 {
     public function belongsToManyField(RestifyRequest $request): ?BelongsToMany
     {
-        return $request->newRepository()::collectRelated()
+        return $request->repository()::collectRelated()
             ->forManyToManyRelations($request)
             ->firstWhere('attribute', $request->relatedRepository);
     }

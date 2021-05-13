@@ -13,18 +13,18 @@ class PostRepository extends Repository
 {
     public static $model = Post::class;
 
-    public static $title = 'title';
+    public static string $title = 'title';
 
-    public static $search = [
+    public static array $search = [
         'id',
         'title',
     ];
 
-    public static $match = [
+    public static array $match = [
         'title' => RestifySearchable::MATCH_TEXT,
     ];
 
-    public static $middleware = [];
+    public static array $middleware = [];
 
     public static function indexQuery(RestifyRequest $request, $query)
     {

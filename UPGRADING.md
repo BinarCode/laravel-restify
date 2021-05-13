@@ -11,7 +11,7 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 - `getOrderByFields()` - deprecated, to use `sorts`
 - `availableFilters` now returns an instance of `FiltersCollection`, so if you overwrite this, make sure to adapt.
 - `uriTo` - explicit `string` returned type
-- The support for relatable via query params was dropped because of security reasons. Now we only maintain the relatable via `BelongsToMany` or `HasMany` fields. ie: `/posts?viaRepository=users&viaRepositoryId=1` should be now: `/users/1/posts` and define the `'posts' => HasMany::new('')...` into your `UserRepository` 
+- The support for relatable via query params was dropped because of security reasons. Now we only maintain the relatable via `BelongsToMany` or `HasMany` fields. ie: `/posts?parentRepository=users&parentRepositoryId=1` should be now: `/users/1/posts` and define the `'posts' => HasMany::new('')...` into your `UserRepository` 
 - Repository `index`, `show`, `store`, `update`, `destroy` should specify the `JsonResponse` return.
 
 ### Filters
@@ -23,6 +23,9 @@ Because there are many breaking changes an upgrade is not that easy. There are m
   
 - The `resolve` method for the advanced filters now requires a `AdvancedFilterPayloadDto` instance.
 - The `value` argument for the third parameter for `AdvancedFilters` will be resolved from the `AdvancedFilterPayloadDto@value` method
+
+### Profile
+- POST `/profile/avatar` was deleted.
 
 ### RestController
 

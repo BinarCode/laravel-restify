@@ -6,7 +6,6 @@ Route::get('/search', \Binaryk\LaravelRestify\Http\Controllers\GlobalSearchContr
 Route::get('/profile', \Binaryk\LaravelRestify\Http\Controllers\ProfileController::class);
 Route::put('/profile', \Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController::class);
 Route::post('/profile', \Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController::class);
-Route::post('/profile/avatar', \Binaryk\LaravelRestify\Http\Controllers\ProfileAvatarController::class);
 
 // RestifyJS
 Route::get('/restifyjs/setup', \Binaryk\LaravelRestify\Http\Controllers\RestifyJsSetupController::class)->withoutMiddleware(
@@ -43,9 +42,9 @@ Route::post('/{repository}/{repositoryId}/attach/{relatedRepository}', \Binaryk\
 Route::post('/{repository}/{repositoryId}/detach/{relatedRepository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryDetachController::class);
 
 // Relatable
-Route::get('/{viaRepository}/{viaRepositoryId}/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class);
-Route::post('/{viaRepository}/{viaRepositoryId}/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class);
-Route::get('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class);
-Route::post('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class);
-Route::put('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class);
-Route::delete('/{viaRepository}/{viaRepositoryId}/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController::class);
+Route::get('/{parentRepository}/{parentRepositoryId}/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class);
+Route::post('/{parentRepository}/{parentRepositoryId}/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class);
+Route::get('/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class);
+Route::post('/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class);
+Route::put('/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class);
+Route::delete('/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController::class);

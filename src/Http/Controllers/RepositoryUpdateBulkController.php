@@ -13,12 +13,12 @@ class RepositoryUpdateBulkController extends RepositoryController
         $collection = DB::transaction(function () use ($request) {
             return $request->collectInput()
                 ->each(function (array $item, int $row) use ($request) {
-                    $model = $request->findModelQuery(
+                    $model = $request->modelQuery(
                         $id = $item['id']
                     )->lockForUpdate()->firstOrFail();
 
                     /** * @var Repository $repository */
-                    $repository = $request->newRepositoryWith($model);
+                    $repository = $request->repositoryWith($model);
 
                     return $repository
                         ->allowToUpdateBulk($request)
