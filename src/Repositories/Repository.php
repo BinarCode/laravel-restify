@@ -351,7 +351,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * If true then all routes will be grouped in a configuration attributes passed by restify, otherwise
      * you should take care of that, by adding $router->group($attributes) in the @routes method
      */
-    public static function routes(Router $router, array $attributes, $wrap = false)
+    public static function routes(Router $router, array $attributes, $wrap = true)
     {
         $router->group($attributes, function () {
             // override for custom routes

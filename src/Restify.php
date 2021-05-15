@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -217,5 +218,20 @@ class Restify
     public static function actionRepository(): Repository
     {
         return app(config('restify.logs.repository'));
+    }
+
+    public static function isRestify(Request $request): bool
+    {
+        $path = trim(static::path(), '/') ?: '/';
+
+        return $request->is($path) ||
+            $request->is(trim($path.'/*', '/')) ||
+            $request->is('restify-api/*') ||
+            collect(static::$repositories)
+                ->filter(fn($repository) => $repository::prefix())
+                ->some(fn($repository) => $request->is($repository::prefix().'/*')) ||
+            collect(static::$repositories)
+                ->filter(fn($repository) => $repository::indexPrefix())
+                ->some(fn($repository) => $request->is($repository::indexPrefix().'/*'));
     }
 }

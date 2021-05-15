@@ -1,26 +1,21 @@
 <?php
 
-namespace Binaryk\LaravelRestify;
+namespace Binaryk\LaravelRestify\Bootstrap;
 
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
+use Binaryk\LaravelRestify\Restify;
+use Illuminate\Contracts\Foundation\CachesRoutes;
+use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\ServiceProvider;
 
-/**
- * This provider is injected in console context by the main provider or by the RestifyInjector
- * if a restify request.
- */
-class RestifyServiceProvider extends ServiceProvider
+class RoutesBoot
 {
-    /**
-     * Bootstrap the application services.
-     */
-    public function boot()
-    {
-        $this->registerRoutes();
+    public function __construct(
+        private Application $app,
+    ) {
     }
 
-    protected function registerRoutes(): self
+    public function boot(): void
     {
         $config = [
             'namespace' => null,
@@ -29,7 +24,7 @@ class RestifyServiceProvider extends ServiceProvider
             'middleware' => config('restify.middleware', []),
         ];
 
-        return $this->defaultRoutes($config)
+        $this->defaultRoutes($config)
             ->registerPrefixed($config)
             ->registerIndexPrefixed($config);
     }
@@ -37,40 +32,45 @@ class RestifyServiceProvider extends ServiceProvider
     public function defaultRoutes($config): self
     {
         Route::group($config, function () {
-            $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+            $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
         });
 
         return $this;
     }
 
-    /**
-     * @param $config
-     * @return $this
-     */
-    public function registerPrefixed($config)
+    public function registerPrefixed($config): self
     {
         collect(Restify::$repositories)
-            ->filter(fn ($repository) => $repository::prefix())
+            ->filter(fn($repository) => $repository::prefix())
             ->each(function (string $repository) use ($config) {
                 $config['prefix'] = $repository::prefix();
                 Route::group($config, function () {
-                    $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+                    $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
                 });
             });
 
         return $this;
     }
 
-    public function registerIndexPrefixed($config)
+    public function registerIndexPrefixed($config): self
     {
         collect(Restify::$repositories)
-            ->filter(fn ($repository) => $repository::hasIndexPrefix())
+            ->filter(fn($repository) => $repository::hasIndexPrefix())
             ->each(function ($repository) use ($config) {
                 $config['prefix'] = $repository::indexPrefix();
                 Route::group($config, function () {
                     Route::get('/{repository}', '\\'.RepositoryIndexController::class);
                 });
             });
+
+        return $this;
+    }
+
+    private function loadRoutesFrom(string $path): self
+    {
+        if (!($this->app instanceof CachesRoutes && $this->app->routesAreCached())) {
+            require $path;
+        }
 
         return $this;
     }

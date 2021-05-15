@@ -1,28 +1,15 @@
 <?php
 
-namespace Binaryk\LaravelRestify;
+namespace Binaryk\LaravelRestify\Bootstrap;
 
+use Binaryk\LaravelRestify\Restify;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\ServiceProvider;
 use ReflectionClass;
+use ReflectionParameter;
 
-/**
- * This provider is injected in console context by the main provider or by the RestifyInjector
- * if a restify request.
- */
-class RestifyCustomRoutesProvider extends ServiceProvider
+class CustomRoutesBoot
 {
-    public function boot()
-    {
-        $this->registerRoutes();
-    }
-
-    public function register()
-    {
-        parent::register();
-    }
-
-    protected function registerRoutes()
+    public function boot(): void
     {
         collect(Restify::$repositories)->each(function ($repository) {
             $config = [
@@ -40,7 +27,7 @@ class RestifyCustomRoutesProvider extends ServiceProvider
 
             $wrap = [];
 
-            if (count($parameters) >= 2 && $parameters[1] instanceof \ReflectionParameter) {
+            if (count($parameters) >= 2 && $parameters[1] instanceof ReflectionParameter) {
                 $default = $parameters[1]->isDefaultValueAvailable() ? $parameters[1]->getDefaultValue() : [];
                 $config = array_merge($config, $default);
             }

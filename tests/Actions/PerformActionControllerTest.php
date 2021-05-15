@@ -11,7 +11,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
-class PerformActionsControllerTest extends IntegrationTest
+class PerformActionControllerTest extends IntegrationTest
 {
     protected function setUp(): void
     {

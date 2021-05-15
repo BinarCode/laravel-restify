@@ -33,6 +33,9 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 - `Action` base class doesn't extend anymore the `RestController`.
 - `RestifyHandler` was removed.
 
+### Others
+
+- `RestifyServiceProviderRegistered` event was removed
 
 
 ## From 4.7.0 to 4.8.0 

@@ -24,7 +24,7 @@ class RepositoryWithRoutesTest extends IntegrationTest
         parent::setUp();
     }
 
-    public function test_can_add_custom_routes()
+    public function test_can_add_custom_routes(): void
     {
         $this->get(Restify::path(RepositoryWithRoutes::uriKey()).'/main-testing')->assertStatus(200)
             ->assertJson([
@@ -75,11 +75,6 @@ class RepositoryWithRoutesTest extends IntegrationTest
 
 class RepositoryWithRoutes extends Repository
 {
-    /**
-     * @param Router $router
-     * @param array $attributes
-     * @param bool $wrap
-     */
     public static function routes(Router $router, array $attributes, $wrap = false)
     {
         $router->group($attributes, function ($router) {
