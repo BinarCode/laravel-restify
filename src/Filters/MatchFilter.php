@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
 use Illuminate\Database\Query\Builder;

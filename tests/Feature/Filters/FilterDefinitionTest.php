@@ -14,7 +14,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class FilterDefinitionTest extends IntegrationTest
 {
-    public function test_filters_can_have_definition()
+    public function test_filters_can_have_definition(): void
     {
         PostRepository::$match = [
             'title' => 'string',

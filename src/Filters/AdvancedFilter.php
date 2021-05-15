@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
-use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Validation\ValidationException;
 

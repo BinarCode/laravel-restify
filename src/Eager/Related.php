@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Eager;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Resolvable;
 use Binaryk\LaravelRestify\Traits\Make;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -14,7 +13,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
-class Related implements JsonSerializable, Resolvable
+class Related implements JsonSerializable
 {
     use Make;
 

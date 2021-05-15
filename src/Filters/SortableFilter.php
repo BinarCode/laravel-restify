@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\EagerField;
-use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
