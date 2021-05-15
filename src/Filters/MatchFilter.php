@@ -17,7 +17,7 @@ class MatchFilter extends Filter
 
     private Closure $resolver;
 
-    const TYPE = 'matchable';
+    public const TYPE = 'matchable';
 
     /**
      * @param RestifyRequest $request

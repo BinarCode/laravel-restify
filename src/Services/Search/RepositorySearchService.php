@@ -85,13 +85,13 @@ class RepositorySearchService extends Searchable
             $canSearchPrimaryKey = is_numeric($search) &&
                 in_array($query->getModel()->getKeyType(), ['int', 'integer']) &&
                 ($connectionType != 'pgsql' || $search <= PHP_INT_MAX) &&
-                in_array($query->getModel()->getKeyName(), $this->repository->getSearchableFields());
+                in_array($query->getModel()->getKeyName(), $this->repository::searchables());
 
             if ($canSearchPrimaryKey) {
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
             }
 
-            foreach ($this->repository->getSearchableFields() as $key => $column) {
+            foreach ($this->repository::searchables() as $key => $column) {
                 $filter = $column instanceof Filter
                     ? $column
                     : SearchableFilter::make()->setColumn(

@@ -45,12 +45,12 @@ class RepositoryWithRoutesTest extends IntegrationTest
             ]);
     }
 
-    public function test_can_use_custom_middleware()
+    public function test_can_use_custom_middleware(): void
     {
         $this->getJson(route('middleware.failing.route'))->assertStatus(403);
     }
 
-    public function test_can_use_custom_namespace()
+    public function test_can_use_custom_namespace(): void
     {
         $this->getJson(route('namespace.route'))
             ->assertOk()
