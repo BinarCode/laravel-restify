@@ -40,9 +40,9 @@ class RepositorySearchServiceTest extends IntegrationTest
             'created_at' => RestifySearchable::MATCH_DATETIME,
         ];
 
-        $this->get('users?created_at=null')->assertJsonCount(1, 'data');
+        $this->getJson('users?created_at=null')->assertJsonCount(1, 'data');
 
-        $this->get('users?created_at=2020-12-01')->assertJsonCount(1, 'data');
+        $this->getJson('users?created_at=2020-12-01')->assertJsonCount(1, 'data');
     }
 
     public function test_can_match_array()

@@ -13,7 +13,7 @@ class RoleRepository extends Repository
 {
     public static $model = Role::class;
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             field('name'),

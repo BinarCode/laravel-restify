@@ -33,7 +33,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(UserWithRolesRepository::uriKey()."/$user->id?related=roles")
+        $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -56,7 +56,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(UserWithRolesRepository::uriKey()."/$user->id?related=roles,companies")
+        $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles,companies")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -93,7 +93,7 @@ class UserWithRolesRepository extends Repository
         ];
     }
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             field('name'),

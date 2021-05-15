@@ -40,7 +40,7 @@ trait ResolvesActions
         return collect(array_values($this->filter($this->actions($request))));
     }
 
-    public function actions(RestifyRequest $request)
+    public function actions(RestifyRequest $request): array
     {
         return [];
     }

@@ -23,7 +23,7 @@ class PerformActionControllerTest extends IntegrationTest
     {
         $post = $this->mockPosts(1, 2);
 
-        $this->post('posts/action?action='.(new PublishPostAction())->uriKey(), [
+        $this->postJson('posts/action?action='.(new PublishPostAction())->uriKey(), [
             'repositories' => [
                 $post->first()->id,
                 $post->last()->id,
@@ -58,7 +58,7 @@ class PerformActionControllerTest extends IntegrationTest
                 },
             ]);
 
-        $this->post('posts/action?action=publish', [
+        $this->postJson('posts/action?action=publish', [
             'repositories' => 'all',
         ])->assertOk()->assertJsonFragment([
             'fromHandle' => 0,
@@ -77,7 +77,7 @@ class PerformActionControllerTest extends IntegrationTest
     {
         $users = $this->mockUsers();
 
-        $this->post('users/'.$users->first()->id.'/action?action='.(new ActivateAction)->uriKey())
+        $this->postJson('users/'.$users->first()->id.'/action?action='.(new ActivateAction)->uriKey())
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',
@@ -88,7 +88,7 @@ class PerformActionControllerTest extends IntegrationTest
 
     public function test_could_perform_standalone_action()
     {
-        $this->post('users/action?action='.(new DisableProfileAction())->uriKey())
+        $this->postJson('users/action?action='.(new DisableProfileAction())->uriKey())
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',

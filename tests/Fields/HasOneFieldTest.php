@@ -41,7 +41,7 @@ class HasOneFieldTest extends IntegrationTest
             'user_id' => User::factory(),
         ]);
 
-        $this->get(UserWithPostRepository::uriKey()."/$post->id?related=post")
+        $this->getJson(UserWithPostRepository::uriKey()."/$post->id?related=post")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -60,7 +60,7 @@ class HasOneFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => User::factory(),
         ]), function ($post) {
-            $this->get(UserWithPostRepository::uriKey()."/{$post->id}?related=post")
+            $this->getJson(UserWithPostRepository::uriKey()."/{$post->id}?related=post")
                 ->assertForbidden();
         });
     }
@@ -95,7 +95,7 @@ class UserWithPostRepository extends Repository
         ];
     }
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             Field::new('name'),

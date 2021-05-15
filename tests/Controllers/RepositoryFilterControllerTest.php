@@ -17,7 +17,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
 {
     public function test_can_get_available_filters()
     {
-        $this->get(PostRepository::uriKey().'/filters')
+        $this->getJson(PostRepository::uriKey().'/filters')
             ->assertJsonCount(4, 'data');
     }
 
@@ -115,13 +115,13 @@ class RepositoryFilterControllerTest extends IntegrationTest
         $this->assertCount(1, $response->json('data'));
     }
 
-    public function test_the_boolean_filter_is_applied()
+    public function test_the_boolean_filter_is_applied(): void
     {
         Post::factory()->create(['is_active' => false]);
         Post::factory()->create(['is_active' => true]);
 
         $availableFilters = $this
-            ->get(PostRepository::uriKey().'/filters?include=matches')
+            ->getJson(PostRepository::uriKey().'/filters?include=matches')
             ->assertOk()
             ->assertJsonFragment($booleanFilter = [
                 'key' => $key = 'active-booleans',
@@ -178,7 +178,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ],
         ]));
 
-        $this->get('posts?filters='.$filters)
+        $this->getJson('posts?filters='.$filters)
             ->assertOk()
             ->assertJsonCount(2, 'data');
     }

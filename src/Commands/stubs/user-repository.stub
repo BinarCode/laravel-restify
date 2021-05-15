@@ -11,7 +11,7 @@ class UserRepository extends Repository
 {
     public static $model = 'App\\Models\\User';
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             Field::make('name')->rules('required'),

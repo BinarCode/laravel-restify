@@ -9,7 +9,7 @@ class ActionLogRepository extends Repository
 {
     public static $model = ActionLog::class;
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             field('batch_id')->readonly(),

@@ -12,7 +12,7 @@ trait InteractWithFields
      * @param RestifyRequest $request
      * @return array
      */
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [];
     }

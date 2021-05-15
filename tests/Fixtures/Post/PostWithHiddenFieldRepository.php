@@ -14,7 +14,7 @@ class PostWithHiddenFieldRepository extends Repository
 
     public static bool $globallySearchable = false;
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             Field::new('user_id')->hidden(),

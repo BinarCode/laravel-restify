@@ -31,7 +31,7 @@ class UserRepository extends Repository
         'created_at' => RestifySearchable::MATCH_DATETIME,
     ];
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             Field::new('name')->rules('sometimes', 'nullable', 'min:4'),
@@ -42,7 +42,7 @@ class UserRepository extends Repository
         ];
     }
 
-    public function actions(RestifyRequest $request)
+    public function actions(RestifyRequest $request): array
     {
         return [
             ActivateAction::new(),

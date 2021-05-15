@@ -7,9 +7,10 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class RestifyMiddlewaresBootTest extends IntegrationTest
 {
-    public function test_restify_loads_custom_middlewares(): void
+    public function test_restify_loads_config_middleware(): void
     {
         $this->withoutExceptionHandling();
+
         $this->getJson(UserRepository::to())
             ->dump()
             ->assertOk();

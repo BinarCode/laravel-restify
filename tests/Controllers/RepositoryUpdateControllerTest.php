@@ -24,18 +24,18 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = Post::factory()->create();
 
-        $this->patch('posts/'.$post->id, [
+        $this->patchJson('posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertOk();
 
         $this->assertEquals('Updated title', Post::find($post->id)->title);
     }
 
-    public function test_put_works()
+    public function test_put_works(): void
     {
         $post = Post::factory()->create();
 
-        $this->withoutExceptionHandling()->put('posts/'.$post->id, [
+        $this->putJson('posts/'.$post->id, [
             'title' => 'Updated title',
         ])->assertOk();
 
