@@ -228,10 +228,10 @@ class Restify
             $request->is(trim($path.'/*', '/')) ||
             $request->is('restify-api/*') ||
             collect(static::$repositories)
-                ->filter(fn($repository) => $repository::prefix())
-                ->some(fn($repository) => $request->is($repository::prefix().'/*')) ||
+                ->filter(fn ($repository) => $repository::prefix())
+                ->some(fn ($repository) => $request->is($repository::prefix().'/*')) ||
             collect(static::$repositories)
-                ->filter(fn($repository) => $repository::indexPrefix())
-                ->some(fn($repository) => $request->is($repository::indexPrefix().'/*'));
+                ->filter(fn ($repository) => $repository::indexPrefix())
+                ->some(fn ($repository) => $request->is($repository::indexPrefix().'/*'));
     }
 }
