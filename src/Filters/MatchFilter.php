@@ -70,7 +70,7 @@ class MatchFilter extends Filter
                     $query->whereDate($field, $this->negation ? '!=' : '=', $value);
 
                     break;
-                case RestifySearchable::MATCH_DATETIME_INTERVAL:
+                case RestifySearchable::MATCH_BETWEEN:
                     if ($this->negation) {
                         $query->whereNotBetween($field, explode(',', $value));
                     } else {

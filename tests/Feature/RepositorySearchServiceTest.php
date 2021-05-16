@@ -52,6 +52,18 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(1, 'data');
     }
 
+    public function test_can_match_range(): void
+    {
+        User::factory(4)->create();
+
+        UserRepository::$match = [
+            'id' => RestifySearchable::MATCH_BETWEEN,
+        ];
+
+        $this->getJson('users?id=1,3')
+            ->assertJsonCount(3, 'data');
+    }
+
     public function test_can_match_datetime_interval(): void
     {
         $user = User::factory()->create();
@@ -75,7 +87,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         $user->save();
 
         UserRepository::$match = [
-            'created_at' => RestifySearchable::MATCH_DATETIME_INTERVAL,
+            'created_at' => RestifySearchable::MATCH_BETWEEN,
         ];
 
         $twoMonthsAgo = now()->subMonths(2)->toISOString();

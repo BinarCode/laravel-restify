@@ -4,11 +4,21 @@ namespace DummyNamespace;
 
 {{ usage }}
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\Request;
 
 class DummyClass extends {{ parent }}
 {
-    public function filter(RestifyRequest $request, $query, $value)
+    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
     {
 
+    }
+
+    public function rules(Request $request): array
+    {
+        return [
+
+        ];
     }
 }
