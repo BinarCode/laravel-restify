@@ -24,7 +24,7 @@ class RestifyServiceProvider extends RestifyApplicationServiceProvider
      *
      * @return void
      */
-    protected function gate()
+    protected function gate(): void
     {
         Gate::define('viewRestify', function ($user) {
             return in_array($user->email, [

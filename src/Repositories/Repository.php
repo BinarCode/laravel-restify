@@ -23,11 +23,13 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -555,6 +557,14 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
         })->values();
+
+        $paginator = Container::getInstance()->makeWith(LengthAwarePaginator::class, [
+            'items' => $items,
+            'total' => $items->count(),
+            'perPage' => $paginator->perPage(),
+            'currentPage' => $paginator->currentPage(),
+            'options' => $paginator->getOptions(),
+        ]);
 
         return response()->json(
             $this->filter([
