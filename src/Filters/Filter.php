@@ -62,7 +62,7 @@ abstract class Filter implements JsonSerializable
         //
     }
 
-    abstract public function filter(RestifyRequest $request, Builder|Relation $query, $value);
+    abstract public function filter(RestifyRequest $request, Builder | Relation $query, $value);
 
     public function canSee(Closure $callback)
     {

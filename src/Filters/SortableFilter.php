@@ -28,7 +28,7 @@ class SortableFilter extends Filter
      * @param string $value
      * @return Builder
      */
-    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
+    public function filter(RestifyRequest $request, Builder | Relation $query, $value)
     {
         if (isset($this->resolver) && is_callable($this->resolver)) {
             return call_user_func($this->resolver, $request, $query, $value);

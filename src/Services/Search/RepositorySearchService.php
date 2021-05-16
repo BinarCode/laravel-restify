@@ -18,14 +18,17 @@ class RepositorySearchService extends Searchable
      */
     protected $repository;
 
-    public function search(RestifyRequest $request, Repository $repository): Builder|Relation
+    public function search(RestifyRequest $request, Repository $repository): Builder | Relation
     {
         $this->repository = $repository;
 
         $query = $this->prepareMatchFields(
             $request,
-            $this->prepareSearchFields($request, $this->prepareRelations($request, $repository::query($request)),
-                $this->fixedInput),
+            $this->prepareSearchFields(
+                $request,
+                $this->prepareRelations($request, $repository::query($request)),
+                $this->fixedInput
+            ),
             $this->fixedInput
         );
 
@@ -113,7 +116,7 @@ class RepositorySearchService extends Searchable
                     ->map(function (BelongsTo $field) {
                         return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
                     })
-                    ->each(fn(SearchableFilter $filter) => $filter->filter($request, $query, $search));
+                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
             }
         });
 
@@ -122,12 +125,12 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn($query) => $repository::indexQuery($request, $query);
+        return fn ($query) => $repository::indexQuery($request, $query);
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn($query) => $repository::mainQuery($request, $query->with($repository::withs()));
+        return fn ($query) => $repository::mainQuery($request, $query->with($repository::withs()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)

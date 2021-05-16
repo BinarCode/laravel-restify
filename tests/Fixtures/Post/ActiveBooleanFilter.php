@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class ActiveBooleanFilter extends BooleanFilter
 {
-    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
+    public function filter(RestifyRequest $request, Builder | Relation $query, $value)
     {
         $query->where('is_active', $this->input('is_active'));
     }

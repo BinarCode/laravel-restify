@@ -2,14 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Actions;
 
-use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Traits\Make;
-use Binaryk\LaravelRestify\Transaction;
+use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Binaryk\LaravelRestify\Traits\Visibility;
+use Binaryk\LaravelRestify\Transaction;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;

@@ -19,7 +19,7 @@ class MatchFilter extends Filter
 
     public const TYPE = 'matchable';
 
-    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
+    public function filter(RestifyRequest $request, Builder | Relation $query, $value)
     {
         if (isset($this->resolver)) {
             return call_user_func($this->resolver, $request, $query, $value);

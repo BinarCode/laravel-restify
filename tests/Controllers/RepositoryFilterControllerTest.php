@@ -31,7 +31,8 @@ class RepositoryFilterControllerTest extends IntegrationTest
             // 1 match filter
             // 1 sort
             // 2 searchable
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->where('data.0.rules.is_active', 'bool')
                 ->where('data.4.type', MatchFilter::TYPE)
                 ->where('data.4.column', 'title')

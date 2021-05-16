@@ -10,12 +10,12 @@ class AdvancedFiltersCollection extends Collection
 {
     public function authorized(RestifyRequest $request): self
     {
-        return $this->filter(fn(Filter $filter) => $filter->authorizedToSee($request))->values();
+        return $this->filter(fn (Filter $filter) => $filter->authorizedToSee($request))->values();
     }
 
     public function apply(RestifyRequest $request, $query): self
     {
-        return $this->each(fn(AdvancedFilter $filter) => $filter->filter($request, $query, $filter->dto->value));
+        return $this->each(fn (AdvancedFilter $filter) => $filter->filter($request, $query, $filter->dto->value));
     }
 
     public static function collectQueryFilters(RestifyRequest $request, Repository $repository): self
@@ -27,7 +27,8 @@ class AdvancedFiltersCollection extends Collection
         return static::make($filters)
             ->map(function (array $queryFilter) use ($allowedFilters, $request) {
                 /** * @var AdvancedFilter $advancedFilter */
-                $advancedFilter = $allowedFilters->first(fn(AdvancedFilter $filter
+                $advancedFilter = $allowedFilters->first(fn (
+                    AdvancedFilter $filter
                 ) => $filter::uriKey() === data_get($queryFilter, 'key'));
 
                 if (is_null($advancedFilter)) {

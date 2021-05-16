@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 
 class InactiveFilter extends AdvancedFilter
 {
-    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
+    public function filter(RestifyRequest $request, Builder | Relation $query, $value)
     {
         $query->where('is_active', false);
     }
@@ -18,7 +18,7 @@ class InactiveFilter extends AdvancedFilter
     public function rules(Request $request): array
     {
         return [
-            'is_active' => 'required|boolean'
+            'is_active' => 'required|boolean',
         ];
     }
 }

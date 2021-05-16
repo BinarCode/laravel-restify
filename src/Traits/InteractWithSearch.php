@@ -3,8 +3,8 @@
 namespace Binaryk\LaravelRestify\Traits;
 
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
-use Binaryk\LaravelRestify\Filters\Filter;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
+use Binaryk\LaravelRestify\Filters\Filter;
 use Binaryk\LaravelRestify\Filters\MatchesCollection;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
