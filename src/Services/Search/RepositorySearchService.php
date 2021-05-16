@@ -133,7 +133,7 @@ class RepositorySearchService extends Searchable
             return fn ($query) => $repository::showQuery($request, $query);
         }
 
-        return fn($query) => $query;
+        return fn ($query) => $query;
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
