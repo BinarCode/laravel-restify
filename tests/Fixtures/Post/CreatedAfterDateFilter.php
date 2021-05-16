@@ -10,13 +10,13 @@ class CreatedAfterDateFilter extends TimestampFilter
 {
     public function filter(RestifyRequest $request, $query, $value)
     {
-        $query->whereDate('created_at', '>', $value);
+        $query->whereDate('created_at', '>', $this->input('created_at'));
     }
 
-    public function options(Request $request): array
+    public function rules(Request $request): array
     {
         return [
-            'created_at' => 'Created At',
+            'created_at' => 'required|nullable|date',
         ];
     }
 }

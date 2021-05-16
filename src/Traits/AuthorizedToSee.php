@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify;
+namespace Binaryk\LaravelRestify\Traits;
 
 use Closure;
 use Illuminate\Http\Request;

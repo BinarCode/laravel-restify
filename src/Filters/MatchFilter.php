@@ -5,7 +5,8 @@ namespace Binaryk\LaravelRestify\Filters;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
 
 class MatchFilter extends Filter
@@ -18,13 +19,7 @@ class MatchFilter extends Filter
 
     public const TYPE = 'matchable';
 
-    /**
-     * @param RestifyRequest $request
-     * @param Builder $query
-     * @param $value
-     * @return mixed
-     */
-    public function filter(RestifyRequest $request, $query, $value)
+    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
     {
         if (isset($this->resolver)) {
             return call_user_func($this->resolver, $request, $query, $value);
@@ -55,9 +50,9 @@ class MatchFilter extends Filter
                         $query->where(function ($query) use ($field) {
                             if ($this->negation) {
                                 return $query->where($field, true);
-                            } else {
-                                return $query->where($field, '=', false)->orWhereNull($field);
                             }
+
+                            return $query->where($field, '=', false)->orWhereNull($field);
                         });
 
                         break;

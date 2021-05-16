@@ -114,10 +114,10 @@ class HasManyTest extends IntegrationTest
             ->assertJsonCount(5, 'data');
     }
 
-    public function test_can_apply_filters()
+    public function test_can_apply_filters(): void
     {
         tap($u = $this->mockUsers()->first(), function ($user) {
-            tap($this->mockPosts($user->id, 20), function (Collection $posts) {
+            tap($this->mockPosts($user->id, 20), static function (Collection $posts) {
                 $first = $posts->first();
                 $first->title = 'wew';
                 $first->save();

@@ -21,4 +21,11 @@ class SelectCategoryFilter extends SelectFilter
             'article' => 'Article Category',
         ];
     }
+
+    public function rules(Request $request): array
+    {
+        return [
+            'category' => 'required|string|in:movie,article',
+        ];
+    }
 }

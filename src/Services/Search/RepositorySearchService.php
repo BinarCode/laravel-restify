@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
+use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
 use Binaryk\LaravelRestify\Filters\Filter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -17,13 +18,14 @@ class RepositorySearchService extends Searchable
      */
     protected $repository;
 
-    public function search(RestifyRequest $request, Repository $repository): Builder | Relation
+    public function search(RestifyRequest $request, Repository $repository): Builder|Relation
     {
         $this->repository = $repository;
 
         $query = $this->prepareMatchFields(
             $request,
-            $this->prepareSearchFields($request, $this->prepareRelations($request, $repository::query($request)), $this->fixedInput),
+            $this->prepareSearchFields($request, $this->prepareRelations($request, $repository::query($request)),
+                $this->fixedInput),
             $this->fixedInput
         );
 
@@ -45,8 +47,8 @@ class RepositorySearchService extends Searchable
     /**
      * Resolve orders.
      *
-     * @param RestifyRequest $request
-     * @param Builder $query
+     * @param  RestifyRequest  $request
+     * @param  Builder  $query
      * @return Builder
      */
     public function prepareOrders(RestifyRequest $request, $query)
@@ -111,7 +113,7 @@ class RepositorySearchService extends Searchable
                     ->map(function (BelongsTo $field) {
                         return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
                     })
-                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
+                    ->each(fn(SearchableFilter $filter) => $filter->filter($request, $query, $search));
             }
         });
 
@@ -120,20 +122,17 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::indexQuery($request, $query);
+        return fn($query) => $repository::indexQuery($request, $query);
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
+        return fn($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
     {
-        $repository
-            ->collectAdvancedFilters($request)
-            ->inQuery($request)
-            ->resolve($request)
+        AdvancedFiltersCollection::collectQueryFilters($request, $repository)
             ->apply($request, $query);
 
         return $query;

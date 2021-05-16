@@ -8,7 +8,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class ActionLogTest extends IntegrationTest
 {
-    public function test_can_create_log_for_repository_storing()
+    public function test_can_create_log_for_repository_storing(): void
     {
         $this->authenticate();
 

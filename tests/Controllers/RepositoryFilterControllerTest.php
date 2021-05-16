@@ -5,23 +5,13 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\CreatedAfterDateFilter;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\InactiveFilter;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\SelectCategoryFilter;
-use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class RepositoryFilterControllerTest extends IntegrationTest
 {
-    public function test_can_get_available_filters()
-    {
-        $this->getJson(PostRepository::uriKey().'/filters')
-            ->assertJsonCount(4, 'data');
-    }
-
-    public function test_available_filters_contains_matches_sortables_searches()
+    public function test_available_filters_contains_matches_sortables_searches(): void
     {
         PostRepository::$match = [
             'title' => 'text',
@@ -36,40 +26,25 @@ class RepositoryFilterControllerTest extends IntegrationTest
             'title',
         ];
 
-        $response = $this->getJson('posts/filters?include=matches,sortables,searchables')
+        $this->getJson('posts/filters?include=matches,sortables,searchables')
             // 5 custom filters
             // 1 match filter
             // 1 sort
             // 2 searchable
+            ->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.0.rules.is_active', 'bool')
+                ->where('data.4.type', MatchFilter::TYPE)
+                ->where('data.4.column', 'title')
+                ->where('data.5.type', SortableFilter::TYPE)
+                ->where('data.5.column', 'title')
+                ->where('data.6.type', SearchableFilter::TYPE)
+                ->where('data.6.column', 'id')
+                ->etc()
+            )
             ->assertJsonCount(8, 'data');
-
-        $this->assertSame(
-            $response->json('data.4.type'),
-            MatchFilter::TYPE
-        );
-        $this->assertSame(
-            $response->json('data.4.column'),
-            'title'
-        );
-        $this->assertSame(
-            $response->json('data.5.type'),
-            SortableFilter::TYPE
-        );
-        $this->assertSame(
-            $response->json('data.5.column'),
-            'title'
-        );
-        $this->assertSame(
-            $response->json('data.6.type'),
-            SearchableFilter::TYPE
-        );
-        $this->assertSame(
-            $response->json('data.6.column'),
-            'id'
-        );
     }
 
-    public function test_available_filters_returns_only_matches_sortables_searches()
+    public function test_available_filters_returns_only_matches_sortables_searches(): void
     {
         PostRepository::$match = [
             'title' => 'text',
@@ -84,102 +59,15 @@ class RepositoryFilterControllerTest extends IntegrationTest
             'title',
         ];
 
-//        $response = $this->getJson('posts/filters?only=matches,sortables,searchables')
-//            ->assertJsonCount(4, 'data');
+        $this->getJson('posts/filters?only=matches,sortables,searchables')
+            ->assertJsonCount(4, 'data');
 
-//        $response = $this->getJson('posts/filters?only=matches')
-//            ->assertJsonCount(1, 'data');
-//
+        $this->getJson('posts/filters?only=matches')
+            ->assertJsonCount(1, 'data');
+
         $this->getJson('posts/filters?only=sortables')->assertJsonCount(1, 'data');
 
-        $response = $this->getJson('posts/filters?only=searchables')
-            ->assertJsonCount(2, 'data');
-    }
-
-    public function test_value_filter_doesnt_require_value()
-    {
-        Post::factory()->create(['is_active' => false]);
-        Post::factory()->create(['is_active' => true]);
-
-        $filters = base64_encode(json_encode([
-            [
-                'key' => InactiveFilter::uriKey(),
-            ],
-        ]));
-
-        $response = $this
-            ->withoutExceptionHandling()
-            ->getJson('posts?filters='.$filters)
-            ->assertOk();
-
-        $this->assertCount(1, $response->json('data'));
-    }
-
-    public function test_the_boolean_filter_is_applied(): void
-    {
-        Post::factory()->create(['is_active' => false]);
-        Post::factory()->create(['is_active' => true]);
-
-        $availableFilters = $this
-            ->getJson(PostRepository::uriKey().'/filters?include=matches')
-            ->assertOk()
-            ->assertJsonFragment($booleanFilter = [
-                'key' => $key = 'active-booleans',
-                'type' => 'boolean',
-                'advanced' => true,
-            ]);
-
-        $filters = base64_encode(json_encode([
-            [
-                'key' => $key,
-                'value' => [
-                    'is_active' => false,
-                ],
-            ],
-        ]));
-
-        $this->getJson('posts?filters='.$filters)
-            ->assertOk()
-            ->assertJsonCount(1, 'data');
-    }
-
-    public function test_the_select_filter_is_applied(): void
-    {
-        Post::factory()->create(['category' => 'movie']);
-        Post::factory()->create(['category' => 'article']);
-
-        $filters = base64_encode(json_encode([
-            [
-                'key' => SelectCategoryFilter::uriKey(),
-                'value' => 'article',
-            ],
-        ], JSON_THROW_ON_ERROR));
-
-        $this->getJson(PostRepository::to(null, ['filters' => $filters]))
-            ->assertOk()
-            ->assertJsonCount(1, 'data');
-    }
-
-    public function test_the_timestamp_filter_is_applied(): void
-    {
-        Post::factory()->create(['created_at' => now()->addYear()]);
-        Post::factory()->create(['created_at' => now()->subYear()]);
-
-        $filters = base64_encode(json_encode([
-            [
-                'key' => UserRepository::uriKey(),
-                'value' => now()->addWeek()->timestamp,
-            ],
-            [
-                'key' => CreatedAfterDateFilter::uriKey(),
-                'value' => [
-                    'created_at' => now()->addWeek()->timestamp,
-                ],
-            ],
-        ]));
-
-        $this->getJson('posts?filters='.$filters)
-            ->assertOk()
+        $this->getJson('posts/filters?only=searchables')
             ->assertJsonCount(2, 'data');
     }
 }

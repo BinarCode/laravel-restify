@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify;
+namespace Binaryk\LaravelRestify\Traits;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 

@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use ReflectionClass;
+use ReflectionException;
 use Symfony\Component\Finder\Finder;
 
 class Restify
@@ -101,11 +102,11 @@ class Restify
     /**
      * Register all of the repository classes in the given directory.
      *
-     * @param string $directory
+     * @param  string  $directory
      * @return void
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    public static function repositoriesFrom($directory)
+    public static function repositoriesFrom(string $directory): void
     {
         $namespace = app()->getNamespace();
 
@@ -205,7 +206,7 @@ class Restify
         return Str::title(Str::snake($value, ' '));
     }
 
-    public static function mountingRepositories()
+    public static function mountingRepositories(): void
     {
         collect(static::$repositories)->each(fn (string $repository) => $repository::mounting());
     }

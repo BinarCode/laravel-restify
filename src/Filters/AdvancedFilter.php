@@ -3,7 +3,8 @@
 namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 abstract class AdvancedFilter extends Filter
 {
@@ -12,31 +13,29 @@ abstract class AdvancedFilter extends Filter
      *
      * @var AdvancedFilterPayloadDto
      */
-    public AdvancedFilterPayloadDto $value;
+    public AdvancedFilterPayloadDto $dto;
 
     public function resolve(RestifyRequest $request, AdvancedFilterPayloadDto $dto): self
     {
-        $this->value = $dto;
+        $this->dto = $dto;
 
         return $this;
     }
 
-    public function validatePayload(RestifyRequest $request, array $payload): self
+    public function validatePayload(RestifyRequest $request, AdvancedFilterPayloadDto $dto): self
     {
-        if ($this instanceof SelectFilter) {
-            foreach (array_values($payload) as $key) {
-                throw_unless(
-                    in_array($key, array_keys($this->options($request))),
-                    ValidationException::withMessages(['Filter values are invalid.'])
-                );
-            }
-        }
+        Validator::make(
+            $dto->value,
+            $this->rules($request)
+        )->validate();
 
         return $this;
     }
 
     protected function input(string $key = null, $default = null)
     {
-        return $this->value->input($key, $default);
+        return data_get($this->dto->value, $key, $default);
     }
+
+    abstract public function rules(Request $request): array;
 }
