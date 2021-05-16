@@ -47,7 +47,7 @@ class GlobalSearchControllerTest extends IntegrationTest
         $_SERVER['restify.post.allowRestify'] = null;
     }
 
-    public function test_global_search_filter_will_filter_with_index_query()
+    public function test_global_search_filter_will_filter_with_index_query(): void
     {
         $_SERVER['restify.post.indexQueryCallback'] = function ($query) {
             $query->where('id', 2);

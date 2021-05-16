@@ -175,7 +175,7 @@ class Restify
         static::$renderCallback = $callback;
     }
 
-    public static function globallySearchableRepositories(RestifyRequest $request)
+    public static function globallySearchableRepositories(RestifyRequest $request): array
     {
         return collect(static::$repositories)
             ->filter(fn ($repository) => $repository::authorizedToUseRepository($request))

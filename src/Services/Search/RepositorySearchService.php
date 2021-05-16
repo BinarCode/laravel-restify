@@ -125,7 +125,15 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::indexQuery($request, $query);
+        if ($request->isIndexRequest() || $request->isGlobalRequest()) {
+            return fn ($query) => $repository::indexQuery($request, $query);
+        }
+
+        if ($request->isShowRequest()) {
+            return fn ($query) => $repository::showQuery($request, $query);
+        }
+
+        return fn($query) => $query;
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
