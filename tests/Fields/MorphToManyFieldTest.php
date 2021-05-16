@@ -25,14 +25,14 @@ class MorphToManyFieldTest extends IntegrationTest
         ]);
     }
 
-    public function test_morph_to_many_displays_in_relationships()
+    public function test_morph_to_many_displays_in_relationships(): void
     {
         $user = tap(User::factory()->create(), function (User $user) {
             $user->roles()->attach(
                 Role::factory(3)->create()
             );
         });
-
+        
         $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles")
             ->assertJsonStructure([
                 'data' => [
@@ -88,8 +88,8 @@ class UserWithRolesRepository extends Repository
     public static function related(): array
     {
         return [
-            'roles' => MorphToMany::make('roles', 'roles', RoleRepository::class),
-            'companies' => BelongsToMany::make('companies', 'companies', CompanyRepository::class),
+            'roles' => MorphToMany::make('roles',  RoleRepository::class),
+            'companies' => BelongsToMany::make('companies', CompanyRepository::class),
         ];
     }
 

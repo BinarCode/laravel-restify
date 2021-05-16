@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Gate;
 
 class RepositoryAttachControllerTest extends IntegrationTest
 {
-    public function test_can_attach_repositories()
+    public function test_can_attach_repositories(): void
     {
         $user = $this->mockUsers()->first();
         $company = Company::factory()->create();
@@ -24,7 +24,8 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
-        ])->assertCreated()->assertJsonFragment([
+        ])
+            ->assertCreated()->assertJsonFragment([
             'company_id' => '1',
             'user_id' => $user->id,
             'is_admin' => true,
@@ -69,7 +70,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->withPivot(
+                'users' => BelongsToMany::make('users',  UserRepository::class)->withPivot(
                     Field::make('is_admin')->rules('required')->messages([
                         'required' => $message = 'You should fill the is_admin information.',
                     ])
@@ -156,7 +157,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)
+                'users' => BelongsToMany::make('users',  UserRepository::class)
                     ->canAttach(function ($request, $pivot) {
                         $this->assertInstanceOf(Request::class, $request);
                         $this->assertInstanceOf(Pivot::class, $pivot);
@@ -179,7 +180,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)
+                'users' => BelongsToMany::make('users',  UserRepository::class)
                     ->canAttach(function ($request, $pivot) {
                         $this->assertInstanceOf(Request::class, $request);
                         $this->assertInstanceOf(Pivot::class, $pivot);
@@ -210,7 +211,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         CompanyRepository::partialMock()->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class),
+                'users' => BelongsToMany::make('users',  UserRepository::class),
             ]);
 
         CompanyRepository::$attachers = [

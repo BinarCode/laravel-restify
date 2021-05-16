@@ -408,8 +408,8 @@ class RestResponse extends JsonResponse implements Responsable
         $this->setAttributes($model->attributesToArray());
         $this->id = $model->getKey();
 
-        if ($withRelations && $model instanceof RestifySearchable && $model::getWiths()) {
-            foreach ($model::getWiths() as $k => $relation) {
+        if ($withRelations && $model instanceof RestifySearchable && $model::withs()) {
+            foreach ($model::withs() as $k => $relation) {
                 if ($model->relationLoaded($relation)) {
                     $this->relationships[$relation] = $model->{$relation}->get();
                 }

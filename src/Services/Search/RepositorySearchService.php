@@ -68,7 +68,7 @@ class RepositorySearchService extends Searchable
 
     public function prepareRelations(RestifyRequest $request, $query)
     {
-        return $query->with($this->repository->getWiths());
+        return $query->with($this->repository->withs());
     }
 
     public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])
@@ -127,7 +127,7 @@ class RepositorySearchService extends Searchable
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
+        return fn($query) => $repository::mainQuery($request, $query->with($repository::withs()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)

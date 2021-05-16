@@ -40,7 +40,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromShow(),
+                'users' => BelongsToMany::make('users',  UserRepository::class)->hideFromShow(),
             ]);
 
         $this->getJson(CompanyRepository::uriKey()."/{$company->id}?related=users")
@@ -62,7 +62,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromIndex(),
+                'users' => BelongsToMany::make('users',  UserRepository::class)->hideFromIndex(),
             ]);
 
         $this->getJson(CompanyRepository::uriKey().'?related=users')->assertJsonMissing([
@@ -72,7 +72,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromShow(),
+                'users' => BelongsToMany::make('users',  UserRepository::class)->hideFromShow(),
             ]);
 
         $this->getJson(CompanyRepository::uriKey().'?related=users')->assertJsonFragment([

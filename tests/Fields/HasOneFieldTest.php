@@ -35,7 +35,7 @@ class HasOneFieldTest extends IntegrationTest
         Repository::clearResolvedInstances();
     }
 
-    public function test_has_one_present_on_relations()
+    public function test_has_one_present_on_relations(): void
     {
         $post = Post::factory()->create([
             'user_id' => User::factory(),
@@ -91,7 +91,7 @@ class UserWithPostRepository extends Repository
     public static function related(): array
     {
         return [
-            'post' => HasOne::make('post', 'post', PostRepository::class),
+            'post' => HasOne::make('post', PostRepository::class),
         ];
     }
 

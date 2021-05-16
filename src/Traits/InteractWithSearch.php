@@ -22,15 +22,6 @@ trait InteractWithSearch
 
     public static $defaultRelatablePerPage = 15;
 
-    /**
-     * @return array
-     * @deprecated
-     */
-    public static function getSearchableFields()
-    {
-        return static::searchables();
-    }
-
     public static function searchables(): array
     {
         return empty(static::$search)
@@ -38,20 +29,9 @@ trait InteractWithSearch
             : static::$search;
     }
 
-    public static function getWiths()
+    public static function withs(): array
     {
         return static::$withs ?? [];
-    }
-
-    /**
-     * Use 'related' instead.
-     *
-     * @return array
-     * @deprecated
-     */
-    public static function getRelated()
-    {
-        return static::related();
     }
 
     public static function related(): array
@@ -64,29 +44,11 @@ trait InteractWithSearch
         return RelatedCollection::make(static::related());
     }
 
-    /**
-     * @return array
-     * @deprecated
-     */
-    public static function getMatchByFields()
-    {
-        return static::matches();
-    }
-
     public static function matches(): array
     {
         return empty(static::$match)
             ? [static::newModel()->getKeyName()]
             : static::$match;
-    }
-
-    /**
-     * @return array
-     * @deprecated
-     */
-    public static function getOrderByFields()
-    {
-        return static::sorts();
     }
 
     public static function sorts(): array

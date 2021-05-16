@@ -15,12 +15,12 @@ class BelongsToFilterTest extends IntegrationTest
     public function test_can_filter_using_belongs_to_field(): void
     {
         PostRepository::$related = [
-            'user' => BelongsTo::make('user', 'user', UserRepository::class),
+            'user' => BelongsTo::make('user',  UserRepository::class),
         ];
 
         PostRepository::$sort = [
             'users.attributes.name' => SortableFilter::make()->setColumn('users.name')->usingBelongsTo(
-                BelongsTo::make('user', 'user', UserRepository::class),
+                BelongsTo::make('user',  UserRepository::class),
             ),
         ];
 

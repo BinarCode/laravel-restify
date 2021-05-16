@@ -172,7 +172,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         PostRepository::$related = [
-            'user' => BelongsTo::make('user', 'user', UserRepository::class)->searchable([
+            'user' => BelongsTo::make('user',  UserRepository::class)->searchable([
                 'users.name',
             ]),
         ];

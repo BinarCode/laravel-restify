@@ -18,7 +18,7 @@ class RoleRepository extends Repository
         return [
             field('name'),
 
-            BelongsToMany::new('users', 'users', UserRepository::class)
+            BelongsToMany::new('users', UserRepository::class)
             ->canAttach(fn ($request, $pivot) => $_SERVER['roles.canAttach.users'])
             ->canDetach(fn ($request, $pivot) => $_SERVER['roles.canDetach.users']),
         ];

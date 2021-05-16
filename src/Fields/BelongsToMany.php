@@ -29,13 +29,13 @@ class BelongsToMany extends EagerField
      */
     public $detachCallback;
 
-    public function __construct($attribute, $relation, $parentRepository)
+    public function __construct($relation, $parentRepository)
     {
         if (! is_a(app($parentRepository), Repository::class)) {
             abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
         }
 
-        parent::__construct($attribute);
+        parent::__construct(attribute: $relation);
 
         $this->relation = $relation;
         $this->repositoryClass = $parentRepository;

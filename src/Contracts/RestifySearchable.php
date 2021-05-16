@@ -22,14 +22,14 @@ interface RestifySearchable
      *
      * @return array
      */
-    public static function getSearchableFields();
+    public static function searchables(): array;
 
     /**
      * Get relations available for query params.
      *
      * @return array
      */
-    public static function getWiths();
+    public static function withs(): array;
 
     /**
      * Find matches in the table by given value
@@ -41,10 +41,10 @@ interface RestifySearchable
      * [  'match' => [ 'id' => 1 ] ]
      * @return array
      */
-    public static function getMatchByFields();
+    public static function matches(): array;
 
     /**
      * @return array
      */
-    public static function getOrderByFields();
+    public static function sorts(): array;
 }

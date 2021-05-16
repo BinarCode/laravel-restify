@@ -13,7 +13,11 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 - `uriTo` - explicit `string` returned type
 - The support for relatable via query params was dropped because of security reasons. Now we only maintain the relatable via `BelongsToMany` or `HasMany` fields. ie: `/posts?parentRepository=users&parentRepositoryId=1` should be now: `/users/1/posts` and define the `'posts' => HasMany::new('')...` into your `UserRepository` 
 - Repository `index`, `show`, `store`, `update`, `destroy` should specify the `JsonResponse` return.
-
+- `getRelated` method was dropped - use `related` instead
+- `getMatchByFields` method was dropped - use `matches` instead
+- `getOrderByFields` method was dropped - use `sorts` instead
+- `getSearchableFields` method was dropped - use `searchables` instead
+- `getWiths` method was dropped - use `withs` instead
 ### Filters
 
 - `uriKey` - `string` returned type
@@ -33,6 +37,10 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 - RestController namespace was changed to `Binaryk\LaravelRestify\Http\Controllers` so you should refactor all of yours classes where you have used it (tip: you can use `data()` helper to wrap any response into json with `data` key)
 - `Action` base class doesn't extend anymore the `RestController`.
 - `RestifyHandler` was removed.
+
+### Fields
+
+- For all related fields (BelongsTo, HasMany etc.) was dropped the argument one, so instead of `BelongsTo::make('user', 'user', UserRepository::class)` you have to use: `BelongsTo::make('user', UserRepository::class)`
 
 ### Others
 

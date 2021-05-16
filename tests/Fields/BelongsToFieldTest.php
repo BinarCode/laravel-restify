@@ -111,7 +111,7 @@ class BelongsToFieldTest extends IntegrationTest
             ->shouldReceive('fields')
             ->andReturn([
                 field('title'),
-                BelongsTo::make('user', 'user', UserRepository::class)
+                BelongsTo::make('user',  UserRepository::class)
                     ->canAttach(function ($request, $repository, $model) {
                         $this->assertInstanceOf(RestifyRequest::class, $request);
                         $this->assertInstanceOf(Repository::class, $repository);
@@ -211,7 +211,7 @@ class PostWithUserRepository extends Repository
     public static function related(): array
     {
         return [
-            'user' => BelongsTo::make('user', 'user', UserRepository::class),
+            'user' => BelongsTo::make('user',  UserRepository::class),
         ];
     }
 
@@ -220,7 +220,7 @@ class PostWithUserRepository extends Repository
         return [
             field('title'),
 
-            BelongsTo::make('user', 'user', UserRepository::class),
+            BelongsTo::make('user',  UserRepository::class),
         ];
     }
 }

@@ -66,7 +66,7 @@ class PostWithMophOneRepository extends Repository
     public static function related(): array
     {
         return [
-            'user' => BelongsTo::make('user', 'user', UserRepository::class),
+            'user' => BelongsTo::make('user',  UserRepository::class),
         ];
     }
 
@@ -75,7 +75,7 @@ class PostWithMophOneRepository extends Repository
         return [
             field('title'),
 
-            MorphOne::make('user', 'user', UserRepository::class),
+            MorphOne::make('user',  UserRepository::class),
         ];
     }
 }

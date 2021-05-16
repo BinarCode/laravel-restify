@@ -107,7 +107,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
         $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts?perPage=5")
@@ -131,7 +131,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
         $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts?title=wew")
@@ -155,7 +155,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
         $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts")
@@ -183,7 +183,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
         $this->postJson(UserWithPosts::uriKey()."/{$u->id}/posts", [
@@ -204,7 +204,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
         $this->getJson(UserWithPosts::to("$userId/posts/$post->id"), [
@@ -300,7 +300,7 @@ class UserWithPosts extends Repository
     public static function related(): array
     {
         return [
-            'posts' => HasMany::make('posts', 'posts', PostRepository::class),
+            'posts' => HasMany::make('posts',  PostRepository::class),
         ];
     }
 

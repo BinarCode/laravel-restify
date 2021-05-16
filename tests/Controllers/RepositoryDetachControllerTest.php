@@ -62,7 +62,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->canDetach(function ($request, $pivot) {
+                'users' => BelongsToMany::make('users',  UserRepository::class)->canDetach(function ($request, $pivot) {
                     $this->assertInstanceOf(Request::class, $request);
                     $this->assertInstanceOf(Pivot::class, $pivot);
 
@@ -84,7 +84,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->detachCallback(function ($request, $repository, $model) {
+                'users' => BelongsToMany::make('users',  UserRepository::class)->detachCallback(function ($request, $repository, $model) {
                     $this->assertInstanceOf(Request::class, $request);
                     $this->assertInstanceOf(CompanyRepository::class, $repository);
                     $this->assertInstanceOf(Company::class, $model);
@@ -111,7 +111,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
         $mock = CompanyRepository::partialMock();
         $mock->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class),
+                'users' => BelongsToMany::make('users',  UserRepository::class),
             ]);
 
         CompanyRepository::$detachers = [
