@@ -12,14 +12,14 @@ trait InteractsWithAttachers
     {
         return $request->repository()::collectRelated()
             ->forManyToManyRelations($request)
-            ->firstWhere('attribute', $request->relatedRepository);
+            ->firstWhere('attribute', $request->route('relatedRepository'));
     }
 
     public function authorizeBelongsToMany(RestifyRequest $request): self
     {
         if (is_null($field = $this->belongsToManyField($request))) {
             $class = class_basename($request->repository());
-            abort(400, "Missing BelongsToMany or MorphToMany field for [{$request->relatedRepository}]. This field should be in the related of the [{$class}] class. Or you are not authorized to use that repository (see `allowRestify` policy method).");
+            abort(400, "Missing BelongsToMany or MorphToMany related for [{$request->relatedRepository}]. This relationship should be in the related of the [{$class}] class. Or you are not authorized to use that repository (see `allowRestify` policy method).");
         }
 
         return $this;

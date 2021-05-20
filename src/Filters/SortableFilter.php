@@ -4,10 +4,10 @@ namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\EagerField;
-use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
 
 class SortableFilter extends Filter
@@ -28,7 +28,7 @@ class SortableFilter extends Filter
      * @param string $value
      * @return Builder
      */
-    public function filter(RestifyRequest $request, Builder $query, $value)
+    public function filter(RestifyRequest $request, Builder | Relation $query, $value)
     {
         if (isset($this->resolver) && is_callable($this->resolver)) {
             return call_user_func($this->resolver, $request, $query, $value);

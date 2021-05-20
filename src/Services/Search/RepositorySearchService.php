@@ -3,7 +3,8 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
-use Binaryk\LaravelRestify\Filter;
+use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
+use Binaryk\LaravelRestify\Filters\Filter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -23,7 +24,11 @@ class RepositorySearchService extends Searchable
 
         $query = $this->prepareMatchFields(
             $request,
-            $this->prepareSearchFields($request, $this->prepareRelations($request, $repository::query($request)), $this->fixedInput),
+            $this->prepareSearchFields(
+                $request,
+                $this->prepareRelations($request, $repository::query($request)),
+                $this->fixedInput
+            ),
             $this->fixedInput
         );
 
@@ -45,8 +50,8 @@ class RepositorySearchService extends Searchable
     /**
      * Resolve orders.
      *
-     * @param RestifyRequest $request
-     * @param Builder $query
+     * @param  RestifyRequest  $request
+     * @param  Builder  $query
      * @return Builder
      */
     public function prepareOrders(RestifyRequest $request, $query)
@@ -66,7 +71,7 @@ class RepositorySearchService extends Searchable
 
     public function prepareRelations(RestifyRequest $request, $query)
     {
-        return $query->with($this->repository->getWiths());
+        return $query->with($this->repository->withs());
     }
 
     public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])
@@ -85,13 +90,13 @@ class RepositorySearchService extends Searchable
             $canSearchPrimaryKey = is_numeric($search) &&
                 in_array($query->getModel()->getKeyType(), ['int', 'integer']) &&
                 ($connectionType != 'pgsql' || $search <= PHP_INT_MAX) &&
-                in_array($query->getModel()->getKeyName(), $this->repository->getSearchableFields());
+                in_array($query->getModel()->getKeyName(), $this->repository::searchables());
 
             if ($canSearchPrimaryKey) {
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
             }
 
-            foreach ($this->repository->getSearchableFields() as $key => $column) {
+            foreach ($this->repository::searchables() as $key => $column) {
                 $filter = $column instanceof Filter
                     ? $column
                     : SearchableFilter::make()->setColumn(
@@ -120,20 +125,25 @@ class RepositorySearchService extends Searchable
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::indexQuery($request, $query);
+        if ($request->isIndexRequest() || $request->isGlobalRequest()) {
+            return fn ($query) => $repository::indexQuery($request, $query);
+        }
+
+        if ($request->isShowRequest()) {
+            return fn ($query) => $repository::showQuery($request, $query);
+        }
+
+        return fn ($query) => $query;
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::getWiths()));
+        return fn ($query) => $repository::mainQuery($request, $query->with($repository::withs()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
     {
-        $repository
-            ->collectAdvancedFilters($request)
-            ->inQuery($request)
-            ->resolve($request)
+        AdvancedFiltersCollection::collectQueryFilters($request, $repository)
             ->apply($request, $query);
 
         return $query;

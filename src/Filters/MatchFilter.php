@@ -3,10 +3,10 @@
 namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Filter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
-use Illuminate\Database\Query\Builder;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
 
 class MatchFilter extends Filter
@@ -17,15 +17,9 @@ class MatchFilter extends Filter
 
     private Closure $resolver;
 
-    const TYPE = 'matchable';
+    public const TYPE = 'matchable';
 
-    /**
-     * @param RestifyRequest $request
-     * @param Builder $query
-     * @param $value
-     * @return mixed
-     */
-    public function filter(RestifyRequest $request, $query, $value)
+    public function filter(RestifyRequest $request, Builder | Relation $query, $value)
     {
         if (isset($this->resolver)) {
             return call_user_func($this->resolver, $request, $query, $value);
@@ -56,9 +50,9 @@ class MatchFilter extends Filter
                         $query->where(function ($query) use ($field) {
                             if ($this->negation) {
                                 return $query->where($field, true);
-                            } else {
-                                return $query->where($field, '=', false)->orWhereNull($field);
                             }
+
+                            return $query->where($field, '=', false)->orWhereNull($field);
                         });
 
                         break;
@@ -76,7 +70,7 @@ class MatchFilter extends Filter
                     $query->whereDate($field, $this->negation ? '!=' : '=', $value);
 
                     break;
-                case RestifySearchable::MATCH_DATETIME_INTERVAL:
+                case RestifySearchable::MATCH_BETWEEN:
                     if ($this->negation) {
                         $query->whereNotBetween($field, explode(',', $value));
                     } else {

@@ -17,13 +17,13 @@ class RepositoryDestroyControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_destroy_works()
+    public function test_destroy_works(): void
     {
         $post = Post::factory()->create(['user_id' => 1]);
 
         $this->assertInstanceOf(Post::class, Post::find($post->id));
 
-        $this->withoutExceptionHandling()->delete('posts/'.$post->id, [
+        $this->deleteJson('posts/'.$post->id, [
             'title' => 'Updated title',
         ])
             ->assertStatus(204);

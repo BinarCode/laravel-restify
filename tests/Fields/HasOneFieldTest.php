@@ -35,13 +35,13 @@ class HasOneFieldTest extends IntegrationTest
         Repository::clearResolvedInstances();
     }
 
-    public function test_has_one_present_on_relations()
+    public function test_has_one_present_on_relations(): void
     {
         $post = Post::factory()->create([
             'user_id' => User::factory(),
         ]);
 
-        $this->get(UserWithPostRepository::uriKey()."/$post->id?related=post")
+        $this->getJson(UserWithPostRepository::uriKey()."/$post->id?related=post")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -60,7 +60,7 @@ class HasOneFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => User::factory(),
         ]), function ($post) {
-            $this->get(UserWithPostRepository::uriKey()."/{$post->id}?related=post")
+            $this->getJson(UserWithPostRepository::uriKey()."/{$post->id}?related=post")
                 ->assertForbidden();
         });
     }
@@ -91,11 +91,11 @@ class UserWithPostRepository extends Repository
     public static function related(): array
     {
         return [
-            'post' => HasOne::make('post', 'post', PostRepository::class),
+            'post' => HasOne::make('post', PostRepository::class),
         ];
     }
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             Field::new('name'),

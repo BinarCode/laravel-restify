@@ -15,13 +15,13 @@ class CompanyRepository extends Repository
     public static function related(): array
     {
         return [
-            'users' => BelongsToMany::make('users', 'users', UserRepository::class)->withPivot(
+            'users' => BelongsToMany::make('users',  UserRepository::class)->withPivot(
                 Field::make('is_admin')->rules('required')
             )->canDetach(fn ($request, $pivot) => isset($_SERVER['roles.canDetach.users']) && $_SERVER['roles.canDetach.users']),
         ];
     }
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             field('name'),

@@ -7,6 +7,8 @@ use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use ReflectionException;
+use RuntimeException;
 
 class RestifyApplicationServiceProvider extends ServiceProvider
 {
@@ -26,11 +28,12 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      * Register the application's Rest resources.
      *
      * @return void
+     * @throws ReflectionException
      */
-    protected function repositories()
+    protected function repositories(): void
     {
-        if (false === is_dir(app_path('Restify'))) {
-            mkdir(app_path('Restify'));
+        if ((false === is_dir(app_path('Restify'))) && ! mkdir($concurrentDirectory = app_path('Restify')) && ! is_dir($concurrentDirectory)) {
+            throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
         }
 
         Restify::repositoriesFrom(app_path('Restify'));
@@ -41,7 +44,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    protected function authorization()
+    protected function authorization(): void
     {
         $this->gate();
 
@@ -65,16 +68,16 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    protected function gate()
+    protected function gate(): void
     {
         Gate::define('viewRestify', function ($user) {
             return in_array($user->email, [
                 //
-            ]);
+            ], true);
         });
     }
 
-    protected function authRoutes()
+    protected function authRoutes(): void
     {
         Route::macro('restifyAuth', function ($prefix = '/') {
             Route::group([

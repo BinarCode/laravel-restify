@@ -6,8 +6,10 @@ use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Factories\PostFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
@@ -36,13 +38,19 @@ class BelongsToFieldTest extends IntegrationTest
         Repository::clearResolvedInstances();
     }
 
-    public function test_present_on_show_when_specified_related()
+    public function test_present_on_show_when_specified_related(): void
     {
-        $post = Post::factory()->create([
-            'user_id' => User::factory(),
-        ]);
+        $post = PostFactory::one();
 
-        $relationships = $this->get(PostWithUserRepository::uriKey()."/$post->id?related=user")
+        PostRepository::partialMock()
+            ->shouldReceive('related')
+            ->andReturn([
+                'user' => BelongsTo::make('user', UserRepository::class),
+            ]);
+
+        $this->getJson(PostRepository::to($post->id, [
+            'related' => 'user',
+        ]))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -53,18 +61,15 @@ class BelongsToFieldTest extends IntegrationTest
                         ],
                     ],
                 ],
-            ])
-            ->json('data.relationships');
+            ]);
 
-        $this->assertNotNull($relationships);
-
-        $relationships = $this->get(PostWithUserRepository::uriKey()."/$post->id")
+        $relationships = $this->getJson(PostRepository::to($post->id))
             ->json('data.relationships');
 
         $this->assertNull($relationships);
     }
 
-    public function test_unauthorized_see_relationship()
+    public function test_unauthorized_see_relationship(): void
     {
         $_SERVER['restify.users.show'] = false;
 
@@ -73,7 +78,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => User::factory(),
         ]), function ($post) {
-            $this->get(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
+            $this->getJson(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
                 ->assertForbidden();
         });
     }
@@ -87,7 +92,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => null,
         ]), function ($post) {
-            $this->get(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
+            $this->getJson(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
                 ->assertJsonFragment([
                     'user' => null,
                 ])
@@ -111,7 +116,7 @@ class BelongsToFieldTest extends IntegrationTest
             ->shouldReceive('fields')
             ->andReturn([
                 field('title'),
-                BelongsTo::make('user', 'user', UserRepository::class)
+                BelongsTo::make('user', UserRepository::class)
                     ->canAttach(function ($request, $repository, $model) {
                         $this->assertInstanceOf(RestifyRequest::class, $request);
                         $this->assertInstanceOf(Repository::class, $repository);
@@ -174,7 +179,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => User::factory(),
         ]), function ($post) {
             $newOwner = User::factory()->create();
-            $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
+            $this->putJson(PostWithUserRepository::uriKey()."/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertOk();
@@ -194,7 +199,7 @@ class BelongsToFieldTest extends IntegrationTest
         ]), function ($post) {
             $firstOwnerId = $post->user->id;
             $newOwner = User::factory()->create();
-            $this->put(PostWithUserRepository::uriKey()."/{$post->id}", [
+            $this->putJson(PostWithUserRepository::uriKey()."/{$post->id}", [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertForbidden();
@@ -211,16 +216,16 @@ class PostWithUserRepository extends Repository
     public static function related(): array
     {
         return [
-            'user' => BelongsTo::make('user', 'user', UserRepository::class),
+            'user' => BelongsTo::make('user', UserRepository::class),
         ];
     }
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             field('title'),
 
-            BelongsTo::make('user', 'user', UserRepository::class),
+            BelongsTo::make('user', UserRepository::class),
         ];
     }
 }

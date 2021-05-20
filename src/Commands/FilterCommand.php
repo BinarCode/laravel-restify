@@ -69,9 +69,33 @@ class FilterCommand extends GeneratorCommand
             ];
         }
 
+        if ($this->option('bool')) {
+            return [
+                'parent' => 'BooleanFilter',
+                'usage' => 'use Binaryk\LaravelRestify\Filters\BooleanFilter;',
+                'namespace' => 'Filters',
+            ];
+        }
+
+        if ($this->option('select')) {
+            return [
+                'parent' => 'SelectFilter',
+                'usage' => 'use Binaryk\LaravelRestify\Filters\SelectFilter;',
+                'namespace' => 'Filters',
+            ];
+        }
+
+        if ($this->option('date')) {
+            return [
+                'parent' => 'TimestampFilter',
+                'usage' => 'use Binaryk\LaravelRestify\Filters\TimestampFilter;',
+                'namespace' => 'Filters',
+            ];
+        }
+
         return [
-            'parent' => 'Filter',
-            'usage' => 'use Binaryk\LaravelRestify\Filter;',
+            'parent' => 'AdvancedFilter',
+            'usage' => 'use Binaryk\LaravelRestify\Filters\AdvancedFilter;',
             'namespace' => 'Filters',
         ];
     }
@@ -101,6 +125,9 @@ class FilterCommand extends GeneratorCommand
             ['match', 'match', InputOption::VALUE_NONE, 'Generates a filter for match.'],
             ['sort', 'sort', InputOption::VALUE_NONE, 'Generates a filter for sorting.'],
             ['search', 'search', InputOption::VALUE_NONE, 'Generates a filter for search.'],
+            ['bool', 'bool', InputOption::VALUE_NONE, 'Generates an advanced boolean filter.'],
+            ['select', 'select', InputOption::VALUE_NONE, 'Generates an advanced select filter.'],
+            ['date', 'date', InputOption::VALUE_NONE, 'Generates an advanced date filter..'],
         ];
     }
 }

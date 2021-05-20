@@ -57,7 +57,7 @@ class FileTest extends IntegrationTest
 
         $user = $this->mockUsers()->first();
 
-        $this->post(UserRepository::uriKey()."/{$user->id}", [
+        $this->postJson(UserRepository::uriKey()."/{$user->id}", [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar_original' => 'image.jpg',
@@ -93,7 +93,7 @@ class FileTest extends IntegrationTest
                     ->storeAs('avatar.jpg'),
             ]);
 
-        $this->delete(UserRepository::uriKey()."/{$user->id}")
+        $this->deleteJson(UserRepository::uriKey()."/{$user->id}")
             ->assertNoContent();
 
         Storage::disk('customDisk')->assertMissing('avatar.jpg');
@@ -116,7 +116,7 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg'),
             ]);
 
-        $this->delete(UserRepository::uriKey()."/{$user->id}")
+        $this->deleteJson(UserRepository::uriKey()."/{$user->id}")
             ->assertNoContent();
 
         Storage::disk('customDisk')->assertExists('avatar.jpg');
@@ -139,7 +139,7 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg')->deletable(true),
             ]);
 
-        $this->delete(UserRepository::uriKey()."/{$user->id}/field/avatar")
+        $this->deleteJson(UserRepository::uriKey()."/{$user->id}/field/avatar")
             ->assertNoContent();
 
         Storage::disk('customDisk')->assertMissing('avatar.jpg');
@@ -162,7 +162,7 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg')->deletable(false),
             ]);
 
-        $this->delete(UserRepository::uriKey()."/{$user->id}/field/avatar")
+        $this->deleteJson(UserRepository::uriKey()."/{$user->id}/field/avatar")
             ->assertNotFound();
     }
 
@@ -180,7 +180,7 @@ class FileTest extends IntegrationTest
 
         $user = $this->mockUsers()->first();
 
-        $this->post(UserRepository::uriKey()."/{$user->id}", [
+        $this->postJson(UserRepository::uriKey()."/{$user->id}", [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar' => '/storage/avatar.jpg',
@@ -208,7 +208,7 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('newAvatar.jpg')->prunable(),
             ]);
 
-        $this->post(UserRepository::uriKey()."/{$user->id}", [
+        $this->postJson(UserRepository::uriKey()."/{$user->id}", [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar' => '/storage/newAvatar.jpg',

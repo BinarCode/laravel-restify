@@ -239,7 +239,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
     {
         PostFactory::one();
 
-        $response = $this->get(PostRepository::to())
+        $response = $this->getJson(PostRepository::to())
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [

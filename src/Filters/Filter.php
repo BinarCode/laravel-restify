@@ -1,17 +1,15 @@
 <?php
 
-namespace Binaryk\LaravelRestify;
+namespace Binaryk\LaravelRestify\Filters;
 
-use Binaryk\LaravelRestify\Filters\AdvancedFilter;
-use Binaryk\LaravelRestify\Filters\HasMode;
-use Binaryk\LaravelRestify\Filters\MatchFilter;
-use Binaryk\LaravelRestify\Filters\SearchableFilter;
-use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\Make;
+use Binaryk\LaravelRestify\Traits\Metable;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use JsonSerializable;
@@ -20,6 +18,7 @@ abstract class Filter implements JsonSerializable
 {
     use Make;
     use HasMode;
+    use Metable;
 
     public string $type = 'value';
 
@@ -63,7 +62,7 @@ abstract class Filter implements JsonSerializable
         //
     }
 
-    abstract public function filter(RestifyRequest $request, Builder $query, $value);
+    abstract public function filter(RestifyRequest $request, Builder | Relation $query, $value);
 
     public function canSee(Closure $callback)
     {
@@ -204,12 +203,13 @@ abstract class Filter implements JsonSerializable
         });
 
         if ($this->isAdvanced() === false) {
-            $serialized = $serialized + ['column' => $this->getColumn()];
+            $serialized += ['column' => $this->getColumn()];
         }
 
         if ($this->isAdvanced()) {
             $serialized = array_merge($serialized, [
                 'key' => static::uriKey(),
+                'rules' => $this->rules(app(Request::class)),
                 'options' => method_exists($this, 'options')
                     ? collect($this->options(app(Request::class)))->map(function ($key, $value) {
                         return is_array($value) ? ($value + ['property' => $key]) : ['label' => $key, 'property' => $value];
@@ -218,7 +218,7 @@ abstract class Filter implements JsonSerializable
             ]);
         }
 
-        return $serialized;
+        return array_merge($serialized, $this->meta());
     }
 
     public function dd(): self

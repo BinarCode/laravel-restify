@@ -23,11 +23,13 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -351,7 +353,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * If true then all routes will be grouped in a configuration attributes passed by restify, otherwise
      * you should take care of that, by adding $router->group($attributes) in the @routes method
      */
-    public static function routes(Router $router, array $attributes, $wrap = false)
+    public static function routes(Router $router, array $attributes, $wrap = true)
     {
         $router->group($attributes, function () {
             // override for custom routes
@@ -555,6 +557,14 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
         })->values();
+
+        $paginator = Container::getInstance()->makeWith(LengthAwarePaginator::class, [
+            'items' => $items,
+            'total' => $items->count(),
+            'perPage' => $paginator->perPage(),
+            'currentPage' => $paginator->currentPage(),
+            'options' => $paginator->getOptions(),
+        ]);
 
         return response()->json(
             $this->filter([

@@ -19,7 +19,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
     public function it_can_list_nested(): void
     {
         UserRepository::$related = [
-            'posts' => HasMany::make('posts', 'posts', PostRepository::class),
+            'posts' => HasMany::make('posts',  PostRepository::class),
         ];
 
         PostFactory::many(5, [
@@ -41,7 +41,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
         ]);
 
         UserRepository::$related = [
-            'posts' => HasMany::make('posts', 'posts', PostRepository::class),
+            'posts' => HasMany::make('posts',  PostRepository::class),
         ];
 
         $this->getJson("users/$post->user_id/posts/$post->id")
@@ -60,7 +60,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
     public function it_can_store_nested_related(): void
     {
         UserRepository::$related = [
-            'posts' => HasMany::make('posts', 'posts', PostRepository::class),
+            'posts' => HasMany::make('posts',  PostRepository::class),
         ];
 
         $user = UserFactory::one();
@@ -89,7 +89,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
     public function it_can_update_nested_related(): void
     {
         UserRepository::$related = [
-            'posts' => HasMany::make('posts', 'posts', PostRepository::class),
+            'posts' => HasMany::make('posts',  PostRepository::class),
         ];
 
         $post = PostFactory::one([
@@ -123,7 +123,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
     public function it_can_delete_nested_related(): void
     {
         UserRepository::$related = [
-            'posts' => HasMany::make('posts', 'posts', PostRepository::class),
+            'posts' => HasMany::make('posts',  PostRepository::class),
         ];
 
         $post = PostFactory::one([
@@ -149,7 +149,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
         Gate::policy(Post::class, PostPolicy::class);
 
         UserRepository::$related = [
-            'posts' => HasMany::make('posts', 'posts', PostRepository::class),
+            'posts' => HasMany::make('posts',  PostRepository::class),
         ];
 
         $post = PostFactory::one([

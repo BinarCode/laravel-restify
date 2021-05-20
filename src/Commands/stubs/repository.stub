@@ -9,7 +9,7 @@ class DummyClass extends Repository
 {
     public static $model = '{{ model }}';
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
         ];

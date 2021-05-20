@@ -44,7 +44,7 @@ class HasManyTest extends IntegrationTest
             'user_id' => $user->id,
         ]);
 
-        $this->get(UserWithPosts::uriKey()."/$user->id?related=posts")
+        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -65,7 +65,7 @@ class HasManyTest extends IntegrationTest
             $this->mockPosts($user->id, 22);
         });
 
-        $this->get(UserWithPosts::uriKey()."/{$user->id}?related=posts&relatablePerPage=20")
+        $this->getJson(UserWithPosts::uriKey()."/{$user->id}?related=posts&relatablePerPage=20")
             ->assertJsonCount(20, 'data.relationships.posts');
     }
 
@@ -78,7 +78,7 @@ class HasManyTest extends IntegrationTest
             $this->mockPosts($user->id, 20);
         });
 
-        $this->get(UserWithPosts::uriKey()."/$user->id?related=posts")
+        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
             ->assertForbidden();
     }
 
@@ -107,17 +107,17 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
-        $this->get(UserWithPosts::uriKey()."/{$u->id}/posts?perPage=5")
+        $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts?perPage=5")
             ->assertJsonCount(5, 'data');
     }
 
-    public function test_can_apply_filters()
+    public function test_can_apply_filters(): void
     {
         tap($u = $this->mockUsers()->first(), function ($user) {
-            tap($this->mockPosts($user->id, 20), function (Collection $posts) {
+            tap($this->mockPosts($user->id, 20), static function (Collection $posts) {
                 $first = $posts->first();
                 $first->title = 'wew';
                 $first->save();
@@ -131,10 +131,10 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
-        $this->get(UserWithPosts::uriKey()."/{$u->id}/posts?title=wew")
+        $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts?title=wew")
             ->assertJsonCount(1, 'data');
     }
 
@@ -155,15 +155,15 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
-        $this->get(UserWithPosts::uriKey()."/{$u->id}/posts")
+        $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts")
             ->assertJsonCount(0, 'data');
 
         $_SERVER['restify.post.allowRestify'] = false;
 
-        $this->get(UserWithPosts::uriKey()."/{$u->id}/posts")
+        $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts")
             ->assertForbidden();
     }
 
@@ -183,10 +183,10 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
-        $this->post(UserWithPosts::uriKey()."/{$u->id}/posts", [
+        $this->postJson(UserWithPosts::uriKey()."/{$u->id}/posts", [
             'title' => 'Test',
         ])->assertCreated();
 
@@ -204,7 +204,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts', 'posts', PostRepository::class),
+                HasMany::make('posts',  PostRepository::class),
             ]);
 
         $this->getJson(UserWithPosts::to("$userId/posts/$post->id"), [
@@ -221,7 +221,7 @@ class HasManyTest extends IntegrationTest
 
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
 
-        $this->get(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->getJson(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
             'title' => 'Test',
         ])->assertForbidden();
     }
@@ -234,7 +234,7 @@ class HasManyTest extends IntegrationTest
         $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
         $secondPost = $this->mockPosts($secondUserId = $this->mockUsers()->first()->id, 1)->first();
 
-        $this->get(UserWithPosts::uriKey()."/{$userId}/posts/{$secondPost->id}")
+        $this->getJson(UserWithPosts::uriKey()."/{$userId}/posts/{$secondPost->id}")
             ->assertNotFound();
     }
 
@@ -245,7 +245,7 @@ class HasManyTest extends IntegrationTest
 
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
 
-        $this->post(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->postJson(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
             'title' => 'Test',
         ])->assertOk();
 
@@ -261,7 +261,7 @@ class HasManyTest extends IntegrationTest
 
         $this->assertDatabaseCount('posts', 1);
 
-        $this->delete(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->deleteJson(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
             'title' => 'Test',
         ])->assertNoContent();
 
@@ -277,7 +277,7 @@ class HasManyTest extends IntegrationTest
 
         $this->assertDatabaseCount('posts', 1);
 
-        $this->delete(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->deleteJson(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
             'title' => 'Test',
         ])->assertForbidden();
 
@@ -300,11 +300,11 @@ class UserWithPosts extends Repository
     public static function related(): array
     {
         return [
-            'posts' => HasMany::make('posts', 'posts', PostRepository::class),
+            'posts' => HasMany::make('posts',  PostRepository::class),
         ];
     }
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             field('name'),

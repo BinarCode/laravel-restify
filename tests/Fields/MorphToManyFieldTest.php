@@ -25,7 +25,7 @@ class MorphToManyFieldTest extends IntegrationTest
         ]);
     }
 
-    public function test_morph_to_many_displays_in_relationships()
+    public function test_morph_to_many_displays_in_relationships(): void
     {
         $user = tap(User::factory()->create(), function (User $user) {
             $user->roles()->attach(
@@ -33,7 +33,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(UserWithRolesRepository::uriKey()."/$user->id?related=roles")
+        $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -56,7 +56,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(UserWithRolesRepository::uriKey()."/$user->id?related=roles,companies")
+        $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles,companies")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -88,12 +88,12 @@ class UserWithRolesRepository extends Repository
     public static function related(): array
     {
         return [
-            'roles' => MorphToMany::make('roles', 'roles', RoleRepository::class),
-            'companies' => BelongsToMany::make('companies', 'companies', CompanyRepository::class),
+            'roles' => MorphToMany::make('roles',  RoleRepository::class),
+            'companies' => BelongsToMany::make('companies', CompanyRepository::class),
         ];
     }
 
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             field('name'),

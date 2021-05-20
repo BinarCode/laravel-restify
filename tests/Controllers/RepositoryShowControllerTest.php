@@ -21,7 +21,7 @@ class RepositoryShowControllerTest extends IntegrationTest
 
     public function test_basic_show(): void
     {
-        $this->get(PostRepository::to(1))
+        $this->getJson(PostRepository::to(1))
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [

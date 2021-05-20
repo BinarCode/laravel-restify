@@ -7,32 +7,24 @@ use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
-use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\VerifiedMatcher;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 
 class RepositorySearchServiceTest extends IntegrationTest
 {
-    /** * @var RepositorySearchService */
-    private $service;
-
-    protected function setUp(): void
+    public function test_can_match_date(): void
     {
-        parent::setUp();
-    }
-
-    public function test_can_match_date()
-    {
-        User::factory()->create([
+        User::factory(2)->create([
             'created_at' => null,
         ]);
 
-        User::factory()->create([
+        User::factory(3)->create([
             'created_at' => '01-12-2020',
         ]);
 
@@ -40,12 +32,12 @@ class RepositorySearchServiceTest extends IntegrationTest
             'created_at' => RestifySearchable::MATCH_DATETIME,
         ];
 
-        $this->get('users?created_at=null')->assertJsonCount(1, 'data');
+        $this->getJson('users?created_at=null')->assertJsonCount(2, 'data');
 
-        $this->get('users?created_at=2020-12-01')->assertJsonCount(1, 'data');
+        $this->getJson('users?created_at=2020-12-01')->assertJsonCount(3, 'data');
     }
 
-    public function test_can_match_array()
+    public function test_can_match_array(): void
     {
         User::factory(4)->create();
 
@@ -60,7 +52,19 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(1, 'data');
     }
 
-    public function test_can_match_datetime_interval()
+    public function test_can_match_range(): void
+    {
+        User::factory(4)->create();
+
+        UserRepository::$match = [
+            'id' => RestifySearchable::MATCH_BETWEEN,
+        ];
+
+        $this->getJson('users?id=1,3')
+            ->assertJsonCount(3, 'data');
+    }
+
+    public function test_can_match_datetime_interval(): void
     {
         $user = User::factory()->create();
 
@@ -83,7 +87,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         $user->save();
 
         UserRepository::$match = [
-            'created_at' => RestifySearchable::MATCH_DATETIME_INTERVAL,
+            'created_at' => RestifySearchable::MATCH_BETWEEN,
         ];
 
         $twoMonthsAgo = now()->subMonths(2)->toISOString();
@@ -95,7 +99,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(1, 'data');
     }
 
-    public function test_match_definition_hit_filter_method()
+    public function test_match_definition_hit_filter_method(): void
     {
         User::factory(4)->create();
 
@@ -161,7 +165,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         $this->getJson('users?search=John')->assertJsonCount(4, 'data');
     }
 
-    public function test_can_search_using_belongs_to_field()
+    public function test_can_search_using_belongs_to_field(): void
     {
         $foreignUser = User::factory()->create([
             'name' => 'Curtis Dog',
@@ -180,7 +184,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         PostRepository::$related = [
-            'user' => BelongsTo::make('user', 'user', UserRepository::class)->searchable([
+            'user' => BelongsTo::make('user',  UserRepository::class)->searchable([
                 'users.name',
             ]),
         ];
@@ -189,7 +193,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(2, 'data');
     }
 
-    public function test_can_order_using_filter_sortable_definition()
+    public function test_can_order_using_filter_sortable_definition(): void
     {
         User::factory()->create([
             'name' => 'Zoro',
@@ -214,7 +218,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->json('data.1.attributes.name'));
     }
 
-    public function test_can_match_closure()
+    public function test_can_match_closure(): void
     {
         User::factory(4)->create();
 
@@ -226,5 +230,22 @@ class RepositorySearchServiceTest extends IntegrationTest
         ];
 
         $this->getJson('users?is_active=true');
+    }
+
+    public function test_can_match_custom_matcher(): void
+    {
+        User::factory(1)->create([
+            'email_verified_at' => now(),
+        ]);
+
+        User::factory(2)->create([
+            'email_verified_at' => null,
+        ]);
+
+        UserRepository::$match = ['verified' => VerifiedMatcher::make()];
+        $this->getJson('users?verified=true')->assertJsonCount(1, 'data');
+
+        UserRepository::$match = ['verified' => VerifiedMatcher::make()];
+        $this->getJson('users?verified=false')->assertJsonCount(2, 'data');
     }
 }

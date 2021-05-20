@@ -24,36 +24,36 @@ class RepositoryWithRoutesTest extends IntegrationTest
         parent::setUp();
     }
 
-    public function test_can_add_custom_routes()
+    public function test_can_add_custom_routes(): void
     {
-        $this->get(Restify::path(RepositoryWithRoutes::uriKey()).'/main-testing')->assertStatus(200)
+        $this->getJson(Restify::path(RepositoryWithRoutes::uriKey()).'/main-testing')->assertOk()
             ->assertJson([
                 'success' => true,
             ]);
 
-        $this->get(route('main.testing.route'))->assertStatus(200)
-            ->assertJson([
-                'success' => true,
-            ]);
-    }
-
-    public function test_can_use_custom_prefix()
-    {
-        $this->withoutExceptionHandling()->get('/custom-prefix/testing')->assertStatus(200)
+        $this->getJson(route('main.testing.route'))->assertOk()
             ->assertJson([
                 'success' => true,
             ]);
     }
 
-    public function test_can_use_custom_middleware()
+    public function test_can_use_custom_prefix(): void
     {
-        $this->get(route('middleware.failing.route'))->assertStatus(403);
+        $this->getJson('/custom-prefix/testing')->assertOk()
+            ->assertJson([
+                'success' => true,
+            ]);
     }
 
-    public function test_can_use_custom_namespace()
+    public function test_can_use_custom_middleware(): void
+    {
+        $this->getJson(route('middleware.failing.route'))->assertStatus(403);
+    }
+
+    public function test_can_use_custom_namespace(): void
     {
         $this->getJson(route('namespace.route'))
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson([
                 'meta' => [
                     'message' => 'From the sayHello method',
@@ -64,7 +64,7 @@ class RepositoryWithRoutesTest extends IntegrationTest
     public function test_routes_default_wrapped()
     {
         $this->withoutExceptionHandling()->getJson(route('no.group.default.options'))
-            ->assertStatus(200)
+            ->assertOk()
             ->assertJson([
                 'meta' => [
                     'message' => 'From the sayHello method',
@@ -75,11 +75,6 @@ class RepositoryWithRoutesTest extends IntegrationTest
 
 class RepositoryWithRoutes extends Repository
 {
-    /**
-     * @param Router $router
-     * @param array $attributes
-     * @param bool $wrap
-     */
     public static function routes(Router $router, array $attributes, $wrap = false)
     {
         $router->group($attributes, function ($router) {

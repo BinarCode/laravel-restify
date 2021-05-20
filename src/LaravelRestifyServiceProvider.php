@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Bootstrap\Boot;
 use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
@@ -12,17 +13,12 @@ use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
-use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap the application services.
-     */
-    public function boot()
+    public function boot(): void
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
@@ -33,23 +29,12 @@ class LaravelRestifyServiceProvider extends ServiceProvider
                 StubCommand::class,
             ]);
             $this->registerPublishing();
-
-            $this->app->register(RestifyCustomRoutesProvider::class);
-            $this->app->register(RestifyServiceProvider::class);
         }
 
-        /*
-         * This will push the RestifyInjector middleware at the end of the middleware stack.
-         * This way we could check if the request is really restify related (starts with `config->path for example`)
-         * We will load routes and maybe other related resources.
-         */
-        $this->app->make(HttpKernel::class)->pushMiddleware(RestifyInjector::class);
+        app(Boot::class)->boot();
     }
 
-    /**
-     * Register the application services.
-     */
-    public function register()
+    public function register(): void
     {
         Repository::clearBootedRepositories();
 
@@ -67,7 +52,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         ]);
     }
 
-    protected function registerPublishing()
+    protected function registerPublishing(): void
     {
         $this->publishes([
             __DIR__.'/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
@@ -80,7 +65,10 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         $migrationFileName = 'create_action_logs_table.php';
         if (! $this->migrationFileExists($migrationFileName)) {
             $this->publishes([
-                __DIR__."/../database/migrations/{$migrationFileName}" => database_path('migrations/'.date('Y_m_d_His', time()).'_'.$migrationFileName),
+                __DIR__."/../database/migrations/{$migrationFileName}" => database_path('migrations/'.date(
+                    'Y_m_d_His',
+                    time()
+                ).'_'.$migrationFileName),
             ], 'restify-migrations');
         }
 

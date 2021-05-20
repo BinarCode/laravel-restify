@@ -19,7 +19,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->get(CompanyRepository::uriKey()."/{$company->id}?related=users")
+        $this->getJson(CompanyRepository::uriKey()."/{$company->id}?related=users")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -40,10 +40,10 @@ class BelongsToManyFieldTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromShow(),
+                'users' => BelongsToMany::make('users',  UserRepository::class)->hideFromShow(),
             ]);
 
-        $this->get(CompanyRepository::uriKey()."/{$company->id}?related=users")
+        $this->getJson(CompanyRepository::uriKey()."/{$company->id}?related=users")
             ->assertJsonStructure([
                 'data' => [],
             ])->assertJsonMissing([
@@ -62,20 +62,20 @@ class BelongsToManyFieldTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromIndex(),
+                'users' => BelongsToMany::make('users',  UserRepository::class)->hideFromIndex(),
             ]);
 
-        $this->get(CompanyRepository::uriKey().'?related=users')->assertJsonMissing([
+        $this->getJson(CompanyRepository::uriKey().'?related=users')->assertJsonMissing([
             'users',
         ]);
 
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users', 'users', UserRepository::class)->hideFromShow(),
+                'users' => BelongsToMany::make('users',  UserRepository::class)->hideFromShow(),
             ]);
 
-        $this->get(CompanyRepository::uriKey().'?related=users')->assertJsonFragment([
+        $this->getJson(CompanyRepository::uriKey().'?related=users')->assertJsonFragment([
             'users',
         ]);
     }
@@ -88,7 +88,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $response = $this->get(CompanyRepository::uriKey()."/{$company->id}/users")
+        $response = $this->getJson(CompanyRepository::uriKey()."/{$company->id}/users")
             ->assertOk();
 
         $this->assertSame(

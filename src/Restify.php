@@ -9,9 +9,11 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use ReflectionClass;
+use ReflectionException;
 use Symfony\Component\Finder\Finder;
 
 class Restify
@@ -100,11 +102,11 @@ class Restify
     /**
      * Register all of the repository classes in the given directory.
      *
-     * @param string $directory
+     * @param  string  $directory
      * @return void
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    public static function repositoriesFrom($directory)
+    public static function repositoriesFrom(string $directory): void
     {
         $namespace = app()->getNamespace();
 
@@ -173,7 +175,7 @@ class Restify
         static::$renderCallback = $callback;
     }
 
-    public static function globallySearchableRepositories(RestifyRequest $request)
+    public static function globallySearchableRepositories(RestifyRequest $request): array
     {
         return collect(static::$repositories)
             ->filter(fn ($repository) => $repository::authorizedToUseRepository($request))
@@ -204,7 +206,7 @@ class Restify
         return Str::title(Str::snake($value, ' '));
     }
 
-    public static function mountingRepositories()
+    public static function mountingRepositories(): void
     {
         collect(static::$repositories)->each(fn (string $repository) => $repository::mounting());
     }
@@ -217,5 +219,20 @@ class Restify
     public static function actionRepository(): Repository
     {
         return app(config('restify.logs.repository'));
+    }
+
+    public static function isRestify(Request $request): bool
+    {
+        $path = trim(static::path(), '/') ?: '/';
+
+        return $request->is($path) ||
+            $request->is(trim($path.'/*', '/')) ||
+            $request->is('restify-api/*') ||
+            collect(static::$repositories)
+                ->filter(fn ($repository) => $repository::prefix())
+                ->some(fn ($repository) => $request->is($repository::prefix().'/*')) ||
+            collect(static::$repositories)
+                ->filter(fn ($repository) => $repository::indexPrefix())
+                ->some(fn ($repository) => $request->is($repository::indexPrefix().'/*'));
     }
 }

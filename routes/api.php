@@ -16,23 +16,23 @@ Route::get('/restifyjs/setup', \Binaryk\LaravelRestify\Http\Controllers\RestifyJ
 Route::get('/{repository}/filters', \Binaryk\LaravelRestify\Http\Controllers\RepositoryFilterController::class);
 
 // Actions
-Route::get('/{repository}/actions', \Binaryk\LaravelRestify\Http\Controllers\ListActionsController::class);
-Route::get('/{repository}/{repositoryId}/actions', \Binaryk\LaravelRestify\Http\Controllers\ListRepositoryActionsController::class);
-Route::post('/{repository}/action', \Binaryk\LaravelRestify\Http\Controllers\PerformActionController::class);
+Route::get('/{repository}/actions', \Binaryk\LaravelRestify\Http\Controllers\ListActionsController::class)->name('restify.actions.index');
+Route::get('/{repository}/{repositoryId}/actions', \Binaryk\LaravelRestify\Http\Controllers\ListRepositoryActionsController::class)->name('restify.actions.repository.index');
+Route::post('/{repository}/action', \Binaryk\LaravelRestify\Http\Controllers\PerformActionController::class)->name('restify.actions.perform');
 Route::post('/{repository}/actions', \Binaryk\LaravelRestify\Http\Controllers\PerformActionController::class); // alias to the previous route
-Route::post('/{repository}/{repositoryId}/action', \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController::class);
+Route::post('/{repository}/{repositoryId}/action', \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController::class)->name('restify.actions.repository.perform');
 Route::post('/{repository}/{repositoryId}/actions', \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController::class); // alias to the previous route
 
 // API CRUD
-Route::get('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class);
-Route::post('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class);
-Route::post('/{repository}/bulk', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreBulkController::class);
-Route::post('/{repository}/bulk/update', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController::class);
-Route::get('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class);
-Route::patch('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class);
-Route::put('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class);
-Route::post('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class);
-Route::delete('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController::class);
+Route::get('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class)->name('restify.index');
+Route::post('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class)->name('restify.store');
+Route::post('/{repository}/bulk', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreBulkController::class)->name('restify.store.bulk');
+Route::post('/{repository}/bulk/update', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController::class)->name('restify.update.bulk');
+Route::get('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class)->name('restify.show');
+Route::patch('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class)->name('restify.patch');
+Route::put('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class)->name('restify.put');
+Route::post('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class)->name('restify.update');
+Route::delete('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController::class)->name('restify.destroy');
 
 // Fields
 Route::delete('/{repository}/{repositoryId}/field/{field}', \Binaryk\LaravelRestify\Http\Controllers\FieldDestroyController::class);

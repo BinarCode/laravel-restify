@@ -3,6 +3,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
+use Binaryk\LaravelRestify\Http\Requests\GlobalSearchRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
@@ -16,6 +17,11 @@ trait DetermineRequestType
     public function isIndexRequest(): bool
     {
         return $this instanceof RepositoryIndexRequest;
+    }
+
+    public function isGlobalRequest(): bool
+    {
+        return $this instanceof GlobalSearchRequest;
     }
 
     public function isShowRequest(): bool

@@ -13,17 +13,12 @@ trait PerformsQueries
         return $request->newQuery(static::uriKey());
     }
 
-    public static function indexQuery(RestifyRequest $request, $query)
+    public static function indexQuery(RestifyRequest $request, Builder | Relation $query)
     {
         return $query;
     }
 
-    public static function detailQuery(RestifyRequest $request, $query)
-    {
-        return $query;
-    }
-
-    public static function showQuery(RestifyRequest $request, $query)
+    public static function showQuery(RestifyRequest $request, Builder | Relation $query)
     {
         return $query;
     }
@@ -35,21 +30,7 @@ trait PerformsQueries
      * @param  \Illuminate\Database\Eloquent\Builder  $query
      * @return \Illuminate\Database\Eloquent\Builder
      */
-    public static function mainQuery(RestifyRequest $request, $query)
-    {
-        return $query;
-    }
-
-    /**
-     * Build an "attach" query for the given repository.
-     *
-     * This query determines which instances of the model may be attached to other resources.
-     *
-     * @param  RestifyRequest  $request
-     * @param  \Illuminate\Database\Eloquent\Builder  $query
-     * @return \Illuminate\Database\Eloquent\Builder
-     */
-    public static function attachQuery(RestifyRequest $request, $query)
+    public static function mainQuery(RestifyRequest $request, Builder | Relation $query)
     {
         return $query;
     }

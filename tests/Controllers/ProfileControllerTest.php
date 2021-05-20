@@ -189,7 +189,7 @@ class ProfileControllerTest extends IntegrationTest
                     ->storeAs('avatar.jpg'),
             ]);
 
-        $this->post('profile', [
+        $this->postJson('profile', [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar_original' => 'image.jpg',
