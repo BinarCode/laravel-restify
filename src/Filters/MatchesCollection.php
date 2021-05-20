@@ -17,8 +17,10 @@ class MatchesCollection extends Collection
         foreach ($items as $column => $matchType) {
             $definition = $matchType instanceof MatchFilter
                 ? $matchType
-                : tap(MatchFilter::make(),
-                    fn(MatchFilter $filter) => is_string($matchType) ? $filter->setType($matchType) : '');
+                : tap(
+                    MatchFilter::make(),
+                    fn (MatchFilter $filter) => is_string($matchType) ? $filter->setType($matchType) : ''
+                );
 
             if (is_callable($matchType)) {
                 $definition->usingClosure($matchType);
@@ -40,7 +42,7 @@ class MatchesCollection extends Collection
 
     public function hydrateRepository(Repository $repository): self
     {
-        return $this->each(fn(Filter $filter) => $filter->setRepository($repository));
+        return $this->each(fn (Filter $filter) => $filter->setRepository($repository));
     }
 
     public function inQuery(RestifyRequest $request): self
@@ -63,7 +65,7 @@ class MatchesCollection extends Collection
 
     public function authorized(RestifyRequest $request): self
     {
-        return $this->filter(fn(MatchFilter $filter) => $filter->authorizedToSee($request));
+        return $this->filter(fn (MatchFilter $filter) => $filter->authorizedToSee($request));
     }
 
     public function hydrateDefinition(RestifyRequest $request, Repository $repository): MatchesCollection
