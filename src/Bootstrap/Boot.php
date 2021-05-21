@@ -18,9 +18,9 @@ class Boot
     {
         $this->customRoutesBoot->boot();
 
-        if (isRestify($request = $this->request)) {
+//        if (isRestify($request = $this->request)) {
             RestifyBeforeEach::dispatch($request);
             $this->routesBoot->boot();
-        }
+//        }
     }
 }
