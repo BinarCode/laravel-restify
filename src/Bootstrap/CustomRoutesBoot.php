@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Bootstrap;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Support\Facades\Route;
 use ReflectionClass;
@@ -36,6 +37,7 @@ class CustomRoutesBoot
                 $wrap = ($parameters[2]->isDefaultValueAvailable() && $parameters[2]->getDefaultValue()) ? $config : [];
             }
 
+            /** * @var Repository $repository */
             Route::group($wrap, function ($router) use ($repository, $config) {
                 $repository::routes($router, $config);
             });
