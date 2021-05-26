@@ -35,7 +35,6 @@ class AdvancedFilterTest extends IntegrationTest
         ];
 
         $this->getJson('posts/filters?only=matches,searchables,sortables')
-            ->dump()
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->where('data.1.repository.key', 'users')
