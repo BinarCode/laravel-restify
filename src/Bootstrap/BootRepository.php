@@ -6,7 +6,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 
 class BootRepository
 {
-    /** * @var Repository $repository */
+    /** * @var Repository */
 
     public function __construct(
         private string $repository

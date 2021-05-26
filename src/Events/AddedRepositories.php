@@ -6,7 +6,6 @@ class AddedRepositories
 {
     public function __construct(
         public array $repositories
-    )
-    {
+    ) {
     }
 }
