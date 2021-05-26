@@ -36,6 +36,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         }
 
         $this->listeners();
+
         $this->app->make(HttpKernel::class)->pushMiddleware(RestifyInjector::class);
     }
 
