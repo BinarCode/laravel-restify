@@ -715,6 +715,35 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->success();
     }
 
+    public function patch(RestifyRequest $request, $repositoryId)
+    {
+        DB::transaction(function () use ($request) {
+            $fields = $this->collectFields($request)
+                ->intersectByKeys($request->json()->keys())
+                ->forUpdate($request, $this)
+                ->authorizedPatch($request)
+                ->merge($this->collectFields($request)->forBelongsTo($request));
+
+            static::fillFields($request, $this->resource, $fields);
+
+            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
+                Restify::actionLog()
+                    ->forRepositoryUpdated($this->resource, $request->user())
+                    ->save();
+            }
+
+            $this->resource->save();
+
+            return $fields;
+        })->each(
+            fn (Field $field) => $field->invokeAfter($request, $this->resource)
+        );
+
+        return $this->response()
+            ->data($this->serializeForShow($request))
+            ->success();
+    }
+
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
         $fields = $this->collectFields($request)
@@ -796,6 +825,17 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $this->authorizeToUpdate($request);
 
         $validator = static::validatorForUpdate($request, $this, $payload);
+
+        $validator->validate();
+
+        return $this;
+    }
+
+    public function allowToPatch(RestifyRequest $request, $payload = null): self
+    {
+        $this->authorizeToUpdate($request);
+
+        $validator = static::validatorForPatch($request, $this, $payload);
 
         $validator->validate();
 
