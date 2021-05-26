@@ -12,8 +12,7 @@ class CustomRoutesBoot
 {
     public function __construct(
         private ?array $repositories = null
-    )
-    {
+    ) {
         $this->repositories = $this->repositories ?? Restify::$repositories;
     }
 

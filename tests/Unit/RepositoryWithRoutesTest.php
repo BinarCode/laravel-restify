@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
-use Binaryk\LaravelRestify\Bootstrap\CustomRoutesBoot;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;

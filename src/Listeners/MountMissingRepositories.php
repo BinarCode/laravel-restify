@@ -9,7 +9,7 @@ class MountMissingRepositories
 {
     public function handle(AddedRepositories $addedRepositories): void
     {
-        collect($addedRepositories->repositories)->each(function(string $repository) {
+        collect($addedRepositories->repositories)->each(function (string $repository) {
             (new BootRepository($repository))->boot();
         });
     }
