@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Bootstrap\Boot;
 use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
@@ -13,7 +12,12 @@ use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
+use Binaryk\LaravelRestify\Events\AddedRepositories;
+use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
+use Binaryk\LaravelRestify\Listeners\MountMissingRepositories;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Contracts\Http\Kernel as HttpKernel;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
@@ -31,7 +35,8 @@ class LaravelRestifyServiceProvider extends ServiceProvider
             $this->registerPublishing();
         }
 
-        app(Boot::class)->boot();
+        $this->listeners();
+        $this->app->make(HttpKernel::class)->pushMiddleware(RestifyInjector::class);
     }
 
     public function register(): void
@@ -85,5 +90,13 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         }
 
         return false;
+    }
+
+    private function listeners(): void
+    {
+        Event::listen(
+            AddedRepositories::class,
+            [MountMissingRepositories::class, 'handle'],
+        );
     }
 }
