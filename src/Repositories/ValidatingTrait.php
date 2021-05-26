@@ -39,11 +39,14 @@ trait ValidatingTrait
             return $messages;
         })->toArray();
 
-        return Validator::make($plainPayload ?? $request->all(), $on->getStoringRules($request),
-            $messages)->after(function ($validator) use ($request) {
-            static::afterValidation($request, $validator);
-            static::afterStoringValidation($request, $validator);
-        });
+        return Validator::make(
+            $plainPayload ?? $request->all(),
+            $on->getStoringRules($request),
+            $messages
+        )->after(function ($validator) use ($request) {
+                static::afterValidation($request, $validator);
+                static::afterStoringValidation($request, $validator);
+            });
     }
 
     public static function validatorForStoringBulk(RestifyRequest $request, array $plainPayload = null)
@@ -59,11 +62,14 @@ trait ValidatingTrait
             return $messages;
         })->toArray();
 
-        return Validator::make($plainPayload ?? $request->all(), $on->getStoringBulkRules($request),
-            $messages)->after(function ($validator) use ($request) {
-            static::afterValidation($request, $validator);
-            static::afterStoringBulkValidation($request, $validator);
-        });
+        return Validator::make(
+            $plainPayload ?? $request->all(),
+            $on->getStoringBulkRules($request),
+            $messages
+        )->after(function ($validator) use ($request) {
+                static::afterValidation($request, $validator);
+                static::afterStoringBulkValidation($request, $validator);
+            });
     }
 
     /**
@@ -90,11 +96,14 @@ trait ValidatingTrait
             return $messages;
         })->toArray();
 
-        return Validator::make($plainPayload ?? $request->all(), $on->getUpdatingRules($request),
-            $messages)->after(function ($validator) use ($request) {
-            static::afterValidation($request, $validator);
-            static::afterUpdatingValidation($request, $validator);
-        });
+        return Validator::make(
+            $plainPayload ?? $request->all(),
+            $on->getUpdatingRules($request),
+            $messages
+        )->after(function ($validator) use ($request) {
+                static::afterValidation($request, $validator);
+                static::afterUpdatingValidation($request, $validator);
+            });
     }
 
     public static function validatorForPatch(RestifyRequest $request, $resource = null, array $plainPayload = null)
@@ -113,11 +122,14 @@ trait ValidatingTrait
                 return $messages;
             })->toArray();
 
-        return Validator::make($plainPayload ?? $request->all(), collect($on->getUpdatingRules($request))->intersectByKeys($request->json())->all(),
-            $messages)->after(function ($validator) use ($request) {
-            static::afterValidation($request, $validator);
-            static::afterUpdatingValidation($request, $validator);
-        });
+        return Validator::make(
+            $plainPayload ?? $request->all(),
+            collect($on->getUpdatingRules($request))->intersectByKeys($request->json())->all(),
+            $messages
+        )->after(function ($validator) use ($request) {
+                static::afterValidation($request, $validator);
+                static::afterUpdatingValidation($request, $validator);
+            });
     }
 
     public static function validatorForAttach(RestifyRequest $request, $resource = null, array $plainPayload = null)
@@ -132,7 +144,7 @@ trait ValidatingTrait
 
         $pivotFields = $field->collectPivotFields();
 
-        $messages = $pivotFields->flatMap(fn(Field $field) => $field->serializeMessages())->all();
+        $messages = $pivotFields->flatMap(fn (Field $field) => $field->serializeMessages())->all();
 
         $rules = $pivotFields->mapWithKeys(function (Field $k) {
             return [
@@ -162,11 +174,14 @@ trait ValidatingTrait
             return $messages;
         })->toArray();
 
-        return Validator::make($plainPayload ?? $request->all(), $on->getUpdatingBulkRules($request),
-            $messages)->after(function ($validator) use ($request) {
-            static::afterValidation($request, $validator);
-            static::afterUpdatingBulkValidation($request, $validator);
-        });
+        return Validator::make(
+            $plainPayload ?? $request->all(),
+            $on->getUpdatingBulkRules($request),
+            $messages
+        )->after(function ($validator) use ($request) {
+                static::afterValidation($request, $validator);
+                static::afterUpdatingBulkValidation($request, $validator);
+            });
     }
 
     /**
