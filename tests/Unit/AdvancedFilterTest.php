@@ -3,13 +3,11 @@
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Filters\AdvancedFilter;
-use Binaryk\LaravelRestify\Filters\MultiSelectFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
-use Illuminate\Testing\AssertableJsonString;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 class AdvancedFilterTest extends IntegrationTest
@@ -34,7 +32,7 @@ class AdvancedFilterTest extends IntegrationTest
                 ];
             }
 
-            public function filter(RestifyRequest $request, Relation|Builder $query, $value)
+            public function filter(RestifyRequest $request, Relation | Builder $query, $value)
             {
                 return $query;
             }
@@ -47,7 +45,8 @@ class AdvancedFilterTest extends IntegrationTest
             }
         };
 
-        tap(AssertableJson::fromArray($filter->jsonSerialize()),
+        tap(
+            AssertableJson::fromArray($filter->jsonSerialize()),
             function (AssertableJson $json) {
                 $json
                     ->dump()
@@ -65,6 +64,7 @@ class AdvancedFilterTest extends IntegrationTest
                         'property' => 'draft',
                     ]])
                     ;
-            });
+            }
+        );
     }
 }
