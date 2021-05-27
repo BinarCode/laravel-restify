@@ -222,6 +222,7 @@ abstract class Filter implements JsonSerializable
             'title' => $this->title(),
             'description' => $this->description(),
             'column' => $this->column(),
+            'key' => static::uriKey(),
         ], function (array $initial) {
             return $this->relatedRepositoryKey ? array_merge($initial, [
                 'repository' => $this->getRelatedRepository(),
@@ -231,7 +232,6 @@ abstract class Filter implements JsonSerializable
 
         if ($this->isAdvanced()) {
             $serialized = array_merge($serialized, [
-                'key' => static::uriKey(),
                 'rules' => $this->rules(app(Request::class)),
                 'options' => method_exists($this, 'options')
                     ? collect($this->options(app(Request::class)))->map(function ($key, $value) {
