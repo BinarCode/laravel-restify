@@ -18,21 +18,7 @@ class MatchableFilterTest extends IntegrationTest
             AssertableJson::fromArray($filter->jsonSerialize()),
             function (AssertableJson $json) {
                 $json
-                    ->dd()
-                    ->dump()
-                    ->where('type', 'multiselect')
-                    ->where('advanced', true)
-                    ->where('title', 'Status filter')
-                    ->where('description', 'Short description')
-                    ->where('column', 'status')
-                    ->where('key', 'status-filter')
-                    ->where('rules', [
-                        'status' => ['required'],
-                    ])
-                    ->where('options', [[
-                        'label' => 'Draft',
-                        'property' => 'draft',
-                    ]])
+                    ->where('key', 'matches')
                 ;
             }
         );
