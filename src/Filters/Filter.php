@@ -22,7 +22,7 @@ abstract class Filter implements JsonSerializable
 
     public string $type = 'value';
 
-    public string $title;
+    public ?string $title = null;
 
     public string $description = '';
 
@@ -92,6 +92,14 @@ abstract class Filter implements JsonSerializable
 
     protected function title(): string
     {
+        if ($this->title) {
+            return $this->title;
+        }
+
+        if ($column = $this->column()) {
+            return Str::title(Str::snake(Str::studly($column), ' '));
+        }
+
         return $this->title ?? Str::title(Str::snake(class_basename(static::class), ' '));
     }
 
