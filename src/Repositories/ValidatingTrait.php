@@ -44,9 +44,9 @@ trait ValidatingTrait
             $on->getStoringRules($request),
             $messages
         )->after(function ($validator) use ($request) {
-                static::afterValidation($request, $validator);
-                static::afterStoringValidation($request, $validator);
-            });
+            static::afterValidation($request, $validator);
+            static::afterStoringValidation($request, $validator);
+        });
     }
 
     public static function validatorForStoringBulk(RestifyRequest $request, array $plainPayload = null)
@@ -67,9 +67,9 @@ trait ValidatingTrait
             $on->getStoringBulkRules($request),
             $messages
         )->after(function ($validator) use ($request) {
-                static::afterValidation($request, $validator);
-                static::afterStoringBulkValidation($request, $validator);
-            });
+            static::afterValidation($request, $validator);
+            static::afterStoringBulkValidation($request, $validator);
+        });
     }
 
     /**
@@ -101,9 +101,9 @@ trait ValidatingTrait
             $on->getUpdatingRules($request),
             $messages
         )->after(function ($validator) use ($request) {
-                static::afterValidation($request, $validator);
-                static::afterUpdatingValidation($request, $validator);
-            });
+            static::afterValidation($request, $validator);
+            static::afterUpdatingValidation($request, $validator);
+        });
     }
 
     public static function validatorForPatch(RestifyRequest $request, $resource = null, array $plainPayload = null)
@@ -127,9 +127,9 @@ trait ValidatingTrait
             collect($on->getUpdatingRules($request))->intersectByKeys($request->json())->all(),
             $messages
         )->after(function ($validator) use ($request) {
-                static::afterValidation($request, $validator);
-                static::afterUpdatingValidation($request, $validator);
-            });
+            static::afterValidation($request, $validator);
+            static::afterUpdatingValidation($request, $validator);
+        });
     }
 
     public static function validatorForAttach(RestifyRequest $request, $resource = null, array $plainPayload = null)
@@ -179,9 +179,9 @@ trait ValidatingTrait
             $on->getUpdatingBulkRules($request),
             $messages
         )->after(function ($validator) use ($request) {
-                static::afterValidation($request, $validator);
-                static::afterUpdatingBulkValidation($request, $validator);
-            });
+            static::afterValidation($request, $validator);
+            static::afterUpdatingBulkValidation($request, $validator);
+        });
     }
 
     /**

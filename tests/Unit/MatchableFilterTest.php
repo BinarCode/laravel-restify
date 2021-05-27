@@ -11,7 +11,6 @@ class MatchableFilterTest extends IntegrationTest
     public function test_matchable_filter_has_key(): void
     {
         $filter = new class extends MatchFilter {
-
         };
 
         tap(
