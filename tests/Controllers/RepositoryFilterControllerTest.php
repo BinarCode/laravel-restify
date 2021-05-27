@@ -26,7 +26,9 @@ class RepositoryFilterControllerTest extends IntegrationTest
             'title',
         ];
 
+        $this->withoutExceptionHandling();
         $this->getJson('posts/filters?include=matches,sortables,searchables')
+            ->dump()
             // 5 custom filters
             // 1 match filter
             // 1 sort
@@ -34,11 +36,11 @@ class RepositoryFilterControllerTest extends IntegrationTest
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->where('data.0.rules.is_active', 'bool')
-                ->where('data.4.type', MatchFilter::TYPE)
+                ->where('data.4.type', 'text')
                 ->where('data.4.column', 'title')
-                ->where('data.5.type', SortableFilter::TYPE)
+                ->where('data.5.type', 'value')
                 ->where('data.5.column', 'title')
-                ->where('data.6.type', SearchableFilter::TYPE)
+                ->where('data.6.type', 'value')
                 ->where('data.6.column', 'id')
                 ->etc()
             )

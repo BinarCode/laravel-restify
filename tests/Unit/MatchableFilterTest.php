@@ -18,9 +18,11 @@ class MatchableFilterTest extends IntegrationTest
             AssertableJson::fromArray($filter->jsonSerialize()),
             function (AssertableJson $json) {
                 $json
+                    ->dump()
                     ->where('key', 'matches')
                     ->where('title', 'Approved At')
                     ->where('column', 'approved_at')
+                    ->etc()
                 ;
             }
         );

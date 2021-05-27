@@ -125,7 +125,6 @@ class AdvancedFilterTest extends IntegrationTest
 
         $this
             ->getJson(PostRepository::uriKey().'/filters?include=matches')
-            ->dump()
             ->assertOk()
             ->assertJsonFragment($booleanFilter = [
                 'key' => $key = 'active-booleans',

@@ -47,15 +47,15 @@ abstract class Filter implements JsonSerializable
         }
 
         if ($this instanceof SearchableFilter) {
-            $this->type = SearchableFilter::TYPE;
+            $this->type = $this->type ?? SearchableFilter::TYPE;
         }
 
         if ($this instanceof SortableFilter) {
-            $this->type = SortableFilter::TYPE;
+            $this->type = $this->type ?? SortableFilter::TYPE;
         }
 
         if ($this instanceof MatchFilter) {
-            $this->type = MatchFilter::TYPE;
+            $this->type = $this->type ?? MatchFilter::TYPE;
         }
 
         $this->booted();

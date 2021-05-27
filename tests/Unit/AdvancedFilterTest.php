@@ -19,7 +19,7 @@ class AdvancedFilterTest extends IntegrationTest
 
             public string $type = 'multiselect';
 
-            public string $title = 'Status filter';
+            public ?string $title = 'Status filter';
 
             public string $description = 'Short description';
 
