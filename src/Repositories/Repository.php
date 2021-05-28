@@ -558,14 +558,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return $repository->authorizedToShow($request);
         })->values();
 
-        $paginator = Container::getInstance()->makeWith(LengthAwarePaginator::class, [
-            'items' => $items,
-            'total' => $items->count(),
-            'perPage' => $paginator->perPage(),
-            'currentPage' => $paginator->currentPage(),
-            'options' => $paginator->getOptions(),
-        ]);
-
         return response()->json(
             $this->filter([
                 'meta' => $this->when(
