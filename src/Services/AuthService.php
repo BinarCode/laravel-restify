@@ -88,7 +88,7 @@ class AuthService
      */
     public function userQuery()
     {
-        $userClass = Config::get('restify.auth.user_model');
+        $userClass = Config::get('auth.providers.users.model');
 
         try {
             $container = Container::getInstance();
