@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -20,7 +21,7 @@ use Orchestra\Testbench\TestCase;
 
 abstract class IntegrationTest extends TestCase
 {
-    protected Mockery\MockInterface | User $authenticatedAs;
+    protected Mockery\MockInterface|User $authenticatedAs;
 
     protected function setUp(): void
     {
@@ -29,8 +30,10 @@ abstract class IntegrationTest extends TestCase
         $this->loadRepositories()
             ->loadMigrations();
 
+        $this->app->register(RestifyApplicationServiceProvider::class);
+
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
+            fn(string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\' . class_basename($modelName) . 'Factory'
         );
 
         Restify::$authUsing = static function () {
@@ -65,7 +68,7 @@ abstract class IntegrationTest extends TestCase
             'prefix' => '',
         ]);
 
-        include_once __DIR__.'/../database/migrations/create_action_logs_table.php';
+        include_once __DIR__ . '/../database/migrations/create_action_logs_table.php';
         (new \CreateActionLogsTable())->up();
     }
 
@@ -73,7 +76,7 @@ abstract class IntegrationTest extends TestCase
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--path' => realpath(__DIR__.DIRECTORY_SEPARATOR.'Migrations'),
+            '--path' => realpath(__DIR__ . DIRECTORY_SEPARATOR . 'Migrations'),
         ]);
 
         return $this;
@@ -106,8 +109,8 @@ abstract class IntegrationTest extends TestCase
 
     public function mockUsers($count = 1, array $predefinedEmails = []): Collection
     {
-        return Collection::times($count, fn ($i) => User::factory()->create())
-            ->merge(collect($predefinedEmails)->each(fn (string $email) => User::factory()->create([
+        return Collection::times($count, fn($i) => User::factory()->create())
+            ->merge(collect($predefinedEmails)->each(fn(string $email) => User::factory()->create([
                 'email' => $email,
             ])))
             ->shuffle();
@@ -115,7 +118,7 @@ abstract class IntegrationTest extends TestCase
 
     public function mockPosts($userId = null, $count = 1): Collection
     {
-        return Collection::times($count, fn () => Post::factory()->create([
+        return Collection::times($count, fn() => Post::factory()->create([
             'user_id' => $userId,
         ]))->shuffle();
     }
@@ -127,17 +130,17 @@ abstract class IntegrationTest extends TestCase
 
     public function getTempDirectory($suffix = ''): string
     {
-        return __DIR__.'/TestSupport/temp'.($suffix === '' ? '' : '/'.$suffix);
+        return __DIR__ . '/TestSupport/temp' . ($suffix === '' ? '' : '/' . $suffix);
     }
 
     #[Pure] public function getMediaDirectory($suffix = ''): string
     {
-        return $this->getTempDirectory().'/media'.($suffix === '' ? '' : '/'.$suffix);
+        return $this->getTempDirectory() . '/media' . ($suffix === '' ? '' : '/' . $suffix);
     }
 
     #[Pure] public function getTestFilesDirectory($suffix = ''): string
     {
-        return $this->getTempDirectory().'/testfiles'.($suffix === '' ? '' : '/'.$suffix);
+        return $this->getTempDirectory() . '/testfiles' . ($suffix === '' ? '' : '/' . $suffix);
     }
 
     #[Pure] public function getTestJpg(): string

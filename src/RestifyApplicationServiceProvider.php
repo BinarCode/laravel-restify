@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\AuthController;
 use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
 use Illuminate\Support\Facades\Gate;
@@ -30,7 +31,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function repositories(): void
     {
-        if ((false === is_dir(app_path('Restify'))) && ! mkdir($concurrentDirectory = app_path('Restify')) && ! is_dir($concurrentDirectory)) {
+        if ((false === is_dir(app_path('Restify'))) && !mkdir($concurrentDirectory = app_path('Restify')) && !is_dir($concurrentDirectory)) {
             throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
         }
 
@@ -81,8 +82,9 @@ class RestifyApplicationServiceProvider extends ServiceProvider
             Route::group([
                 'prefix' => $prefix,
                 'middleware' => [EnsureJsonApiHeaderMiddleware::class],
+
             ], function () {
-                Route::post('register', [AuthController::class, 'register'])
+                Route::post('register', RegisterController::class)
                     ->name('restify.register');
 
                 Route::post('login', [AuthController::class, 'login'])
