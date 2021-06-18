@@ -4,9 +4,9 @@ namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Routing\Controller;
 
 class RegisterController extends Controller
 {
