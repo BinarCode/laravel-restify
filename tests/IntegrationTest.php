@@ -33,7 +33,7 @@ abstract class IntegrationTest extends TestCase
         $this->app->register(RestifyApplicationServiceProvider::class);
 
         Factory::guessFactoryNamesUsing(
-            fn(string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\' . class_basename($modelName) . 'Factory'
+            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\' . class_basename($modelName) . 'Factory'
         );
 
         Restify::$authUsing = static function () {

@@ -1,7 +1,6 @@
 <?php
 
 namespace Binaryk\LaravelRestify;
-
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\AuthController;
 use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
@@ -84,7 +83,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
                 'middleware' => [EnsureJsonApiHeaderMiddleware::class],
 
             ], function () {
-                Route::post('register', [AuthController::class, 'register'])
+                Route::post('register', RegisterController::class)
                     ->name('restify.register');
 
                 Route::post('login', [AuthController::class, 'login'])
