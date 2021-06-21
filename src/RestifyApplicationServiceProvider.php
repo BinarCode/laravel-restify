@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
-use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\AuthController;
 use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
 use Illuminate\Support\Facades\Gate;
