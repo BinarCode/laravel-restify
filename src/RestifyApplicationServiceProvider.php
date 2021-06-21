@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\AuthController;
 use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
@@ -24,7 +25,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the application's Rest resources.
+     * Register the application's Rest Resources.
      *
      * @return void
      * @throws ReflectionException
@@ -95,7 +96,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
                     ->middleware('throttle:6,1')
                     ->name('restify.verify');
 
-                Route::post('forgotPassword', [AuthController::class, 'forgotPassword'])
+                Route::post('forgotPassword', ForgotPasswordController::class)
                     ->middleware('throttle:6,1')
                     ->name('restify.forgotPassword');
 

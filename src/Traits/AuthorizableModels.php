@@ -62,7 +62,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can view the given resource or throw.
+     * Determine if the current user can views the given resource or throw.
      *
      * @param Request $request
      * @throws AuthorizationException
@@ -73,7 +73,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can view the given resource.
+     * Determine if the current user can views the given resource.
      *
      * @param Request $request
      * @return bool
@@ -233,7 +233,7 @@ trait AuthorizableModels
     }
 
     /**
-     * Determine if the current user can view the given resource.
+     * Determine if the current user can views the given resource.
      *
      * @param \Illuminate\Http\Request $request
      * @param string $ability
