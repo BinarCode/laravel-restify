@@ -26,7 +26,7 @@ trait ResetsPasswords
     }
 
     /**
-     * Display the password reset views for the given token.
+     * Display the password reset view for the given token.
      *
      * If no token is present, display the link request form.
      *
@@ -62,7 +62,7 @@ trait ResetsPasswords
         );
 
         // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated views. If there is an error we can
+        // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
         return $response == Password::PASSWORD_RESET
             ? $this->sendResetResponse($response)

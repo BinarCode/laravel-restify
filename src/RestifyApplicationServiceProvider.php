@@ -25,7 +25,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     }
 
     /**
-     * Register the application's Rest Resources.
+     * Register the application's Rest resources.
      *
      * @return void
      * @throws ReflectionException
@@ -85,7 +85,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
                 'middleware' => [EnsureJsonApiHeaderMiddleware::class],
 
             ], function () {
-                Route::post('register', RegisterController::class)
+                Route::post('register', [AuthController::class, 'register'])
                     ->name('restify.register');
 
                 Route::post('login', [AuthController::class, 'login'])

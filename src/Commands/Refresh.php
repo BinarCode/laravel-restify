@@ -18,7 +18,7 @@ class Refresh extends Command
      *
      * @var string
      */
-    protected $description = 'Clear all laravel caches (routes, cache, config and views)';
+    protected $description = 'Clear all laravel caches (routes, cache, config and view)';
 
     /**
      * Execute the console command.
@@ -30,7 +30,7 @@ class Refresh extends Command
         $this->call('route:cache');
         $this->call('cache:clear');
         $this->call('config:cache');
-        $this->call('views:clear');
+        $this->call('view:clear');
         $this->call('route:clear');
         $this->call('optimize');
     }

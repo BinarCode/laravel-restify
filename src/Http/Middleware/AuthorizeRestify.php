@@ -21,6 +21,6 @@ class AuthorizeRestify
             return $next($request);
         }
 
-        abort(403, __('Unauthorized to views restify.'));
+        abort(403, __('Unauthorized to view restify.'));
     }
 }

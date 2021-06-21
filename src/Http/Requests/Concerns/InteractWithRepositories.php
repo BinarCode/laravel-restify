@@ -27,7 +27,7 @@ trait InteractWithRepositories
 
             if (! $repository::authorizedToUseRepository($this)) {
                 abort(403, __(
-                    'Unauthorized to views repository :name. Check "allowRestify" policy.',
+                    'Unauthorized to view repository :name. Check "allowRestify" policy.',
                     [
                         'name' => $repository,
                     ]
