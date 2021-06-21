@@ -1,14 +1,12 @@
 <?php
 
-
 namespace Binaryk\LaravelRestify\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 
-class ForgotPasswordMail extends Mailable implements ShouldQueue
+class ForgotPasswordMail extends Mailable
 {
     use Queueable, SerializesModels;
 
