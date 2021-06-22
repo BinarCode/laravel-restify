@@ -23,7 +23,9 @@ class ForgotPasswordController extends Controller
 
         $token = Password::createToken($user);
 
-        $url = str_replace(array('{token}', '{email}'), array($token, $user->email),
+        $url = str_replace(
+            ['{token}', '{email}'],
+            [$token, $user->email],
             config('restify.auth.password_reset_url')
         );
 

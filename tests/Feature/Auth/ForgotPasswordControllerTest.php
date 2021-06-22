@@ -5,9 +5,9 @@ namespace Binaryk\LaravelRestify\Tests\Feature\Auth;
 use Binaryk\LaravelRestify\Mail\ForgotPasswordMail;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Hash;
 
 class ForgotPasswordControllerTest extends IntegrationTest
 {
