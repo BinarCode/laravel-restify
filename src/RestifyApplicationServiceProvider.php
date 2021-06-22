@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
+use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\AuthController;
 use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
 use Illuminate\Support\Facades\Gate;
@@ -99,7 +100,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
                     ->middleware('throttle:6,1')
                     ->name('restify.forgotPassword');
 
-                Route::post('resetPassword', [AuthController::class, 'resetPassword'])
+                Route::post('resetPassword', ResetPasswordController::class)
                     ->middleware('throttle:6,1')
                     ->name('restify.resetPassword');
             });
