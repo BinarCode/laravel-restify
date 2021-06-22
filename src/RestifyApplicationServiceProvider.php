@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\AuthController;
 use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
 use Illuminate\Support\Facades\Gate;
@@ -81,8 +82,9 @@ class RestifyApplicationServiceProvider extends ServiceProvider
             Route::group([
                 'prefix' => $prefix,
                 'middleware' => [EnsureJsonApiHeaderMiddleware::class],
+
             ], function () {
-                Route::post('register', [AuthController::class, 'register'])
+                Route::post('register', RegisterController::class)
                     ->name('restify.register');
 
                 Route::post('login', [AuthController::class, 'login'])
