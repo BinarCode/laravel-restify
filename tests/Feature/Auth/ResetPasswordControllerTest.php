@@ -35,6 +35,10 @@ class ResetPasswordControllerTest extends IntegrationTest
             'password_confirmation' => 'secret!1'
         ]))->assertOk()->json('data');
 
+        $user->password = Hash::make('secret!1');
+        $user->save();
+
+        $this->assertTrue(Hash::check('secret!1', $user->password));
         $this->assertSame($response, 'Password has been successfully changed');
     }
 }
