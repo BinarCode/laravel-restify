@@ -35,9 +35,9 @@ class VerifyControllerTest extends IntegrationTest
 
         $this->assertNull($userRegistered->email_verified_at);
 
-       $verifiedUser = $this->postJson(route('restify.verify', [
+        $verifiedUser = $this->postJson(route('restify.verify', [
             $userRegistered->id,
-            sha1($userRegistered->email)
+            sha1($userRegistered->email),
         ]))->assertOk()->json();
 
         $this->assertNotNull($verifiedUser['email_verified_at']);
@@ -74,7 +74,7 @@ class VerifyControllerTest extends IntegrationTest
 
         $this->postJson(route('restify.verify', [
             $userRegistered->id,
-            sha1('exemple@exemple.com')
+            sha1('exemple@exemple.com'),
         ]))->assertForbidden();
 
         Event::assertNotDispatched(Verified::class);
