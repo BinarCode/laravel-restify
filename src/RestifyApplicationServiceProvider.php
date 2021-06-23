@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Http\Controllers\Auth\LoginController;
+use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
@@ -88,7 +90,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
                 Route::post('register', RegisterController::class)
                     ->name('restify.register');
 
-                Route::post('login', [AuthController::class, 'login'])
+                Route::post('login', LoginController::class)
                     ->middleware('throttle:6,1')
                     ->name('restify.login');
 

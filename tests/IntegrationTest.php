@@ -44,7 +44,6 @@ abstract class IntegrationTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-
         Mockery::close();
         Repository::clearResolvedInstances();
     }
