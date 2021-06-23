@@ -24,7 +24,7 @@ class LoginControllerTest extends IntegrationTest
             'password' => 'secret!',
         ]))->assertOk()->assertJsonStructure([
             'data' => [
-                'user' =>[
+                'user' => [
                     'id',
                     'name',
                     'avatar',
@@ -36,7 +36,7 @@ class LoginControllerTest extends IntegrationTest
                     'updated_at',
                 ],
                 'token',
-            ]
+            ],
         ]);
     }
 
