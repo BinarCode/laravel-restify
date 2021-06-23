@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Feature\Auth;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Route;
 
