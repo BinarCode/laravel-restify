@@ -149,7 +149,7 @@ abstract class Action implements JsonSerializable
                 Transaction::run(function () use ($models, $request, &$response) {
                     $response = $this->handle($request, $models);
 
-                    $models->each(fn(Model $model) => ActionLog::forRepositoryAction($this, $model, $request->user())->save());
+                    $models->each(fn (Model $model) => ActionLog::forRepositoryAction($this, $model, $request->user())->save());
                 });
             });
         } else {
@@ -162,7 +162,9 @@ abstract class Action implements JsonSerializable
                 );
 
                 Restify::actionLog()::forRepositoryAction(
-                    $this, $model, $request->user()
+                    $this,
+                    $model,
+                    $request->user()
                 )->save();
             });
         }
