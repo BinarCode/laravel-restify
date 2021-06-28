@@ -148,7 +148,8 @@ class RepositorySearchService extends Searchable
             new AdvancedFiltersApplied(
                 $repository,
                 AdvancedFiltersCollection::collectQueryFilters($request, $repository)
-                    ->apply($request, $query)
+                    ->apply($request, $query),
+                $request->input('filters'),
             )
         );
 
