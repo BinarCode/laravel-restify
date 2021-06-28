@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Services\Search;
 
+use Binaryk\LaravelRestify\Events\AdvancedFiltersApplied;
 use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
 use Binaryk\LaravelRestify\Filters\Filter;
@@ -143,8 +144,12 @@ class RepositorySearchService extends Searchable
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
     {
-        AdvancedFiltersCollection::collectQueryFilters($request, $repository)
-            ->apply($request, $query);
+        event(
+            new AdvancedFiltersApplied(
+                AdvancedFiltersCollection::collectQueryFilters($request, $repository)
+                    ->apply($request, $query)
+            )
+        );
 
         return $query;
     }
