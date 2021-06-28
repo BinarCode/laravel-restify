@@ -3,11 +3,13 @@
 namespace Binaryk\LaravelRestify\Events;
 
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
+use Binaryk\LaravelRestify\Repositories\Repository;
 
 class AdvancedFiltersApplied
 {
     public function __construct(
-        public AdvancedFiltersCollection $advancedFiltersCollection
+        public Repository $repository,
+        public AdvancedFiltersCollection $advancedFiltersCollection,
     ) {
     }
 }

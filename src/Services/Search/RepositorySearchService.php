@@ -146,6 +146,7 @@ class RepositorySearchService extends Searchable
     {
         event(
             new AdvancedFiltersApplied(
+                $repository,
                 AdvancedFiltersCollection::collectQueryFilters($request, $repository)
                     ->apply($request, $query)
             )
