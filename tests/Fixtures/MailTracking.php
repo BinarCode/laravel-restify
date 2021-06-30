@@ -13,12 +13,12 @@ use Swift_Message;
 trait MailTracking
 {
     /**
-     * Delivered emails.
+     * Delivered Blades.
      */
     protected $emails = [];
 
     /**
-     * Register a listener for new emails.
+     * Register a listener for new Blades.
      */
     public function setUpMailTracking()
     {
@@ -33,27 +33,27 @@ trait MailTracking
     {
         $this->assertNotEmpty(
             $this->emails,
-            'No emails have been sent.'
+            'No Blades have been sent.'
         );
 
         return $this;
     }
 
     /**
-     * Assert that no emails were sent.
+     * Assert that no Blades were sent.
      */
     protected function assertEmailWasNotSent()
     {
         $this->assertEmpty(
             $this->emails,
-            'Did not expect any emails to have been sent.'
+            'Did not expect any Blades to have been sent.'
         );
 
         return $this;
     }
 
     /**
-     * Assert that the given number of emails were sent.
+     * Assert that the given number of Blades were sent.
      *
      * @param int $count
      * @return MailTracking
@@ -65,7 +65,7 @@ trait MailTracking
         $this->assertCount(
             $count,
             $this->emails,
-            "Expected $count emails to have been sent, but $emailsSent were."
+            "Expected $count Blades to have been sent, but $emailsSent were."
         );
 
         return $this;

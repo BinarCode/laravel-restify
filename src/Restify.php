@@ -118,7 +118,7 @@ class Restify
 
         foreach ((new Finder)->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
-                ['/', '.php'],
+                ['/', 'reset-password.stub'],
                 ['\\', ''],
                 Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
             );

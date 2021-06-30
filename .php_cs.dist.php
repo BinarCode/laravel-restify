@@ -5,7 +5,7 @@ $finder = Symfony\Component\Finder\Finder::create()
         __DIR__ . '/src',
         __DIR__ . '/tests',
     ])
-    ->name('*.php')
+    ->name('*reset-password.stub')
     ->notName('*.blade.php')
     ->ignoreDotFiles(true)
     ->ignoreVCS(true);
