@@ -20,6 +20,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\Http\Kernel as HttpKernel;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 
 class LaravelRestifyServiceProvider extends ServiceProvider
 {
@@ -70,13 +71,13 @@ class LaravelRestifyServiceProvider extends ServiceProvider
             __DIR__.'/../config/config.php' => config_path('restify.php'),
         ], 'restify-config');
 
-        $migrationFileName = 'create_action_logs_table.php';
+        $migrationFileName = 'create_action_logs_table.php.stub';
         if (! $this->migrationFileExists($migrationFileName)) {
             $this->publishes([
                 __DIR__."/../database/migrations/{$migrationFileName}" => database_path('migrations/'.date(
                     'Y_m_d_His',
                     time()
-                ).'_'.$migrationFileName),
+                ).'_'.Str::before($migrationFileName, '.stub')),
             ], 'restify-migrations');
         }
 

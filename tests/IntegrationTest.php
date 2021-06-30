@@ -67,7 +67,7 @@ abstract class IntegrationTest extends TestCase
             'prefix' => '',
         ]);
 
-        include_once __DIR__ . '/../database/migrations/create_action_logs_table.php';
+        include_once __DIR__ . '/../database/migrations/create_action_logs_table.php.stub';
         (new \CreateActionLogsTable())->up();
     }
 
