@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 
-
 class ResetPasswordControllerTest extends IntegrationTest
 {
     public function test_auth_user_can_reset_password()
@@ -33,7 +32,7 @@ class ResetPasswordControllerTest extends IntegrationTest
             'email' => $user->email,
             'token' => $token,
             'password' => 'secret!1',
-            'password_confirmation' => 'secret!1'
+            'password_confirmation' => 'secret!1',
         ]))->assertOk()->json('data');
 
         $this->assertTrue(Hash::check('secret!1', $user->fresh()->password));
