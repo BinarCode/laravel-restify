@@ -85,7 +85,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
             Route::group([
                 'prefix' => $prefix,
                 'middleware' => [EnsureJsonApiHeaderMiddleware::class],
-
             ], function () {
                 Route::post('register', RegisterController::class)
                     ->name('restify.register');
