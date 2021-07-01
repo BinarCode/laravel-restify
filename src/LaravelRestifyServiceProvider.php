@@ -87,7 +87,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
     public static function migrationFileExists(string $migrationFileName): bool
     {
         $len = strlen($migrationFileName);
-        foreach (glob(database_path('migrations/*reset-password.stub')) as $filename) {
+        foreach (glob(database_path('migrations/*.php')) as $filename) {
             if ((substr($filename, -$len) === $migrationFileName)) {
                 return true;
             }

@@ -2,6 +2,7 @@
 
 namespace {{namespace}};
 
+use App\Models\User;
 use Binaryk\LaravelRestify\Contracts\Sanctumable;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\Events\Verified;

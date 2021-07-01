@@ -18,11 +18,17 @@ class PublishAuthControllerCommand extends Command
         $this
             ->publishControllers()
             ->publishBlades()
-            ->publishEmails();
-
+            ->publishEmails()
+            ->registerRutes();
 
         $this->info('Restify Controllers & Emails published successfully');
     }
+
+    /**
+     * Publish all Controllers from package to project
+     *
+     * @return $this
+     */
 
     public function publishControllers(): self
     {
@@ -36,6 +42,12 @@ class PublishAuthControllerCommand extends Command
         return $this;
     }
 
+    /**
+     * Publish all Blades from package to project.
+     *
+     * @return $this
+     */
+
     public function publishBlades(): self
     {
         $path = '../resources/views/Restify/Auth/';
@@ -45,9 +57,14 @@ class PublishAuthControllerCommand extends Command
         $this->checkDirectory($path)
             ->copyDirectory($path, $stubDirectory, $format);
 
-
         return $this;
     }
+
+    /**
+     * Publish all emails from package to project.
+     *
+     * @return $this
+     */
 
     public function publishEmails(): self
     {
@@ -57,18 +74,34 @@ class PublishAuthControllerCommand extends Command
 
         $this->checkDirectory($path)
             ->copyDirectory($path, $stubDirectory, $format);
+
         return $this;
     }
 
-    public function checkDirectory(string $path = null): self
-    {
+    /**
+     * Check directory if exist depend on path, if not create.
+     *
+     * @param string $path
+     * @return $this
+     */
 
+    public function checkDirectory(string $path): self
+    {
         if (!is_dir($directory = app_path($path))) {
             mkdir($directory, 0755, true);
         }
 
         return $this;
     }
+
+    /**
+     * Reformat .stub files to .php or .blade.php and move to project.
+     *
+     * @param string $path
+     * @param string $stubDirectory
+     * @param string $format
+     * @return $this
+     */
 
     protected function copyDirectory(string $path, string $stubDirectory, string $format): self
     {
@@ -90,12 +123,15 @@ class PublishAuthControllerCommand extends Command
     }
 
     /**
-     * Compiles the "HomeController" stub.
+     * Update name space for each controller.
      *
      * @param string $stubDirectory
      * @param string $fileName
+     * @param string $path
+     * @param string $fullPath
      * @return string
      */
+
     protected function setNameSpace(string $stubDirectory, string $fileName, string $path, string $fullPath): string
     {
         $path = substr(str_replace('/', '\\', $path), 0, -1);
@@ -105,5 +141,38 @@ class PublishAuthControllerCommand extends Command
             $this->laravel->getNamespace() . $path,
             file_get_contents(__DIR__ . $stubDirectory . '/' . $fileName)
         ));
+    }
+
+    protected function registerRutes(): self
+    {
+        $pathProvider = 'Providers/RestifyServiceProvider.php';
+        $routeStub = __DIR__ . '/stubs/Routes/routes.stub';
+
+        if (!file_exists(app_path($pathProvider))) {
+            $this->call('restify:setup');
+        }
+
+        file_put_contents(app_path($pathProvider), str_replace(
+            "use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;" . PHP_EOL,
+            "use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;" . PHP_EOL .
+            "use App\Http\Controllers\Restify\Auth\RegisterController;" . PHP_EOL .
+            "use App\Http\Controllers\Restify\Auth\ForgotPasswordController;" . PHP_EOL .
+            "use App\Http\Controllers\Restify\Auth\LoginController;" . PHP_EOL .
+            "use App\Http\Controllers\Restify\Auth\ResetPasswordController;" . PHP_EOL .
+            "use Illuminate\Support\Facades\Route;" . PHP_EOL .
+            "use App\Http\Controllers\Restify\Auth\VerifyController;" . PHP_EOL,
+            file_get_contents(app_path($pathProvider))
+        ));
+
+        file_put_contents(app_path($pathProvider), str_replace(
+            "public function register()
+    {
+        //
+    }",
+            file_get_contents($routeStub),
+            file_get_contents(app_path($pathProvider))
+        ));
+
+        return $this;
     }
 }

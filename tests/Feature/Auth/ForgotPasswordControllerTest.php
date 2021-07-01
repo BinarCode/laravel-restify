@@ -13,8 +13,6 @@ class ForgotPasswordControllerTest extends IntegrationTest
 {
     public function test_user_can_use_forgot_password_method()
     {
-        $this->withoutExceptionHandling();
-
         Mail::fake();
         Route::restifyAuth();
 
