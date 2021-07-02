@@ -79,7 +79,7 @@ class PublishAuthControllerCommand extends Command
      */
     public function checkDirectory(string $path): self
     {
-        if (!is_dir($directory = app_path($path))) {
+        if (! is_dir($directory = app_path($path))) {
             mkdir($directory, 0755, true);
         }
 
@@ -99,7 +99,6 @@ class PublishAuthControllerCommand extends Command
 
         collect($filesystem->allFiles(__DIR__ . $stubDirectory))
             ->each(function (SplFileInfo $file) use ($filesystem, $path, $format, $stubDirectory) {
-
                 $filesystem->copy(
                     $file->getPathname(),
                     $fullPath = app_path($path . Str::replaceLast('.stub', $format, $file->getFilename()))
@@ -139,7 +138,7 @@ class PublishAuthControllerCommand extends Command
         $pathProvider = 'Providers/RestifyServiceProvider.php';
         $routeStub = __DIR__ . '/stubs/Routes/routes.stub';
 
-        if (!file_exists(app_path($pathProvider))) {
+        if (! file_exists(app_path($pathProvider))) {
             $this->callSilent('restify:setup');
         }
 

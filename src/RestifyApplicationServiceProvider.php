@@ -34,7 +34,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function repositories(): void
     {
-        if ((false === is_dir(app_path('Restify'))) && !mkdir($concurrentDirectory = app_path('Restify')) && !is_dir($concurrentDirectory)) {
+        if ((false === is_dir(app_path('Restify'))) && ! mkdir($concurrentDirectory = app_path('Restify')) && ! is_dir($concurrentDirectory)) {
             throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
         }
 
