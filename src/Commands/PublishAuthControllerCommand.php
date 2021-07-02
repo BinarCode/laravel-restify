@@ -165,8 +165,7 @@ class PublishAuthControllerCommand extends Command
         file_put_contents(app_path($pathProvider), str_replace(
             "public function register()
     {
-        //
-    }",
+   ",
             file_get_contents($routeStub),
             file_get_contents(app_path($pathProvider))
         ));

@@ -18,4 +18,4 @@ public function register()
         Route::post('resetPassword', ResetPasswordController::class)
             ->middleware('throttle:6,1')
             ->name('restify.resetPassword');
-    }
+
