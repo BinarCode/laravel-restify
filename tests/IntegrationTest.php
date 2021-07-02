@@ -30,6 +30,8 @@ abstract class IntegrationTest extends TestCase
         $this->loadRepositories()
             ->loadMigrations();
 
+        $this->app['config']->set('config.auth.user_model', User::class);
+
         $this->app->register(RestifyApplicationServiceProvider::class);
 
         Factory::guessFactoryNamesUsing(
