@@ -29,7 +29,6 @@ class PublishAuthControllerCommand extends Command
      *
      * @return $this
      */
-
     public function publishControllers(): self
     {
         $path = 'Http/Controllers/Restify/Auth/';
@@ -47,7 +46,6 @@ class PublishAuthControllerCommand extends Command
      *
      * @return $this
      */
-
     public function publishBlades(): self
     {
         $path = '../resources/views/Restify/Auth/';
@@ -65,7 +63,6 @@ class PublishAuthControllerCommand extends Command
      *
      * @return $this
      */
-
     public function publishEmails(): self
     {
         $path = 'Mail/Restify/Auth/';
@@ -84,7 +81,6 @@ class PublishAuthControllerCommand extends Command
      * @param string $path
      * @return $this
      */
-
     public function checkDirectory(string $path): self
     {
         if (!is_dir($directory = app_path($path))) {
@@ -102,7 +98,6 @@ class PublishAuthControllerCommand extends Command
      * @param string $format
      * @return $this
      */
-
     protected function copyDirectory(string $path, string $stubDirectory, string $format): self
     {
         $filesystem = new Filesystem;
@@ -116,7 +111,6 @@ class PublishAuthControllerCommand extends Command
                 );
 
                 $this->setNameSpace($stubDirectory, $file->getFilename(), $path, $fullPath);
-
             });
 
         return $this;
@@ -131,7 +125,6 @@ class PublishAuthControllerCommand extends Command
      * @param string $fullPath
      * @return string
      */
-
     protected function setNameSpace(string $stubDirectory, string $fileName, string $path, string $fullPath): string
     {
         $path = substr(str_replace('/', '\\', $path), 0, -1);
@@ -143,13 +136,18 @@ class PublishAuthControllerCommand extends Command
         ));
     }
 
+    /**
+     * Register routes in RestifyServiceProvider
+     *
+     * @return $this
+     */
     protected function registerRutes(): self
     {
         $pathProvider = 'Providers/RestifyServiceProvider.php';
         $routeStub = __DIR__ . '/stubs/Routes/routes.stub';
 
         if (!file_exists(app_path($pathProvider))) {
-            $this->call('restify:setup');
+            $this->callSilent('restify:setup');
         }
 
         file_put_contents(app_path($pathProvider), str_replace(

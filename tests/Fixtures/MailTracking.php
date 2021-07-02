@@ -46,7 +46,7 @@ trait MailTracking
     {
         $this->assertEmpty(
             $this->emails,
-            'Did not expect any Blades to have been sent.'
+            'Did not expect any emails to have been sent.'
         );
 
         return $this;

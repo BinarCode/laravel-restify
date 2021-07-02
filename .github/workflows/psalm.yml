@@ -3,7 +3,7 @@ name: Psalm
 on:
     push:
         paths:
-            - '**reset-password.stub'
+            - '**.php'
             - 'psalm.xml.dist'
 
 jobs:
