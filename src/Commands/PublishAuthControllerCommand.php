@@ -25,7 +25,6 @@ class PublishAuthControllerCommand extends Command
     }
 
     /**
-     * Publish all Controllers from package to project
      *
      * @return $this
      */
@@ -42,7 +41,6 @@ class PublishAuthControllerCommand extends Command
     }
 
     /**
-     * Publish all Blades from package to project.
      *
      * @return $this
      */
@@ -59,7 +57,6 @@ class PublishAuthControllerCommand extends Command
     }
 
     /**
-     * Publish all emails from package to project.
      *
      * @return $this
      */
@@ -76,7 +73,6 @@ class PublishAuthControllerCommand extends Command
     }
 
     /**
-     * Check directory if exist depend on path, if not create.
      *
      * @param string $path
      * @return $this
@@ -91,7 +87,6 @@ class PublishAuthControllerCommand extends Command
     }
 
     /**
-     * Reformat .stub files to .php or .blade.php and move to project.
      *
      * @param string $path
      * @param string $stubDirectory
@@ -110,14 +105,13 @@ class PublishAuthControllerCommand extends Command
                     $fullPath = app_path($path . Str::replaceLast('.stub', $format, $file->getFilename()))
                 );
 
-                $this->setNameSpace($stubDirectory, $file->getFilename(), $path, $fullPath);
+                $this->setNamespace($stubDirectory, $file->getFilename(), $path, $fullPath);
             });
 
         return $this;
     }
 
     /**
-     * Update name space for each controller.
      *
      * @param string $stubDirectory
      * @param string $fileName
@@ -125,7 +119,7 @@ class PublishAuthControllerCommand extends Command
      * @param string $fullPath
      * @return string
      */
-    protected function setNameSpace(string $stubDirectory, string $fileName, string $path, string $fullPath): string
+    protected function setNamespace(string $stubDirectory, string $fileName, string $path, string $fullPath): string
     {
         $path = substr(str_replace('/', '\\', $path), 0, -1);
 
@@ -137,7 +131,6 @@ class PublishAuthControllerCommand extends Command
     }
 
     /**
-     * Register routes in RestifyServiceProvider
      *
      * @return $this
      */
