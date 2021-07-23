@@ -11,7 +11,7 @@ class LoginControllerTest extends IntegrationTest
 {
     public function test_user_can_successfully_login()
     {
-       $this->markTestSkipped();
+        $this->markTestSkipped();
 
         Route::restifyAuth();
 
