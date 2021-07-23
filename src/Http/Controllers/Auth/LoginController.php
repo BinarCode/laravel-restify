@@ -30,7 +30,7 @@ class LoginController extends Controller
             abort(401, 'Invalid credentials.');
         }
 
-        $token = Password::createToken($user);
+        $token = $user->createToken('login');
 
         return data([
             'user' => $user,

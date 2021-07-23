@@ -135,16 +135,11 @@ class PublishAuthControllerCommand extends Command
      */
     protected function registerRutes(): self
     {
-        $pathProvider = 'Providers/RestifyServiceProvider.php';
+        $pathProvider = '../routes/api.php';
         $routeStub = __DIR__ . '/stubs/Routes/routes.stub';
 
-        if (! file_exists(app_path($pathProvider))) {
-            $this->callSilent('restify:setup');
-        }
-
         file_put_contents(app_path($pathProvider), str_replace(
-            "use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;" . PHP_EOL,
-            "use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;" . PHP_EOL .
+            "use Illuminate\Support\Facades\Route;" . PHP_EOL,
             "use App\Http\Controllers\Restify\Auth\RegisterController;" . PHP_EOL .
             "use App\Http\Controllers\Restify\Auth\ForgotPasswordController;" . PHP_EOL .
             "use App\Http\Controllers\Restify\Auth\LoginController;" . PHP_EOL .
@@ -155,9 +150,9 @@ class PublishAuthControllerCommand extends Command
         ));
 
         file_put_contents(app_path($pathProvider), str_replace(
-            "public function register()
-    {
-   ",
+            'Route::middleware(\'auth:api\')->get(\'/user\', function (Request $request) {
+    return $request->user();
+});',
             file_get_contents($routeStub),
             file_get_contents(app_path($pathProvider))
         ));

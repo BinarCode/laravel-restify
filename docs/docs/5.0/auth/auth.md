@@ -54,6 +54,11 @@ After installation user can publish controllers for full control on it.
 ```shell script
 php artisan restify:publish-controllers
 ```
+On run this command is no need anymore to import 
+```shell script 
+Route::restifyAuth();
+```
+in your `routes/api.php`, it will be setted automatically.
 
 The command above does:
 

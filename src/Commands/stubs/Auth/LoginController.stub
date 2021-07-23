@@ -5,7 +5,6 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use App\Models\User;
 
 class LoginController extends Controller
@@ -29,7 +28,7 @@ class LoginController extends Controller
             abort(401, 'Invalid credentials.');
         }
 
-        $token = Password::createToken($user);
+        $token = $user->createToken('login');
 
         return data([
             'user' => $user,
