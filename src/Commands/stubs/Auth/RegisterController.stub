@@ -18,12 +18,15 @@ class RegisterController extends Controller
             'password' => ['required', 'confirmed'],
         ]);
 
-        User::forceCreate([
+        $user = User::forceCreate([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
             'password' => Hash::make($request->input('password')),
         ]);
 
-        return data($user);
+        return data([
+            'user' => $user,
+            'token' => $user->createToken('login')
+        ]);
     }
 }
