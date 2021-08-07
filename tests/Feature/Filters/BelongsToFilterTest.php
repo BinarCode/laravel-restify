@@ -110,6 +110,7 @@ class BelongsToFilterTest extends IntegrationTest
         ]);
 
         $json = $this
+            // plural `users.attributes`
             ->getJson(PostRepository::uriKey().'?related=user&sort=-users.attributes.name&perPage=5')
             ->json();
 
@@ -120,7 +121,8 @@ class BelongsToFilterTest extends IntegrationTest
         );
 
         $json = $this
-            ->getJson(PostRepository::uriKey().'?related=user&sort=-users.attributes.name&perPage=6&page=4')
+            // singular `user.attributes`
+            ->getJson(PostRepository::uriKey().'?related=user&sort=-user.attributes.name&perPage=6&page=4')
             ->json();
 
         $this->assertSame(
@@ -129,7 +131,7 @@ class BelongsToFilterTest extends IntegrationTest
         );
 
         $json = $this
-            ->getJson(PostRepository::uriKey().'?related=user&sort=users.attributes.name&perPage=5')
+            ->getJson(PostRepository::uriKey().'?related=user&sort=user.attributes.name&perPage=5')
             ->json();
 
         $this->assertSame(
@@ -138,7 +140,7 @@ class BelongsToFilterTest extends IntegrationTest
         );
 
         $json = $this
-            ->getJson(PostRepository::uriKey().'?related=user&sort=users.attributes.name&perPage=6&page=4')
+            ->getJson(PostRepository::uriKey().'?related=user&sort=user.attributes.name&perPage=6&page=4')
             ->json();
 
         $this->assertSame(

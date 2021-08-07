@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
-use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Exception;
@@ -95,7 +94,9 @@ class SortCollection extends Collection
 
     public function normalize(): self
     {
-        return $this->each(fn(SortableFilter $filter) => $filter->syncDirection());
+        return $this
+            ->each(fn(SortableFilter $filter) => $filter->syncDirection())
+            ->map(fn(SortableFilter $filter) => $filter->resolveFrontendColumn());
     }
 
     public function apply(RestifyRequest $request, Builder $builder): self
