@@ -17,14 +17,8 @@ class UserRepository extends Repository
             Field::make('name')->rules('required'),
 
             Field::make('email')->storingRules('required', 'unique:users')->messages([
-                    'required' => 'This field is required.',
-                ]),
-
-            Field::make('password')
-                ->value(fn(Request $request) => Hash::make($request->input('password')))
-                ->rules('required')
-                ->storingRules('confirmed')
-                ->hidden(),
+                'required' => 'This field is required.',
+            ]),
         ];
     }
 }
