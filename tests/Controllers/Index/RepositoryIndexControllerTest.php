@@ -181,7 +181,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
     public function it_can_retrieve_nested_relationships(): void
     {
         CompanyRepository::partialMock()
-            ->expects('related')
+            ->shouldReceive('related')
             ->andReturn([
                 'users.posts',
             ]);

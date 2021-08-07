@@ -27,11 +27,19 @@ class HasMany extends EagerField
         $this->readonly();
     }
 
+    /**
+     * @param Repository $repository
+     * @param  null  $attribute
+     * @return $this|EagerField|HasMany
+     */
     public function resolve($repository, $attribute = null)
     {
-        $paginator = $repository->{$this->relation}();
-
-        $paginator = $paginator->take(request('relatablePerPage') ?? ($this->repositoryClass::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
+        if ($repository->model()->relationLoaded($this->relation)) {
+            $paginator = $repository->model()->getRelation($this->relation);
+        } else {
+            $paginator = $repository->{$this->relation}();
+            $paginator = $paginator->take(request('relatablePerPage') ?? ($this->repositoryClass::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
+        }
 
         $this->value = $paginator->map(function ($item) {
             try {

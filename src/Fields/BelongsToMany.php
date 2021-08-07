@@ -45,9 +45,14 @@ class BelongsToMany extends EagerField
 
     public function resolve($repository, $attribute = null)
     {
-        $paginator = $repository->{$this->relation}();
+        if ($repository->model()->relationLoaded($this->relation)) {
+            $paginator = $repository->model()->getRelation($this->relation);
+        } else {
+            $paginator = $repository->{$this->relation}();
 
-        $paginator = $paginator->take(request('relatablePerPage') ?? ($repository::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
+            $paginator = $paginator->take(request('relatablePerPage') ?? ($repository::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
+        }
+
 
         $this->value = $paginator->map(function ($item) {
             try {

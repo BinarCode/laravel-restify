@@ -40,7 +40,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->expects('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users',  UserRepository::class)->hideFromShow(),
+                'users' => BelongsToMany::make('users', UserRepository::class)->hideFromShow(),
             ]);
 
         $this->getJson(CompanyRepository::uriKey()."/{$company->id}?related=users")
@@ -51,7 +51,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             ]);
     }
 
-    public function test_belongs_to_many_can_hide_relationships_from_index()
+    public function test_belongs_to_many_can_hide_relationships_from_index(): void
     {
         tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach(
@@ -60,22 +60,12 @@ class BelongsToManyFieldTest extends IntegrationTest
         });
 
         CompanyRepository::partialMock()
-            ->expects('related')
+            ->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users',  UserRepository::class)->hideFromIndex(),
+                'users' => BelongsToMany::make('users', UserRepository::class)->hideFromIndex(),
             ]);
 
         $this->getJson(CompanyRepository::uriKey().'?related=users')->assertJsonMissing([
-            'users',
-        ]);
-
-        CompanyRepository::partialMock()
-            ->expects('related')
-            ->andReturn([
-                'users' => BelongsToMany::make('users',  UserRepository::class)->hideFromShow(),
-            ]);
-
-        $this->getJson(CompanyRepository::uriKey().'?related=users')->assertJsonFragment([
             'users',
         ]);
     }
@@ -113,7 +103,8 @@ class BelongsToManyFieldTest extends IntegrationTest
             [
                 'relationships' => [
                     'users' => [],
-                ], ],
+                ],
+            ],
         ]);
     }
 }

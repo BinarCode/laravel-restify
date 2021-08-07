@@ -16,7 +16,7 @@ class EagerField extends Field
      *
      * @var string
      */
-    protected string $relation;
+    public string $relation;
 
     /**
      * The class name of the related repository.

@@ -19,7 +19,7 @@ class ActionLogRepositoryTest extends IntegrationTest
         ]);
     }
 
-    public function test_can_list_action_logs()
+    public function test_can_list_action_logs(): void
     {
         $this->authenticate();
 
