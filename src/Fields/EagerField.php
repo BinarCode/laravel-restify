@@ -28,22 +28,25 @@ class EagerField extends Field
     /**
      * Determine if the field should be displayed for the given request.
      *
-     * @param Request $request
+     * @param  Request  $request
      * @return bool
      */
     public function authorize(Request $request)
     {
         return call_user_func(
-            [$this->repositoryClass, 'authorizedToUseRepository'],
-            $request
-        ) && parent::authorize($request);
+                [$this->repositoryClass, 'authorizedToUseRepository'],
+                $request
+            ) && parent::authorize($request);
     }
 
     public function resolve($repository, $attribute = null)
     {
+        /** * @var Model $model */
         $model = $repository->resource;
 
-        $relatedModel = $model->{$this->relation}()->first();
+        $relatedModel = $model->relationLoaded($this->relation)
+            ? $model->{$this->relation}
+            : $model->{$this->relation}()->first();
 
         if (is_null($relatedModel)) {
             $this->value = null;
@@ -64,33 +67,42 @@ class EagerField extends Field
             $field = class_basename(get_called_class());
             $policy = get_class(Gate::getPolicyFor($relatedModel));
 
-            abort(403, "You are not authorized to see the [{$class}] relationship from the {$field} field from the {$field} field. Check the [show] method from the [$policy]");
+            abort(403,
+                "You are not authorized to see the [{$class}] relationship from the {$field} field from the {$field} field. Check the [show] method from the [$policy]");
         }
 
         return $this;
     }
 
-    public function getRelation(Repository $repository = null): Relation
-    {
+    public
+    function getRelation(
+        Repository $repository = null
+    ): Relation {
         $repository = $repository ?? $this->parentRepository;
 
         return $repository->resource->{$this->relation}();
     }
 
-    public function getRelatedModel(Repository $repository): Model
-    {
+    public
+    function getRelatedModel(
+        Repository $repository
+    ): Model {
         return $this->getRelation($repository)->getRelated();
     }
 
-    public function getRelatedKey(Repository $repository): string
-    {
+    public
+    function getRelatedKey(
+        Repository $repository
+    ): string {
         return $repository->resource->qualifyColumn(
             $this->getRelation($repository)->getRelated()->getForeignKey()
         );
     }
 
-    public function getQualifiedKey(Repository $repository): string
-    {
+    public
+    function getQualifiedKey(
+        Repository $repository
+    ): string {
         return $this->getRelation($repository)->getRelated()->getQualifiedKeyName();
     }
 }
