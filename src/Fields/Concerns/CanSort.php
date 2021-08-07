@@ -17,12 +17,12 @@ trait CanSort
 
     public function isSortable(): bool
     {
-        return !is_null($this->sortableColumn);
+        return ! is_null($this->sortableColumn);
     }
 
     public function qualifySortable(): ?string
     {
-        if (!$this->isSortable()) {
+        if (! $this->isSortable()) {
             return null;
         }
 

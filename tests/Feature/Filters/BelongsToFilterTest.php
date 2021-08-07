@@ -84,7 +84,7 @@ class BelongsToFilterTest extends IntegrationTest
     public function test_can_filter_self_defined_belongs_to_field(): void
     {
         PostRepository::$related = [
-            'user' => BelongsTo::make('user',  UserRepository::class)->sortable('name')
+            'user' => BelongsTo::make('user',  UserRepository::class)->sortable('name'),
         ];
 
         PostRepository::$sort = [];

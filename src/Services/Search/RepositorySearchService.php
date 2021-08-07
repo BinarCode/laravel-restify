@@ -9,7 +9,6 @@ use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
 use Binaryk\LaravelRestify\Filters\Filter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
-use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
@@ -20,7 +19,7 @@ class RepositorySearchService
     /** * @var Repository */
     protected $repository;
 
-    public function search(RestifyRequest $request, Repository $repository): Builder|Relation
+    public function search(RestifyRequest $request, Repository $repository): Builder | Relation
     {
         $this->repository = $repository;
 
@@ -69,19 +68,19 @@ class RepositorySearchService
         return $query;
     }
 
-    public function prepareRelations(RestifyRequest $request, Builder|Relation $query)
+    public function prepareRelations(RestifyRequest $request, Builder | Relation $query)
     {
         $eager = $this->repository::collectRelated()
             ->forEager($request)
             ->when(
                 $request->isIndexRequest(),
-                fn(RelatedCollection $collection) => $collection->forIndex($request, $this->repository)
+                fn (RelatedCollection $collection) => $collection->forIndex($request, $this->repository)
             )
             ->when(
                 $request->isShowRequest(),
-                fn(RelatedCollection $collection) => $collection->forShow($request, $this->repository)
+                fn (RelatedCollection $collection) => $collection->forShow($request, $this->repository)
             )
-            ->map(fn(EagerField $field) => $field->relation)
+            ->map(fn (EagerField $field) => $field->relation)
             ->merge(($this->repository)::withs())
             ->values()
             ->unique()
@@ -132,7 +131,7 @@ class RepositorySearchService
                     ->map(function (BelongsTo $field) {
                         return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
                     })
-                    ->each(fn(SearchableFilter $filter) => $filter->filter($request, $query, $search));
+                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
             }
         });
 
@@ -142,19 +141,19 @@ class RepositorySearchService
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
         if ($request->isIndexRequest() || $request->isGlobalRequest()) {
-            return fn($query) => $repository::indexQuery($request, $query);
+            return fn ($query) => $repository::indexQuery($request, $query);
         }
 
         if ($request->isShowRequest()) {
-            return fn($query) => $repository::showQuery($request, $query);
+            return fn ($query) => $repository::showQuery($request, $query);
         }
 
-        return fn($query) => $query;
+        return fn ($query) => $query;
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository)
     {
-        return fn($query) => $repository::mainQuery($request, $query->with($repository::withs()));
+        return fn ($query) => $repository::mainQuery($request, $query->with($repository::withs()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
