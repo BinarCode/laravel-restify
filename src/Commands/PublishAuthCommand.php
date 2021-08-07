@@ -7,7 +7,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
 
-class PublishAuthControllerCommand extends Command
+class PublishAuthCommand extends Command
 {
     protected $name = 'restify:auth';
 
