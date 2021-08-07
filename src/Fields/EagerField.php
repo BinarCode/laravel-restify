@@ -34,9 +34,9 @@ class EagerField extends Field
     public function authorize(Request $request)
     {
         return call_user_func(
-                [$this->repositoryClass, 'authorizedToUseRepository'],
-                $request
-            ) && parent::authorize($request);
+            [$this->repositoryClass, 'authorizedToUseRepository'],
+            $request
+        ) && parent::authorize($request);
     }
 
     public function resolve($repository, $attribute = null)
@@ -67,15 +67,16 @@ class EagerField extends Field
             $field = class_basename(get_called_class());
             $policy = get_class(Gate::getPolicyFor($relatedModel));
 
-            abort(403,
-                "You are not authorized to see the [{$class}] relationship from the {$field} field from the {$field} field. Check the [show] method from the [$policy]");
+            abort(
+                403,
+                "You are not authorized to see the [{$class}] relationship from the {$field} field from the {$field} field. Check the [show] method from the [$policy]"
+            );
         }
 
         return $this;
     }
 
-    public
-    function getRelation(
+    public function getRelation(
         Repository $repository = null
     ): Relation {
         $repository = $repository ?? $this->parentRepository;
@@ -83,15 +84,13 @@ class EagerField extends Field
         return $repository->resource->{$this->relation}();
     }
 
-    public
-    function getRelatedModel(
+    public function getRelatedModel(
         Repository $repository
     ): Model {
         return $this->getRelation($repository)->getRelated();
     }
 
-    public
-    function getRelatedKey(
+    public function getRelatedKey(
         Repository $repository
     ): string {
         return $repository->resource->qualifyColumn(
@@ -99,8 +98,7 @@ class EagerField extends Field
         );
     }
 
-    public
-    function getQualifiedKey(
+    public function getQualifiedKey(
         Repository $repository
     ): string {
         return $this->getRelation($repository)->getRelated()->getQualifiedKeyName();
