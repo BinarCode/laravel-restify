@@ -70,8 +70,9 @@ class BelongsToManyFieldTest extends IntegrationTest
         ]);
     }
 
-    public function test_belongs_to_many_generates_nested_uri()
+    public function test_belongs_to_many_generates_nested_uri(): void
     {
+        $this->withoutExceptionHandling();
         $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach(
                 User::factory()->create()

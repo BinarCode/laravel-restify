@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
+use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Exception;
@@ -39,29 +40,40 @@ class SortCollection extends Collection
 
     public function hydrateRepository(Repository $repository): self
     {
-        return $this->each(fn (Filter $filter) => $filter->setRepository($repository));
+        return $this->each(fn(Filter $filter) => $filter->setRepository($repository));
     }
 
     public function inRepository(RestifyRequest $request, Repository $repository): self
     {
-        $collection = static::make($repository::sorts());
+        $collection = static::make($repository::sorts())->merge(
+            $repository::collectRelated()->mapIntoSortable()
+        );
 
         return $this->filter(fn (SortableFilter $filter) => $collection->contains('column', '=', $filter->column));
     }
 
     public function authorized(RestifyRequest $request): self
     {
-        return $this->filter(fn (SortableFilter $filter) => $filter->authorizedToSee($request));
+        return $this->filter(fn(SortableFilter $filter) => $filter->authorizedToSee($request));
     }
 
     public function hydrateDefinition(Repository $repository): SortCollection
     {
-        return $this->map(function (SortableFilter $filter) use ($repository) {
-            if (! array_key_exists($filter->column, $repository::sorts())) {
+        $relatedSortables = $repository::collectRelated()->mapIntoSortable();
+
+        return $this->map(function (SortableFilter $filter) use ($repository, $relatedSortables) {
+            /** * @var SortableFilter $relatedSortableFilter */
+            if ($relatedSortableFilter = $relatedSortables->first(fn(SortableFilter $relatedSortableFilter
+            ) => $relatedSortableFilter->column === $filter->column)) {
+                return $relatedSortableFilter->syncDirection($filter->direction());
+            }
+
+
+            if (!array_key_exists($filter->column, $repository::sorts())) {
                 return $filter;
             }
 
-            $definition = Arr::get($repository::sorts(), $filter->getColumn());
+            $definition = Arr::get($repository::sorts(), $filter->column());
 
             if (is_callable($definition)) {
                 return $filter->usingClosure($definition);
@@ -77,13 +89,13 @@ class SortCollection extends Collection
 
     public function forEager(RestifyRequest $request): self
     {
-        return $this->filter(fn (SortableFilter $filter) => $filter->hasEager())
+        return $this->filter(fn(SortableFilter $filter) => $filter->hasEager())
             ->unique('column');
     }
 
     public function normalize(): self
     {
-        return $this->each(fn (SortableFilter $filter) => $filter->syncDirection());
+        return $this->each(fn(SortableFilter $filter) => $filter->syncDirection());
     }
 
     public function apply(RestifyRequest $request, Builder $builder): self

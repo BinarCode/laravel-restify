@@ -119,12 +119,21 @@ abstract class Filter implements JsonSerializable
 
     public function column(): ?string
     {
-        return $this->getColumn();
+        return $this->column;
+    }
+
+    public function qualifyColumn(): string
+    {
+        if (Str::contains($this->column, '.attributes')) {
+            return Str::replace('.attributes', '', $this->column);
+        }
+
+        return $this->column;
     }
 
     public function getQueryKey(): ?string
     {
-        return Str::after($this->getColumn(), '.');
+        return Str::after($this->column(), '.');
     }
 
     public function setColumn(string $column): self
@@ -176,6 +185,15 @@ abstract class Filter implements JsonSerializable
         $this->repository = $repository;
 
         return $this;
+    }
+
+    public function repository(): ?Repository
+    {
+        if (! isset($this->repository)) {
+            return null;
+        }
+
+        return $this->repository;
     }
 
     public function setAdvanced(bool $advanced = true): self

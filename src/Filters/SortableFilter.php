@@ -20,34 +20,34 @@ class SortableFilter extends Filter
 
     private Closure $resolver;
 
-    const TYPE = 'sortable';
+    public const TYPE = 'sortable';
 
     /**
-     * @param RestifyRequest $request
-     * @param Builder $query
-     * @param string $value
+     * @param  RestifyRequest  $request
+     * @param  Builder  $query
+     * @param  string  $value
      * @return Builder
      */
-    public function filter(RestifyRequest $request, Builder | Relation $query, $value)
+    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
     {
         if (isset($this->resolver) && is_callable($this->resolver)) {
             return call_user_func($this->resolver, $request, $query, $value);
         }
 
         if (isset($this->belongsToField)) {
-            if (! $this->belongsToField->authorize($request)) {
+            if (!$this->belongsToField->authorize($request)) {
                 return $query;
             }
 
             // This approach could be rewritten using join.
             $query->orderBy(
-                $this->belongsToField->getRelatedModel($this->repository)::select($this->getColumn())
-                ->whereColumn(
-                    $this->belongsToField->getQualifiedKey($this->repository),
-                    $this->belongsToField->getRelatedKey($this->repository)
-                )
-                ->orderBy($this->getColumn(), $value)
-                ->take(1),
+                $this->belongsToField->getRelatedModel($this->repository)::select($this->qualifyColumn())
+                    ->whereColumn(
+                        $this->belongsToField->getQualifiedKey($this->repository),
+                        $this->belongsToField->getRelatedKey($this->repository)
+                    )
+                    ->orderBy($this->qualifyColumn(), $value)
+                    ->take(1),
                 $value
             );
 
@@ -66,7 +66,7 @@ class SortableFilter extends Filter
 
     public function getEager(): ?EagerField
     {
-        if (! isset($this->belongsToField)) {
+        if (!isset($this->belongsToField)) {
             return null;
         }
 
@@ -99,7 +99,7 @@ class SortableFilter extends Filter
 
     public function syncDirection(string $direction = null): self
     {
-        if (! is_null($direction) && in_array($direction, ['asc', 'desc'])) {
+        if (!is_null($direction) && in_array($direction, ['asc', 'desc'])) {
             $this->direction = $direction;
 
             return $this;
