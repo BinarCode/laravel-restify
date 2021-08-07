@@ -51,7 +51,7 @@ class HasOneFieldTest extends IntegrationTest
             ]);
     }
 
-    public function test_has_one_field_unauthorized_see_relationship()
+    public function test_has_one_field_unauthorized_see_relationship(): void
     {
         $_SERVER['restify.post.show'] = false;
 

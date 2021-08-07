@@ -17,8 +17,14 @@ class RelatedCollection extends Collection
     public function intoAssoc(): self
     {
         return $this->mapWithKeys(function ($value, $key) {
+            $mapKey = is_numeric($key) ? $value : $key;
+
+            if ($value instanceof EagerField) {
+                $mapKey = $value->getAttribute();
+            }
+
             return [
-                is_numeric($key) ? $value : $key => $value,
+                $mapKey => $value,
             ];
         });
     }
