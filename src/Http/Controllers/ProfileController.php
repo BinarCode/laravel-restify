@@ -40,7 +40,7 @@ class ProfileController extends RepositoryController
             }
         }
 
-        $user = tap(RepositorySearchService::instance()->search(
+        $user = tap(RepositorySearchService::make()->search(
             $request,
             $repository
         ), function ($query) use ($request, $repository) {

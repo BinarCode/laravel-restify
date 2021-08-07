@@ -9,9 +9,9 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class PublishAuthControllerCommand extends Command
 {
-    protected $name = 'restify:publish-controllers';
+    protected $name = 'restify:auth';
 
-    protected $description = 'Publish controllers from package to local project';
+    protected $description = 'Publish auth module.';
 
     public function handle()
     {
@@ -19,15 +19,11 @@ class PublishAuthControllerCommand extends Command
             ->publishControllers()
             ->publishBlades()
             ->publishEmails()
-            ->registerRutes();
+            ->registerRoutes();
 
-        $this->info('Restify Controllers & Emails published successfully');
+        $this->info('Restify auth published.');
     }
 
-    /**
-     *
-     * @return $this
-     */
     public function publishControllers(): self
     {
         $path = 'Http/Controllers/Restify/Auth/';
@@ -74,12 +70,12 @@ class PublishAuthControllerCommand extends Command
 
     /**
      *
-     * @param string $path
+     * @param  string  $path
      * @return $this
      */
     public function checkDirectory(string $path): self
     {
-        if (! is_dir($directory = app_path($path))) {
+        if (!is_dir($directory = app_path($path))) {
             mkdir($directory, 0755, true);
         }
 
@@ -88,20 +84,20 @@ class PublishAuthControllerCommand extends Command
 
     /**
      *
-     * @param string $path
-     * @param string $stubDirectory
-     * @param string $format
+     * @param  string  $path
+     * @param  string  $stubDirectory
+     * @param  string  $format
      * @return $this
      */
     protected function copyDirectory(string $path, string $stubDirectory, string $format): self
     {
         $filesystem = new Filesystem;
 
-        collect($filesystem->allFiles(__DIR__ . $stubDirectory))
+        collect($filesystem->allFiles(__DIR__.$stubDirectory))
             ->each(function (SplFileInfo $file) use ($filesystem, $path, $format, $stubDirectory) {
                 $filesystem->copy(
                     $file->getPathname(),
-                    $fullPath = app_path($path . Str::replaceLast('.stub', $format, $file->getFilename()))
+                    $fullPath = app_path($path.Str::replaceLast('.stub', $format, $file->getFilename()))
                 );
 
                 $this->setNamespace($stubDirectory, $file->getFilename(), $path, $fullPath);
@@ -110,42 +106,30 @@ class PublishAuthControllerCommand extends Command
         return $this;
     }
 
-    /**
-     *
-     * @param string $stubDirectory
-     * @param string $fileName
-     * @param string $path
-     * @param string $fullPath
-     * @return string
-     */
     protected function setNamespace(string $stubDirectory, string $fileName, string $path, string $fullPath): string
     {
         $path = substr(str_replace('/', '\\', $path), 0, -1);
 
         return file_put_contents($fullPath, str_replace(
             '{{namespace}}',
-            $this->laravel->getNamespace() . $path,
-            file_get_contents(__DIR__ . $stubDirectory . '/' . $fileName)
+            $this->laravel->getNamespace().$path,
+            file_get_contents(__DIR__.$stubDirectory.'/'.$fileName)
         ));
     }
 
-    /**
-     *
-     * @return $this
-     */
-    protected function registerRutes(): self
+    protected function registerRoutes(): self
     {
         $pathProvider = '../routes/api.php';
-        $routeStub = __DIR__ . '/stubs/Routes/routes.stub';
+        $routeStub = __DIR__.'/stubs/Routes/routes.stub';
 
         file_put_contents(app_path($pathProvider), str_replace(
-            "use Illuminate\Support\Facades\Route;" . PHP_EOL,
-            "use App\Http\Controllers\Restify\Auth\RegisterController;" . PHP_EOL .
-            "use App\Http\Controllers\Restify\Auth\ForgotPasswordController;" . PHP_EOL .
-            "use App\Http\Controllers\Restify\Auth\LoginController;" . PHP_EOL .
-            "use App\Http\Controllers\Restify\Auth\ResetPasswordController;" . PHP_EOL .
-            "use Illuminate\Support\Facades\Route;" . PHP_EOL .
-            "use App\Http\Controllers\Restify\Auth\VerifyController;" . PHP_EOL,
+            "use Illuminate\Support\Facades\Route;".PHP_EOL,
+            "use App\Http\Controllers\Restify\Auth\RegisterController;".PHP_EOL.
+            "use App\Http\Controllers\Restify\Auth\ForgotPasswordController;".PHP_EOL.
+            "use App\Http\Controllers\Restify\Auth\LoginController;".PHP_EOL.
+            "use App\Http\Controllers\Restify\Auth\ResetPasswordController;".PHP_EOL.
+            "use Illuminate\Support\Facades\Route;".PHP_EOL.
+            "use App\Http\Controllers\Restify\Auth\VerifyController;".PHP_EOL,
             file_get_contents(app_path($pathProvider))
         ));
 

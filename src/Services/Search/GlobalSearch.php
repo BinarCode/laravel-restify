@@ -72,7 +72,7 @@ class GlobalSearch
         $results = [];
 
         foreach ($this->repositories as $repository) {
-            $query = RepositorySearchService::instance()->search($this->request, $repository::resolveWith($repository::newModel()));
+            $query = RepositorySearchService::make()->search($this->request, $repository::resolveWith($repository::newModel()));
 
             if (count($models = $query->limit($repository::$globalSearchResults)->get()) > 0) {
                 $results[$repository] = $models;

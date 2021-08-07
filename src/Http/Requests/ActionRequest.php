@@ -36,7 +36,7 @@ class ActionRequest extends RestifyRequest
 
     public function builder(Action $action, int $size): Builder
     {
-        return tap(RepositorySearchService::instance()->search($this, $this->repository()), function ($query) use ($action) {
+        return tap(RepositorySearchService::make()->search($this, $this->repository()), function ($query) use ($action) {
             $action::indexQuery($this, $query);
         })
             ->when($this->input('repositories') !== 'all', function ($query) {

@@ -547,7 +547,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
          * Apply all of the query: search, match, sort, related.
          * @var AbstractPaginator $paginator
          */
-        $paginator = RepositorySearchService::instance()->search($request, $this)
+        $paginator = RepositorySearchService::make()->search($request, $this)
             ->paginate($request->query('perPage') ?? static::$defaultPerPage);
 
         $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
