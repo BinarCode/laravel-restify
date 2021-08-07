@@ -2,7 +2,6 @@
 
 use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
-use Binaryk\LaravelRestify\Http\Middleware\EnsureJsonApiHeaderMiddleware;
 use Binaryk\LaravelRestify\Repositories\ActionLogRepository;
 
 return [
@@ -96,7 +95,6 @@ return [
 
     'middleware' => [
         'api',
-        EnsureJsonApiHeaderMiddleware::class,
         DispatchRestifyStartingEvent::class,
         AuthorizeRestify::class,
     ],
