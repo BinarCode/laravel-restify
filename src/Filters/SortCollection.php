@@ -39,7 +39,7 @@ class SortCollection extends Collection
 
     public function hydrateRepository(Repository $repository): self
     {
-        return $this->each(fn(Filter $filter) => $filter->setRepository($repository));
+        return $this->each(fn (Filter $filter) => $filter->setRepository($repository));
     }
 
     public function inRepository(RestifyRequest $request, Repository $repository): self
@@ -53,7 +53,7 @@ class SortCollection extends Collection
 
     public function authorized(RestifyRequest $request): self
     {
-        return $this->filter(fn(SortableFilter $filter) => $filter->authorizedToSee($request));
+        return $this->filter(fn (SortableFilter $filter) => $filter->authorizedToSee($request));
     }
 
     public function hydrateDefinition(Repository $repository): SortCollection
@@ -62,13 +62,14 @@ class SortCollection extends Collection
 
         return $this->map(function (SortableFilter $filter) use ($repository, $relatedSortables) {
             /** * @var SortableFilter $relatedSortableFilter */
-            if ($relatedSortableFilter = $relatedSortables->first(fn(SortableFilter $relatedSortableFilter
+            if ($relatedSortableFilter = $relatedSortables->first(fn (
+                SortableFilter $relatedSortableFilter
             ) => $relatedSortableFilter->column === $filter->column)) {
                 return $relatedSortableFilter->syncDirection($filter->direction());
             }
 
 
-            if (!array_key_exists($filter->column, $repository::sorts())) {
+            if (! array_key_exists($filter->column, $repository::sorts())) {
                 return $filter;
             }
 
@@ -88,15 +89,15 @@ class SortCollection extends Collection
 
     public function forEager(RestifyRequest $request): self
     {
-        return $this->filter(fn(SortableFilter $filter) => $filter->hasEager())
+        return $this->filter(fn (SortableFilter $filter) => $filter->hasEager())
             ->unique('column');
     }
 
     public function normalize(): self
     {
         return $this
-            ->each(fn(SortableFilter $filter) => $filter->syncDirection())
-            ->map(fn(SortableFilter $filter) => $filter->resolveFrontendColumn());
+            ->each(fn (SortableFilter $filter) => $filter->syncDirection())
+            ->map(fn (SortableFilter $filter) => $filter->resolveFrontendColumn());
     }
 
     public function apply(RestifyRequest $request, Builder $builder): self
