@@ -75,7 +75,7 @@ class PublishAuthCommand extends Command
      */
     public function checkDirectory(string $path): self
     {
-        if (!is_dir($directory = app_path($path))) {
+        if (! is_dir($directory = app_path($path))) {
             mkdir($directory, 0755, true);
         }
 
