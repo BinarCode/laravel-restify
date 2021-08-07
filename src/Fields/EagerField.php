@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Str;
 
 class EagerField extends Field
 {
@@ -35,9 +34,9 @@ class EagerField extends Field
     public function authorize(Request $request)
     {
         return call_user_func(
-                [$this->repositoryClass, 'authorizedToUseRepository'],
-                $request
-            ) && parent::authorize($request);
+            [$this->repositoryClass, 'authorizedToUseRepository'],
+            $request
+        ) && parent::authorize($request);
     }
 
     public function resolve($repository, $attribute = null)

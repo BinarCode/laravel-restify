@@ -28,14 +28,14 @@ class SortableFilter extends Filter
      * @param  string  $value
      * @return Builder
      */
-    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
+    public function filter(RestifyRequest $request, Builder | Relation $query, $value)
     {
         if (isset($this->resolver) && is_callable($this->resolver)) {
             return call_user_func($this->resolver, $request, $query, $value);
         }
 
         if (isset($this->belongsToField)) {
-            if (!$this->belongsToField->authorize($request)) {
+            if (! $this->belongsToField->authorize($request)) {
                 return $query;
             }
 
@@ -66,7 +66,7 @@ class SortableFilter extends Filter
 
     public function getEager(): ?EagerField
     {
-        if (!isset($this->belongsToField)) {
+        if (! isset($this->belongsToField)) {
             return null;
         }
 
@@ -99,7 +99,7 @@ class SortableFilter extends Filter
 
     public function syncDirection(string $direction = null): self
     {
-        if (!is_null($direction) && in_array($direction, ['asc', 'desc'])) {
+        if (! is_null($direction) && in_array($direction, ['asc', 'desc'])) {
             $this->direction = $direction;
 
             return $this;
