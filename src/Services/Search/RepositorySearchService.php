@@ -76,15 +76,17 @@ class RepositorySearchService extends Searchable
     {
         $eager = $this->repository::collectRelated()
             ->forEager($request)
+            ->inRequest($request)
             ->when($request->isIndexRequest(), fn (RelatedCollection $collection) => $collection->forIndex($request, $this->repository))
             ->when($request->isShowRequest(), fn (RelatedCollection $collection) => $collection->forShow($request, $this->repository))
             ->map(fn (EagerField $field) => $field->relation)
-            ->merge(($this->repository)::withs())
             ->values()
             ->unique()
             ->all();
 
-        return $query->with($eager);
+        $query->with($eager);
+
+        return $query->with(($this->repository)::withs());
     }
 
     public function prepareSearchFields(RestifyRequest $request, $query, $extra = [])
