@@ -609,6 +609,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 $this->resource,
                 $fields = $this->collectFields($request)
                     ->forStore($request, $this)
+                    ->withoutActions($request, $this)
                     ->authorizedStore($request)
                     ->merge($this->collectFields($request)->forBelongsTo($request))
             );
@@ -682,6 +683,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         DB::transaction(function () use ($request) {
             $fields = $this->collectFields($request)
                 ->forUpdate($request, $this)
+                ->withoutActions($request, $this)
                 ->authorizedUpdate($request)
                 ->merge($this->collectFields($request)->forBelongsTo($request));
 

@@ -2,11 +2,13 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Fields\Concerns\HasAction;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use JsonSerializable;
@@ -14,6 +16,7 @@ use JsonSerializable;
 class Field extends OrganicField implements JsonSerializable
 {
     use Make;
+    use HasAction;
 
     /**
      * The resource associated with the field.
@@ -640,6 +643,13 @@ class Field extends OrganicField implements JsonSerializable
 
     public function invokeAfter(RestifyRequest $request, $repository)
     {
+        $request->repository()
+            ->collectFields($request)
+            ->withActions($request, $this)
+            ->authorizedStore($request)
+            ->dd()
+            ->each(fn(Field $field) => call_user_func($field->actionHandler->{'handle'}, $request, $repository));
+
         if ($request->isStoreRequest() && is_callable($this->afterStoreCallback)) {
             call_user_func($this->afterStoreCallback, data_get($repository, $this->attribute), $repository, $request);
         }
