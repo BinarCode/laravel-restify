@@ -33,7 +33,7 @@ class FieldActionTest extends IntegrationTest
             ->andreturn([
                 Field::new('title'),
 
-                Field::new('description')->action($action)
+                Field::new('description')->action($action),
             ]);
 
         $this
@@ -43,7 +43,7 @@ class FieldActionTest extends IntegrationTest
             'title' => $updated = 'Title',
         ])
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', $updated)
                     ->where('data.attributes.description', 'Actionable Description')
                     ->etc()

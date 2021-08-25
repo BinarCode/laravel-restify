@@ -277,13 +277,13 @@ class Field extends OrganicField implements JsonSerializable
             ? $attribute
             : "{$bulkRow}.{$attribute}";
 
-        if (!($request->exists($attribute) || $request->input($attribute))) {
+        if (! ($request->exists($attribute) || $request->input($attribute))) {
             return;
         }
 
         tap(
             ($request->input($attribute) ?? $request[$attribute]),
-            fn($value) => $model->{$this->attribute} = $request->has($attribute)
+            fn ($value) => $model->{$this->attribute} = $request->has($attribute)
                 ? $value
                 : $model->{$this->attribute}
         );
@@ -314,7 +314,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     protected function fillAttributeFromValue(RestifyRequest $request, $model, $attribute)
     {
-        if (!isset($this->valueCallback)) {
+        if (! isset($this->valueCallback)) {
             return $this;
         }
 
@@ -440,7 +440,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function computed()
     {
-        return (is_callable($this->attribute) && !is_string($this->attribute)) ||
+        return (is_callable($this->attribute) && ! is_string($this->attribute)) ||
             is_callable($this->computedCallback) || $this->attribute == 'Computed';
     }
 
@@ -452,7 +452,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function sortable($value = true)
     {
-        if (!$this->computed()) {
+        if (! $this->computed()) {
             $this->sortable = $value;
         }
 
@@ -486,13 +486,15 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (!$this->showCallback) {
+        if (! $this->showCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->showCallback)) {
-            tap($this->value ?? $this->resolveAttribute($repository, $attribute),
+            tap(
+                $this->value ?? $this->resolveAttribute($repository, $attribute),
                 function ($value) use ($repository, $attribute) {
                     $this->value = call_user_func($this->showCallback, $value, $repository, $attribute);
-                });
+                }
+            );
         }
 
         return $this;
@@ -510,13 +512,15 @@ class Field extends OrganicField implements JsonSerializable
             return $this;
         }
 
-        if (!$this->indexCallback) {
+        if (! $this->indexCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->indexCallback)) {
-            tap($this->value ?? $this->resolveAttribute($repository, $attribute),
+            tap(
+                $this->value ?? $this->resolveAttribute($repository, $attribute),
                 function ($value) use ($repository, $attribute) {
                     $this->value = call_user_func($this->indexCallback, $value, $repository, $attribute);
-                });
+                }
+            );
         }
 
         return $this;
@@ -534,7 +538,7 @@ class Field extends OrganicField implements JsonSerializable
             return $this;
         }
 
-        if (!$this->resolveCallback) {
+        if (! $this->resolveCallback) {
             $this->value = $this->resolveAttribute($repository, $attribute);
         } elseif (is_callable($this->resolveCallback)) {
             tap($this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -651,11 +655,15 @@ class Field extends OrganicField implements JsonSerializable
                 ->forStore($request, $request->repository())
                 ->withActions($request, $this)
                 ->authorizedStore($request)
-                ->each(fn(Field $field) => $field->actionHandler->handle($request, $model));
+                ->each(fn (Field $field) => $field->actionHandler->handle($request, $model));
 
             if (is_callable($this->afterStoreCallback)) {
-                call_user_func($this->afterStoreCallback, data_get($model, $this->attribute), $model,
-                    $request);
+                call_user_func(
+                    $this->afterStoreCallback,
+                    data_get($model, $this->attribute),
+                    $model,
+                    $request
+                );
             }
         }
 
@@ -665,14 +673,18 @@ class Field extends OrganicField implements JsonSerializable
                 ->forUpdate($request, $request->repository())
                 ->withActions($request, $this)
                 ->authorizedUpdate($request)
-                ->each(fn(Field $field) => $field->actionHandler->handle($request, $model));
+                ->each(fn (Field $field) => $field->actionHandler->handle($request, $model));
 
             if (is_callable($this->afterUpdateCallback)) {
-                call_user_func($this->afterUpdateCallback, $this->resolveAttribute($model, $this->attribute),
-                    $this->valueBeforeUpdate, $model, $request);
+                call_user_func(
+                    $this->afterUpdateCallback,
+                    $this->resolveAttribute($model, $this->attribute),
+                    $this->valueBeforeUpdate,
+                    $model,
+                    $request
+                );
             }
         }
-
     }
 
     /**
