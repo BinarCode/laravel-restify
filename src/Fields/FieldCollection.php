@@ -78,6 +78,20 @@ class FieldCollection extends Collection
             })->values();
     }
 
+    public function withActions(RestifyRequest $request, $repository): self
+    {
+        return $this
+            ->filter(fn (Field $field) => $field->isActionable())
+            ->values();
+    }
+
+    public function withoutActions(RestifyRequest $request, $repository): self
+    {
+        return $this
+            ->reject(fn (Field $field) => $field->isActionable())
+            ->values();
+    }
+
     public function forStoreBulk(RestifyRequest $request, $repository): self
     {
         return $this->filter(function (Field $field) use ($repository, $request) {
