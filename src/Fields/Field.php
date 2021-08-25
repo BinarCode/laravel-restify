@@ -135,8 +135,8 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Create a new field.
      *
-     * @param string|callable|null $attribute
-     * @param callable|null $resolveCallback
+     * @param  string|callable|null  $attribute
+     * @param  callable|null  $resolveCallback
      */
     public function __construct($attribute, callable $resolveCallback = null)
     {
@@ -165,7 +165,7 @@ class Field extends OrganicField implements JsonSerializable
     }
 
     /**
-     * @param Closure $callback
+     * @param  Closure  $callback
      * @return $this
      */
     public function showCallback(Closure $callback)
@@ -200,7 +200,7 @@ class Field extends OrganicField implements JsonSerializable
      * Callback called when trying to fill this attribute, this callback will override the fill action, so make
      * sure you assign the attribute to the model over this callback.
      *
-     * @param Closure $callback
+     * @param  Closure  $callback
      * @return $this
      */
     public function fillCallback(Closure $callback)
@@ -213,9 +213,9 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill attribute with value from the request or delegate this action to the user defined callback.
      *
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @param $model
-     * @param int|null $bulkRow
+     * @param  int|null  $bulkRow
      * @return mixed|void
      */
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
@@ -266,10 +266,10 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill the model with value from the request.
      *
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @param $model
      * @param $attribute
-     * @param int|null $bulkRow
+     * @param  int|null  $bulkRow
      */
     protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
     {
@@ -277,25 +277,25 @@ class Field extends OrganicField implements JsonSerializable
             ? $attribute
             : "{$bulkRow}.{$attribute}";
 
-        if (! ($request->exists($attribute) || $request->input($attribute))) {
+        if (!($request->exists($attribute) || $request->input($attribute))) {
             return;
         }
 
         tap(
             ($request->input($attribute) ?? $request[$attribute]),
-            fn ($value) => $model->{$this->attribute} = $request->has($attribute)
-            ? $value
-            : $model->{$this->attribute}
+            fn($value) => $model->{$this->attribute} = $request->has($attribute)
+                ? $value
+                : $model->{$this->attribute}
         );
     }
 
     /**
      * Fill the model with value from the callback.
      *
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @param $model
      * @param $attribute
-     * @param int|null $bulkRow
+     * @param  int|null  $bulkRow
      */
     protected function fillAttributeFromCallback(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
     {
@@ -307,14 +307,14 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill the model with the value from value.
      *
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @param $model
      * @param $attribute
      * @return Field
      */
     protected function fillAttributeFromValue(RestifyRequest $request, $model, $attribute)
     {
-        if (! isset($this->valueCallback)) {
+        if (!isset($this->valueCallback)) {
             return $this;
         }
 
@@ -440,7 +440,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function computed()
     {
-        return (is_callable($this->attribute) && ! is_string($this->attribute)) ||
+        return (is_callable($this->attribute) && !is_string($this->attribute)) ||
             is_callable($this->computedCallback) || $this->attribute == 'Computed';
     }
 
@@ -452,7 +452,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function sortable($value = true)
     {
-        if (! $this->computed()) {
+        if (!$this->computed()) {
             $this->sortable = $value;
         }
 
@@ -472,8 +472,8 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Resolve the attribute's value for display.
      *
-     * @param mixed $repository
-     * @param string|null $attribute
+     * @param  mixed  $repository
+     * @param  string|null  $attribute
      * @return Field|void
      */
     public function resolveForShow($repository, $attribute = null)
@@ -486,12 +486,13 @@ class Field extends OrganicField implements JsonSerializable
             return;
         }
 
-        if (! $this->showCallback) {
+        if (!$this->showCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->showCallback)) {
-            tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
-                $this->value = call_user_func($this->showCallback, $value, $repository, $attribute);
-            });
+            tap($this->value ?? $this->resolveAttribute($repository, $attribute),
+                function ($value) use ($repository, $attribute) {
+                    $this->value = call_user_func($this->showCallback, $value, $repository, $attribute);
+                });
         }
 
         return $this;
@@ -509,12 +510,13 @@ class Field extends OrganicField implements JsonSerializable
             return $this;
         }
 
-        if (! $this->indexCallback) {
+        if (!$this->indexCallback) {
             $this->resolve($repository, $attribute);
         } elseif (is_callable($this->indexCallback)) {
-            tap($this->value ?? $this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
-                $this->value = call_user_func($this->indexCallback, $value, $repository, $attribute);
-            });
+            tap($this->value ?? $this->resolveAttribute($repository, $attribute),
+                function ($value) use ($repository, $attribute) {
+                    $this->value = call_user_func($this->indexCallback, $value, $repository, $attribute);
+                });
         }
 
         return $this;
@@ -532,7 +534,7 @@ class Field extends OrganicField implements JsonSerializable
             return $this;
         }
 
-        if (! $this->resolveCallback) {
+        if (!$this->resolveCallback) {
             $this->value = $this->resolveAttribute($repository, $attribute);
         } elseif (is_callable($this->resolveCallback)) {
             tap($this->resolveAttribute($repository, $attribute), function ($value) use ($repository, $attribute) {
@@ -546,8 +548,8 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Resolve the given attribute from the given repository.
      *
-     * @param mixed $repository
-     * @param string $attribute
+     * @param  mixed  $repository
+     * @param  string  $attribute
      * @return mixed
      */
     protected function resolveAttribute($repository, $attribute)
@@ -602,7 +604,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Resolve the default value for the field.
      *
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @return callable|mixed
      */
     protected function resolveDefaultValue(RestifyRequest $request)
@@ -617,7 +619,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Define the callback that should be used to resolve the field's value.
      *
-     * @param callable $resolveCallback
+     * @param  callable  $resolveCallback
      * @return $this
      */
     public function resolveCallback(callable $resolveCallback)
@@ -641,28 +643,42 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    public function invokeAfter(RestifyRequest $request, $repository)
+    public function invokeAfter(RestifyRequest $request, Model $model): void
     {
-        $request->repository()
-            ->collectFields($request)
-            ->withActions($request, $this)
-            ->authorizedStore($request)
-            ->dd()
-            ->each(fn(Field $field) => call_user_func($field->actionHandler->{'handle'}, $request, $repository));
+        if ($request->isStoreRequest()) {
+            $request->repository()
+                ->collectFields($request)
+                ->forStore($request, $request->repository())
+                ->withActions($request, $this)
+                ->authorizedStore($request)
+                ->each(fn(Field $field) => $field->actionHandler->handle($request, $model));
 
-        if ($request->isStoreRequest() && is_callable($this->afterStoreCallback)) {
-            call_user_func($this->afterStoreCallback, data_get($repository, $this->attribute), $repository, $request);
+            if (is_callable($this->afterStoreCallback)) {
+                call_user_func($this->afterStoreCallback, data_get($model, $this->attribute), $model,
+                    $request);
+            }
         }
 
-        if ($request->isUpdateRequest() && is_callable($this->afterUpdateCallback)) {
-            call_user_func($this->afterUpdateCallback, $this->resolveAttribute($repository, $this->attribute), $this->valueBeforeUpdate, $repository, $request);
+        if ($request->isUpdateRequest()) {
+            $request->repository()
+                ->collectFields($request)
+                ->forUpdate($request, $request->repository())
+                ->withActions($request, $this)
+                ->authorizedUpdate($request)
+                ->each(fn(Field $field) => $field->actionHandler->handle($request, $model));
+
+            if (is_callable($this->afterUpdateCallback)) {
+                call_user_func($this->afterUpdateCallback, $this->resolveAttribute($model, $this->attribute),
+                    $this->valueBeforeUpdate, $model, $request);
+            }
         }
+
     }
 
     /**
      * Indicate whatever the input is hidden or not.
      *
-     * @param bool $callback
+     * @param  bool  $callback
      * @return $this
      */
     public function hidden($callback = true)
@@ -678,7 +694,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Force set values when store/update.
      *
-     * @param callable|string $value
+     * @param  callable|string  $value
      * @return $this
      */
     public function value($value)
