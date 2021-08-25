@@ -54,7 +54,7 @@ class FieldCollection extends Collection
     public function forIndex(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn(Field $field) => !$field instanceof EagerField)
+            ->filter(fn (Field $field) => ! $field instanceof EagerField)
             ->filter(function (Field $field) use ($repository, $request) {
                 return $field->isShownOnIndex($request, $repository);
             })->values();
@@ -63,7 +63,7 @@ class FieldCollection extends Collection
     public function forShow(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn(Field $field) => !$field instanceof EagerField)
+            ->filter(fn (Field $field) => ! $field instanceof EagerField)
             ->filter(function (Field $field) use ($repository, $request) {
                 return $field->isShownOnShow($request, $repository);
             })->values();
@@ -72,7 +72,7 @@ class FieldCollection extends Collection
     public function forStore(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn(Field $field) => !$field instanceof EagerField)
+            ->filter(fn (Field $field) => ! $field instanceof EagerField)
             ->filter(function (Field $field) use ($repository, $request) {
                 return $field->isShownOnStore($request, $repository);
             })->values();
@@ -81,14 +81,14 @@ class FieldCollection extends Collection
     public function withActions(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn(Field $field) => $field->isActionable())
+            ->filter(fn (Field $field) => $field->isActionable())
             ->values();
     }
 
     public function withoutActions(RestifyRequest $request, $repository): self
     {
         return $this
-            ->reject(fn(Field $field) => $field->isActionable())
+            ->reject(fn (Field $field) => $field->isActionable())
             ->values();
     }
 
@@ -102,7 +102,7 @@ class FieldCollection extends Collection
     public function forUpdate(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn(Field $field) => !$field instanceof EagerField)
+            ->filter(fn (Field $field) => ! $field instanceof EagerField)
             ->filter(function (Field $field) use ($repository, $request) {
                 return $field->isShownOnUpdate($request, $repository);
             })->values();
@@ -119,27 +119,27 @@ class FieldCollection extends Collection
     {
         return $this->filter(function ($field) {
             return $field instanceof BelongsToMany || $field instanceof MorphToMany;
-        })->filter(fn(EagerField $field) => $field->authorize($request));
+        })->filter(fn (EagerField $field) => $field->authorize($request));
     }
 
     public function forEager(RestifyRequest $request, Repository $repository): self
     {
         return $this
-            ->filter(fn(Field $field) => $field instanceof EagerField)
-            ->filter(fn(Field $field) => $field->authorize($request))
+            ->filter(fn (Field $field) => $field instanceof EagerField)
+            ->filter(fn (Field $field) => $field->authorize($request))
             ->unique();
     }
 
     public function forBelongsTo(RestifyRequest $request): self
     {
         return $this
-            ->filter(fn(Field $field) => $field instanceof BelongsTo)
+            ->filter(fn (Field $field) => $field instanceof BelongsTo)
             ->unique();
     }
 
     public function setRepository(Repository $repository): self
     {
-        return $this->each(fn(Field $field) => $field->setRepository($repository));
+        return $this->each(fn (Field $field) => $field->setRepository($repository));
     }
 
     public function findFieldByAttribute($attribute, $default = null)
