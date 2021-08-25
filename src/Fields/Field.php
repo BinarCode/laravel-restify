@@ -648,7 +648,7 @@ class Field extends OrganicField implements JsonSerializable
             ->withActions($request, $this)
             ->authorizedStore($request)
             ->dd()
-            ->each(fn(Field $field) => call_user_func($field->actionHandler->{'handle'}, $request, $repository));
+            ->each(fn (Field $field) => call_user_func($field->actionHandler->{'handle'}, $request, $repository));
 
         if ($request->isStoreRequest() && is_callable($this->afterStoreCallback)) {
             call_user_func($this->afterStoreCallback, data_get($repository, $this->attribute), $repository, $request);

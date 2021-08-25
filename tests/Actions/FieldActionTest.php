@@ -19,7 +19,7 @@ class FieldActionTest extends IntegrationTest
 
 
 
-                Field::new('description')->canStore(fn() => false),
+                Field::new('description')->canStore(fn () => false),
             ]);
 
         $this
@@ -29,7 +29,7 @@ class FieldActionTest extends IntegrationTest
             'title' => $updated = 'Title',
         ])
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', $updated)
                     ->where('data.attributes.description', null)
                     ->etc()
