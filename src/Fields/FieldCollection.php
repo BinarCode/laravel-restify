@@ -81,8 +81,12 @@ class FieldCollection extends Collection
     public function withActions(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn (Field $field) => $field->isActionable())
-            ->values();
+            ->filter(fn (Field $field) => $field->isActionable()
+                && (
+                    $request->has($field->attribute)
+                    || $request->hasFile($field->attribute)
+                )
+            )->values();
     }
 
     public function withoutActions(RestifyRequest $request, $repository): self
