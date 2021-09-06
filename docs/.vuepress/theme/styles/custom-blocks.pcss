@@ -1,0 +1,76 @@
+/**
+ * AKA 'tip' blocks used for informative callouts within page content.
+ */
+
+.custom-block {
+  @apply px-5 rounded-sm overflow-hidden relative;
+  background-color: var(--custom-block-bg-color);
+  border: 1px solid var(--custom-block-border-color);
+
+  .custom-block-title {
+    @apply font-medium mt-4 -mb-3 text-sm;
+
+    &.tip,
+    &.warning,
+    &.danger {
+      @apply py-0 mx-0 my-4;
+    }
+  }
+
+  &.tip,
+  &.warning,
+  &.danger {
+    padding-left: 3.75rem;
+    border-bottom: 1px solid #e5edfd;
+
+    &:before {
+      content: "";
+      @apply block absolute top-0 left-0 mt-4 ml-4;
+      width: 1.75rem;
+      height: 1.75rem;
+      background: transparent url("/docs/icons/icon-tip.svg") no-repeat 0 0;
+      background-size: contain;
+    }
+  }
+
+  &.warning {
+    border: 1px solid rgba(178, 148, 0, 0.25);
+    border-bottom: 1px solid rgba(178, 148, 0, 0.4);
+    &:before {
+      background: transparent url("/docs/icons/icon-warning.svg") no-repeat 0 0;
+    }
+  }
+
+  &.danger {
+    border: 1px solid rgba(229, 66, 43, 0.25);
+    border-bottom: 1px solid rgba(229, 66, 43, 0.45);
+
+    .custom-block-title {
+      color: rgba(229, 66, 43, 1);
+    }
+
+    &:before {
+      background: transparent url("/docs/icons/icon-danger.svg") no-repeat 0 0;
+    }
+  }
+
+  &.details {
+    @apply py-4 px-6;
+    margin: 1.6em 0;
+
+    h4 {
+      @apply mt-0;
+    }
+
+    figure,
+    p {
+      &:last-child {
+        @apply mb-0 pb-0;
+      }
+    }
+
+    summary {
+      @apply outline-none cursor-pointer;
+    }
+  }
+}

@@ -1,0 +1,206 @@
+/* initial load, no class on html element */
+@media (prefers-color-scheme: light) {
+  html:not([class]) {
+    --bg-color: theme("colors.white");
+  }
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([class]) {
+    --text-color: theme("colors.white");
+    --bg-color: theme("colors.gray.900");
+    --sidebar-bg-color: rgba(0, 0, 0, 0.1);
+    --search-bg-color: theme("colors.slate");
+    --heading-color: theme("colors.gray.100");
+    --sidebar-link-color: theme("colors.gray.500");
+    --border-color: theme("colors.slate");
+    --doc-set-color: theme("colors.gray.200");
+    --code-highlight-color: rgba(45, 55, 72, 0.25);
+    --code-bg-color: theme("colors.cinder");
+    --custom-block-bg-color: theme("colors.slate");
+    --custom-block-border-color: transparent;
+  }
+}
+
+/* JS-applied, which may differ from browser setting */
+.theme-dark {
+  --text-color: theme("colors.white");
+  --bg-color: theme("colors.gray.900");
+  --sidebar-bg-color: rgba(0, 0, 0, 0.1);
+  --search-bg-color: theme("colors.slate");
+  --medium-zoom-overlay-color: rgba(23, 29, 40, 1);
+  --heading-color: theme("colors.gray.100");
+  --sidebar-link-color: theme("colors.gray.500");
+  --hamburger-color: theme("colors.white");
+  --tooltip-bg-color: theme("colors.gray.800");
+  --border-color: theme("colors.slate");
+  --doc-set-color: theme("colors.gray.200");
+  --code-highlight-color: rgba(45, 55, 72, 0.25);
+  --code-bg-color: theme("colors.cinder");
+  --custom-block-bg-color: theme("colors.slate");
+  --custom-block-border-color: transparent;
+
+  .link-panel {
+    background-color: var(--border-color);
+    border-color: rgba(255, 255, 255, 0.05);
+
+    .subtitle {
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+
+  .icon-link {
+    .text-slate {
+      color: rgba(255, 255, 255, 0.4);
+    }
+  }
+
+  .search-box {
+    .suggestions {
+      @apply bg-gray-900;
+
+      &:before {
+        @apply border-gray-900;
+        border-top-color: transparent;
+        border-left-color: transparent;
+        border-right-color: transparent;
+      }
+    }
+
+    mark {
+      @apply text-gray-400;
+    }
+
+    .suggestion-row {
+      .page-title {
+        border-color: rgba(0, 0, 0, 0.2);
+      }
+    }
+
+    .suggestion {
+      &.focused {
+        background-color: rgba(255, 255, 255, 0.1);
+
+        .suggestion-row {
+          .page-title {
+            @apply border-gray-700;
+          }
+        }
+      }
+    }
+
+    input:focus {
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+      @apply text-white outline-none;
+    }
+
+    .suggestion-doc-set {
+      @apply bg-cinder;
+      color: #a0aec0;
+    }
+  }
+
+  .doc-set-version {
+    /* Edge */
+    option {
+      @apply text-gray-900;
+    }
+  }
+
+  .code-placeholder {
+    border-color: #252525;
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.075) 25%,
+      rgba(255, 255, 255, 0.0125) 100%
+    );
+  }
+
+  .pre-heading-title {
+    @apply text-slate;
+  }
+
+  .custom-block {
+    div[class*="language-"] {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    code {
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+
+    pre {
+      code {
+        @apply bg-transparent;
+      }
+    }
+
+    &.tip,
+    &.warning,
+    &.danger,
+    &.details {
+      border-color: var(--custom-block-border-color);
+    }
+  }
+
+  kbd {
+    background-color: rgba(0, 0, 0, 0.4);
+    color: #476582;
+    border: 1px solid rgba(0, 0, 0, 0.3);
+    border-bottom: 3px solid #111;
+  }
+
+  tr {
+    border-top: 1px solid rgba(0, 0, 0, 0.2);
+
+    &:nth-child(2n) {
+      background: rgba(255, 255, 255, 0.05);
+    }
+  }
+
+  div.table {
+    border-color: var(--border-color);
+  }
+
+  dl {
+    background-color: var(--border-color);
+
+    code {
+      color: theme("colors.gray.500");
+      background-color: rgba(0, 0, 0, 0.4);
+    }
+  }
+
+  .token.comment {
+    @apply opacity-50;
+  }
+
+  .token.treeview-part .line-h:before,
+  .token.treeview-part .line-v:before {
+    border-left: 1px solid var(--border-color);
+  }
+
+  .token.treeview-part .line-h:after {
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  .token.treeview-part .line-v-last:before {
+    border-left: 1px solid var(--border-color);
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  ul.code-language-switcher {
+    background: var(--border-color);
+
+    li a.active {
+      @apply text-cinder;
+      background-color: rgba(255, 255, 255, 0.3);
+    }
+  }
+
+  div[class*="language-"] {
+    &:before {
+      color: rgba(255, 255, 255, 0.2);
+    }
+  }
+}

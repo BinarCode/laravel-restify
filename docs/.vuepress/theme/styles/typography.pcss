@@ -1,0 +1,274 @@
+/**
+ * Styles that broadly control how article content is presented.
+ */
+.theme-default-content {
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-medium;
+    color: var(--heading-color);
+
+    &:hover .header-anchor {
+      @apply opacity-100;
+    }
+  }
+
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply mt-8 mb-4;
+  }
+
+  h1 {
+    @apply text-4xl;
+
+    code {
+      @apply text-3xl;
+    }
+  }
+
+  h2 {
+    @apply text-2.5xl mt-12 pb-1 border-b;
+    border-color: var(--border-color);
+
+    code {
+      @apply text-2xl bg-transparent px-0;
+      color: var(--heading-color);
+    }
+  }
+
+  h3 {
+    @apply text-xl mt-10;
+
+    code {
+      @apply text-lg font-bold bg-transparent px-0;
+    }
+
+    .badge {
+      @apply relative;
+      top: -2px;
+    }
+  }
+
+  h4 {
+    @apply text-lg;
+
+    code {
+      @apply text-base font-bold bg-transparent px-0;
+      color: var(--heading-color);
+    }
+  }
+
+  h5 {
+    @apply text-base;
+    
+    code {
+      @apply font-bold;
+    }
+  }
+
+  p {
+    a[target="_blank"] {
+      @apply whitespace-no-wrap;
+    }
+  }
+
+  a:hover {
+    @apply underline;
+  }
+
+  ::selection {
+    background: var(--selection-color);
+  }
+
+  p,
+  pre,
+  .custom-block,
+  ul,
+  ol {
+    @apply my-4;
+  }
+
+  ul,
+  ol {
+    @apply pl-5;
+  }
+
+  ul ul,
+  ol ul,
+  ol ol {
+    @apply my-0;
+  }
+
+  ul {
+    @apply list-disc;
+  }
+
+  ol {
+    @apply list-decimal;
+  }
+
+  kbd {
+    background-color: #eee;
+    border-radius: 0.15rem;
+    border: 1px solid #ddd;
+    border-bottom: 3px solid #ddd;
+    padding: 0.15em 0.375em;
+    font-size: 0.8rem;
+  }
+
+  dl {
+    @apply flex py-5 px-6 leading-relaxed rounded;
+    flex-flow: row wrap;
+    background: #f1f5f8;
+
+    dt,
+    dd {
+      @apply mt-1 mx-0 mb-0;
+      word-wrap: break-word;
+    }
+
+    dt {
+      @apply pr-4 box-border text-right justify-end font-medium;
+      width: 9rem;
+
+      code {
+        @apply font-semibold bg-transparent px-0;
+      }
+    }
+
+    dd {
+      width: calc(100% - 9rem);
+
+      code {
+        @apply bg-transparent px-0;
+      }
+    }
+
+    code {
+      background: #dadfe3;
+    }
+  }
+
+  p a code {
+    @apply font-normal text-blue;
+  }
+
+  blockquote {
+    @apply text-base my-4 mx-0 py-1 pr-0 pl-4;
+    color: #999;
+
+    & > p {
+      @apply m-0;
+    }
+  }
+
+  strong {
+    @apply font-bold;
+  }
+
+  dfn {
+    @apply font-bold not-italic;
+  }
+
+  a.header-anchor {
+    @apply text-sm float-left opacity-0;
+    font-size: 0.85em;
+    margin-left: -0.87em;
+    padding-right: 0.23em;
+    margin-top: 0.125em;
+
+    &:hover {
+      @apply no-underline;
+    }
+  }
+
+  code,
+  kbd,
+  .line-number {
+    @apply font-mono;
+  }
+
+  p,
+  ul,
+  ol {
+    @apply leading-relaxed;
+  }
+
+  hr {
+    @apply border-0 border-t;
+  }
+
+  .table-of-contents {
+    .badge {
+      @apply align-middle;
+    }
+  }
+
+  table {
+    @apply border-collapse mx-0 my-4 block overflow-x-auto;
+  }
+
+  tr {
+    border-top: 1px solid #dfe2e5;
+
+    &:nth-child(2n) {
+      background: #f1f5f8;
+    }
+  }
+
+  th,
+  td {
+    @apply px-4 py-2 border;
+    border-color: var(--border-color);
+  }
+
+  div.table {
+    @apply block my-4 mx-0 overflow-x-auto max-w-full;
+    border: 1px solid #dfe2e5;
+
+    table {
+      @apply table m-0 border-none w-full text-base;
+
+      thead,
+      tbody:first-child {
+        tr:first-child {
+          &,
+          th,
+          td {
+            border-top: none;
+          }
+        }
+      }
+    }
+
+    tbody tr:last-child {
+      th,
+      td {
+        border-bottom: none;
+      }
+    }
+
+    th,
+    td {
+      &:first-child {
+        border-left: none;
+      }
+
+      &:last-child {
+        border-right: none;
+      }
+    }
+  }
+
+  .croker-table {
+    table tr td:first-child {
+      width: 10%;
+    }
+  }
+}

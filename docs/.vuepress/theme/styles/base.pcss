@@ -1,0 +1,90 @@
+:root {
+  --text-color: theme("colors.slate");
+  --bg-color: theme("colors.white");
+  --sidebar-bg-color: theme("colors.softer");
+  --search-bg-color: theme("colors.soft");
+  --medium-zoom-overlay-color: theme("colors.soft");
+  --heading-color: theme("colors.slate");
+  --sidebar-link-color: theme("colors.slate");
+  --sidebar-active-link-color: theme("colors.blue");
+  --hamburger-color: theme("colors.black");
+  --tooltip-bg-color: theme("colors.white");
+  --border-color: #e2e8f0;
+  --doc-set-color: theme("colors.slate");
+  --code-highlight-color: rgba(252, 233, 106, 0.3);
+  --selection-color: rgba(74, 124, 246, 0.3);
+  --code-bg-color: theme("colors.soft");
+  --custom-block-bg-color: theme("colors.softer");
+  --custom-block-border-color: theme("colors.soft");
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+/**
+ * Uncomfortable hack to disbable smooth scroll in Firefox.
+
+ */
+@supports (-moz-appearance: none) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
+body {
+  @apply font-sans font-normal;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+}
+
+a {
+  @apply text-blue no-underline;
+}
+
+img {
+  @apply max-w-full;
+}
+
+.arrow {
+  @apply inline-block w-0 h-0;
+
+  &.up {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 6px solid #ccc;
+  }
+
+  &.down {
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-top: 6px solid #ccc;
+  }
+
+  &.right {
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-left: 6px solid #ccc;
+  }
+
+  &.left {
+    border-top: 4px solid transparent;
+    border-bottom: 4px solid transparent;
+    border-right: 6px solid #ccc;
+  }
+}
+
+@screen xxl {
+  body {
+    font-size: 108%;
+  }
+}

@@ -18,5 +18,6 @@ features:
   details: Make your API more suggestive by giving readable exceptions
 - title: JSON:API consistency
   details: Maintain your API consistent accordingly with https://jsonapi.org
-  
-footer: MIT License (MIT
+---
+
+footer: MIT License (MIT)
