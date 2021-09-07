@@ -1,5 +1,6 @@
 ---
 title: Introduction
+description: Laravel Restify helps you build APIs faster, easier and with more consistency.
 menuTitle: Introduction
 category: Getting Started
 ---
