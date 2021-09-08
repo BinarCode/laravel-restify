@@ -103,4 +103,15 @@ class RelatedCollection extends Collection
         return $this->forBelongsToRelations($request)
            ->filter(fn (BelongsTo $field) => $field->isSearchable());
     }
+
+    public function forAlways(): self
+    {
+        return $this->filter(function ($related) {
+            if ($related instanceof EagerField) {
+                return $related->isAlways();
+            }
+
+            return false;
+        });
+    }
 }

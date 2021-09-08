@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers\Index;
 
+use Binaryk\LaravelRestify\Fields\HasMany;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Factories\PostFactory;
@@ -12,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\RelatedCastWithAttributes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -202,6 +204,34 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         self::assertCount(1, $response->json('data.0.relationships')['users.posts']);
         self::assertCount(1, $response->json('data.0.relationships')['users.posts'][0]['posts']);
+    }
+
+    /** * @test */
+    public function it_can_retrieve_nested_relationships_always(): void
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('related')
+            ->andReturn([
+                'users' => HasMany::make('users', UserRepository::class),
+            ]);
+
+        Company::factory()->has(
+            User::factory()->has(
+                Post::factory()
+            )
+        )->create();
+
+        $response = $this->getJson(CompanyRepository::to(null, [
+            'related' => 'users',
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->dd()
+            ->has('data.0.relationships')
+            ->etc()
+        );
+
+//        self::assertCount(1, $response->json('data.0.relationships')['users.posts']);
+//        self::assertCount(1, $response->json('data.0.relationships')['users.posts'][0]['posts']);
     }
 
     /** * @test */

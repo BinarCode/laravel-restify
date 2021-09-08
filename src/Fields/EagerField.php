@@ -26,6 +26,13 @@ class EagerField extends Field
     public string $repositoryClass;
 
     /**
+     * This will instruct Restify to load the relationship even it's not in related.
+     *
+     * @var bool
+     */
+    private bool $alwaysLoad;
+
+    /**
      * Determine if the field should be displayed for the given request.
      *
      * @param  Request  $request
@@ -102,5 +109,17 @@ class EagerField extends Field
         Repository $repository
     ): string {
         return $this->getRelation($repository)->getRelated()->getQualifiedKeyName();
+    }
+
+    public function always(bool $always = true): self
+    {
+        $this->alwaysLoad = $always;
+
+        return $this;
+    }
+
+    public function isAlways(): bool
+    {
+        return $this->alwaysLoad === true;
     }
 }
