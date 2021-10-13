@@ -924,11 +924,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this;
     }
 
-    public static function stored($repository, $request)
-    {
-        //
-    }
-
     public static function storedBulk(Collection $repositories, $request)
     {
         //
