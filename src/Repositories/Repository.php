@@ -635,6 +635,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             }
 
             $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
+
+            $this
+                ->collectFields($request)
+                ->forStore($request, $this)
+                ->withActions($request, $this)
+                ->authorizedStore($request)
+                ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
         });
 
         if (method_exists(static::class, 'stored')) {
@@ -703,6 +710,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         })->each(
             fn (Field $field) => $field->invokeAfter($request, $this->resource)
         );
+
+        $this
+            ->collectFields($request)
+            ->forUpdate($request, $this)
+            ->withActions($request, $this)
+            ->authorizedUpdate($request)
+            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
 
         return $this->response()
             ->data($this->serializeForShow($request))

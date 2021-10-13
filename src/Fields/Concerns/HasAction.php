@@ -6,7 +6,7 @@ use Binaryk\LaravelRestify\Actions\Action;
 
 trait HasAction
 {
-    protected ?Action $actionHandler = null;
+    public ?Action $actionHandler = null;
 
     public function action(Action $action): self
     {

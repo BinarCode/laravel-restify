@@ -649,41 +649,23 @@ class Field extends OrganicField implements JsonSerializable
 
     public function invokeAfter(RestifyRequest $request, Model $model): void
     {
-        if ($request->isStoreRequest()) {
-            $request->repository()
-                ->collectFields($request)
-                ->forStore($request, $request->repository())
-                ->withActions($request, $this)
-                ->authorizedStore($request)
-                ->each(fn (Field $field) => $field->actionHandler->handle($request, $model));
-
-            if (is_callable($this->afterStoreCallback)) {
-                call_user_func(
-                    $this->afterStoreCallback,
-                    data_get($model, $this->attribute),
-                    $model,
-                    $request
-                );
-            }
+        if ($request->isStoreRequest() && is_callable($this->afterStoreCallback)) {
+            call_user_func(
+                $this->afterStoreCallback,
+                data_get($model, $this->attribute),
+                $model,
+                $request
+            );
         }
 
-        if ($request->isUpdateRequest()) {
-            $request->repository()
-                ->collectFields($request)
-                ->forUpdate($request, $request->repository())
-                ->withActions($request, $this)
-                ->authorizedUpdate($request)
-                ->each(fn (Field $field) => $field->actionHandler->handle($request, $model));
-
-            if (is_callable($this->afterUpdateCallback)) {
-                call_user_func(
-                    $this->afterUpdateCallback,
-                    $this->resolveAttribute($model, $this->attribute),
-                    $this->valueBeforeUpdate,
-                    $model,
-                    $request
-                );
-            }
+        if ($request->isUpdateRequest() && is_callable($this->afterUpdateCallback)) {
+            call_user_func(
+                $this->afterUpdateCallback,
+                $this->resolveAttribute($model, $this->attribute),
+                $this->valueBeforeUpdate,
+                $model,
+                $request
+            );
         }
     }
 
