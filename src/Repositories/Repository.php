@@ -637,7 +637,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
         });
 
-        static::stored($this->resource, $request);
+        if (method_exists(static::class, 'stored')) {
+            call_user_func([static::class, 'stored'], $this->resource, $request);
+        }
 
         return $this->response()
             ->created()
