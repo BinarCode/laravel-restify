@@ -37,5 +37,4 @@ trait Testing
             'action' => app($action)->uriKey(),
         ]);
     }
-
 }
