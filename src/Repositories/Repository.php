@@ -19,6 +19,7 @@ use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithModel;
 use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
+use Binaryk\LaravelRestify\Repositories\Concerns\Testing;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
@@ -48,6 +49,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     use InteractsWithModel;
     use InteractsWithAttachers;
     use Mockable;
+    use Testing;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -1071,16 +1073,5 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 $this
             ))->values(),
         ];
-    }
-
-    public static function to(string $path = null, array $query = []): string
-    {
-        $base = Restify::path().'/'.static::uriKey();
-
-        $route = $path
-            ? $base.'/'.$path
-            : $base;
-
-        return $route.'?'.http_build_query($query);
     }
 }
