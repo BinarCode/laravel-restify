@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\PaginationDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Foundation\Http\FormRequest;
 
 class RestifyRequest extends FormRequest
