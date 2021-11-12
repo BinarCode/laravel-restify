@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Services;
 
 use Binaryk\LaravelRestify\Events\UserLoggedIn;
 use Binaryk\LaravelRestify\Services\Concerns\AuthenticatesUsers;
-use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 
 class LoginService
