@@ -7,7 +7,7 @@ category: Getting Started
 
 Laravel Restify has a few requirements you should be aware of before installing:
 
-<list :items="['Composer', 'Laravel Framework >= 7.0']">
+<list :items="['Composer', 'Laravel Framework >= 8.0']">
 </list>
 
 ## Installing Laravel Restify
@@ -85,11 +85,6 @@ right after `api` middleware.
 You may notice that Restify also use the `EnsureJsonApiHeaderMiddleware` middleware, which enforce you to use
 the `application/vnd.api+json` Accept header for your API requests. So make sure, even when using Postman (or something
 else) for making requests, that this `Accept header` is applied.
-
-### Exception Handling
-
-The `exception_handler` configuration allow you to use another default Exception Handler instead of the one Laravel
-provides by default. If you want to keep the default one, just left this configuration as `null`.
 
 ## Generate repository
 

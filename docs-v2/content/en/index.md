@@ -15,7 +15,6 @@ Laravel Restify is MIT Licensed and can be freely by anyone.
 'Authentication with Sanctum',
 'Handy Response maker',
 'Powerful Search',
-'Integrated Exception handler',
 'JSON:API consistency'
 ]">
 </list>
