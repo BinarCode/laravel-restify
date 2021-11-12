@@ -43,7 +43,13 @@ If you are not able to install Restify into your application because of your `mi
 Having the package setup and users table migrated, you should be good to perform the first API request:
 
 ```http request
-GET: /api/restify/users?perPage=10
+GET: /api/restify/users?perPage=10&page=2
+```
+
+or using [json api](https://jsonapi.org/profiles/ethanresnick/cursor-pagination/#auto-id-pagesize) format: 
+
+```http request
+GET: /api/restify/users?page[size]=10&page[number]=2
 ```
 
 This should return the users list paginated and formatted according to [JSON:API](https://jsonapi.org/format/) standard.
