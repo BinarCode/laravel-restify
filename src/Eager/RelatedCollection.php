@@ -77,18 +77,21 @@ class RelatedCollection extends Collection
     public function inRequest(RestifyRequest $request): self
     {
         return $this
-            ->filter(fn ($field, $key) => in_array($key, str_getcsv($request->input('related'))))
+            ->filter(fn ($field, $key) => in_array($key, $request->related()->related))
             ->unique();
     }
 
     public function mapIntoRelated(RestifyRequest $request): self
     {
         return $this->map(function ($value, $key) {
-            return tap(Related::make($key, $value instanceof EagerField ? $value : null), function (Related $related) use ($value) {
-                if (is_callable($value)) {
-                    $related->resolveUsing($value);
+            return tap(
+                Related::make($key, $value instanceof EagerField ? $value : null),
+                function (Related $related) use ($value) {
+                    if (is_callable($value)) {
+                        $related->resolveUsing($value);
+                    }
                 }
-            });
+            );
         });
     }
 
@@ -101,6 +104,6 @@ class RelatedCollection extends Collection
     public function onlySearchable(RestifyRequest $request): self
     {
         return $this->forBelongsToRelations($request)
-           ->filter(fn (BelongsTo $field) => $field->isSearchable());
+            ->filter(fn (BelongsTo $field) => $field->isSearchable());
     }
 }

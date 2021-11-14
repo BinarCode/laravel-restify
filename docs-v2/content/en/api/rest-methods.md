@@ -2,7 +2,7 @@
 title: REST Methods 
 menuTitle: REST Methods 
 category: API
-position: 1
+position: 2
 ---
 
 ## Introduction

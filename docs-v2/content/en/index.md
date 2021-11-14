@@ -5,8 +5,7 @@ menuTitle: Introduction
 category: Getting Started
 ---
 
-Laravel Restify helps you build APIs faster, easier and with more consistency.
-Laravel Restify is MIT Licensed and can be freely by anyone.
+Laravel Restify is an extraordinary tool for building robust, modern API. And, it will become a breeze to do that.
 
 ## Features
 
@@ -15,7 +14,9 @@ Laravel Restify is MIT Licensed and can be freely by anyone.
 'Authentication with Sanctum',
 'Handy Response maker',
 'Powerful Search',
-'JSON:API consistency'
+'JSON:API consistency',
+'Customizable',
+'Laravel Compatible Authorization'
 ]">
 </list>
 
@@ -23,7 +24,7 @@ Laravel Restify is MIT Licensed and can be freely by anyone.
 
 You can find the [full course here](https://www.binarcode.com/learn/restify) with features and insights about how Laravel Restify works.
 
-<iframe src="https://player.vimeo.com/video/502759392" width="640" height="480">
+<iframe src="https://player.vimeo.com/video/501764861" width="640" height="480">
 </iframe>
 
 

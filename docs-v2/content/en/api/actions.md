@@ -1,5 +1,8 @@
 ---
-title: Actions menuTitle: Actions category: API position: 4
+title: Actions 
+menuTitle: Actions 
+category: API 
+position: 4
 ---
 
 Restify allow you to define extra actions for your repositories. Let's say you have a list of posts, and you have to
