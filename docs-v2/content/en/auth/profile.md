@@ -366,28 +366,3 @@ The payload should be a form-data, with an image under `avatar` key:
 ```
 
 If you have to customize path or disk of the storage file, check the [image field](../repository-pattern/field.html#file-fields)
-
-### Avatar without repository
-
-If you don't use the repository for updating the user profile, Restify provides a separate endpoint for updating the avatar.
-
-```http request
-POST: api/restify/profile/avatar
-```
-
-The default path for storing avatar is: `/avatars/{user_key}/`, and it uses by default the `public` disk.
-
-You can modify that by modifying property in a `boot` method of any service provider:
-
-```php
-Binaryk\LaravelRestify\Http\Requests\ProfileAvatarRequest::$path = 'users';
-Binaryk\LaravelRestify\Http\Requests\ProfileAvatarRequest::$disk = 's3';
-```
-
-Or if you need the request to make the path:
-
-```php
-Binaryk\LaravelRestify\Http\Requests\ProfileAvatarRequest::usingPath(function(Illuminate\Http\Request $request) {
-    return 'avatars/' . $request->user()->uuid
-})
-```
