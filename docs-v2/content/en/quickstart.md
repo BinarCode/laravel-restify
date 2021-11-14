@@ -1,5 +1,5 @@
 ---
-title: Installation 
+title: Quick Start
 category: Getting Started
 ---
 
@@ -7,16 +7,19 @@ category: Getting Started
 
 Laravel Restify has a few requirements you should be aware of before installing:
 
-<list :items="['Composer', 'Laravel Framework >= 8.0']">
+<list :items="[
+  'PHP >= 8.0',
+  'Laravel Framework >= 8.0'
+]">
 </list>
 
-## Installing Laravel Restify
+## Installation
 
 ```bash
 composer require binaryk/laravel-restify
 ```
 
-## Setup Laravel Restify
+## Setup
 
 After the installation, the package requires a setup process:
 
@@ -26,11 +29,11 @@ php artisan restify:setup
 
 The command above:
 
-- [x] **publishes** the `config/restify.php` configuration file
-- [x] **creates** the `providers/RestifyServiceProvider` and will add it in your `config/app.php`
-- [x] **creates** a new `app/Restify` directory
-- [x] **creates** an abstract `app/Restif/Repository.php`
-- [x] **scaffolds** a `app/Restify/UserRepository` repository for users CRUD
+- **publishes** the `config/restify.php` configuration file
+- **creates** the `providers/RestifyServiceProvider` and will add it in the `config/app.php`
+- **creates** a new `app/Restify` directory
+- **creates** an abstract `app/Restif/Repository.php`
+- **scaffolds** a `app/Restify/UserRepository` repository for users CRUD
 
 ### Package Stability
 
@@ -74,8 +77,11 @@ file:
 One important configuration is the restify default middlewares:
 
 ```php
+// config/restify.php
+
 'middleware' => [
     'api',
+    // 'auth:sanctum',
     Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent::class,
     Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify::class,
 ]
@@ -83,14 +89,9 @@ One important configuration is the restify default middlewares:
 
 ### Sanctum authentication
 
-Usually you want to authenticate your api (allow access only to authenticated users). For this purpose you can simply
-add another middleware. For the `sanctum`, Restify
-provides `Binaryk\LaravelRestify\Http\Middleware\RestifySanctumAuthenticate::class` middleware. Make sure you put this
-right after `api` middleware.
+Usually you want to authenticate your api (allow access only to authenticated users). For this purpose you can simply add another middleware. For the `sanctum`, you can add the `auth:sanctum`. Make sure you put this right after `api` middleware.
 
-You may notice that Restify also use the `EnsureJsonApiHeaderMiddleware` middleware, which enforce you to use
-the `application/vnd.api+json` Accept header for your API requests. So make sure, even when using Postman (or something
-else) for making requests, that this `Accept header` is applied.
+Restify also provides the `EnsureJsonApiHeaderMiddleware` middleware, which enforce you to use the `application/application-json` `Accept header` for your API requests. If you prefer to add this middleware, make sure, even when using Postman/Insomnia API client that this `Accept header` is applied.
 
 ## Generate repository
 

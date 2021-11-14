@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\PaginationDto;
+use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Illuminate\Foundation\Http\FormRequest;
@@ -33,7 +34,7 @@ class RestifyRequest extends FormRequest
         /** * @var EagerField $eagerField */
         $eagerField = $parentRepository::collectRelated()
             ->forEager($this)
-            ->first(fn ($field, $key) => $key === $this->route('repository'));
+            ->first(fn($field, $key) => $key === $this->route('repository'));
 
         if (is_null($eagerField)) {
             abort(403, 'Eager field missing from the parent ['.$this->route('parentRepository').'] related fields.');
@@ -57,6 +58,13 @@ class RestifyRequest extends FormRequest
         return new PaginationDto(
             perPage: $perPage,
             page: $pageNumber,
+        );
+    }
+
+    public function related(): RelatedDto
+    {
+        return new RelatedDto(
+            related: str_getcsv($this->input('related') ?? $this->input('include'))
         );
     }
 }

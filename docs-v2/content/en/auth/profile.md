@@ -2,19 +2,27 @@
 title: User Profile
 menuTitle: Profile
 category: Auth
-position: 3
+position: 1
 ---
 
-To ensure you can get your profile, you should add the `Authenticate` middleware to your restify, this can be easily
-done by using the `Binaryk\LaravelRestify\Http\Middleware\RestifySanctumAuthenticate::class` into
-your `restify.middleware` [configuration file](../quickstart.html#configurations);
+To ensure you can get your profile, you should add the `Authenticate` middleware to your restify, this can be easily done by using the `auth:sanctum` into your `restify.middleware`:
+
+```php
+// config/restify.php
+
+'middleware' => [
+    'api',
+    'auth:sanctum',
+    Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent::class,
+    Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify::class,
+]
+```
 
 Laravel Restify expose the user profile via `GET: /api/restify/profile` endpoint.
 
 ## Get profile using repository
 
-When retrieving the user profile, by default it is serialized using the `UserRepository` if there is once (Restify will
-find the repository based on the `User` model).
+When retrieving the user profile, by default it is serialized using the `UserRepository`.
 
 ```http request
 GET: /api/restify/profile
