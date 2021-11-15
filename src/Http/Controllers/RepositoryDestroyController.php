@@ -4,13 +4,13 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Controllers\Concerns\DeletesFields;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
-use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class RepositoryDestroyController extends RepositoryController
 {
     use DeletesFields;
 
-    public function __invoke(RepositoryDestroyRequest $request): JsonResponse
+    public function __invoke(RepositoryDestroyRequest $request): Response
     {
         $repository = $request->repositoryWith(
             $model = $request->modelQuery()->firstOrFail()

@@ -33,3 +33,10 @@ if (! function_exists('ok')) {
         return response('', 204);
     }
 }
+
+if (! function_exists('id')) {
+    function id(): Field
+    {
+        return field('id')->readonly();
+    }
+}

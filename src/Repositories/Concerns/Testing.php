@@ -37,4 +37,13 @@ trait Testing
             'action' => app($action)->uriKey(),
         ]);
     }
+
+    public function dd(string $prop = null): void
+    {
+        if (is_null($prop)) {
+            dd($this);
+        }
+
+        dd($this->{$prop});
+    }
 }

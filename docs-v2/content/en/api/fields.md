@@ -2,7 +2,7 @@
 title: Fields
 menuTitle: Fields
 category: API
-position: 2
+position: 8
 ---
 
 Field is basically the model attribute representation. Each Field generally extends

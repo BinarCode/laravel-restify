@@ -2,10 +2,10 @@
 title: Basic Filters
 menuTitle: Basic Filters
 category: Search & Filters
-position: 1
+position: 10
 ---
 
-If you want search for some specific fields from a model, you have to define these fields in the `$search` static
+For searching by specific model attributes, define these fields into the `$search` static
 property:
 
 ```php
@@ -18,14 +18,6 @@ Now `posts` are searchable by `id` and `title`, so you could use `search` query 
 
 ```http request
 GET: /api/restify/posts?search="Test title"
-```
-
-### Get available searchables
-
-You can use the following request to available searchable attributes for a repository:
-
-```http request
-/api/restify/posts/filters?only=searchables
 ```
 
 ## Match
@@ -415,4 +407,13 @@ The per page could be changed via query param `perPage`:
 
 ```http request
 `/api/restify/posts?perPage=30
+```
+
+
+### Get available searchables
+
+You can use the following request to available searchable attributes for a repository:
+
+```http request
+/api/restify/posts/filters?only=searchables
 ```

@@ -734,4 +734,11 @@ class Field extends OrganicField implements JsonSerializable
 
         return $this->storeCallback;
     }
+
+    public function required(): self
+    {
+        $this->rules += ['required'];
+
+        return $this;
+    }
 }

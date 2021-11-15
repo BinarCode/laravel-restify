@@ -3,7 +3,7 @@ title: Search
 menuTitle: Search
 description: Laravel Restify provides configurable and powerful way of filtering over entities.
 category: Search & Filters
-position: 2
+position: 12
 ---
 
 If you want search for some specific fields from a model, you have to define these fields in the `$search` static 

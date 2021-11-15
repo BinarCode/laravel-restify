@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
@@ -22,7 +23,7 @@ class MatchesCollection extends Collection
                     fn (MatchFilter $filter) => is_string($matchType) ? $filter->setType($matchType) : ''
                 );
 
-            if (is_callable($matchType)) {
+            if ($matchType instanceof Closure) {
                 $definition->usingClosure($matchType);
             }
 
