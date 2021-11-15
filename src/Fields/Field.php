@@ -131,7 +131,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param  string|callable|null  $attribute
      * @param  callable|null  $resolveCallback
      */
-    public function __construct($attribute, callable $resolveCallback = null)
+    public function __construct($attribute, callable|Closure $resolveCallback = null)
     {
         $this->attribute = $attribute;
 
@@ -148,9 +148,13 @@ class Field extends OrganicField implements JsonSerializable
         } else {
             $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($attribute));
         }
+
+        if (is_callable($resolveCallback)) {
+            $this->readonly();
+        }
     }
 
-    public function indexCallback(Closure $callback)
+    public function indexCallback(callable|Closure $callback)
     {
         $this->indexCallback = $callback;
 
@@ -161,28 +165,28 @@ class Field extends OrganicField implements JsonSerializable
      * @param  Closure  $callback
      * @return $this
      */
-    public function showCallback(Closure $callback)
+    public function showCallback(callable|Closure $callback)
     {
         $this->showCallback = $callback;
 
         return $this;
     }
 
-    public function storeCallback(Closure $callback)
+    public function storeCallback(callable|Closure $callback)
     {
         $this->storeCallback = $callback;
 
         return $this;
     }
 
-    public function storeCallbackCallback(Closure $callback)
+    public function storeBulkCallback(callable|Closure $callback)
     {
         $this->storeBulkCallback = $callback;
 
         return $this;
     }
 
-    public function updateCallback(Closure $callback)
+    public function updateCallback(callable|Closure $callback)
     {
         $this->updateCallback = $callback;
 
@@ -196,7 +200,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param  Closure  $callback
      * @return $this
      */
-    public function fillCallback(Closure $callback)
+    public function fillCallback(callable|Closure $callback)
     {
         $this->fillCallback = $callback;
 
@@ -292,8 +296,14 @@ class Field extends OrganicField implements JsonSerializable
      */
     protected function fillAttributeFromCallback(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
     {
-        if (is_callable($cb = $this->guessFillableMethod($request))) {
-            $model->{$this->attribute} = call_user_func($cb, $request, $model, $attribute, $bulkRow);
+        if (is_callable($cb = $this->guessBeforeFillableCallable($request))) {
+            $value = $request->input($attribute ?? $this->attribute);
+
+            if ($this instanceof File) {
+                $value = $request->file($attribute ?? $this->attribute);
+            }
+
+            $model->{$this->attribute} = $cb($value);
         }
     }
 
@@ -690,14 +700,14 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    private function guessFillableMethod(RestifyRequest $request): ?Closure
+    private function guessBeforeFillableCallable(RestifyRequest $request): Closure|callable|null
     {
         if ($request->isUpdateRequest()) {
             return $this->updateCallback;
         }
 
         if ($request->isStoreBulkRequest()) {
-            $this->storeBulkCallback;
+            return $this->storeBulkCallback;
         }
 
         return $this->storeCallback;
@@ -708,5 +718,10 @@ class Field extends OrganicField implements JsonSerializable
         $this->rules += ['required'];
 
         return $this;
+    }
+
+    public function file(): File
+    {
+        return File::make($this->attribute);
     }
 }

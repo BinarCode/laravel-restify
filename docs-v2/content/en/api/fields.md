@@ -1,13 +1,16 @@
 ---
-title: Fields
-menuTitle: Fields
-category: API
+title: Fields 
+menuTitle: Fields 
+category: API 
 position: 8
 ---
 
-Field is basically the model attribute representation. Each Field generally extends
-the `Binaryk\LaravelRestify\Fields\Field` class from the Laravel Restify. This class ships a variety of mutators,
-interceptors, validators chaining methods you can use for defining your attribute.
+Field is basically the model attribute representation.
+
+## Declaration
+
+Each Field generally extends the `Binaryk\LaravelRestify\Fields\Field` class from the Laravel Restify. This class ships
+a fluent API for a variety of mutators, interceptors and validators.
 
 To add a field to a repository, we can simply add it to the repository's fields method. Typically, fields may be created
 using their static `new` or `make` method. These methods accept the underlying database column as argument:
@@ -21,90 +24,85 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 public function fields(RestifyRequest $request)
 {
     return [
-        Field::new('email')->rules('required')->storingRules('unique:users')->messages([
+        Field::make('name')->required(),
+        
+        Field::make('email')->required()->storingRules('unique:users')->messages([
             'required' => 'This field is required.',
         ]),
-        Field::new('password')->storeCallback(function (RestifyRequest $request, $model, $attribute) {
-            $model->password = Hash::make($request->input($attribute));
-        })->rules('required')->storingRules('confirmed'),
     ];
 }
 ```
 
-#### `field` helper
+### `field` helper
 
 <alert>
 
-Instead of using the `Field` class, you can use the `field` helper.
-For example: 
+Instead of using the `Field` class, you can use the `field` helper. For example:
+
 ```php 
-Field::new('email') => field('email')
+field('email')
 ```
 
 </alert>
 
 ## Authorization
 
+The `Field` class provides few methods to authorize certain actions. Each authorization method accept a `Closure` that
+should return `true`
+or `false`. The `Closure` will receive the incoming `\Illuminate\Http\Request` request.
+
+### Can see
+
 Sometimes you may want to hide certain fields from a group of users. You may easily accomplish this by chaining
-the `canSee` method onto your field definition. The `canSee` method accepts a `Closure` which should return `true`
-or `false`. The `Closure` will receive the incoming `HTTP` request:
+the `canSee`:
 
+ ```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('role_id')->canSee(fn($request) => $request->user()->isAdmin())
+    ];
+}
+```
 
-<code-group>
+### Can store
 
-  <code-block label="View" active>
-
-   ```php
-      public function fields(RestifyRequest $request)
-      {
-          return [
-              field('role_id')->canSee(fn($request) => $request->user()->isAdmin());
-      }
-  ```
-
-  </code-block>
-
-  <code-block label="Store">
-
-  ```php
-      public function fields(RestifyRequest $request)
-      {
-          return [
-              field('role_id')->canStore(fn($request) => $request->user()->isAdmin())
-      }
-  ```
-
-  </code-block>
-
-  <code-block label="Update">
-
-  ```php
-      public function fields(RestifyRequest $request)
-      {
-          return [
-              field('role_id')->canUpdate(fn($request) => $request->user()->isAdmin())
-      }
-  ```
-
-  </code-block>
-
-</code-group>
-
-
-# Validation
-
-There is a gold rule saying - catch the exception as soon as possible on its request way. Validations are the first
-bridge of your request information, it would be a good start to validate your input. So you don't have to worry about
-the payload anymore.
-
-## Attaching rules
-
-Validation rules could be adding by chaining the `rules` method to
-attach [validation rules](https://laravel.com/docs/validation#available-validation-rules)
-to the field:
+The can store closure:
 
 ```php
-Field::new('email')->rules('required'),
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('role_id')->canStore(fn($request) => $request->user()->isAdmin())
+}
+```
+
+### Can update
+
+The can update closure:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('role_id')->canUpdate(fn($request) => $request->user()->isAdmin())
+}
+```
+
+## Validation
+
+There is a gold rule saying - catch the exception as soon as possible on its request way.
+
+Validations are the first bridge of your request information, it would be a good start to validate your input. So you
+don't have to worry about the payload anymore.
+
+### Attaching rules
+
+Validation rules could be adding by chaining the `rules` method to
+attach [validation rules](https://laravel.com/docs/validation#available-validation-rules) to the field:
+
+```php
+field('email')->rules('required', 'email'),
 ```
 
 Of course, if you are leveraging Laravel's support
@@ -126,10 +124,19 @@ Field::new('email')->rules('required', function($attribute, $value, $fail) {
 }),
 ```
 
-## Storing Rules
+<alert type="success">
 
-If you would like to define rules that only apply when a resource is being storing, you may use the `storingRules`
-method:
+Considering the `required` rule is very often used, Restify provides a `required()` validation
+helper: `field('email')->required()`
+
+</alert>
+
+These rules will be applied for all update and store requests.
+
+### Storing Rules
+
+If you would like to define more specific rules that only apply when a resource is being storing, you may use
+the `storingRules` method:
 
 ```php
 Field::new('email')
@@ -137,7 +144,16 @@ Field::new('email')
     ->storingRules('unique:users,email');
 ```
 
-## Update Rules
+Considering Restify concatenates rules provided by the `rules()` method, the entire validation for a POST request on
+this repository will look like this:
+
+```php
+$request->validate([
+    'email' => ['required', 'email', 'max:255', 'unique:users,email']
+]);
+```
+
+### Updating Rules
 
 Likewise, if you would like to define rules that only apply when a resource is being updated, you may use
 the `updatingRules` method.
@@ -146,29 +162,31 @@ the `updatingRules` method.
 Field::new('email')->updatingRules('required', 'email');
 ```
 
-# Interceptors
+## Interceptors
 
-However, the default storing process is automatically, sometimes you may want to take the control over it. That's a
-breeze with Restify, since Field expose few useful chained helpers for that.
+Sometimes you may want to take the control over certain Field actions. 
 
-## Fill callback
+That's why the Field class expose a lot of chained methods you can call to configure it.
 
-There are two steps before the value from the request is attached to model attribute. Firstly it is get from the
-application request, and go to the `fillCallback` and secondly, the value is transforming by the `storeCallback`
-or `updateCallback`:
+### Fill callback
+
+During the `store` and `update` requests, there are two steps before the value from the Request is attached to the model attribute. 
+
+Firstly it is retrieved from the application request, and passed to the `fillCallback` and secondly, the value is passed through the `storeCallback` or `updateCallback`:
 
 You may intercept each of those with closures.
 
+Let's start with the `fillCallback`. It accepts a `callable` (an invokable class) or a Closure. The callable will receive the Request, the repository model (an empty one for storing and filled one for updating) and the attribute name:
+
 ```php
-Field::new('title')
-    ->fillCallback(function (RestifyRequest $request, $model, $attribute) {
-        $model->{$attribute} = strtoupper($request->get('title_from_the_request'));
+field('title')->fillCallback(function (RestifyRequest $request, Post $model, $attribute) {
+    $model->title = strtoupper($request->input('title_from_the_request'));
 })
 ```
 
 This way you can get anything from the `$request` and perform any transformations with the value before storing.
 
-## Store callback
+### Store callback
 
 Another handy interceptor is the `storeCallback`, this is the step immediately before attaching the value from the
 request to the model attribute:
@@ -177,19 +195,31 @@ This interceptor may be useful for modifying the value passed through the `$requ
 
 ```php
 Field::new('password')->storeCallback(function (RestifyRequest $request) {
-    return Hash::new($request->input('password'));
+    return Hash::make($request->input('password'));
 });
 ```
 
-## Update callback
+### Update callback
+
+Likewise, works the `updateCallback`. Let's use an invokable this time:
 
 ```php
-Field::new('password')->updateCallback(function (RestifyRequest $request) { 
-    return Hash::new($request->input('password'));
-});
+Field::new('password')->updateCallback(new PasswordUpdateInvokable);
 ```
 
-## Index Callback
+Where the `PasswordUpdateInvokable` could be an invokable method: 
+
+```php
+class PasswordUpdateInvokable 
+{
+    public function __invoke(Request $request)
+    {
+        return Hash::make($request->input('password'));
+    }
+}
+```
+
+### Index Callback
 
 Sometimes you may want to transform some attribute from the database right before it is returned to the frontend.
 
@@ -197,21 +227,21 @@ Transform the value for the index request:
 
 ```php
 Field::new('password')->indexCallback(function ($value) {
-    return Hash::new($value);
+    return Hash::make($value);
 });
 ```
 
-## Show callback
+### Show callback
 
 Transform the value for the show request:
 
 ```php
 Field::new('password')->showRequest(function ($value) {
-    return Hash::new($value);
+    return Hash::make($value);
 });
 ```
 
-## Value Callback
+### Value Callback
 
 Usually, there is necessary to store a field as `Auth::id()`. This field will be automatically populated by Restify if
 you specify the `value` value for it:
@@ -228,7 +258,7 @@ Field::new('user_id')->hidden()->value(function(RestifyRequest $request, $model,
 });
 ```
 
-## Field label
+### Field label
 
 Field label, so you can replace a field attribute spelling when it is returned to the frontend:
 
@@ -238,7 +268,7 @@ Field::new('created_at')->label('sent_at')
 
 Of course if you want to populate this value from a frontend request, you can use the label as a payload key.
 
-## Hidden field
+### Hidden field
 
 Field can be setup as hidden:
 
@@ -252,7 +282,7 @@ However, you can populate the field value when the entity is stored, by using `v
 Field::new('token')->value(Str::random(32))->hidden();
 ```
 
-## Default value
+### Default value
 
 If you have a field which has `null` value into the database, however, you want to return a fallback default value for
 the frontend:
@@ -263,7 +293,7 @@ Field::new('description')->default('N/A');
 
 So now, for fields which don't have a description into the database, it will return `N/A`.
 
-## After store
+### After store
 
 You can handle the after field store callback:
 
@@ -273,7 +303,7 @@ Field::new('title')->afterStore(function($value) {
 })
 ```
 
-## After update
+### After update
 
 You can handle the after field is updated callback:
 
@@ -533,16 +563,16 @@ resource in the payload:
   ```http request
   POST: http://restify-app.test/api/restify/posts
   ```
-  
+
   </code-block>
 
   <code-block label="Response">
 
   ```json
   {
-    "description": "Ready to be published!",
-    "owner": 1
-  }
+  "description": "Ready to be published!",
+  "owner": 1
+}
   ```
 
   </code-block>
@@ -550,8 +580,6 @@ resource in the payload:
 </code-group>
 
 Payload:
-
-
 
 ### Authorization
 
@@ -693,9 +721,10 @@ public static $defaultRelatablePerPage = 100;
 
 You can also use the query `?relatablePerPage=100`.
 
-### Relatable per page 
+### Relatable per page
+
 <alert type="warning"> 
-  
+
 When using `relatablePerPage` query param, it will paginate all relatable entities with that size.
 
 </alert>

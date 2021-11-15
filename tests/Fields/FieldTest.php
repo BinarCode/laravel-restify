@@ -85,25 +85,29 @@ class FieldTest extends IntegrationTest
         $this->assertEquals('Title', $value['title']);
     }
 
-    public function test_field_can_have_custom_store_callback()
+    public function test_field_can_have_custom_store_callback(): void
     {
         $request = new RepositoryStoreRequest([], []);
+
+        $request->merge([
+            'title' => 'Request value.',
+        ]);
 
         $model = new class extends Model {
             protected $fillable = ['title'];
         };
 
         /** * @var Field $field */
-        $field = Field::new('title')->storeCallback(function ($request, $model) {
-            return 'from store callback';
+        $field = Field::new('title')->storeCallback(function ($value) {
+            return strtoupper($value);
         });
 
         $field->fillAttribute($request, $model);
 
-        $this->assertEquals('from store callback', $model->title);
+        $this->assertEquals('REQUEST VALUE.', $model->title);
     }
 
-    public function test_field_keep_its_value_if_request_empty()
+    public function test_field_keep_its_value_if_request_empty(): void
     {
         $request = new RepositoryStoreRequest([], []);
 
@@ -120,25 +124,28 @@ class FieldTest extends IntegrationTest
         $this->assertEquals($old, $model->title);
     }
 
-    public function test_field_can_have_custom_update_callback()
+    public function test_field_can_have_custom_update_callback(): void
     {
         $request = new RepositoryUpdateRequest([], []);
+
+        $request->merge([
+            'title' => 'Request title.',
+        ]);
 
         $model = new class extends Model {
             protected $fillable = ['title'];
         };
 
-        /** * @var Field $field */
-        $field = Field::new('title')->updateCallback(function ($request, $model) {
-            return 'from update callback';
+        $field = field('title')->updateCallback(function ($value) {
+            return strtoupper($value);
         });
 
         $field->fillAttribute($request, $model);
 
-        $this->assertEquals('from update callback', $model->title);
+        $this->assertEquals('REQUEST TITLE.', $model->title);
     }
 
-    public function test_field_fill_callback_has_high_priority()
+    public function test_field_fill_callback_has_high_priority(): void
     {
         $request = new RepositoryStoreRequest([], []);
 
@@ -151,14 +158,12 @@ class FieldTest extends IntegrationTest
             ->value(function () {
                 return 'from append callback';
             })
-            ->fillCallback(function ($request, $model) {
-                $model->title = 'from fill callback';
-            })
-            ->storeCallback(function ($request, $model) {
+            ->fillCallback(new InvokableFill)
+            ->storeCallback(function () {
                 return 'from store callback';
             })
-            ->updateCallback(function ($request, $model) {
-                $model->title = 'from update callback';
+            ->updateCallback(function () {
+                return 'from update callback';
             });
 
         $field->fillAttribute($request, $model);
@@ -378,12 +383,20 @@ class FieldTest extends IntegrationTest
         /** * @var Field $field */
         $field = Field::new('title')
             ->hidden()
-            ->value(fn () => 'Append title');
+            ->value(fn() => 'Append title');
 
         $field->fillAttribute($request, $model);
 
         $model->save();
 
         $this->assertEquals($model->title, 'Append title');
+    }
+}
+
+class InvokableFill
+{
+    public function __invoke(RestifyRequest $request, $model)
+    {
+        $model->title = 'from fill callback';
     }
 }
