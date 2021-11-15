@@ -3,11 +3,11 @@
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
-use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class RepositoryStoreController extends RepositoryController
 {
-    public function __invoke(RepositoryStoreRequest $request): JsonResponse
+    public function __invoke(RepositoryStoreRequest $request): Response
     {
         return $request->repository()
             ->allowToStore($request)

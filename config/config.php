@@ -95,6 +95,7 @@ return [
 
     'middleware' => [
         'api',
+        //auth.sanctum,
         DispatchRestifyStartingEvent::class,
         AuthorizeRestify::class,
     ],

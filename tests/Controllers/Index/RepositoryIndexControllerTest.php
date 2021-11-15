@@ -44,12 +44,29 @@ class RepositoryIndexControllerTest extends IntegrationTest
         );
 
         $this->getJson(PostRepository::to(null, [
+            'page[size]' => 10,
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+            ->count('data', 10)
+            ->etc()
+        );
+
+        $this->getJson(PostRepository::to(null, [
             'perPage' => 10,
             'page' => '2',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
             ->count('data', 5)
             ->etc()
+        );
+
+        $this->getJson(PostRepository::to(null, [
+            'page[size]' => 10,
+            'page[number]' => 2,
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->count('data', 5)
+                ->etc()
         );
     }
 

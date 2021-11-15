@@ -92,7 +92,7 @@ class RelatedCollection extends Collection
     public function inRequest(RestifyRequest $request): self
     {
         return $this
-            ->filter(fn ($field, $key) => in_array($key, str_getcsv($request->input('related'))))
+            ->filter(fn ($field, $key) => in_array($key, $request->related()->related))
             ->unique();
     }
 

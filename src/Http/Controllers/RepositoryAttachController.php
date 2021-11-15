@@ -25,7 +25,11 @@ class RepositoryAttachController extends RepositoryController
             $request,
             $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))
-                ->filter(fn ($relatedRepositoryId) => $request->repository()->allowToAttach($request, $request->attachRelatedModels()))
+                ->filter(fn ($relatedRepositoryId) => $request
+                    ->repositoryWith(
+                        $request->modelQuery()->firstOrFail()
+                    )
+                    ->allowToAttach($request, $request->attachRelatedModels()))
                 ->map(fn ($relatedRepositoryId) => $this->belongsToManyField($request)
                     ->initializePivot(
                         $request,

@@ -19,6 +19,7 @@ use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithModel;
 use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
+use Binaryk\LaravelRestify\Repositories\Concerns\Testing;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
@@ -34,6 +35,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
+/**
+ * @property static $type Repository type
+ */
 abstract class Repository implements RestifySearchable, JsonSerializable
 {
     use InteractWithSearch;
@@ -48,10 +52,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     use InteractsWithModel;
     use InteractsWithAttachers;
     use Mockable;
+    use Testing;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
-     * This may be a single model or a illuminate collection, or even a paginator instance.
      *
      * @var Model
      */
@@ -609,6 +613,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 $this->resource,
                 $fields = $this->collectFields($request)
                     ->forStore($request, $this)
+                    ->withoutActions($request, $this)
                     ->authorizedStore($request)
                     ->merge($this->collectFields($request)->forBelongsTo($request))
             );
@@ -634,9 +639,18 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             }
 
             $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
+
+            $this
+                ->collectFields($request)
+                ->forStore($request, $this)
+                ->withActions($request, $this)
+                ->authorizedStore($request)
+                ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
         });
 
-        static::stored($this->resource, $request);
+        if (method_exists(static::class, 'stored')) {
+            call_user_func([static::class, 'stored'], $this->resource, $request);
+        }
 
         return $this->response()
             ->created()
@@ -682,6 +696,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         DB::transaction(function () use ($request) {
             $fields = $this->collectFields($request)
                 ->forUpdate($request, $this)
+                ->withoutActions($request, $this)
                 ->authorizedUpdate($request)
                 ->merge($this->collectFields($request)->forBelongsTo($request));
 
@@ -700,6 +715,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             fn (Field $field) => $field->invokeAfter($request, $this->resource)
         );
 
+        $this
+            ->collectFields($request)
+            ->forUpdate($request, $this)
+            ->withActions($request, $this)
+            ->authorizedUpdate($request)
+            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
+
         return $this->response()
             ->data($this->serializeForShow($request))
             ->success();
@@ -708,8 +730,12 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function patch(RestifyRequest $request, $repositoryId)
     {
         DB::transaction(function () use ($request) {
+            $keys = $request->json()->keys();
+
             $fields = $this->collectFields($request)
-                ->intersectByKeys($request->json()->keys())
+                ->filter(
+                    fn (Field $field) => in_array($field->attribute, $keys),
+                )
                 ->forUpdate($request, $this)
                 ->authorizedPatch($request)
                 ->merge($this->collectFields($request)->forBelongsTo($request));
@@ -902,11 +928,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return $this;
     }
 
-    public static function stored($repository, $request)
-    {
-        //
-    }
-
     public static function storedBulk(Collection $repositories, $request)
     {
         //
@@ -961,7 +982,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     protected function getType(RestifyRequest $request): ?string
     {
-        return $this->model()->getTable();
+        return isset(static::$type) && is_string(static::$type)
+            ? static::$type
+            : $this->model()->getTable();
     }
 
     protected function getId(RestifyRequest $request): ?string
@@ -1054,16 +1077,5 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 $this
             ))->values(),
         ];
-    }
-
-    public static function to(string $path = null, array $query = []): string
-    {
-        $base = Restify::path().'/'.static::uriKey();
-
-        $route = $path
-            ? $base.'/'.$path
-            : $base;
-
-        return $route.'?'.http_build_query($query);
     }
 }

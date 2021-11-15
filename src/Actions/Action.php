@@ -14,10 +14,17 @@ use Binaryk\LaravelRestify\Transaction;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
+/**
+ * Class Action
+ * @method JsonResponse handle(Request $request, Model|Collection $models)
+ * @package Binaryk\LaravelRestify\Actions
+ */
 abstract class Action implements JsonSerializable
 {
     use AuthorizedToSee;

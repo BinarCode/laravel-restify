@@ -78,6 +78,21 @@ class FieldCollection extends Collection
             })->values();
     }
 
+    public function withActions(RestifyRequest $request, $repository): self
+    {
+        return $this
+            ->inRequest($request)
+            ->filter(fn (Field $field) => $field->isActionable())
+            ->values();
+    }
+
+    public function withoutActions(RestifyRequest $request, $repository): self
+    {
+        return $this
+            ->reject(fn (Field $field) => $field->isActionable())
+            ->values();
+    }
+
     public function forStoreBulk(RestifyRequest $request, $repository): self
     {
         return $this->filter(function (Field $field) use ($repository, $request) {
@@ -137,5 +152,12 @@ class FieldCollection extends Collection
         }
 
         return null;
+    }
+
+    public function inRequest(RestifyRequest $request): self
+    {
+        return $this
+            ->filter(fn (Field $field) => $request->has($field->attribute) || $request->hasFile($field->attribute))
+            ->values();
     }
 }

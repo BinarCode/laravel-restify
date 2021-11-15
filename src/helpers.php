@@ -26,3 +26,17 @@ if (! function_exists('data')) {
         ], $status, $headers, $options);
     }
 }
+
+if (! function_exists('ok')) {
+    function ok()
+    {
+        return response('', 204);
+    }
+}
+
+if (! function_exists('id')) {
+    function id(): Field
+    {
+        return field('id')->readonly();
+    }
+}
