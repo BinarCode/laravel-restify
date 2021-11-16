@@ -382,7 +382,7 @@ class FieldTest extends IntegrationTest
         /** * @var Field $field */
         $field = Field::new('title')
             ->hidden()
-            ->value(fn() => 'Append title');
+            ->value(fn () => 'Append title');
 
         $field->fillAttribute($request, $model);
 
