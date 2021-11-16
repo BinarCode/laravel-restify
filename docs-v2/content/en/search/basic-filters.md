@@ -32,7 +32,7 @@ It will search over all repositories that are authorized (has `allowRestify` pol
 There are 2 ways to disable the global search:  for a repository, either return false from the `allowRestify` model policy method or
 
 <list :items="[
-'disable `allowRestify` model policy method',
+'return false from the `allowRestify` model policy method',
 'mark the `$globallySearchable` static property false on repository',
 ]"></list>
 
