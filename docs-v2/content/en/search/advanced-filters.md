@@ -5,9 +5,7 @@ category: Search & Filters
 position: 12
 ---
 
-Laravel Restify has built in filters for usual search or matching. But what if you need some custom filtering. 
-
-Restify ships with an easy way to implement your own custom filters.
+Restify has built in filters for usual search or matching. But what if you need some custom filtering. 
 
 ## Definition
 
@@ -83,7 +81,7 @@ The frontend has to encode into base64 an array of filters. Each filter contains
 
 - `key` - which is the `ke-bab` form of the filter class name, or a custom `$uriKey` [defined in the filter](#custom-uri-key)
 
-- `value` - this is optional, and represents the value the advanced filter will as a third argument in the `filter` method.
+- `value` - this is optional, and represents the value the advanced filter will as a third argument in the `filter` method
 
 ### Custom uri key
 
@@ -107,7 +105,7 @@ The third argument of the `filter` method is the raw value send by the frontend.
 $value['activation']['active']
 ```
 
-Well, there is a `input` method defined into the parent class you can use, that facilitate this: 
+To avoid this, there is an `input` method defined into the parent class, so you can use: 
 
 ```php
  public function filter(RestifyRequest $request, Relation|Builder $query, $value)
