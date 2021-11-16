@@ -1,8 +1,8 @@
 ---
 title: REST Methods 
-menuTitle: REST Methods 
+menuTitle: Controllers
 category: API
-position: 7
+position: 12
 ---
 
 ## Introduction

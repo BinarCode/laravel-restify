@@ -1,8 +1,8 @@
 ---
 title: Repositories advanced
-menuTitle: Repositories advanced
+menuTitle: Advanced
 category: API 
-position: 6
+position: 7
 ---
 
 ## Repository prefix

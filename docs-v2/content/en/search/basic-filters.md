@@ -2,7 +2,7 @@
 title: Basic Filters
 menuTitle: Basic Filters
 category: Search & Filters
-position: 10
+position: 11
 ---
 
 For searching by specific model attributes, define these fields into the `$search` static

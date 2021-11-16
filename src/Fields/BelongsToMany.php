@@ -75,14 +75,14 @@ class BelongsToMany extends EagerField
         return $this;
     }
 
-    public function attachCallback(Closure $callback)
+    public function attachCallback(callable|Closure $callback)
     {
         $this->attachCallback = $callback;
 
         return $this;
     }
 
-    public function detachCallback(Closure $callback)
+    public function detachCallback(callable|Closure $callback)
     {
         $this->detachCallback = $callback;
 

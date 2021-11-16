@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Gate;
 
 class RepositoryDetachControllerTest extends IntegrationTest
 {
-    public function test_can_detach_repositories()
+    public function test_can_detach_repositories(): void
     {
         $_SERVER['roles.canDetach.users'] = true;
 
@@ -29,10 +29,15 @@ class RepositoryDetachControllerTest extends IntegrationTest
         $this->assertCount(2, $company->users);
 
         $this->postJson('companies/'.$company->id.'/detach/users', [
-            'users' => [1, 2],
+            'users' => [1],
         ])->assertNoContent();
 
-        $this->assertCount(0, $company->fresh()->users);
+        $this->assertCount(1, $company->fresh()->users);
+
+        $this->assertSame(
+            2,
+            $company->users()->get()->first()->id
+        );
     }
 
     public function test_cant_detach_repositories_not_authorized_to_detach()

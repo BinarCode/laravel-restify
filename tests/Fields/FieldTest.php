@@ -10,6 +10,8 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
+use function PHPUnit\Framework\assertInstanceOf;
+use function PHPUnit\Framework\assertSame;
 
 class FieldTest extends IntegrationTest
 {
@@ -227,7 +229,7 @@ class FieldTest extends IntegrationTest
         $this->assertEquals('Append value.', $model->title);
     }
 
-    public function test_field_after_store_called()
+    public function test_field_after_store_called(): void
     {
         $request = new RepositoryStoreRequest([], []);
 
@@ -249,10 +251,7 @@ class FieldTest extends IntegrationTest
         };
 
         /** * @var Field $field */
-        $field = Field::new('title')->afterStore(function ($value, $model) {
-            $this->assertEquals('After store title', $value);
-            $this->assertInstanceOf(Model::class, $model);
-        });
+        $field = Field::new('title')->afterStore(new InvokableAfterStore);
 
         $field->fillAttribute($request, $model);
 
@@ -398,5 +397,14 @@ class InvokableFill
     public function __invoke(RestifyRequest $request, $model)
     {
         $model->title = 'from fill callback';
+    }
+}
+
+class InvokableAfterStore
+{
+    public function __invoke($value, $model)
+    {
+        assertSame('After store title', $value);
+        assertInstanceOf(Model::class, $model);
     }
 }

@@ -611,14 +611,14 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
-    public function afterUpdate(Closure $callback)
+    public function afterUpdate(callable|Closure $callback)
     {
         $this->afterUpdateCallback = $callback;
 
         return $this;
     }
 
-    public function afterStore(Closure $callback)
+    public function afterStore(callable|Closure $callback)
     {
         $this->afterStoreCallback = $callback;
 

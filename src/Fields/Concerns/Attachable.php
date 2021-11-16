@@ -35,7 +35,7 @@ trait Attachable
      */
     public $pivotFields = [];
 
-    public function canAttach(Closure $callback)
+    public function canAttach(callable|Closure $callback)
     {
         $this->canAttachCallback = $callback;
 
@@ -46,7 +46,7 @@ trait Attachable
      * @param Closure $callback
      * @return $this
      */
-    public function canDetach(Closure $callback)
+    public function canDetach(callable|Closure $callback)
     {
         $this->canDetachCallback = $callback;
 

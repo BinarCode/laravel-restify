@@ -2,7 +2,7 @@
 title: Custom Filters
 menuTitle: Custom Filters
 category: Search & Filters
-position: 11
+position: 12
 ---
 
 Laravel Restify has built in filters for usual search or matching. But what if you need some custom filtering. Restify ships with an easy way to implement your own custom filters.
