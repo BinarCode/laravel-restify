@@ -9,7 +9,7 @@ position: 10
 
 Eloquent provides a large variety of relationships. You can read about them [here](https://laravel.com/docs/eloquent-relationships).
 
-Restify all relationships and give you an expressive way to list resource relationships.
+Restify handles all relationships and give you an expressive way to list resource relationships.
 
 ## Definition
 
@@ -31,13 +31,14 @@ Each `EagerField` declaration is similar to the `Field` one. The first argument 
 Say we have a User that has a list of posts, we will define it this way: 
 
 ```php
-// UserRepository -> related()
 HasMany::make('posts', PostRepository::class),
 ```
 
 Let's take a look over all relationships Restify provides:
 
-## BelongsTo
+## BelongsTo & MorphOne
+
+The `BelongsTo` and `MorphOne` eager fields works in a similar way. So let's take the `BelongsTo` as an example.
 
 Let's assume each `Post` [belongsTo](https://laravel.com/docs/eloquent-relationships#one-to-many-inverse) a `User`. To return the post's owner we will define it this way:
 
@@ -103,6 +104,17 @@ GET: api/restify/posts/1?include=owner
 }
 ```
 
+### Searchable belongs to
+
+The `BelongsTo` field allows you to use the search endpoint to [search over a column](/search/basic-filters#repository-search) from the `belongsTo` relationship by simply using the `searchables`: 
+
+```php
+BelongsTo::make('user', UserRepository::class)->searchable(['name'])
+```
+
+The `searchable` method accepts an array of database columns from the related entity (`users` in our case).
+
+
 ## HasOne
 
 The `HasOne` field corresponds to a `hasOne` Eloquent relationship. 
@@ -146,9 +158,9 @@ The json response structure will be the same as previously:
       ...
 ```
 
-## HasMany
+## HasMany & MorphMany
 
-The `HasMany` field corresponds to a `hasMany` Eloquent relationship. For example, let's assume a User
+The `HasMany` and `MorphMany` fields corresponds to a `hasMany` and `morphMany` Eloquent relationship. For example, let's assume a User
 model `hasMany` `Post` models. We may add the relationship to our `UserRepository` like so:
 
 ```php
@@ -219,9 +231,9 @@ When using `relatablePerPage` query param, it will paginate all relatable entiti
 
 </alert>
 
-## BelongsToMany
+## BelongsToMany & MorphToMany
 
-The `BelongsToMany` field corresponds to a `belongsToMany` Eloquent relationship. For example, let's assume a `User`
+The `BelongsToMany` and `MorphToMany` field corresponds to a `belongsToMany` or `morphToMany` Eloquent relationship. For example, let's assume a `User`
 model `belongsToMany` Role models. We may add the relationship to our UserRepository like so:
 
 ```php

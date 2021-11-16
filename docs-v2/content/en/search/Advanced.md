@@ -1,6 +1,6 @@
 ---
-title: Custom Filters
-menuTitle: Custom Filters
+title: Advanced filters
+menuTitle: Advanced filters
 category: Search & Filters
 position: 12
 ---

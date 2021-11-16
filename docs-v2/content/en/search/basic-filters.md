@@ -1,24 +1,113 @@
 ---
-title: Basic Filters
-menuTitle: Basic Filters
+title: Filters
+menuTitle: Filters
 category: Search & Filters
 position: 11
 ---
 
-For searching by specific model attributes, define these fields into the `$search` static
-property:
+Restify provides few powerful ways to filter and search your data.
+
+## Global search
+
+Restify provides a global endpoint that searches over all repositories searchable fields. 
+
+To define which repository fields are searchable, you may assign an array of database columns in the `search` property of your repository class. This includes id column by default, but you may override it to your needs:
 
 ```php
 class PostRepository extends Repository
 {
-    public static $search = ['id', 'title'];
+    public static array $search = ['id', 'title'];
 ```
 
-Now `posts` are searchable by `id` and `title`, so you could use `search` query param for filtering the index request:
+The endpoint to search is:
 
 ```http request
-GET: /api/restify/posts?search="Test title"
+GET: /api/restify/search?search="Test title"
 ```
+
+It will search over all repositories that are authorized (has `allowRestify` policy on true).
+
+### Disabling global search
+
+There are 2 ways to disable the global search:  for a repository, either return false from the `allowRestify` model policy method or
+
+<list :items="[
+'disable `allowRestify` model policy method',
+'mark the `$globallySearchable` static property false on repository',
+]"></list>
+
+So to disable the `Posts` from the global search using the repository property we do:
+
+```php
+// PostRepository.php
+public static bool $globallySearchable = false;
+```
+
+### Paginate global search
+
+You can limit the number of results that are returned in the global search by overriding the `globalSearchResults` property on the resource:
+
+```php
+// PostRepository.php
+public static int $globalSearchResults = 5;
+```
+
+### Customize global search
+
+The default global search response looks like this:
+
+```json
+{
+  "data": [
+    {
+      "repositoryName": "users",
+      "repositoryTitle": "Users",
+      "title": "Mrs. Lucie Parker Jr.",
+      "subTitle": null,
+      "repositoryId": 1,
+      "link": "/api/restify/users/1"
+    }
+  ]
+}
+```
+
+Where the `title` is the repository column defined by the `$title` property. So you can customize it:
+
+```php
+// UserRepository.php
+
+public static string $title = 'email';
+```
+
+The `subTitle` could be customized by overriding the `subtitle` method. The returned value will be displayed here:
+
+```php
+// UserRepository.php
+public function subtitle(): ?string
+{
+    return 'User email: ' . $this->model()->email;
+}
+```
+
+## Repository Search
+
+The repository search works in a similar way as [global search](#global-search), however in this case the endpoint refers to the repository and the search will be applied for a certain repository.
+
+Say we want to search users by their `email` and `name`:
+
+```php
+class UserRepository extends Repository
+{
+    public static array $search = ['name', 'email'];
+```
+
+So the endpoint will scope the the `users` repository now:
+
+```http request
+GET: /api/restify/users?search="John Doe"
+```
+
+### Search field definition
 
 ## Match
 
@@ -29,9 +118,9 @@ Repository configuration:
 ```php
 class PostRepository extends Repository
 {
-    public static $match = [
-        'id' => RestifySearchable::MATCH_INTEGER
-        'title' => RestifySearchable::MATCH_TEXT,
+    public static array $match = [
+        'id' => 'int',
+        'title' => 'string',
     ];
 }
 ```
@@ -40,11 +129,12 @@ As we may notice the match configuration is an associative array, defining the a
 
 Available types:
 
-- text (or `string`)
-- bool
-- int (or `integer`)
-- datetime
-- array
+- [text (or `string`)](#match-string)
+- [bool](#match-bool)
+- [int (or `integer`)](#match-int)
+- [datetime](#match-datetime)
+- [between](#match-between)
+- [array](#match-array)
 
 When performing the request you may pass the match field and value as query params:
 
@@ -58,6 +148,45 @@ or by title:
 GET: /api/restify/posts?title="Some title"
 ```
 
+### Match string
+
+Definition: 
+
+```php
+class PostRepository extends Repository
+{
+    public static array $match = [
+        'title' => 'string',
+    ];
+}
+```
+
+Request: 
+
+```http request
+GET: /api/restify/posts?title="Title"
+```
+
+### Match bool
+
+Definition: 
+
+```php
+class PostRepository extends Repository
+{
+    public static array $match = [
+        'title' => 'string',
+    ];
+}
+```
+
+Request: 
+
+```http request
+GET: /api/restify/posts?title="Title"
+```
+
+
 ### Match datetime
 
 The `datetime` filter add behind the scene an `whereDate` query.
@@ -65,8 +194,8 @@ The `datetime` filter add behind the scene an `whereDate` query.
 ```php
 class PostRepository extends Repository
 {
-    public static $match = [
-        'published_at' => RestifySearchable::MATCH_DATETIME,
+    public static array $match = [
+        'published_at' => 'datetime',
     ];
 }
 ```
@@ -76,6 +205,34 @@ Request:
 ```http request
 GET: /api/restify/posts?published_at=2020-12-01
 ```
+
+### Match between
+
+The `between` match works similarly as the `whereBetween` Eloquent method: 
+
+```php
+class PostRepository extends Repository
+{
+    public static array $match = [
+        'id' => 'between',
+        'published_at' => 'between',
+    ];
+}
+```
+
+Request:
+
+```http request
+GET: /api/restify/posts?published_at=2021-09-16,2021-11-16
+```
+
+So it will return all posts published between the first and the second dates. It works with `integer` as well: 
+
+```http request
+GET: /api/restify/posts?id=1,20
+```
+
+Match all available `ids` between `1` and `20`.
 
 ### Match null
 

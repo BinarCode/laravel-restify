@@ -55,6 +55,7 @@ class GlobalSearch
                     'title' => $instance->title(),
                     'subTitle' => $instance->subtitle(),
                     'repositoryId' => $model->getKey(),
+                    'link' => $repository::to($model->getKey()),
                 ];
             }
         }

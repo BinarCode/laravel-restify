@@ -5,6 +5,12 @@ category: API
 position: 7
 ---
 
+## Main query
+
+## Index query
+
+## Show query
+
 ## Repository prefix
 
 The default prefix of all Restify routes (except `login` and `register`) lives under the `restify->base` config:
