@@ -552,7 +552,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
          * @var AbstractPaginator $paginator
          */
         $paginator = RepositorySearchService::make()->search($request, $this)
-            ->paginate($request->query('perPage') ?? static::$defaultPerPage);
+            ->paginate($request->pagination()->perPage ?? static::$defaultPerPage, page: $request->pagination()->page);
 
         $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
             return static::resolveWith($value);
