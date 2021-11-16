@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -174,7 +175,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         UserRepository::$search = [
-            'name' => SearchableFilter::make(),
+            'name' => CustomSearchableFilter::make(),
         ];
 
         $this->getJson('users?search=John')->assertJsonCount(4, 'data');
@@ -262,5 +263,13 @@ class RepositorySearchServiceTest extends IntegrationTest
 
         UserRepository::$match = ['verified' => VerifiedMatcher::make()];
         $this->getJson('users?verified=false')->assertJsonCount(2, 'data');
+    }
+}
+
+class CustomSearchableFilter extends SearchableFilter
+{
+    public function filter(RestifyRequest $request, $query, $value)
+    {
+        return $query->orWhere('name', 'like', "%$value%");
     }
 }
