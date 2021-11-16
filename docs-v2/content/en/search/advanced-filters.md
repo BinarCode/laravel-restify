@@ -96,7 +96,6 @@ class ReadyPostsFilter extends AdvancedFilter
 
 };
 ```
-
 ### Advanced filter value
 
 The third argument of the `filter` method is the raw value send by the frontend. Sometimes it might be an array, so you have to get the value using array access: 
@@ -115,6 +114,37 @@ To avoid this, there is an `input` method defined into the parent class, so you 
 ```
 
 This method gets a default value as a second parameter in case the frontend didn't define it.
+
+
+### Advanced filter rules
+
+The `rules` method return an associative array with laravel rules for the payload the frontend should send in the `value` property for this specific filter. The payload is validated right before it gets to the filter method:
+
+```php
+public function rules(Request $request): array
+{
+    return [
+        'created_at' => ['required'],
+    ];
+}
+```
+
+So the frontend should send the `created_at` value:
+
+```javascript
+{
+    'key': 'ready-posts-filter',
+    'value': { created_at: '2021-01-01' }
+}
+```
+
+And you can get this value into the `filter` method using the [advanced filter value](#advanced-filter-value):
+
+```php
+ $value = $this->input('created_at', now());
+```
+
+
 
 ## Variations
 

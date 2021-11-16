@@ -10,7 +10,7 @@ class CreatedAfterDateFilter extends TimestampFilter
 {
     public function filter(RestifyRequest $request, $query, $value)
     {
-        $query->whereDate('created_at', '>', $this->input('created_at'));
+        $query->whereDate('created_at', '>', $value);
     }
 
     public function rules(Request $request): array
