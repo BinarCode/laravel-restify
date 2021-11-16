@@ -183,7 +183,7 @@ JavaScript implementation:
 ```javascript
 const filters = btoa(JSON.stringify([
     {
-        'class': 'App\\Restify\\Filters\\CreatedAfterDateFilter',
+        'key': 'created-after-date-filter',
         'value': moment()->timestamp
     }
 ]))
@@ -239,7 +239,7 @@ JavaScript implementation:
 ```javascript
 const filters = btoa(JSON.stringify([
     {
-        'key': 'App\\Restify\\Filters\\SelectCategoryFilter',
+        'key': 'select-category-filter',
         'value': 'article'
     }
 ]))
@@ -311,7 +311,7 @@ const filters = btoa(JSON.stringify([
         }
     }, 
     {
-        'key': 'App\\Restify\\Filters\\SelectCategoryFilter',
+        'key': 'select-category-filter',
         'value': 'article'
     },
 ]))
@@ -331,7 +331,7 @@ The response will look like this:
 {
   "data": [
     {
-      "class": "Binaryk\\LaravelRestify\\Tests\\Fixtures\\Post\\ActiveBooleanFilter",
+      "key": "active-boolean-filter",
       "type": "boolean",
       "options": [
         {
@@ -341,7 +341,7 @@ The response will look like this:
       ]
     },
     {
-      "class": "Binaryk\\LaravelRestify\\Tests\\Fixtures\\Post\\SelectCategoryFilter",
+      "key": "select-category-filter",
       "type": "select",
       "options": [
         {
@@ -355,7 +355,7 @@ The response will look like this:
       ]
     },
     {
-      "class": "Binaryk\\LaravelRestify\\Tests\\Fixtures\\Post\\CreatedAfterDateFilter",
+      "key": "created-after-date-filter",
       "type": "timestamp",
       "options": []
     }
