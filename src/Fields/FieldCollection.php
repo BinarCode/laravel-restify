@@ -157,7 +157,8 @@ class FieldCollection extends Collection
     public function inRequest(RestifyRequest $request, $row = null): self
     {
         return $this
-            ->filter(fn (Field $field) =>
+            ->filter(
+                fn (Field $field) =>
                 $request->hasAny($field->attribute, $row.'.'.$field->attribute)
                 || $request->hasFile($field->attribute)
             )
