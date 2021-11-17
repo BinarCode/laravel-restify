@@ -5,7 +5,11 @@ category: Search & Filters
 position: 12
 ---
 
-Restify has [base filters](/search/basic-filters) for usual `search` or `matching`. But what if you need some custom filtering. 
+Restify has [base filters](/search/basic-filters) for usual `search` or `matching`. 
+
+<alert type="success"> 
+Advanced filters will help you to build your own filters from scratch.
+</alert>
 
 ## Definition
 
@@ -41,7 +45,7 @@ Then add the filter to the repository `filters` method:
 public function filters(RestifyRequest $request): array
 {
     return [
-        ReadyPostsFilter::make(),
+        ReadyPostsFilter::new(),
     ];
 }
 ```
@@ -55,7 +59,7 @@ You can authorize certain filters to be active for specific users:
 public function filters(RestifyRequest $request): array
 {
     return [
-        ReadyPostsFilter::make()->canSee(
+        ReadyPostsFilter::new()->canSee(
             fn($request) => $request->user()->isAdmin()
         ),
     ];
