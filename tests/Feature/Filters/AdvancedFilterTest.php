@@ -36,7 +36,7 @@ class AdvancedFilterTest extends IntegrationTest
 
         $this->getJson('posts/filters?only=matches,searchables,sortables')
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.1.repository.key', 'users')
                     ->where('data.1.repository.label', 'Users')
                     ->where('data.1.repository.display_key', 'id')
@@ -69,7 +69,7 @@ class AdvancedFilterTest extends IntegrationTest
 
         $this->getJson('posts?filters='.$filters)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.attributes.title', $expectedTitle)
                     ->etc()
             )
@@ -187,7 +187,7 @@ class AdvancedFilterTest extends IntegrationTest
         $this->getJson('posts?filters='.$filters)
             ->assertOk()
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.attributes.title', 'Valid post')
                     ->count('data', 1)
                     ->etc()
