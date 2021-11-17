@@ -346,6 +346,12 @@ public function fields(RestifyRequest $request)
 }
 ```
 
+<alert type="info">
+
+You can use `field('avatar')->file()` instead of `File::make('avatar')` as well.
+
+</alert>
+
 ### How Files Are Stored
 
 When a file is uploaded using this field, Restify will use
@@ -397,6 +403,12 @@ Image::make('avatar')
 The image above will store the file, with name `avatar.jpg` in the `avatar` column, the file original name
 into `avatar_original` column and file size in bytes under `avatar_size` column (only if these columns are fillable on
 your model).
+
+<alert type="info">
+
+You can use `field('avatar')->image()` instead of `Image::make('avatar')` as well.
+
+</alert>
 
 ### Pruning & Deletion
 

@@ -5,11 +5,63 @@ category: API
 position: 7
 ---
 
-## Main query
+## Query Builder
 
-## Index query
+To perform any request to the database, Restify has to create a query builder instance. The query builder is passed through few static methods from the repository, so you can override them and intercept the builder to add your custom statements.
 
-## Show query
+### Main query
+
+The `main` query is applied for `show`, `index` and `global search` requests. You can override it in the repository:
+
+```php
+// PostRepository
+
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+
+public static function mainQuery(RestifyRequest $request, Builder | Relation $query)
+{
+    //
+}
+```
+
+
+### Index query
+
+
+The `index` query is applied for `index` and `global search` requests. You can override it in the repository:
+
+```php
+// PostRepository
+
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+
+public static function indexQuery(RestifyRequest $request, Builder | Relation $query)
+{
+    //
+}
+```
+
+### Show query
+
+
+The `show` query is applied for the `show` request. You can override it in the repository:
+
+```php
+// PostRepository
+
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+
+public static function showQuery(RestifyRequest $request, Builder | Relation $query)
+{
+    //
+}
+```
 
 ## Repository prefix
 

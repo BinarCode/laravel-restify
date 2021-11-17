@@ -5,7 +5,7 @@ category: Search & Filters
 position: 12
 ---
 
-Restify has built in filters for usual search or matching. But what if you need some custom filtering. 
+Restify has [base filters](/search/basic-filters) for usual `search` or `matching`. But what if you need some custom filtering. 
 
 ## Definition
 

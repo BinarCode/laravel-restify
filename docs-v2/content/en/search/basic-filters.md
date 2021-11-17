@@ -368,6 +368,21 @@ As soon as you define the `matches` method into the repository, the `$match` arr
 
 </alert>
 
+### Partial match
+
+The match filters 1:1 match, however, when you're looking for a substring into a text, you might need to partially match it.
+
+This could be done using the `Binaryk\LaravelRestify\Filters\MatchFilter` class:
+
+```php
+public static function matches(): array
+{
+    return [
+        MatchFilter::make()->setType('text')->partial()
+    ];
+}
+```
+
 ### Get available matches
 
 You can use the following request to get all repository matches:

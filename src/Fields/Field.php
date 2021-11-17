@@ -724,4 +724,9 @@ class Field extends OrganicField implements JsonSerializable
     {
         return File::make($this->attribute);
     }
+
+    public function image(): Image
+    {
+        return Image::make($this->attribute);
+    }
 }

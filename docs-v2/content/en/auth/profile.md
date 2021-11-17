@@ -5,7 +5,9 @@ category: Auth
 position: 1
 ---
 
-To ensure you can get your profile, you should add the `Authenticate` middleware to your restify, this can be easily done by using the `auth:sanctum` into your `restify.middleware`:
+## Sanctum middleware
+
+To ensure you can get your profile, you should add the `Authenticate` middleware to the restify config:
 
 ```php
 // config/restify.php
@@ -13,14 +15,12 @@ To ensure you can get your profile, you should add the `Authenticate` middleware
 'middleware' => [
     'api',
     'auth:sanctum',
-    Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent::class,
-    Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify::class,
+    \Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent::class,
+    \Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify::class,
 ]
 ```
 
-Laravel Restify expose the user profile via `GET: /api/restify/profile` endpoint.
-
-## Get profile using repository
+## Get profile
 
 When retrieving the user profile, by default it is serialized using the `UserRepository`.
 
@@ -50,17 +50,14 @@ This is what we have for a basic profile:
 You can add more `fields` in your `UserRepository` if you want to display.
 
 ```php
-public function fields(RestifyRequest $request)
+public function fields(RestifyRequest $request): array
 {
     return [
-        Field::make('name')->rules('required'),
+        field('name')->rules('required'),
 
-        Field::make('email')->rules('required')
-            ->storingRules('unique:users')->messages([
-                'required' => 'This field is required.',
-            ]),
+        field('email')->rules('required')->storingRules('unique:users'),
 
-        Field::make('age')
+        field('age')
     ];
 }
 ```
@@ -71,7 +68,7 @@ if you want to return user roles:
 ```php
 //UserRepository
 
-public static $related = [
+public static array $related = [
     'roles',
 ];
 ```
@@ -82,7 +79,7 @@ return an array:
 ```php
 //User.php
 
-public function roles()
+public function roles(): array
 {
     // In a real project, here you will get this information from the database.
     return [
@@ -95,7 +92,7 @@ public function roles()
 Let's get the profile now, using the `roles` relationship:
 
 ```http request
-GET: /api/restify/profile?related=roles
+GET: /api/restify/profile?include=roles
 ```
 
 The result will look like this:
@@ -125,7 +122,7 @@ The result will look like this:
 
 ### Without repository
 
-In some cases, you may choose to not use the repository for the profile serialization. In such cases you should add the
+In some cases, you might choose to not use the repository for the profile serialization. In such cases you should add the
 trait `Binaryk\LaravelRestify\Repositories\UserProfile` into your `UserRepository`:
 
 ```php
@@ -148,7 +145,7 @@ In this case, the profile will return the model directly:
 ### Relations
 <alert type="warning"> 
 
-Note that when you're not using the repository, the `?related` will do not work anymore.
+Note that when you're not using the repository, the `?include` will do not work anymore.
 
 </alert>
 
@@ -196,9 +193,9 @@ class UserRepository extends Repository
     public function fields(RestifyRequest $request)
     {
         return [
-            Field::make('name')->rules('required'),
+            field('name')->rules('required'),
 
-            Field::make('email')->rules('required')
+            field('email')->rules('required')
                 ->storingRules('unique:users')->messages([
                     'required' => 'This field is required.',
                 ]),
@@ -220,9 +217,9 @@ profile. Let's get as an example the following repository fields:
 public function fields(RestifyRequest $request)
 {
     return [
-        Field::make('name')->rules('required'),
+        field('name')->rules('required'),
 
-        Field::make('email')->storingRules('required', 'unique:users')->messages([
+        field('email')->storingRules('required', 'unique:users')->messages([
                 'required' => 'This field is required.',
             ]),
     ];
@@ -336,9 +333,9 @@ use Binaryk\LaravelRestify\Fields\Image;
 public function fields(RestifyRequest $request)
 {
     return [
-        Field::make('name')->rules('required'),
+        field('name')->rules('required'),
 
-        Image::make('avatar')->storeAs('avatar.jpg')
+        field('avatar')->image()->storeAs('avatar.jpg')
     ];
 }
 ```
