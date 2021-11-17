@@ -78,10 +78,10 @@ class FieldCollection extends Collection
             })->values();
     }
 
-    public function withActions(RestifyRequest $request, $repository): self
+    public function withActions(RestifyRequest $request, $repository, $row = null): self
     {
         return $this
-            ->inRequest($request)
+            ->inRequest($request, $row)
             ->filter(fn (Field $field) => $field->isActionable())
             ->values();
     }
@@ -154,10 +154,14 @@ class FieldCollection extends Collection
         return null;
     }
 
-    public function inRequest(RestifyRequest $request): self
+    public function inRequest(RestifyRequest $request, $row = null): self
     {
         return $this
-            ->filter(fn (Field $field) => $request->has($field->attribute) || $request->hasFile($field->attribute))
+            ->filter(
+                fn (Field $field) =>
+                $request->hasAny($field->attribute, $row.'.'.$field->attribute)
+                || $request->hasFile($field->attribute)
+            )
             ->values();
     }
 }
