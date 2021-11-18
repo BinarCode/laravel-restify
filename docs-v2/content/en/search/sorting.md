@@ -6,6 +6,8 @@ category: Search & Filters
 position: 13
 ---
 
+ ## Definition
+
 During index requests, usually we have to sort by specific attributes. This requires the `$sort` configuration:
 
 ```php
@@ -16,30 +18,88 @@ class PostRepository extends Repository
 
 Performing request requires the sort query param:
 
-### Descending sorting
+## Descending sorting
 
 Sorting DESC requires a minus (`-`) sign before the attribute name:
 
- ```http request
+ ```http_request
 GET: /api/restify/posts?sort=-id
 ```
 
 Sorting ASC:
 
- ```http request
+ ```http_request
 GET: /api/restify/posts?sort=id
 ```
 
 or with plus sign before the field:
 
- ```http request
+ ```http_request
 GET: /api/restify/posts?sort=+id
 ```
 
-### Sort using BelongsTo
+## Sort using relation
 
-Sometimes you may need to sort by a `belongsTo` relationship. This become a breeze with Restify. Firstly you have to
-instruct your sort to use a relationship:
+Sometimes you may need to sort by a `belongsTo` or `hasOne` relationship. 
+
+This become a breeze with Restify. Firstly you have to instruct your sort to use a relationship:
+
+### HasOne sorting
+
+Using a `related` relationship, it becomes very easy to define a sortable by has one related.
+
+You simply add the `->sortable()` method to the relationship:
+
+```php
+// UserRepository.php
+
+public function related(): array
+{
+    return [
+        'post' => HasOne::make('post', PostRepository::class)->sortable('title'),
+    ];
+}
+```
+
+<alert>
+
+The `sortable` method accepts the column (or fully qualified column name) of the related model.
+
+</alert>
+
+
+The API request will always have to use the full path to the `attributes`:
+
+```bash
+GET: /api/restify/posts?sort=post.attributes.title
+```
+
+The structure of the `sort` query param value consist always from 3 parts:
+
+- `post` - the name of the relation defined in the `related` method
+- `attributes` - a generic json:api term
+- `title` - the column name from the database of the related model
+
+### BelongsTo sorting
+
+The belongsTo sorting works in a similar way.
+
+You simply add the `->sortable()` method to the relationship:
+
+```php
+// PostRepository.php
+
+public function related(): array
+{
+    return [
+        'user' => BelongsTo::make('user', UserRepository::class)->sortable('name'),
+    ];
+}
+```
+
+### Using custom sortable filter
+
+You can override the `sorts` method, and return an instance of `SortableFilter` that might be instructed to use a relationship:
 
 ```php
 // PostRepository
@@ -51,7 +111,7 @@ public static function sorts(): array
     return [
         'users.name' => SortableFilter::make()
             ->setColumn('users.name')
-            ->usingBelongsTo(
+            ->usingRelation(
                 BelongsTo::make('user', 'user', UserRepository::class),
         )
     ];
@@ -74,7 +134,7 @@ As you may notice we have typed twice the `users.name` (on the array key, and as
 
 </alert>
 
-### Sort using closure
+## Sort using closure
 
 If you have a quick sort method, you can use a closure to sort your data:
 
@@ -92,7 +152,7 @@ public static function sorts(): array
 }
 ```
 
-### Get available sorts
+## Get available sorts
 
 You can use the following request to get sortable attributes for a repository:
 

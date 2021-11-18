@@ -68,7 +68,6 @@ class SortCollection extends Collection
                 return $relatedSortableFilter->syncDirection($filter->direction());
             }
 
-
             if (! array_key_exists($filter->column, $repository::sorts())) {
                 return $filter;
             }

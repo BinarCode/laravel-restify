@@ -2,11 +2,15 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Fields\Concerns\CanSort;
+use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
-class HasOne extends EagerField
+class HasOne extends EagerField implements Sortable
 {
+    use CanSort;
+
     public function __construct($relation, $parentRepository)
     {
         if (! is_a(app($parentRepository), Repository::class)) {

@@ -251,7 +251,7 @@ public static function sorts(): array
     return [
         'users.name' => SortableFilter::make()
             ->setColumn('users.name')
-            ->usingBelongsTo(
+            ->usingRelation(
                 BelongsTo::make('user', 'user', UserRepository::class),
         )
     ];

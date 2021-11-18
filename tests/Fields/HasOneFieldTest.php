@@ -2,9 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fields;
 
+use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Fields\HasOne;
+use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
@@ -12,8 +14,10 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class HasOneFieldTest extends IntegrationTest
 {
@@ -81,6 +85,46 @@ class HasOneFieldTest extends IntegrationTest
             'password' => 'strong!',
             'post' => 'wew',
         ])->assertCreated();
+    }
+
+    public function test_can_sort_using_has_one_to_field(): void
+    {
+        UserRepository::$related = [
+            'post' => HasOne::make('post', PostRepository::class)->sortable('posts.title'),
+        ];
+
+        Post::factory()->create([
+            'title' => 'Zez',
+            'user_id' => User::factory()->create([
+                'name' => 'Last',
+            ]),
+        ]);
+
+        Post::factory()->create([
+            'title' => 'Abc',
+            'user_id' => User::factory()->create([
+                'name' => 'First',
+            ]),
+        ]);
+
+        $this
+            ->getJson(UserRepository::uriKey().'?related=post&sort=-post.attributes.title&perPage=5')
+            ->assertJson(function (AssertableJson $assertableJson) {
+                $assertableJson
+                    ->where('data.1.attributes.name', 'First')
+                    ->where('data.0.attributes.name', 'Last')
+                    ->etc();
+            });
+
+        $this
+            ->getJson(UserRepository::uriKey().'?related=post&sort=post.attributes.title&perPage=5')
+            ->assertJson(function (AssertableJson $assertableJson) {
+                $assertableJson
+                    ->where('data.0.attributes.name', 'First')
+                    ->where('data.1.attributes.name', 'Last')
+                    ->etc();
+            });
+
     }
 }
 

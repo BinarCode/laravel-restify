@@ -19,7 +19,7 @@ class BelongsToFilterTest extends IntegrationTest
         ];
 
         PostRepository::$sort = [
-            'users.attributes.name' => SortableFilter::make()->setColumn('users.name')->usingBelongsTo(
+            'users.attributes.name' => SortableFilter::make()->setColumn('users.name')->usingRelation(
                 BelongsTo::make('user',  UserRepository::class),
             ),
         ];

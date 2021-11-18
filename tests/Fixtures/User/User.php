@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -89,7 +90,7 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
         return $this->hasMany(Post::class);
     }
 
-    public function post()
+    public function post(): HasOne
     {
         return $this->hasOne(Post::class);
     }
