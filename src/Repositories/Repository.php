@@ -1094,4 +1094,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ))->values(),
         ];
     }
+
+    public static function usesScout(): bool
+    {
+        return in_array("\\Laravel\\Scout\\Searchable", class_uses_recursive(static::newModel()));
+    }
 }

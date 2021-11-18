@@ -27,4 +27,9 @@ trait PerformsQueries
     {
         return $query;
     }
+
+    public static function scoutQuery(RestifyRequest $request, Builder | Relation $query)
+    {
+        return $query;
+    }
 }

@@ -23,18 +23,25 @@ class RepositorySearchService
     {
         $this->repository = $repository;
 
+        $scoutQuery = null;
+
+        if ($repository::usesScout()) {
+            $scoutQuery = $this->initializeQueryUsingScout($request, $repository);
+        }
+
         $query = $this->prepareMatchFields(
             $request,
             $this->prepareSearchFields(
                 $request,
-                $this->prepareRelations($request, $repository::query($request)),
+                $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
             ),
         );
 
         $query = $this->applyFilters($request, $repository, $query);
 
-        return tap(
-            tap($this->prepareOrders($request, $query), $this->applyMainQuery($request, $repository)),
+        $ordersBuilder = $this->prepareOrders($request, $query);
+
+        return tap(tap($ordersBuilder, $this->applyMainQuery($request, $repository)),
             $this->applyIndexQuery($request, $repository)
         );
     }
@@ -147,7 +154,14 @@ class RepositorySearchService
         return fn ($query) => $query;
     }
 
-    protected function applyMainQuery(RestifyRequest $request, Repository $repository)
+    public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
+    {
+        return tap($repository::newModel()->search($request->input('search')), function($scoutBuilder) use ($repository, $request) {
+            return $repository::scoutQuery($request, $scoutBuilder);
+        });
+    }
+
+    protected function applyMainQuery(RestifyRequest $request, Repository $repository): callable
     {
         return fn ($query) => $repository::mainQuery($request, $query->with($repository::withs()));
     }
