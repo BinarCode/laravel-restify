@@ -86,7 +86,7 @@ class PerformActionControllerTest extends IntegrationTest
         $this->assertEquals(1, ActivateAction::$applied[0]->id);
     }
 
-    public function test_could_perform_standalone_action()
+    public function test_could_perform_standalone_action(): void
     {
         $this->postJson('users/action?action='.(new DisableProfileAction())->uriKey())
             ->assertSuccessful()

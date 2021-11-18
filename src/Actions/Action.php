@@ -107,9 +107,20 @@ abstract class Action implements JsonSerializable
     /**
      * Get the payload available on the action.
      *
+     * @deprecated Use rules instead
      * @return array
      */
     public function payload(): array
+    {
+        return $this->rules();
+    }
+
+    /**
+     * Validation rules to be applied before the action is called.
+     *
+     * @return array
+     */
+    public function rules(): array
     {
         return [];
     }
