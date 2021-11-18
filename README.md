@@ -57,7 +57,7 @@ GET: http://laravel.test/api/restify/dreams/1
 PUT: http://laravel.test/api/restify/dreams/1
 ```
 
-```http request
+```bash
 DELETE: http://laravel.test/api/restify/dreams/1
 ```
 
