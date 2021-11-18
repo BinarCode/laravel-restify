@@ -52,6 +52,12 @@ You can limit the number of results that are returned in the global search by ov
 public static int $globalSearchResults = 5;
 ```
 
+<alert type="success"> 
+
+Restify has built in support for laravel scout, so it will initialize the query using scout if you have setup it for the model.
+
+</alert>
+
 ### Customize global search
 
 The default global search response looks like this:
