@@ -7,11 +7,11 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use Symfony\Component\Finder\SplFileInfo;
 
-class PublishAuthControllerCommand extends Command
+class PublishAuthCommand extends Command
 {
-    protected $name = 'restify:publish-controllers';
+    protected $name = 'restify:auth';
 
-    protected $description = 'Publish controllers from package to local project';
+    protected $description = 'Publish auth controllers & blades.';
 
     public function handle()
     {

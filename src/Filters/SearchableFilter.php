@@ -9,6 +9,8 @@ class SearchableFilter extends Filter
 {
     const TYPE = 'searchable';
 
+    public array $computedColumns = [];
+
     private BelongsTo $belongsToField;
 
     public function filter(RestifyRequest $request, $query, $value)
@@ -39,12 +41,19 @@ class SearchableFilter extends Filter
             return $query;
         }
 
-        $query->orWhere($this->column, $likeOperator, '%'.$value.'%');
+        return $query->orWhere($this->column, $likeOperator, '%'.$value.'%');
     }
 
     public function usingBelongsTo(BelongsTo $field): self
     {
         $this->belongsToField = $field;
+
+        return $this;
+    }
+
+    public function computed(...$columns): self
+    {
+        $this->computedColumns = collect($columns)->flatten()->all();
 
         return $this;
     }

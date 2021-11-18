@@ -3,11 +3,11 @@
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
-use Illuminate\Http\JsonResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 class RepositoryShowController extends RepositoryController
 {
-    public function __invoke(RepositoryShowRequest $request): JsonResponse
+    public function __invoke(RepositoryShowRequest $request): Response
     {
         $repository = $request->repository();
 

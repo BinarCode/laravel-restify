@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use function PHPUnit\Framework\assertInstanceOf;
 
 class RepositoryAttachControllerTest extends IntegrationTest
 {
@@ -21,20 +22,22 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers()->first();
         $company = Company::factory()->create();
 
+        $this->assertCount(0, Company::first()->users);
+
         $this->postJson('companies/'.$company->id.'/attach/users', [
             'users' => $user->id,
             'is_admin' => true,
         ])
             ->assertCreated()->assertJsonFragment([
-            'company_id' => '1',
-            'user_id' => $user->id,
-            'is_admin' => true,
-        ]);
+                'company_id' => '1',
+                'user_id' => $user->id,
+                'is_admin' => true,
+            ]);
 
         $this->assertCount(1, Company::first()->users);
     }
 
-    public function test_cant_attach_repositories_not_authorized_to_attach()
+    public function test_cant_attach_repositories_not_authorized_to_attach(): void
     {
         Gate::policy(Company::class, CompanyPolicy::class);
 
@@ -62,7 +65,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         unset($_SERVER['allow_attach_users']);
     }
 
-    public function test_attach_pivot_field_validation()
+    public function test_attach_pivot_field_validation(): void
     {
         $user = $this->mockUsers()->first();
         $company = Company::factory()->create();
@@ -70,7 +73,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users',  UserRepository::class)->withPivot(
+                'users' => BelongsToMany::make('users', UserRepository::class)->withPivot(
                     Field::make('is_admin')->rules('required')->messages([
                         'required' => $message = 'You should fill the is_admin information.',
                     ])
@@ -82,10 +85,11 @@ class RepositoryAttachControllerTest extends IntegrationTest
         ])->assertStatus(422)->assertJsonFragment([
             'is_admin' => [
                 $message,
-            ], ]);
+            ],
+        ]);
     }
 
-    public function test_pivot_field_present_when_show()
+    public function test_pivot_field_present_when_show(): void
     {
         $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id, [
@@ -108,7 +112,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         );
     }
 
-    public function test_pivot_field_present_when_index()
+    public function test_pivot_field_present_when_index(): void
     {
         tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id, [
@@ -130,7 +134,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         );
     }
 
-    public function test_attach_multiple_users_to_a_company()
+    public function test_attach_multiple_users_to_a_company(): void
     {
         $user = $this->mockUsers(2)->first();
         $company = Company::factory()->create();
@@ -149,7 +153,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $this->assertCount(2, $company->fresh()->users);
     }
 
-    public function test_many_to_many_field_can_intercept_attach_authorization()
+    public function test_many_to_many_field_can_intercept_attach_authorization(): void
     {
         $user = $this->mockUsers()->first();
         $company = Company::factory()->create();
@@ -157,7 +161,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users',  UserRepository::class)
+                'users' => BelongsToMany::make('users', UserRepository::class)
                     ->canAttach(function ($request, $pivot) {
                         $this->assertInstanceOf(Request::class, $request);
                         $this->assertInstanceOf(Pivot::class, $pivot);
@@ -172,7 +176,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         ])->assertForbidden();
     }
 
-    public function test_many_to_many_field_can_intercept_attach_method()
+    public function test_many_to_many_field_can_intercept_attach_method(): void
     {
         $user = $this->mockUsers()->first();
         $company = Company::factory()->create();
@@ -180,20 +184,14 @@ class RepositoryAttachControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users',  UserRepository::class)
+                'users' => BelongsToMany::make('users', UserRepository::class)
                     ->canAttach(function ($request, $pivot) {
                         $this->assertInstanceOf(Request::class, $request);
                         $this->assertInstanceOf(Pivot::class, $pivot);
 
                         return true;
                     })
-                    ->attachCallback(function ($request, $repository, $model) {
-                        $this->assertInstanceOf(Request::class, $request);
-                        $this->assertInstanceOf(CompanyRepository::class, $repository);
-                        $this->assertInstanceOf(Company::class, $model);
-
-                        $model->users()->attach($request->input('users'));
-                    }),
+                    ->attachCallback(new AttachInvokable),
             ]);
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
@@ -204,14 +202,14 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $this->assertCount(1, Company::first()->users);
     }
 
-    public function test_repository_can_intercept_attach()
+    public function test_repository_can_intercept_attach(): void
     {
         $user = $this->mockUsers()->first();
         $company = Company::factory()->create();
 
         CompanyRepository::partialMock()->shouldReceive('related')
             ->andReturn([
-                'users' => BelongsToMany::make('users',  UserRepository::class),
+                'users' => BelongsToMany::make('users', UserRepository::class),
             ]);
 
         CompanyRepository::$attachers = [
@@ -229,5 +227,17 @@ class RepositoryAttachControllerTest extends IntegrationTest
         ])->assertOk();
 
         $this->assertCount(1, $company->fresh()->users);
+    }
+}
+
+class AttachInvokable
+{
+    public function __invoke($request, $repository, $model): void
+    {
+        assertInstanceOf(Request::class, $request);
+        assertInstanceOf(CompanyRepository::class, $repository);
+        assertInstanceOf(Company::class, $model);
+
+        $model->users()->attach($request->input('users'));
     }
 }

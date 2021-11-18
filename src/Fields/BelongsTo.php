@@ -3,14 +3,17 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
+use Binaryk\LaravelRestify\Fields\Concerns\CanSort;
+use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
-class BelongsTo extends EagerField
+class BelongsTo extends EagerField implements Sortable
 {
     use Attachable;
+    use CanSort;
 
     public ?array $searchablesAttributes = null;
 
@@ -25,6 +28,7 @@ class BelongsTo extends EagerField
         $this->relation = $relation;
         $this->repositoryClass = $parentRepository;
     }
+
 
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {

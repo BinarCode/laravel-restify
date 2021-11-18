@@ -14,7 +14,10 @@ use Illuminate\Support\Str;
  */
 trait InteractsWithModel
 {
-    public function model(): Model
+    /**
+     * @return Model
+     */
+    public function model()
     {
         return $this->resource ?? static::newModel();
     }

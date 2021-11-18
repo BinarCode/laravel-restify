@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 
@@ -17,7 +18,7 @@ trait ValidatingTrait
     abstract public function collectFields(RestifyRequest $request);
 
     /**
-     * @return mixed
+     * @return Model
      */
     abstract public static function newModel();
 

@@ -1,16 +1,21 @@
 ---
-title: Fields
-menuTitle: Fields
-category: API
-position: 2
+title: Fields 
+menuTitle: Fields 
+category: API 
+position: 8
 ---
 
-Field is basically the model attribute representation. Each Field generally extends
-the `Binaryk\LaravelRestify\Fields\Field` class from the Laravel Restify. This class ships a variety of mutators,
-interceptors, validators chaining methods you can use for defining your attribute.
+Field is basically the model attribute representation.
+
+## Declaration
+
+Each Field generally extends the `Binaryk\LaravelRestify\Fields\Field` class from the Laravel Restify. This class ships
+a fluent API for a variety of mutators, interceptors and validators.
 
 To add a field to a repository, we can simply add it to the repository's fields method. Typically, fields may be created
-using their static `new` or `make` method. These methods accept the underlying database column as argument:
+using their static `new` or `make` method. 
+
+The first argument is always the attribute name, and usually matches the database `column`.
 
 ```php
 
@@ -21,90 +26,118 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 public function fields(RestifyRequest $request)
 {
     return [
-        Field::new('email')->rules('required')->storingRules('unique:users')->messages([
+        Field::make('name')->required(),
+        
+        Field::make('email')->required()->storingRules('unique:users')->messages([
             'required' => 'This field is required.',
         ]),
-        Field::new('password')->storeCallback(function (RestifyRequest $request, $model, $attribute) {
-            $model->password = Hash::make($request->input($attribute));
-        })->rules('required')->storingRules('confirmed'),
     ];
 }
 ```
 
-#### `field` helper
+### `field` helper
 
 <alert>
 
-Instead of using the `Field` class, you can use the `field` helper.
-For example: 
+Instead of using the `Field` class, you can use the `field` helper. For example:
+
 ```php 
-Field::new('email') => field('email')
+field('email')
 ```
 
 </alert>
 
-## Authorization
+### Computed field
 
-Sometimes you may want to hide certain fields from a group of users. You may easily accomplish this by chaining
-the `canSee` method onto your field definition. The `canSee` method accepts a `Closure` which should return `true`
-or `false`. The `Closure` will receive the incoming `HTTP` request:
-
-
-<code-group>
-
-  <code-block label="View" active>
-
-   ```php
-      public function fields(RestifyRequest $request)
-      {
-          return [
-              field('role_id')->canSee(fn($request) => $request->user()->isAdmin());
-      }
-  ```
-
-  </code-block>
-
-  <code-block label="Store">
-
-  ```php
-      public function fields(RestifyRequest $request)
-      {
-          return [
-              field('role_id')->canStore(fn($request) => $request->user()->isAdmin())
-      }
-  ```
-
-  </code-block>
-
-  <code-block label="Update">
-
-  ```php
-      public function fields(RestifyRequest $request)
-      {
-          return [
-              field('role_id')->canUpdate(fn($request) => $request->user()->isAdmin())
-      }
-  ```
-
-  </code-block>
-
-</code-group>
-
-
-# Validation
-
-There is a gold rule saying - catch the exception as soon as possible on its request way. Validations are the first
-bridge of your request information, it would be a good start to validate your input. So you don't have to worry about
-the payload anymore.
-
-## Attaching rules
-
-Validation rules could be adding by chaining the `rules` method to
-attach [validation rules](https://laravel.com/docs/validation#available-validation-rules)
-to the field:
+The second optional argument is a callback or invokable, and it represents the displayable value of the field either in `show` or `index` requests. 
 
 ```php
-Field::new('email')->rules('required'),
+field('name', fn() => 'John Doe')
+```
+
+The field above will always return the `name` value as `John Doe`. The field is still writeable, so you can update or create an entity using it.
+
+### Readonly field
+
+If you don't want a field to be writeable you can mark it readonly: 
+
+```php
+field('title')->readonly()
+```
+
+The `readonly` accepts a request as well as you can use: 
+
+```php
+field('title')->readonly(fn($request) => $request->user()->isGuest())
+```
+
+### Virtual field
+
+A virtual field, is a field that's [computed](#computed-field) and [readonly](#readonly-field).
+
+```php
+field('name', fn() => "$this->first_name $this->last_name")->readonly()
+```
+
+
+## Authorization
+
+The `Field` class provides few methods to authorize certain actions. Each authorization method accept a `Closure` that
+should return `true`
+or `false`. The `Closure` will receive the incoming `\Illuminate\Http\Request` request.
+
+### Can see
+
+Sometimes you may want to hide certain fields from a group of users. You may easily accomplish this by chaining
+the `canSee`:
+
+ ```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('role_id')->canSee(fn($request) => $request->user()->isAdmin())
+    ];
+}
+```
+
+### Can store
+
+The can store closure:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('role_id')->canStore(fn($request) => $request->user()->isAdmin())
+}
+```
+
+### Can update
+
+The can update closure:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('role_id')->canUpdate(fn($request) => $request->user()->isAdmin())
+}
+```
+
+## Validation
+
+There is a gold rule saying - catch the exception as soon as possible on its request way.
+
+Validations are the first bridge of your request information, it would be a good start to validate your input. So you
+don't have to worry about the payload anymore.
+
+### Attaching rules
+
+Validation rules could be adding by chaining the `rules` method to
+attach [validation rules](https://laravel.com/docs/validation#available-validation-rules) to the field:
+
+```php
+field('email')->rules('required', 'email'),
 ```
 
 Of course, if you are leveraging Laravel's support
@@ -126,10 +159,19 @@ Field::new('email')->rules('required', function($attribute, $value, $fail) {
 }),
 ```
 
-## Storing Rules
+<alert type="success">
 
-If you would like to define rules that only apply when a resource is being storing, you may use the `storingRules`
-method:
+Considering the `required` rule is very often used, Restify provides a `required()` validation
+helper: `field('email')->required()`
+
+</alert>
+
+These rules will be applied for all update and store requests.
+
+### Storing Rules
+
+If you would like to define more specific rules that only apply when a resource is being storing, you may use
+the `storingRules` method:
 
 ```php
 Field::new('email')
@@ -137,7 +179,16 @@ Field::new('email')
     ->storingRules('unique:users,email');
 ```
 
-## Update Rules
+Considering Restify concatenates rules provided by the `rules()` method, the entire validation for a POST request on
+this repository will look like this:
+
+```php
+$request->validate([
+    'email' => ['required', 'email', 'max:255', 'unique:users,email']
+]);
+```
+
+### Updating Rules
 
 Likewise, if you would like to define rules that only apply when a resource is being updated, you may use
 the `updatingRules` method.
@@ -146,29 +197,31 @@ the `updatingRules` method.
 Field::new('email')->updatingRules('required', 'email');
 ```
 
-# Interceptors
+## Interceptors
 
-However, the default storing process is automatically, sometimes you may want to take the control over it. That's a
-breeze with Restify, since Field expose few useful chained helpers for that.
+Sometimes you may want to take the control over certain Field actions. 
 
-## Fill callback
+That's why the Field class expose a lot of chained methods you can call to configure it.
 
-There are two steps before the value from the request is attached to model attribute. Firstly it is get from the
-application request, and go to the `fillCallback` and secondly, the value is transforming by the `storeCallback`
-or `updateCallback`:
+### Fill callback
+
+During the `store` and `update` requests, there are two steps before the value from the Request is attached to the model attribute. 
+
+Firstly it is retrieved from the application request, and passed to the `fillCallback` and secondly, the value is passed through the `storeCallback` or `updateCallback`:
 
 You may intercept each of those with closures.
 
+Let's start with the `fillCallback`. It accepts a `callable` (an invokable class) or a Closure. The callable will receive the Request, the repository model (an empty one for storing and filled one for updating) and the attribute name:
+
 ```php
-Field::new('title')
-    ->fillCallback(function (RestifyRequest $request, $model, $attribute) {
-        $model->{$attribute} = strtoupper($request->get('title_from_the_request'));
+field('title')->fillCallback(function (RestifyRequest $request, Post $model, $attribute) {
+    $model->title = strtoupper($request->input('title_from_the_request'));
 })
 ```
 
 This way you can get anything from the `$request` and perform any transformations with the value before storing.
 
-## Store callback
+### Store callback
 
 Another handy interceptor is the `storeCallback`, this is the step immediately before attaching the value from the
 request to the model attribute:
@@ -177,19 +230,31 @@ This interceptor may be useful for modifying the value passed through the `$requ
 
 ```php
 Field::new('password')->storeCallback(function (RestifyRequest $request) {
-    return Hash::new($request->input('password'));
+    return Hash::make($request->input('password'));
 });
 ```
 
-## Update callback
+### Update callback
+
+Likewise, works the `updateCallback`. Let's use an invokable this time:
 
 ```php
-Field::new('password')->updateCallback(function (RestifyRequest $request) { 
-    return Hash::new($request->input('password'));
-});
+Field::new('password')->updateCallback(new PasswordUpdateInvokable);
 ```
 
-## Index Callback
+Where the `PasswordUpdateInvokable` could be an invokable method: 
+
+```php
+class PasswordUpdateInvokable 
+{
+    public function __invoke(Request $request)
+    {
+        return Hash::make($request->input('password'));
+    }
+}
+```
+
+### Index Callback
 
 Sometimes you may want to transform some attribute from the database right before it is returned to the frontend.
 
@@ -197,21 +262,71 @@ Transform the value for the index request:
 
 ```php
 Field::new('password')->indexCallback(function ($value) {
-    return Hash::new($value);
+    return Hash::make($value);
 });
 ```
 
-## Show callback
+### Show callback
 
 Transform the value for the show request:
 
 ```php
 Field::new('password')->showRequest(function ($value) {
-    return Hash::new($value);
+    return Hash::make($value);
 });
 ```
 
-## Value Callback
+### Fields actionable
+
+Sometime storing attributes might require the stored model before saving it. 
+
+For example, say the Post model uses the [media library](https://spatie.be/docs/laravel-medialibrary/v9/introduction) and has the `media` relationship, that's a list of Media files:
+
+```php
+// PostRepository
+
+public function fields(RestifyRequest $request): array
+{
+    return [
+        field('title'),
+        
+        field('files', 
+            fn () => $this->model()->media()->pluck('file_name')
+        )
+        ->action(new AttachPostFileRestifyAction),
+    ];
+}
+```
+
+So we have a virtual `files` field (it's not an actual database column) that uses a [computed field](#computed-field) to display the list of Post's files names. The `->action()` call, accept an instance of a class that extends `Binaryk\LaravelRestify\Actions\Action`: 
+
+```php
+class AttachPostFileRestifyAction extends Action
+{
+    public function handle(RestifyRequest $request, Post $post): void
+    {
+        $post->addMediaFromRequest('file');
+    }
+}
+```
+
+The action gets the `$request` and the current `$post` model. Say the frontend has to create a post with a file:
+
+```javascript
+const data = new FormData;
+data.append('file', blobFile);
+data.append('title', 'Post title');
+
+axios.post(`api/restify/posts`, data);
+```
+
+In a single request we're able to create the post and attach file using media library, otherwise it would involve 2 separate requests (post creation and file attaching).
+
+Actionable fields handle [store](/repositories#store-request), put, [bulk store](/repositories#store-bulk-flow) and bulk update requests.
+
+## Fallbacks
+
+### Default Stored Value
 
 Usually, there is necessary to store a field as `Auth::id()`. This field will be automatically populated by Restify if
 you specify the `value` value for it:
@@ -228,7 +343,24 @@ Field::new('user_id')->hidden()->value(function(RestifyRequest $request, $model,
 });
 ```
 
-## Field label
+### Default Displayed Value
+
+If you have a field which has `null` value into the database, however, you want to return a fallback default value for
+the frontend:
+
+```php
+Field::new('description')->default('N/A');
+```
+
+So now, for fields which don't have a description into the database, it will return `N/A`.
+
+<alert type="info">
+The default value is ONLY used for the READ, not for WRITE requests.
+</alert>
+
+## Customizations
+
+### Field label
 
 Field label, so you can replace a field attribute spelling when it is returned to the frontend:
 
@@ -238,7 +370,7 @@ Field::new('created_at')->label('sent_at')
 
 Of course if you want to populate this value from a frontend request, you can use the label as a payload key.
 
-## Hidden field
+### Hidden field
 
 Field can be setup as hidden:
 
@@ -252,18 +384,9 @@ However, you can populate the field value when the entity is stored, by using `v
 Field::new('token')->value(Str::random(32))->hidden();
 ```
 
-## Default value
+## Hooks
 
-If you have a field which has `null` value into the database, however, you want to return a fallback default value for
-the frontend:
-
-```php
-Field::new('description')->default('N/A');
-```
-
-So now, for fields which don't have a description into the database, it will return `N/A`.
-
-## After store
+### After store
 
 You can handle the after field store callback:
 
@@ -273,7 +396,7 @@ Field::new('title')->afterStore(function($value) {
 })
 ```
 
-## After update
+### After update
 
 You can handle the after field is updated callback:
 
@@ -282,8 +405,6 @@ Field::new('title')->afterUpdate(function($value, $oldValue) {
     dump($value, $oldValue);
 })
 ```
-
-# Variations
 
 ## File fields
 
@@ -308,6 +429,12 @@ public function fields(RestifyRequest $request)
     ];
 }
 ```
+
+<alert type="info">
+
+You can use `field('avatar')->file()` instead of `File::make('avatar')` as well.
+
+</alert>
 
 ### How Files Are Stored
 
@@ -360,6 +487,12 @@ Image::make('avatar')
 The image above will store the file, with name `avatar.jpg` in the `avatar` column, the file original name
 into `avatar_original` column and file size in bytes under `avatar_size` column (only if these columns are fillable on
 your model).
+
+<alert type="info">
+
+You can use `field('avatar')->image()` instead of `Image::make('avatar')` as well.
+
+</alert>
 
 ### Pruning & Deletion
 
@@ -464,354 +597,3 @@ class AvatarStore implements Storable
 <alert>
 You can use the <code>php artisan restify:store AvatarStore</code> command to generate a store file.
 </alert>
-
-## BelongsTo
-
-Let's assume each `Post` `belongsTo` a `User`. If we want to return the post owner we can do this from the fields:
-
-```php
-    // PostRepository
-    public function fields(RestifyRequest $request)
-    {
-        return [
-            Field::new('title'),
-
-            Field::new('description'),
-
-            BelongsTo::make('owner', 'user', UserRepository::class),
-        ];
-    }
-```
-
-Now look, the response of the `api/restify/posts/1` will have this format:
-
-```json
-{
-  "data": {
-    "id": "91c2bdd0-bf6f-4717-b1c4-a6131843ba56",
-    "type": "posts",
-    "attributes": {
-      "title": "Culpa qui accusamus eaque sint.",
-      "description": "Id illo et quidem nobis reiciendis molestiae."
-    },
-    "relationships": {
-      "owner": {
-        "id": "3",
-        "type": "users",
-        "attributes": {
-          "name": "Laborum vel esse dolorem amet consequatur.",
-          "email": "jacobi.ferne@gmail.com"
-        },
-        "meta": {
-          "authorizedToShow": true,
-          "authorizedToStore": true,
-          "authorizedToUpdate": false,
-          "authorizedToDelete": false
-        }
-      }
-    },
-    "meta": {
-      "authorizedToShow": true,
-      "authorizedToStore": true,
-      "authorizedToUpdate": true,
-      "authorizedToDelete": true
-    }
-  }
-}
-```
-
-How cool is that :-)
-
-Sure, having a `BelongsTo` relationship, you have to attach posts to the user when creating the `Post`. This is when the
-Restify become very handy. You only have to put the same field attribute, with the `key` (usually `id`) of the related
-resource in the payload:
-
-<code-group>
-
-  <code-block label="Request" active>
-
-  ```http request
-  POST: http://restify-app.test/api/restify/posts
-  ```
-  
-  </code-block>
-
-  <code-block label="Response">
-
-  ```json
-  {
-    "description": "Ready to be published!",
-    "owner": 1
-  }
-  ```
-
-  </code-block>
-
-</code-group>
-
-Payload:
-
-
-
-### Authorization
-
-You should add the policy method against attaching in the policy. Let's think of it like this, we want to attach a user
-to a newly created post, this means we need to add the policy into the `PostPolicy` called `attachUser`:
-
-```php
-public function attachUser(User $authenticatedUser, Post $createdPost, User $userToBeAttached) 
-{
-    return $authenticatedUser->is($userToBeAttached);
-}
-```
-
-The `attach` policy could be used to the `BelongsTo` field as well, it should return `true` or `false`:
-
-```php
-BelongsTo::make('owner', 'user', UserRepository::class)->canAttach(function(
-            RestifyRequest $request, 
-            PostRepository $repository, 
-            User  $userToBeAttached 
-) {
-            return Auth::user()->is($userToBeAttached);
-})
-```
-
-As for the [other fields](#authorization), you can easily show / hide the field depending on the user role for example:
-
-```php
-BelongsTo::new('owner', 'user', UserRepository::class)->canSee(
-           fn($request) => $request->user()->isAdmin()
-);
-```
-
-## HasOne
-
-The `HasOne` field corresponds to a `hasOne` Eloquent relationship. For example, let's assume a `User`
-model `hasOne` `Phone` model. We may add the relationship to our `UserRepository` like so:
-
-```php
-// UserRepository
- public function fields(RestifyRequest $request)
-{
-    return [
-        Field::new('name'),
-
-        HasOne::new('phone', 'phone', PhoneRepository::class),
-    ];
-}
-```
-
-The json response structure will be the same as previously:
-
-```json
-{
-  "data": {
-    "id": "1",
-    "type": "users",
-    "attributes": {
-      "name": "Et maxime voluptatem cumque accusamus sit."
-    },
-    "relationships": {
-      "phone": {
-        "id": "2",
-        "type": "phones",
-        "attributes": {
-          "phone": "+40 766 444 22"
-        },
-        "meta": {
-          "authorizedToShow": false,
-          "authorizedToStore": true,
-          "authorizedToUpdate": false,
-          "authorizedToDelete": false
-        }
-      },
-      ...
-```
-
-For the `HasOne` field, there is no way to attach it from Restify, it works the other way around, so you should create
-the `Phone` and attach it to the `User` by using the `BelongsTo` field.
-
-## HasMany
-
-The `HasMany` field corresponds to a `hasMany` Eloquent relationship. For example, let's assume a User
-model `hasMany` `Post` models. We may add the relationship to our `UserRepository` like so:
-
-```php
-// UserRepository@fields()
-use Binaryk\LaravelRestify\Fields\HasMany;
-
-HasMany::make('posts', 'posts', PostRepository::class),
-```
-
-So you will get back the `posts` relationship:
-
-```json
-{
-  "data": {
-    "id": "1",
-    "type": "users",
-    "attributes": {
-      "name": "Et maxime voluptatem cumque accusamus sit."
-    },
-    "relationships": {
-      "posts": [
-        {
-          "id": "91c2bdd0-ccf6-49ec-9ae9-8bae1d39c100",
-          "type": "posts",
-          "attributes": {
-            "title": "Rem suscipit tempora ullam accusantium in rerum.",
-            "description": "Vero nostrum quasi velit molestiae animi neque."
-          },
-          "meta": {
-            "authorizedToShow": true,
-            "authorizedToStore": true,
-            "authorizedToUpdate": true,
-            "authorizedToDelete": true
-          }
-        }
-      ]
-    },
-    "meta": {
-      "authorizedToShow": true,
-      "authorizedToStore": true,
-      "authorizedToUpdate": false,
-      "authorizedToDelete": false
-    }
-  }
-}
-```
-
-### Paginate
-
-`HasMany` field returns 15 entries in the `relationships`. This could be customizable from the repository (the
-repository being in this case the class of the related resource) class using:
-
-```php
-public static $defaultRelatablePerPage = 100;
-```
-
-You can also use the query `?relatablePerPage=100`.
-
-### Relatable per page 
-<alert type="warning"> 
-  
-When using `relatablePerPage` query param, it will paginate all relatable entities with that size.
-
-</alert>
-
-## BelongsToMany
-
-The `BelongsToMany` field corresponds to a `belongsToMany` Eloquent relationship. For example, let's assume a `User`
-model `belongsToMany` Role models. We may add the relationship to our UserRepository like so:
-
-```php
-BelongsToMany::make('roles', 'roles', RoleRepository::class),
-```
-
-### Pivot fields
-
-If your `belongsToMany` relationship interacts with additional "pivot" attributes that are stored on the intermediate
-table of the `many-to-many` relationship, you may also attach those to your `BelongsToMany` Restify Field. Once these
-fields are attached to the relationship field, and the relationship has been defined on both sides, they will be
-displayed on the request.
-
-For example, let's assume our `User` model `belongsToMany` Role models. On our `user_role` intermediate table, let's
-imagine we have a `policy` field that contains some simple text about the relationship. We can attach this pivot field
-to the `BelongsToMany` field using the fields method:
-
-```php
-BelongsToMany::make('roles', 'roles', RoleRepository::class)->withPivot(
-    Field::make('policy')
-),
-```
-
-And you also have to define this in the `User` model:
-
-```php
-public function roles()
-{
-   return $this->belongsToMany(Role::class, 'user_role')->withPivot('policy');
-}
-```
-
-### Attach related
-
-Once you have defined the `BelongsToMany` field, you can now attach Role to a User like so:
-
-```http request
-POST: api/restify/users/1/attach/roles
-```
-
-Payload:
-
-```json
-{
-  "roles": [
-    1,
-    2
-  ],
-  "policy": "Some message."
-}
-```
-
-### Detach related
-
-We can also detach a role from the user, it could be done like so:
-
-```http request
-POST: api/restify/users/1/detach/roles
-```
-
-Using the payload:
-
-```json
-{
-  "roles": [
-    1
-  ]
-}
-```
-
-### Custom attach method
-
-If you want to implement attach method for such relationship on your own, Laravel Restify provides you an easy way to do
-so. Restify will look for a method which starts with `attach` and concatenated with `Str::studly($relation)` where
-the `$relation` is the name of the last segment in the attach URL, `roles` in our case. Let's say you have to attach
-roles to user:
-
-```php
-// app/Restify/UserRepository.php
-
-public function attachRoles(RestifyRequest $request, UserRepository $repository, User $user)
-{
-    $roles = collect($request->get('roles'))->map(fn($role) => Role::findByName($role, 'web'));
-
-    if ($id = $request->get('company_id')) {
-        $user->assignCompanyRoles(
-            Company::find($id),
-            $roles
-        );
-    }
-
-    return $this->response()->created();
-}
-```
-
-The first argument is the request, then we get the repository we use for attach, and the parent model (`User` in this
-case). Then you are free to have a custom implementation.
-
-If you don't like this kind of `magic` stuff, you can override the `getAttachers` method, and return an associative
-array, where the key is the name of the related resource, and the value should be a closure which handle the action:
-
-```php
-// UserRepository.php
-
-public static function getAttachers(): array
-{
-    'roles' => function(RestifyRequest $request, UserRepository $repository, User $user) {
-        // custom implementation
-    },
-}
-```
-

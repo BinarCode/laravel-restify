@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
+use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
@@ -20,12 +21,12 @@ class SortableFilter extends Filter
 
     private Closure $resolver;
 
-    const TYPE = 'sortable';
+    public const TYPE = 'sortable';
 
     /**
-     * @param RestifyRequest $request
-     * @param Builder $query
-     * @param string $value
+     * @param  RestifyRequest  $request
+     * @param  Builder  $query
+     * @param  string  $value
      * @return Builder
      */
     public function filter(RestifyRequest $request, Builder | Relation $query, $value)
@@ -41,13 +42,13 @@ class SortableFilter extends Filter
 
             // This approach could be rewritten using join.
             $query->orderBy(
-                $this->belongsToField->getRelatedModel($this->repository)::select($this->getColumn())
-                ->whereColumn(
-                    $this->belongsToField->getQualifiedKey($this->repository),
-                    $this->belongsToField->getRelatedKey($this->repository)
-                )
-                ->orderBy($this->getColumn(), $value)
-                ->take(1),
+                $this->belongsToField->getRelatedModel($this->repository)::select($this->qualifyColumn())
+                    ->whereColumn(
+                        $this->belongsToField->getQualifiedKey($this->repository),
+                        $this->belongsToField->getRelatedKey($this->repository)
+                    )
+                    ->orderBy($this->qualifyColumn(), $value)
+                    ->take(1),
                 $value
             );
 
@@ -64,9 +65,22 @@ class SortableFilter extends Filter
         return $this;
     }
 
-    public function getEager(): ?EagerField
+    public function getSortableEager(): ?Sortable
     {
-        if (! isset($this->belongsToField)) {
+        if (! $this->hasEager()) {
+            return null;
+        }
+
+        if (! $this->getEager() instanceof Sortable) {
+            return null;
+        }
+
+        return $this->getEager();
+    }
+
+    public function getEager(): EagerField | Sortable | null
+    {
+        if (! $this->hasEager()) {
             return null;
         }
 
@@ -95,6 +109,23 @@ class SortableFilter extends Filter
     public function direction(): string
     {
         return $this->direction;
+    }
+
+    public function resolveFrontendColumn(): self
+    {
+        if (Str::contains($this->column, '.')) {
+            /**
+             * We assume that the name is singular, as we related sort by
+             * has one or belongs to relationships.
+             *
+             * user.attributes.name => users.attributes.name
+             */
+            $tablePlural = Str::plural(Str::before($this->column, '.'));
+
+            $this->column = $tablePlural . '.' . Str::after($this->column, '.');
+        }
+
+        return $this;
     }
 
     public function syncDirection(string $direction = null): self

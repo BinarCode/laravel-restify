@@ -37,10 +37,10 @@ class AdvancedFilterTest extends IntegrationTest
         $this->getJson('posts/filters?only=matches,searchables,sortables')
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.1.repository.key', 'users')
-                ->where('data.1.repository.label', 'Users')
-                ->where('data.1.repository.display_key', 'id')
-                ->etc()
+                    ->where('data.1.repository.key', 'users')
+                    ->where('data.1.repository.label', 'Users')
+                    ->where('data.1.repository.display_key', 'id')
+                    ->etc()
             )
             ->assertJsonFragment([
                 'key' => 'users',
@@ -70,8 +70,8 @@ class AdvancedFilterTest extends IntegrationTest
         $this->getJson('posts?filters='.$filters)
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.0.attributes.title', $expectedTitle)
-                ->etc()
+                    ->where('data.0.attributes.title', $expectedTitle)
+                    ->etc()
             )
             ->assertJsonCount(1, 'data');
     }
@@ -180,9 +180,7 @@ class AdvancedFilterTest extends IntegrationTest
             ],
             [
                 'key' => CreatedAfterDateFilter::uriKey(),
-                'value' => [
-                    'created_at' => now()->addWeek()->toDateString(),
-                ],
+                'value' => now()->addWeek()->toDateString(),
             ],
         ]));
 
@@ -190,9 +188,9 @@ class AdvancedFilterTest extends IntegrationTest
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.0.attributes.title', 'Valid post')
-                ->count('data', 1)
-                ->etc()
+                    ->where('data.0.attributes.title', 'Valid post')
+                    ->count('data', 1)
+                    ->etc()
             );
     }
 }

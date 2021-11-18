@@ -8,5 +8,5 @@ class AdvancedFilterPayloadDto extends DataTransferObject
 {
     public string $key;
 
-    public array $value;
+    public mixed $value;
 }

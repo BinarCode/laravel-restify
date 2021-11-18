@@ -30,6 +30,13 @@ if (! function_exists('data')) {
 if (! function_exists('ok')) {
     function ok()
     {
-        return response('', 204);
+        return response('', 204)->json([], 204);
+    }
+}
+
+if (! function_exists('id')) {
+    function id(): Field
+    {
+        return field('id')->readonly();
     }
 }

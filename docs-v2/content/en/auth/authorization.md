@@ -2,7 +2,7 @@
 title: Authorization
 menuTitle: Authorization
 category: Auth
-position: 2
+position: 1
 ---
 
 After setting up the Restify configuration, and the authentication. The next logical step is to protect your API Repositories against unauthorized users. 
@@ -21,11 +21,9 @@ Restify injects the `RestifyApplicationServiceProvider`, it is injected in your 
 
 - Then `RestifyApplicationServiceProvider` is booted, this will define the gate, will load repositories and make the auth routes macro. You have the full control over this provider.
 
-- The `RestifyInjector` will be handled. It will register `RestifyCustomRoutesProvider` which load all the custom routes (defined in the `routes` static method in repositories) and will check if this request is a restify one - in which case it will register a new service provider `RestifyServiceProvider`
+- The `RestifyInjector` will be handled. It will register all routes.
 
-- If the `RestifyServiceProvider` was registered, it will load all the other CRUD routes Restify provides and will try to bind a custom exception handler defined in the `restify.php` configuration.
-
-- If the request route is a Restify route, Laravel will handle other middlewares defined in the `restify.php` -> `middleware`.
+- On each request, if the request route is a Restify route, Laravel will handle other middlewares defined in the `restify.php` -> `middleware`.
 
 
 ## View Restify
@@ -34,15 +32,11 @@ Since we are now aware of how Restify boot itself, let's see how to guard it.
 
 Let's take a closer look to the package global gate:
 
+<alert> This gate is only active in a non-local environment. </alert>
+
 ```php
 // app/Providers/RestifyServiceProvider.php
-/**
- * Register the Restify gate.
- *
- * This gate determines who can access Restify in non-local environments.
- *
- * @return void
- */
+
 protected function gate()
 {
     Gate::define('viewRestify', function ($user) {
@@ -56,28 +50,26 @@ protected function gate()
 This is the first gate to access the Restify repositories. In a real life project, you may allow every authenticated user to have access to repositories, and just after that, using policies you can restrict specific actions. To do so: 
 
 ```php
-    Gate::define('viewRestify', function ($user) {
-        return true;
-    });
+  Gate::define('viewRestify', function ($user) {
+      return true;
+  });
 ```
 
 If you want to allow unauthenticated users to be authorized to see restify routes, you can nullify the `$user`:
 
 ```php
-    Gate::define('viewRestify', function ($user = null) {
-        return true;
-    });
+  Gate::define('viewRestify', function ($user = null) {
+      return true;
+  });
 ```
 
 From this point, it's highly recommended having a policy for each model have exposed via Restify. Otherwise, users may access unauthorized resources, which is not what we want.
 
 ## Policies
 
-If you are not aware of what a policy is, I highly recommend reading the [documentation](https://laravel.com/docs/authorization#creating-policies) before you move forward.
+If you are not aware of what a policy is, we highly recommend reading the [documentation](https://laravel.com/docs/authorization#creating-policies) before you move forward.
 
-Restify uses CRUD classic naming to authorize specific actions.
-
-However, you can use the Laravel command for generating a policy, it's recommended to generate a policy using Restify command, because it will scaffold Restify CRUD authorization methods for you:
+You can use the Laravel command for generating a policy, it's recommended to generate a policy using Restify command, because it will scaffold Restify CRUD authorization methods for you:
 
 ```shell script
 php artisan restify:policy UserPolicy
@@ -86,7 +78,7 @@ php artisan restify:policy UserPolicy
 It will automatically detect the `User` model (the word before `Policy`). However, you can specify the model: 
 
 ```shell script
-php artisan restify:policy SuperUserPolicy --model=User
+php artisan restify:policy PostPolicy --model=User
 ```
 
 <alert>

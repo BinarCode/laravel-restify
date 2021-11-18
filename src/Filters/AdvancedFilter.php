@@ -24,10 +24,12 @@ abstract class AdvancedFilter extends Filter
 
     public function validatePayload(RestifyRequest $request, AdvancedFilterPayloadDto $dto): self
     {
-        Validator::make(
-            $dto->value,
-            $this->rules($request)
-        )->validate();
+        if (is_array($dto->value)) {
+            Validator::make(
+                $dto->value,
+                $this->rules($request)
+            )->validate();
+        }
 
         return $this;
     }

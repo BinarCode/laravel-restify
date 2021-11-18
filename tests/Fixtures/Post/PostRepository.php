@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -36,13 +35,13 @@ class PostRepository extends Repository
     public function fields(RestifyRequest $request): array
     {
         return [
-            Field::new('user_id'),
+            field('user_id'),
 
-            Field::new('title')->storingRules('required')->messages([
+            field('title')->storingRules('required')->messages([
                 'required' => 'This field is required',
             ]),
 
-            Field::new('description')->storingRules('required')->messages([
+            field('description')->storingRules('required')->messages([
                 'required' => 'Description field is required',
             ]),
         ];
@@ -51,9 +50,9 @@ class PostRepository extends Repository
     public function fieldsForStore(RestifyRequest $request): array
     {
         return [
-            Field::new('user_id'),
+            field('user_id'),
 
-            Field::new('title')->storingRules('required')->messages([
+            field('title')->storingRules('required')->messages([
                 'required' => 'This field is required',
             ]),
         ];
@@ -62,22 +61,22 @@ class PostRepository extends Repository
     public function fieldsForStoreBulk(RestifyRequest $request)
     {
         return [
-            Field::new('title')->storeBulkRules('required')->messages([
+            field('title')->storeBulkRules('required')->messages([
                 'required' => 'This field is required',
             ]),
 
-            Field::new('user_id'),
+            field('user_id'),
         ];
     }
 
     public function fieldsForUpdateBulk(RestifyRequest $request)
     {
         return [
-            Field::new('title')->updateBulkRules('required')->messages([
+            field('title')->updateBulkRules('required')->messages([
                 'required' => 'This field is required',
             ]),
 
-            Field::new('user_id'),
+            field('user_id'),
         ];
     }
 

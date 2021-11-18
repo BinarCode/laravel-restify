@@ -35,6 +35,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
 
+/**
+ * @property static $type Repository type
+ */
 abstract class Repository implements RestifySearchable, JsonSerializable
 {
     use InteractWithSearch;
@@ -53,7 +56,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
-     * This may be a single model or a illuminate collection, or even a paginator instance.
      *
      * @var Model
      */
@@ -549,8 +551,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
          * Apply all of the query: search, match, sort, related.
          * @var AbstractPaginator $paginator
          */
-        $paginator = RepositorySearchService::instance()->search($request, $this)
-            ->paginate($request->query('perPage') ?? static::$defaultPerPage);
+        $paginator = RepositorySearchService::make()->search($request, $this)
+            ->paginate($request->pagination()->perPage ?? static::$defaultPerPage, page: $request->pagination()->page);
 
         $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
             return static::resolveWith($value);
@@ -670,6 +672,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                         $this->resource,
                         $fields = $this->collectFields($request)
                             ->forStoreBulk($request, $this)
+                            ->withoutActions($request, $this)
                             ->authorizedUpdateBulk($request),
                         $row
                     );
@@ -677,6 +680,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     $this->resource->save();
 
                     $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
+
+                    $this
+                        ->collectFields($request)
+                        ->forStoreBulk($request, $this)
+                        ->withActions($request, $this, $row)
+                        ->authorizedUpdateBulk($request)
+                        ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
                     return $this->resource;
                 });
@@ -762,11 +772,19 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         $fields = $this->collectFields($request)
             ->forUpdateBulk($request, $this)
+            ->withoutActions($request, $this)
             ->authorizedUpdateBulk($request);
 
         static::fillBulkFields($request, $this->resource, $fields, $row);
 
         $this->resource->save();
+
+        $this
+            ->collectFields($request)
+            ->forUpdateBulk($request, $this)
+            ->withActions($request, $this, $row)
+            ->authorizedUpdateBulk($request)
+            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
         static::updatedBulk($this->resource, $request);
 
@@ -980,7 +998,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     protected function getType(RestifyRequest $request): ?string
     {
-        return $this->model()->getTable();
+        return isset(static::$type) && is_string(static::$type)
+            ? static::$type
+            : $this->model()->getTable();
     }
 
     protected function getId(RestifyRequest $request): ?string

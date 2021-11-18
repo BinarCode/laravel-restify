@@ -44,7 +44,9 @@ class SortCollection extends Collection
 
     public function inRepository(RestifyRequest $request, Repository $repository): self
     {
-        $collection = static::make($repository::sorts());
+        $collection = static::make($repository::sorts())->merge(
+            $repository::collectRelated()->mapIntoSortable()
+        );
 
         return $this->filter(fn (SortableFilter $filter) => $collection->contains('column', '=', $filter->column));
     }
@@ -56,12 +58,22 @@ class SortCollection extends Collection
 
     public function hydrateDefinition(Repository $repository): SortCollection
     {
-        return $this->map(function (SortableFilter $filter) use ($repository) {
+        $relatedSortables = $repository::collectRelated()->mapIntoSortable();
+
+        return $this->map(function (SortableFilter $filter) use ($repository, $relatedSortables) {
+            /** * @var SortableFilter $relatedSortableFilter */
+            if ($relatedSortableFilter = $relatedSortables->first(fn (
+                SortableFilter $relatedSortableFilter
+            ) => $relatedSortableFilter->column === $filter->column)) {
+                return $relatedSortableFilter->syncDirection($filter->direction());
+            }
+
+
             if (! array_key_exists($filter->column, $repository::sorts())) {
                 return $filter;
             }
 
-            $definition = Arr::get($repository::sorts(), $filter->getColumn());
+            $definition = Arr::get($repository::sorts(), $filter->column());
 
             if (is_callable($definition)) {
                 return $filter->usingClosure($definition);
@@ -83,7 +95,9 @@ class SortCollection extends Collection
 
     public function normalize(): self
     {
-        return $this->each(fn (SortableFilter $filter) => $filter->syncDirection());
+        return $this
+            ->each(fn (SortableFilter $filter) => $filter->syncDirection())
+            ->map(fn (SortableFilter $filter) => $filter->resolveFrontendColumn());
     }
 
     public function apply(RestifyRequest $request, Builder $builder): self

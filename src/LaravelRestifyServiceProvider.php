@@ -7,7 +7,7 @@ use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
 use Binaryk\LaravelRestify\Commands\FilterCommand;
 use Binaryk\LaravelRestify\Commands\PolicyCommand;
-use Binaryk\LaravelRestify\Commands\PublishAuthControllerCommand;
+use Binaryk\LaravelRestify\Commands\PublishAuthCommand;
 use Binaryk\LaravelRestify\Commands\Refresh;
 use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
@@ -33,7 +33,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
                 BaseRepositoryCommand::class,
                 Refresh::class,
                 StubCommand::class,
-                PublishAuthControllerCommand::class,
+                PublishAuthCommand::class,
             ]);
             $this->registerPublishing();
         }

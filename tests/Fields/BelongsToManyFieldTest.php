@@ -11,7 +11,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class BelongsToManyFieldTest extends IntegrationTest
 {
-    public function test_belongs_to_many_displays_on_relationships_show()
+    public function test_belongs_to_many_displays_on_relationships_show(): void
     {
         $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach(
@@ -19,7 +19,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(CompanyRepository::uriKey()."/{$company->id}?related=users")
+        $this->getJson(CompanyRepository::uriKey()."/{$company->id}?include=users")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -29,7 +29,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             ])->assertJsonCount(5, 'data.relationships.users');
     }
 
-    public function test_belongs_to_many_can_hide_relationships_from_show()
+    public function test_belongs_to_many_can_hide_relationships_from_show(): void
     {
         $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach(
@@ -70,8 +70,9 @@ class BelongsToManyFieldTest extends IntegrationTest
         ]);
     }
 
-    public function test_belongs_to_many_generates_nested_uri()
+    public function test_belongs_to_many_generates_nested_uri(): void
     {
+        $this->withoutExceptionHandling();
         $company = tap(Company::factory()->create(), function (Company $company) {
             $company->users()->attach(
                 User::factory()->create()
@@ -87,7 +88,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         );
     }
 
-    public function test_belongs_to_many_ignored_when_storing()
+    public function test_belongs_to_many_ignored_when_storing(): void
     {
         /** * @var User $user */
         $user = User::factory()->create();
