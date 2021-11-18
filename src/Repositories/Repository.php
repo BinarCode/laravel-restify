@@ -126,6 +126,11 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static int $globalSearchResults = 5;
 
     /**
+     * The number of results to display when searching the resource using Scout.
+     */
+    public static int $scoutSearchResults = 200;
+
+    /**
      * The list of middlewares for the current repository.
      *
      * @var array
@@ -1097,6 +1102,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public static function usesScout(): bool
     {
-        return in_array("\\Laravel\\Scout\\Searchable", class_uses_recursive(static::newModel()));
+        return in_array("Laravel\Scout\Searchable", class_uses_recursive(static::newModel()));
     }
 }

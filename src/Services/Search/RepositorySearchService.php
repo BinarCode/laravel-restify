@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Collection;
 
 class RepositorySearchService
 {
@@ -157,9 +158,16 @@ class RepositorySearchService
 
     public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
     {
-        return tap($repository::newModel()->search($request->input('search')), function ($scoutBuilder) use ($repository, $request) {
+        /**
+         * @var Collection $keys
+         */
+        $keys = tap($repository::newModel()->search($request->input('search')), function ($scoutBuilder) use ($repository, $request) {
             return $repository::scoutQuery($request, $scoutBuilder);
-        });
+        })->take($repository::$scoutSearchResults)->get()->map->getKey();
+
+        return $repository::newModel()->newQuery()->whereIn(
+            $repository::newModel()->getQualifiedKeyName(), $keys->all()
+        );
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository): callable

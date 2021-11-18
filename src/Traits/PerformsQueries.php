@@ -28,8 +28,8 @@ trait PerformsQueries
         return $query;
     }
 
-    public static function scoutQuery(RestifyRequest $request, Builder | Relation $query)
+    public static function scoutQuery(RestifyRequest $request, $scoutBuilder)
     {
-        return $query;
+        return $scoutBuilder;
     }
 }
