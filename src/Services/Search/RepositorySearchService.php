@@ -166,7 +166,8 @@ class RepositorySearchService
         })->take($repository::$scoutSearchResults)->get()->map->getKey();
 
         return $repository::newModel()->newQuery()->whereIn(
-            $repository::newModel()->getQualifiedKeyName(), $keys->all()
+            $repository::newModel()->getQualifiedKeyName(),
+            $keys->all()
         );
     }
 
