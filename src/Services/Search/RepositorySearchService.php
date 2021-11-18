@@ -41,7 +41,8 @@ class RepositorySearchService
 
         $ordersBuilder = $this->prepareOrders($request, $query);
 
-        return tap(tap($ordersBuilder, $this->applyMainQuery($request, $repository)),
+        return tap(
+            tap($ordersBuilder, $this->applyMainQuery($request, $repository)),
             $this->applyIndexQuery($request, $repository)
         );
     }
@@ -156,7 +157,7 @@ class RepositorySearchService
 
     public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
     {
-        return tap($repository::newModel()->search($request->input('search')), function($scoutBuilder) use ($repository, $request) {
+        return tap($repository::newModel()->search($request->input('search')), function ($scoutBuilder) use ($repository, $request) {
             return $repository::scoutQuery($request, $scoutBuilder);
         });
     }
