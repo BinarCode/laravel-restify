@@ -37,7 +37,7 @@ class SortableFilter extends Filter
         }
 
         if (isset($this->relation)) {
-            if (!$this->relation->authorize($request)) {
+            if (! $this->relation->authorize($request)) {
                 return $query;
             }
 
@@ -68,11 +68,11 @@ class SortableFilter extends Filter
 
     public function getSortableEager(): ?Sortable
     {
-        if (!$this->hasEager()) {
+        if (! $this->hasEager()) {
             return null;
         }
 
-        if (!$this->getEager() instanceof Sortable) {
+        if (! $this->getEager() instanceof Sortable) {
             return null;
         }
 
@@ -81,7 +81,7 @@ class SortableFilter extends Filter
 
     public function getEager(): EagerField|Sortable|null
     {
-        if (!$this->hasEager()) {
+        if (! $this->hasEager()) {
             return null;
         }
 
@@ -131,7 +131,7 @@ class SortableFilter extends Filter
 
     public function syncDirection(string $direction = null): self
     {
-        if (!is_null($direction) && in_array($direction, ['asc', 'desc'])) {
+        if (! is_null($direction) && in_array($direction, ['asc', 'desc'])) {
             $this->direction = $direction;
 
             return $this;
