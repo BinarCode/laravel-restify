@@ -35,7 +35,7 @@ Generate repository:
 php artisan restify:repository Dream --all
 ```
 
-Now you have the REST CRUD over users and this beautiful repository:
+Now you have the REST CRUD over dreams and this beautiful repository:
 
 <p align="center"><img src="/docs-v2/static/tile.png"></p>
 
@@ -58,7 +58,7 @@ PUT: http://laravel.test/api/restify/dreams/1
 ```
 
 ```http request
-DELETE: http://laravel.test/api/restify/users/1
+DELETE: http://laravel.test/api/restify/dreams/1
 ```
 
 ## Usage
