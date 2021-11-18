@@ -1,4 +1,4 @@
-<p align="center"><img src="/docs-v2/static/tile.png"></p>
+<p align="center"><img src="/docs-v2/static/logo.png"></p>
 
 <p align="center">
     <a href="https://github.com/BinarCode/laravel-restify/actions"><img src="https://github.com/BinarCode/laravel-restify/workflows/tests/badge.svg" alt="Build Status"></a>
@@ -32,12 +32,12 @@ php artisan restify:setup
 Generate repository:
 
 ```bash
-php artisan restify:repository UserRepository --all
+php artisan restify:repository Dream --all
 ```
 
 Now you have the REST CRUD over users and this beautiful repository:
 
-<p align="center"><img src="https://restify.binarcode.com/assets/userRepository.png"></p>
+<p align="center"><img src="/docs-v2/static/tile.png"></p>
 
 Now you can go into Postman and check it out: 
 
