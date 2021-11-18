@@ -1,4 +1,4 @@
-<p align="center"><img src="http://restify.binarcode.com/assets/img/logo.png"></p>
+<p align="center"><img src="/docs-v2/static/tile.png"></p>
 
 <p align="center">
     <a href="https://github.com/BinarCode/laravel-restify/actions"><img src="https://github.com/BinarCode/laravel-restify/workflows/tests/badge.svg" alt="Build Status"></a>
