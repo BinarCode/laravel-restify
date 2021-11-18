@@ -5,6 +5,8 @@ category: Getting Started
 
 ## Requirements
 
+
+
 Laravel Restify has a few requirements you should be aware of before installing:
 
 <list :items="[
