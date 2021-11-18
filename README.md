@@ -41,20 +41,20 @@ Now you have the REST CRUD over users and this beautiful repository:
 
 Now you can go into Postman and check it out: 
 
-```http request
-GET: http://laravel.test/api/restify/users
+```bash
+GET: http://laravel.test/api/restify/dreams
 ```
 
-```http request
-POST: http://laravel.test/api/restify/users
+```bash
+POST: http://laravel.test/api/restify/dreams
 ```
 
-```http request
-GET: http://laravel.test/api/restify/users/1
+```bash
+GET: http://laravel.test/api/restify/dreams/1
 ```
 
-```http request
-PUT: http://laravel.test/api/restify/users/1
+```bash
+PUT: http://laravel.test/api/restify/dreams/1
 ```
 
 ```http request
