@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Filters;
 use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Fields\EagerField;
+use Binaryk\LaravelRestify\Fields\HasOne;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -17,7 +18,7 @@ class SortableFilter extends Filter
 
     public string $direction = 'asc';
 
-    private BelongsTo $belongsToField;
+    private HasOne|BelongsTo $relation;
 
     private Closure $resolver;
 
@@ -29,23 +30,23 @@ class SortableFilter extends Filter
      * @param  string  $value
      * @return Builder
      */
-    public function filter(RestifyRequest $request, Builder | Relation $query, $value)
+    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
     {
         if (isset($this->resolver) && is_callable($this->resolver)) {
             return call_user_func($this->resolver, $request, $query, $value);
         }
 
-        if (isset($this->belongsToField)) {
-            if (! $this->belongsToField->authorize($request)) {
+        if (isset($this->relation)) {
+            if (! $this->relation->authorize($request)) {
                 return $query;
             }
 
             // This approach could be rewritten using join.
             $query->orderBy(
-                $this->belongsToField->getRelatedModel($this->repository)::select($this->qualifyColumn())
+                $this->relation->getRelatedModel($this->repository)::select($this->qualifyColumn())
                     ->whereColumn(
-                        $this->belongsToField->getQualifiedKey($this->repository),
-                        $this->belongsToField->getRelatedKey($this->repository)
+                        $this->relationForeignColumn(),
+                        $this->relationRelatedColumn(),
                     )
                     ->orderBy($this->qualifyColumn(), $value)
                     ->take(1),
@@ -58,9 +59,9 @@ class SortableFilter extends Filter
         $query->orderBy($this->column, $value);
     }
 
-    public function usingBelongsTo(BelongsTo $field): self
+    public function usingRelation(HasOne|BelongsTo $field): self
     {
-        $this->belongsToField = $field;
+        $this->relation = $field;
 
         return $this;
     }
@@ -78,18 +79,18 @@ class SortableFilter extends Filter
         return $this->getEager();
     }
 
-    public function getEager(): EagerField | Sortable | null
+    public function getEager(): EagerField|Sortable|null
     {
         if (! $this->hasEager()) {
             return null;
         }
 
-        return $this->belongsToField;
+        return $this->relation;
     }
 
     public function hasEager(): bool
     {
-        return isset($this->belongsToField) && $this->belongsToField instanceof EagerField;
+        return isset($this->relation) && $this->relation instanceof EagerField;
     }
 
     public function asc(): self
@@ -122,7 +123,7 @@ class SortableFilter extends Filter
              */
             $tablePlural = Str::plural(Str::before($this->column, '.'));
 
-            $this->column = $tablePlural . '.' . Str::after($this->column, '.');
+            $this->column = $tablePlural.'.'.Str::after($this->column, '.');
         }
 
         return $this;
@@ -160,5 +161,23 @@ class SortableFilter extends Filter
         $this->resolver = $closure;
 
         return $this;
+    }
+
+    private function relationForeignColumn(): string
+    {
+        if ($this->relation instanceof HasOne) {
+            return $this->relation->getRelation($this->repository)->getQualifiedForeignKeyName();
+        }
+
+        return $this->relation->getQualifiedKey($this->repository);
+    }
+
+    private function relationRelatedColumn(): string
+    {
+        if ($this->relation instanceof HasOne) {
+            return $this->relation->getRelation($this->repository)->getQualifiedParentKeyName();
+        }
+
+        return $this->relation->getRelatedKey($this->repository);
     }
 }

@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Fields\HasOne;
 use Binaryk\LaravelRestify\Fields\MorphToMany;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -59,8 +60,8 @@ class RelatedCollection extends Collection
             ->map(function (Sortable $field) {
                 $filter = SortableFilter::make();
 
-                if ($field instanceof BelongsTo) {
-                    return $filter->usingBelongsTo($field)->setColumn($field->qualifySortable());
+                if ($field instanceof BelongsTo || $field instanceof HasOne) {
+                    return $filter->usingRelation($field)->setColumn($field->qualifySortable());
                 }
 
                 return null;
