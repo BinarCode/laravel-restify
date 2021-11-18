@@ -13,7 +13,9 @@ Each Field generally extends the `Binaryk\LaravelRestify\Fields\Field` class fro
 a fluent API for a variety of mutators, interceptors and validators.
 
 To add a field to a repository, we can simply add it to the repository's fields method. Typically, fields may be created
-using their static `new` or `make` method. These methods accept the underlying database column as argument:
+using their static `new` or `make` method. 
+
+The first argument is always the attribute name, and usually matches the database `column`.
 
 ```php
 
@@ -44,6 +46,39 @@ field('email')
 ```
 
 </alert>
+
+### Computed field
+
+The second optional argument is a callback or invokable, and it represents the displayable value of the field either in `show` or `index` requests. 
+
+```php
+field('name', fn() => 'John Doe')
+```
+
+The field above will always return the `name` value as `John Doe`. The field is still writeable, so you can update or create an entity using it.
+
+### Readonly field
+
+If you don't want a field to be writeable you can mark it readonly: 
+
+```php
+field('title')->readonly()
+```
+
+The `readonly` accepts a request as well as you can use: 
+
+```php
+field('title')->readonly(fn($request) => $request->user()->isGuest())
+```
+
+### Virtual field
+
+A virtual field, is a field that's [computed](#computed-field) and [readonly](#readonly-field).
+
+```php
+field('name', fn() => "$this->first_name $this->last_name")->readonly()
+```
+
 
 ## Authorization
 
@@ -240,6 +275,55 @@ Field::new('password')->showRequest(function ($value) {
     return Hash::make($value);
 });
 ```
+
+### Fields actionable
+
+Sometime storing attributes might require the stored model before saving it. 
+
+For example, say the Post model uses the [media library](https://spatie.be/docs/laravel-medialibrary/v9/introduction) and has the `media` relationship, that's a list of Media files:
+
+```php
+// PostRepository
+
+public function fields(RestifyRequest $request): array
+{
+    return [
+        field('title'),
+        
+        field('files', 
+            fn () => $this->model()->media()->pluck('file_name')
+        )
+        ->action(new AttachPostFileRestifyAction),
+    ];
+}
+```
+
+So we have a virtual `files` field (it's not an actual database column) that uses a [computed field](#computed-field) to display the list of Post's files names. The `->action()` call, accept an instance of a class that extends `Binaryk\LaravelRestify\Actions\Action`: 
+
+```php
+class AttachPostFileRestifyAction extends Action
+{
+    public function handle(RestifyRequest $request, Post $post): void
+    {
+        $post->addMediaFromRequest('file');
+    }
+}
+```
+
+The action gets the `$request` and the current `$post` model. Say the frontend has to create a post with a file:
+
+```javascript
+const data = new FormData;
+data.append('file', blobFile);
+data.append('title', 'Post title');
+
+axios.post(`api/restify/posts`, data);
+```
+
+In a single request we're able to create the post and attach file using media library, otherwise it would involve 2 separate requests (post creation and file attaching).
+
+Actionable fields handle [store](/repositories#store-request), put, [bulk store](/repositories#store-bulk-flow) and bulk update requests.
+
 ## Fallbacks
 
 ### Default Stored Value
