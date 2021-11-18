@@ -148,10 +148,6 @@ class Field extends OrganicField implements JsonSerializable
         } else {
             $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($attribute));
         }
-
-        if (is_callable($resolveCallback)) {
-            $this->readonly();
-        }
     }
 
     public function indexCallback(callable|Closure $callback)

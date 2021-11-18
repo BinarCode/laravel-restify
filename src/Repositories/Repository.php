@@ -672,6 +672,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                         $this->resource,
                         $fields = $this->collectFields($request)
                             ->forStoreBulk($request, $this)
+                            ->withoutActions($request, $this)
                             ->authorizedUpdateBulk($request),
                         $row
                     );
@@ -679,6 +680,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     $this->resource->save();
 
                     $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
+
+                    $this
+                        ->collectFields($request)
+                        ->forStoreBulk($request, $this)
+                        ->withActions($request, $this, $row)
+                        ->authorizedUpdateBulk($request)
+                        ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
                     return $this->resource;
                 });
@@ -764,11 +772,19 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     {
         $fields = $this->collectFields($request)
             ->forUpdateBulk($request, $this)
+            ->withoutActions($request, $this)
             ->authorizedUpdateBulk($request);
 
         static::fillBulkFields($request, $this->resource, $fields, $row);
 
         $this->resource->save();
+
+        $this
+            ->collectFields($request)
+            ->forUpdateBulk($request, $this)
+            ->withActions($request, $this, $row)
+            ->authorizedUpdateBulk($request)
+            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
         static::updatedBulk($this->resource, $request);
 

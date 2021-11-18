@@ -38,6 +38,8 @@ class ReadyPostsFilter extends AdvancedFilter
 };
 ```
 
+### Register filter
+
 Then add the filter to the repository `filters` method: 
 
 ```php
