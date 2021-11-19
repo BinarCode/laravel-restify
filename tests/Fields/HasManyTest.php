@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class HasManyTest extends IntegrationTest
 {
@@ -36,7 +37,7 @@ class HasManyTest extends IntegrationTest
         Repository::clearResolvedInstances();
     }
 
-    public function test_has_many_present_on_relations()
+    public function test_has_many_present_on_relations(): void
     {
         $user = User::factory()->create();
 
@@ -59,7 +60,7 @@ class HasManyTest extends IntegrationTest
             ]);
     }
 
-    public function test_has_many_paginated_on_relation()
+    public function test_has_many_paginated_on_relation(): void
     {
         $user = tap($this->mockUsers()->first(), function ($user) {
             $this->mockPosts($user->id, 22);
@@ -69,7 +70,7 @@ class HasManyTest extends IntegrationTest
             ->assertJsonCount(20, 'data.relationships.posts');
     }
 
-    public function test_has_many_unauthorized_see_relationship_posts()
+    public function test_has_many_filter_unauthorized_to_see_relationship_posts(): void
     {
         $_SERVER['restify.post.show'] = false;
 
@@ -79,7 +80,8 @@ class HasManyTest extends IntegrationTest
         });
 
         $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
-            ->assertForbidden();
+            ->assertOk()
+            ->assertJson(fn (AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
     }
 
     public function test_field_ignored_when_storing()
@@ -107,7 +109,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts',  PostRepository::class),
+                HasMany::make('posts', PostRepository::class),
             ]);
 
         $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts?perPage=5")
@@ -131,7 +133,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts',  PostRepository::class),
+                HasMany::make('posts', PostRepository::class),
             ]);
 
         $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts?title=wew")
@@ -155,7 +157,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts',  PostRepository::class),
+                HasMany::make('posts', PostRepository::class),
             ]);
 
         $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts")
@@ -183,7 +185,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts',  PostRepository::class),
+                HasMany::make('posts', PostRepository::class),
             ]);
 
         $this->postJson(UserWithPosts::uriKey()."/{$u->id}/posts", [
@@ -204,7 +206,7 @@ class HasManyTest extends IntegrationTest
                 field('email'),
                 field('password'),
 
-                HasMany::make('posts',  PostRepository::class),
+                HasMany::make('posts', PostRepository::class),
             ]);
 
         $this->getJson(UserWithPosts::to("$userId/posts/$post->id"), [
@@ -300,7 +302,7 @@ class UserWithPosts extends Repository
     public static function related(): array
     {
         return [
-            'posts' => HasMany::make('posts',  PostRepository::class),
+            'posts' => HasMany::make('posts', PostRepository::class),
         ];
     }
 
