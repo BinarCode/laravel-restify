@@ -516,7 +516,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             })
             ->mapIntoRelated($request)
             ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
-            ->map(function(mixed $items) {
+            ->map(function (mixed $items) {
                 if ($items instanceof Collection) {
                     return $items->filter();
                 }
