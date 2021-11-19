@@ -124,7 +124,6 @@ class HasOneFieldTest extends IntegrationTest
                     ->where('data.1.attributes.name', 'Last')
                     ->etc();
             });
-
     }
 }
 

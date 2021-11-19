@@ -37,7 +37,7 @@ class SortableFilter extends Filter
         }
 
         if (isset($this->relation)) {
-            if (!$this->relation->authorize($request)) {
+            if (! $this->relation->authorize($request)) {
                 return $query;
             }
 
