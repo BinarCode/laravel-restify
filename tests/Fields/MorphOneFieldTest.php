@@ -30,13 +30,15 @@ class MorphOneFieldTest extends IntegrationTest
         Repository::clearResolvedInstances();
     }
 
-    public function test_morph_one_present_on_show_when_specified_related()
+    public function test_morph_one_present_on_show_when_specified_related(): void
     {
         $post = Post::factory()->create([
             'user_id' => User::factory(),
         ]);
 
-        $relationships = $this->getJson(PostWithMophOneRepository::uriKey()."/$post->id?related=user")
+        $relationships = $this
+            ->withoutExceptionHandling()
+            ->getJson(PostWithMophOneRepository::uriKey()."/$post->id?related=user")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [

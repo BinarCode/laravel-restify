@@ -46,11 +46,8 @@ class HasMany extends EagerField
                 return $this->repositoryClass::resolveWith($item)
                     ->allowToShow(app(Request::class))
                     ->eagerState();
-            } catch (AuthorizationException $e) {
-                $class = get_class($item);
-                $policy = get_class(Gate::getPolicyFor($item));
-
-                abort(403, "You are not authorized to see the [{$class}] relationship from the HasMany field from the BelongsTo field. Check the [show] method from the [$policy]");
+            } catch (AuthorizationException) {
+                return null;
             }
         });
 
