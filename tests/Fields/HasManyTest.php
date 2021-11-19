@@ -81,7 +81,7 @@ class HasManyTest extends IntegrationTest
 
         $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
             ->assertOk()
-            ->assertJson(fn(AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
+            ->assertJson(fn (AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
     }
 
     public function test_field_ignored_when_storing()
