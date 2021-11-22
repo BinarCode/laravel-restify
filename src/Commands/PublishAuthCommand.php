@@ -19,7 +19,7 @@ class PublishAuthCommand extends Command
             ->publishControllers()
             ->publishBlades()
             ->publishEmails()
-            ->registerRutes();
+            ->registerRoutes();
 
         $this->info('Restify Controllers & Emails published successfully');
     }
@@ -133,7 +133,7 @@ class PublishAuthCommand extends Command
      *
      * @return $this
      */
-    protected function registerRutes(): self
+    protected function registerRoutes(): self
     {
         $pathProvider = '../routes/api.php';
         $routeStub = __DIR__ . '/stubs/Routes/routes.stub';

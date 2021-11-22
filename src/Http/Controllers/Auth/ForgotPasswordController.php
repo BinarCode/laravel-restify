@@ -19,7 +19,7 @@ class ForgotPasswordController extends Controller
         ]);
 
         /** @var User $user */
-        $user = config('config.auth.user_model')::query()->where($request->only('email'))->firstOrFail();
+        $user = config('restify.auth.user_model')::query()->where($request->only('email'))->firstOrFail();
 
         $token = Password::createToken($user);
 
