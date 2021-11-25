@@ -6,6 +6,7 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 
 ### Filtering
 
+- The major deprecation was the `AuthController` deletion, as it wasn't very intuitive and configurable. Intead we developed individual controllers for each auth action, you can release them using the `restify:auth` command. See more [on the official docs](https://restify.binarcode.com/auth/authentication#define-routes);
 - Matchable are now only read from query params, not post payloads. So make sure all matchable filters are in query params.
 - Actions are not logged if the model doesn't use HasActionLog trait.
 
