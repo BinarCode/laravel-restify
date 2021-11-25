@@ -2,6 +2,14 @@
 
 Because there are many breaking changes an upgrade is not that easy. There are many edge cases this guide does not cover. We accept PRs to improve this guide.
 
+## From 5.x to 6.x
+
+### Filtering
+
+- Matchable are now only read from query params, not post payloads. So make sure all matchable filters are in query params.
+- Actions are not logged if the model doesn't use HasActionLog trait.
+
+
 ## From 4.10.x to 5.x
 
 ### Repository changes:
