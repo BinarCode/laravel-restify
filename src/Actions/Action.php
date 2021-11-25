@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Actions;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\ActionLog;
+use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -82,8 +83,8 @@ abstract class Action implements JsonSerializable
     /**
      * Determine if the action is executable for the given request.
      *
-     * @param Request $request
-     * @param Model $model
+     * @param  Request  $request
+     * @param  Model  $model
      * @return bool
      */
     public function authorizedToRun(Request $request, $model)
@@ -94,7 +95,7 @@ abstract class Action implements JsonSerializable
     /**
      * Set the callback to be run to authorize running the action.
      *
-     * @param Closure $callback
+     * @param  Closure  $callback
      * @return $this
      */
     public function canRun(Closure $callback)
@@ -107,8 +108,8 @@ abstract class Action implements JsonSerializable
     /**
      * Get the payload available on the action.
      *
-     * @deprecated Use rules instead
      * @return array
+     * @deprecated Use rules instead
      */
     public function payload(): array
     {
@@ -128,7 +129,7 @@ abstract class Action implements JsonSerializable
     /**
      * Make current action being standalone. No model query will be performed.
      *
-     * @param bool $standalone
+     * @param  bool  $standalone
      * @return self
      */
     public function standalone(bool $standalone = true): self
@@ -152,22 +153,26 @@ abstract class Action implements JsonSerializable
 
     public function handleRequest(ActionRequest $request)
     {
-        if (! method_exists($this, 'handle')) {
+        if (!method_exists($this, 'handle')) {
             throw new Exception('Missing handle method from the action.');
         }
 
         if ($this->isStandalone()) {
-            return Transaction::run(fn () => $this->handle($request));
+            return Transaction::run(fn() => $this->handle($request));
         }
 
         $response = null;
 
-        if (! $request->isForRepositoryRequest()) {
+        if (!$request->isForRepositoryRequest()) {
             $request->collectRepositories($this, static::$chunkCount, function ($models) use ($request, &$response) {
                 Transaction::run(function () use ($models, $request, &$response) {
                     $response = $this->handle($request, $models);
 
-                    $models->each(fn (Model $model) => ActionLog::forRepositoryAction($this, $model, $request->user())->save());
+                    $models->each(function (Model $model) use ($request) {
+                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
+                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
+                        }
+                    });
                 });
             });
         } else {
@@ -179,11 +184,14 @@ abstract class Action implements JsonSerializable
                     })->firstOrFail()
                 );
 
-                Restify::actionLog()::forRepositoryAction(
-                    $this,
-                    $model,
-                    $request->user()
-                )->save();
+                if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
+                    Restify::actionLog()::forRepositoryAction(
+                        $this,
+                        $model,
+                        $request->user()
+                    )->save();
+                }
+
             });
         }
 
