@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Actions;
 
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
@@ -153,17 +152,17 @@ abstract class Action implements JsonSerializable
 
     public function handleRequest(ActionRequest $request)
     {
-        if (!method_exists($this, 'handle')) {
+        if (! method_exists($this, 'handle')) {
             throw new Exception('Missing handle method from the action.');
         }
 
         if ($this->isStandalone()) {
-            return Transaction::run(fn() => $this->handle($request));
+            return Transaction::run(fn () => $this->handle($request));
         }
 
         $response = null;
 
-        if (!$request->isForRepositoryRequest()) {
+        if (! $request->isForRepositoryRequest()) {
             $request->collectRepositories($this, static::$chunkCount, function ($models) use ($request, &$response) {
                 Transaction::run(function () use ($models, $request, &$response) {
                     $response = $this->handle($request, $models);
@@ -191,7 +190,6 @@ abstract class Action implements JsonSerializable
                         $request->user()
                     )->save();
                 }
-
             });
         }
 
