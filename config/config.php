@@ -116,13 +116,6 @@ return [
         'related' => \Binaryk\LaravelRestify\Repositories\Casts\RelatedCast::class,
     ],
 
-    'search' => [
-        /*
-        | Allow Restify to check the post payload in order to receive matchable filters.
-        */
-        'matchable_using_post_payload' => true,
-    ],
-
     /*
     |--------------------------------------------------------------------------
     | Restify Logs

@@ -60,12 +60,7 @@ class MatchesCollection extends Collection
                 }
             }
 
-            if (! config('restify.search.matchable_using_post_payload')) {
-                return (bool) ($request->query("-{$filter->column()}") || $request->query($filter->column()));
-            }
-
-
-            return $request->has("-{$filter->column()}") || $request->has($filter->column());
+            return (bool) ($request->query("-{$filter->column()}") || $request->query($filter->column()));
         });
     }
 
