@@ -50,8 +50,8 @@ class MatchesCollection extends Collection
     {
         return $this->filter(function (MatchFilter $filter) use ($request) {
             $possibleKeys = collect([
-                $filter->getColumn(),
-                "-{$filter->getColumn()}",
+                $filter->column(),
+                "-{$filter->column()}",
             ]);
 
             if ($filters = collect($request->input('filter', []))) {
@@ -60,7 +60,7 @@ class MatchesCollection extends Collection
                 }
             }
 
-            return $request->has("-{$filter->getColumn()}") || $request->has($filter->getColumn());
+            return (bool) ($request->query("-{$filter->column()}") || $request->query($filter->column()));
         });
     }
 
