@@ -45,6 +45,12 @@ trait InteractsWithModel
             return $model;
         }
 
+        $domain = Str::of($prefix)->pluralStudly()->__toString();
+
+        if (class_exists($model = "App\\Domains\\{$domain}\\Models\\{$prefix}")) {
+            return $model;
+        }
+
         return NullModel::class;
     }
 }
