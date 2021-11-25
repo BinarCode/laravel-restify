@@ -45,7 +45,7 @@ class ActionRequest extends RestifyRequest
             ->latest($this->model()->getKeyName());
     }
 
-    public function collectRepositories(Action $action, $count, Closure $callback)
+    public function collectRepositories(Action $action, $count, Closure $callback): array
     {
         $output = [];
 

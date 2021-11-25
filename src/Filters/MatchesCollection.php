@@ -50,8 +50,8 @@ class MatchesCollection extends Collection
     {
         return $this->filter(function (MatchFilter $filter) use ($request) {
             $possibleKeys = collect([
-                $filter->getColumn(),
-                "-{$filter->getColumn()}",
+                $filter->column(),
+                "-{$filter->column()}",
             ]);
 
             if ($filters = collect($request->input('filter', []))) {
@@ -60,7 +60,12 @@ class MatchesCollection extends Collection
                 }
             }
 
-            return $request->has("-{$filter->getColumn()}") || $request->has($filter->getColumn());
+            if (! config('restify.search.matchable_using_post_payload')) {
+                return (bool) ($request->query("-{$filter->column()}") || $request->query($filter->column()));
+            }
+
+
+            return $request->has("-{$filter->column()}") || $request->has($filter->column());
         });
     }
 
