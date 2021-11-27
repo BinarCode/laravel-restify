@@ -34,6 +34,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
+use ReturnTypeWillChange;
 
 /**
  * @property static $type Repository type
@@ -1025,6 +1026,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             : $this->resource->getAttribute(static::$id);
     }
 
+    #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return $this->serializeForShow(app(RestifyRequest::class));

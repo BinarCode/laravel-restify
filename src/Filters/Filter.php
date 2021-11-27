@@ -13,6 +13,7 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use JsonSerializable;
+use ReturnTypeWillChange;
 
 abstract class Filter implements JsonSerializable
 {
@@ -240,6 +241,7 @@ abstract class Filter implements JsonSerializable
         return $this instanceof AdvancedFilter;
     }
 
+    #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
         $serialized = with([

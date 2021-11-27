@@ -12,6 +12,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
+use ReturnTypeWillChange;
 
 class Related implements JsonSerializable
 {
@@ -121,6 +122,7 @@ class Related implements JsonSerializable
         return $this;
     }
 
+    #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return [
