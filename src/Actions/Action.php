@@ -19,6 +19,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
+use ReturnTypeWillChange;
 
 /**
  * Class Action
@@ -196,6 +197,7 @@ abstract class Action implements JsonSerializable
         return $response;
     }
 
+    #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return array_merge([

@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Filters;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use JsonSerializable;
+use ReturnTypeWillChange;
 
 abstract class FilterDefinition implements JsonSerializable
 {
@@ -33,6 +34,7 @@ abstract class FilterDefinition implements JsonSerializable
             : null;
     }
 
+    #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return with([

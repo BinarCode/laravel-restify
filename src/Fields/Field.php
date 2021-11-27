@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use JsonSerializable;
+use ReturnTypeWillChange;
 
 class Field extends OrganicField implements JsonSerializable
 {
@@ -542,6 +543,7 @@ class Field extends OrganicField implements JsonSerializable
         }
     }
 
+    #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return with(app(RestifyRequest::class), function ($request) {
