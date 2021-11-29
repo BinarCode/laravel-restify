@@ -10,6 +10,20 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 - Matchable are now only read from query params, not post payloads. So make sure all matchable filters are in query params.
 - Actions are not logged if the model doesn't use HasActionLog trait.
 
+### Fields
+
+- A major breaking change was made around the `storeCallback`, `updateCallback` and `storeBulkCallback`. In 5.x the closure was receiving the `RestifyRequest $request` instance, however now, it only gets the value (so it's compatible with the `showCallback` or `indexCallback`): 
+```php
+field('name')->storeCallback(fn($value) => dump($value)) // $value === $request->input('name')
+```
+
+How to fix: 
+
+If you already implemented this callback, you still can use instead the `fillCallback`, so simply replace you `storeCallback` with `fillCallback`: 
+
+```php
+field('name')->fillCallback(fn(RestifyRequest $request, $model) => $model->name = $request->input('name'))
+```
 
 ## From 4.10.x to 5.x
 
