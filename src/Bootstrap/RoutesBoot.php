@@ -74,7 +74,7 @@ class RoutesBoot
     public function registerIndexPrefixed($config): self
     {
         collect(Restify::$repositories)
-            ->filter(fn($repository) => $repository::hasIndexPrefix())
+            ->filter(fn ($repository) => $repository::hasIndexPrefix())
             ->each(function ($repository) use ($config) {
                 $config['prefix'] = $repository::indexPrefix();
                 Route::group($config, function () {
@@ -87,7 +87,7 @@ class RoutesBoot
 
     private function loadRoutesFrom(string $path): self
     {
-        if (!($this->app instanceof CachesRoutes && $this->app->routesAreCached())) {
+        if (! ($this->app instanceof CachesRoutes && $this->app->routesAreCached())) {
             require $path;
         }
 

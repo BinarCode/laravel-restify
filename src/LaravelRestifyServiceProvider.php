@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Bootstrap\Boot;
 use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
