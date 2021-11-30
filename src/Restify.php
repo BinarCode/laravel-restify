@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Events\AddedRepositories;
+use Binaryk\LaravelRestify\Bootstrap\BootRepository;
 use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -58,7 +58,7 @@ class Restify
     /**
      * Get the repository class name for a given model.
      *
-     * @param string $model
+     * @param  string  $model
      * @return string
      */
     public static function repositoryForModel($model)
@@ -75,7 +75,7 @@ class Restify
     /**
      * Get the repository class name for a given table name.
      *
-     * @param string $table
+     * @param  string  $table
      * @return string
      */
     public static function repositoryForTable($table)
@@ -88,7 +88,7 @@ class Restify
     /**
      * Register the given repositories.
      *
-     * @param array $repositories
+     * @param  array  $repositories
      * @return static
      */
     public static function repositories(array $repositories)
@@ -97,8 +97,9 @@ class Restify
             array_merge(static::$repositories, $repositories)
         );
 
-
-        event(new AddedRepositories($repositories));
+        collect($repositories)->each(function (string $repository) {
+            (new BootRepository($repository))->boot();
+        });
 
         return new static;
     }
@@ -123,7 +124,10 @@ class Restify
                 Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
             );
 
-            if (is_subclass_of($repository, Repository::class) && (new ReflectionClass($repository))->isInstantiable()) {
+            if (is_subclass_of(
+                $repository,
+                Repository::class
+            ) && (new ReflectionClass($repository))->isInstantiable()) {
                 $repositories[] = $repository;
             }
         }
@@ -136,7 +140,7 @@ class Restify
     /**
      * Get the URI path prefix utilized by Restify.
      *
-     * @param null $plus
+     * @param  null  $plus
      * @return string
      */
     public static function path($plus = null)
@@ -153,7 +157,7 @@ class Restify
      *
      * This listener is added in the RestifyApplicationServiceProvider
      *
-     * @param \Closure|string $callback
+     * @param  \Closure|string  $callback
      * @return void
      */
     public static function starting($callback)
@@ -162,7 +166,7 @@ class Restify
     }
 
     /**
-     * @param \Closure|string $callback
+     * @param  \Closure|string  $callback
      */
     public static function beforeEach($callback)
     {
@@ -172,7 +176,7 @@ class Restify
     /**
      * Set the callback used for intercepting any request exception.
      *
-     * @param \Closure|string $callback
+     * @param  \Closure|string  $callback
      */
     public static function exceptionHandler($callback)
     {
@@ -198,7 +202,7 @@ class Restify
     /**
      * Humanize the given value into a proper name.
      *
-     * @param string $value
+     * @param  string  $value
      * @return string
      */
     public static function humanize($value)

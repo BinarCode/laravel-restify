@@ -7,11 +7,11 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\LoginController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use ReflectionException;
-use RuntimeException;
 
 class RestifyApplicationServiceProvider extends ServiceProvider
 {
@@ -33,9 +33,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function repositories(): void
     {
-        if ((false === is_dir(app_path('Restify'))) && ! mkdir($concurrentDirectory = app_path('Restify')) && ! is_dir($concurrentDirectory)) {
-            throw new RuntimeException(sprintf('Directory "%s" was not created', $concurrentDirectory));
-        }
+        app(Filesystem::class)->ensureDirectoryExists(app_path('Restify'));
 
         Restify::repositoriesFrom(app_path('Restify'));
     }
