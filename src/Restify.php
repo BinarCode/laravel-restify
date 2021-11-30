@@ -98,8 +98,6 @@ class Restify
         );
 
 
-        event(new AddedRepositories($repositories));
-
         return new static;
     }
 
