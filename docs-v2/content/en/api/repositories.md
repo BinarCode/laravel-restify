@@ -675,6 +675,6 @@ public static $withs = ['posts'];
 
 <alert type="warning">
 
-`withs` is not a type Laravel uses the `with` property on models, on repositories we use `$withs`, it's not a typo.
+`withs` is not a typo. Laravel uses the `with` property on models, on repositories we use `$withs`, it's not a typo.
 
 </alert>
