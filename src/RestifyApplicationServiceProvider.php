@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use ReflectionException;
-use RuntimeException;
 
 class RestifyApplicationServiceProvider extends ServiceProvider
 {
