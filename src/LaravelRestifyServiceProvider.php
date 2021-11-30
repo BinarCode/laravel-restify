@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Bootstrap\Boot;
+use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
@@ -35,7 +37,10 @@ class LaravelRestifyServiceProvider extends ServiceProvider
                 StubCommand::class,
                 PublishAuthCommand::class,
             ]);
+
             $this->registerPublishing();
+
+            app(RoutesBoot::class)->boot();
         }
 
         $this->listeners();

@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
 use ReflectionClass;
@@ -41,6 +42,13 @@ class Restify
      * @var \Closure
      */
     public static $renderCallback;
+
+    public static function collectRepositories(): Collection
+    {
+        static::repositoriesFrom(app_path('Restify'));
+
+        return collect(static::$repositories);
+    }
 
     /**
      * Get the repository class name for a given key.
