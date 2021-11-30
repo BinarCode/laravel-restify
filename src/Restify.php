@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Events\AddedRepositories;
 use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
