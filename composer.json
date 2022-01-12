@@ -21,7 +21,7 @@
         "php": "^8.0",
         "ext-json": "*",
         "doctrine/dbal": "^2.10|^3.0",
-        "illuminate/contracts": "^8.37",
+        "illuminate/contracts": "^8.37|^9.0",
         "spatie/data-transfer-object": "^3.1",
         "spatie/once": "^2.0|^3.0"
     },
