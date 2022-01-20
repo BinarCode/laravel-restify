@@ -5,6 +5,8 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\RepositoryCollection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Contracts\Pagination\Paginator;
 use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
@@ -558,7 +560,7 @@ class RestResponse extends JsonResponse implements Responsable
         return (new self())->code(201);
     }
 
-    public static function index(AbstractPaginator $paginator, array $meta = []): JsonResponse
+    public static function index(AbstractPaginator|Paginator $paginator, array $meta = []): JsonResponse
     {
         return response()->json(
             [
