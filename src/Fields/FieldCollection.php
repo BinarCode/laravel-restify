@@ -89,7 +89,7 @@ class FieldCollection extends Collection
     public function withoutActions(RestifyRequest $request, $repository): self
     {
         return $this
-            ->reject(fn (Field $field) => $field->isActionable())
+            ->reject(fn (Field $field) => $field->isActionable() && $field->actionHandler?->skipFieldFill($request))
             ->values();
     }
 

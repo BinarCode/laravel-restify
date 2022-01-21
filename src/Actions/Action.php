@@ -48,6 +48,13 @@ abstract class Action implements JsonSerializable
     public bool $standalone = false;
 
     /**
+     * Indicates if Restify should skip the field default update behavior in case it's actionable field.
+     *
+     * @var bool
+     */
+    public bool $skipFieldFill = true;
+
+    /**
      * Default uri key for the action.
      * @var string
      */
@@ -195,6 +202,11 @@ abstract class Action implements JsonSerializable
         }
 
         return $response;
+    }
+
+    public function skipFieldFill(RestifyRequest $request): bool
+    {
+        return $this->skipFieldFill;
     }
 
     #[ReturnTypeWillChange]
