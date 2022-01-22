@@ -1,6 +1,8 @@
 <?php
 
 // Global Search...
+use Illuminate\Support\Facades\Route;
+
 Route::get('/search', \Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController::class);
 
 Route::get('/profile', \Binaryk\LaravelRestify\Http\Controllers\ProfileController::class);
@@ -22,6 +24,12 @@ Route::post('/{repository}/action', \Binaryk\LaravelRestify\Http\Controllers\Per
 Route::post('/{repository}/actions', \Binaryk\LaravelRestify\Http\Controllers\PerformActionController::class); // alias to the previous route
 Route::post('/{repository}/{repositoryId}/action', \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController::class)->name('restify.actions.repository.perform');
 Route::post('/{repository}/{repositoryId}/actions', \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController::class); // alias to the previous route
+
+// Getters
+Route::get('/{repository}/getters', \Binaryk\LaravelRestify\Http\Controllers\ListGettersController::class)->name('restify.getters.index');
+Route::get('/{repository}/{repositoryId}/getters', \Binaryk\LaravelRestify\Http\Controllers\ListRepositoryGettersController::class)->name('restify.getters.repository.index');
+Route::get('/{repository}/getters/{getter}', \Binaryk\LaravelRestify\Http\Controllers\PerformGetterController::class)->name('restify.getters.perform');
+Route::get('/{repository}/{repositoryId}/getters/{getter}', \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryGetterController::class)->name('restify.getters.repository.perform');
 
 // API CRUD
 Route::get('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class)->name('restify.index');

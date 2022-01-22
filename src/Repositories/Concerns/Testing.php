@@ -38,6 +38,13 @@ trait Testing
         ]);
     }
 
+    public static function getter(string $getter, string|int $key = null): string
+    {
+        $path = $key ? "$key/getters" : 'getters';
+
+        return  static::to($path . '/' .app($getter)->uriKey());
+    }
+
     public function dd(string $prop = null): void
     {
         if (is_null($prop)) {

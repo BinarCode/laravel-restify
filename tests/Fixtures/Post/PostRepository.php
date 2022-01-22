@@ -3,9 +3,13 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsIndexGetter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsShowGetter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\UnauthenticatedActionGetter;
 use Illuminate\Support\Collection;
 
 class PostRepository extends Repository
@@ -83,7 +87,7 @@ class PostRepository extends Repository
     public function filters(RestifyRequest $request): array
     {
         return [
-            ActiveBooleanFilter::new()->canSee(fn () => true),
+            ActiveBooleanFilter::new()->canSee(fn() => true),
             SelectCategoryFilter::new(),
             CreatedAfterDateFilter::new(),
             InactiveFilter::new(),
@@ -102,9 +106,9 @@ class PostRepository extends Repository
     {
         return [
             PublishPostAction::new()
-            ->onlyOnShow(
-                $_SERVER['actions.posts.publish.onlyOnShow'] ?? false,
-            ),
+                ->onlyOnShow(
+                    $_SERVER['actions.posts.publish.onlyOnShow'] ?? false,
+                ),
             InvalidatePostAction::new()
                 ->onlyOnShow(
                     $_SERVER['actions.posts.onlyOnShow'] ?? true
@@ -112,6 +116,15 @@ class PostRepository extends Repository
                 ->canSee(function (ActionRequest $request) {
                     return $_SERVER['actions.posts.invalidate'] ?? true;
                 }),
+        ];
+    }
+
+    public function getters(RestifyRequest $request): array
+    {
+        return [
+            PostsIndexGetter::make(),
+            PostsShowGetter::make()->onlyOnShow(),
+            UnauthenticatedActionGetter::make()->withoutMiddleware(AuthorizeRestify::class),
         ];
     }
 }

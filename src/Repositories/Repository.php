@@ -47,6 +47,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     use ConditionallyLoadsAttributes;
     use DelegatesToResource;
     use ResolvesActions;
+    use ResolvesGetters;
     use RepositoryEvents;
     use WithRoutePrefix;
     use InteractWithFields;
