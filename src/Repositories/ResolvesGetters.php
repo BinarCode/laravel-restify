@@ -1,0 +1,47 @@
+<?php
+
+namespace Binaryk\LaravelRestify\Repositories;
+
+use Binaryk\LaravelRestify\Http\Requests\GetterRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Support\Collection;
+
+trait ResolvesGetters
+{
+    public function availableGetters(GetterRequest $request)
+    {
+        $getters = $request->isForRepositoryRequest()
+            ? $this->resolveShowGetters($request)
+            : $this->resolveIndexGetters($request);
+
+        return $getters->filter->authorizedToSee($request)->values();
+    }
+
+    public function resolveIndexGetters(GetterRequest $request): Collection
+    {
+        return $this->resolveGetters($request)->filter(fn ($getter) => $getter->isShownOnIndex(
+            $request,
+            $request->repository()
+        ))->values();
+    }
+
+    public function resolveShowGetters(GetterRequest $request): Collection
+    {
+        return $this->resolveGetters($request)->filter(fn ($getter) => $getter->isShownOnShow(
+            $request,
+            $request->repositoryWith(
+                $request->findModelOrFail()
+            )
+        ))->values();
+    }
+
+    public function resolveGetters(RestifyRequest $request): Collection
+    {
+        return collect(array_values($this->filter($this->getters($request))));
+    }
+
+    public function getters(RestifyRequest $request): array
+    {
+        return [];
+    }
+}

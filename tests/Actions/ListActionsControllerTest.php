@@ -2,31 +2,25 @@
 
 namespace Binaryk\LaravelRestify\Tests\Actions;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Testing\Fluent\AssertableJson;
 
+// TODO: Please refactor all tests using assertJson (as the first test does).
 class ListActionsControllerTest extends IntegrationTest
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-        $this->authenticate();
-    }
-
     public function test_could_list_actions_for_repository(): void
     {
         $_SERVER['actions.posts.invalidate'] = false;
 
-        $this->withoutExceptionHandling()->getJson('posts/actions')
-            ->assertSuccessful()
-            ->assertJsonCount(1, 'data')
-            ->assertJsonStructure([
-                'data' => [
-                    [
-                        'name',
-                        'uriKey',
-                    ],
-                ],
-            ]);
+        $this->getJson(PostRepository::to('actions'))
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                ->count('data', 1)
+                ->where('data.0.uriKey', 'publish-post-action')
+                ->etc()
+            );
     }
 
     public function test_could_list_actions_for_given_repository(): void

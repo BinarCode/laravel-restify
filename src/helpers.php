@@ -28,8 +28,14 @@ if (! function_exists('data')) {
 }
 
 if (! function_exists('ok')) {
-    function ok()
+    function ok(string $message = null, int $code = 200)
     {
+        if (! is_null($message)) {
+            return response()->json([
+                'message' => $message,
+            ], $code);
+        }
+
         return response()->json([], 204);
     }
 }
