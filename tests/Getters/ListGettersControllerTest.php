@@ -12,7 +12,8 @@ class ListGettersControllerTest extends IntegrationTest
     {
         $this->getJson(PostRepository::to('getters'))
             ->assertOk()
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->has('data')
                 ->where('data.0.uriKey', 'posts-index-getter')
                 ->count('data', 2)
@@ -26,7 +27,8 @@ class ListGettersControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::to('1/getters'))
             ->assertOk()
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->has('data')
                 ->where('data.1.uriKey', 'posts-show-getter')
                 ->count('data', 3)

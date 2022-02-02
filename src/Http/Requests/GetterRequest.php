@@ -20,6 +20,7 @@ class GetterRequest extends RestifyRequest
         return once(function () {
             return $this->availableGetters()->first(function ($getter) {
                 dd($this->route('getter') ?? $this->query('getter'));
+
                 return $this->route('getter') ?? $this->query('getter') === $getter->uriKey();
             }) ?: abort(
                 $this->getterExists() ? 403 : 404,
