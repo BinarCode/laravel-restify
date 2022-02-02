@@ -11,6 +11,6 @@ class DummyClass extends Action
 {
     public function handle(ActionRequest $request, Collection $models): JsonResponse
     {
-        return $this->response()->respond();
+        return ok();
     }
 }

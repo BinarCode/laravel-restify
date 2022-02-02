@@ -1,0 +1,16 @@
+<?php
+
+namespace DummyNamespace;
+
+use Binaryk\LaravelRestify\Getters\Getter;
+use Binaryk\LaravelRestify\Http\Requests\GetterRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
+
+class DummyClass extends Getter
+{
+    public function handle(GetterRequest $request): JsonResponse
+    {
+        return ok();
+    }
+}

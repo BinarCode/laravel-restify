@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
 use Binaryk\LaravelRestify\Commands\FilterCommand;
+use Binaryk\LaravelRestify\Commands\GetterCommand;
 use Binaryk\LaravelRestify\Commands\PolicyCommand;
 use Binaryk\LaravelRestify\Commands\PublishAuthCommand;
 use Binaryk\LaravelRestify\Commands\Refresh;
@@ -50,6 +51,7 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         $this->commands([
             RepositoryCommand::class,
             ActionCommand::class,
+            GetterCommand::class,
             StoreCommand::class,
             FilterCommand::class,
             DevCommand::class,
