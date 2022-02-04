@@ -181,6 +181,25 @@ class RepositorySearchServiceTest extends IntegrationTest
         $this->getJson('users?search=John')->assertJsonCount(4, 'data');
     }
 
+    public function test_can_search_incase_sensitive(): void
+    {
+        config()->set('restify.search.case_sensitive', false);
+
+        User::factory(4)->create([
+            'name' => 'JOHN DOE',
+        ]);
+
+        User::factory(4)->create([
+            'name' => 'wew',
+        ]);
+
+        UserRepository::$search = [
+            'name',
+        ];
+
+        $this->getJson('users?search=John')->assertJsonCount(4, 'data');
+    }
+
     public function test_can_search_using_belongs_to_field(): void
     {
         $foreignUser = User::factory()->create([

@@ -113,6 +113,21 @@ So the endpoint will scope the the `users` repository now:
 GET: /api/restify/users?search="John Doe"
 ```
 
+## Case-sensitive search
+
+By default, Restify search is case-sensitive. You can change this behavior by changing the configuration:
+
+```php
+// restify.php
+
+  'search' => [
+      /*
+      | Specify either the search should be case-sensitive or not.
+      */
+      'case_sensitive' => false,
+  ],
+```
+
 ### Custom search filter
 
 The search could be customized by creating a class that extends the `\Binaryk\LaravelRestify\Filters\SearchableFilter`: 

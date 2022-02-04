@@ -127,4 +127,16 @@ return [
         */
         'repository' => ActionLogRepository::class,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restify Search
+    |--------------------------------------------------------------------------
+    */
+    'search' => [
+        /*
+        | Specify either the search should be case-sensitive or not.
+        */
+        'case_sensitive' => true,
+    ],
 ];
