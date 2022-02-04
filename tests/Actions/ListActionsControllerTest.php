@@ -15,7 +15,8 @@ class ListActionsControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::to('actions'))
             ->assertOk()
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->count('data', 1)
                 ->where('data.0.uriKey', 'publish-post-action')
                 ->etc()
