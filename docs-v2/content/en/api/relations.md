@@ -211,6 +211,16 @@ So you will get back the `posts` relationship:
 }
 ```
 
+## Load specific columns
+
+Sometimes you might want to load specific columns from the database into the response. For example, if you have a `Post` model with an `id`, `title` and a `description` column, you might want to load only the `title` and the `description` column in the response.
+
+In order to do this, you can use in the request:
+
+```http request
+GET /users/1?include=posts[title|description]
+```
+
 ### Paginate
 
 `HasMany` field returns 15 entries in the `relationships`. This could be customizable from the repository (the

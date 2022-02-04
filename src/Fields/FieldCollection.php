@@ -158,10 +158,16 @@ class FieldCollection extends Collection
     {
         return $this
             ->filter(
-                fn (Field $field) =>
-                $request->hasAny($field->attribute, $row.'.'.$field->attribute)
-                || $request->hasFile($field->attribute)
+                fn (Field $field) => $request->hasAny($field->attribute, $row.'.'.$field->attribute)
+                    || $request->hasFile($field->attribute)
             )
+            ->values();
+    }
+
+    public function inList(array $columns = []): self
+    {
+        return $this
+            ->filter(fn (Field $field) => in_array($field->getAttribute(), $columns, true))
             ->values();
     }
 }

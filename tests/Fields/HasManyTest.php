@@ -60,6 +60,32 @@ class HasManyTest extends IntegrationTest
             ]);
     }
 
+    public function test_has_many_could_choose_columns(): void
+    {
+        $user = User::factory()->create();
+
+        Post::factory()->times(2)->create([
+            'title' => 'Title',
+            'description' => 'Description',
+            'user_id' => $user->id,
+        ]);
+
+        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title]")
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                ->where('data.relationships.posts.0.attributes.title', 'Title')
+                ->etc()
+            );
+
+        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title|description]")
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                ->where('data.relationships.posts.0.attributes.title', 'Title')
+                ->where('data.relationships.posts.0.attributes.description', 'Description')
+                ->etc()
+            );
+    }
+
     public function test_has_many_paginated_on_relation(): void
     {
         $user = tap($this->mockUsers()->first(), function ($user) {

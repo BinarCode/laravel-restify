@@ -22,6 +22,7 @@ use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
 use Binaryk\LaravelRestify\Repositories\Concerns\Testing;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
+use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Database\Eloquent\Model;
@@ -53,6 +54,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     use InteractWithFields;
     use InteractsWithModel;
     use InteractsWithAttachers;
+    use HasColumns;
     use Mockable;
     use Testing;
 
@@ -431,6 +433,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         // Resolve the show method, and attach the value to the array
         $fields = $this
             ->collectFields($request)
+            ->when($this->hasCustomColumns(), fn (FieldCollection $fields) => $fields->inList($this->getColumns()))
             ->forIndex($request, $this)
             ->filter(fn (Field $field) => $field->authorize($request))
             ->when(

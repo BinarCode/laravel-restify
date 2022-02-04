@@ -37,13 +37,17 @@ class HasMany extends EagerField
             $paginator = $repository->model()->getRelation($this->relation);
         } else {
             $paginator = $repository->{$this->relation}();
-            $paginator = $paginator->take(request('relatablePerPage') ?? ($this->repositoryClass::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
+            $paginator = $paginator
+                ->take(request('relatablePerPage') ?? ($this->repositoryClass::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))
+                ->select($this->getColumns())
+                ->get();
         }
 
         $this->value = $paginator->map(function ($item) {
             try {
                 return $this->repositoryClass::resolveWith($item)
                     ->allowToShow(app(Request::class))
+                    ->columns($this->getColumns())
                     ->eagerState();
             } catch (AuthorizationException) {
                 return null;
