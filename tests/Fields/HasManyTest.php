@@ -71,13 +71,15 @@ class HasManyTest extends IntegrationTest
         ]);
 
         $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title]")
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->where('data.relationships.posts.0.attributes.title', 'Title')
                 ->etc()
             );
 
         $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title|description]")
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->where('data.relationships.posts.0.attributes.title', 'Title')
                 ->where('data.relationships.posts.0.attributes.description', 'Description')
                 ->etc()
