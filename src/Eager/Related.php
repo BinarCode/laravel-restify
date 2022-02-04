@@ -92,7 +92,7 @@ class Related implements JsonSerializable
 
         $paginator = $repository->resource->relationLoaded($this->getRelation())
             ? $repository->resource->{$this->getRelation()}
-            : $repository->resource->{$this->getRelation()}()->select($this->getColumns());
+            : $repository->resource->{$this->getRelation()}();
 
         if (is_null($paginator)) {
             $this->value = null;
