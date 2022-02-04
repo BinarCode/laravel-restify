@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Eager;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\Make;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -17,6 +18,7 @@ use ReturnTypeWillChange;
 class Related implements JsonSerializable
 {
     use Make;
+    use HasColumns;
 
     private string $relation;
 
@@ -42,7 +44,7 @@ class Related implements JsonSerializable
 
     public function isEager(): bool
     {
-        return ! is_null($this->field);
+        return !is_null($this->field);
     }
 
     public function getRelation(): string
@@ -57,7 +59,10 @@ class Related implements JsonSerializable
 
     public function resolveField(Repository $repository): EagerField
     {
-        return $this->field->resolve($repository);
+        return $this
+            ->field
+            ->columns($this->getColumns())
+            ->resolve($repository);
     }
 
     public function resolve(RestifyRequest $request, Repository $repository): self
@@ -87,7 +92,7 @@ class Related implements JsonSerializable
 
         $paginator = $repository->resource->relationLoaded($this->getRelation())
             ? $repository->resource->{$this->getRelation()}
-            : $repository->resource->{$this->getRelation()}();
+            : $repository->resource->{$this->getRelation()}()->select($this->getColumns());
 
         if (is_null($paginator)) {
             $this->value = null;

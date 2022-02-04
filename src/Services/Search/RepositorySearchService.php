@@ -80,6 +80,7 @@ class RepositorySearchService
     public function prepareRelations(RestifyRequest $request, Builder | Relation $query)
     {
         $eager = $this->repository::collectRelated()
+            ->authorized($request)
             ->forEager($request)
             ->inRequest($request)
             ->when($request->isIndexRequest(), fn (RelatedCollection $collection) => $collection->forIndex($request, $this->repository))

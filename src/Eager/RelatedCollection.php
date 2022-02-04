@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class RelatedCollection extends Collection
 {
@@ -92,8 +93,12 @@ class RelatedCollection extends Collection
 
     public function inRequest(RestifyRequest $request): self
     {
+        $queryRelated = collect($request->related()->related)
+            ->transform(fn($related) => Str::before($related, '['))
+            ->all();
+
         return $this
-            ->filter(fn ($field, $key) => in_array($key, $request->related()->related))
+            ->filter(fn ($field, $key) => in_array($key, $queryRelated))
             ->unique();
     }
 
@@ -108,7 +113,9 @@ class RelatedCollection extends Collection
                     }
                 }
             );
-        });
+        })->map(fn(Related $related) => $related->columns(
+            $request->related()->getColumnsFor($related->getRelation())
+        ));
     }
 
     public function authorized(RestifyRequest $request)

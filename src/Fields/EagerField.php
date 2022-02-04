@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Traits\HasColumns;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Gate;
 
 class EagerField extends Field
 {
+    use HasColumns;
+
     /**
      * Name of the relationship.
      *
@@ -46,7 +49,7 @@ class EagerField extends Field
 
         $relatedModel = $model->relationLoaded($this->relation)
             ? $model->{$this->relation}
-            : $model->{$this->relation}()->first();
+            : $model->{$this->relation}()->select($this->getColumns())->first();
 
         if (is_null($relatedModel)) {
             $this->value = null;
