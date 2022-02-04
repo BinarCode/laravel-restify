@@ -36,6 +36,18 @@ HasMany::make('posts', PostRepository::class),
 
 Let's take a look over all relationships Restify provides:
 
+### Frontend request
+
+In order to get the related resources, you need to send a `GET` request to the `/users/{user}/posts` or `/users?include=posts` endpoint.
+
+Sometimes you might want to load specific columns from the database into the response. For example, if you have a `Post` model with an `id`, `title` and a `description` column, you might want to load only the `title` and the `description` column in the response.
+
+In order to do this, you can use in the request:
+
+```http request
+GET /users/1?include=posts[title|description]
+```
+
 ## BelongsTo & MorphOne
 
 The `BelongsTo` and `MorphOne` eager fields works in a similar way. So let's take the `BelongsTo` as an example.
@@ -209,16 +221,6 @@ So you will get back the `posts` relationship:
     }
   }
 }
-```
-
-## Load specific columns
-
-Sometimes you might want to load specific columns from the database into the response. For example, if you have a `Post` model with an `id`, `title` and a `description` column, you might want to load only the `title` and the `description` column in the response.
-
-In order to do this, you can use in the request:
-
-```http request
-GET /users/1?include=posts[title|description]
 ```
 
 ### Paginate
