@@ -14,14 +14,13 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonSerializable;
 use ReturnTypeWillChange;
-use Throwable;
 use function tap;
 use function throw_unless;
+use Throwable;
 
 /**
  * Class Getter
@@ -75,7 +74,9 @@ abstract class Getter implements JsonSerializable
         if ($request->isForRepositoryRequest()) {
             return $this->handle(
                 $request,
-                tap($request->modelQuery(), fn(Builder $query) => static::indexQuery($request, $query)
+                tap(
+                    $request->modelQuery(),
+                    fn (Builder $query) => static::indexQuery($request, $query)
                 )->firstOrFail()
             );
         }
@@ -86,7 +87,8 @@ abstract class Getter implements JsonSerializable
     public function withoutMiddleware(string|array $middleware): self
     {
         $this->action['excluded_middleware'] = array_merge(
-            (array) ($this->action['excluded_middleware'] ?? []), Arr::wrap($middleware)
+            (array) ($this->action['excluded_middleware'] ?? []),
+            Arr::wrap($middleware)
         );
 
         return $this;
