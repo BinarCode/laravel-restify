@@ -45,7 +45,7 @@ class SearchableFilter extends Filter
             return $query->orWhereRaw("UPPER({$this->column}) LIKE '%". strtoupper($value)."%'");
         }
 
-        return $query->orWhere($this->column, $likeOperator, '%'.$value.'%')->dd();
+        return $query->orWhere($this->column, $likeOperator, '%'.$value.'%');
     }
 
     public function usingBelongsTo(BelongsTo $field): self
