@@ -27,5 +27,4 @@ trait HasColumns
     {
         return $this->columns !== '*';
     }
-
 }

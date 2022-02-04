@@ -94,7 +94,7 @@ class RelatedCollection extends Collection
     public function inRequest(RestifyRequest $request): self
     {
         $queryRelated = collect($request->related()->related)
-            ->transform(fn($related) => Str::before($related, '['))
+            ->transform(fn ($related) => Str::before($related, '['))
             ->all();
 
         return $this
@@ -113,7 +113,7 @@ class RelatedCollection extends Collection
                     }
                 }
             );
-        })->map(fn(Related $related) => $related->columns(
+        })->map(fn (Related $related) => $related->columns(
             $request->related()->getColumnsFor($related->getRelation())
         ));
     }
