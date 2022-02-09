@@ -5,7 +5,9 @@ menuTitle: Introduction
 category: Getting Started
 ---
 
-Laravel Restify is an extraordinary tool for building robust, modern API. And, it will become a breeze to do that.
+Laravel Restify is an extraordinary tool inspired from [Laravel Nova](https://nova.laravel.com/) for building robust, modern API. If you already have an application built with Laravel Nova, you can transfer your data to Laravel Restify using basically the same resource classes content.
+
+If you don't have an application written with Nova, you can start with Laravel Restify from scratch and get a powerful API in a few minutes.
 
 ## Features
 
