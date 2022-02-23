@@ -18,7 +18,7 @@ class Image extends File
     {
         parent::resolveForShow($repository, $attribute);
 
-        if (Storage::disk($this->getStorageDisk())->exists($this->value)) {
+        if ($this->value && Storage::disk($this->getStorageDisk())->exists($this->value)) {
             $this->value = Storage::disk($this->getStorageDisk())->url($this->value);
         } else {
             $this->value = $this->resolveDefaultValue(app(RestifyRequest::class));
@@ -31,7 +31,7 @@ class Image extends File
     {
         parent::resolveForIndex($repository, $attribute);
 
-        if (Storage::disk($this->getStorageDisk())->exists($this->value)) {
+        if ($this->value && Storage::disk($this->getStorageDisk())->exists($this->value)) {
             $this->value = Storage::disk($this->getStorageDisk())->url($this->value);
         } else {
             $this->value = $this->resolveDefaultValue(app(RestifyRequest::class));
