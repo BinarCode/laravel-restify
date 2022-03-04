@@ -44,6 +44,9 @@ class BelongsToMany extends EagerField
 
     public function resolve($repository, $attribute = null)
     {
+        /**
+         * @var Repository $repository
+         */
         if ($repository->model()->relationLoaded($this->relation)) {
             $paginator = $repository->model()->getRelation($this->relation);
         } else {
