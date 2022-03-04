@@ -221,7 +221,8 @@ class BelongsToFieldTest extends IntegrationTest
 
         $this->getJson(PostRepository::to($post->id, [
             'include' => 'user[name]',
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
             ->has('data.relationships.user.attributes.name')
             ->missing('data.relationships.user.attributes.email')
             ->etc()
