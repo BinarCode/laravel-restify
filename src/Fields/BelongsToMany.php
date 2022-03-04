@@ -44,6 +44,9 @@ class BelongsToMany extends EagerField
 
     public function resolve($repository, $attribute = null)
     {
+        /**
+         * @var Repository $repository
+         */
         if ($repository->model()->relationLoaded($this->relation)) {
             $paginator = $repository->model()->getRelation($this->relation);
         } else {
@@ -57,6 +60,7 @@ class BelongsToMany extends EagerField
             try {
                 return $this->repositoryClass::resolveWith($item)
                     ->allowToShow(app(Request::class))
+                    ->columns($this->getColumns())
                     ->withPivots(
                         PivotsCollection::make($this->pivotFields)
                             ->map(fn (Field $field) => clone $field)

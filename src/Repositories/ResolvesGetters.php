@@ -8,7 +8,7 @@ use Illuminate\Support\Collection;
 
 trait ResolvesGetters
 {
-    public function availableGetters(GetterRequest $request)
+    public function availableGetters(GetterRequest $request): Collection
     {
         $getters = $request->isForRepositoryRequest()
             ? $this->resolveShowGetters($request)

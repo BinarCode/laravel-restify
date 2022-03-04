@@ -30,7 +30,6 @@ class PerformGetterControllerTest extends IntegrationTest
 
         $this
             ->getJson(PostRepository::getter(PostsShowGetter::class, 1))
-            ->assertSuccessful()
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->where('message', 'show works')
@@ -49,7 +48,6 @@ class PerformGetterControllerTest extends IntegrationTest
         $this
             ->withoutExceptionHandling()
             ->getJson(PostRepository::getter(UnauthenticatedActionGetter::class))
-            ->dump()
             ->assertSuccessful()
             ->assertJson(
                 fn (AssertableJson $json) => $json

@@ -19,9 +19,9 @@ class GetterRequest extends RestifyRequest
     {
         return once(function () {
             return $this->availableGetters()->first(function ($getter) {
-                dd($this->route('getter') ?? $this->query('getter'));
-
-                return $this->route('getter') ?? $this->query('getter') === $getter->uriKey();
+                return $this->route('getter')
+                    ? $this->route('getter') === $getter->uriKey()
+                    : $this->query('getter') === $getter->uriKey();
             }) ?: abort(
                 $this->getterExists() ? 403 : 404,
                 'Getter does not exists or you don\'t have enough permissions to perform it.'
@@ -38,9 +38,12 @@ class GetterRequest extends RestifyRequest
 
     public function builder(Getter $getter, int $size): Builder
     {
-        return tap(RepositorySearchService::make()->search($this, $this->repository()), function ($query) use ($getter) {
-            $getter::indexQuery($this, $query);
-        })
+        return tap(
+            RepositorySearchService::make()->search($this, $this->repository()),
+            function ($query) use ($getter) {
+                $getter::indexQuery($this, $query);
+            }
+        )
             ->when($this->input('repositories') !== 'all', function ($query) {
                 $query->whereKey($this->input('repositories', []));
             })
