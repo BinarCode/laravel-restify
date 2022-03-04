@@ -38,10 +38,12 @@ class GetterRequest extends RestifyRequest
 
     public function builder(Getter $getter, int $size): Builder
     {
-        return tap(RepositorySearchService::make()->search($this, $this->repository()),
+        return tap(
+            RepositorySearchService::make()->search($this, $this->repository()),
             function ($query) use ($getter) {
                 $getter::indexQuery($this, $query);
-            })
+            }
+        )
             ->when($this->input('repositories') !== 'all', function ($query) {
                 $query->whereKey($this->input('repositories', []));
             })
