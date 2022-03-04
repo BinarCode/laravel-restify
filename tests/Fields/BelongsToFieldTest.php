@@ -15,6 +15,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class BelongsToFieldTest extends IntegrationTest
 {
@@ -206,6 +207,25 @@ class BelongsToFieldTest extends IntegrationTest
 
             $this->assertSame($post->fresh()->user->id, $firstOwnerId);
         });
+    }
+
+    public function test_belongs_to_could_choose_columns(): void
+    {
+        $post = PostFactory::one();
+
+        PostRepository::partialMock()
+            ->shouldReceive('related')
+            ->andReturn([
+                'user' => BelongsTo::make('user', UserRepository::class),
+            ]);
+
+        $this->getJson(PostRepository::to($post->id, [
+            'include' => 'user[name]',
+        ]))->assertJson(fn(AssertableJson $json) => $json
+            ->has('data.relationships.user.attributes.name')
+            ->missing('data.relationships.user.attributes.email')
+            ->etc()
+        );
     }
 }
 

@@ -60,6 +60,7 @@ class EagerField extends Field
         try {
             $this->value = $this->repositoryClass::resolveWith($relatedModel)
                 ->allowToShow(app(Request::class))
+                ->columns($this->getColumns())
                 ->eagerState();
         } catch (AuthorizationException $e) {
             if (is_null($relatedModel)) {
