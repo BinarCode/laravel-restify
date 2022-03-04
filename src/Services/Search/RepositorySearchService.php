@@ -32,7 +32,9 @@ class RepositorySearchService
 
         $query = $this->prepareMatchFields(
             $request,
-            $this->prepareSearchFields(
+            $repository::usesScout()
+                ? $this->prepareRelations($request, $scoutQuery ?? $repository::query($request))
+                : $this->prepareSearchFields(
                 $request,
                 $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
             ),
