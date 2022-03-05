@@ -24,9 +24,7 @@ trait InteractWithRepositories
         try {
             $key = $key ?? $this->route('repository');
 
-            if (is_null($key)) {
-                throw RepositoryException::missingKey();
-            }
+            throw_if(is_null($key), RepositoryException::missingKey());
 
             $repository = Restify::repository($key);
 
