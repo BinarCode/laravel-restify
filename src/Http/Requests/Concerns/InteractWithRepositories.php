@@ -49,21 +49,21 @@ trait InteractWithRepositories
         }
     }
 
-    public function repositoryWith($model, $uriKey = null): Repository
+    public function repositoryWith(Model $model, string $uriKey = null): Repository
     {
         $repository = $this->repository($uriKey);
 
         return $repository::resolveWith($model);
     }
 
-    public function model($uriKey = null): Model
+    public function model(string $uriKey = null): Model
     {
         $repository = $this->repository($uriKey);
 
         return $repository::newModel();
     }
 
-    public function newQuery($uriKey = null): Builder|Relation
+    public function newQuery(string $uriKey = null): Builder|Relation
     {
         if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
