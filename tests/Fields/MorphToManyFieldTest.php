@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class MorphToManyFieldTest extends IntegrationTest
 {
@@ -33,14 +34,12 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles")
-            ->assertJsonStructure([
-                'data' => [
-                    'relationships' => [
-                        'roles' => [],
-                    ],
-                ],
-            ])->assertJsonCount(3, 'data.relationships.roles');
+        $this->getJson(UserWithRolesRepository::to($user->id, [
+            'related' => 'roles',
+        ]))->assertJson(fn(AssertableJson $json) => $json
+            ->count('data.relationships.roles', 3)
+            ->etc()
+        );
     }
 
     public function test_morph_to_many_works_with_belongs_to_many()
@@ -88,7 +87,7 @@ class UserWithRolesRepository extends Repository
     public static function related(): array
     {
         return [
-            'roles' => MorphToMany::make('roles',  RoleRepository::class),
+            'roles' => MorphToMany::make('roles', RoleRepository::class),
             'companies' => BelongsToMany::make('companies', CompanyRepository::class),
         ];
     }
