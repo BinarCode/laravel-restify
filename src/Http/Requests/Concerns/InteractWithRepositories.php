@@ -28,11 +28,15 @@ trait InteractWithRepositories
 
             $repository = Restify::repository($key);
 
-            throw_unless($repository::authorizedToUseRepository($this),
-                RepositoryException::unauthorized($repository::uriKey()));
+            throw_unless(
+                $repository::authorizedToUseRepository($this),
+                RepositoryException::unauthorized($repository::uriKey())
+            );
 
-            throw_unless($repository::authorizedToUseRoute($this),
-                RepositoryException::routeUnauthorized($this->getRequestUri()));
+            throw_unless(
+                $repository::authorizedToUseRoute($this),
+                RepositoryException::routeUnauthorized($this->getRequestUri())
+            );
 
             app(Pipeline::class)
                 ->send($this)
@@ -61,7 +65,7 @@ trait InteractWithRepositories
 
     public function newQuery($uriKey = null): Builder|Relation
     {
-        if (!$this->isViaRepository()) {
+        if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
         }
 
@@ -96,8 +100,8 @@ trait InteractWithRepositories
 
         //TODO: Find another implementation for prefixes:
         $matchSomePrefixes = collect(Restify::$repositories)
-                ->some(fn($repository) => $repository::prefix() === "$parentRepository/$parentRepositoryId")
-            || collect(Restify::$repositories)->some(fn(
+                ->some(fn ($repository) => $repository::prefix() === "$parentRepository/$parentRepositoryId")
+            || collect(Restify::$repositories)->some(fn (
                 $repository
             ) => $repository::indexPrefix() === "$parentRepository/$parentRepositoryId");
 

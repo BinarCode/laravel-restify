@@ -36,7 +36,8 @@ class MorphToManyFieldTest extends IntegrationTest
 
         $this->getJson(UserWithRolesRepository::to($user->id, [
             'related' => 'roles',
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
             ->count('data.relationships.roles', 3)
             ->etc()
         );
