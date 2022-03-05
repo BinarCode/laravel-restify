@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests\Repositories;
 
-use Binaryk\LaravelRestify\Exceptions\RepositoryException;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
