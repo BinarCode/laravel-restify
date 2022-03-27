@@ -2,11 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Tests\Feature;
 
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\BelongsTo;
-use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
-use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -14,8 +11,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\VerifiedMatcher;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Http\Request;
 
 class RepositorySearchServiceTest extends IntegrationTest
 {

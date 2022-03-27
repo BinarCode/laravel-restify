@@ -216,7 +216,8 @@ class MatchFilterTest extends IntegrationTest
 
         $this
             ->getJson('users?is_active=true')
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->count('data', 1)
                 ->etc()
             );
