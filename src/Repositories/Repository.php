@@ -988,7 +988,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function serializeForShow(RestifyRequest $request): array
     {
         return $this->filter([
-            'id' => $this->when(optional($this->resource)->id, fn () => $this->getId($request)),
+            'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
             'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
