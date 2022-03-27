@@ -58,7 +58,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
     {
         $user = $this->mockUsers()->first();
         $response = $this->postJson('posts', [
-            'user_id' => $user->id,
+            'user_id' => $user->getKey(),
             'title' => 'Some post title',
             'description' => 'A very short description',
         ])

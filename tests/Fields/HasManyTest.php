@@ -42,10 +42,10 @@ class HasManyTest extends IntegrationTest
         $user = User::factory()->create();
 
         Post::factory()->times(2)->create([
-            'user_id' => $user->id,
+            'user_id' => $user->getKey(),
         ]);
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
+        $this->getJson(UserWithPosts::uriKey()."/$user->getKey()?related=posts")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -67,17 +67,17 @@ class HasManyTest extends IntegrationTest
         Post::factory()->times(2)->create([
             'title' => 'Title',
             'description' => 'Description',
-            'user_id' => $user->id,
+            'user_id' => $user->getKey(),
         ]);
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title]")
+        $this->getJson(UserWithPosts::uriKey()."/$user->getKey()?related=posts[title]")
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->where('data.relationships.posts.0.attributes.title', 'Title')
                 ->etc()
             );
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title|description]")
+        $this->getJson(UserWithPosts::uriKey()."/$user->getKey()?related=posts[title|description]")
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->where('data.relationships.posts.0.attributes.title', 'Title')
@@ -89,10 +89,10 @@ class HasManyTest extends IntegrationTest
     public function test_has_many_paginated_on_relation(): void
     {
         $user = tap($this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 22);
+            $this->mockPosts($user->getKey(), 22);
         });
 
-        $this->getJson(UserWithPosts::uriKey()."/{$user->id}?related=posts&relatablePerPage=20")
+        $this->getJson(UserWithPosts::uriKey()."/{$user->getKey()}?related=posts&relatablePerPage=20")
             ->assertJsonCount(20, 'data.relationships.posts');
     }
 
@@ -102,10 +102,10 @@ class HasManyTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
         $user = tap($this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 20);
+            $this->mockPosts($user->getKey(), 20);
         });
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
+        $this->getJson(UserWithPosts::uriKey()."/$user->getKey()?related=posts")
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
     }
@@ -125,7 +125,7 @@ class HasManyTest extends IntegrationTest
     public function test_can_display_other_pages()
     {
         tap($u = $this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 20);
+            $this->mockPosts($user->getKey(), 20);
         });
 
         UserWithPosts::partialMock()
@@ -145,7 +145,7 @@ class HasManyTest extends IntegrationTest
     public function test_can_apply_filters(): void
     {
         tap($u = $this->mockUsers()->first(), function ($user) {
-            tap($this->mockPosts($user->id, 20), static function (Collection $posts) {
+            tap($this->mockPosts($user->getKey(), 20), static function (Collection $posts) {
                 $first = $posts->first();
                 $first->title = 'wew';
                 $first->save();
@@ -173,7 +173,7 @@ class HasManyTest extends IntegrationTest
         Gate::policy(Post::class, PostPolicy::class);
 
         tap($u = $this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 5);
+            $this->mockPosts($user->getKey(), 5);
         });
 
         UserWithPosts::partialMock()

@@ -106,7 +106,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertCreated();
         });
     }
@@ -130,7 +130,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertForbidden();
         });
     }
@@ -146,7 +146,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertForbidden();
 
             $this->assertDatabaseCount('posts', 0);
@@ -155,7 +155,7 @@ class BelongsToFieldTest extends IntegrationTest
 
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertCreated();
         });
 
@@ -169,7 +169,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertForbidden();
         });
     }
