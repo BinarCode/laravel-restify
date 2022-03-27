@@ -67,7 +67,7 @@ class MatchFilter extends Filter
 
                     break;
                 case RestifySearchable::MATCH_DATETIME:
-                    if (count($values = explode(',',$value)) > 1) {
+                    if (count($values = explode(',', $value)) > 1) {
                         if ($this->negation) {
                             $query->whereNotBetween($field, $values);
                         } else {
