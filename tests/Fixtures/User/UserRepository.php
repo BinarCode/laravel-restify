@@ -11,7 +11,7 @@ class UserRepository extends Repository
 {
     use UserProfile;
 
-    public static $model = User::class;
+    public static string $model = User::class;
 
     public static bool $wasBooted = false;
 

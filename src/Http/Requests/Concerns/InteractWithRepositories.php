@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
 use Binaryk\LaravelRestify\Exceptions\RepositoryException;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Builder;

@@ -12,14 +12,14 @@ trait UserProfile
 
     public static $metaProfile = [];
 
-    public static function canUseForProfile(Request $request)
+    public static function canUseForProfile(Request $request): bool
     {
         return is_callable(static::$canUseForProfile)
             ? forward_static_call(static::$canUseForProfile, $request)
             : static::$canUseForProfile;
     }
 
-    public static function canUseForProfileUpdate(Request $request)
+    public static function canUseForProfileUpdate(Request $request): bool
     {
         return is_callable(static::$canUseForProfileUpdate)
             ? forward_static_call(static::$canUseForProfileUpdate, $request)

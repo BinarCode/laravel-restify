@@ -79,7 +79,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
                 Field::new('description')->canStore(fn () => false),
             ]);
 
-        $this->postJson(PostRepository::to(), [
+        $this->postJson(PostRepository::route(), [
             'description' => 'Description',
             'title' => $updated = 'Title',
         ])
@@ -101,7 +101,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
                 Field::new('description')->readonly(),
             ]);
 
-        $this->postJson(PostRepository::to(), [
+        $this->postJson(PostRepository::route(), [
             'description' => 'Description',
             'title' => $updated = 'Title',
         ])

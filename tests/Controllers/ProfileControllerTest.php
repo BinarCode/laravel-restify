@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -102,9 +103,9 @@ class ProfileControllerTest extends IntegrationTest
         ])
             ->assertStatus(422)
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->has('message')
-                ->has('errors')
+                fn(AssertableJson $json) => $json
+                    ->has('message')
+                    ->has('errors')
             );
     }
 
@@ -115,10 +116,10 @@ class ProfileControllerTest extends IntegrationTest
         $this->getJson('profile')
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->has('data')
-                ->where('data.attributes.email', $this->authenticatedAs->email)
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->has('data')
+                    ->where('data.attributes.email', $this->authenticatedAs->email)
+                    ->etc()
             );
     }
 
@@ -129,12 +130,12 @@ class ProfileControllerTest extends IntegrationTest
         $this->getJson('profile?related=posts')
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->has('data')
-                ->has('data.attributes')
-                ->has('data.relationships.posts')
-                ->where('data.attributes.email', $this->authenticatedAs->email)
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->has('data')
+                    ->has('data.attributes')
+                    ->has('data.relationships.posts')
+                    ->where('data.attributes.email', $this->authenticatedAs->email)
+                    ->etc()
             );
     }
 
@@ -148,10 +149,10 @@ class ProfileControllerTest extends IntegrationTest
 
         $this->getJson('profile')
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->has('data.attributes')
-                ->has('data.meta.roles')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->has('data.attributes')
+                    ->has('data.meta.roles')
+                    ->etc()
             );
     }
 
@@ -163,8 +164,8 @@ class ProfileControllerTest extends IntegrationTest
             'email' => $email = 'contact@binarschool.com',
         ])
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.attributes.email', $email)
+                fn(AssertableJson $json) => $json
+                    ->where('data.attributes.email', $email)
             );
     }
 

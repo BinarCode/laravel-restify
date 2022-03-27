@@ -22,7 +22,7 @@ class HasOneFieldTest extends IntegrationTest
     protected function setUp(): void
     {
         parent::setUp();
-        $this->authenticate();
+//        $this->authenticate();
 
         unset($_SERVER['restify.post.show']);
 
@@ -39,22 +39,21 @@ class HasOneFieldTest extends IntegrationTest
 
     public function test_has_one_present_on_relations(): void
     {
-        $post = Post::factory()->create([
-            'user_id' => User::factory(),
-        ]);
+        $post = Post::factory()->create();
 
-        $this->getJson(UserWithPostRepository::uriKey()."/$post->id?related=post")
-            ->assertJsonStructure([
-                'data' => [
-                    'relationships' => [
-                        'post',
-                    ],
+        $this->getJson(UserWithPostRepository::route($post->user_id, ['include' => 'post']))->assertJsonStructure([
+            'data' => [
+                'relationships' => [
+                    'post',
                 ],
-            ]);
+            ],
+        ]);
     }
 
     public function test_has_one_field_unauthorized_see_relationship(): void
     {
+        $this->authenticate();
+
         $_SERVER['restify.post.show'] = false;
 
         Gate::policy(Post::class, PostPolicy::class);
@@ -62,13 +61,13 @@ class HasOneFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => User::factory(),
         ]), function (Post $post) {
-            $this->postJson(UserWithPostRepository::to($post->id, [
+            $this->postJson(UserWithPostRepository::route($post->user_id, [
                 'include' => 'post',
-            ]))->dd();
+            ]))->assertForbidden();
         });
     }
 
-    public function test_field_ignored_when_storing()
+    public function test_field_ignored_when_storing(): void
     {
         UserWithPostRepository::partialMock()
             ->shouldReceive('fillFields')
@@ -92,45 +91,47 @@ class HasOneFieldTest extends IntegrationTest
             'post' => HasOne::make('post', PostRepository::class)->sortable('posts.title'),
         ];
 
-        Post::factory()->create([
+        Post::factory()->state([
             'title' => 'Zez',
-            'user_id' => User::factory()->create([
-                'name' => 'Last',
-            ]),
-        ]);
+        ])->for(User::factory()->state([
+            'name' => 'Last',
+        ]))->create();
 
-        Post::factory()->create([
+        Post::factory()->state([
             'title' => 'Abc',
-            'user_id' => User::factory()->create([
-                'name' => 'First',
-            ]),
-        ]);
+        ])->for(User::factory()->state([
+            'name' => 'First',
+        ]))->create();
 
         $this
-            ->getJson(UserRepository::uriKey().'?related=post&sort=-post.attributes.title&perPage=5')
-            ->assertJson(function (AssertableJson $assertableJson) {
-                $assertableJson
-                    ->where('data.1.attributes.name', 'First')
-                    ->where('data.0.attributes.name', 'Last')
-                    ->etc();
-            });
+            ->getJson(UserRepository::route(query: [
+                'include' => 'post',
+                'sort' => '-post.attributes.title',
+                'perPage' => 5,
+            ]))->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.0.attributes.name', 'Last')
+                ->where('data.1.attributes.name', 'First')
+                ->etc()
+            );
 
         $this
-            ->getJson(UserRepository::uriKey().'?related=post&sort=post.attributes.title&perPage=5')
-            ->assertJson(function (AssertableJson $assertableJson) {
-                $assertableJson
-                    ->where('data.0.attributes.name', 'First')
-                    ->where('data.1.attributes.name', 'Last')
-                    ->etc();
-            });
+            ->getJson(UserRepository::route(query: [
+                'include' => 'post',
+                'sort' => 'post.attributes.title',
+                'perPage' => 5,
+            ]))->assertJson(fn(AssertableJson $json) => $json
+                ->where('data.0.attributes.name', 'First')
+                ->where('data.1.attributes.name', 'Last')
+                ->etc()
+            );
     }
 }
 
 class UserWithPostRepository extends Repository
 {
-    public static $model = User::class;
+    public static string $model = User::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
             'post' => HasOne::make('post', PostRepository::class),

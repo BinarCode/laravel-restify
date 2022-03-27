@@ -34,7 +34,17 @@ trait InteractWithSearch
         return static::$withs ?? [];
     }
 
+    /**
+     * @deprecated Use `include` instead
+     *
+     * @return array
+     */
     public static function related(): array
+    {
+        return static::include();
+    }
+
+    public static function include(): array
     {
         return static::$related ?? [];
     }

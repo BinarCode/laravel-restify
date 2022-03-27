@@ -34,7 +34,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(UserWithRolesRepository::to($user->id, [
+        $this->getJson(UserWithRolesRepository::route($user->id, [
             'related' => 'roles',
         ]))->assertJson(
             fn (AssertableJson $json) => $json

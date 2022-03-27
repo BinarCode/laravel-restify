@@ -16,13 +16,13 @@ class ProfileUpdateController extends RepositoryController
         $user = $request->user();
 
         if ($repository = $this->guessRepository($request)) {
-//            $repository->allowToUpdate($request)->update($request, Auth::id());
+            $repository->allowToUpdate($request)->update($request, Auth::id());
 
             return data($repository->serializeForShow($request));
         }
 
         $request->validate([
-//            'email' => 'sometimes|required|unique:users,email,'.$user->id,
+            'email' => 'sometimes|required|unique:users,email,'.$user->id,
             'password' => 'sometimes|required|min:5|confirmed',
         ]);
 

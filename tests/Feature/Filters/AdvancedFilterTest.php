@@ -96,7 +96,7 @@ class AdvancedFilterTest extends IntegrationTest
             ],
         ], JSON_THROW_ON_ERROR));
 
-        $this->getJson(PostRepository::to(null, ['filters' => $filters]))
+        $this->getJson(PostRepository::route(null, ['filters' => $filters]))
             ->assertStatus(422);
 
         $filters = base64_encode(json_encode([
@@ -114,7 +114,7 @@ class AdvancedFilterTest extends IntegrationTest
             ],
         ], JSON_THROW_ON_ERROR));
 
-        $this->getJson(PostRepository::to(null, ['filters' => $filters]))
+        $this->getJson(PostRepository::route(null, ['filters' => $filters]))
             ->assertJsonCount(0, 'data');
     }
 
@@ -160,7 +160,7 @@ class AdvancedFilterTest extends IntegrationTest
             ],
         ], JSON_THROW_ON_ERROR));
 
-        $this->getJson(PostRepository::to(null, ['filters' => $filters]))
+        $this->getJson(PostRepository::route(null, ['filters' => $filters]))
             ->assertOk()
             ->assertJsonCount(1, 'data');
     }

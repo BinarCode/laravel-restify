@@ -99,7 +99,7 @@ abstract class IntegrationTest extends TestCase
 
     protected function authenticate(Authenticatable $user = null): self
     {
-        $user = $user ?? User::factory()->create();
+//        $user = $user ?? User::factory()->create();
 
         $this->actingAs($this->authenticatedAs = $user ?? Mockery::mock(Authenticatable::class));
 

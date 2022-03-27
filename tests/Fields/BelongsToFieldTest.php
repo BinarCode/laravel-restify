@@ -49,7 +49,7 @@ class BelongsToFieldTest extends IntegrationTest
                 'user' => BelongsTo::make('user', UserRepository::class),
             ]);
 
-        $this->getJson(PostRepository::to($post->id, [
+        $this->getJson(PostRepository::route($post->id, [
             'related' => 'user',
         ]))
             ->assertJsonStructure([
@@ -64,7 +64,7 @@ class BelongsToFieldTest extends IntegrationTest
                 ],
             ]);
 
-        $relationships = $this->getJson(PostRepository::to($post->id))
+        $relationships = $this->getJson(PostRepository::route($post->id))
             ->json('data.relationships');
 
         $this->assertNull($relationships);
@@ -219,7 +219,7 @@ class BelongsToFieldTest extends IntegrationTest
                 'user' => BelongsTo::make('user', UserRepository::class),
             ]);
 
-        $this->getJson(PostRepository::to($post->id, [
+        $this->getJson(PostRepository::route($post->id, [
             'include' => 'user[name]',
         ]))->assertJson(
             fn (AssertableJson $json) => $json

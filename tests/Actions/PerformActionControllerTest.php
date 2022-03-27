@@ -73,7 +73,7 @@ class PerformActionControllerTest extends IntegrationTest
             ->assertNotFound();
     }
 
-    public function test_show_action_not_need_repositories()
+    public function test_show_action_not_need_repositories(): void
     {
         $users = $this->mockUsers();
 

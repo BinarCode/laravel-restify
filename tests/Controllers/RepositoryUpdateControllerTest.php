@@ -65,7 +65,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
                 Field::new('title'),
             ]);
 
-        $this->putJson(PostRepository::to(Post::factory()->create([
+        $this->putJson(PostRepository::route(Post::factory()->create([
             'image' => null,
             'title' => 'Initial',
         ])->id), [
@@ -90,7 +90,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
                 Field::new('title'),
             ]);
 
-        $this->putJson(PostRepository::to(Post::factory()->create([
+        $this->putJson(PostRepository::route(Post::factory()->create([
             'image' => null,
             'title' => 'Initial',
         ])->id), [

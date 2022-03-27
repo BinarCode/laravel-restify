@@ -235,7 +235,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', PostRepository::class),
             ]);
 
-        $this->getJson(UserWithPosts::to("$userId/posts/$post->id"), [
+        $this->getJson(UserWithPosts::route("$userId/posts/$post->id"), [
             'title' => 'Test',
         ])->assertJsonStructure([
             'data' => ['attributes'],
