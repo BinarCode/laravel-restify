@@ -10,13 +10,16 @@ class UserFactory extends Factory
 {
     protected $model = User::class;
 
-    public function definition()
+    public function definition(): array
     {
         return [
             'name' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
+            'active' => $this->faker->boolean,
             'password' => '$2y$10$TKh8H1.PfQx37YgCzwiKb.KjNyWgaHb9cbcoQgdIVFlYg7B77UdFm',
             'remember_token' => Str::random(10),
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 
