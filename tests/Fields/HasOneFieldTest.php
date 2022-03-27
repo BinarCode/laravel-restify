@@ -61,9 +61,10 @@ class HasOneFieldTest extends IntegrationTest
 
         tap(Post::factory()->create([
             'user_id' => User::factory(),
-        ]), function ($post) {
-            $this->getJson(UserWithPostRepository::uriKey()."/{$post->id}?related=post")
-                ->assertForbidden();
+        ]), function (Post $post) {
+            $this->postJson(UserWithPostRepository::to($post->id, [
+                'include' => 'post',
+            ]))->dd();
         });
     }
 

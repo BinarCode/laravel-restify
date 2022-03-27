@@ -29,6 +29,13 @@ class PostRepository extends Repository
 
     public static array $middleware = [];
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        ray()->backtrace();
+    }
+
     public static function indexQuery(RestifyRequest $request, $query)
     {
         if (isset($_SERVER['restify.post.indexQueryCallback']) && is_callable($_SERVER['restify.post.indexQueryCallback'])) {
