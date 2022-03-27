@@ -108,7 +108,8 @@ class HasOneFieldTest extends IntegrationTest
                 'include' => 'post',
                 'sort' => '-post.attributes.title',
                 'perPage' => 5,
-            ]))->assertJson(fn(AssertableJson $json) => $json
+            ]))->assertJson(
+                fn (AssertableJson $json) => $json
                 ->where('data.0.attributes.name', 'Last')
                 ->where('data.1.attributes.name', 'First')
                 ->etc()
@@ -119,7 +120,8 @@ class HasOneFieldTest extends IntegrationTest
                 'include' => 'post',
                 'sort' => 'post.attributes.title',
                 'perPage' => 5,
-            ]))->assertJson(fn(AssertableJson $json) => $json
+            ]))->assertJson(
+                fn (AssertableJson $json) => $json
                 ->where('data.0.attributes.name', 'First')
                 ->where('data.1.attributes.name', 'Last')
                 ->etc()
