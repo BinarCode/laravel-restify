@@ -18,13 +18,14 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonSerializable;
 use ReturnTypeWillChange;
+use Symfony\Component\HttpFoundation\Response;
 use function tap;
 use function throw_unless;
 use Throwable;
 
 /**
  * Class Getter
- * @method JsonResponse handle(RestifyRequest $request, ?Model $model = null)
+ * @method Response|JsonResponse handle(RestifyRequest $request, ?Model $model = null)
  * @package Binaryk\LaravelRestify\Getters
  */
 abstract class Getter implements JsonSerializable
@@ -67,7 +68,7 @@ abstract class Getter implements JsonSerializable
     /**
      * @throws Throwable
      */
-    public function handleRequest(GetterRequest $request): JsonResponse
+    public function handleRequest(GetterRequest $request): Response
     {
         throw_unless(method_exists($this, 'handle'), new Exception('Missing handle method from the getter.'));
 
