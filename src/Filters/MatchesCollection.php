@@ -60,7 +60,8 @@ class MatchesCollection extends Collection
                 }
             }
 
-            return (bool) ($request->query("-{$filter->column()}") || $request->query($filter->column()));
+            return ! is_null($request->query("-{$filter->column()}"))
+                || ! is_null($request->query($filter->column()));
         });
     }
 
