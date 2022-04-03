@@ -9,6 +9,12 @@
 
 The first fully customizable Laravel [JSON:API](https://jsonapi.org) builder. "CRUD" and protect your resources with 0 (zero) extra line of code.
 
+<div>
+<a href="https://supportukrainenow.org">
+<img alt="Support Ukraine" src="https://github-ads.s3-eu-central-1.amazonaws.com/support-ukraine-spatie-be.svg">
+</a>
+</div>
+
 ## Installation
 
 You can install the package via composer:
