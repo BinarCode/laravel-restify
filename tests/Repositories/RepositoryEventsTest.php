@@ -26,11 +26,11 @@ class RepositoryEventsTest extends IntegrationTest
         $this->assertFalse(UserRepository::$wasBooted);
     }
 
-    public function test_booted_method_invoked()
+    public function test_booted_method_invoked(): void
     {
         UserRepository::$wasBooted = false;
 
-        $this->getJson('users');
+        $this->getJson(UserRepository::to());
 
         $this->assertTrue(UserRepository::$wasBooted);
     }

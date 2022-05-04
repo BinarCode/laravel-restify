@@ -22,7 +22,7 @@ class ProfileUpdateController extends RepositoryController
         }
 
         $request->validate([
-            'email' => 'sometimes|required|unique:users,email,'.$user->id,
+            'email' => 'sometimes|required|unique:users,email,'.$user->getKey(),
             'password' => 'sometimes|required|min:5|confirmed',
         ]);
 

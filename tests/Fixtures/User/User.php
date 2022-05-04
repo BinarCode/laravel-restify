@@ -36,36 +36,21 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
 
     public static $withs = ['posts'];
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
-     */
     protected $fillable = [
         'name', 'email', 'password', 'email_verified_at', 'avatar', 'created_at',
         'avatar_size',
         'avatar_original',
     ];
 
-    /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
-     */
     protected $hidden = [
         'password', 'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast to native types.
-     *
-     * @var array
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
 
-    public function getEmail()
+    public function getEmail(): string
     {
         return $this->email;
     }

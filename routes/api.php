@@ -32,7 +32,13 @@ Route::get('/{repository}/getters/{getter}', \Binaryk\LaravelRestify\Http\Contro
 Route::get('/{repository}/{repositoryId}/getters/{getter}', \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryGetterController::class)->name('restify.getters.repository.perform');
 
 // API CRUD
-Route::get('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class)->name('restify.index');
+Route::group([
+    'prefix' => config('restify.prefix'),
+    'as' => 'restify',
+], function() {
+    Route::get('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class)->name('index');
+});
+
 Route::post('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class)->name('restify.store');
 Route::post('/{repository}/bulk', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreBulkController::class)->name('restify.store.bulk');
 Route::post('/{repository}/bulk/update', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController::class)->name('restify.update.bulk');

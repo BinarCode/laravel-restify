@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\MockUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -98,7 +99,7 @@ abstract class IntegrationTest extends TestCase
 
     protected function authenticate(Authenticatable $user = null)
     {
-        $this->actingAs($this->authenticatedAs = $user ?? Mockery::mock(Authenticatable::class));
+        $this->actingAs($this->authenticatedAs = $user ?? Mockery::mock(MockUser::class));
 
         if (is_null($user)) {
             $this->authenticatedAs->shouldReceive('getAuthIdentifier')->andReturn(1);
