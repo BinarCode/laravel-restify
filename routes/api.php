@@ -36,6 +36,7 @@ Route::get('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryI
 Route::post('/{repository}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class)->name('restify.store');
 Route::post('/{repository}/bulk', \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreBulkController::class)->name('restify.store.bulk');
 Route::post('/{repository}/bulk/update', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController::class)->name('restify.update.bulk');
+Route::delete('/{repository}/bulk/delete', \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyBulkController::class)->name('restify.destroy.bulk');
 Route::get('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class)->name('restify.show');
 Route::patch('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryPatchController::class)->name('restify.patch');
 Route::put('/{repository}/{repositoryId}', \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class)->name('restify.put');

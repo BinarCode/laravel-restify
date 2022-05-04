@@ -181,6 +181,11 @@ trait AuthorizableModels
         $this->authorizeTo($request, 'updateBulk');
     }
 
+    public function authorizeToDeleteBulk(Request $request)
+    {
+        $this->authorizeTo($request, 'deleteBulk');
+    }
+
     /**
      * Determine if the current user can update the given resource.
      *

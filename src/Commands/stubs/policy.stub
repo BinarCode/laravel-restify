@@ -40,6 +40,11 @@ class {{ class }}
         //
     }
 
+    public function deleteBulk(User $user, {{ model }} $model)
+    {
+        //
+    }
+
     public function delete(User $user, {{ model }} $model)
     {
         //
