@@ -807,6 +807,23 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return response()->json();
     }
 
+    public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)
+    {
+        $status = DB::transaction(function () use ($request) {
+            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
+                Restify::actionLog()
+                    ->forRepositoryDestroy($this->resource, $request->user())
+                    ->save();
+            }
+
+            return $this->resource->delete();
+        });
+
+        static::deleted($status, $request);
+
+        return ok(code: 204);
+    }
+
     public function attach(RestifyRequest $request, $repositoryId, Collection $pivots)
     {
         $eagerField = $this->authorizeBelongsToMany($request)->belongsToManyField($request);
@@ -915,6 +932,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         $validator = static::validatorForUpdateBulk($request, $this, $payload);
 
         $validator->validate();
+
+        return $this;
+    }
+
+    public function allowToDestroyBulk(RestifyRequest $request, $payload = null): self
+    {
+        $this->authorizeToDeleteBulk($request);
 
         return $this;
     }
