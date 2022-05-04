@@ -56,21 +56,22 @@ for example: `UserPostRepository` class has the model `UserPost`.
 
 Having this in place you're basically ready for the CRUD actions over posts. You have available the follow endpoints:
 
-| Verb          | URI                            | Action  |
-| :------------- |:----------------------------- | :-------|
-| **GET**            | `/api/restify/posts`          | index   |
-| **GET**            | `/api/restify/posts/actions`          | index actions  |
-| **GET**            | `/api/restify/posts/{post}`   | show    |
-| **GET**            | `/api/restify/posts/{post}/actions`          | individual actions  |
-| **POST**           | `/api/restify/posts`          | store   |
-| **POST**            | `/api/restify/posts/actions?action=actionName`          | perform index actions  |
-| **POST**           | `/api/restify/posts/bulk`     | store multiple   |
-| **POST**           | `/api/restify/posts/bulk/update`     | update multiple   |
-| **PATCH**          | `/api/restify/posts/{post}`   | partial update  | 
-| **PUT**            | `/api/restify/posts/{post}`   | full update  |
-| **POST**           | `/api/restify/posts/{post}`   | partial of full update including attachments  | 
-| **POST**            | `/api/restify/posts/{post}/actions?action=actionName`          | perform index actions  |
-| **DELETE**         | `/api/restify/posts/{post}`   | destroy |
+| Verb       | URI                                                   | Action                                       |
+|:-----------|:------------------------------------------------------|:---------------------------------------------|
+| **GET**    | `/api/restify/posts`                                  | index                                        |
+| **GET**    | `/api/restify/posts/actions`                          | index actions                                |
+| **GET**    | `/api/restify/posts/{post}`                           | show                                         |
+| **GET**    | `/api/restify/posts/{post}/actions`                   | individual actions                           |
+| **POST**   | `/api/restify/posts`                                  | store                                        |
+| **POST**   | `/api/restify/posts/actions?action=actionName`        | perform index actions                        |
+| **POST**   | `/api/restify/posts/bulk`                             | store multiple                               |
+| **DELETE** | `/api/restify/posts/bulk/delete`                      | delete multiple                              |
+| **POST**   | `/api/restify/posts/bulk/update`                      | update multiple                              |
+| **PATCH**  | `/api/restify/posts/{post}`                           | partial update                               | 
+| **PUT**    | `/api/restify/posts/{post}`                           | full update                                  |
+| **POST**   | `/api/restify/posts/{post}`                           | partial of full update including attachments | 
+| **POST**   | `/api/restify/posts/{post}/actions?action=actionName` | perform index actions                        |
+| **DELETE** | `/api/restify/posts/{post}`                           | destroy                                      |
 
 <alert> 
 
@@ -661,6 +662,18 @@ Payload:
   }
 ]
 ```
+
+### Bulk delete flow
+
+The payload for a bulk delete should contain an array of primary keys for the models you want to delete: 
+
+```json
+[
+  1, 10, 15
+]
+```
+
+These models will be resolved from the database and check for the `deleteBulk` policy permission, in case any of the models isn't allowed to be deleted, no entry will be deleted.
 
 ## Force eager loading
 
