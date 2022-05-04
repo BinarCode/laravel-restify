@@ -36,7 +36,7 @@ if (! function_exists('ok')) {
             ], $code);
         }
 
-        return response()->json([], 204);
+        return response()->json([], $code);
     }
 }
 
