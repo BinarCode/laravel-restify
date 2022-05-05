@@ -26,7 +26,7 @@ abstract class FilterDefinition implements JsonSerializable
     public function getRelatedRepositoryUrl(): ?string
     {
         return ($key = $this->getRelatedRepositoryKey())
-            ? with(Restify::repositoryForKey($key), function ($repository = null) {
+            ? with(Restify::repositoryClassForKey($key), function ($repository = null) {
                 if (is_subclass_of($repository, Repository::class)) {
                     return Restify::path($repository::uriKey());
                 }

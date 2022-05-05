@@ -2,70 +2,69 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
-use Binaryk\LaravelRestify\Exceptions\RepositoryNotFoundException;
+use Binaryk\LaravelRestify\Exceptions\RepositoryException;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pipeline\Pipeline;
+use Throwable;
 
 /**
  * @mixin RestifyRequest
  */
 trait InteractWithRepositories
 {
+    /**
+     * @throws Throwable
+     */
     public function repository($key = null): Repository
     {
-        $repository = tap(Restify::repositoryForKey($key ?? $this->route('repository')), function (string $repository) {
-            /** * @var Repository $repository */
-            if (is_null($repository)) {
-                throw RepositoryNotFoundException::make(__('Repository :name not found.', [
-                    'name' => $repository,
-                ]));
-            }
+        try {
+            $key = $key ?? $this->route('repository');
 
-            if (! $repository::authorizedToUseRepository($this)) {
-                abort(403, __(
-                    'Unauthorized to view repository :name. Check "allowRestify" policy.',
-                    [
-                        'name' => $repository,
-                    ]
-                ));
-            }
+            throw_if(is_null($key), RepositoryException::missingKey());
 
-            if (! $repository::authorizedToUseRoute($this)) {
-                abort(403, __('Unauthorized to use the route :name. Check prefix.', [
-                    'name' => $this->getRequestUri(),
-                ]));
-            }
+            $repository = Restify::repository($key);
+
+            throw_unless(
+                $repository::authorizedToUseRepository($this),
+                RepositoryException::unauthorized($repository::uriKey())
+            );
+
+            throw_unless(
+                $repository::authorizedToUseRoute($this),
+                RepositoryException::routeUnauthorized($this->getRequestUri())
+            );
 
             app(Pipeline::class)
                 ->send($this)
                 ->through(optional($repository::collectMiddlewares($this))->all())
                 ->thenReturn();
-        });
 
-        return $repository::isMock()
-            ? $repository::getMock()
-            : $repository::resolveWith($repository::newModel());
+            return $repository;
+        } catch (RepositoryException $e) {
+            abort($e->getCode(), $e->getMessage());
+        }
     }
 
-    public function repositoryWith($model, $uriKey = null): Repository
+    public function repositoryWith(Model $model, string $uriKey = null): Repository
     {
         $repository = $this->repository($uriKey);
 
         return $repository::resolveWith($model);
     }
 
-    public function model($uriKey = null): Model
+    public function model(string $uriKey = null): Model
     {
         $repository = $this->repository($uriKey);
 
         return $repository::newModel();
     }
 
-    public function newQuery($uriKey = null): Builder | Relation
+    public function newQuery(string $uriKey = null): Builder|Relation
     {
         if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
@@ -79,7 +78,7 @@ trait InteractWithRepositories
         return $this->relatedEagerField()->getRelation();
     }
 
-    public function modelQuery(string $repositoryId = null, string $uriKey = null): Builder | Relation
+    public function modelQuery(string $repositoryId = null, string $uriKey = null): Builder|Relation
     {
         return $this->newQuery($uriKey)->whereKey(
             $repositoryId ?? $this->route('repositoryId')

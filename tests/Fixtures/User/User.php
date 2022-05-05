@@ -37,7 +37,13 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
     public static $withs = ['posts'];
 
     protected $fillable = [
-        'name', 'email', 'password', 'email_verified_at', 'avatar', 'created_at',
+        'name',
+        'email',
+        'active',
+        'password',
+        'email_verified_at',
+        'avatar',
+        'created_at',
         'avatar_size',
         'avatar_original',
     ];
@@ -55,7 +61,7 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
         return $this->email;
     }
 
-    public function createToken($name, array $scopes = [])
+    public function createToken($name, array $scopes = []): object
     {
         return new class {
             public $accessToken = 'token';

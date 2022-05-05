@@ -207,7 +207,7 @@ abstract class Filter implements JsonSerializable
     public function getRelatedRepository(): ?array
     {
         return ($key = $this->getRelatedRepositoryKey())
-            ? with(Restify::repositoryForKey($key), function ($repository = null) {
+            ? with(Restify::repositoryClassForKey($key), function ($repository = null) {
                 if (is_subclass_of($repository, Repository::class)) {
                     return [
                         'key' => $repository::uriKey(),

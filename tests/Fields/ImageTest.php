@@ -28,7 +28,7 @@ class ImageTest extends IntegrationTest
         );
     }
 
-    public function test_ignore_image_default_value_when_image_exists()
+    public function test_ignore_image_default_value_when_image_exists(): void
     {
         Storage::fake('customDisk');
 
@@ -40,7 +40,7 @@ class ImageTest extends IntegrationTest
 
         $user = $this->mockUsers()->first();
 
-        $this->postJson(UserRepository::uriKey()."/{$user->id}", [
+        $this->postJson(UserRepository::uriKey()."/{$user->getKey()}", [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar' => '/storage/avatar.jpg',

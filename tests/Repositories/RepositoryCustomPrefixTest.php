@@ -24,13 +24,13 @@ class RepositoryCustomPrefixTest extends IntegrationTest
         PostRepository::$indexPrefix = null;
     }
 
-    public function test_repository_can_have_custom_prefix()
+    public function test_repository_can_have_custom_prefix(): void
     {
         $this->getJson('api/index/'.PostRepository::uriKey())
             ->assertSuccessful();
     }
 
-    public function test_repository_prefix_block_default_route()
+    public function test_repository_prefix_block_default_route(): void
     {
         $this->getJson(PostRepository::uriKey())
             ->assertForbidden();

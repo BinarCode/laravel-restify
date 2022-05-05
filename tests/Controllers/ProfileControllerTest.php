@@ -103,8 +103,8 @@ class ProfileControllerTest extends IntegrationTest
             ->assertStatus(422)
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('message')
-                ->has('errors')
+                    ->has('message')
+                    ->has('errors')
             );
     }
 
@@ -116,9 +116,9 @@ class ProfileControllerTest extends IntegrationTest
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data')
-                ->where('data.attributes.email', $this->authenticatedAs->email)
-                ->etc()
+                    ->has('data')
+                    ->where('data.attributes.email', $this->authenticatedAs->email)
+                    ->etc()
             );
     }
 
@@ -130,11 +130,11 @@ class ProfileControllerTest extends IntegrationTest
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data')
-                ->has('data.attributes')
-                ->has('data.relationships.posts')
-                ->where('data.attributes.email', $this->authenticatedAs->email)
-                ->etc()
+                    ->has('data')
+                    ->has('data.attributes')
+                    ->has('data.relationships.posts')
+                    ->where('data.attributes.email', $this->authenticatedAs->email)
+                    ->etc()
             );
     }
 
@@ -149,9 +149,9 @@ class ProfileControllerTest extends IntegrationTest
         $this->getJson('profile')
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data.attributes')
-                ->has('data.meta.roles')
-                ->etc()
+                    ->has('data.attributes')
+                    ->has('data.meta.roles')
+                    ->etc()
             );
     }
 
@@ -164,7 +164,7 @@ class ProfileControllerTest extends IntegrationTest
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.email', $email)
+                    ->where('data.attributes.email', $email)
             );
     }
 

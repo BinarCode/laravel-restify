@@ -2,22 +2,12 @@
 
 namespace Binaryk\LaravelRestify\Bootstrap;
 
-use Binaryk\LaravelRestify\Getters\Getter;
-use Binaryk\LaravelRestify\Http\Controllers\PerformGetterController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
-use Illuminate\Contracts\Foundation\CachesRoutes;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 
 class RoutesBoot
 {
-    public function __construct(
-        private Application $app,
-    ) {
-    }
-
     public function boot(): void
     {
         $config = [
@@ -28,7 +18,6 @@ class RoutesBoot
         ];
 
         $this
-//            ->registerCustomGettersPerforms($config)
             ->defaultRoutes($config)
             ->registerPrefixed($config)
             ->registerIndexPrefixed($config);
@@ -74,28 +63,6 @@ class RoutesBoot
     private function loadRoutesFrom(string $path): self
     {
         require $path;
-
-        return $this;
-    }
-
-    // @deprecated
-    public function registerCustomGettersPerforms($config): self
-    {
-        collect(Restify::$repositories)
-            ->filter(function ($repository) use ($config) {
-                return collect(app($repository)
-                    ->getters(app(RestifyRequest::class)))
-                    ->each(function (Getter $getter) use ($config, $repository) {
-                        if (count($excludedMiddleware = $getter->excludedMiddleware())) {
-                            Route::group($config, function () use ($excludedMiddleware, $repository, $getter) {
-                                $getterKey = $getter->uriKey();
-
-                                Route::get("/{repository}/getters/$getterKey", PerformGetterController::class)
-                                    ->withoutMiddleware($excludedMiddleware);
-                            });
-                        }
-                    });
-            });
 
         return $this;
     }

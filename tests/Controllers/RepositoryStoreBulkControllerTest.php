@@ -44,11 +44,11 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
         $user = $this->mockUsers()->first();
         $this->postJson('posts/bulk', [
             [
-                'user_id' => $user->id,
+                'user_id' => $user->getKey(),
                 'title' => 'First post.',
             ],
             [
-                'user_id' => $user->id,
+                'user_id' => $user->getKey(),
                 'title' => 'Second post.',
             ],
         ])->assertSuccessful();

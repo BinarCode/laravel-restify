@@ -18,14 +18,14 @@ trait RepositoryEvents
      *
      * @var array
      */
-    protected static $booted = [];
+    protected static array $booted = [];
 
     /**
      * Perform any actions required before the repository boots.
      *
      * @return void
      */
-    protected static function booting()
+    protected static function booting(): void
     {
         //
     }
@@ -35,7 +35,7 @@ trait RepositoryEvents
      *
      * @return void
      */
-    protected static function boot()
+    protected static function boot(): void
     {
         static::$relatedCast = app(config('restify.casts.related'));
     }
@@ -45,12 +45,12 @@ trait RepositoryEvents
      *
      * @return void
      */
-    protected static function booted()
+    protected static function booted(): void
     {
         //
     }
 
-    protected function bootIfNotBooted()
+    protected function bootIfNotBooted(): void
     {
         if (! isset(static::$booted[static::class])) {
             static::$booted[static::class] = true;
@@ -61,7 +61,7 @@ trait RepositoryEvents
         }
     }
 
-    public static function mounting()
+    public static function mounting(): void
     {
         if (static::$prefix) {
             static::setPrefix(static::$prefix, static::uriKey());
@@ -73,11 +73,11 @@ trait RepositoryEvents
     }
 
     /**
-     * Clear the list of booted repositories so they will be re-booted.
+     * Clear the list of booted repositories, so they will be re-booted.
      *
      * @return void
      */
-    public static function clearBootedRepositories()
+    public static function clearBootedRepositories(): void
     {
         static::$booted = [];
     }

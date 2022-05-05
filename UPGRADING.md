@@ -2,6 +2,11 @@
 
 Because there are many breaking changes an upgrade is not that easy. There are many edge cases this guide does not cover. We accept PRs to improve this guide.
 
+## From 6.x to 7.x
+
+ - Restify.php - `repositoryForKey` renamed to `repositoryClassForKey`
+ - Repository.php - static `to` method renamed to `route`
+
 ## From 6.2.1 to 6.3.0
 
 - The `src/Events/AddedRepositories.php` event was removed because of a [conflict with telescope](https://github.com/laravel/telescope/issues/1152).

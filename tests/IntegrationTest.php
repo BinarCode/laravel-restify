@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\MockUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -90,14 +91,14 @@ abstract class IntegrationTest extends TestCase
             UserRepository::class,
             PostRepository::class,
             CompanyRepository::class,
-            \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository::class,
+            PostWithHiddenFieldRepository::class,
             RoleRepository::class,
         ]);
 
         return $this;
     }
 
-    protected function authenticate(Authenticatable $user = null)
+    protected function authenticate(Authenticatable $user = null): self
     {
         $this->actingAs($this->authenticatedAs = $user ?? Mockery::mock(MockUser::class));
 

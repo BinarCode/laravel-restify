@@ -29,7 +29,7 @@ trait AuthorizableModels
     /**
      * Determine if the Restify is enabled for this repository.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @return void
      * @throws AuthorizationException
      */
@@ -47,10 +47,10 @@ trait AuthorizableModels
     /**
      * Determine if the repository should be available for the given request.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @return bool
      */
-    public static function authorizedToUseRepository(Request $request)
+    public static function authorizedToUseRepository(Request $request): bool
     {
         if (! static::authorizable()) {
             return true;
@@ -86,7 +86,7 @@ trait AuthorizableModels
     /**
      * Determine if the current user can store new repositories or throw an exception.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
@@ -108,7 +108,7 @@ trait AuthorizableModels
     /**
      * Determine if the current user can store new repositories.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @return bool
      */
     public static function authorizedToStore(Request $request)
@@ -132,7 +132,7 @@ trait AuthorizableModels
     /**
      * Determine if the current user can update the given resource or throw an exception.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
@@ -184,7 +184,7 @@ trait AuthorizableModels
     /**
      * Determine if the current user can update the given resource.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @return bool
      */
     public function authorizedToUpdate(Request $request)
@@ -195,7 +195,7 @@ trait AuthorizableModels
     /**
      * Determine if the current user can delete the given resource or throw an exception.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @return void
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
@@ -208,7 +208,7 @@ trait AuthorizableModels
     /**
      * Determine if the current user can delete the given resource.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @return bool
      */
     public function authorizedToDelete(Request $request)
@@ -219,7 +219,7 @@ trait AuthorizableModels
     /**
      * Determine if the current user has a given ability.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @param string $ability
      * @return void
      *
@@ -235,7 +235,7 @@ trait AuthorizableModels
     /**
      * Determine if the current user can view the given resource.
      *
-     * @param \Illuminate\Http\Request $request
+     * @param  Request  $request
      * @param string $ability
      * @return bool
      */
