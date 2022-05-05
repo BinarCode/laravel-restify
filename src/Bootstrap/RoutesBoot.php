@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Http\Controllers\PerformGetterController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
-use Illuminate\Contracts\Foundation\CachesRoutes;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 
@@ -46,7 +45,7 @@ class RoutesBoot
     public function registerPrefixed($config): self
     {
         collect(Restify::$repositories)
-            ->filter(fn($repository) => $repository::prefix())
+            ->filter(fn ($repository) => $repository::prefix())
             ->each(function (string $repository) use ($config) {
                 $config['prefix'] = $repository::prefix();
                 Route::group($config, function () {
@@ -60,7 +59,7 @@ class RoutesBoot
     public function registerIndexPrefixed($config): self
     {
         collect(Restify::$repositories)
-            ->filter(fn($repository) => $repository::hasIndexPrefix())
+            ->filter(fn ($repository) => $repository::hasIndexPrefix())
             ->each(function ($repository) use ($config) {
                 $config['prefix'] = $repository::indexPrefix();
                 Route::group($config, function () {
