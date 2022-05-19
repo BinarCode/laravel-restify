@@ -101,7 +101,7 @@ class Restify
             (new BootRepository($repository))->boot();
         });
 
-        return new static;
+        return new static();
     }
 
     /**
@@ -117,7 +117,7 @@ class Restify
 
         $repositories = [];
 
-        foreach ((new Finder)->in($directory)->files() as $repository) {
+        foreach ((new Finder())->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
                 ['/', '.php'],
                 ['\\', ''],

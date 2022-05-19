@@ -32,6 +32,6 @@ class ResetPasswordController extends Controller
 
         Password::deleteToken($user);
 
-        return data("Password has been successfully changed");
+        return data('Password has been successfully changed');
     }
 }

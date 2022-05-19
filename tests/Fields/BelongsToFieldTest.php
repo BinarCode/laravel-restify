@@ -28,9 +28,9 @@ class BelongsToFieldTest extends IntegrationTest
             PostWithUserRepository::class,
         ]);
 
-        unset($_SERVER['restify.post.store']);
-        unset($_SERVER['restify.post.allowRestify']);
-        unset($_SERVER['restify.users.show']);
+        unset($_SERVER['restify.post.store'], $_SERVER['restify.post.allowRestify'], $_SERVER['restify.users.show']);
+
+
     }
 
     protected function tearDown(): void

@@ -17,7 +17,6 @@ class PublishPostAction extends Action
         $query->whereNotNull('published_at');
     }
 
-
     public function handle(ActionRequest $request, Collection $models): JsonResponse
     {
         static::$applied[] = $models;

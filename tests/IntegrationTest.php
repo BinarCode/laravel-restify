@@ -134,18 +134,21 @@ abstract class IntegrationTest extends TestCase
         return __DIR__ . '/TestSupport/temp' . ($suffix === '' ? '' : '/' . $suffix);
     }
 
-    #[Pure] public function getMediaDirectory($suffix = ''): string
-    {
-        return $this->getTempDirectory() . '/media' . ($suffix === '' ? '' : '/' . $suffix);
-    }
+    #[Pure]
+ public function getMediaDirectory($suffix = ''): string
+ {
+     return $this->getTempDirectory() . '/media' . ($suffix === '' ? '' : '/' . $suffix);
+ }
 
-    #[Pure] public function getTestFilesDirectory($suffix = ''): string
-    {
-        return $this->getTempDirectory() . '/testfiles' . ($suffix === '' ? '' : '/' . $suffix);
-    }
+    #[Pure]
+ public function getTestFilesDirectory($suffix = ''): string
+ {
+     return $this->getTempDirectory() . '/testfiles' . ($suffix === '' ? '' : '/' . $suffix);
+ }
 
-    #[Pure] public function getTestJpg(): string
-    {
-        return $this->getTestFilesDirectory('test.jpg');
-    }
+    #[Pure]
+ public function getTestJpg(): string
+ {
+     return $this->getTestFilesDirectory('test.jpg');
+ }
 }

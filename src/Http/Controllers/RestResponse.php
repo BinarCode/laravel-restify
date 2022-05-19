@@ -50,23 +50,23 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Response Codes.
      */
-    const REST_RESPONSE_AUTH_CODE = 401;
-    const REST_RESPONSE_REFRESH_CODE = 103;
-    const REST_RESPONSE_CREATED_CODE = 201;
-    const REST_RESPONSE_UPDATED_CODE = 200;
-    const REST_RESPONSE_DELETED_CODE = 204; // update or delete with success
-    const REST_RESPONSE_BLANK_CODE = 204;
-    const REST_RESPONSE_ERROR_CODE = 500;
-    const REST_RESPONSE_INVALID_CODE = 400;
-    const REST_RESPONSE_UNAUTHORIZED_CODE = 401;
-    const REST_RESPONSE_FORBIDDEN_CODE = 403;
-    const REST_RESPONSE_MISSING_CODE = 404;
-    const REST_RESPONSE_NOTFOUND_CODE = 404;
-    const REST_RESPONSE_THROTTLE_CODE = 429;
-    const REST_RESPONSE_SUCCESS_CODE = 200;
-    const REST_RESPONSE_UNAVAILABLE_CODE = 503;
+    public const REST_RESPONSE_AUTH_CODE = 401;
+    public const REST_RESPONSE_REFRESH_CODE = 103;
+    public const REST_RESPONSE_CREATED_CODE = 201;
+    public const REST_RESPONSE_UPDATED_CODE = 200;
+    public const REST_RESPONSE_DELETED_CODE = 204; // update or delete with success
+    public const REST_RESPONSE_BLANK_CODE = 204;
+    public const REST_RESPONSE_ERROR_CODE = 500;
+    public const REST_RESPONSE_INVALID_CODE = 400;
+    public const REST_RESPONSE_UNAUTHORIZED_CODE = 401;
+    public const REST_RESPONSE_FORBIDDEN_CODE = 403;
+    public const REST_RESPONSE_MISSING_CODE = 404;
+    public const REST_RESPONSE_NOTFOUND_CODE = 404;
+    public const REST_RESPONSE_THROTTLE_CODE = 429;
+    public const REST_RESPONSE_SUCCESS_CODE = 200;
+    public const REST_RESPONSE_UNAVAILABLE_CODE = 503;
 
-    const CODES = [
+    public const CODES = [
         self::REST_RESPONSE_AUTH_CODE,
         self::REST_RESPONSE_REFRESH_CODE,
         self::REST_RESPONSE_CREATED_CODE,
