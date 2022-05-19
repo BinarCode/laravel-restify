@@ -95,7 +95,7 @@ class PublishAuthCommand extends Command
      */
     protected function copyDirectory(string $path, string $stubDirectory, string $format): self
     {
-        $filesystem = new Filesystem;
+        $filesystem = new Filesystem();
 
         collect($filesystem->allFiles(__DIR__ . $stubDirectory))
             ->each(function (SplFileInfo $file) use ($filesystem, $path, $format, $stubDirectory) {

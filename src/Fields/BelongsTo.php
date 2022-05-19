@@ -29,7 +29,6 @@ class BelongsTo extends EagerField implements Sortable
         $this->repositoryClass = $parentRepository;
     }
 
-
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
         /** * @var Model $relatedModel */

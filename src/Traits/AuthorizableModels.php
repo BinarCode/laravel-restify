@@ -256,6 +256,6 @@ trait AuthorizableModels
      */
     public static function isRepositoryContext()
     {
-        return new static instanceof Repository;
+        return new static() instanceof Repository;
     }
 }
