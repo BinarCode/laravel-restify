@@ -29,8 +29,6 @@ class BelongsToFieldTest extends IntegrationTest
         ]);
 
         unset($_SERVER['restify.post.store'], $_SERVER['restify.post.allowRestify'], $_SERVER['restify.users.show']);
-
-
     }
 
     protected function tearDown(): void
