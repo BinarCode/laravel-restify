@@ -46,7 +46,7 @@ class PerformActionControllerTest extends IntegrationTest
         PostRepository::partialMock()
             ->shouldReceive('actions')
             ->andReturn([
-                new class extends Action {
+                new class () extends Action {
                     public static $uriKey = 'publish';
 
                     public function handle(Request $request, Collection $collection)
@@ -77,7 +77,7 @@ class PerformActionControllerTest extends IntegrationTest
     {
         $users = $this->mockUsers();
 
-        $this->postJson('users/'.$users->first()->id.'/action?action='.(new ActivateAction)->uriKey())
+        $this->postJson('users/'.$users->first()->id.'/action?action='.(new ActivateAction())->uriKey())
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',

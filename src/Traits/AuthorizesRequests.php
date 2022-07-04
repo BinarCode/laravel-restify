@@ -21,7 +21,7 @@ trait AuthorizesRequests
     {
         static::$authUsing = $callback;
 
-        return new static;
+        return new static();
     }
 
     /**

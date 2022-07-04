@@ -62,12 +62,7 @@ abstract class Filter implements JsonSerializable
         $this->booted();
     }
 
-    protected function booted()
-    {
-        //
-    }
-
-    abstract public function filter(RestifyRequest $request, Builder | Relation $query, $value);
+    abstract public function filter(RestifyRequest $request, Builder|Relation $query, $value);
 
     public function canSee(Closure $callback)
     {
@@ -86,31 +81,7 @@ abstract class Filter implements JsonSerializable
         return static::class;
     }
 
-    protected function getType(): string
-    {
-        return $this->type;
-    }
-
-    protected function title(): string
-    {
-        if ($this->title) {
-            return $this->title;
-        }
-
-        if ($column = $this->column()) {
-            return Str::title(Str::snake(Str::studly($column), ' '));
-        }
-
-        return $this->title ?? Str::title(Str::snake(class_basename(static::class), ' '));
-    }
-
-    protected function description(): string
-    {
-        return $this->description;
-    }
-
     /**
-     * @return string|null
      * @deprecated use `column()` instead
      */
     public function getColumn(): ?string
@@ -155,7 +126,9 @@ abstract class Filter implements JsonSerializable
     {
         if (is_array($value)) {
             return count($value) < 1;
-        } elseif (is_string($value)) {
+        }
+
+        if (is_string($value)) {
             return trim($value) === '';
         }
 
@@ -184,6 +157,13 @@ abstract class Filter implements JsonSerializable
     public function setRepository(Repository $repository): self
     {
         $this->repository = $repository;
+
+        return $this;
+    }
+
+    public function setTitle(string $title): self
+    {
+        $this->title = $title;
 
         return $this;
     }
@@ -222,8 +202,6 @@ abstract class Filter implements JsonSerializable
 
     /**
      * Get the URI key for the filter.
-     *
-     * @return string
      */
     public static function uriKey(): string
     {
@@ -257,7 +235,6 @@ abstract class Filter implements JsonSerializable
             ]) : $initial;
         });
 
-
         if ($this->isAdvanced()) {
             $serialized = array_merge($serialized, [
                 'rules' => $this->rules(app(Request::class)),
@@ -277,5 +254,32 @@ abstract class Filter implements JsonSerializable
         dd($this);
 
         return $this;
+    }
+
+    protected function booted()
+    {
+    }
+
+    protected function getType(): string
+    {
+        return $this->type;
+    }
+
+    protected function title(): string
+    {
+        if ($this->title) {
+            return $this->title;
+        }
+
+        if ($column = $this->column()) {
+            return Str::title(Str::snake(Str::studly($column), ' '));
+        }
+
+        return $this->title ?? Str::title(Str::snake(class_basename(static::class), ' '));
+    }
+
+    protected function description(): string
+    {
+        return $this->description;
     }
 }

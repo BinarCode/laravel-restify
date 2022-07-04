@@ -35,11 +35,11 @@ class ActionLog extends Model
         'changes' => 'array',
     ];
 
-    const STATUS_FINISHED = 'finished';
+    public const STATUS_FINISHED = 'finished';
 
-    const ACTION_CREATED = 'Stored';
-    const ACTION_UPDATED = 'Updated';
-    const ACTION_DELETED = 'Deleted';
+    public const ACTION_CREATED = 'Stored';
+    public const ACTION_UPDATED = 'Updated';
+    public const ACTION_DELETED = 'Deleted';
 
     public static function forRepositoryStored(Model $model, Authenticatable $user = null, array $dirty = null): self
     {

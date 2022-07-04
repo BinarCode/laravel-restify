@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
 use Binaryk\LaravelRestify\Http\Requests\GlobalSearchRequest;

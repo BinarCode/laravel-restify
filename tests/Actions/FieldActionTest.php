@@ -15,7 +15,7 @@ class FieldActionTest extends IntegrationTest
     /** * @test */
     public function can_use_actionable_field(): void
     {
-        $action = new class extends Action {
+        $action = new class () extends Action {
             public bool $showOnShow = true;
 
             public function handle(RestifyRequest $request, Post $post)
@@ -53,7 +53,7 @@ class FieldActionTest extends IntegrationTest
     /** @test */
     public function can_use_actionable_field_on_bulk_store(): void
     {
-        $action = new class extends Action {
+        $action = new class () extends Action {
             public bool $showOnShow = true;
 
             public function handle(RestifyRequest $request, Post $post, int $row)
@@ -99,7 +99,7 @@ class FieldActionTest extends IntegrationTest
     /** @test */
     public function can_use_actionable_field_on_bulk_update(): void
     {
-        $action = new class extends Action {
+        $action = new class () extends Action {
             public bool $showOnShow = true;
 
             public function handle(RestifyRequest $request, Post $post, int $row)

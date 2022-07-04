@@ -7,7 +7,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 class SearchableFilter extends Filter
 {
-    const TYPE = 'searchable';
+    public const TYPE = 'searchable';
 
     public array $computedColumns = [];
 

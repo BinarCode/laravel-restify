@@ -14,7 +14,7 @@ class AdvancedFilterTest extends IntegrationTest
 {
     public function test_advanced_filters_can_serialize(): void
     {
-        $filter = new class extends AdvancedFilter {
+        $filter = new class () extends AdvancedFilter {
             public static $uriKey = 'status-filter';
 
             public string $type = 'multiselect';
@@ -62,8 +62,7 @@ class AdvancedFilterTest extends IntegrationTest
                     ->where('options', [[
                         'label' => 'Draft',
                         'property' => 'draft',
-                    ]])
-                    ;
+                    ]]);
             }
         );
     }

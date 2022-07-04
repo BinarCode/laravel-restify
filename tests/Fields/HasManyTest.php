@@ -26,9 +26,7 @@ class HasManyTest extends IntegrationTest
             UserWithPosts::class,
         ]);
 
-        unset($_SERVER['restify.post.show']);
-        unset($_SERVER['restify.post.delete']);
-        unset($_SERVER['restify.post.allowRestify']);
+        unset($_SERVER['restify.post.show'], $_SERVER['restify.post.delete'], $_SERVER['restify.post.allowRestify']);
     }
 
     protected function tearDown(): void
