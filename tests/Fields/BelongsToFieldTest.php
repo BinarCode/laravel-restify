@@ -44,7 +44,7 @@ class BelongsToFieldTest extends IntegrationTest
         $post = PostFactory::one();
 
         PostRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'user' => BelongsTo::make('user', UserRepository::class),
             ]);
@@ -214,7 +214,7 @@ class BelongsToFieldTest extends IntegrationTest
         $post = PostFactory::one();
 
         PostRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'user' => BelongsTo::make('user', UserRepository::class),
             ]);
@@ -234,7 +234,7 @@ class PostWithUserRepository extends Repository
 {
     public static $model = Post::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
             'user' => BelongsTo::make('user', UserRepository::class),

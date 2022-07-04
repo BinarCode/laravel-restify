@@ -23,7 +23,7 @@ use ReturnTypeWillChange;
 
 /**
  * Class Action
- * @method JsonResponse handle(Request $request, Model|Collection $models, ?int $row)
+ * @method JsonResponse handle(Request $request, ?Model|Collection $models = null, ?int $row = null)
  * @package Binaryk\LaravelRestify\Actions
  */
 abstract class Action implements JsonSerializable

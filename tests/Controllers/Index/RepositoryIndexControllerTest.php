@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers\Index;
 
+use Binaryk\LaravelRestify\Fields\HasMany;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Factories\PostFactory;
@@ -12,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\RelatedCastWithAttributes;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
@@ -30,41 +32,41 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::route())
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->count('data', 5)
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->count('data', 5)
+                    ->etc()
             );
 
         $this->getJson(PostRepository::route(null, [
             'perPage' => 10,
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
-            ->count('data', 10)
-            ->etc()
+            fn(AssertableJson $json) => $json
+                ->count('data', 10)
+                ->etc()
         );
 
         $this->getJson(PostRepository::route(null, [
             'page[size]' => 10,
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
-            ->count('data', 10)
-            ->etc()
+            fn(AssertableJson $json) => $json
+                ->count('data', 10)
+                ->etc()
         );
 
         $this->getJson(PostRepository::route(null, [
             'perPage' => 10,
             'page' => '2',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
-            ->count('data', 5)
-            ->etc()
+            fn(AssertableJson $json) => $json
+                ->count('data', 5)
+                ->etc()
         );
 
         $this->getJson(PostRepository::route(null, [
             'page[size]' => 10,
             'page[number]' => 2,
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
+            fn(AssertableJson $json) => $json
                 ->count('data', 5)
                 ->etc()
         );
@@ -93,7 +95,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::route(null, [
             'search' => 'code',
-        ]))->assertJson(fn (AssertableJson $json) => $json->count('data', 2)->etc());
+        ]))->assertJson(fn(AssertableJson $json) => $json->count('data', 2)->etc());
     }
 
     /** * @test */
@@ -114,19 +116,19 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'sort' => '-title',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
-            ->where('data.0.attributes.title', 'ZZZ')
-            ->where('data.1.attributes.title', 'AAA')
-            ->etc()
+            fn(AssertableJson $json) => $json
+                ->where('data.0.attributes.title', 'ZZZ')
+                ->where('data.1.attributes.title', 'AAA')
+                ->etc()
         );
 
         $this->getJson(PostRepository::route(null, [
             'sort' => 'title',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
-            ->where('data.0.attributes.title', 'AAA')
-            ->where('data.1.attributes.title', 'ZZZ')
-            ->etc()
+            fn(AssertableJson $json) => $json
+                ->where('data.0.attributes.title', 'AAA')
+                ->where('data.1.attributes.title', 'ZZZ')
+                ->etc()
         );
     }
 
@@ -146,9 +148,9 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'related' => 'user',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
-            ->where('data.0.relationships.user.0.name', $name)
-            ->etc()
+            fn(AssertableJson $json) => $json
+                ->where('data.0.relationships.user.0.name', $name)
+                ->etc()
         );
     }
 
@@ -168,9 +170,9 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'related' => 'user',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
-            ->where('data.0.relationships.user', 'foo')
-            ->etc()
+            fn(AssertableJson $json) => $json
+                ->where('data.0.relationships.user', 'foo')
+                ->etc()
         );
     }
 
@@ -188,9 +190,9 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'related' => 'user',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
-            ->has('data.0.relationships.user.0.attributes')
-            ->etc()
+            fn(AssertableJson $json) => $json
+                ->has('data.0.relationships.user.0.attributes')
+                ->etc()
         );
     }
 
@@ -198,9 +200,9 @@ class RepositoryIndexControllerTest extends IntegrationTest
     public function it_can_retrieve_nested_relationships(): void
     {
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
-                'users.posts',
+                'users' => HasMany::make('users', UserRepository::class),
             ]);
 
         Company::factory()->has(
@@ -209,16 +211,14 @@ class RepositoryIndexControllerTest extends IntegrationTest
             )
         )->create();
 
-        $response = $this->getJson(CompanyRepository::route(null, [
-            'related' => 'users.posts',
+        $this->getJson(CompanyRepository::route(null, [
+            'related' => 'users',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
-            ->has('data.0.relationships')
-            ->etc()
+            fn(AssertableJson $json) => $json
+                ->has('data.0.relationships')
+                ->has('data.0.relationships.users')
+                ->etc()
         );
-
-        self::assertCount(1, $response->json('data.0.relationships')['users.posts']);
-        self::assertCount(1, $response->json('data.0.relationships')['users.posts'][0]['posts']);
     }
 
     /** * @test */
@@ -245,10 +245,10 @@ class RepositoryIndexControllerTest extends IntegrationTest
             'page' => 2,
         ]))
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->count('data', 1)
-                ->where('data.0.relationships.user.0.name', $owner)
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->count('data', 1)
+                    ->where('data.0.relationships.user.0.name', $owner)
+                    ->etc()
             );
     }
 

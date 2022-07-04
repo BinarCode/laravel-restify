@@ -38,7 +38,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         });
 
         CompanyRepository::partialMock()
-            ->expects('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)->hideFromShow(),
             ]);
@@ -60,7 +60,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         });
 
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)->hideFromIndex(),
             ]);

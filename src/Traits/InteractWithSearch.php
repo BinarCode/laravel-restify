@@ -34,16 +34,6 @@ trait InteractWithSearch
         return static::$withs ?? [];
     }
 
-    /**
-     * @deprecated Use `include` instead
-     *
-     * @return array
-     */
-    public static function related(): array
-    {
-        return static::include();
-    }
-
     public static function include(): array
     {
         return static::$related ?? [];
@@ -51,7 +41,7 @@ trait InteractWithSearch
 
     public static function collectRelated(): RelatedCollection
     {
-        return RelatedCollection::make(static::related());
+        return RelatedCollection::make(static::include());
     }
 
     public static function matches(): array
@@ -70,7 +60,7 @@ trait InteractWithSearch
 
     public static function collectSorts(RestifyRequest $request, Repository $repository): SortCollection
     {
-        return SortCollection::make(explode(',', $request->input('sort', '')))
+        return (new SortCollection(explode(',', $request->input('sort', ''))))
             ->normalize()
             ->hydrateDefinition($repository)
             ->authorized($request)
@@ -80,7 +70,7 @@ trait InteractWithSearch
 
     public static function collectMatches(RestifyRequest $request, Repository $repository): MatchesCollection
     {
-        return MatchesCollection::make($repository::matches())
+        return (new MatchesCollection($repository::matches()))
             ->normalize()
             ->authorized($request)
             ->inQuery($request)

@@ -325,7 +325,7 @@ class UserWithPosts extends Repository
 {
     public static $model = User::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
             'posts' => HasMany::make('posts', PostRepository::class),

@@ -65,7 +65,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
     public function test_many_to_many_field_can_intercept_detach_authorization()
     {
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users',  UserRepository::class)->canDetach(function ($request, $pivot) {
                     $this->assertInstanceOf(Request::class, $request);
@@ -87,7 +87,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
     public function test_many_to_many_field_can_intercept_detach_method()
     {
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users',  UserRepository::class)->detachCallback(function ($request, $repository, $model) {
                     $this->assertInstanceOf(Request::class, $request);
@@ -114,7 +114,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
     public function test_repository_can_intercept_detach()
     {
         $mock = CompanyRepository::partialMock();
-        $mock->shouldReceive('related')
+        $mock->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users',  UserRepository::class),
             ]);

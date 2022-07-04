@@ -65,7 +65,7 @@ class PostWithMophOneRepository extends Repository
 {
     public static $model = Post::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
             'user' => BelongsTo::make('user',  UserRepository::class),

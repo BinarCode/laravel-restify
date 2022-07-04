@@ -5,7 +5,10 @@ Because there are many breaking changes an upgrade is not that easy. There are m
 ## From 6.x to 7.x
 
  - Restify.php - `repositoryForKey` renamed to `repositoryClassForKey`
- - Repository.php - static `to` method renamed to `route`
+ - Repository.php:
+   - static `to` method renamed to `route`
+   - `related` static method deleted, replace with `include`
+   - 
 
 ## From 6.2.1 to 6.3.0
 

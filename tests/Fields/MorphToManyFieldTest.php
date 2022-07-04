@@ -85,7 +85,7 @@ class UserWithRolesRepository extends Repository
 {
     public static $model = User::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
             'roles' => MorphToMany::make('roles', RoleRepository::class),
