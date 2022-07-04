@@ -21,7 +21,7 @@ class RepositoryShowControllerTest extends IntegrationTest
 
     public function test_basic_show(): void
     {
-        $this->getJson(PostRepository::to(1))
+        $this->getJson(PostRepository::route(1))
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [
@@ -44,7 +44,7 @@ class RepositoryShowControllerTest extends IntegrationTest
                 field('description')->hidden(),
             ]);
 
-        $this->getJson(PostRepository::to(1))
+        $this->getJson(PostRepository::route(1))
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->missing('data.attributes.title')
@@ -53,7 +53,7 @@ class RepositoryShowControllerTest extends IntegrationTest
 
         $_SERVER['postAuthorize.can.see.title'] = true;
 
-        $this->getJson(PostRepository::to(1))
+        $this->getJson(PostRepository::route(1))
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->has('data.attributes.title')
@@ -69,7 +69,7 @@ class RepositoryShowControllerTest extends IntegrationTest
                 field('title')->showCallback(fn ($value) => strtoupper($value)),
             ]);
 
-        $this->getJson(PostRepository::to(
+        $this->getJson(PostRepository::route(
             $this->mockPost([
                 'title' => 'wew',
             ])->id
@@ -86,7 +86,7 @@ class RepositoryShowControllerTest extends IntegrationTest
             PostMergeableRepository::class,
         ]);
 
-        $this->getJson(PostMergeableRepository::to(
+        $this->getJson(PostMergeableRepository::route(
             $this->mockPost()->id
         ))
             ->assertJsonStructure([
@@ -114,7 +114,7 @@ class RepositoryShowControllerTest extends IntegrationTest
                 field('description')->hidden(),
             ]);
 
-        $this->getJson(PostRepository::to(
+        $this->getJson(PostRepository::route(
             $this->mockPosts()->first()->id
         ))
             ->assertJson(
@@ -135,7 +135,7 @@ class RepositoryShowControllerTest extends IntegrationTest
                 field('description')->hidden(),
             ]);
 
-        $this->putJson(PostRepository::to(
+        $this->putJson(PostRepository::route(
             $post = $this->mockPost(['description' => 'Description'])->id
         ), [
             'title' => $title = 'Updated title',
@@ -164,7 +164,7 @@ class RepositoryShowControllerTest extends IntegrationTest
                 field('description')->hidden()->value($default = 'Default description'),
             ]);
 
-        $this->putJson(PostRepository::to(
+        $this->putJson(PostRepository::route(
             $post = $this->mockPost()->id
         ), [
             'title' => 'Updated title',

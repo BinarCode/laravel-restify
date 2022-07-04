@@ -44,12 +44,12 @@ class BelongsToFieldTest extends IntegrationTest
         $post = PostFactory::one();
 
         PostRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'user' => BelongsTo::make('user', UserRepository::class),
             ]);
 
-        $this->getJson(PostRepository::to($post->id, [
+        $this->getJson(PostRepository::route($post->id, [
             'related' => 'user',
         ]))
             ->assertJsonStructure([
@@ -64,7 +64,7 @@ class BelongsToFieldTest extends IntegrationTest
                 ],
             ]);
 
-        $relationships = $this->getJson(PostRepository::to($post->id))
+        $relationships = $this->getJson(PostRepository::route($post->id))
             ->json('data.relationships');
 
         $this->assertNull($relationships);
@@ -106,7 +106,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertCreated();
         });
     }
@@ -130,7 +130,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertForbidden();
         });
     }
@@ -146,7 +146,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertForbidden();
 
             $this->assertDatabaseCount('posts', 0);
@@ -155,7 +155,7 @@ class BelongsToFieldTest extends IntegrationTest
 
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertCreated();
         });
 
@@ -169,7 +169,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::uriKey(), [
                 'title' => 'Create post with owner.',
-                'user' => $user->id,
+                'user' => $user->getKey(),
             ])->assertForbidden();
         });
     }
@@ -214,12 +214,12 @@ class BelongsToFieldTest extends IntegrationTest
         $post = PostFactory::one();
 
         PostRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'user' => BelongsTo::make('user', UserRepository::class),
             ]);
 
-        $this->getJson(PostRepository::to($post->id, [
+        $this->getJson(PostRepository::route($post->id, [
             'include' => 'user[name]',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -234,7 +234,7 @@ class PostWithUserRepository extends Repository
 {
     public static $model = Post::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
             'user' => BelongsTo::make('user', UserRepository::class),

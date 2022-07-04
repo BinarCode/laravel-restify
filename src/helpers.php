@@ -3,6 +3,7 @@
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 if (! function_exists('field')) {
     function field(...$args): Field
@@ -12,7 +13,7 @@ if (! function_exists('field')) {
 }
 
 if (! function_exists('isRestify')) {
-    function isRestify(\Illuminate\Http\Request $request): bool
+    function isRestify(Request $request): bool
     {
         return Restify::isRestify($request);
     }

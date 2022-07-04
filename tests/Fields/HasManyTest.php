@@ -42,7 +42,7 @@ class HasManyTest extends IntegrationTest
         $user = User::factory()->create();
 
         Post::factory()->times(2)->create([
-            'user_id' => $user->id,
+            'user_id' => $user->getKey(),
         ]);
 
         $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
@@ -67,7 +67,7 @@ class HasManyTest extends IntegrationTest
         Post::factory()->times(2)->create([
             'title' => 'Title',
             'description' => 'Description',
-            'user_id' => $user->id,
+            'user_id' => $user->getKey(),
         ]);
 
         $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title]")
@@ -89,10 +89,10 @@ class HasManyTest extends IntegrationTest
     public function test_has_many_paginated_on_relation(): void
     {
         $user = tap($this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 22);
+            $this->mockPosts($user->getKey(), 22);
         });
 
-        $this->getJson(UserWithPosts::uriKey()."/{$user->id}?related=posts&relatablePerPage=20")
+        $this->getJson(UserWithPosts::uriKey()."/{$user->getKey()}?related=posts&relatablePerPage=20")
             ->assertJsonCount(20, 'data.relationships.posts');
     }
 
@@ -102,7 +102,7 @@ class HasManyTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
         $user = tap($this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 20);
+            $this->mockPosts($user->getKey(), 20);
         });
 
         $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
@@ -125,7 +125,7 @@ class HasManyTest extends IntegrationTest
     public function test_can_display_other_pages()
     {
         tap($u = $this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 20);
+            $this->mockPosts($user->getKey(), 20);
         });
 
         UserWithPosts::partialMock()
@@ -145,7 +145,7 @@ class HasManyTest extends IntegrationTest
     public function test_can_apply_filters(): void
     {
         tap($u = $this->mockUsers()->first(), function ($user) {
-            tap($this->mockPosts($user->id, 20), static function (Collection $posts) {
+            tap($this->mockPosts($user->getKey(), 20), static function (Collection $posts) {
                 $first = $posts->first();
                 $first->title = 'wew';
                 $first->save();
@@ -173,7 +173,7 @@ class HasManyTest extends IntegrationTest
         Gate::policy(Post::class, PostPolicy::class);
 
         tap($u = $this->mockUsers()->first(), function ($user) {
-            $this->mockPosts($user->id, 5);
+            $this->mockPosts($user->getKey(), 5);
         });
 
         UserWithPosts::partialMock()
@@ -235,7 +235,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', PostRepository::class),
             ]);
 
-        $this->getJson(UserWithPosts::to("$userId/posts/$post->id"), [
+        $this->getJson(UserWithPosts::route("$userId/posts/$post->id"), [
             'title' => 'Test',
         ])->assertJsonStructure([
             'data' => ['attributes'],
@@ -325,7 +325,7 @@ class UserWithPosts extends Repository
 {
     public static $model = User::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
             'posts' => HasMany::make('posts', PostRepository::class),

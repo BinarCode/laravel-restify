@@ -10,7 +10,7 @@ class ListGettersControllerTest extends IntegrationTest
 {
     public function test_could_list_getters_for_repository(): void
     {
-        $this->getJson(PostRepository::to('getters'))
+        $this->getJson(PostRepository::route('getters'))
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
@@ -25,7 +25,7 @@ class ListGettersControllerTest extends IntegrationTest
     {
         $this->mockPosts(1, 2);
 
-        $this->getJson(PostRepository::to('1/getters'))
+        $this->getJson(PostRepository::route('1/getters'))
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json

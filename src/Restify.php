@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify;
 use Binaryk\LaravelRestify\Bootstrap\BootRepository;
 use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
+use Binaryk\LaravelRestify\Exceptions\RepositoryNotFoundException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -48,11 +49,32 @@ class Restify
      * @param  string  $key
      * @return string|null
      */
-    public static function repositoryForKey(string $key): ?string
+    public static function repositoryClassForKey(string $key): ?string
     {
         return collect(static::$repositories)->first(function ($value) use ($key) {
             return $value::uriKey() === $key;
         });
+    }
+
+    /**
+     * Return the repository instance for a given key.
+     *
+     * @param  string  $key
+     * @throw RepositoryNotFoundException
+     * @return Repository
+     */
+    public static function repository(string $key): Repository
+    {
+        /**
+         * @var Repository|string $repositoryClass
+         */
+        if (is_null($repositoryClass = static::repositoryClassForKey($key))) {
+            throw RepositoryNotFoundException::make($repositoryClass);
+        }
+
+        return $repositoryClass::isMock()
+            ? $repositoryClass::getMock()
+            : $repositoryClass::resolveWith($repositoryClass::newModel());
     }
 
     /**

@@ -13,7 +13,7 @@ class ListActionsControllerTest extends IntegrationTest
     {
         $_SERVER['actions.posts.invalidate'] = false;
 
-        $this->getJson(PostRepository::to('actions'))
+        $this->getJson(PostRepository::route('actions'))
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json

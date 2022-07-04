@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Repositories\Concerns;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Support\Str;
 
 /**
  * Trait Testing
@@ -15,9 +16,9 @@ use Binaryk\LaravelRestify\Restify;
  */
 trait Testing
 {
-    public static function to(string $path = null, array $query = []): string
+    public static function route(string $path = null, array $query = []): string
     {
-        $base = Restify::path().'/'.static::uriKey();
+        $base = Str::replaceFirst('//', '/', Restify::path().'/'.static::uriKey());
 
         $route = $path
             ? $base.'/'.$path
@@ -33,7 +34,7 @@ trait Testing
     {
         $path = $key ? "$key/actions" : 'actions';
 
-        return static::to($path, [
+        return static::route($path, [
             'action' => app($action)->uriKey(),
         ]);
     }
@@ -42,7 +43,7 @@ trait Testing
     {
         $path = $key ? "$key/getters" : 'getters';
 
-        return  static::to($path . '/' .app($getter)->uriKey());
+        return static::route($path.'/'.app($getter)->uriKey());
     }
 
     public function dd(string $prop = null): void

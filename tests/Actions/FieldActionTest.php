@@ -38,7 +38,7 @@ class FieldActionTest extends IntegrationTest
 
         $this
             ->withoutExceptionHandling()
-            ->postJson(PostRepository::to(), [
+            ->postJson(PostRepository::route(), [
             'description' => 'Description',
             'title' => $updated = 'Title',
         ])
@@ -76,7 +76,7 @@ class FieldActionTest extends IntegrationTest
 
         $this
             ->withoutExceptionHandling()
-            ->postJson(PostRepository::to('bulk'), [
+            ->postJson(PostRepository::route('bulk'), [
                 [
                     'title' => $title1 = 'First title',
                     'description' => 'first description',
@@ -122,19 +122,19 @@ class FieldActionTest extends IntegrationTest
 
         $postId1 = $this
             ->withoutExceptionHandling()
-            ->postJson(PostRepository::to(), [
+            ->postJson(PostRepository::route(), [
                 'title' => 'First title',
             ])->json('data.id');
 
         $postId2 = $this
             ->withoutExceptionHandling()
-            ->postJson(PostRepository::to(), [
+            ->postJson(PostRepository::route(), [
                 'title' => 'Second title',
             ])->json('data.id');
 
         $this
             ->withoutExceptionHandling()
-            ->postJson(PostRepository::to('bulk/update'), [
+            ->postJson(PostRepository::route('bulk/update'), [
                 [
                     'id' => $postId1,
                     'description' => 'first description',

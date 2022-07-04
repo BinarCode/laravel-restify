@@ -25,12 +25,12 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $this->assertCount(0, Company::first()->users);
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
+            'users' => $user->getKey(),
             'is_admin' => true,
         ])
             ->assertCreated()->assertJsonFragment([
                 'company_id' => '1',
-                'user_id' => $user->id,
+                'user_id' => $user->getKey(),
                 'is_admin' => true,
             ]);
 
@@ -51,14 +51,14 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $_SERVER['allow_attach_users'] = false;
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
+            'users' => $user->getKey(),
             'is_admin' => true,
         ])->assertForbidden();
 
         $_SERVER['allow_attach_users'] = true;
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
+            'users' => $user->getKey(),
             'is_admin' => true,
         ])->assertCreated();
 
@@ -71,7 +71,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $company = Company::factory()->create();
 
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)->withPivot(
                     Field::make('is_admin')->rules('required')->messages([
@@ -81,7 +81,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
             ]);
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
+            'users' => $user->getKey(),
         ])->assertStatus(422)->assertJsonFragment([
             'is_admin' => [
                 $message,
@@ -146,7 +146,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
             'is_admin' => true,
         ])->assertCreated()->assertJsonFragment([
             'company_id' => '1',
-            'user_id' => $user->id,
+            'user_id' => $user->getKey(),
             'is_admin' => true,
         ]);
 
@@ -159,7 +159,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $company = Company::factory()->create();
 
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)
                     ->canAttach(function ($request, $pivot) {
@@ -171,7 +171,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
             ]);
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
+            'users' => $user->getKey(),
             'is_admin' => true,
         ])->assertForbidden();
     }
@@ -182,7 +182,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $company = Company::factory()->create();
 
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)
                     ->canAttach(function ($request, $pivot) {
@@ -195,7 +195,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
             ]);
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
+            'users' => $user->getKey(),
             'is_admin' => true,
         ])->assertOk();
 
@@ -207,7 +207,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers()->first();
         $company = Company::factory()->create();
 
-        CompanyRepository::partialMock()->shouldReceive('related')
+        CompanyRepository::partialMock()->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class),
             ]);
@@ -223,7 +223,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         ];
 
         $this->postJson('companies/'.$company->id.'/attach/users', [
-            'users' => $user->id,
+            'users' => $user->getKey(),
         ])->assertOk();
 
         $this->assertCount(1, $company->fresh()->users);

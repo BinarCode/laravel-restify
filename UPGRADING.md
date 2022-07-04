@@ -1,6 +1,13 @@
 # Upgrading
 
-Because there are many breaking changes an upgrade is not that easy. There are many edge cases this guide does not cover. We accept PRs to improve this guide.
+## From 6.x to 7.x
+
+- PHP8.1 is required
+- Laravel 9 is required
+- Restify.php - `repositoryForKey` renamed to `repositoryClassForKey`
+- Repository.php:
+  - static `to` method renamed to `route`
+  - `related` static method deleted, replace with `include`
 
 ## From 6.2.1 to 6.3.0
 
