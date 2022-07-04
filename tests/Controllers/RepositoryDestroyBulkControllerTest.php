@@ -27,7 +27,7 @@ class RepositoryDestroyBulkControllerTest extends IntegrationTest
 
         $this->withoutExceptionHandling();
 
-        $this->deleteJson(PostRepository::to('bulk/delete'), [
+        $this->deleteJson(PostRepository::route('bulk/delete'), [
             $post1->getKey(),
             $post2->getKey(),
         ])->assertOk();
