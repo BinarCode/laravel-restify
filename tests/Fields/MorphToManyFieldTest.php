@@ -43,7 +43,7 @@ class MorphToManyFieldTest extends IntegrationTest
         );
     }
 
-    public function test_morph_to_many_works_with_belongs_to_many()
+    public function test_morph_to_many_works_with_belongs_to_many(): void
     {
         /** * @var User $user */
         $user = User::factory()->create();
@@ -56,7 +56,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(UserWithRolesRepository::uriKey()."/$user->getKey()?related=roles,companies")
+        $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles,companies")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -85,7 +85,7 @@ class UserWithRolesRepository extends Repository
 {
     public static $model = User::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
             'roles' => MorphToMany::make('roles', RoleRepository::class),

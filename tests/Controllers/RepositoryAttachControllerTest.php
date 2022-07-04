@@ -71,7 +71,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $company = Company::factory()->create();
 
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)->withPivot(
                     Field::make('is_admin')->rules('required')->messages([
@@ -159,7 +159,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $company = Company::factory()->create();
 
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)
                     ->canAttach(function ($request, $pivot) {
@@ -182,7 +182,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $company = Company::factory()->create();
 
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)
                     ->canAttach(function ($request, $pivot) {
@@ -207,7 +207,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
         $user = $this->mockUsers()->first();
         $company = Company::factory()->create();
 
-        CompanyRepository::partialMock()->shouldReceive('related')
+        CompanyRepository::partialMock()->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class),
             ]);

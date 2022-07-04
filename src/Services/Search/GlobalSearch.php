@@ -22,13 +22,6 @@ class GlobalSearch
      */
     public $repositories;
 
-    /**
-     * Create a new global search instance.
-     *
-     * @param RestifyRequest $request
-     * @param \Illuminate\Support\Collection repositories
-     * @return void
-     */
     public function __construct(RestifyRequest $request, $repositories)
     {
         $this->request = $request;
@@ -44,7 +37,9 @@ class GlobalSearch
     {
         $formatted = [];
 
-        /** * @var Repository $repository */
+        /**
+         * @var Repository $repository
+         */
         foreach ($this->getSearchResults() as $repository => $models) {
             foreach ($models as $model) {
                 $instance = $repository::resolveWith($model);

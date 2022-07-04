@@ -1,0 +1,14 @@
+includes:
+    - phpstan-baseline.neon
+
+parameters:
+    level: 1
+    paths:
+        - src
+        - config
+        - database
+    tmpDir: build/phpstan
+    checkMissingIterableValueType: false
+    ignoreErrors:
+        - '#Unsafe usage of new static#'
+

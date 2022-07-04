@@ -18,17 +18,19 @@
         }
     ],
     "require": {
-        "php": "^8.0",
-        "ext-json": "*",
-        "doctrine/dbal": "^3.0",
+        "php": "^8.1",
         "illuminate/contracts": "^9.0",
-        "spatie/data-transfer-object": "^3.7",
+        "spatie/data-transfer-object": "^3.1",
         "spatie/once": "^3.0"
     },
     "require-dev": {
         "brianium/paratest": "^6.2",
+        "doctrine/dbal": "^3.0",
         "nunomaduro/collision": "^6.0",
         "orchestra/testbench": "^7.0",
+        "phpstan/extension-installer": "^1.1",
+        "phpstan/phpstan-deprecation-rules": "^1.0",
+        "phpstan/phpstan-phpunit": "^1.0",
         "phpunit/phpunit": "^9.3",
         "spatie/laravel-ray": "^1.9",
         "vimeo/psalm": "^4.4"
@@ -49,6 +51,7 @@
     },
     "scripts": {
         "psalm": "./vendor/bin/psalm --no-cache",
+        "analyse": "vendor/bin/phpstan analyse",
         "test": "./vendor/bin/testbench package:test --parallel --no-coverage",
         "test-coverage": "./vendor/bin/phpunit --coverage-html coverage"
     },

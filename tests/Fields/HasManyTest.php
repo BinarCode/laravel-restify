@@ -45,7 +45,7 @@ class HasManyTest extends IntegrationTest
             'user_id' => $user->getKey(),
         ]);
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->getKey()?related=posts")
+        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -70,14 +70,14 @@ class HasManyTest extends IntegrationTest
             'user_id' => $user->getKey(),
         ]);
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->getKey()?related=posts[title]")
+        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title]")
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->where('data.relationships.posts.0.attributes.title', 'Title')
                 ->etc()
             );
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->getKey()?related=posts[title|description]")
+        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title|description]")
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->where('data.relationships.posts.0.attributes.title', 'Title')
@@ -105,7 +105,7 @@ class HasManyTest extends IntegrationTest
             $this->mockPosts($user->getKey(), 20);
         });
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->getKey()?related=posts")
+        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
     }
@@ -325,7 +325,7 @@ class UserWithPosts extends Repository
 {
     public static $model = User::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
             'posts' => HasMany::make('posts', PostRepository::class),
