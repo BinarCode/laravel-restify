@@ -53,7 +53,7 @@ trait AuthorizableModels
     public static function authorizedToUseRepository(Request $request): bool
     {
         if (! static::authorizable()) {
-            return true;
+            return false;
         }
 
         return method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
@@ -117,7 +117,7 @@ trait AuthorizableModels
             return Gate::check('store', static::guessModelClassName());
         }
 
-        return true;
+        return false;
     }
 
     public static function authorizedToStoreBulk(Request $request)
@@ -126,7 +126,7 @@ trait AuthorizableModels
             return Gate::check('storeBulk', static::guessModelClassName());
         }
 
-        return true;
+        return false;
     }
 
     /**
@@ -145,7 +145,7 @@ trait AuthorizableModels
     public function authorizeToAttach(Request $request, $method, $model)
     {
         if (! static::authorizable()) {
-            return true;
+            return false;
         }
 
         $policyClass = get_class(Gate::getPolicyFor($this->model()));
@@ -158,18 +158,18 @@ trait AuthorizableModels
             abort(403, 'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.');
         }
 
-        return true;
+        return false;
     }
 
     public function authorizeToDetach(Request $request, $method, $model)
     {
         if (! static::authorizable()) {
-            return true;
+            return false;
         }
 
         $authorized = method_exists(Gate::getPolicyFor($this->model()), $method)
             ? Gate::check($method, [$this->model(), $model])
-            : true;
+            : false;
 
         if (false === $authorized) {
             throw new AuthorizationException();
@@ -246,7 +246,7 @@ trait AuthorizableModels
      */
     public function authorizedTo(Request $request, $ability)
     {
-        return static::authorizable() ? Gate::check($ability, $this->resource) : true;
+        return static::authorizable() ? Gate::check($ability, $this->resource) : false;
     }
 
     /**

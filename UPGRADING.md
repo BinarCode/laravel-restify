@@ -5,6 +5,7 @@
 - PHP8.1 is required
 - Laravel 9 is required
 - Restify.php - `repositoryForKey` renamed to `repositoryClassForKey`
+- Any action permitted unless the Model Policy exists and the method is defined
 - Repository.php:
   - static `to` method renamed to `route`
   - `related` static method deleted, replace with `include`
