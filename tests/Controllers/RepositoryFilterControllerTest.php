@@ -65,12 +65,12 @@ class RepositoryFilterControllerTest extends IntegrationTest
             'only' => 'matches,sortables,searchables',
         ]))->assertJsonCount(4, 'data');
 
-        $this->getJson(PostRepository::route('filters', ['only'=> 'matches']))
+        $this->getJson(PostRepository::route('filters', ['only' => 'matches']))
             ->assertJsonCount(1, 'data');
 
-        $this->getJson(PostRepository::route('filters', ['only'=> 'sortables']))->assertJsonCount(1, 'data');
+        $this->getJson(PostRepository::route('filters', ['only' => 'sortables']))->assertJsonCount(1, 'data');
 
-        $this->getJson(PostRepository::route('filters', ['only'=> 'searchables']))
+        $this->getJson(PostRepository::route('filters', ['only' => 'searchables']))
             ->assertJsonCount(2, 'data');
     }
 }

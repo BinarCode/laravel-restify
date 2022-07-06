@@ -44,7 +44,8 @@ class GlobalSearchControllerTest extends IntegrationTest
 
         $this->getJson(Restify::path('search', [
             'search' => 1,
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
             ->count('data', 1)
             ->etc()
         );
@@ -63,7 +64,8 @@ class GlobalSearchControllerTest extends IntegrationTest
 
         $this->getJson(Restify::path('search', [
             'search' => 1,
-        ]))->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
             ->count('data', 1)
             ->etc()
         );
