@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class GlobalSearchControllerTest extends IntegrationTest
 {
@@ -32,22 +33,23 @@ class GlobalSearchControllerTest extends IntegrationTest
         $this->assertEquals('Second post', $response->json('data.0.title'));
     }
 
-    public function test_global_search_filter_out_unauthorized_repositories()
+    public function test_global_search_filter_out_unauthorized_repositories(): void
     {
         Gate::policy(Post::class, PostPolicy::class);
 
         $_SERVER['restify.post.allowRestify'] = false;
 
-        Post::factory()->create();
-        User::factory()->create();
+        $this->mockUsers();
+        $this->mockPosts();
 
-        $response = $this
-            ->withoutExceptionHandling()
-            ->getJson('search?search=1');
+        $this->getJson(Restify::path('search', [
+            'search' => 1,
+        ]))->assertJson(fn(AssertableJson $json) => $json
+            ->count('data', 1)
+            ->etc()
+        );
 
-        $this->assertCount(1, $response->json('data'));
-
-        $_SERVER['restify.post.allowRestify'] = null;
+        $_SERVER['restify.post.allowRestify'] = true;
     }
 
     public function test_global_search_filter_will_filter_with_index_query(): void
@@ -59,11 +61,12 @@ class GlobalSearchControllerTest extends IntegrationTest
         Post::factory()->create(['title' => 'First post']);
         User::factory()->create(['name' => 'First user']);
 
-        $response = $this
-            ->withoutExceptionHandling()
-            ->getJson('search?search=1');
-
-        $this->assertCount(1, $response->json('data'));
+        $this->getJson(Restify::path('search', [
+            'search' => 1,
+        ]))->assertJson(fn(AssertableJson $json) => $json
+            ->count('data', 1)
+            ->etc()
+        );
 
         $_SERVER['restify.post.indexQueryCallback'] = null;
     }

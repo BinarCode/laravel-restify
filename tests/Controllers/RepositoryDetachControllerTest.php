@@ -28,7 +28,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
 
         $this->assertCount(2, $company->users);
 
-        $this->postJson('companies/'.$company->id.'/detach/users', [
+        $this->postJson(CompanyRepository::route("$company->id/detach/users"), [
             'users' => [1],
         ])->assertNoContent();
 
@@ -57,7 +57,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
 
         $_SERVER['allow_detach_users'] = false;
 
-        $this->postJson('companies/'.$company->id.'/detach/users', [
+        $this->postJson(CompanyRepository::route("$company->id/detach/users"), [
             'users' => [1, 2],
         ])->assertForbidden();
     }
@@ -79,7 +79,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
-        $this->postJson('companies/'.$company->id.'/detach/users', [
+        $this->postJson(CompanyRepository::route("$company->id/detach/users"), [
             'users' => [1],
         ])->assertForbidden();
     }
@@ -104,7 +104,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
-        $this->postJson('companies/'.$company->id.'/detach/users', [
+        $this->postJson(CompanyRepository::route("$company->id/detach/users"), [
             'users' => [1],
         ])->assertNoContent();
 
@@ -135,7 +135,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
-        $this->postJson('companies/'.$company->id.'/detach/users', [
+        $this->postJson(CompanyRepository::route("$company->id/detach/users"), [
             'users' => [1],
         ])->assertNoContent();
 

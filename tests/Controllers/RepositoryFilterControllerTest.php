@@ -25,8 +25,9 @@ class RepositoryFilterControllerTest extends IntegrationTest
         ];
 
         $this->withoutExceptionHandling();
-        $this->getJson('posts/filters?include=matches,sortables,searchables')
-            ->dump()
+        $this->getJson(PostRepository::route('filters', [
+            'include' => 'matches,sortables,searchables',
+        ]))
             // 5 custom filters
             // 1 match filter
             // 1 sort
@@ -60,15 +61,16 @@ class RepositoryFilterControllerTest extends IntegrationTest
             'title',
         ];
 
-        $this->getJson('posts/filters?only=matches,sortables,searchables')
-            ->assertJsonCount(4, 'data');
+        $this->getJson(PostRepository::route('filters', [
+            'only' => 'matches,sortables,searchables',
+        ]))->assertJsonCount(4, 'data');
 
-        $this->getJson('posts/filters?only=matches')
+        $this->getJson(PostRepository::route('filters', ['only'=> 'matches']))
             ->assertJsonCount(1, 'data');
 
-        $this->getJson('posts/filters?only=sortables')->assertJsonCount(1, 'data');
+        $this->getJson(PostRepository::route('filters', ['only'=> 'sortables']))->assertJsonCount(1, 'data');
 
-        $this->getJson('posts/filters?only=searchables')
+        $this->getJson(PostRepository::route('filters', ['only'=> 'searchables']))
             ->assertJsonCount(2, 'data');
     }
 }

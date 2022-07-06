@@ -19,18 +19,18 @@ class NestedRepositoryControllerTest extends IntegrationTest
     public function it_can_list_nested(): void
     {
         UserRepository::$related = [
-            'posts' => HasMany::make('posts',  PostRepository::class),
+            'posts' => HasMany::make('posts', PostRepository::class),
         ];
 
         PostFactory::many(5, [
             'user_id' => UserFactory::one()->id,
         ]);
 
-        $this->getJson('users/1/posts')->assertJsonCount(5, 'data');
+        $this->getJson(UserRepository::route('1/posts'))->assertJsonCount(5, 'data');
 
         UserRepository::$related = [];
 
-        $this->getJson('users/1/posts')->assertForbidden();
+        $this->getJson(UserRepository::route('1/posts'))->assertForbidden();
     }
 
     /** * @test */
@@ -41,44 +41,43 @@ class NestedRepositoryControllerTest extends IntegrationTest
         ]);
 
         UserRepository::$related = [
-            'posts' => HasMany::make('posts',  PostRepository::class),
+            'posts' => HasMany::make('posts', PostRepository::class),
         ];
 
-        $this->getJson("users/$post->user_id/posts/$post->id")
-            ->assertJson(
-                fn (AssertableJson $json) => $json
+        $this->getJson(UserRepository::route("$post->user_id/posts/$post->id"))
+            ->assertJson(fn(AssertableJson $json) => $json
                 ->where('data.attributes.title', 'Post.')
                 ->etc()
             );
 
         UserRepository::$related = [];
 
-        $this->getJson("users/$post->user_id/posts/$post->id")->assertForbidden();
+        $this->getJson(UserRepository::route("$post->user_id/posts/$post->id"))->assertForbidden();
     }
 
     /** * @test */
     public function it_can_store_nested_related(): void
     {
         UserRepository::$related = [
-            'posts' => HasMany::make('posts',  PostRepository::class),
+            'posts' => HasMany::make('posts', PostRepository::class),
         ];
 
         $user = UserFactory::one();
 
-        $this->postJson("users/$user->id/posts", [
+        $this->postJson(UserRepository::route("$user->id/posts"), [
             'title' => $title = 'Post.',
         ])
             ->assertStatus(201)
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $title)
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.attributes.title', $title)
+                    ->etc()
             );
 
         self::assertCount(1, $user->posts()->get());
 
         UserRepository::$related = [];
-        $this->postJson("users/$user->id/posts", [
+        $this->postJson(UserRepository::route("$user->id/posts"), [
             'title' => 'Post.',
         ])->assertForbidden();
     }
@@ -89,20 +88,20 @@ class NestedRepositoryControllerTest extends IntegrationTest
     public function it_can_update_nested_related(): void
     {
         UserRepository::$related = [
-            'posts' => HasMany::make('posts',  PostRepository::class),
+            'posts' => HasMany::make('posts', PostRepository::class),
         ];
 
         $post = PostFactory::one([
             'title' => 'Post',
         ]);
 
-        $this->putJson("users/$post->user_id/posts/$post->id", [
+        $this->putJson(UserRepository::route("$post->user_id/posts/$post->id"), [
             'title' => $title = 'Updated.',
         ])
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $title)
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.attributes.title', $title)
+                    ->etc()
             );
 
         self::assertSame(
@@ -112,7 +111,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
 
         UserRepository::$related = [];
 
-        $this->putJson("users/$post->user_id/posts/$post->id", [
+        $this->putJson(UserRepository::route("$post->user_id/posts/$post->id"), [
             'title' => 'Updated.',
         ])->assertForbidden();
     }
@@ -123,20 +122,20 @@ class NestedRepositoryControllerTest extends IntegrationTest
     public function it_can_delete_nested_related(): void
     {
         UserRepository::$related = [
-            'posts' => HasMany::make('posts',  PostRepository::class),
+            'posts' => HasMany::make('posts', PostRepository::class),
         ];
 
         $post = PostFactory::one([
             'title' => 'Post',
         ]);
 
-        $this->deleteJson("users/$post->user_id/posts/$post->id")->assertNoContent();
+        $this->deleteJson(UserRepository::route("$post->user_id/posts/$post->id"))->assertNoContent();
 
         self::assertNull($post->fresh());
 
         UserRepository::$related = [];
 
-        $this->deleteJson("users/$post->user_id/posts/$post->id")->assertForbidden();
+        $this->deleteJson(UserRepository::route("$post->user_id/posts/$post->id"))->assertForbidden();
     }
 
     /**
@@ -149,13 +148,13 @@ class NestedRepositoryControllerTest extends IntegrationTest
         Gate::policy(Post::class, PostPolicy::class);
 
         UserRepository::$related = [
-            'posts' => HasMany::make('posts',  PostRepository::class),
+            'posts' => HasMany::make('posts', PostRepository::class),
         ];
 
         $post = PostFactory::one([
             'title' => 'Post',
         ]);
 
-        $this->deleteJson("users/$post->user_id/posts/$post->id")->assertForbidden();
+        $this->deleteJson(UserRepository::route("$post->user_id/posts/$post->id"))->assertForbidden();
     }
 }

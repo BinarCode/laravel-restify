@@ -26,7 +26,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.delete'] = true;
 
-        $this->deleteJson('posts/'.$post->id, [
+        $this->deleteJson(PostRepository::route($post->id), [
             'title' => 'Updated title',
         ])
             ->assertStatus(204);
@@ -57,7 +57,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.delete'] = true;
 
-        $this->deleteJson("posts/$post->id")->assertNoContent();
+        $this->deleteJson(PostRepository::route($post->id))->assertNoContent();
 
         $this->assertDatabaseHas('action_logs', [
             'user_id' => $this->authenticatedAs->getAuthIdentifier(),

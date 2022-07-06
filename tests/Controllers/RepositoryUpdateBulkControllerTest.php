@@ -41,7 +41,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTest
             'title' => 'Second title',
         ]);
 
-        $this->postJson('posts/bulk/update', [
+        $this->postJson(PostRepository::route('bulk/update'), [
             [
                 'id' => $post1->id,
                 'title' => 'Updated first title',

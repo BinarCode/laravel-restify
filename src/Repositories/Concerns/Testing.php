@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Support\Str;
+use Illuminate\Support\Stringable;
 
 /**
  * Trait Testing
@@ -16,7 +17,7 @@ use Illuminate\Support\Str;
  */
 trait Testing
 {
-    public static function route(string $path = null, array $query = []): string
+    public static function route(string $path = null, array $query = []): Stringable
     {
         $base = Str::replaceFirst('//', '/', Restify::path().'/'.static::uriKey());
 
@@ -24,7 +25,9 @@ trait Testing
             ? $base.'/'.$path
             : $base;
 
-        return $route.'?'.http_build_query($query);
+        return str(empty($query)
+            ? $route
+            : $route.'?'.http_build_query($query));
     }
 
     /**
