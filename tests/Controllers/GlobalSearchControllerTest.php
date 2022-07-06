@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -22,7 +23,9 @@ class GlobalSearchControllerTest extends IntegrationTest
 
         $response = $this
             ->withoutExceptionHandling()
-            ->getJson('search?search=Second');
+            ->getJson(Restify::path('search', [
+                'search' => 'Second',
+            ]));
 
         $this->assertCount(2, $response->json('data'));
         $this->assertEquals('users', $response->json('data.1.repositoryName'));

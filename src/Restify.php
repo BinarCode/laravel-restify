@@ -141,15 +141,15 @@ class Restify
 
         foreach ((new Finder())->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
-                ['/', '.php'],
-                ['\\', ''],
-                Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
-            );
+                    ['/', '.php'],
+                    ['\\', ''],
+                    Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+                );
 
             if (is_subclass_of(
-                $repository,
-                Repository::class
-            ) && (new ReflectionClass($repository))->isInstantiable()) {
+                    $repository,
+                    Repository::class
+                ) && (new ReflectionClass($repository))->isInstantiable()) {
                 $repositories[] = $repository;
             }
         }
@@ -165,13 +165,17 @@ class Restify
      * @param  null  $plus
      * @return string
      */
-    public static function path($plus = null)
+    public static function path($plus = null, array $query = [])
     {
-        if (! is_null($plus)) {
-            return config('restify.base', '/restify-api').'/'.$plus;
+        if (!is_null($plus)) {
+            return empty($query)
+            ? config('restify.base', '/restify-api').'/'.$plus
+            : config('restify.base', '/restify-api').'/'.$plus.'?'.http_build_query($query);
         }
 
-        return config('restify.base', '/restify-api');
+        return empty($query)
+        ? config('restify.base', '/restify-api')
+        : config('restify.base', '/restify-api').'?'.http_build_query($query);
     }
 
     /**
@@ -208,8 +212,8 @@ class Restify
     public static function globallySearchableRepositories(RestifyRequest $request): array
     {
         return collect(static::$repositories)
-            ->filter(fn ($repository) => $repository::authorizedToUseRepository($request))
-            ->filter(fn ($repository) => $repository::$globallySearchable)
+            ->filter(fn($repository) => $repository::authorizedToUseRepository($request))
+            ->filter(fn($repository) => $repository::$globallySearchable)
             ->sortBy(static::sortResourcesWith())
             ->all();
     }
@@ -254,10 +258,10 @@ class Restify
             $request->is(trim($path.'/*', '/')) ||
             $request->is('restify-api/*') ||
             collect(static::$repositories)
-                ->filter(fn ($repository) => $repository::prefix())
-                ->some(fn ($repository) => $request->is($repository::prefix().'/*')) ||
+                ->filter(fn($repository) => $repository::prefix())
+                ->some(fn($repository) => $request->is($repository::prefix().'/*')) ||
             collect(static::$repositories)
-                ->filter(fn ($repository) => $repository::indexPrefix())
-                ->some(fn ($repository) => $request->is($repository::indexPrefix().'/*'));
+                ->filter(fn($repository) => $repository::indexPrefix())
+                ->some(fn($repository) => $request->is($repository::indexPrefix().'/*'));
     }
 }

@@ -38,16 +38,15 @@ abstract class IntegrationTest extends TestCase
     {
         parent::setUp();
 
-        $this->loadRepositories()
+        $this
+            ->loadRepositories()
             ->policies()
             ->loadMigrations();
 
-        $this->app['config']->set('config.auth.user_model', User::class);
-
-        $this->app->register(RestifyApplicationServiceProvider::class);
+        config()->set('restify.auth.user_model', User::class);
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
+            fn(string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         Restify::$authUsing = static function () {
@@ -74,7 +73,6 @@ abstract class IntegrationTest extends TestCase
     protected function getEnvironmentSetUp($app): void
     {
         $app['config']->set('database.default', 'sqlite');
-        $app['config']->set('auth.providers.users.model', User::class);
         $app['config']->set('restify.base', '/');
 
         $app['config']->set('database.connections.sqlite', [
@@ -124,8 +122,8 @@ abstract class IntegrationTest extends TestCase
 
     public function mockUsers($count = 1, array $predefinedEmails = []): Collection
     {
-        return Collection::times($count, fn ($i) => User::factory()->create())
-            ->merge(collect($predefinedEmails)->each(fn (string $email) => User::factory()->create([
+        return Collection::times($count, fn($i) => User::factory()->create())
+            ->merge(collect($predefinedEmails)->each(fn(string $email) => User::factory()->create([
                 'email' => $email,
             ])))
             ->shuffle();
@@ -133,7 +131,7 @@ abstract class IntegrationTest extends TestCase
 
     public function mockPosts($userId = null, $count = 1): Collection
     {
-        return Collection::times($count, fn () => Post::factory()->create([
+        return Collection::times($count, fn() => Post::factory()->create([
             'user_id' => $userId,
         ]))->shuffle();
     }

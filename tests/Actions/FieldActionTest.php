@@ -23,7 +23,7 @@ class FieldActionTest extends IntegrationTest
                 $description = $request->input('description');
 
                 $post->update([
-                    'description' => 'Actionable ' . $description,
+                    'description' => 'Actionable '.$description,
                 ]);
             }
         };
@@ -37,11 +37,11 @@ class FieldActionTest extends IntegrationTest
             ]);
 
         $this
-            ->withoutExceptionHandling()
             ->postJson(PostRepository::route(), [
             'description' => 'Description',
             'title' => $updated = 'Title',
         ])
+            ->assertCreated()
             ->assertJson(
                 fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', $updated)
@@ -61,7 +61,7 @@ class FieldActionTest extends IntegrationTest
                 $description = data_get($request[$row], 'description');
 
                 $post->update([
-                    'description' => 'Actionable ' . $description,
+                    'description' => 'Actionable '.$description,
                 ]);
             }
         };
@@ -87,7 +87,7 @@ class FieldActionTest extends IntegrationTest
                 ],
             ])
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->where('data.0.title', $title1)
                     ->where('data.0.description', 'Actionable first description')
                     ->where('data.1.title', $title2)
@@ -107,7 +107,7 @@ class FieldActionTest extends IntegrationTest
                 $description = data_get($request[$row], 'description');
 
                 $post->update([
-                    'description' => 'Actionable ' . $description,
+                    'description' => 'Actionable '.$description,
                 ]);
             }
         };
