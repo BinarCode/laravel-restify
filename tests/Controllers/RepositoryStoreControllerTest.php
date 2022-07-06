@@ -39,6 +39,8 @@ class RepositoryStoreControllerTest extends IntegrationTest
 
     public function test_success_storing(): void
     {
+        $_SERVER['restify.post.store'] = true;
+
         $this->postJson('posts', $data = [
             'user_id' => ($user = $this->mockUsers()->first())->id,
             'title' => $title = 'Some post title',

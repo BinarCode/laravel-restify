@@ -6,16 +6,29 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsIndexGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsShowGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\UnauthenticatedActionGetter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 class PerformGetterControllerTest extends IntegrationTest
 {
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->ensureLoggedIn();
+    }
+
     public function test_could_perform_getter(): void
     {
-        $this->getJson(PostRepository::getter(PostsIndexGetter::class))
+        $this
+            ->getJson(PostRepository::getter(PostsIndexGetter::class))
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json

@@ -2,8 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Tests\Repositories;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Support\Facades\Gate;
 
 class RepositoryCustomPrefixTest extends IntegrationTest
 {
@@ -26,7 +29,8 @@ class RepositoryCustomPrefixTest extends IntegrationTest
 
     public function test_repository_can_have_custom_prefix(): void
     {
-        $this->getJson('api/index/'.PostRepository::uriKey())
+        $this
+            ->getJson('api/index/'.PostRepository::uriKey())
             ->assertSuccessful();
     }
 
