@@ -56,7 +56,8 @@
         "test-coverage": "./vendor/bin/phpunit --coverage-html coverage"
     },
     "config": {
-        "sort-packages": true
+        "sort-packages": true,
+        "allow-plugins": true
     },
     "extra": {
         "laravel": {

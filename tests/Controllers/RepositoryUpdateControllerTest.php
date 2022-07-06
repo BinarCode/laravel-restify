@@ -65,6 +65,8 @@ class RepositoryUpdateControllerTest extends IntegrationTest
                 Field::new('title'),
             ]);
 
+        $_SERVER['restify.post.update'] = true;
+
         $this->putJson(PostRepository::route(Post::factory()->create([
             'image' => null,
             'title' => 'Initial',

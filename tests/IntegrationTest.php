@@ -3,33 +3,43 @@
 namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
+use Binaryk\LaravelRestify\Models\ActionLog;
+use Binaryk\LaravelRestify\Models\ActionLogPolicy;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
+use Binaryk\LaravelRestify\Tests\Fixtures\Role\RolePolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\MockUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
 use Orchestra\Testbench\TestCase;
 
 abstract class IntegrationTest extends TestCase
 {
-    protected Mockery\MockInterface | User $authenticatedAs;
+    protected Mockery\MockInterface|User|null $authenticatedAs = null;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->loadRepositories()
+            ->policies()
             ->loadMigrations();
 
         $this->app['config']->set('config.auth.user_model', User::class);
@@ -37,12 +47,14 @@ abstract class IntegrationTest extends TestCase
         $this->app->register(RestifyApplicationServiceProvider::class);
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\' . class_basename($modelName) . 'Factory'
+            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         Restify::$authUsing = static function () {
             return true;
         };
+
+        $this->ensureLoggedIn();
     }
 
     protected function tearDown(): void
@@ -71,7 +83,7 @@ abstract class IntegrationTest extends TestCase
             'prefix' => '',
         ]);
 
-        include_once __DIR__ . '/../database/migrations/create_action_logs_table.php.stub';
+        include_once __DIR__.'/../database/migrations/create_action_logs_table.php.stub';
         (new \CreateActionLogsTable())->up();
     }
 
@@ -79,7 +91,7 @@ abstract class IntegrationTest extends TestCase
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--path' => realpath(__DIR__ . DIRECTORY_SEPARATOR . 'Migrations'),
+            '--path' => realpath(__DIR__.DIRECTORY_SEPARATOR.'Migrations'),
         ]);
 
         return $this;
@@ -133,24 +145,44 @@ abstract class IntegrationTest extends TestCase
 
     public function getTempDirectory($suffix = ''): string
     {
-        return __DIR__ . '/TestSupport/temp' . ($suffix === '' ? '' : '/' . $suffix);
+        return __DIR__.'/TestSupport/temp'.($suffix === '' ? '' : '/'.$suffix);
     }
 
     #[Pure]
- public function getMediaDirectory($suffix = ''): string
- {
-     return $this->getTempDirectory() . '/media' . ($suffix === '' ? '' : '/' . $suffix);
- }
+    public function getMediaDirectory($suffix = ''): string
+    {
+        return $this->getTempDirectory().'/media'.($suffix === '' ? '' : '/'.$suffix);
+    }
 
     #[Pure]
- public function getTestFilesDirectory($suffix = ''): string
- {
-     return $this->getTempDirectory() . '/testfiles' . ($suffix === '' ? '' : '/' . $suffix);
- }
+    public function getTestFilesDirectory($suffix = ''): string
+    {
+        return $this->getTempDirectory().'/testfiles'.($suffix === '' ? '' : '/'.$suffix);
+    }
 
     #[Pure]
- public function getTestJpg(): string
- {
-     return $this->getTestFilesDirectory('test.jpg');
- }
+    public function getTestJpg(): string
+    {
+        return $this->getTestFilesDirectory('test.jpg');
+    }
+
+    private function policies(): self
+    {
+        Gate::policy(Post::class, PostPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Company::class, CompanyPolicy::class);
+        Gate::policy(Role::class, RolePolicy::class);
+        Gate::policy(ActionLog::class, ActionLogPolicy::class);
+
+        return $this;
+    }
+
+    protected function ensureLoggedIn(): self
+    {
+        if (is_null($this->authenticatedAs)) {
+            $this->authenticate();
+        }
+
+        return $this;
+    }
 }

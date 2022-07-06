@@ -42,6 +42,9 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
     public function test_user_can_bulk_create_posts(): void
     {
         $user = $this->mockUsers()->first();
+
+        $_SERVER['restify.post.storeBulk'] = true;
+
         $this->postJson('posts/bulk', [
             [
                 'user_id' => $user->getKey(),

@@ -14,6 +14,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->authenticate();
     }
 
@@ -22,6 +23,8 @@ class RepositoryDestroyControllerTest extends IntegrationTest
         $post = Post::factory()->create(['user_id' => 1]);
 
         $this->assertInstanceOf(Post::class, Post::find($post->id));
+
+        $_SERVER['restify.post.delete'] = true;
 
         $this->deleteJson('posts/'.$post->id, [
             'title' => 'Updated title',
@@ -51,6 +54,8 @@ class RepositoryDestroyControllerTest extends IntegrationTest
         $post = Post::factory()->create([
             'title' => 'Original title',
         ]);
+
+        $_SERVER['restify.post.delete'] = true;
 
         $this->deleteJson("posts/$post->id")->assertNoContent();
 
