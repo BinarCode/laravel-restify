@@ -16,16 +16,27 @@ use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Contracts\Http\Kernel as HttpKernel;
-use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Str;
+use Illuminate\Contracts\Container\BindingResolutionException;
+use Illuminate\Contracts\Http\Kernel;
+use Spatie\LaravelPackageTools\Package;
+use Spatie\LaravelPackageTools\PackageServiceProvider;
 
-class LaravelRestifyServiceProvider extends ServiceProvider
+class LaravelRestifyServiceProvider extends PackageServiceProvider
 {
-    public function boot(): void
+    public function configurePackage(Package $package): void
     {
-        if ($this->app->runningInConsole()) {
-            $this->commands([
+        $package
+            ->name('laravel-restify')
+            ->hasConfigFile()
+            ->hasMigration('create_action_logs_table')
+            ->runsMigrations()
+            ->hasCommands([
+                RepositoryCommand::class,
+                ActionCommand::class,
+                GetterCommand::class,
+                StoreCommand::class,
+                FilterCommand::class,
+                DevCommand::class,
                 SetupCommand::class,
                 PolicyCommand::class,
                 BaseRepositoryCommand::class,
@@ -33,13 +44,26 @@ class LaravelRestifyServiceProvider extends ServiceProvider
                 StubCommand::class,
                 PublishAuthCommand::class,
             ]);
+    }
+
+    /**
+     * @throws BindingResolutionException
+     */
+    public function packageBooted(): void
+    {
+        if ($this->app->runningInConsole()) {
             $this->registerPublishing();
         }
 
-        $this->app->make(HttpKernel::class)->pushMiddleware(RestifyInjector::class);
+        /**
+         * @var Kernel $kernel
+         */
+        $kernel = $this->app->make(Kernel::class);
+
+        $kernel->pushMiddleware(RestifyInjector::class);
     }
 
-    public function register(): void
+    public function packageRegistered(): void
     {
         Repository::clearBootedRepositories();
 
@@ -47,15 +71,6 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         $this->app->singleton('laravel-restify', function () {
             return new Restify();
         });
-
-        $this->commands([
-            RepositoryCommand::class,
-            ActionCommand::class,
-            GetterCommand::class,
-            StoreCommand::class,
-            FilterCommand::class,
-            DevCommand::class,
-        ]);
     }
 
     protected function registerPublishing(): void
@@ -63,33 +78,5 @@ class LaravelRestifyServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
         ], 'restify-provider');
-
-        $this->publishes([
-            __DIR__.'/../config/config.php' => config_path('restify.php'),
-        ], 'restify-config');
-
-        $migrationFileName = 'create_action_logs_table.php.stub';
-        if (! $this->migrationFileExists($migrationFileName)) {
-            $this->publishes([
-                __DIR__."/../database/migrations/{$migrationFileName}" => database_path('migrations/'.date(
-                    'Y_m_d_His',
-                    time()
-                ).'_'.Str::before($migrationFileName, '.stub')),
-            ], 'restify-migrations');
-        }
-
-        $this->mergeConfigFrom(__DIR__.'/../config/config.php', 'restify');
-    }
-
-    public static function migrationFileExists(string $migrationFileName): bool
-    {
-        $len = strlen($migrationFileName);
-        foreach (glob(database_path('migrations/*.php')) as $filename) {
-            if ((substr($filename, -$len) === $migrationFileName)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 }
