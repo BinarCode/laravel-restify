@@ -23,7 +23,7 @@ class RelatedCollection extends Collection
             $mapKey = is_numeric($key) ? $value : $key;
 
             if ($value instanceof EagerField) {
-                $mapKey = $value->getAttribute();
+                $mapKey = $key ?: $value->getAttribute();
             }
 
             return [
@@ -120,7 +120,8 @@ class RelatedCollection extends Collection
 
     public function authorized(RestifyRequest $request)
     {
-        return $this->intoAssoc()
+        return $this
+            ->intoAssoc()
             ->filter(fn ($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
     }
 

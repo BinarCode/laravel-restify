@@ -21,7 +21,8 @@
         "php": "^8.1",
         "illuminate/contracts": "^9.0",
         "spatie/data-transfer-object": "^3.1",
-        "spatie/once": "^3.0"
+        "spatie/once": "^3.0",
+        "spatie/laravel-package-tools": "^1.12"
     },
     "require-dev": {
         "brianium/paratest": "^6.2",
