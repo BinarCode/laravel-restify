@@ -87,7 +87,7 @@ class FieldActionTest extends IntegrationTest
                 ],
             ])
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.title', $title1)
                     ->where('data.0.description', 'Actionable first description')
                     ->where('data.1.title', $title2)
