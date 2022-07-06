@@ -58,8 +58,9 @@
     "config": {
         "sort-packages": true,
         "config": {
-            "allow-plugins": true,
-            "phpstan/extension-installer": true
+            "allow-plugins": {
+                "phpstan/extension-installer": true
+            },
         }
     },
     "extra": {
