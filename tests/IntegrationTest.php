@@ -47,7 +47,7 @@ abstract class IntegrationTest extends TestCase
         $this->app->register(RestifyApplicationServiceProvider::class);
 
         Factory::guessFactoryNamesUsing(
-            fn(string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         Restify::$authUsing = static function () {
@@ -124,8 +124,8 @@ abstract class IntegrationTest extends TestCase
 
     public function mockUsers($count = 1, array $predefinedEmails = []): Collection
     {
-        return Collection::times($count, fn($i) => User::factory()->create())
-            ->merge(collect($predefinedEmails)->each(fn(string $email) => User::factory()->create([
+        return Collection::times($count, fn ($i) => User::factory()->create())
+            ->merge(collect($predefinedEmails)->each(fn (string $email) => User::factory()->create([
                 'email' => $email,
             ])))
             ->shuffle();
@@ -133,7 +133,7 @@ abstract class IntegrationTest extends TestCase
 
     public function mockPosts($userId = null, $count = 1): Collection
     {
-        return Collection::times($count, fn() => Post::factory()->create([
+        return Collection::times($count, fn () => Post::factory()->create([
             'user_id' => $userId,
         ]))->shuffle();
     }

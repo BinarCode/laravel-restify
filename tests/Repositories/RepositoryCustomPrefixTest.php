@@ -2,11 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Tests\Repositories;
 
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
-use Illuminate\Support\Facades\Gate;
 
 class RepositoryCustomPrefixTest extends IntegrationTest
 {
