@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\ActionLogPolicy;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
@@ -46,7 +45,7 @@ abstract class IntegrationTest extends TestCase
         config()->set('restify.auth.user_model', User::class);
 
         Factory::guessFactoryNamesUsing(
-            fn(string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         Restify::$authUsing = static function () {
@@ -122,8 +121,8 @@ abstract class IntegrationTest extends TestCase
 
     public function mockUsers($count = 1, array $predefinedEmails = []): Collection
     {
-        return Collection::times($count, fn($i) => User::factory()->create())
-            ->merge(collect($predefinedEmails)->each(fn(string $email) => User::factory()->create([
+        return Collection::times($count, fn ($i) => User::factory()->create())
+            ->merge(collect($predefinedEmails)->each(fn (string $email) => User::factory()->create([
                 'email' => $email,
             ])))
             ->shuffle();
@@ -131,7 +130,7 @@ abstract class IntegrationTest extends TestCase
 
     public function mockPosts($userId = null, $count = 1): Collection
     {
-        return Collection::times($count, fn() => Post::factory()->create([
+        return Collection::times($count, fn () => Post::factory()->create([
             'user_id' => $userId,
         ]))->shuffle();
     }
