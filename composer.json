@@ -57,11 +57,7 @@
     },
     "config": {
         "sort-packages": true,
-        "config": {
-            "allow-plugins": {
-                "phpstan/extension-installer": true
-            }
-        }
+        "allow-plugins": true
     },
     "extra": {
         "laravel": {
