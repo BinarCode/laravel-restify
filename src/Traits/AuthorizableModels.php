@@ -58,7 +58,7 @@ trait AuthorizableModels
 
         return method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
             ? Gate::check('allowRestify', get_class(static::newModel()))
-            : false;
+            :true;
     }
 
     /**
@@ -169,7 +169,7 @@ trait AuthorizableModels
 
         $authorized = method_exists(Gate::getPolicyFor($this->model()), $method)
             ? Gate::check($method, [$this->model(), $model])
-            : false;
+            :true;
 
         if (false === $authorized) {
             throw new AuthorizationException();
@@ -246,7 +246,7 @@ trait AuthorizableModels
      */
     public function authorizedTo(Request $request, $ability)
     {
-        return static::authorizable() ? Gate::check($ability, $this->resource) : false;
+        return static::authorizable() ? Gate::check($ability, $this->resource) :true;
     }
 
     /**
