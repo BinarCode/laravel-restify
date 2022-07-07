@@ -14,7 +14,7 @@
 
 ### Features
 
-- [ ] Adding support for custom ActionLogs (ie ActionLog::register("project marked active by user Auth::id()", $project->id))
+- [x] Adding support for custom ActionLogs (ie ActionLog::register("project marked active by user Auth::id()", $project->id))
 - [ ] Ensure `$with` loads relationship in `show` requests
 - [ ] Make sure any action isn't permitted unless the Model Policy exists
 - [ ] Ability to make an endpoint public using a policy method

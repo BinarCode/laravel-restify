@@ -132,7 +132,7 @@ class ActionLog extends Model
         ]);
     }
 
-    public static function customLog(
+    public static function register(
         string $name,
         Model $actionable,
         array $attributes = [],
