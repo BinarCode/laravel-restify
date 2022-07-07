@@ -14,7 +14,7 @@ trait HasActionLogs
 {
     public static function bootHasActionLogs()
     {
-        if (!config('restify.logs.enable')) {
+        if (! config('restify.logs.enable')) {
             return;
         }
 

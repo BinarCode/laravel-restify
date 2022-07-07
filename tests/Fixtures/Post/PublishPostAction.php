@@ -23,7 +23,7 @@ class PublishPostAction extends Action
     {
         static::$applied[] = $models;
 
-        $models->each(fn(Post $post) => $post->update([
+        $models->each(fn (Post $post) => $post->update([
             'is_active' => true,
         ]));
 

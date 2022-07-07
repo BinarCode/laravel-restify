@@ -59,7 +59,7 @@ abstract class Prototypeable implements JsonSerializable
             return $guessedClass;
         }
 
-        if (!isset(static::$modelClass)) {
+        if (! isset(static::$modelClass)) {
             abort(502, '$modelClass is not defined.');
         }
 
@@ -72,7 +72,7 @@ abstract class Prototypeable implements JsonSerializable
             return $guessedClass;
         }
 
-        if (!isset(static::$repositoryClass)) {
+        if (! isset(static::$repositoryClass)) {
             return null;
         }
 
@@ -85,7 +85,7 @@ abstract class Prototypeable implements JsonSerializable
             return $guessedClass;
         }
 
-        if (!isset(static::$repositoryClass)) {
+        if (! isset(static::$repositoryClass)) {
             return null;
         }
 
@@ -119,7 +119,7 @@ abstract class Prototypeable implements JsonSerializable
         $this->ensureRepositoryClassDefined();
 
         $id = $this->test->postJson(static::repositoryClass()::route(), $this->getAttributes())
-            ->tap($tap ?? fn() => '')
+            ->tap($tap ?? fn () => '')
             ->json('data.id');
 
         return $this->wirteableCallback($id, $assertable);
@@ -130,7 +130,7 @@ abstract class Prototypeable implements JsonSerializable
         $key = $key ?? $this->model()->getKey();
 
         $id = $this->test->postJson(static::repositoryClass()::route($key), $this->getAttributes())
-            ->tap($tap ?? fn() => '')
+            ->tap($tap ?? fn () => '')
             ->json('data.id');
 
         return $this->wirteableCallback($id, $assertable);
@@ -142,7 +142,7 @@ abstract class Prototypeable implements JsonSerializable
 
         $this->test
             ->deleteJson(static::repositoryClass()::route($key))
-            ->tap($tap ?? fn() => '');
+            ->tap($tap ?? fn () => '');
 
         return $this;
     }
@@ -173,11 +173,11 @@ abstract class Prototypeable implements JsonSerializable
             return $this;
         }
 
-        if (!static::modelClass() && is_callable($cb)) {
+        if (! static::modelClass() && is_callable($cb)) {
             $this->ensureModelClassDefined();
         }
 
-        if (!static::modelClass()) {
+        if (! static::modelClass()) {
             return $this;
         }
 
