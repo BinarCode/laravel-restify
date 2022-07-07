@@ -12,6 +12,8 @@ class PublishPostAction extends Action
 {
     public static $applied = [];
 
+    public static $uriKey = 'publish-post-action';
+
     public static function indexQuery(RestifyRequest $request, $query)
     {
         $query->whereNotNull('published_at');
@@ -20,6 +22,10 @@ class PublishPostAction extends Action
     public function handle(ActionRequest $request, Collection $models): JsonResponse
     {
         static::$applied[] = $models;
+
+        $models->each(fn(Post $post) => $post->update([
+            'is_active' => true,
+        ]));
 
         return data(['succes' => 'true']);
     }

@@ -124,23 +124,4 @@ class RepositoryStoreControllerTest extends IntegrationTest
                     ->etc()
             );
     }
-
-    public function test_storing_repository_log_action(): void
-    {
-        $this->authenticate();
-
-        $this->postJson(PostRepository::route(), $data = [
-            'title' => 'Some post title',
-        ])->assertCreated();
-
-        $this->assertDatabaseHas('action_logs', [
-            'user_id' => $this->authenticatedAs->getAuthIdentifier(),
-            'name' => ActionLog::ACTION_CREATED,
-            'actionable_type' => Post::class,
-        ]);
-
-        $log = ActionLog::latest()->first();
-
-        $this->assertSame($data, $log->changes);
-    }
 }

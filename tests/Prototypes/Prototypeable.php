@@ -27,9 +27,9 @@ abstract class Prototypeable implements JsonSerializable
 
     protected ?Model $model = null;
 
-    public function fake(): self
+    public function fake(array $attributes = []): self
     {
-        $this->attributes = static::modelClass()::factory()->make()->toArray();
+        $this->attributes = static::modelClass()::factory($attributes)->make()->toArray();
 
         return $this;
     }
@@ -59,7 +59,7 @@ abstract class Prototypeable implements JsonSerializable
             return $guessedClass;
         }
 
-        if (! isset(static::$modelClass)) {
+        if (!isset(static::$modelClass)) {
             abort(502, '$modelClass is not defined.');
         }
 
@@ -72,7 +72,7 @@ abstract class Prototypeable implements JsonSerializable
             return $guessedClass;
         }
 
-        if (! isset(static::$repositoryClass)) {
+        if (!isset(static::$repositoryClass)) {
             return null;
         }
 
@@ -85,7 +85,7 @@ abstract class Prototypeable implements JsonSerializable
             return $guessedClass;
         }
 
-        if (! isset(static::$repositoryClass)) {
+        if (!isset(static::$repositoryClass)) {
             return null;
         }
 
@@ -119,7 +119,7 @@ abstract class Prototypeable implements JsonSerializable
         $this->ensureRepositoryClassDefined();
 
         $id = $this->test->postJson(static::repositoryClass()::route(), $this->getAttributes())
-            ->tap($tap ?? fn () => '')
+            ->tap($tap ?? fn() => '')
             ->json('data.id');
 
         return $this->wirteableCallback($id, $assertable);
@@ -130,10 +130,21 @@ abstract class Prototypeable implements JsonSerializable
         $key = $key ?? $this->model()->getKey();
 
         $id = $this->test->postJson(static::repositoryClass()::route($key), $this->getAttributes())
-            ->tap($tap ?? fn () => '')
+            ->tap($tap ?? fn() => '')
             ->json('data.id');
 
         return $this->wirteableCallback($id, $assertable);
+    }
+
+    public function destroy(string|int $key = null, Closure $assertable = null, Closure $tap = null): self
+    {
+        $key = $key ?? $this->model()->getKey();
+
+        $this->test
+            ->deleteJson(static::repositoryClass()::route($key))
+            ->tap($tap ?? fn() => '');
+
+        return $this;
     }
 
     public function runAction(string $actionClass, array $payload = [], Closure $cb = null): self
@@ -142,12 +153,12 @@ abstract class Prototypeable implements JsonSerializable
 
         abort_unless((bool) static::repositoryClass(), 502, __('Undefined class $repositoryClass.'));
 
-        $call = postJson(static::repositoryClass()::action(
+        $call = $this->test->postJson(static::repositoryClass()::action(
             $actionClass,
             $this->model()
                 ? $this->model()->getKey()
                 : null,
-        ), $payload);
+        ), $payload)->assertOk();
 
         if (is_callable($cb)) {
             $cb($call);
@@ -162,11 +173,11 @@ abstract class Prototypeable implements JsonSerializable
             return $this;
         }
 
-        if (! static::modelClass() && is_callable($cb)) {
+        if (!static::modelClass() && is_callable($cb)) {
             $this->ensureModelClassDefined();
         }
 
-        if (! static::modelClass()) {
+        if (!static::modelClass()) {
             return $this;
         }
 
@@ -183,7 +194,7 @@ abstract class Prototypeable implements JsonSerializable
         return $this;
     }
 
-    public function setModel(Model $model): self
+    public function setModel(?Model $model): self
     {
         $this->model = $model;
 
@@ -213,9 +224,9 @@ abstract class Prototypeable implements JsonSerializable
         return $this;
     }
 
-    public function dd()
+    public function dd($prop = null)
     {
-        dd($this);
+        dd($prop ? $this->{$prop} : $this);
     }
 
     public function ddd()

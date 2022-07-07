@@ -176,9 +176,9 @@ abstract class Action implements JsonSerializable
                     $response = $this->handle($request, $models);
 
                     $models->each(function (Model $model) use ($request) {
-                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
-                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
-                        }
+//                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
+//                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
+//                        }
                     });
                 });
             });
@@ -190,14 +190,6 @@ abstract class Action implements JsonSerializable
                         static::indexQuery($request, $query);
                     })->firstOrFail()
                 );
-
-                if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
-                    Restify::actionLog()::forRepositoryAction(
-                        $this,
-                        $model,
-                        $request->user()
-                    )->save();
-                }
             });
         }
 

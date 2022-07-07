@@ -46,28 +46,4 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $this->assertInstanceOf(Post::class, $post->refresh());
     }
-
-    public function test_destroying_repository_log_action(): void
-    {
-        $this->authenticate();
-
-        $post = Post::factory()->create([
-            'title' => 'Original title',
-        ]);
-
-        $_SERVER['restify.post.delete'] = true;
-
-        $this->deleteJson(PostRepository::route($post->id))->assertNoContent();
-
-        $this->assertDatabaseHas('action_logs', [
-            'user_id' => $this->authenticatedAs->getAuthIdentifier(),
-            'name' => ActionLog::ACTION_DELETED,
-            'actionable_type' => Post::class,
-            'actionable_id' => $post->getKey(),
-        ]);
-
-        $log = ActionLog::latest()->first();
-
-        $this->assertSame($post->title, data_get($log->original, 'title'));
-    }
 }

@@ -106,29 +106,4 @@ class RepositoryUpdateControllerTest extends IntegrationTest
                 ->etc()
             );
     }
-
-    public function test_updating_repository_log_action(): void
-    {
-        $this->authenticate();
-
-        $post = Post::factory()->create([
-            'title' => 'Original',
-        ]);
-
-        $this->postJson(PostRepository::route($post->id), $data = [
-            'title' => 'Title changed',
-        ])->assertSuccessful();
-
-        $this->assertDatabaseHas('action_logs', [
-            'user_id' => $this->authenticatedAs->getAuthIdentifier(),
-            'name' => ActionLog::ACTION_UPDATED,
-            'actionable_type' => Post::class,
-            'actionable_id' => (string) $post->id,
-        ]);
-
-        $log = ActionLog::latest()->first();
-
-        $this->assertSame($data, $log->changes);
-        $this->assertSame(['title' => 'Original'], $log->original);
-    }
 }

@@ -39,7 +39,7 @@ class PostPolicy
         return $_SERVER['restify.post.deleteBulk'] ?? true;
     }
 
-    public function delete($user, $post)
+    public function delete($user = null, $post)
     {
         return $_SERVER['restify.post.delete'] ?? true;
     }
