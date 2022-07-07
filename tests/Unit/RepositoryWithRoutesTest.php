@@ -13,8 +13,6 @@ class RepositoryWithRoutesTest extends IntegrationTest
     {
         parent::setUp();
 
-        $this->loadRepositories();
-
         Restify::repositories([
             RepositoryWithRoutes::class,
             WithCustomPrefix::class,

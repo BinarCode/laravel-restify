@@ -165,13 +165,17 @@ class Restify
      * @param  null  $plus
      * @return string
      */
-    public static function path($plus = null)
+    public static function path($plus = null, array $query = [])
     {
         if (! is_null($plus)) {
-            return config('restify.base', '/restify-api').'/'.$plus;
+            return empty($query)
+            ? config('restify.base', '/restify-api').'/'.$plus
+            : config('restify.base', '/restify-api').'/'.$plus.'?'.http_build_query($query);
         }
 
-        return config('restify.base', '/restify-api');
+        return empty($query)
+        ? config('restify.base', '/restify-api')
+        : config('restify.base', '/restify-api').'?'.http_build_query($query);
     }
 
     /**

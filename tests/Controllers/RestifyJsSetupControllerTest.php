@@ -2,13 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class RestifyJsSetupControllerTest extends IntegrationTest
 {
-    public function test_returns_configurations()
+    public function test_returns_configurations(): void
     {
-        $this->getJson('restifyjs/setup')
+        $this->getJson(Restify::path('restifyjs/setup'))
             ->assertJsonStructure([
                 'config' => [
                     'domain',

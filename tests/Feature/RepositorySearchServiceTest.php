@@ -28,7 +28,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             'name' => CustomSearchableFilter::make(),
         ];
 
-        $this->getJson('users?search=John')->assertJsonCount(4, 'data');
+        $this->getJson(UserRepository::route(query: ['search' => 'John',]))->assertJsonCount(4, 'data');
     }
 
     public function test_can_search_incase_sensitive(): void
@@ -47,7 +47,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             'name',
         ];
 
-        $this->getJson('users?search=John')->assertJsonCount(4, 'data');
+        $this->getJson(UserRepository::route(query: ['search' => 'John',]))->assertJsonCount(4, 'data');
     }
 
     public function test_can_search_using_belongs_to_field(): void
@@ -74,7 +74,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             ]),
         ];
 
-        $this->getJson('posts?search=John')
+        $this->getJson(PostRepository::route(query: ['search' => 'John']))
             ->assertJsonCount(2, 'data');
     }
 
@@ -89,10 +89,10 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         UserRepository::$match = ['verified' => VerifiedMatcher::make()];
-        $this->getJson('users?verified=true')->assertJsonCount(1, 'data');
+        $this->getJson(UserRepository::route(query: ['verified' => 'true']))->assertJsonCount(1, 'data');
 
         UserRepository::$match = ['verified' => VerifiedMatcher::make()];
-        $this->getJson('users?verified=false')->assertJsonCount(2, 'data');
+        $this->getJson(UserRepository::route(query: ['verified' => 'false']))->assertJsonCount(2, 'data');
     }
 }
 

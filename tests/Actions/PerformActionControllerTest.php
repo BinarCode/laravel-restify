@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\ActivateAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\DisableProfileAction;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -23,7 +24,7 @@ class PerformActionControllerTest extends IntegrationTest
     {
         $post = $this->mockPosts(1, 2);
 
-        $this->postJson('posts/action?action='.(new PublishPostAction())->uriKey(), [
+        $this->postJson(PostRepository::action(PublishPostAction::class), [
             'repositories' => [
                 $post->first()->id,
                 $post->last()->id,
@@ -39,7 +40,7 @@ class PerformActionControllerTest extends IntegrationTest
         $this->assertEquals(1, PublishPostAction::$applied[0][1]->id);
     }
 
-    public function test_could_perform_action_using_all()
+    public function test_could_perform_action_using_all(): void
     {
         $this->assertDatabaseCount('posts', 0);
 
@@ -58,7 +59,7 @@ class PerformActionControllerTest extends IntegrationTest
                 },
             ]);
 
-        $this->postJson('posts/action?action=publish', [
+        $this->postJson(PostRepository::route('actions', ['action' => 'publish']), [
             'repositories' => 'all',
         ])->assertOk()->assertJsonFragment([
             'fromHandle' => 0,
@@ -69,7 +70,7 @@ class PerformActionControllerTest extends IntegrationTest
     {
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->postJson('posts/action?action='.(new PublishPostAction())->uriKey(), [])
+        $this->postJson(PostRepository::action(PublishPostAction::class), [])
             ->assertNotFound();
     }
 
@@ -77,7 +78,7 @@ class PerformActionControllerTest extends IntegrationTest
     {
         $users = $this->mockUsers();
 
-        $this->postJson('users/'.$users->first()->id.'/action?action='.(new ActivateAction())->uriKey())
+        $this->postJson(UserRepository::action(ActivateAction::class, $users->first()->id))
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',
@@ -88,7 +89,7 @@ class PerformActionControllerTest extends IntegrationTest
 
     public function test_could_perform_standalone_action(): void
     {
-        $this->postJson('users/action?action='.(new DisableProfileAction())->uriKey())
+        $this->postJson(UserRepository::action(DisableProfileAction::class))
             ->assertSuccessful()
             ->assertJsonStructure([
                 'data',

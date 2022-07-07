@@ -7,7 +7,7 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\ActionLogPolicy;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
+use Binaryk\LaravelRestify\Tests\Concerns\Mockers;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
@@ -24,7 +24,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
@@ -32,22 +31,23 @@ use Orchestra\Testbench\TestCase;
 
 abstract class IntegrationTest extends TestCase
 {
+    use Mockers;
+
     protected Mockery\MockInterface|User|null $authenticatedAs = null;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->loadRepositories()
+        $this
+            ->repositories()
             ->policies()
-            ->loadMigrations();
-
-        $this->app['config']->set('config.auth.user_model', User::class);
-
-        $this->app->register(RestifyApplicationServiceProvider::class);
+            ->migrations();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
+            fn (
+                string $modelName
+            ) => 'Binaryk\\LaravelRestify\\Tests\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         Restify::$authUsing = static function () {
@@ -60,7 +60,7 @@ abstract class IntegrationTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-        Mockery::close();
+
         Repository::clearResolvedInstances();
     }
 
@@ -73,31 +73,24 @@ abstract class IntegrationTest extends TestCase
 
     protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('database.default', 'sqlite');
-        $app['config']->set('auth.providers.users.model', User::class);
-        $app['config']->set('restify.base', '/');
+        config()->set('database.default', 'sqlite');
+        config()->set('restify.auth.user_model', User::class);
 
-        $app['config']->set('database.connections.sqlite', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-        ]);
-
-        include_once __DIR__.'/../database/migrations/create_action_logs_table.php.stub';
-        (new \CreateActionLogsTable())->up();
+        $migration = include __DIR__.'/../database/migrations/create_action_logs_table.php.stub';
+        $migration->up();
     }
 
-    protected function loadMigrations(): self
+    private function migrations(): self
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--path' => realpath(__DIR__.DIRECTORY_SEPARATOR.'Migrations'),
+            '--path' => realpath(__DIR__.'/database/migrations'),
         ]);
 
         return $this;
     }
 
-    public function loadRepositories(): self
+    public function repositories(): self
     {
         Restify::repositories([
             UserRepository::class,
@@ -120,27 +113,6 @@ abstract class IntegrationTest extends TestCase
         }
 
         return $this;
-    }
-
-    public function mockUsers($count = 1, array $predefinedEmails = []): Collection
-    {
-        return Collection::times($count, fn ($i) => User::factory()->create())
-            ->merge(collect($predefinedEmails)->each(fn (string $email) => User::factory()->create([
-                'email' => $email,
-            ])))
-            ->shuffle();
-    }
-
-    public function mockPosts($userId = null, $count = 1): Collection
-    {
-        return Collection::times($count, fn () => Post::factory()->create([
-            'user_id' => $userId,
-        ]))->shuffle();
-    }
-
-    protected function mockPost(array $attributes = []): Post
-    {
-        return Post::factory()->create($attributes);
     }
 
     public function getTempDirectory($suffix = ''): string

@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
 
@@ -17,7 +18,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
 
     public function test_basic_validation_works(): void
     {
-        $this->postJson('posts/bulk', [
+        $this->postJson(PostRepository::route('bulk'), [
             [
                 'title' => null,
             ],
@@ -31,7 +32,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        $this->postJson('posts/bulk', [
+        $this->postJson(PostRepository::route('bulk'), [
             [
                 'title' => 'Title',
                 'description' => 'Title',
@@ -45,7 +46,7 @@ class RepositoryStoreBulkControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.storeBulk'] = true;
 
-        $this->postJson('posts/bulk', [
+        $this->postJson(PostRepository::route('bulk'), [
             [
                 'user_id' => $user->getKey(),
                 'title' => 'First post.',

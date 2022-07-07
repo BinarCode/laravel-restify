@@ -19,9 +19,9 @@ class RepositoryStoreControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_basic_validation_works(): void
+    public function test_store_basic_validation_works(): void
     {
-        $this->postJson('posts', [])
+        $this->postJson(PostRepository::route(), [])
             ->assertStatus(422);
     }
 
@@ -31,7 +31,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        $this->postJson('posts', [
+        $this->postJson(PostRepository::route(), [
             'title' => 'Title',
             'description' => 'Title',
         ])->assertStatus(403);
@@ -41,16 +41,16 @@ class RepositoryStoreControllerTest extends IntegrationTest
     {
         $_SERVER['restify.post.store'] = true;
 
-        $this->postJson('posts', $data = [
+        $this->postJson(PostRepository::route(), $data = [
             'user_id' => ($user = $this->mockUsers()->first())->id,
             'title' => $title = 'Some post title',
-        ])->assertCreated()->assertHeader('Location', '/posts/1')
+        ])->assertCreated()->assertHeader('Location', PostRepository::route(1))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $title)
-                ->where('data.attributes.user_id', 1)
-                ->where('data.id', '1')
-                ->where('data.type', 'posts')
+                    ->where('data.attributes.title', $title)
+                    ->where('data.attributes.user_id', 1)
+                    ->where('data.id', '1')
+                    ->where('data.type', PostRepository::uriKey())
             );
 
         $this->assertDatabaseHas('posts', $data);
@@ -59,16 +59,19 @@ class RepositoryStoreControllerTest extends IntegrationTest
     public function test_will_store_only_defined_fields_from_fieldsForStore(): void
     {
         $user = $this->mockUsers()->first();
-        $response = $this->postJson('posts', [
+
+        $this->postJson(PostRepository::route(), [
             'user_id' => $user->getKey(),
             'title' => 'Some post title',
             'description' => 'A very short description',
-        ])
-            ->assertStatus(201)
-            ->assertHeader('Location', '/posts/1');
-
-        $this->assertEquals('Some post title', $response->json('data.attributes.title'));
-        $this->assertNull($response->json('data.attributes.description'));
+        ])->assertCreated()
+            ->assertHeader('Location', PostRepository::route(1))
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                ->missing('data.attributes.description')
+                ->where('data.attributes.title', 'Some post title')
+                ->etc()
+            );
     }
 
     public function test_cannot_store_unauthorized_fields(): void
@@ -87,9 +90,9 @@ class RepositoryStoreControllerTest extends IntegrationTest
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $updated)
-                ->where('data.attributes.description', null)
-                ->etc()
+                    ->where('data.attributes.title', $updated)
+                    ->where('data.attributes.description', null)
+                    ->etc()
             );
     }
 
@@ -109,9 +112,9 @@ class RepositoryStoreControllerTest extends IntegrationTest
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $updated)
-                ->where('data.attributes.description', null)
-                ->etc()
+                    ->where('data.attributes.title', $updated)
+                    ->where('data.attributes.description', null)
+                    ->etc()
             );
     }
 
@@ -119,7 +122,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
     {
         $this->authenticate();
 
-        $this->postJson('posts', $data = [
+        $this->postJson(PostRepository::route(), $data = [
             'title' => 'Some post title',
         ])->assertCreated();
 

@@ -20,11 +20,11 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_basic_update_works()
+    public function test_basic_simple_update_works(): void
     {
         $post = Post::factory()->create();
 
-        $this->putJson('posts/'.$post->id, [
+        $this->putJson(PostRepository::route($post->id), [
             'title' => 'Updated title',
         ])->assertOk();
 
@@ -35,7 +35,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = Post::factory()->create();
 
-        $this->putJson('posts/'.$post->id, [
+        $this->putJson(PostRepository::route($post->id), [
             'title' => 'Updated title',
         ])->assertOk();
 
@@ -50,7 +50,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.update'] = false;
 
-        $this->putJson('posts/'.$post->id, [
+        $this->putJson(PostRepository::route($post->id), [
             'title' => 'Updated title',
         ])->assertStatus(403);
     }
@@ -115,7 +115,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
             'title' => 'Original',
         ]);
 
-        $this->postJson("posts/$post->id", $data = [
+        $this->postJson(PostRepository::route($post->id), $data = [
             'title' => 'Title changed',
         ])->assertSuccessful();
 

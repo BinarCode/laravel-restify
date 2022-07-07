@@ -33,13 +33,13 @@ class RepositoryCustomPrefixTest extends IntegrationTest
 
     public function test_repository_prefix_block_default_route(): void
     {
-        $this->getJson(PostRepository::uriKey())
+        $this->getJson(PostRepository::route())
             ->assertForbidden();
 
         $this->getJson('api/index/'.PostRepository::uriKey())
             ->assertSuccessful();
 
-        $this->postJson(PostRepository::uriKey())
+        $this->postJson(PostRepository::route())
             ->assertForbidden();
     }
 }
