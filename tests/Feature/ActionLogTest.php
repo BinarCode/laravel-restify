@@ -135,7 +135,7 @@ class ActionLogTest extends IntegrationTest
             ->posts()
             ->attributes(['title' => 'Title', 'user_id' => 1])
             ->create(
-                fn(AssertablePost $assertablePost) => $assertablePost
+                fn (AssertablePost $assertablePost) => $assertablePost
                     ->hasActionLog()
                     ->etc()
             )->model();
@@ -161,7 +161,7 @@ class ActionLogTest extends IntegrationTest
             ->create()
             ->attributes(['title' => 'Updated post'])
             ->update(
-                assertable: fn(AssertablePost $assertablePost) => $assertablePost
+                assertable: fn (AssertablePost $assertablePost) => $assertablePost
                     ->hasActionLog(2)
                     ->etc()
             )->model();
@@ -194,7 +194,7 @@ class ActionLogTest extends IntegrationTest
             ->attributes(['title' => 'Updated post'])
             ->destroy(
                 key: $post->getKey(),
-                tap: fn(TestResponse $assertablePost) => $assertablePost
+                tap: fn (TestResponse $assertablePost) => $assertablePost
                     ->assertNoContent()
             );
 
