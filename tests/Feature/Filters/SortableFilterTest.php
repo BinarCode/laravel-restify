@@ -23,14 +23,14 @@ class SortableFilterTest extends IntegrationTest
             'name' => SortableFilter::make()->setColumn('name'),
         ];
 
-        $this->assertSame('Alisa', $this->getJson('users?sort=name')
+        $this->assertSame('Alisa', $this->getJson(UserRepository::route(query: ['sort' => 'name',]))
             ->json('data.0.attributes.name'));
 
-        $this->assertSame('Zoro', $this->getJson('users?sort=name')
+        $this->assertSame('Zoro', $this->getJson(UserRepository::route(query: ['sort' => 'name',]))
             ->json('data.1.attributes.name'));
-        $this->assertSame('Zoro', $this->getJson('users?sort=-name')
+        $this->assertSame('Zoro', $this->getJson(UserRepository::route(query: ['sort' => '-name',]))
             ->json('data.0.attributes.name'));
-        $this->assertSame('Alisa', $this->getJson('users?sort=-name')
+        $this->assertSame('Alisa', $this->getJson(UserRepository::route(query: ['sort' => '-name',]))
             ->json('data.1.attributes.name'));
     }
 }

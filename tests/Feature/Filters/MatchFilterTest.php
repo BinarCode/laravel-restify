@@ -42,7 +42,9 @@ class MatchFilterTest extends IntegrationTest
             'title' => 'string',
         ];
 
-        $this->getJson('posts/filters?only=matches')
+        $this->getJson(PostRepository::route('filters', [
+            'only' => 'matches',
+        ]))
             ->assertJsonStructure([
                 'data' => [
                     [
@@ -65,14 +67,19 @@ class MatchFilterTest extends IntegrationTest
             'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY),
         ];
 
-        $this->getJson('users?-id=1,2,3')
+        $this->getJson(UserRepository::route(query: [
+            '-id' => '1,2,3',
+        ]))
+            ->assertOk()
             ->assertJsonCount(1, 'data');
 
         UserRepository::$match = [
             'id' => MatchFilter::make()->setType(RestifySearchable::MATCH_ARRAY),
         ];
 
-        $this->getJson('users?id=1,2,3')
+        $this->getJson(UserRepository::route(query: [
+            'id' => '1,2,3',
+        ]))
             ->assertJsonCount(3, 'data');
     }
 
@@ -86,24 +93,24 @@ class MatchFilterTest extends IntegrationTest
             'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->strict(),
         ];
 
-        $this->getJson('users?name=John')->assertJsonCount(0, 'data');
+        $this->getJson(UserRepository::route(query: ['name' => 'John']))->assertJsonCount(0, 'data');
 
         UserRepository::$match = [
             'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->strict(),
         ];
 
-        $this->getJson('users?-name=John')->assertJsonCount(2, 'data');
+        $this->getJson(UserRepository::route(query: ['-name' => 'John']))->assertJsonCount(2, 'data');
 
         UserRepository::$match = [
             'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->partial(),
         ];
 
-        $this->getJson('users?name=John')->assertJsonCount(2, 'data');
+        $this->getJson(UserRepository::route(query: ['name' => 'John']))->assertJsonCount(2, 'data');
 
         UserRepository::$match = [
             'name' => MatchFilter::make()->setType(RestifySearchable::MATCH_TEXT)->partial(),
         ];
-        $this->getJson('users?-name=John')->assertJsonCount(0, 'data');
+        $this->getJson(UserRepository::route(query: ['-name' => 'John']))->assertJsonCount(0, 'data');
     }
 
     public function test_can_match_range(): void
@@ -114,7 +121,7 @@ class MatchFilterTest extends IntegrationTest
             'id' => RestifySearchable::MATCH_BETWEEN,
         ];
 
-        $this->getJson('users?id=1,3')
+        $this->getJson(UserRepository::route(query: ['id' => '1,3']))
             ->assertJsonCount(3, 'data');
     }
 
@@ -126,10 +133,10 @@ class MatchFilterTest extends IntegrationTest
             'id' => RestifySearchable::MATCH_ARRAY,
         ];
 
-        $this->getJson('users?filter[id]=1,2,3')
+        $this->getJson(UserRepository::route(query: ['filter[id]' => '1,2,3']))
             ->assertJsonCount(3, 'data');
 
-        $this->getJson('users?filter[-id]=1,2,3')
+        $this->getJson(UserRepository::route(query: ['filter[-id]' => '1,2,3']))
             ->assertJsonCount(1, 'data');
     }
 
@@ -141,10 +148,10 @@ class MatchFilterTest extends IntegrationTest
             'id' => RestifySearchable::MATCH_ARRAY,
         ];
 
-        $this->getJson('users?id=1,2,3')
+        $this->getJson(UserRepository::route(query: ['id' => '1,2,3']))
             ->assertJsonCount(3, 'data');
 
-        $this->getJson('users?-id=1,2,3')
+        $this->getJson(UserRepository::route(query: ['-id' => '1,2,3']))
             ->assertJsonCount(1, 'data');
     }
 
@@ -162,9 +169,9 @@ class MatchFilterTest extends IntegrationTest
             'created_at' => RestifySearchable::MATCH_DATETIME,
         ];
 
-        $this->getJson('users?created_at=null')->assertJsonCount(2, 'data');
+        $this->getJson(UserRepository::route(query: ['created_at' => 'null']))->assertJsonCount(2, 'data');
 
-        $this->getJson('users?created_at=2020-12-01')->assertJsonCount(3, 'data');
+        $this->getJson(UserRepository::route(query: ['created_at' => '2020-12-01']))->assertJsonCount(3, 'data');
     }
 
     public function test_can_match_datetime_interval(): void
@@ -188,10 +195,10 @@ class MatchFilterTest extends IntegrationTest
         $now = now()->toISOString();
         $twoMonthsAgo = now()->subMonths(2)->toISOString();
 
-        $this->getJson("users?created_at=$twoMonthsAgo,$now")
+        $this->getJson(UserRepository::route(query: ['created_at' => "$twoMonthsAgo,$now"]))
             ->assertJsonCount(2, 'data');
 
-        $this->getJson("users?-created_at=$twoMonthsAgo,$now")
+        $this->getJson(UserRepository::route(query: ['-created_at' => "$twoMonthsAgo,$now"]))
             ->assertJsonCount(1, 'data');
     }
 
@@ -215,7 +222,7 @@ class MatchFilterTest extends IntegrationTest
         ];
 
         $this
-            ->getJson('users?is_active=true')
+            ->getJson(UserRepository::route(query: ['is_active' => true]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->count('data', 1)

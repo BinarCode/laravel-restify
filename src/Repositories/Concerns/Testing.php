@@ -19,6 +19,10 @@ trait Testing
 {
     public static function route(string $path = null, array $query = []): Stringable
     {
+        if (str($path)->startsWith('/')) {
+            $path = str($path)->replaceFirst('/', '')->toString();
+        }
+
         $base = Str::replaceFirst('//', '/', Restify::path().'/'.static::uriKey());
 
         $route = $path

@@ -31,7 +31,7 @@ class RepositoryEventsTest extends IntegrationTest
     {
         UserRepository::$wasBooted = false;
 
-        $this->getJson(UserRepository::uriKey());
+        $this->getJson(UserRepository::route());
 
         $this->assertTrue(UserRepository::$wasBooted);
     }

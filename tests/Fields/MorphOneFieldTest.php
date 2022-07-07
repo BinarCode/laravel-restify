@@ -20,7 +20,7 @@ class MorphOneFieldTest extends IntegrationTest
         $this->authenticate();
 
         Restify::repositories([
-            PostWithMophOneRepository::class,
+            PostWithMorphOneRepository::class,
         ]);
     }
 
@@ -38,7 +38,7 @@ class MorphOneFieldTest extends IntegrationTest
 
         $relationships = $this
             ->withoutExceptionHandling()
-            ->getJson(PostWithMophOneRepository::uriKey()."/$post->id?related=user")
+            ->getJson(PostWithMorphOneRepository::route($post->id, ['related' => 'user']))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -54,14 +54,14 @@ class MorphOneFieldTest extends IntegrationTest
 
         $this->assertNotNull($relationships);
 
-        $relationships = $this->getJson(PostWithMophOneRepository::uriKey()."/$post->id")
+        $relationships = $this->getJson(PostWithMorphOneRepository::route($post->id))
             ->json('data.relationships');
 
         $this->assertNull($relationships);
     }
 }
 
-class PostWithMophOneRepository extends Repository
+class PostWithMorphOneRepository extends Repository
 {
     public static $model = Post::class;
 

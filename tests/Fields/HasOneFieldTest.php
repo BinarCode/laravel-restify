@@ -77,7 +77,7 @@ class HasOneFieldTest extends IntegrationTest
                 );
             });
 
-        $this->postJson(UserWithPostRepository::uriKey(), [
+        $this->postJson(UserWithPostRepository::route(), [
             'name' => 'Eduard Lupacescu',
             'email' => 'eduard.lupacescu@binarcode.com',
             'password' => 'strong!',

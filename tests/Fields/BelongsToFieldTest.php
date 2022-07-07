@@ -77,12 +77,13 @@ class BelongsToFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => User::factory(),
         ]), function ($post) {
-            $this->getJson(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
-                ->assertForbidden();
+            $this->getJson(PostWithUserRepository::route($post->id, [
+                'related' => 'user',
+            ]))->assertForbidden();
         });
     }
 
-    public function test_dont_show_key_when_nullable_related()
+    public function test_dont_show_key_when_nullable_related(): void
     {
         $_SERVER['restify.users.show'] = true;
 
@@ -91,7 +92,9 @@ class BelongsToFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => null,
         ]), function ($post) {
-            $this->getJson(PostWithUserRepository::uriKey()."/{$post->id}?related=user")
+            $this->getJson(PostWithUserRepository::route($post->id, [
+                'related' => 'user',
+            ]))
                 ->assertJsonFragment([
                     'user' => null,
                 ])
@@ -99,10 +102,10 @@ class BelongsToFieldTest extends IntegrationTest
         });
     }
 
-    public function test_field_used_when_storing()
+    public function test_field_used_when_storing(): void
     {
         tap(User::factory()->create(), function ($user) {
-            $this->postJson(PostWithUserRepository::uriKey(), [
+            $this->postJson(PostWithUserRepository::route(), [
                 'title' => 'Create post with owner.',
                 'user' => $user->getKey(),
             ])->assertCreated();
@@ -126,14 +129,14 @@ class BelongsToFieldTest extends IntegrationTest
             ]);
 
         tap(User::factory()->create(), function ($user) {
-            $this->postJson(PostWithUserRepository::uriKey(), [
+            $this->postJson(PostWithUserRepository::route(), [
                 'title' => 'Create post with owner.',
                 'user' => $user->getKey(),
             ])->assertForbidden();
         });
     }
 
-    public function test_unauthorized_via_policy_models_cannot_be_attached()
+    public function test_unauthorized_via_policy_models_cannot_be_attached(): void
     {
         $_SERVER['restify.post.allowAttachUser'] = false;
 
@@ -142,7 +145,7 @@ class BelongsToFieldTest extends IntegrationTest
         $this->assertDatabaseCount('posts', 0);
 
         tap(User::factory()->create(), function ($user) {
-            $this->postJson(PostWithUserRepository::uriKey(), [
+            $this->postJson(PostWithUserRepository::route(), [
                 'title' => 'Create post with owner.',
                 'user' => $user->getKey(),
             ])->assertForbidden();
@@ -151,7 +154,7 @@ class BelongsToFieldTest extends IntegrationTest
 
             $_SERVER['restify.post.allowAttachUser'] = true;
 
-            $this->postJson(PostWithUserRepository::uriKey(), [
+            $this->postJson(PostWithUserRepository::route(), [
                 'title' => 'Create post with owner.',
                 'user' => $user->getKey(),
             ])->assertCreated();
@@ -160,25 +163,25 @@ class BelongsToFieldTest extends IntegrationTest
         $this->assertDatabaseCount('posts', 1);
     }
 
-    public function test_unauthorized_without_authorization_method_defined_to_attach_models()
+    public function test_unauthorized_without_authorization_method_defined_to_attach_models(): void
     {
         Gate::policy(Post::class, PostPolicyWithoutMethod::class);
 
         tap(User::factory()->create(), function ($user) {
-            $this->postJson(PostWithUserRepository::uriKey(), [
+            $this->postJson(PostWithUserRepository::route(), [
                 'title' => 'Create post with owner.',
                 'user' => $user->getKey(),
             ])->assertForbidden();
         });
     }
 
-    public function test_field_used_when_updating()
+    public function test_field_used_when_updating(): void
     {
         tap(Post::factory()->create([
             'user_id' => User::factory(),
         ]), function ($post) {
             $newOwner = User::factory()->create();
-            $this->putJson(PostWithUserRepository::uriKey()."/{$post->id}", [
+            $this->putJson(PostWithUserRepository::route($post->id), [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertOk();
@@ -187,7 +190,7 @@ class BelongsToFieldTest extends IntegrationTest
         });
     }
 
-    public function test_unauthorized_via_policy_when_updating()
+    public function test_unauthorized_via_policy_when_updating(): void
     {
         $_SERVER['restify.post.allowAttachUser'] = false;
 
@@ -198,7 +201,7 @@ class BelongsToFieldTest extends IntegrationTest
         ]), function ($post) {
             $firstOwnerId = $post->user->id;
             $newOwner = User::factory()->create();
-            $this->putJson(PostWithUserRepository::uriKey()."/{$post->id}", [
+            $this->putJson(PostWithUserRepository::route($post->id), [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertForbidden();

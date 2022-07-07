@@ -56,7 +56,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles,companies")
+        $this->getJson(UserWithRolesRepository::route($user->id, ['related' => 'roles,companies']))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -67,12 +67,12 @@ class MorphToManyFieldTest extends IntegrationTest
             ])->assertJsonCount(3, 'data.relationships.roles');
     }
 
-    public function test_morph_to_many_ignored_when_store()
+    public function test_morph_to_many_ignored_when_store(): void
     {
         /** * @var User $user */
         $user = User::factory()->make();
 
-        $id = $this->postJson(UserWithRolesRepository::uriKey(), array_merge($user->toArray(), [
+        $id = $this->postJson(UserWithRolesRepository::route(), array_merge($user->toArray(), [
             'password' => 'password',
             'users' => [1],
         ]))->json('data.id');

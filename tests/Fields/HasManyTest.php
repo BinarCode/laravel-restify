@@ -43,19 +43,20 @@ class HasManyTest extends IntegrationTest
             'user_id' => $user->getKey(),
         ]);
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
-            ->assertJsonStructure([
-                'data' => [
-                    'relationships' => [
-                        'posts' => [
-                            [
-                                'id',
-                                'attributes',
-                            ],
+        $this->getJson(UserWithPosts::route($user->getKey(), [
+            'related' => 'posts',
+        ]))->assertJsonStructure([
+            'data' => [
+                'relationships' => [
+                    'posts' => [
+                        [
+                            'id',
+                            'attributes',
                         ],
                     ],
                 ],
-            ]);
+            ],
+        ]);
     }
 
     public function test_has_many_could_choose_columns(): void
@@ -68,19 +69,19 @@ class HasManyTest extends IntegrationTest
             'user_id' => $user->getKey(),
         ]);
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title]")
+        $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts[title]']))
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.relationships.posts.0.attributes.title', 'Title')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.relationships.posts.0.attributes.title', 'Title')
+                    ->etc()
             );
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts[title|description]")
+        $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts[title|description]']))
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.relationships.posts.0.attributes.title', 'Title')
-                ->where('data.relationships.posts.0.attributes.description', 'Description')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.relationships.posts.0.attributes.title', 'Title')
+                    ->where('data.relationships.posts.0.attributes.description', 'Description')
+                    ->etc()
             );
     }
 
@@ -90,7 +91,7 @@ class HasManyTest extends IntegrationTest
             $this->mockPosts($user->getKey(), 22);
         });
 
-        $this->getJson(UserWithPosts::uriKey()."/{$user->getKey()}?related=posts&relatablePerPage=20")
+        $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts', 'relatablePerPage' => 20]))
             ->assertJsonCount(20, 'data.relationships.posts');
     }
 
@@ -103,15 +104,15 @@ class HasManyTest extends IntegrationTest
             $this->mockPosts($user->getKey(), 20);
         });
 
-        $this->getJson(UserWithPosts::uriKey()."/$user->id?related=posts")
+        $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts']))
             ->assertOk()
-            ->assertJson(fn (AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
+            ->assertJson(fn(AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
     }
 
-    public function test_field_ignored_when_storing()
+    public function test_field_ignored_when_storing(): void
     {
         tap(User::factory()->create(), function ($user) {
-            $this->postJson(UserWithPosts::uriKey(), [
+            $this->postJson(UserWithPosts::route(), [
                 'name' => 'Eduard Lupacescu',
                 'email' => 'eduard.lupacescu@binarcode.com',
                 'password' => 'strong!',
@@ -120,7 +121,7 @@ class HasManyTest extends IntegrationTest
         });
     }
 
-    public function test_can_display_other_pages()
+    public function test_can_display_other_pages(): void
     {
         tap($u = $this->mockUsers()->first(), function ($user) {
             $this->mockPosts($user->getKey(), 20);
@@ -136,7 +137,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', PostRepository::class),
             ]);
 
-        $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts?perPage=5")
+        $this->getJson(UserWithPosts::route("$u->id/posts", ['perPage' => 5]))
             ->assertJsonCount(5, 'data');
     }
 
@@ -160,11 +161,11 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', PostRepository::class),
             ]);
 
-        $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts?title=wew")
+        $this->getJson(UserWithPosts::route("$u->id/posts", ['title' => 'wew']))
             ->assertJsonCount(1, 'data');
     }
 
-    public function test_filter_unauthorized_posts()
+    public function test_filter_unauthorized_posts(): void
     {
         $_SERVER['restify.post.show'] = false;
 
@@ -184,16 +185,16 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', PostRepository::class),
             ]);
 
-        $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts")
+        $this->getJson(UserWithPosts::route("$u->id/posts"))
             ->assertJsonCount(0, 'data');
 
         $_SERVER['restify.post.allowRestify'] = false;
 
-        $this->getJson(UserWithPosts::uriKey()."/{$u->id}/posts")
+        $this->getJson(UserWithPosts::route("$u->id/posts"))
             ->assertForbidden();
     }
 
-    public function test_can_store()
+    public function test_can_store(): void
     {
         $_SERVER['restify.post.store'] = true;
 
@@ -212,7 +213,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', PostRepository::class),
             ]);
 
-        $this->postJson(UserWithPosts::uriKey()."/{$u->id}/posts", [
+        $this->postJson(UserWithPosts::route("$u->id/posts"), [
             'title' => 'Test',
         ])->assertCreated();
 
@@ -247,7 +248,7 @@ class HasManyTest extends IntegrationTest
 
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
 
-        $this->getJson(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->getJson(UserWithPosts::route("{$userId}/posts/{$post->id}"), [
             'title' => 'Test',
         ])->assertForbidden();
     }
@@ -260,25 +261,25 @@ class HasManyTest extends IntegrationTest
         $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
         $secondPost = $this->mockPosts($secondUserId = $this->mockUsers()->first()->id, 1)->first();
 
-        $this->getJson(UserWithPosts::uriKey()."/{$userId}/posts/{$secondPost->id}")
+        $this->getJson(UserWithPosts::route("/{$userId}/posts/{$secondPost->id}"))
             ->assertNotFound();
     }
 
-    public function test_change_post()
+    public function test_change_post(): void
     {
         $_SERVER['restify.post.update'] = true;
         Gate::policy(Post::class, PostPolicy::class);
 
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
 
-        $this->postJson(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->postJson(UserWithPosts::route("/{$userId}/posts/{$post->id}"), [
             'title' => 'Test',
         ])->assertOk();
 
         $this->assertSame('Test', $post->fresh()->title);
     }
 
-    public function test_delete_post()
+    public function test_delete_post(): void
     {
         $_SERVER['restify.post.delete'] = true;
         Gate::policy(Post::class, PostPolicy::class);
@@ -287,14 +288,14 @@ class HasManyTest extends IntegrationTest
 
         $this->assertDatabaseCount('posts', 1);
 
-        $this->deleteJson(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->deleteJson(UserWithPosts::route("/{$userId}/posts/{$post->id}"), [
             'title' => 'Test',
         ])->assertNoContent();
 
         $this->assertDatabaseCount('posts', 0);
     }
 
-    public function test_unauthorized_delete_post()
+    public function test_unauthorized_delete_post(): void
     {
         $_SERVER['restify.post.delete'] = false;
         Gate::policy(Post::class, PostPolicy::class);
@@ -303,7 +304,7 @@ class HasManyTest extends IntegrationTest
 
         $this->assertDatabaseCount('posts', 1);
 
-        $this->deleteJson(UserWithPosts::uriKey()."/{$userId}/posts/{$post->id}", [
+        $this->deleteJson(UserWithPosts::route("/{$userId}/posts/{$post->id}"), [
             'title' => 'Test',
         ])->assertForbidden();
 
@@ -313,7 +314,7 @@ class HasManyTest extends IntegrationTest
     public function test_it_validates_fields_when_storing_related(): void
     {
         $userId = $this->mockUsers()->first()->id;
-        $this->postJson(UserWithPosts::uriKey()."/{$userId}/posts", [
+        $this->postJson(UserWithPosts::route("/{$userId}/posts"), [
             /*'title' => 'Wew',*/
         ])->assertStatus(422);
     }

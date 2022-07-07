@@ -72,7 +72,7 @@ abstract class IntegrationTest extends TestCase
     protected function getEnvironmentSetUp($app): void
     {
         config()->set('database.default', 'sqlite');
-        config()->set('restify.base', '/');
+//        config()->set('restify.base', '/');
 //        $app['config']->set('restify.base', '/');
 
         $app['config']->set('database.connections.sqlite', [
