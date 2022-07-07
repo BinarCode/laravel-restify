@@ -10,13 +10,6 @@ use Illuminate\Testing\Fluent\AssertableJson;
 
 class PerformGetterControllerTest extends IntegrationTest
 {
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->ensureLoggedIn();
-    }
-
     public function test_could_perform_getter(): void
     {
         $this
