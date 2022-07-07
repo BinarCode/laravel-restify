@@ -618,7 +618,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function show(RestifyRequest $request, $repositoryId)
     {
-        return $this->response()->data($this->serializeForShow($request));
+        return data($this->serializeForShow($request));
     }
 
     public function store(RestifyRequest $request)
@@ -660,12 +660,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             call_user_func([static::class, 'stored'], $this->resource, $request);
         }
 
-        return $this->response()
-            ->created()
-            ->header('Location', static::uriTo($this->resource))
-            ->data($this->serializeForShow(
-                $request,
-            ));
+        return data($this->serializeForShow($request), 201, ['Location' => static::uriTo($this->resource)]);
     }
 
     public function storeBulk(RepositoryStoreBulkRequest $request)
@@ -702,9 +697,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         static::storedBulk($entities, $request);
 
-        return $this->response()
-            ->data($entities)
-            ->success();
+        return data($entities);
     }
 
     public function update(RestifyRequest $request, $repositoryId)
@@ -732,9 +725,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->authorizedUpdate($request)
             ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
 
-        return $this->response()
-            ->data($this->serializeForShow($request))
-            ->success();
+        return data($this->serializeForShow($request));
     }
 
     public function patch(RestifyRequest $request, $repositoryId)
@@ -765,9 +756,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             fn (Field $field) => $field->invokeAfter($request, $this->resource)
         );
 
-        return $this->response()
-            ->data($this->serializeForShow($request))
-            ->success();
+        return data($this->serializeForShow($request));
     }
 
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
@@ -790,7 +779,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         static::updatedBulk($this->resource, $request);
 
-        return response()->json();
+        return ok();
     }
 
     public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)
@@ -832,9 +821,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             })->each->save();
         });
 
-        return $this->response()
-            ->created()
-            ->data($pivots);
+        return data($pivots, 201);
     }
 
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
@@ -849,9 +836,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 ->map(fn ($pivot) => $eagerField->authorizeToDetach($request, $pivot) && $pivot->delete());
         });
 
-        return $this->response()
-            ->data($deleted)
-            ->deleted();
+        return data($deleted, 204);
     }
 
     public function destroy(RestifyRequest $request, $repositoryId)
@@ -862,7 +847,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         static::deleted($status, $request);
 
-        return $this->response()->deleted();
+        return ok(code: 204);
     }
 
     public function allowToUpdate(RestifyRequest $request, $payload = null): self
