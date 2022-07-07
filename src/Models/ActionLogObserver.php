@@ -13,7 +13,7 @@ class ActionLogObserver
 {
     public function created(Model $model): void
     {
-        if (!$this->tryLoggingActionRequest($model)) {
+        if (! $this->tryLoggingActionRequest($model)) {
             Restify::actionLog()
                 ->forRepositoryStored($model, request()?->user())
                 ->save();
@@ -22,7 +22,7 @@ class ActionLogObserver
 
     public function updating(Model $model): void
     {
-        if (!$this->tryLoggingActionRequest($model)) {
+        if (! $this->tryLoggingActionRequest($model)) {
             Restify::actionLog()
                 ->forRepositoryUpdated($model, request()?->user())
                 ->save();
@@ -31,7 +31,7 @@ class ActionLogObserver
 
     public function deleted(Model $model): void
     {
-        if (!$this->tryLoggingActionRequest($model)) {
+        if (! $this->tryLoggingActionRequest($model)) {
             Restify::actionLog()
                 ->forRepositoryDestroy($model, request()?->user())
                 ->save();

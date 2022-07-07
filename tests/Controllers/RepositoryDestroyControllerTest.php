@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
