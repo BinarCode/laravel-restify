@@ -2,9 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Tests\Prototypes;
 
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Assertables\AssertableModel;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
@@ -12,7 +13,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 use Illuminate\Testing\TestResponse;
 use JsonSerializable;
-use Binaryk\LaravelRestify\Tests\Assertables\AssertableModel;
 
 abstract class Prototypeable implements JsonSerializable
 {
@@ -81,7 +81,7 @@ abstract class Prototypeable implements JsonSerializable
 
     public static function assertableClass(): string|AssertableModel|null
     {
-        if (class_exists($guessedClass = "\\Binaryk\\LaravelRestify\\Tests\\Assertables\\Assertable".static::baseModelClass())) {
+        if (class_exists($guessedClass = '\\Binaryk\\LaravelRestify\\Tests\\Assertables\\Assertable'.static::baseModelClass())) {
             return $guessedClass;
         }
 
@@ -119,7 +119,7 @@ abstract class Prototypeable implements JsonSerializable
         $this->ensureRepositoryClassDefined();
 
         $id = $this->test->postJson(static::repositoryClass()::route(), $this->getAttributes())
-            ->tap($tap ?? fn() => '')
+            ->tap($tap ?? fn () => '')
             ->json('data.id');
 
         return $this->wirteableCallback($id, $assertable);
@@ -130,7 +130,7 @@ abstract class Prototypeable implements JsonSerializable
         $key = $key ?? $this->model()->getKey();
 
         $id = $this->test->postJson(static::repositoryClass()::route($key), $this->getAttributes())
-            ->tap($tap ?? fn() => '')
+            ->tap($tap ?? fn () => '')
             ->json('data.id');
 
         return $this->wirteableCallback($id, $assertable);

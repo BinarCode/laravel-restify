@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Assertables\AssertablePost;
 use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
@@ -128,7 +127,8 @@ class ActionLogTest extends IntegrationTest
         $this
             ->posts()
             ->fake()
-            ->create(fn(AssertablePost $assertablePost) => $assertablePost
+            ->create(
+                fn (AssertablePost $assertablePost) => $assertablePost
                 ->hasActionLog()
                 ->etc()
             );
@@ -143,7 +143,9 @@ class ActionLogTest extends IntegrationTest
         $this
             ->posts()
             ->attributes(['title' => 'Updated post'])
-            ->update($post->getKey(), fn(AssertablePost $assertablePost) => $assertablePost
+            ->update(
+                $post->getKey(),
+                fn (AssertablePost $assertablePost) => $assertablePost
                 ->hasActionLog()
                 ->etc()
             );
