@@ -288,7 +288,7 @@ class ActionLogTest extends IntegrationTest
             ->create()
             ->attributes(['title' => 'Updated post'])
             ->update(
-                assertable: fn(AssertablePost $assertablePost) => $assertablePost
+                assertable: fn (AssertablePost $assertablePost) => $assertablePost
                     ->hasActionLog(2)
                     ->etc()
             )
