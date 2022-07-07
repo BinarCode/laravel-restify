@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\ActionLogPolicy;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Concerns\Mockers;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
@@ -23,7 +24,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
@@ -31,6 +31,8 @@ use Orchestra\Testbench\TestCase;
 
 abstract class IntegrationTest extends TestCase
 {
+    use Mockers;
+
     protected Mockery\MockInterface|User|null $authenticatedAs = null;
 
     protected function setUp(): void
@@ -38,14 +40,13 @@ abstract class IntegrationTest extends TestCase
         parent::setUp();
 
         $this
-            ->loadRepositories()
+            ->repositories()
             ->policies()
             ->migrations();
 
-        config()->set('restify.auth.user_model', User::class);
-
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Database\\Factories\\'.class_basename($modelName).'Factory'
+            fn(string $modelName
+            ) => 'Binaryk\\LaravelRestify\\Tests\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         Restify::$authUsing = static function () {
@@ -72,6 +73,7 @@ abstract class IntegrationTest extends TestCase
     protected function getEnvironmentSetUp($app): void
     {
         config()->set('database.default', 'sqlite');
+        config()->set('restify.auth.user_model', User::class);
 
         $migration = include __DIR__.'/../database/migrations/create_action_logs_table.php.stub';
         $migration->up();
@@ -87,7 +89,7 @@ abstract class IntegrationTest extends TestCase
         return $this;
     }
 
-    public function loadRepositories(): self
+    public function repositories(): self
     {
         Restify::repositories([
             UserRepository::class,
@@ -110,27 +112,6 @@ abstract class IntegrationTest extends TestCase
         }
 
         return $this;
-    }
-
-    public function mockUsers($count = 1, array $predefinedEmails = []): Collection
-    {
-        return Collection::times($count, fn ($i) => User::factory()->create())
-            ->merge(collect($predefinedEmails)->each(fn (string $email) => User::factory()->create([
-                'email' => $email,
-            ])))
-            ->shuffle();
-    }
-
-    public function mockPosts($userId = null, $count = 1): Collection
-    {
-        return Collection::times($count, fn () => Post::factory()->create([
-            'user_id' => $userId,
-        ]))->shuffle();
-    }
-
-    protected function mockPost(array $attributes = []): Post
-    {
-        return Post::factory()->create($attributes);
     }
 
     public function getTempDirectory($suffix = ''): string
