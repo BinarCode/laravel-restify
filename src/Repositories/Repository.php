@@ -618,7 +618,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function show(RestifyRequest $request, $repositoryId)
     {
-        return $this->response()->data($this->serializeForShow($request));
+        return data($this->serializeForShow($request));
     }
 
     public function store(RestifyRequest $request)
