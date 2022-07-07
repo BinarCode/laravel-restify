@@ -49,7 +49,6 @@ class AdvancedFilterTest extends IntegrationTest
             AssertableJson::fromArray($filter->jsonSerialize()),
             function (AssertableJson $json) {
                 $json
-                    ->dump()
                     ->where('type', 'multiselect')
                     ->where('advanced', true)
                     ->where('title', 'Status filter')

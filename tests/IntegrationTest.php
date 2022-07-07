@@ -73,14 +73,8 @@ abstract class IntegrationTest extends TestCase
     {
         config()->set('database.default', 'sqlite');
 
-        $app['config']->set('database.connections.sqlite', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-        ]);
-
-        include_once __DIR__.'/../database/migrations/create_action_logs_table.php.stub';
-        (new \CreateActionLogsTable())->up();
+        $migration = include __DIR__.'/../database/migrations/create_action_logs_table.php.stub';
+        $migration->up();
     }
 
     protected function loadMigrations(): self

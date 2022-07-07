@@ -32,5 +32,8 @@
     <php>
         <env name="APP_KEY" value="base64:la8jDWcqBHfGO6PR+OA9FAZqdi0XQKuhnzqc5tUATZs="/>
         <env name="MAIL_DRIVER" value="log"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_FOREIGN_KEYS" value="false"/>
     </php>
 </phpunit>
