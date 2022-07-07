@@ -71,14 +71,14 @@ class HasManyTest extends IntegrationTest
 
         $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts[title]']))
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.relationships.posts.0.attributes.title', 'Title')
                     ->etc()
             );
 
         $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts[title|description]']))
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.relationships.posts.0.attributes.title', 'Title')
                     ->where('data.relationships.posts.0.attributes.description', 'Description')
                     ->etc()
@@ -106,7 +106,7 @@ class HasManyTest extends IntegrationTest
 
         $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts']))
             ->assertOk()
-            ->assertJson(fn(AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
+            ->assertJson(fn (AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
     }
 
     public function test_field_ignored_when_storing(): void
