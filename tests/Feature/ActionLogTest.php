@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests\Feature;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\ActionLogObserver;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Assertables\AssertableActionLog;
 use Binaryk\LaravelRestify\Tests\Assertables\AssertablePost;
 use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
@@ -265,5 +266,18 @@ class ActionLogTest extends IntegrationTest
             ->where('changes.is_active', true)
             ->where('user_id', Auth::id())
             ->etc();
+    }
+
+    public function test_can_store_custom_logs(): void
+    {
+        $post = PostFactory::one();
+
+        $log = ActionLog::customLog('Activated post', $post, [], $this->authenticatedAs)->save();
+
+        $this->assertDatabaseHas('action_logs', [
+            'name' => 'Activated post',
+            'actionable_type' => $post::class,
+            'actionable_id' => $post->getKey(),
+        ]);
     }
 }

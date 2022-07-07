@@ -9,20 +9,22 @@ use Illuminate\Support\Str;
 
 /**
  * Class ActionLog.
- * @property string batch_id
- * @property string user_id
- * @property string name
- * @property string actionable_type // the actual model
- * @property string actionable_id
- * @property string target_type // say we attach model A to model B (current one) - the model A will be the target
- * @property string target_id
- * @property string model_type // say we detach model A from model B (current one) - the pivot will be the model_type
- * @property string model_id
- * @property string fields
- * @property string status
- * @property string original
- * @property string changes
- * @property string exception
+ * @property int $id
+ * @property string $batch_id
+ * @property string $user_id
+ * @property string $name
+ * @property string $actionable_type // the actual model
+ * @property string $actionable_id
+ * @property string $target_type // say we attach model A to model B (current one) - the model A will be the target
+ * @property string $target_id
+ * @property string $model_type // say we detach model A from model B (current one) - the pivot will be the model_type
+ * @property string $model_id
+ * @property string $fields
+ * @property string $status
+ * @property string $original
+ * @property string $changes
+ * @property string $exception
+ * @property ?array $meta
  */
 class ActionLog extends Model
 {
@@ -33,6 +35,7 @@ class ActionLog extends Model
     protected $casts = [
         'original' => 'array',
         'changes' => 'array',
+        'meta' => 'array',
     ];
 
     public const STATUS_FINISHED = 'finished';
@@ -127,5 +130,37 @@ class ActionLog extends Model
             'created_at' => now(),
             'updated_at' => now(),
         ]);
+    }
+
+    public static function customLog(
+        string $name,
+        Model $actionable,
+        array $attributes = [],
+        ?Authenticatable $user = null
+    ): self {
+        return new static(array_merge([
+            'batch_id' => (string) Str::uuid(),
+            'user_id' => optional($user)->getAuthIdentifier(),
+            'name' => $name,
+            'actionable_type' => $actionable->getMorphClass(),
+            'actionable_id' => $actionable->getKey(),
+            'status' => static::STATUS_FINISHED,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ], $attributes));
+    }
+
+    public function withMeta(string $key, mixed $value): self
+    {
+        $this->meta[$key] = $value;
+
+        return $this;
+    }
+
+    public function withMetas(array $metas): self
+    {
+        $this->meta = $metas;
+
+        return $this;
     }
 }
