@@ -45,7 +45,8 @@ class NestedRepositoryControllerTest extends IntegrationTest
         ];
 
         $this->getJson(UserRepository::route("$post->user_id/posts/$post->id"))
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->where('data.attributes.title', 'Post.')
                 ->etc()
             );
@@ -69,7 +70,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
         ])
             ->assertStatus(201)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', $title)
                     ->etc()
             );
@@ -99,7 +100,7 @@ class NestedRepositoryControllerTest extends IntegrationTest
             'title' => $title = 'Updated.',
         ])
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', $title)
                     ->etc()
             );

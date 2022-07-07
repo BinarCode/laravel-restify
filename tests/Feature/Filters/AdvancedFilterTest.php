@@ -37,7 +37,7 @@ class AdvancedFilterTest extends IntegrationTest
         $this->getJson(PostRepository::route('filters', [
             'only' => 'matches,searchables,sortables',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.1.repository.key', 'users')
                 ->where('data.1.repository.label', 'Users')
                 ->where('data.1.repository.display_key', 'id')
@@ -72,7 +72,7 @@ class AdvancedFilterTest extends IntegrationTest
             'filters' => $filters,
         ]))
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.attributes.title', $expectedTitle)
                     ->etc()
             )
@@ -147,7 +147,7 @@ class AdvancedFilterTest extends IntegrationTest
         ], JSON_THROW_ON_ERROR));
 
         $this->getJson(PostRepository::route(query: [
-            'filters' => $filters
+            'filters' => $filters,
         ]))
             ->assertOk()
             ->assertJsonCount(1, 'data');
@@ -192,11 +192,11 @@ class AdvancedFilterTest extends IntegrationTest
         ]));
 
         $this->getJson(PostRepository::route(query: [
-            'filters' => $filters
+            'filters' => $filters,
         ]))
             ->assertOk()
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.attributes.title', 'Valid post')
                     ->count('data', 1)
                     ->etc()

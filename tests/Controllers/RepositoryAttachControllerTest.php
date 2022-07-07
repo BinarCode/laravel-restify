@@ -101,7 +101,8 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $this->getJson(CompanyRepository::route($company->id, [
             'include' => 'users',
-        ]))->assertOk()->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertOk()->assertJson(
+            fn (AssertableJson $json) => $json
             ->where('data.relationships.users.0.pivots.is_admin', true)
             ->where('data.relationships.users.1.pivots.is_admin', false)
             ->etc()
@@ -119,7 +120,8 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $this->getJson(CompanyRepository::route(query: [
             'include' => 'users',
-        ]))->assertOk()->assertJson(fn(AssertableJson $json) => $json
+        ]))->assertOk()->assertJson(
+            fn (AssertableJson $json) => $json
             ->where('data.0.relationships.users.0.pivots.is_admin', true)
             ->where('data.0.relationships.users.1.pivots.is_admin', false)
             ->etc()

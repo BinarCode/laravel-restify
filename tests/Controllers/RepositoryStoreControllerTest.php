@@ -46,7 +46,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'title' => $title = 'Some post title',
         ])->assertCreated()->assertHeader('Location', PostRepository::route(1))
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', $title)
                     ->where('data.attributes.user_id', 1)
                     ->where('data.id', '1')
@@ -66,7 +66,8 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'description' => 'A very short description',
         ])->assertCreated()
             ->assertHeader('Location', PostRepository::route(1))
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->missing('data.attributes.description')
                 ->where('data.attributes.title', 'Some post title')
                 ->etc()
@@ -80,7 +81,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             ->andreturn([
                 Field::new('title'),
 
-                Field::new('description')->canStore(fn() => false),
+                Field::new('description')->canStore(fn () => false),
             ]);
 
         $this->postJson(PostRepository::route(), [
@@ -88,7 +89,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'title' => $updated = 'Title',
         ])
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', $updated)
                     ->where('data.attributes.description', null)
                     ->etc()
@@ -110,7 +111,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'title' => $updated = 'Title',
         ])
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', $updated)
                     ->where('data.attributes.description', null)
                     ->etc()
