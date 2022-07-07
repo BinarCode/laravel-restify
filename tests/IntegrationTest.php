@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\ActionLogPolicy;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
