@@ -266,24 +266,4 @@ class ActionLogTest extends IntegrationTest
             ->where('user_id', Auth::id())
             ->etc();
     }
-
-    public function test_store_just_one_log_when_enabled_and_go_through_restify(): void
-    {
-        $this->markTestSkipped('test');
-        $post = $this
-            ->posts()
-            ->attributes(['title' => 'Title'])
-            ->create()
-            ->attributes(['title' => 'Updated post'])
-            ->update(
-                assertable: fn(AssertablePost $assertablePost) => $assertablePost
-                    ->hasActionLog(2)
-                    ->etc()
-            )
-            ->model();
-
-        $post->update(['title' => 'A title set outside of restify.']);
-
-        $this->assertCount(2, $post->actionLogs()->get());
-    }
 }
