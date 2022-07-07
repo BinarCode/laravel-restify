@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Feature;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\ActionLogObserver;
-use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Assertables\AssertableActionLog;
 use Binaryk\LaravelRestify\Tests\Assertables\AssertablePost;
 use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
