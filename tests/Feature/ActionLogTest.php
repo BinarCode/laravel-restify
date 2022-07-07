@@ -272,7 +272,7 @@ class ActionLogTest extends IntegrationTest
     {
         $post = PostFactory::one();
 
-        $log = ActionLog::customLog('Activated post', $post, [], $this->authenticatedAs)->save();
+        ActionLog::customLog('Activated post', $post, [], $this->authenticatedAs)->save();
 
         $this->assertDatabaseHas('action_logs', [
             'name' => 'Activated post',
