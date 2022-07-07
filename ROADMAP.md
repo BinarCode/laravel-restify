@@ -9,7 +9,7 @@
 - [ ] Request validations should be rewritten 
 - [ ] Revisit the `InteractWithRepositories` trait and clean model queries accordingly
 - [ ] Adding support for PHPStan and configure the level 4
-- [ ] Clean up all tests using AssertableJson [x]
+- [x] Clean up all tests using AssertableJson [x]
 - [x] Make sure the `include` matches array key firstly, and secondly the relationship name
 
 ### Features
