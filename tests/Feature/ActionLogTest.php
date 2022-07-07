@@ -4,6 +4,9 @@ namespace Binaryk\LaravelRestify\Tests\Feature;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Models\ActionLog;
+use Binaryk\LaravelRestify\Tests\Assertables\AssertablePost;
+use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
@@ -118,5 +121,31 @@ class ActionLogTest extends IntegrationTest
         ]);
 
         $this->assertDatabaseCount('action_logs', 1);
+    }
+
+    public function test_store_log_on_store_request(): void
+    {
+        $this
+            ->posts()
+            ->fake()
+            ->create(fn(AssertablePost $assertablePost) => $assertablePost
+                ->hasActionLog()
+                ->etc()
+            );
+    }
+
+    public function test_store_log_on_update_request(): void
+    {
+        $post = PostFactory::one();
+
+        $this->assertEmpty($post->actionLogs()->get());
+
+        $this
+            ->posts()
+            ->attributes(['title' => 'Updated post'])
+            ->update($post->getKey(), fn(AssertablePost $assertablePost) => $assertablePost
+                ->hasActionLog()
+                ->etc()
+            );
     }
 }

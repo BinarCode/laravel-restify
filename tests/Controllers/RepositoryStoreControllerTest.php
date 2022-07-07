@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Illuminate\Testing\TestResponse;
 
 class RepositoryStoreControllerTest extends IntegrationTest
 {
@@ -31,29 +32,35 @@ class RepositoryStoreControllerTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        $this->postJson(PostRepository::route(), [
-            'title' => 'Title',
-            'description' => 'Title',
-        ])->assertStatus(403);
+        $this
+            ->posts()
+            ->create(tap: function (TestResponse $response) {
+                $response->assertForbidden();
+            });
     }
 
     public function test_success_storing(): void
     {
         $_SERVER['restify.post.store'] = true;
 
-        $this->postJson(PostRepository::route(), $data = [
-            'user_id' => ($user = $this->mockUsers()->first())->id,
-            'title' => $title = 'Some post title',
-        ])->assertCreated()->assertHeader('Location', PostRepository::route(1))
-            ->assertJson(
-                fn (AssertableJson $json) => $json
-                    ->where('data.attributes.title', $title)
-                    ->where('data.attributes.user_id', 1)
-                    ->where('data.id', '1')
-                    ->where('data.type', PostRepository::uriKey())
-            );
+        $post = $this
+            ->posts()
+            ->fake()
+            ->attributes([
+                'title' => $title = 'Some post title',
+            ])
+            ->create(tap: fn(TestResponse $testResponse) => $testResponse
+                ->assertHeader('Location', PostRepository::route(1))
+                ->assertJson(
+                    fn(AssertableJson $json) => $json
+                        ->where('data.attributes.title', $title)
+                        ->where('data.attributes.user_id', 1)
+                        ->where('data.id', '1')
+                        ->where('data.type', PostRepository::uriKey()),
+                ))
+            ->model();
 
-        $this->assertDatabaseHas('posts', $data);
+        $this->assertModelExists($post);
     }
 
     public function test_will_store_only_defined_fields_from_fieldsForStore(): void
@@ -67,10 +74,10 @@ class RepositoryStoreControllerTest extends IntegrationTest
         ])->assertCreated()
             ->assertHeader('Location', PostRepository::route(1))
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->missing('data.attributes.description')
-                ->where('data.attributes.title', 'Some post title')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->missing('data.attributes.description')
+                    ->where('data.attributes.title', 'Some post title')
+                    ->etc()
             );
     }
 
@@ -81,7 +88,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             ->andreturn([
                 Field::new('title'),
 
-                Field::new('description')->canStore(fn () => false),
+                Field::new('description')->canStore(fn() => false),
             ]);
 
         $this->postJson(PostRepository::route(), [
@@ -89,7 +96,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'title' => $updated = 'Title',
         ])
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->where('data.attributes.title', $updated)
                     ->where('data.attributes.description', null)
                     ->etc()
@@ -111,7 +118,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
             'title' => $updated = 'Title',
         ])
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->where('data.attributes.title', $updated)
                     ->where('data.attributes.description', null)
                     ->etc()

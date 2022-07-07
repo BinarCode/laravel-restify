@@ -15,6 +15,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Prototypes;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RolePolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
@@ -32,6 +33,7 @@ use Orchestra\Testbench\TestCase;
 abstract class IntegrationTest extends TestCase
 {
     use Mockers;
+    use Prototypes;
 
     protected Mockery\MockInterface|User|null $authenticatedAs = null;
 

@@ -12,11 +12,11 @@ use Illuminate\Support\Str;
  * @property string batch_id
  * @property string user_id
  * @property string name
- * @property string actionable_type
+ * @property string actionable_type // the actual model
  * @property string actionable_id
- * @property string target_type
+ * @property string target_type // say we attach model A to model B (current one) - the model A will be the target
  * @property string target_id
- * @property string model_type
+ * @property string model_type // say we detach model A from model B (current one) - the pivot will be the model_type
  * @property string model_id
  * @property string fields
  * @property string status
