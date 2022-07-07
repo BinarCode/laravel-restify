@@ -3,8 +3,8 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers\Index;
 
 use Binaryk\LaravelRestify\Fields\HasMany;
-use Binaryk\LaravelRestify\Tests\Factories\PostFactory;
-use Binaryk\LaravelRestify\Tests\Factories\UserFactory;
+use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
+use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;

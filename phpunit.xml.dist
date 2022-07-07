@@ -14,24 +14,6 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist>
-            <directory suffix=".php">src/</directory>
-            <exclude>
-                <directory suffix="CheckPassport.php">src/Commands</directory>
-            </exclude>
-        </whitelist>
-    </filter>
-    <coverage>
-        <include>
-            <directory suffix=".php">./src</directory>
-        </include>
-        <report>
-            <html outputDirectory="build/coverage"/>
-            <text outputFile="build/coverage.txt"/>
-            <clover outputFile="build/logs/clover.xml"/>
-        </report>
-    </coverage>
     <php>
         <env name="APP_KEY" value="base64:la8jDWcqBHfGO6PR+OA9FAZqdi0XQKuhnzqc5tUATZs="/>
         <env name="MAIL_DRIVER" value="log"/>

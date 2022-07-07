@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\ActionLogPolicy;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
@@ -40,12 +41,12 @@ abstract class IntegrationTest extends TestCase
         $this
             ->loadRepositories()
             ->policies()
-            ->loadMigrations();
+            ->migrations();
 
         config()->set('restify.auth.user_model', User::class);
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\'.class_basename($modelName).'Factory'
+            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         Restify::$authUsing = static function () {
@@ -58,7 +59,7 @@ abstract class IntegrationTest extends TestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-        Mockery::close();
+
         Repository::clearResolvedInstances();
     }
 
@@ -77,11 +78,11 @@ abstract class IntegrationTest extends TestCase
         $migration->up();
     }
 
-    protected function loadMigrations(): self
+    private function migrations(): self
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--path' => realpath(__DIR__.DIRECTORY_SEPARATOR.'Migrations'),
+            '--path' => realpath(__DIR__.'/database/migrations'),
         ]);
 
         return $this;

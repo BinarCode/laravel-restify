@@ -1,6 +1,6 @@
 <?php
 
-namespace Binaryk\LaravelRestify\Tests\Factories;
+namespace Binaryk\LaravelRestify\Tests\Database\Factories;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Illuminate\Database\Eloquent\Factories\Factory;
