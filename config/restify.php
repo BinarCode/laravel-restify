@@ -126,6 +126,16 @@ return [
         | Repository used to list logs.
         */
         'repository' => ActionLogRepository::class,
+
+        /**
+         | Inform restify to log or not action logs.
+         */
+        'enable' => env('RESTIFY_ENABLE_LOGS', true),
+
+        /**
+        | Inform restify to log model changes from any source, or just restify. Set to `false` to log just restify logs.
+         */
+        'all' => env('RESTIFY_WRITE_ALL_LOGS', false),
     ],
 
     /*

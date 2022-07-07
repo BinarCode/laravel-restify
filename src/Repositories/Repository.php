@@ -313,7 +313,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Resolve repository with given model.
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return Repository
      */
     public static function resolveWith(Model $model): Repository
@@ -634,8 +634,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     ->merge($this->collectFields($request)->forBelongsTo($request))
             );
 
-            $dirty = $this->resource->getDirty();
-
             if ($request->isViaRepository()) {
                 $this->resource = $request->viaQuery()->save($this->resource);
             } else {
@@ -646,12 +644,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 } else {
                     $this->resource->save();
                 }
-            }
-
-            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
-                Restify::actionLog()
-                    ->forRepositoryStored($this->resource, $request->user(), $dirty)
-                    ->save();
             }
 
             $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
@@ -725,12 +717,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 ->merge($this->collectFields($request)->forBelongsTo($request));
 
             static::fillFields($request, $this->resource, $fields);
-
-            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
-                Restify::actionLog()
-                    ->forRepositoryUpdated($this->resource, $request->user())
-                    ->save();
-            }
 
             $this->resource->save();
 
@@ -871,12 +857,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function destroy(RestifyRequest $request, $repositoryId)
     {
         $status = DB::transaction(function () use ($request) {
-            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
-                Restify::actionLog()
-                    ->forRepositoryDestroy($this->resource, $request->user())
-                    ->save();
-            }
-
             return $this->resource->delete();
         });
 

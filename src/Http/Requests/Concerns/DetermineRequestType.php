@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
+use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\GlobalSearchRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
@@ -51,5 +52,10 @@ trait DetermineRequestType
     public function isUpdateBulkRequest(): bool
     {
         return $this instanceof RepositoryUpdateBulkRequest;
+    }
+
+    public function isActionRequest(): bool
+    {
+        return $this instanceof ActionRequest;
     }
 }
