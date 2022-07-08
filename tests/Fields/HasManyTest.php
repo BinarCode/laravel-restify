@@ -327,7 +327,7 @@ class UserWithPosts extends Repository
     public static function include(): array
     {
         return [
-            'posts' => HasMany::make('posts', PostRepository::class),
+            HasMany::make('posts', PostRepository::class),
         ];
     }
 
