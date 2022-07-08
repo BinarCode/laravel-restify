@@ -34,7 +34,8 @@ class RelatedCollection extends Collection
 
     public function forEager(RestifyRequest $request): self
     {
-        return $this->filter(fn ($value, $key) => $value instanceof EagerField)
+        return $this
+            ->filter(fn ($value, $key) => $value instanceof EagerField)
             ->filter(fn (Field $field) => $field->authorize($request))
             ->unique('attribute');
     }
