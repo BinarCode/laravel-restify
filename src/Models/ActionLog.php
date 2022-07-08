@@ -152,7 +152,9 @@ class ActionLog extends Model
 
     public function withMeta(string $key, mixed $value): self
     {
-        $this->meta[$key] = $value;
+        $this->meta = array_merge($this->meta ?: [], [
+            $key => $value,
+        ]);
 
         return $this;
     }
@@ -160,6 +162,21 @@ class ActionLog extends Model
     public function withMetas(array $metas): self
     {
         $this->meta = $metas;
+
+        return $this;
+    }
+
+    public function actor(Model $model): self
+    {
+        $this->user_id = $model->getKey();
+
+        return $this;
+    }
+
+    public function target(Model $model): self
+    {
+        $this->target_id = $model->getKey();
+        $this->target_type = $model->getMorphClass();
 
         return $this;
     }

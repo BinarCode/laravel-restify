@@ -99,7 +99,7 @@ class ActionLogTest extends IntegrationTest
         $this->assertDatabaseCount('action_logs', 1);
     }
 
-    public function test_can_create_log_for_repository_custom_action()
+    public function test_can_create_log_for_repository_custom_action(): void
     {
         $this->authenticate();
 
@@ -134,7 +134,7 @@ class ActionLogTest extends IntegrationTest
             ->posts()
             ->attributes(['title' => 'Title', 'user_id' => 1])
             ->create(
-                fn (AssertablePost $assertablePost) => $assertablePost
+                fn(AssertablePost $assertablePost) => $assertablePost
                     ->hasActionLog()
                     ->etc()
             )->model();
@@ -160,7 +160,7 @@ class ActionLogTest extends IntegrationTest
             ->create()
             ->attributes(['title' => 'Updated post'])
             ->update(
-                assertable: fn (AssertablePost $assertablePost) => $assertablePost
+                assertable: fn(AssertablePost $assertablePost) => $assertablePost
                     ->hasActionLog(2)
                     ->etc()
             )->model();
@@ -193,7 +193,7 @@ class ActionLogTest extends IntegrationTest
             ->attributes(['title' => 'Updated post'])
             ->destroy(
                 key: $post->getKey(),
-                tap: fn (TestResponse $assertablePost) => $assertablePost
+                tap: fn(TestResponse $assertablePost) => $assertablePost
                     ->assertNoContent()
             );
 
@@ -271,12 +271,22 @@ class ActionLogTest extends IntegrationTest
     {
         $post = PostFactory::one();
 
-        ActionLog::register('Activated post', $post, [], $this->authenticatedAs)->save();
+        $log = ActionLog::register('Activated post', $post, [])
+            ->actor($this->authenticatedAs)
+            ->target($post)
+            ->withMeta('foo', 'bar');
+
+        $log->save();
+
+        AssertableActionLog::make($log->fresh())
+            ->where('target_type', $post->getMorphClass())
+            ->where('meta.foo', 'bar');
 
         $this->assertDatabaseHas('action_logs', [
             'name' => 'Activated post',
             'actionable_type' => $post::class,
             'actionable_id' => $post->getKey(),
+            'user_id' => $this->authenticatedAs->getKey(),
         ]);
     }
 
@@ -288,7 +298,7 @@ class ActionLogTest extends IntegrationTest
             ->create()
             ->attributes(['title' => 'Updated post'])
             ->update(
-                assertable: fn (AssertablePost $assertablePost) => $assertablePost
+                assertable: fn(AssertablePost $assertablePost) => $assertablePost
                     ->hasActionLog(2)
                     ->etc()
             )
