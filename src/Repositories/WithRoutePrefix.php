@@ -15,38 +15,17 @@ trait WithRoutePrefix
     public static $prefix;
 
     /**
-     * List of index prefixes by uriKey.
-     * @var array
-     */
-    public static $indexPrefixes;
-
-    /**
      * The repository prefixes by key.
      *
      * @var array
      */
     private static $prefixes;
 
-    /**
-     * The repository index route default prefix.
-     * @var string
-     */
-    public static $indexPrefix;
-
     public static function prefix(): ?string
     {
         return static::hasPrefix()
             ? static::sanitizeSlashes(
                 static::$prefixes[static::uriKey()]
-            )
-            : null;
-    }
-
-    public static function indexPrefix(): ?string
-    {
-        return static::hasIndexPrefix()
-            ? static::sanitizeSlashes(
-                static::$indexPrefixes[static::uriKey()]
             )
             : null;
     }
@@ -60,14 +39,7 @@ trait WithRoutePrefix
     {
         $name = static::uriKey();
 
-        return isset(static::$prefixes[$name]) && ! empty(static::$prefixes[$name]);
-    }
-
-    public static function hasIndexPrefix(): bool
-    {
-        $name = static::uriKey();
-
-        return isset(static::$indexPrefixes[$name]) && ! empty(static::$indexPrefixes[$name]);
+        return isset(static::$prefixes[$name]) && !empty(static::$prefixes[$name]);
     }
 
     protected static function sanitizeSlashes(?string $prefix): ?string
@@ -85,16 +57,11 @@ trait WithRoutePrefix
 
     public static function authorizedToUseRoute(RestifyRequest $request): bool
     {
-        if (! static::shouldAuthorizeRouteUsage()) {
+        if (!static::shouldAuthorizeRouteUsage()) {
             return true;
         }
 
         if ($request->isIndexRequest()) {
-            // index
-            if (static::indexPrefix()) {
-                return $request->is(static::indexPrefix().'/*');
-            }
-
             if (static::prefix()) {
                 return $request->is(static::prefix().'/*');
             }
@@ -108,21 +75,12 @@ trait WithRoutePrefix
     {
         return collect([
             static::prefix(),
-            static::indexPrefix(),
-        ])->some(fn ($prefix) => (bool) $prefix);
+        ])->some(fn($prefix) => (bool) $prefix);
     }
 
-    public static function setPrefix(string $prefix, string $uriKey = null)
+    public static function setPrefix(?string $prefix, string $uriKey = null): void
     {
-        if ($prefix) {
-            static::$prefixes[$uriKey ?? static::uriKey()] = $prefix;
-        }
-    }
-
-    public static function setIndexPrefix(string $prefix, string $uriKey = null)
-    {
-        if ($prefix) {
-            static::$indexPrefixes[$uriKey ?? static::uriKey()] = $prefix;
-        }
+        static::$prefixes[$uriKey ?? static::uriKey()] = $prefix;
+        static::$prefix = $prefix;
     }
 }

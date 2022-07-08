@@ -57,6 +57,24 @@ class Restify
     }
 
     /**
+     * Get the repository class for the prefix.
+     *
+     * @param  string  $prefix
+     * @return string|null
+     */
+    public static function repositoryClassForPrefix(string $prefix): ?string
+    {
+        return collect(static::$repositories)->first(function ($value) use ($prefix) {
+            /** * @var Repository $value */
+            return
+                $value::route()
+                    ->whenStartsWith('/', fn($string) => $string->replaceFirst('/', ''))->is(
+                        str($prefix)->whenStartsWith('/', fn($string) => $string->replaceFirst('/', ''))
+                    );
+        });
+    }
+
+    /**
      * Return the repository instance for a given key.
      *
      * @param  string  $key
@@ -141,15 +159,15 @@ class Restify
 
         foreach ((new Finder())->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
-                ['/', '.php'],
-                ['\\', ''],
-                Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
-            );
+                    ['/', '.php'],
+                    ['\\', ''],
+                    Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+                );
 
             if (is_subclass_of(
-                $repository,
-                Repository::class
-            ) && (new ReflectionClass($repository))->isInstantiable()) {
+                    $repository,
+                    Repository::class
+                ) && (new ReflectionClass($repository))->isInstantiable()) {
                 $repositories[] = $repository;
             }
         }
@@ -167,15 +185,15 @@ class Restify
      */
     public static function path($plus = null, array $query = [])
     {
-        if (! is_null($plus)) {
+        if (!is_null($plus)) {
             return empty($query)
-            ? config('restify.base', '/restify-api').'/'.$plus
-            : config('restify.base', '/restify-api').'/'.$plus.'?'.http_build_query($query);
+                ? config('restify.base', '/restify-api').'/'.$plus
+                : config('restify.base', '/restify-api').'/'.$plus.'?'.http_build_query($query);
         }
 
         return empty($query)
-        ? config('restify.base', '/restify-api')
-        : config('restify.base', '/restify-api').'?'.http_build_query($query);
+            ? config('restify.base', '/restify-api')
+            : config('restify.base', '/restify-api').'?'.http_build_query($query);
     }
 
     /**
@@ -212,8 +230,8 @@ class Restify
     public static function globallySearchableRepositories(RestifyRequest $request): array
     {
         return collect(static::$repositories)
-            ->filter(fn ($repository) => $repository::authorizedToUseRepository($request))
-            ->filter(fn ($repository) => $repository::$globallySearchable)
+            ->filter(fn($repository) => $repository::authorizedToUseRepository($request))
+            ->filter(fn($repository) => $repository::$globallySearchable)
             ->sortBy(static::sortResourcesWith())
             ->all();
     }
@@ -258,10 +276,17 @@ class Restify
             $request->is(trim($path.'/*', '/')) ||
             $request->is('restify-api/*') ||
             collect(static::$repositories)
-                ->filter(fn ($repository) => $repository::prefix())
-                ->some(fn ($repository) => $request->is($repository::prefix().'/*')) ||
-            collect(static::$repositories)
-                ->filter(fn ($repository) => $repository::indexPrefix())
-                ->some(fn ($repository) => $request->is($repository::indexPrefix().'/*'));
+                ->filter(fn($repository) => $repository::prefix())
+                ->some(fn($repository) => $request->is($repository::prefix().'/*'));
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public static function ensureRepositoriesLoaded(): void
+    {
+        if (empty(static::$repositories)) {
+            static::repositoriesFrom(app_path('Restify'));
+        }
     }
 }
