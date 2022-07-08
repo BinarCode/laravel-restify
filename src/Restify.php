@@ -57,6 +57,24 @@ class Restify
     }
 
     /**
+     * Get the repository class for the prefix.
+     *
+     * @param  string  $prefix
+     * @return string|null
+     */
+    public static function repositoryClassForPrefix(string $prefix): ?string
+    {
+        return collect(static::$repositories)->first(function ($value) use ($prefix) {
+            /** * @var Repository $value */
+            return
+                $value::route()
+                    ->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', ''))->is(
+                        str($prefix)->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', ''))
+                    );
+        });
+    }
+
+    /**
      * Return the repository instance for a given key.
      *
      * @param  string  $key
@@ -169,13 +187,13 @@ class Restify
     {
         if (! is_null($plus)) {
             return empty($query)
-            ? config('restify.base', '/restify-api').'/'.$plus
-            : config('restify.base', '/restify-api').'/'.$plus.'?'.http_build_query($query);
+                ? config('restify.base', '/restify-api').'/'.$plus
+                : config('restify.base', '/restify-api').'/'.$plus.'?'.http_build_query($query);
         }
 
         return empty($query)
-        ? config('restify.base', '/restify-api')
-        : config('restify.base', '/restify-api').'?'.http_build_query($query);
+            ? config('restify.base', '/restify-api')
+            : config('restify.base', '/restify-api').'?'.http_build_query($query);
     }
 
     /**
@@ -259,9 +277,16 @@ class Restify
             $request->is('restify-api/*') ||
             collect(static::$repositories)
                 ->filter(fn ($repository) => $repository::prefix())
-                ->some(fn ($repository) => $request->is($repository::prefix().'/*')) ||
-            collect(static::$repositories)
-                ->filter(fn ($repository) => $repository::indexPrefix())
-                ->some(fn ($repository) => $request->is($repository::indexPrefix().'/*'));
+                ->some(fn ($repository) => $request->is($repository::prefix().'/*'));
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public static function ensureRepositoriesLoaded(): void
+    {
+        if (empty(static::$repositories)) {
+            static::repositoriesFrom(app_path('Restify'));
+        }
     }
 }

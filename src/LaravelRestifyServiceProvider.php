@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
@@ -18,6 +19,7 @@ use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Support\Facades\App;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -61,6 +63,10 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         $kernel = $this->app->make(Kernel::class);
 
         $kernel->pushMiddleware(RestifyInjector::class);
+
+        if (! App::runningUnitTests()) {
+            app(RoutesBoot::class)->boot();
+        }
     }
 
     public function packageRegistered(): void

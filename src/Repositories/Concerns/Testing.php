@@ -23,7 +23,7 @@ trait Testing
             $path = str($path)->replaceFirst('/', '')->toString();
         }
 
-        $base = Str::replaceFirst('//', '/', Restify::path().'/'.static::uriKey());
+        $base = (static::prefix() ?: Str::replaceFirst('//', '/', Restify::path())) .'/'.static::uriKey();
 
         $route = $path
             ? $base.'/'.$path

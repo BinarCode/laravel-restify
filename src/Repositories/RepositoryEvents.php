@@ -66,10 +66,6 @@ trait RepositoryEvents
         if (static::$prefix) {
             static::setPrefix(static::$prefix, static::uriKey());
         }
-
-        if (static::$indexPrefix) {
-            static::setIndexPrefix(static::$indexPrefix, static::uriKey());
-        }
     }
 
     /**
