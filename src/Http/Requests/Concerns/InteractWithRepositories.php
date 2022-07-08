@@ -73,7 +73,7 @@ trait InteractWithRepositories
 
     public function newQuery(string $uriKey = null): Builder|Relation
     {
-        if (!$this->isViaRepository()) {
+        if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
         }
 
@@ -107,7 +107,8 @@ trait InteractWithRepositories
         $parentRepositoryId = $this->route('parentRepositoryId');
 
         //TODO: Find another implementation for prefixes:
-        $matchSomePrefixes = collect(Restify::$repositories)->some(fn($repository
+        $matchSomePrefixes = collect(Restify::$repositories)->some(fn (
+            $repository
         ) => $repository::prefix() === "$parentRepository/$parentRepositoryId");
 
         if ($matchSomePrefixes) {

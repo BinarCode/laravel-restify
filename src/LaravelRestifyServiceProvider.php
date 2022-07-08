@@ -64,7 +64,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
 
         $kernel->pushMiddleware(RestifyInjector::class);
 
-        if (!App::runningUnitTests()) {
+        if (! App::runningUnitTests()) {
             app(RoutesBoot::class)->boot();
         }
     }

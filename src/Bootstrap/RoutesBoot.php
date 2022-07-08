@@ -39,7 +39,7 @@ class RoutesBoot
         collect(Restify::$repositories)
             /** * @var Repository $repository */
             ->each(function (string $repository) use ($config) {
-                if (!$repository::prefix()) {
+                if (! $repository::prefix()) {
                     return;
                 }
 

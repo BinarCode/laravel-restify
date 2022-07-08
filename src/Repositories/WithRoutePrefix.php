@@ -39,7 +39,7 @@ trait WithRoutePrefix
     {
         $name = static::uriKey();
 
-        return isset(static::$prefixes[$name]) && !empty(static::$prefixes[$name]);
+        return isset(static::$prefixes[$name]) && ! empty(static::$prefixes[$name]);
     }
 
     protected static function sanitizeSlashes(?string $prefix): ?string
@@ -57,7 +57,7 @@ trait WithRoutePrefix
 
     public static function authorizedToUseRoute(RestifyRequest $request): bool
     {
-        if (!static::shouldAuthorizeRouteUsage()) {
+        if (! static::shouldAuthorizeRouteUsage()) {
             return true;
         }
 
@@ -75,7 +75,7 @@ trait WithRoutePrefix
     {
         return collect([
             static::prefix(),
-        ])->some(fn($prefix) => (bool) $prefix);
+        ])->some(fn ($prefix) => (bool) $prefix);
     }
 
     public static function setPrefix(?string $prefix, string $uriKey = null): void
