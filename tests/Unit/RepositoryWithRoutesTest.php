@@ -24,7 +24,6 @@ class RepositoryWithRoutesTest extends IntegrationTest
 
     public function test_can_add_custom_routes(): void
     {
-        dump(RepositoryWithRoutes::route('main-testing'));
         $this->getJson(RepositoryWithRoutes::route('main-testing'))
             ->assertOk()
             ->assertJson([
