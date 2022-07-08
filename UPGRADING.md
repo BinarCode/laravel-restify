@@ -2,13 +2,18 @@
 
 ## From 6.x to 7.x
 
+High impact:
+
+- Any action permitted unless the Model Policy exists and the method is defined
 - PHP8.1 is required
 - Laravel 9 is required
-- Restify.php - `repositoryForKey` renamed to `repositoryClassForKey`
-- Any action permitted unless the Model Policy exists and the method is defined
 - Repository.php:
-  - static `to` method renamed to `route`
-  - `related` static method deleted, replace with `include`
+    - static `to` method renamed to `route`
+    - `related` static method deleted, replace with `include`
+
+Low impact: 
+
+- Restify.php - `repositoryForKey` renamed to `repositoryClassForKey`
 
 ## From 6.2.1 to 6.3.0
 
