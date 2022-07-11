@@ -34,10 +34,16 @@ trait InteractWithSearch
         return static::$withs ?? [];
     }
 
-    public static function include(): array
+    public static function related(): array
     {
         return static::$related ?? [];
     }
+
+    public static function include(): array
+    {
+        return static::related();
+    }
+
 
     public static function collectRelated(): RelatedCollection
     {

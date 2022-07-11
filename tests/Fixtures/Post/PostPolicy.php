@@ -4,7 +4,7 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 
 class PostPolicy
 {
-    public function allowRestify()
+    public function allowRestify($user = null)
     {
         return $_SERVER['restify.post.allowRestify'] ?? true;
     }

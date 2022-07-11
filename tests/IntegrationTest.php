@@ -159,4 +159,11 @@ abstract class IntegrationTest extends TestCase
 
         return $this;
     }
+
+    protected function logout(): self
+    {
+        $this->actingAs(null);
+
+        return $this;
+    }
 }
