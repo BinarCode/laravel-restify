@@ -10,42 +10,42 @@ class {{ class }}
 {
     use HandlesAuthorization;
 
-    public function allowRestify(User $user = null)
+    public function allowRestify(User $user = null): bool
     {
         //
     }
 
-    public function show(User $user, {{ model }} $model)
+    public function show(User $user, {{ model }} $model): bool
     {
         //
     }
 
-    public function store(User $user)
+    public function store(User $user): bool
     {
         //
     }
 
-    public function storeBulk(User $user)
+    public function storeBulk(User $user): bool
     {
         //
     }
 
-    public function update(User $user, {{ model }} $model)
+    public function update(User $user, {{ model }} $model): bool
     {
         //
     }
 
-    public function updateBulk(User $user, {{ model }} $model)
+    public function updateBulk(User $user, {{ model }} $model): bool
     {
         //
     }
 
-    public function deleteBulk(User $user, {{ model }} $model)
+    public function deleteBulk(User $user, {{ model }} $model): bool
     {
         //
     }
 
-    public function delete(User $user, {{ model }} $model)
+    public function delete(User $user, {{ model }} $model): bool
     {
         //
     }

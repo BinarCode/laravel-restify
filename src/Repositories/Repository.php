@@ -40,7 +40,7 @@ use ReturnTypeWillChange;
 /**
  * @property string $type
  */
-abstract class Repository implements RestifySearchable, JsonSerializable
+class Repository implements RestifySearchable, JsonSerializable
 {
     use InteractWithSearch;
     use ValidatingTrait;
@@ -1104,5 +1104,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static function usesScout(): bool
     {
         return in_array("Laravel\Scout\Searchable", class_uses_recursive(static::newModel()));
+    }
+
+    public static function serializer(): Serializer
+    {
+        return (new Serializer(app(static::class)));
     }
 }
