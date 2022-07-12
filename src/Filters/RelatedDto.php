@@ -21,7 +21,7 @@ class RelatedDto extends DataTransferObject
     {
         $related = collect($this->related)->first(fn ($related) => $relation === Str::before($related, '['));
 
-        if (!$related) {
+        if (! $related) {
             return '*';
         }
 
@@ -119,8 +119,8 @@ class RelatedDto extends DataTransferObject
     public function makeTree(): array
     {
         return collect($this->related)->map(
-            fn(string $relation) => collect($this->nested[$relation] ?? [null])->map(
-                fn(?self $nested) => $this->makeTreeFor($relation, $nested)
+            fn (string $relation) => collect($this->nested[$relation] ?? [null])->map(
+                fn (?self $nested) => $this->makeTreeFor($relation, $nested)
             )
         )->flatten()->all();
     }
