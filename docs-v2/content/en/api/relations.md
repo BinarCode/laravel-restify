@@ -38,7 +38,11 @@ Let's take a look over all relationships Restify provides:
 
 ### Frontend request
 
-In order to get the related resources, you need to send a `GET` request to the `/users/{user}/posts` or `/users?include=posts` endpoint.
+In order to get the related resources, you need to send a `GET` request to:
+
+```http request
+GET `/api/restify/users?include=posts`
+```
 
 Sometimes you might want to load specific columns from the database into the response. For example, if you have a `Post` model with an `id`, `title` and a `description` column, you might want to load only the `title` and the `description` column in the response.
 
@@ -47,6 +51,101 @@ In order to do this, you can use in the request:
 ```http request
 GET /users/1?include=posts[title|description]
 ```
+
+### Nested relationships
+
+Let's assume you have the `CompanyRepository`: 
+
+```php
+public static function related(): array
+{
+    return [
+        'users' => HasMany::make('users', UserRepository::class),
+    ];
+}
+```
+
+In the UserRepository you have a relationship to a list of user posts and roles:
+
+```php
+public static function related(): array
+{
+    return [
+        'posts' => HasMany::make('posts', PostRepository::class),
+        'roles' => MorphToMany::make('roles', RoleRepository::class),
+    ];
+}
+```
+
+In order to get the company users with their posts and roles you can follow the [laravel syntax for eager loading](https://laravel.com/docs/master/eloquent-relationships#nested-eager-loading) into the request query: 
+
+```http request
+GET: /api/restify/companies?include=users.posts,users.roles
+```
+
+This request will return a list like this: 
+
+```json
+{
+  "data": {
+    "id": "91c2bdd0-bf6f-4717-b1c4-a6131843ba56",
+    "type": "companies",
+    "attributes": {
+      "name": "Binar Code"
+    },
+    "relationships": {
+      "users": [{
+        "id": "3",
+        "type": "users",
+        "attributes": {
+          "name": "Eduard"
+        },
+        "meta": {
+          "authorizedToShow": true,
+          "authorizedToStore": true,
+          "authorizedToUpdate": false,
+          "authorizedToDelete": false
+        },
+        "relationships": {
+          "posts": [{
+            "id": "1",
+            "type": "posts",
+            "attributes": {
+              "title": "Post title"
+            },
+            "meta": {
+              "authorizedToShow": true,
+              "authorizedToStore": true,
+              "authorizedToUpdate": false,
+              "authorizedToDelete": false
+            }
+          }],
+          "roles": [{
+            "id": "1",
+            "type": "roles",
+            "attributes": {
+              "name": "admin"
+            },
+            "meta": {
+              "authorizedToShow": true,
+              "authorizedToStore": true,
+              "authorizedToUpdate": false,
+              "authorizedToDelete": false
+            }
+          }]
+        }
+      }]
+    },
+    "meta": {
+      "authorizedToShow": true,
+      "authorizedToStore": true,
+      "authorizedToUpdate": true,
+      "authorizedToDelete": true
+    }
+  }
+}
+```
+
 
 ## BelongsTo & MorphOne
 

@@ -23,6 +23,7 @@ use Binaryk\LaravelRestify\Repositories\Concerns\Testing;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\HasColumns;
+use Binaryk\LaravelRestify\Traits\HasNested;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Database\Eloquent\Model;
@@ -57,6 +58,7 @@ class Repository implements RestifySearchable, JsonSerializable
     use HasColumns;
     use Mockable;
     use Testing;
+    use HasNested;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -512,7 +514,8 @@ class Repository implements RestifySearchable, JsonSerializable
     {
         return static::collectRelated()
             ->authorized($request)
-            ->inRequest($request)
+            ->inRequest($request, $this)
+            ->merge($this->nested)
             ->when($request->isShowRequest(), function (RelatedCollection $collection) use ($request) {
                 return $collection->forShow($request, $this);
             })
@@ -1074,9 +1077,17 @@ class Repository implements RestifySearchable, JsonSerializable
         return static::$detachers;
     }
 
-    public function eagerState($state = true): Repository
+    public function eager(EagerField $field = null): Repository
     {
-        $this->eagerState = $state;
+        if (! $field) {
+            $this->eagerState = false;
+
+            return $this;
+        }
+
+        $this
+            ->columns($field->getColumns())
+            ->nested($field->getNested());
 
         return $this;
     }
@@ -1109,5 +1120,20 @@ class Repository implements RestifySearchable, JsonSerializable
     public static function serializer(): Serializer
     {
         return (new Serializer(app(static::class)));
+    }
+
+    public function nested(array $nested = []): self
+    {
+        // Set the nested relationship eager attribute from the related list
+        collect($nested)
+            ->map(fn ($key) => static::collectRelated()
+            ->filter(fn ($related) => $related instanceof EagerField)
+            ->first(fn (EagerField $k, $value) => $k->getAttribute() === $key))
+            ->filter(fn ($related) => $related instanceof EagerField)
+            ->each(function (EagerField $nestedEagerField) {
+                $this->nested[$nestedEagerField->getAttribute()] = $nestedEagerField;
+            });
+
+        return $this;
     }
 }

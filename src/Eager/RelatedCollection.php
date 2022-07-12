@@ -92,10 +92,11 @@ class RelatedCollection extends Collection
         });
     }
 
-    public function inRequest(RestifyRequest $request): self
+    public function inRequest(RestifyRequest $request, Repository $repository): self
     {
         $queryRelated = collect($request->related()->related)
             ->transform(fn ($related) => Str::before($related, '['))
+            ->filter(fn ($related) => ! in_array($repository::uriKey() . $repository->getKey() . $related, $request->related()->resolvedRelationships, true))
             ->all();
 
         return $this
@@ -114,9 +115,11 @@ class RelatedCollection extends Collection
                     }
                 }
             );
-        })->map(fn (Related $related) => $related->columns(
-            $request->related()->getColumnsFor($related->getRelation())
-        ));
+        })->map(
+            fn (Related $related) => $related
+            ->columns($request->related()->getColumnsFor($related->getRelation()))
+            ->nested($request->related()->getNestedFor($related->getRelation()))
+        );
     }
 
     public function authorized(RestifyRequest $request)

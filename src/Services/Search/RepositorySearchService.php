@@ -84,7 +84,7 @@ class RepositorySearchService
         $eager = $this->repository::collectRelated()
             ->authorized($request)
             ->forEager($request)
-            ->inRequest($request)
+            ->inRequest($request, $this->repository)
             ->when($request->isIndexRequest(), fn (RelatedCollection $collection) => $collection->forIndex($request, $this->repository))
             ->when($request->isShowRequest(), fn (RelatedCollection $collection) => $collection->forShow($request, $this->repository))
             ->map(fn (EagerField $field) => $field->relation)

@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Fields;
 
 use Binaryk\LaravelRestify\Fields\HasMany;
+use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
@@ -75,6 +76,8 @@ class HasManyTest extends IntegrationTest
                     ->where('data.relationships.posts.0.attributes.title', 'Title')
                     ->etc()
             );
+
+        app(RelatedDto::class)->reset();
 
         $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts[title|description]']))
             ->assertJson(

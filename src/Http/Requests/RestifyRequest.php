@@ -63,8 +63,6 @@ class RestifyRequest extends FormRequest
 
     public function related(): RelatedDto
     {
-        return new RelatedDto(
-            related: str_getcsv($this->input('related') ?? $this->input('include'))
-        );
+        return app(RelatedDto::class)->sync($this);
     }
 }
