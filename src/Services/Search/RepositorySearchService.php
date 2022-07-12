@@ -20,7 +20,7 @@ class RepositorySearchService
     /** * @var Repository */
     protected $repository;
 
-    public function search(RestifyRequest $request, Repository $repository): Builder | Relation
+    public function search(RestifyRequest $request, Repository $repository): Builder|Relation
     {
         $this->repository = $repository;
 
@@ -35,9 +35,9 @@ class RepositorySearchService
             $repository::usesScout()
                 ? $this->prepareRelations($request, $scoutQuery ?? $repository::query($request))
                 : $this->prepareSearchFields(
-                    $request,
-                    $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
-                ),
+                $request,
+                $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
+            ),
         );
 
         $query = $this->applyFilters($request, $repository, $query);
@@ -79,15 +79,17 @@ class RepositorySearchService
         return $query;
     }
 
-    public function prepareRelations(RestifyRequest $request, Builder | Relation $query)
+    public function prepareRelations(RestifyRequest $request, Builder|Relation $query)
     {
         $eager = $this->repository::collectRelated()
             ->authorized($request)
             ->forEager($request)
             ->inRequest($request, $this->repository)
-            ->when($request->isIndexRequest(), fn (RelatedCollection $collection) => $collection->forIndex($request, $this->repository))
-            ->when($request->isShowRequest(), fn (RelatedCollection $collection) => $collection->forShow($request, $this->repository))
-            ->map(fn (EagerField $field) => $field->relation)
+            ->when($request->isIndexRequest(),
+                fn(RelatedCollection $collection) => $collection->forIndex($request, $this->repository))
+            ->when($request->isShowRequest(),
+                fn(RelatedCollection $collection) => $collection->forShow($request, $this->repository))
+            ->map(fn(EagerField $field) => $field->relation)
             ->values()
             ->unique()
             ->all();
@@ -139,7 +141,7 @@ class RepositorySearchService
                     ->map(function (BelongsTo $field) {
                         return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
                     })
-                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
+                    ->each(fn(SearchableFilter $filter) => $filter->filter($request, $query, $search));
             }
         });
 
@@ -149,14 +151,14 @@ class RepositorySearchService
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
         if ($request->isIndexRequest() || $request->isGlobalRequest()) {
-            return fn ($query) => $repository::indexQuery($request, $query);
+            return fn($query) => $repository::indexQuery($request, $query);
         }
 
         if ($request->isShowRequest()) {
-            return fn ($query) => $repository::showQuery($request, $query);
+            return fn($query) => $repository::showQuery($request, $query);
         }
 
-        return fn ($query) => $query;
+        return fn($query) => $query;
     }
 
     public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
@@ -164,9 +166,10 @@ class RepositorySearchService
         /**
          * @var Collection $keys
          */
-        $keys = tap($repository::newModel()->search($request->input('search')), function ($scoutBuilder) use ($repository, $request) {
-            return $repository::scoutQuery($request, $scoutBuilder);
-        })->take($repository::$scoutSearchResults)->get()->map->getKey();
+        $keys = tap($repository::newModel()->search($request->input('search')),
+            function ($scoutBuilder) use ($repository, $request) {
+                return $repository::scoutQuery($request, $scoutBuilder);
+            })->take($repository::$scoutSearchResults)->get()->map->getKey();
 
         return $repository::newModel()->newQuery()->whereIn(
             $repository::newModel()->getQualifiedKeyName(),
@@ -176,7 +179,7 @@ class RepositorySearchService
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository): callable
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::withs()));
+        return fn($query) => $repository::mainQuery($request, $query->with($repository::withs()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
