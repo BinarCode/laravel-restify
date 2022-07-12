@@ -20,6 +20,6 @@ trait HasNested
 
     public function hasNested(): bool
     {
-        return !empty($this->nested);
+        return ! empty($this->nested);
     }
 }

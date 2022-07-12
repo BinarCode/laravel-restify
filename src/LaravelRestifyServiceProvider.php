@@ -69,7 +69,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
             app(RoutesBoot::class)->boot();
         }
 
-        $this->app->singleton(RelatedDto::class, fn($app) => new RelatedDto());
+        $this->app->singleton(RelatedDto::class, fn ($app) => new RelatedDto());
     }
 
     public function packageRegistered(): void
