@@ -8,7 +8,6 @@ use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Support\Stringable;
 
 class RestifyRequest extends FormRequest
 {

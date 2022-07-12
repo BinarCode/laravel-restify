@@ -52,7 +52,7 @@ class BelongsToFilterTest extends IntegrationTest
                 'sort' => '-users.attributes.name',
                 'perPage' => 5,
             ]))->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.relationships.user.attributes.name', 'Zez')
                     ->etc()
             );
@@ -64,7 +64,7 @@ class BelongsToFilterTest extends IntegrationTest
                 'perPage' => 6,
                 'page' => 4,
             ]))->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.5.relationships.user.attributes.name', 'Ame')
                     ->etc()
             );
@@ -161,7 +161,7 @@ class BelongsToFilterTest extends IntegrationTest
                 'sort' => '-users.attributes.name',
                 'perPage' => 5,
             ]))->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.relationships.user.attributes.name', 'Zez')
                     ->etc()
             );
@@ -174,7 +174,7 @@ class BelongsToFilterTest extends IntegrationTest
                 'perPage' => 6,
                 'page' => 4,
             ]))->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.5.relationships.user.attributes.name', 'Ame')
                     ->etc()
             );
@@ -187,7 +187,7 @@ class BelongsToFilterTest extends IntegrationTest
                 'sort' => 'users.attributes.name',
                 'perPage' => 5,
             ]))->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.relationships.user.attributes.name', 'Ame')
                     ->etc()
             );
@@ -201,7 +201,7 @@ class BelongsToFilterTest extends IntegrationTest
                 'perPage' => 6,
                 'page' => 4,
             ]))->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.5.relationships.user.attributes.name', 'Zez')
                     ->etc()
             );

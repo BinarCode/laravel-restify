@@ -36,7 +36,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::route())
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->count('data', 5)
                     ->etc()
             );
@@ -44,7 +44,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'perPage' => 10,
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->count('data', 10)
                 ->etc()
         );
@@ -52,7 +52,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'page[size]' => 10,
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->count('data', 10)
                 ->etc()
         );
@@ -61,7 +61,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             'perPage' => 10,
             'page' => '2',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->count('data', 5)
                 ->etc()
         );
@@ -70,7 +70,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             'page[size]' => 10,
             'page[number]' => 2,
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->count('data', 5)
                 ->etc()
         );
@@ -99,7 +99,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::route(null, [
             'search' => 'code',
-        ]))->assertJson(fn(AssertableJson $json) => $json->count('data', 2)->etc());
+        ]))->assertJson(fn (AssertableJson $json) => $json->count('data', 2)->etc());
     }
 
     /** * @test */
@@ -120,7 +120,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'sort' => '-title',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.0.attributes.title', 'ZZZ')
                 ->where('data.1.attributes.title', 'AAA')
                 ->etc()
@@ -129,7 +129,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'sort' => 'title',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.0.attributes.title', 'AAA')
                 ->where('data.1.attributes.title', 'ZZZ')
                 ->etc()
@@ -152,7 +152,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'related' => 'user',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.0.relationships.user.0.name', $name)
                 ->etc()
         );
@@ -174,7 +174,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'related' => 'user',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.0.relationships.user', 'foo')
                 ->etc()
         );
@@ -194,7 +194,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(PostRepository::route(null, [
             'related' => 'user',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->has('data.0.relationships.user.0.attributes')
                 ->etc()
         );
@@ -225,9 +225,9 @@ class RepositoryIndexControllerTest extends IntegrationTest
         )->create();
 
         $this->withoutExceptionHandling()->getJson(CompanyRepository::route(null, [
-            'related' => 'users.companies.users, users.posts, users.roles'
+            'related' => 'users.companies.users, users.posts, users.roles',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.0.type', 'companies')
                 ->has('data.0.relationships')
                 ->has('data.0.relationships.users')
@@ -264,7 +264,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             'page' => 2,
         ]))
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->count('data', 1)
                     ->where('data.0.relationships.user.0.name', $owner)
                     ->etc()
