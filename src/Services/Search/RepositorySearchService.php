@@ -14,6 +14,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Stringable;
 
 class RepositorySearchService
 {
@@ -94,9 +95,15 @@ class RepositorySearchService
             ->unique()
             ->all();
 
-        $query->with($eager);
+        $filtered = collect($request->related()->makeTree())->filter(fn(string $relationships) => in_array(
+                str($relationships)->whenContains('.', fn(Stringable $string) => $string->before('.'))->toString(),
+                $eager,
+                true,
+            ))->all();
 
-        return $query->with(($this->repository)::withs());
+        return $query->with(
+            array_merge($filtered, ($this->repository)::withs())
+        );
     }
 
     public function prepareSearchFields(RestifyRequest $request, $query)

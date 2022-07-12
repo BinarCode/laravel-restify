@@ -224,8 +224,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
             )
         )->create();
 
-        ray('start');
-
         $this->withoutExceptionHandling()->getJson(CompanyRepository::route(null, [
             'related' => 'users.companies.users, users.posts, users.roles',
         ]))->assertJson(
