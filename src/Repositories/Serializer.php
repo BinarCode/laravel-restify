@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
+use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
@@ -19,17 +20,18 @@ class Serializer implements JsonSerializable, Responsable
 {
     use ConditionallyLoadsAttributes;
 
-    protected ?Paginator $paginator = null;
+    protected ?Collection $items = null;
 
-    private ?Repository $repository = null;
+    protected int $perPage = RestifySearchable::DEFAULT_PER_PAGE;
 
     public function __construct(
+        private Repository $repository,
         private array $related = [],
         private ?SortableFilter $sort = null,
         private ?array $meta = [],
     ) {
+        $this->perPage = ($this->repository)::$defaultPerPage;
     }
-
 
     public function repository(Repository $class): self
     {
@@ -62,6 +64,13 @@ class Serializer implements JsonSerializable, Responsable
         return $this->sort(SortableFilter::make()->setColumn($column)->desc());
     }
 
+    public function perPage(int $perPage): self
+    {
+        $this->perPage = $perPage;
+
+        return $this;
+    }
+
     public function indexMeta(array $meta): self
     {
         $this->meta = $meta;
@@ -82,37 +91,46 @@ class Serializer implements JsonSerializable, Responsable
             return $this->model($models->first());
         }
 
-        $items = $models
+        $this->items = $models
             ->filter(fn($model) => $model instanceof Model)
-            ->map(fn(Model $value) => $this->repository::resolveWith($value))
-            ->values();
-
-        $this->paginator = new Paginator($items, ($this->repository)::$defaultPerPage);
+            ->map(fn(Model $value) => $this->repository::resolveWith($value));
 
         return $this;
     }
 
     public function jsonSerialize(): mixed
     {
-        if ($this->paginator) {
-            $request = $this->request(RepositoryIndexRequest::class);
-            $items = $this->paginator->getCollection();
-
-            return $this->filter([
-                'meta' => $this->meta ?: RepositoryCollection::meta($this->paginator->toArray()),
-                'links' => array_merge(RepositoryCollection::paginationLinks($this->paginator->toArray()), [
-                    'filters' => Restify::path($this->repository::uriKey().'/filters'),
-                ]),
-                'data' => $items
-                    ->when($this->sort && $this->sort->direction() === 'desc', fn(Collection $items) => $items->sortByDesc($this->sort->column()))
-                    ->when($this->sort && $this->sort->direction() === 'asc', fn(Collection $items) => $items->sortBy($this->sort->column()))
-                    ->map(fn(Repository $repository) => $repository->serializeForIndex($request)),
-            ]);
+        if (is_null($this->items)) {
+            return [];
         }
 
-        return $this->repository->serializeForShow(
-            $this->request(RepositoryShowRequest::class)
-        );
+        if ($this->items->count() === 1) {
+            return $this->repository->serializeForShow(
+                $this->request(RepositoryShowRequest::class)
+            );
+        }
+
+        $paginator = new Paginator($this->items->values(), $this->perPage);
+
+        if (!$this->hasCustomRepository()) {
+            return ['data' => $paginator->getCollection()];
+        }
+
+        $request = $this->request(RepositoryIndexRequest::class);
+        $items = $paginator->getCollection();
+
+        return $this->filter([
+            'meta' => $this->meta ?: RepositoryCollection::meta($paginator->toArray()),
+            'links' => array_merge(RepositoryCollection::paginationLinks($paginator->toArray()), [
+                'filters' => Restify::path($this->repository::uriKey().'/filters'),
+            ]),
+            'data' => $items
+                ->when($this->sort && $this->sort->direction() === 'desc',
+                    fn(Collection $items) => $items->sortByDesc($this->sort->column()))
+                ->when($this->sort && $this->sort->direction() === 'asc',
+                    fn(Collection $items) => $items->sortBy($this->sort->column()))
+                ->map(fn(Repository $repository) => $repository->serializeForIndex($request)),
+        ]);
     }
 
     private function request(string $class = null): RestifyRequest
@@ -132,5 +150,10 @@ class Serializer implements JsonSerializable, Responsable
     public function toResponse($request)
     {
         return $this;
+    }
+
+    private function hasCustomRepository(): bool
+    {
+        return get_class($this->repository) !== Repository::class;
     }
 }

@@ -40,7 +40,7 @@ use ReturnTypeWillChange;
 /**
  * @property string $type
  */
-abstract class Repository implements RestifySearchable, JsonSerializable
+class Repository implements RestifySearchable, JsonSerializable
 {
     use InteractWithSearch;
     use ValidatingTrait;
@@ -1108,6 +1108,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public static function serializer(): Serializer
     {
-        return (new Serializer())->repository(app(static::class));
+        return (new Serializer(app(static::class)));
     }
 }

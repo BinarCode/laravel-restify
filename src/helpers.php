@@ -1,6 +1,7 @@
 <?php
 
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\Serializer;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Http\JsonResponse;
@@ -55,8 +56,9 @@ if (!function_exists('rest')) {
     {
         $models = collect($models)->flatten();
 
-        return (new Serializer())
-            ->repository(app(Restify::repositoryForModel(get_class($models->first()))))
+        $repository = Restify::repositoryForModel(get_class($models->first())) ?? Repository::class;
+
+        return (new Serializer(app($repository)))
             ->models(collect($models));
     }
 }
