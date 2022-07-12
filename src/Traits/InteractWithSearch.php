@@ -44,7 +44,6 @@ trait InteractWithSearch
         return static::related();
     }
 
-
     public static function collectRelated(): RelatedCollection
     {
         return RelatedCollection::make(static::include());
