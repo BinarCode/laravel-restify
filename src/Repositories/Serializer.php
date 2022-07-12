@@ -92,8 +92,8 @@ class Serializer implements JsonSerializable, Responsable
         }
 
         $this->items = $models
-            ->filter(fn($model) => $model instanceof Model)
-            ->map(fn(Model $value) => $this->repository::resolveWith($value));
+            ->filter(fn ($model) => $model instanceof Model)
+            ->map(fn (Model $value) => $this->repository::resolveWith($value));
 
         return $this;
     }
@@ -112,7 +112,7 @@ class Serializer implements JsonSerializable, Responsable
 
         $paginator = new Paginator($this->items->values(), $this->perPage);
 
-        if (!$this->hasCustomRepository()) {
+        if (! $this->hasCustomRepository()) {
             return ['data' => $paginator->getCollection()];
         }
 
@@ -125,11 +125,15 @@ class Serializer implements JsonSerializable, Responsable
                 'filters' => Restify::path($this->repository::uriKey().'/filters'),
             ]),
             'data' => $items
-                ->when($this->sort && $this->sort->direction() === 'desc',
-                    fn(Collection $items) => $items->sortByDesc($this->sort->column()))
-                ->when($this->sort && $this->sort->direction() === 'asc',
-                    fn(Collection $items) => $items->sortBy($this->sort->column()))
-                ->map(fn(Repository $repository) => $repository->serializeForIndex($request)),
+                ->when(
+                    $this->sort && $this->sort->direction() === 'desc',
+                    fn (Collection $items) => $items->sortByDesc($this->sort->column())
+                )
+                ->when(
+                    $this->sort && $this->sort->direction() === 'asc',
+                    fn (Collection $items) => $items->sortBy($this->sort->column())
+                )
+                ->map(fn (Repository $repository) => $repository->serializeForIndex($request)),
         ]);
     }
 
