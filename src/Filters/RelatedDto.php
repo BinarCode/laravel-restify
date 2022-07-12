@@ -34,6 +34,7 @@ class RelatedDto extends DataTransferObject
 
     public function getNestedFor(string $relation): ?array
     {
+        // TODO: work here to support many nested levels
         return collect(
             collect($this->nested)->first(fn($related, $key) => $relation === $key)
         )->map(fn(self $nested) => [$nested->related])->flatten()->all();
