@@ -10,6 +10,7 @@
 - [ ] Revisit the `InteractWithRepositories` trait and clean model queries accordingly
 - [x] Clean up all tests using AssertableJson [x]
 - [x] Make sure the `include` matches array key firstly, and secondly the relationship name
+- [ ] Serialize nested relationships
 
 ### Features
 
@@ -32,3 +33,4 @@
 
 - [ ] Adding a command that lists all Restify registered routes `php artisan restify:routes`
 - [ ] Ability to make an endpoint public using a policy method
+- [ ] UI for Restify

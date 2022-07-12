@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\HasColumns;
+use Binaryk\LaravelRestify\Traits\HasNested;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Gate;
 class EagerField extends Field
 {
     use HasColumns;
+    use HasNested;
 
     /**
      * Name of the relationship.
@@ -60,8 +62,8 @@ class EagerField extends Field
         try {
             $this->value = $this->repositoryClass::resolveWith($relatedModel)
                 ->allowToShow(app(Request::class))
-                ->columns($this->getColumns())
-                ->eagerState();
+                ->columns()
+                ->eager($this);
         } catch (AuthorizationException $e) {
             if (is_null($relatedModel)) {
                 abort(403, 'You are not authorized to perform this action.');

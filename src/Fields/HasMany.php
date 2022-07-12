@@ -47,8 +47,7 @@ class HasMany extends EagerField
             try {
                 return $this->repositoryClass::resolveWith($item)
                     ->allowToShow(app(Request::class))
-                    ->columns($this->getColumns())
-                    ->eagerState();
+                    ->eager($this);
             } catch (AuthorizationException) {
                 return null;
             }

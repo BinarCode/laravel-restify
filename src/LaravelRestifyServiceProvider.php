@@ -15,6 +15,7 @@ use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
+use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\Container\BindingResolutionException;
@@ -67,6 +68,8 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         if (! App::runningUnitTests()) {
             app(RoutesBoot::class)->boot();
         }
+
+        $this->app->singleton(RelatedDto::class, fn($app) => new RelatedDto());
     }
 
     public function packageRegistered(): void

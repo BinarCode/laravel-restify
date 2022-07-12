@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Feature\Filters;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
+use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -13,7 +14,7 @@ use Illuminate\Testing\Fluent\AssertableJson;
 
 class BelongsToFilterTest extends IntegrationTest
 {
-    public function test_can_filter_using_belongs_to_field(): void
+    public function test_can_sort_desc_using_belongs_to_field(): void
     {
         PostRepository::$related = [
             'user' => BelongsTo::make('user', UserRepository::class),
@@ -51,9 +52,9 @@ class BelongsToFilterTest extends IntegrationTest
                 'sort' => '-users.attributes.name',
                 'perPage' => 5,
             ]))->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.user.attributes.name', 'Zez')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.0.relationships.user.attributes.name', 'Zez')
+                    ->etc()
             );
 
         $this
@@ -63,10 +64,43 @@ class BelongsToFilterTest extends IntegrationTest
                 'perPage' => 6,
                 'page' => 4,
             ]))->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.5.relationships.user.attributes.name', 'Ame')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.5.relationships.user.attributes.name', 'Ame')
+                    ->etc()
             );
+    }
+
+    public function test_can_sort_asc_using_belongs_to_field(): void
+    {
+        PostRepository::$related = [
+            'user' => BelongsTo::make('user', UserRepository::class),
+        ];
+
+        PostRepository::$sort = [
+            'users.attributes.name' => SortableFilter::make()->setColumn('users.name')->usingRelation(
+                BelongsTo::make('user', UserRepository::class),
+            ),
+        ];
+
+        $randomUser = User::factory()->create([
+            'name' => 'John Doe',
+        ]);
+
+        Post::factory(22)->create([
+            'user_id' => $randomUser->id,
+        ]);
+
+        Post::factory()->create([
+            'user_id' => User::factory()->create([
+                'name' => 'Zez',
+            ]),
+        ]);
+
+        Post::factory()->create([
+            'user_id' => User::factory()->create([
+                'name' => 'Ame',
+            ]),
+        ]);
 
         $this
             ->getJson(PostRepository::route(query: [
@@ -127,9 +161,9 @@ class BelongsToFilterTest extends IntegrationTest
                 'sort' => '-users.attributes.name',
                 'perPage' => 5,
             ]))->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.user.attributes.name', 'Zez')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.0.relationships.user.attributes.name', 'Zez')
+                    ->etc()
             );
 
         $this
@@ -140,10 +174,12 @@ class BelongsToFilterTest extends IntegrationTest
                 'perPage' => 6,
                 'page' => 4,
             ]))->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.5.relationships.user.attributes.name', 'Ame')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.5.relationships.user.attributes.name', 'Ame')
+                    ->etc()
             );
+
+        app(RelatedDto::class)->reset();
 
         $this
             ->getJson(PostRepository::route(query: [
@@ -151,10 +187,12 @@ class BelongsToFilterTest extends IntegrationTest
                 'sort' => 'users.attributes.name',
                 'perPage' => 5,
             ]))->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.user.attributes.name', 'Ame')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.0.relationships.user.attributes.name', 'Ame')
+                    ->etc()
             );
+
+        app(RelatedDto::class)->reset();
 
         $this
             ->getJson(PostRepository::route(query: [
@@ -163,9 +201,9 @@ class BelongsToFilterTest extends IntegrationTest
                 'perPage' => 6,
                 'page' => 4,
             ]))->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.5.relationships.user.attributes.name', 'Zez')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.5.relationships.user.attributes.name', 'Zez')
+                    ->etc()
             );
     }
 }
