@@ -54,6 +54,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
      */
     public function packageBooted(): void
     {
+        ray()->measure('restify-booted');
         if ($this->app->runningInConsole()) {
             $this->registerPublishing();
         }
@@ -70,6 +71,8 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         }
 
         $this->app->singleton(RelatedDto::class, fn ($app) => new RelatedDto());
+
+        ray()->measure('restify-booted');
     }
 
     public function packageRegistered(): void

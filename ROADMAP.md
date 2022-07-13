@@ -2,13 +2,14 @@
 
 7.x 
 
-### Fixes
+### Fixes & Improvements
 
 - [x] Clean up controllers
 - [x] Reduce the main Repository class by using traits
 - [x] Revisit the `InteractWithRepositories` trait and clean model queries accordingly
 - [x] Clean up all tests using AssertableJson [x]
 - [x] Make sure the `include` matches array key firstly, and secondly the relationship name
+- [ ] Improve performance for queries and relationships
 
 ### Features
 

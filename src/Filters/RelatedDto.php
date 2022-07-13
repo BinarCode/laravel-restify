@@ -19,13 +19,13 @@ class RelatedDto extends DataTransferObject
 
     public function getColumnsFor(string $relation): array|string
     {
-        $related = collect($this->related)->first(fn ($related) => $relation === Str::before($related, '['));
+        $related = collect($this->related)->first(fn($related) => $relation === Str::before($related, '['));
 
         if (!$related) {
             return '*';
         }
 
-        if (! (Str::contains($related, '[') && Str::contains($related, ']'))) {
+        if (!(Str::contains($related, '[') && Str::contains($related, ']'))) {
             return '*';
         }
 
@@ -40,8 +40,8 @@ class RelatedDto extends DataTransferObject
     {
         // TODO: work here to support many nested levels
         return collect(
-            collect($this->nested)->first(fn ($related, $key) => $relation === $key)
-        )->map(fn (self $nested) => [$nested->related])->flatten()->all();
+            collect($this->nested)->first(fn($related, $key) => $relation === $key)
+        )->map(fn(self $nested) => [$nested->related])->flatten()->all();
     }
 
     public function normalize(): self
@@ -54,7 +54,7 @@ class RelatedDto extends DataTransferObject
                     related: [
                         str($relationship)
                             ->after($baseRelationship)
-                            ->whenStartsWith('.', fn (Stringable $string) => $string->replaceFirst('.', ''))
+                            ->whenStartsWith('.', fn(Stringable $string) => $string->replaceFirst('.', ''))
                             ->ltrim()
                             ->rtrim()
                             ->toString(),
@@ -85,8 +85,14 @@ class RelatedDto extends DataTransferObject
 
     public function sync(RestifyRequest $request): self
     {
-        if (! $this->loaded) {
-            $this->related = collect(str_getcsv($request->input('related') ?? $request->input('include')))->mapInto(Stringable::class)->map->ltrim()->map->rtrim()->all();
+        if (empty($query = ($request->input('related') ?? $request->input('include')))) {
+            $this->loaded = true;
+
+            return $this;
+        }
+
+        if (!$this->loaded) {
+            $this->related = collect(str_getcsv($query))->mapInto(Stringable::class)->map->ltrim()->map->rtrim()->all();
 
             $this->normalize();
 
@@ -123,5 +129,10 @@ class RelatedDto extends DataTransferObject
                 fn(?self $nested) => $this->makeTreeFor($relation, $nested)
             )
         )->flatten()->all();
+    }
+
+    public function hasRelated(): bool
+    {
+        return !empty($this->related);
     }
 }
