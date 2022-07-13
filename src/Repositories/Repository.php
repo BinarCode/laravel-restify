@@ -510,6 +510,10 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveRelationships($request): array
     {
+        if (! $request->related()->hasRelated()) {
+            return [];
+        }
+
         return static::collectRelated()
             ->authorized($request)
             ->inRequest($request)

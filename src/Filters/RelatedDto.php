@@ -23,4 +23,9 @@ class RelatedDto extends DataTransferObject
             ? $columns
             : '*';
     }
+
+    public function hasRelated(): bool
+    {
+        return ! empty($this->related);
+    }
 }
