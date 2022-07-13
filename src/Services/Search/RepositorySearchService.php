@@ -99,11 +99,11 @@ class RepositorySearchService
             ->unique()
             ->all();
 
-        $filtered = collect($request->related()->makeTree())->filter(fn(string $relationships) => in_array(
-                str($relationships)->whenContains('.', fn(Stringable $string) => $string->before('.'))->toString(),
-                $eager,
-                true,
-            ))->all();
+        $filtered = collect($request->related()->makeTree())->filter(fn (string $relationships) => in_array(
+            str($relationships)->whenContains('.', fn (Stringable $string) => $string->before('.'))->toString(),
+            $eager,
+            true,
+        ))->all();
 
         return $query->with(
             array_merge($filtered, ($this->repository)::withs())
