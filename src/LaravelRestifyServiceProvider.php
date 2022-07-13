@@ -18,7 +18,6 @@ use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
