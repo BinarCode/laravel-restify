@@ -18,6 +18,7 @@ use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
@@ -54,7 +55,6 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
      */
     public function packageBooted(): void
     {
-        ray()->measure('restify-booted');
         if ($this->app->runningInConsole()) {
             $this->registerPublishing();
         }
@@ -71,8 +71,6 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         }
 
         $this->app->singleton(RelatedDto::class, fn ($app) => new RelatedDto());
-
-        ray()->measure('restify-booted');
     }
 
     public function packageRegistered(): void
