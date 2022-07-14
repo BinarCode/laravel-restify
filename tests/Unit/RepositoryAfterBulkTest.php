@@ -28,7 +28,7 @@ class RepositoryAfterBulkTest extends IntegrationTest
                 'name' => $user->name,
                 'email' => 'test@example.com',
                 'password' => $user->password,
-            ]
+            ],
         ])->assertSuccessful();
 
         $this->assertEquals('stored@test.example.com', $user->first()->email);
@@ -42,7 +42,7 @@ class RepositoryAfterBulkTest extends IntegrationTest
             [
                 'id' => $user->id,
                 'email' => 'test@example.com',
-            ]
+            ],
         ])->assertSuccessful();
 
         $this->assertEquals('updated@test.example.com', $user->fresh()->email);
@@ -57,7 +57,7 @@ class RepositoryAfterBulkTest extends IntegrationTest
                 'name' => $user->name,
                 'email' => 'test@example.com',
                 'password' => $user->password,
-            ]
+            ],
         ])->assertSuccessful();
 
         $this->assertEquals('John Saved', $user->first()->name);
@@ -71,7 +71,7 @@ class RepositoryAfterBulkTest extends IntegrationTest
             [
                 'id' => $user->id,
                 'email' => 'test@example.com',
-            ]
+            ],
         ])->assertSuccessful();
 
         $this->assertEquals('John Saved', $user->fresh()->name);
