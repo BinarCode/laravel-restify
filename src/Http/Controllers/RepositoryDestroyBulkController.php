@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 class RepositoryDestroyBulkController
 {
+    private array $repositories = [];
+
     public function __invoke(RepositoryDestroyBulkRequest $request)
     {
         $collection = DB::transaction(function () use ($request) {
@@ -20,6 +22,10 @@ class RepositoryDestroyBulkController
                      */
                     $repository = $request->repositoryWith($model);
 
+                    if (! in_array($repository, $this->repositories)) {
+                        $this->repositories[] = $repository;
+                    }
+
                     return $repository
                         ->allowToDestroyBulk($request)
                         ->deleteBulk(
@@ -29,6 +35,11 @@ class RepositoryDestroyBulkController
                         );
                 });
         });
+
+        /** @var Repository $repository */
+        foreach ($this->repositories as $repository) {
+            $repository::deletedBulk($collection, $request);
+        }
 
         return ok();
     }

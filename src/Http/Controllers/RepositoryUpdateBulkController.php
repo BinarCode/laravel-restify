@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\DB;
 
 class RepositoryUpdateBulkController extends RepositoryController
 {
+    private array $repositories = [];
+
     public function __invoke(RepositoryUpdateBulkRequest $request)
     {
         $collection = DB::transaction(function () use ($request) {
@@ -20,6 +22,10 @@ class RepositoryUpdateBulkController extends RepositoryController
                     /** * @var Repository $repository */
                     $repository = $request->repositoryWith($model);
 
+                    if (! in_array($repository, $this->repositories)) {
+                        $this->repositories[] = $repository;
+                    }
+
                     return $repository
                         ->allowToUpdateBulk($request)
                         ->updateBulk(
@@ -29,6 +35,12 @@ class RepositoryUpdateBulkController extends RepositoryController
                         );
                 });
         });
+
+        /** @var Repository $repository */
+        foreach ($this->repositories as $repository) {
+            $repository::savedBulk($collection, $request);
+            $repository::updatedBulk($collection, $request);
+        }
 
         return $this->response()
             ->success();
