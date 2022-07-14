@@ -35,8 +35,8 @@ class RelatedCollection extends Collection
     public function forEager(RestifyRequest $request): self
     {
         return $this
-            ->filter(fn($value, $key) => $value instanceof EagerField)
-            ->filter(fn(Field $field) => $field->authorize($request))
+            ->filter(fn ($value, $key) => $value instanceof EagerField)
+            ->filter(fn (Field $field) => $field->authorize($request))
             ->unique('attribute');
     }
 
@@ -44,21 +44,21 @@ class RelatedCollection extends Collection
     {
         return $this->filter(function ($field) {
             return $field instanceof BelongsToMany || $field instanceof MorphToMany;
-        })->filter(fn(EagerField $field) => $field->authorize($request));
+        })->filter(fn (EagerField $field) => $field->authorize($request));
     }
 
     public function forBelongsToRelations(RestifyRequest $request): self
     {
         return $this->filter(function ($field) {
             return $field instanceof BelongsTo;
-        })->filter(fn(EagerField $field) => $field->authorize($request));
+        })->filter(fn (EagerField $field) => $field->authorize($request));
     }
 
     public function mapIntoSortable(): self
     {
         return $this
-            ->filter(fn($key) => $key instanceof Sortable)
-            ->filter(fn(Sortable $field) => $field->isSortable())
+            ->filter(fn ($key) => $key instanceof Sortable)
+            ->filter(fn (Sortable $field) => $field->isSortable())
             ->map(function (Sortable $field) {
                 $filter = SortableFilter::make();
 
@@ -95,13 +95,16 @@ class RelatedCollection extends Collection
     public function inRequest(RestifyRequest $request, Repository $repository): self
     {
         $queryRelated = collect($request->related()->related)
-            ->transform(fn($related) => Str::before($related, '['))
-            ->filter(fn($related) => !in_array($repository::uriKey().$repository->getKey().$related,
-                $request->related()->resolvedRelationships, true))
+            ->transform(fn ($related) => Str::before($related, '['))
+            ->filter(fn ($related) => ! in_array(
+                $repository::uriKey().$repository->getKey().$related,
+                $request->related()->resolvedRelationships,
+                true
+            ))
             ->all();
 
         return $this
-            ->filter(fn($field, $key) => in_array($key, $queryRelated))
+            ->filter(fn ($field, $key) => in_array($key, $queryRelated))
             ->unique();
     }
 
@@ -117,7 +120,7 @@ class RelatedCollection extends Collection
                 }
             );
         })->map(
-            fn(Related $related) => $related
+            fn (Related $related) => $related
                 ->columns($request->related()->getColumnsFor($related->getRelation()))
                 ->nested($request->related()->getNestedFor($related->getRelation()))
         );
@@ -127,18 +130,18 @@ class RelatedCollection extends Collection
     {
         return $this
             ->intoAssoc()
-            ->filter(fn($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
+            ->filter(fn ($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
     }
 
     public function onlySearchable(RestifyRequest $request): self
     {
         return $this->forBelongsToRelations($request)
-            ->filter(fn(BelongsTo $field) => $field->isSearchable());
+            ->filter(fn (BelongsTo $field) => $field->isSearchable());
     }
 
     public function forRequest(RestifyRequest $request, Repository $repository): self
     {
-        if (!$request->related()->hasRelated()) {
+        if (! $request->related()->hasRelated()) {
             return self::make([]);
         }
 
@@ -150,8 +153,8 @@ class RelatedCollection extends Collection
         return $this
             ->authorized($request)
             ->inRequest($request, $repository)
-            ->when($request->isShowRequest(), fn(self $collection) => $collection->forShow($request, $repository))
-            ->when($request->isIndexRequest(), fn(self $collection) => $collection->forIndex($request, $repository))
+            ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))
+            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository))
             ->merge($repository->nested);
     }
 }

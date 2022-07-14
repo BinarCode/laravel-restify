@@ -8,8 +8,6 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\HasNested;
 use Binaryk\LaravelRestify\Traits\Make;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
