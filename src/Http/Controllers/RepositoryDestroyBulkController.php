@@ -30,6 +30,8 @@ class RepositoryDestroyBulkController
                 });
         });
 
+        $request->repository()::deletedBulk($collection, $request);
+
         return ok();
     }
 }

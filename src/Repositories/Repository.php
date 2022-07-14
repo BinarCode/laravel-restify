@@ -712,6 +712,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 });
         });
 
+        static::savedBulk($entities, $request);
         static::storedBulk($entities, $request);
 
         return $this->response()
@@ -806,8 +807,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->authorizedUpdateBulk($request)
             ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
-        static::updatedBulk($this->resource, $request);
-
         return response()->json();
     }
 
@@ -822,8 +821,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
             return $this->resource->delete();
         });
-
-        static::deleted($status, $request);
 
         return ok(code: 204);
     }
@@ -993,7 +990,17 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         //
     }
 
-    public static function updatedBulk($model, $request)
+    public static function updatedBulk(Collection $repositories, $request)
+    {
+        //
+    }
+
+    public static function savedBulk(Collection $repositories, $request)
+    {
+        //
+    }
+
+    public static function deletedBulk(Collection $repositories, $request)
     {
         //
     }

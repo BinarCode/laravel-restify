@@ -30,6 +30,9 @@ class RepositoryUpdateBulkController extends RepositoryController
                 });
         });
 
+        $request->repository()::savedBulk($collection, $request);
+        $request->repository()::updatedBulk($collection, $request);
+
         return $this->response()
             ->success();
     }
