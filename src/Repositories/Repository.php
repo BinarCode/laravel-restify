@@ -807,7 +807,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->authorizedUpdateBulk($request)
             ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
-        return $this->resource;
+        return response()->json();
     }
 
     public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)
@@ -822,7 +822,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return $this->resource->delete();
         });
 
-        return $this->resource;
+        return ok(code: 204);
     }
 
     public function attach(RestifyRequest $request, $repositoryId, Collection $pivots)
