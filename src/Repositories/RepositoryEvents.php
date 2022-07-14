@@ -2,17 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
-use Binaryk\LaravelRestify\Repositories\Casts\RepositoryCast;
-
 trait RepositoryEvents
 {
-    /**
-     * Used to convert collections for relations.
-     *
-     * @var RepositoryCast
-     */
-    public static RepositoryCast $relatedCast;
-
     /**
      * The array of booted repositories.
      *
@@ -37,7 +28,7 @@ trait RepositoryEvents
      */
     protected static function boot(): void
     {
-        static::$relatedCast = app(config('restify.casts.related'));
+        //
     }
 
     /**

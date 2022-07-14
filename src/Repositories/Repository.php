@@ -512,26 +512,8 @@ class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveRelationships($request): array
     {
-        if (!$request->related()->hasRelated()) {
-            return [];
-        }
-
-        if (currentRepository()::class !== static::class) {
-            // When serializing nested relationships simply load nested
-            $related = RelatedCollection::make($this->nested);
-        } else {
-            $related = static::collectRelated()
-                   ->authorized($request)
-                   ->inRequest($request, $this)
-                   ->when($request->isShowRequest(), function (RelatedCollection $collection) use ($request) {
-                       return $collection->forShow($request, $this);
-                   })
-                   ->when($request->isIndexRequest(), function (RelatedCollection $collection) use ($request) {
-                       return $collection->forIndex($request, $this);
-                   })->merge($this->nested);
-        }
-
-        return $related
+        return static::collectRelated()
+            ->forRequest($request, $this)
             ->mapIntoRelated($request)
             ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
             ->map(function (mixed $items) {

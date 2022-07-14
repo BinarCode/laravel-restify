@@ -36,9 +36,9 @@ class RepositorySearchService
             $repository::usesScout()
                 ? $this->prepareRelations($request, $scoutQuery ?? $repository::query($request))
                 : $this->prepareSearchFields(
-                    $request,
-                    $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
-                ),
+                $request,
+                $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
+            ),
         );
 
         $query = $this->applyFilters($request, $repository, $query);
@@ -82,25 +82,22 @@ class RepositorySearchService
 
     public function prepareRelations(RestifyRequest $request, Builder|Relation $query)
     {
-        $eager = $this->repository::collectRelated()
-            ->authorized($request)
-            ->forEager($request)
-            ->inRequest($request, $this->repository)
-            ->when(
-                $request->isIndexRequest(),
-                fn (RelatedCollection $collection) => $collection->forIndex($request, $this->repository)
+        $eager = ($this->repository)::collectRelated()
+            ->forRequest($request, $this->repository)
+            ->map(fn($relation) => $relation instanceof EagerField
+                ? $relation->relation
+                : $relation
             )
-            ->when(
-                $request->isShowRequest(),
-                fn (RelatedCollection $collection) => $collection->forShow($request, $this->repository)
-            )
-            ->map(fn (EagerField $field) => $field->relation)
             ->values()
             ->unique()
             ->all();
 
-        $filtered = collect($request->related()->makeTree())->filter(fn (string $relationships) => in_array(
-            str($relationships)->whenContains('.', fn (Stringable $string) => $string->before('.'))->toString(),
+        if (empty($eager)) {
+            return $query;
+        }
+
+        $filtered = collect($request->related()->makeTree())->filter(fn(string $relationships) => in_array(
+            str($relationships)->whenContains('.', fn(Stringable $string) => $string->before('.'))->toString(),
             $eager,
             true,
         ))->all();
@@ -152,7 +149,7 @@ class RepositorySearchService
                     ->map(function (BelongsTo $field) {
                         return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
                     })
-                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
+                    ->each(fn(SearchableFilter $filter) => $filter->filter($request, $query, $search));
             }
         });
 
@@ -162,14 +159,14 @@ class RepositorySearchService
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
         if ($request->isIndexRequest() || $request->isGlobalRequest()) {
-            return fn ($query) => $repository::indexQuery($request, $query);
+            return fn($query) => $repository::indexQuery($request, $query);
         }
 
         if ($request->isShowRequest()) {
-            return fn ($query) => $repository::showQuery($request, $query);
+            return fn($query) => $repository::showQuery($request, $query);
         }
 
-        return fn ($query) => $query;
+        return fn($query) => $query;
     }
 
     public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
@@ -192,7 +189,7 @@ class RepositorySearchService
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository): callable
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::withs()));
+        return fn($query) => $repository::mainQuery($request, $query->with($repository::withs()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)

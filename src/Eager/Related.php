@@ -106,14 +106,6 @@ class Related implements JsonSerializable
         }
 
         switch ($paginator) {
-            case $paginator instanceof Builder:
-                $this->value = ($repository::$relatedCast)::fromBuilder($request, $paginator, $repository);
-
-                break;
-            case $paginator instanceof Relation:
-                $this->value = ($repository::$relatedCast)::fromRelation($request, $paginator, $repository);
-
-                break;
             case $paginator instanceof Collection:
                 $this->value = $paginator;
 

@@ -37,6 +37,10 @@ trait InteractWithRepositories
 
             $repository = Restify::repository($key);
 
+//            if ($repository::class === currentRepository()::class) {
+//                return currentRepository();
+//            }
+
             throw_unless(
                 $repository::authorizedToUseRepository($this),
                 RepositoryException::unauthorized($repository::uriKey())
