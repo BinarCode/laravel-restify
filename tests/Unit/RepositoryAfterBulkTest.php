@@ -85,8 +85,11 @@ class RepositoryAfterBulkTest extends IntegrationTest
             $user->id,
         ])->assertSuccessful();
 
+        $this->assertDatabaseMissing(User::class, ['id' => $user->id]);
+
         $this->assertDatabaseHas(User::class, [
-            'email' => 'new@example.com',
+            'email' => $user->email,
+            'name' => $user->name,
         ]);
     }
 }
@@ -122,8 +125,11 @@ class WithAfterBulkOverrides extends UserRepository
 
     public static function deletedBulk(Collection $repositories, $request)
     {
+        $first = $repositories->first();
+
         User::factory()->create([
-            'email' => 'new@example.com',
+            'email' => $first['email'],
+            'name' => $first['name'],
         ]);
     }
 }
