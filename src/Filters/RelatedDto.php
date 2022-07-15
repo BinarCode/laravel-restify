@@ -95,7 +95,7 @@ class RelatedDto
 
     public function hasRelated(): bool
     {
-        return !empty($this->related);
+        return ! empty($this->related);
     }
 
     public function sync(Request $request): self
@@ -132,7 +132,7 @@ class RelatedDto
             }
 
             // Here it's like `comments[id]`
-            if (!str($related)->contains('.')) {
+            if (! str($related)->contains('.')) {
                 /**
                  * @var RelatedQuery|null $relatedQuery
                  */
@@ -150,7 +150,7 @@ class RelatedDto
             /**
              * @var RelatedQuery|null $relatedQuery
              */
-            if (!$this->related->firstWhere('relation', $relation)) {
+            if (! $this->related->firstWhere('relation', $relation)) {
                 $this->related->push($parent);
             }
 
