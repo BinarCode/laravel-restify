@@ -12,7 +12,7 @@ class RelatedQueryCollectionTest extends IntegrationTest
     public function test_can_create_collection_from_query(): void
     {
         $request = new RestifyRequest([
-            'include' => 'users[email|name].posts[title].tags[id], users.comments, buildings[title], creator',
+            'include' => 'users[email|name].posts[title].tags[id], users.comments[comment], buildings[title], creator',
         ]);
 
         $relatedDto = app(RelatedDto::class)->makeFromRequest($request);
@@ -41,6 +41,14 @@ class RelatedQueryCollectionTest extends IntegrationTest
         $this->assertCount(1, $postsNested->nested);
 
         /**
+         * @var RelatedQuery $userPostTagsRelated
+         */
+        $userPostTagsRelated = $postsNested->nested->first();
+        $this->assertSame('tags', $userPostTagsRelated->relation);
+        $this->assertSame(['id'], $userPostTagsRelated->columns);
+        $this->assertCount(0, $userPostTagsRelated->nested);
+
+        /**
          * @var RelatedQuery $userCommentsNested
          */
         $userCommentsNested = $usesRelated->nested->last();
@@ -57,13 +65,13 @@ class RelatedQueryCollectionTest extends IntegrationTest
         $this->assertCount(0, $tagsNested->nested);
 
         /**
-         * @var RelatedQuery $commentsRelated
+         * @var RelatedQuery $buildingsRelated
          */
-        $commentsRelated = $relatedCollection->get(1);
+        $buildingsRelated = $relatedCollection->get(1);
 
-        $this->assertSame('comments', $commentsRelated->relation);
-        $this->assertSame(['title'], $commentsRelated->columns);
-        $this->assertCount(0, $commentsRelated->nested);
+        $this->assertSame('buildings', $buildingsRelated->relation);
+        $this->assertSame(['title'], $buildingsRelated->columns);
+        $this->assertCount(0, $buildingsRelated->nested);
 
         /**
          * @var RelatedQuery $creatorRelated

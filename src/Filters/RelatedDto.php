@@ -197,7 +197,7 @@ class RelatedDto extends DataTransferObject
                 });
 
             return $instance;
-        })->dd();
+        });
 
         return $instance;
     }
