@@ -812,7 +812,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)
     {
-        $status = DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request) {
             if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
                 Restify::actionLog()
                     ->forRepositoryDestroy($this->resource, $request->user())
