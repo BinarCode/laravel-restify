@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 use Illuminate\Support\Stringable;
 use Spatie\DataTransferObject\DataTransferObject;
 
@@ -30,7 +29,6 @@ class RelatedDto extends DataTransferObject
 
     public function getNestedForRelatedForRelation(RelatedQuery $relatedQuery, string $relation)
     {
-
     }
 
     public function getNestedFor(string $relation): ?RelatedQueryCollection
