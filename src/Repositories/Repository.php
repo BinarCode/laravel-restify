@@ -38,7 +38,7 @@ use JsonSerializable;
 use ReturnTypeWillChange;
 
 /**
- * @property static $type Repository type
+ * @property $type Repository type
  */
 abstract class Repository implements RestifySearchable, JsonSerializable
 {
