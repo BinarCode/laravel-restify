@@ -10,7 +10,7 @@ class RelatedQueryCollection extends Collection
     {
         $parent = static::fromToken(str($related)->before('.')->toString());
 
-        if (!str($related)->contains('.')) {
+        if (! str($related)->contains('.')) {
             return $parent;
         }
 

@@ -20,13 +20,13 @@ class RelatedDto extends DataTransferObject
 
     public function getColumnsFor(string $relation): array|string
     {
-        $related = collect($this->related)->first(fn($related) => $relation === Str::before($related, '['));
+        $related = collect($this->related)->first(fn ($related) => $relation === Str::before($related, '['));
 
-        if (!$related) {
+        if (! $related) {
             return '*';
         }
 
-        if (!(Str::contains($related, '[') && Str::contains($related, ']'))) {
+        if (! (Str::contains($related, '[') && Str::contains($related, ']'))) {
             return '*';
         }
 
@@ -41,8 +41,8 @@ class RelatedDto extends DataTransferObject
     {
         // TODO: work here to support many nested levels
         return collect(
-            collect($this->nested)->first(fn($related, $key) => $relation === $key)
-        )->map(fn(self $nested) => [$nested->related])->flatten()->all();
+            collect($this->nested)->first(fn ($related, $key) => $relation === $key)
+        )->map(fn (self $nested) => [$nested->related])->flatten()->all();
     }
 
     public function normalize(): self
@@ -55,7 +55,7 @@ class RelatedDto extends DataTransferObject
                     related: [
                         str($relationship)
                             ->after($baseRelationship)
-                            ->whenStartsWith('.', fn(Stringable $string) => $string->replaceFirst('.', ''))
+                            ->whenStartsWith('.', fn (Stringable $string) => $string->replaceFirst('.', ''))
                             ->ltrim()
                             ->rtrim()
                             ->toString(),
@@ -92,7 +92,7 @@ class RelatedDto extends DataTransferObject
             return $this;
         }
 
-        if (!$this->loaded) {
+        if (! $this->loaded) {
             $this->related = collect(str_getcsv($query))->mapInto(Stringable::class)->map->ltrim()->map->rtrim()->all();
 
             $this->normalize();
@@ -126,15 +126,15 @@ class RelatedDto extends DataTransferObject
     public function makeTree(): array
     {
         return collect($this->related)->map(
-            fn(string $relation) => collect($this->nested[$relation] ?? [null])->map(
-                fn(?self $nested) => $this->makeTreeFor($relation, $nested)
+            fn (string $relation) => collect($this->nested[$relation] ?? [null])->map(
+                fn (?self $nested) => $this->makeTreeFor($relation, $nested)
             )
         )->flatten()->all();
     }
 
     public function hasRelated(): bool
     {
-        return !empty($this->related);
+        return ! empty($this->related);
     }
 
     public static function makeFromRequest(Request $request): self
@@ -148,7 +148,7 @@ class RelatedDto extends DataTransferObject
         $roots = str($query)->replace(' ', '')->explode(',');
 
         collect($roots)->map(function (string $related) use ($instance) {
-            if(str($related)->contains('.')) {
+            if (str($related)->contains('.')) {
                 // users[id].comments[id] => users
                 $relation = str(collect(str($related)->explode('.'))->first())->before('[');
             } else {
@@ -167,7 +167,7 @@ class RelatedDto extends DataTransferObject
             }
 
             // Here it's like `comments[id]`
-            if (!str($related)->contains('.')) {
+            if (! str($related)->contains('.')) {
                 /**
                  * @var RelatedQuery|null $relatedQuery
                  */
@@ -183,7 +183,7 @@ class RelatedDto extends DataTransferObject
             /**
              * @var RelatedQuery|null $relatedQuery
              */
-            if (!$instance->related->firstWhere('relation', $relation)) {
+            if (! $instance->related->firstWhere('relation', $relation)) {
                 $instance->related->push($parent);
             }
 
