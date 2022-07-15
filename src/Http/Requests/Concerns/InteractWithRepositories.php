@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 use Binaryk\LaravelRestify\Exceptions\RepositoryException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -36,6 +37,10 @@ trait InteractWithRepositories
 
             $repository = Restify::repository($key);
 
+            if ($repository::class === currentRepository()::class) {
+                return currentRepository();
+            }
+
             throw_unless(
                 $repository::authorizedToUseRepository($this),
                 RepositoryException::unauthorized($repository::uriKey())
@@ -50,6 +55,8 @@ trait InteractWithRepositories
                 ->send($this)
                 ->through(optional($repository::collectMiddlewares($this))->all())
                 ->thenReturn();
+
+            app()->singleton(RepositoryInstance::class, fn ($app) => new RepositoryInstance($repository));
 
             return $repository;
         } catch (RepositoryException $e) {

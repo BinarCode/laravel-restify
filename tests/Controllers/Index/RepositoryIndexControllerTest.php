@@ -13,7 +13,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\RelatedCastWithAttributes;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -153,7 +152,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             'related' => 'user',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.user.0.name', $name)
+                ->where('data.0.relationships.user.name', $name)
                 ->etc()
         );
     }
@@ -176,26 +175,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
         ]))->assertJson(
             fn (AssertableJson $json) => $json
                 ->where('data.0.relationships.user', 'foo')
-                ->etc()
-        );
-    }
-
-    /** * @test */
-    public function it_can_transform_relationship_format_using_config(): void
-    {
-        PostRepository::$related = ['user'];
-
-        config([
-            'restify.casts.related' => RelatedCastWithAttributes::class,
-        ]);
-
-        PostFactory::one();
-
-        $this->getJson(PostRepository::route(null, [
-            'related' => 'user',
-        ]))->assertJson(
-            fn (AssertableJson $json) => $json
-                ->has('data.0.relationships.user.0.attributes')
                 ->etc()
         );
     }
@@ -266,7 +245,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ->assertJson(
                 fn (AssertableJson $json) => $json
                     ->count('data', 1)
-                    ->where('data.0.relationships.user.0.name', $owner)
+                    ->where('data.0.relationships.user.name', $owner)
                     ->etc()
             );
     }

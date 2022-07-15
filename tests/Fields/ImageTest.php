@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageTest extends IntegrationTest
 {
-    public function test_image_has_default()
+    public function test_image_has_default(): void
     {
         $image = Image::make('image')->default($default = 'https://lorempixel.com/500x500.png');
 

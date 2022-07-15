@@ -96,7 +96,11 @@ class RelatedCollection extends Collection
     {
         $queryRelated = collect($request->related()->related)
             ->transform(fn ($related) => Str::before($related, '['))
-            ->filter(fn ($related) => ! in_array($repository::uriKey() . $repository->getKey() . $related, $request->related()->resolvedRelationships, true))
+            ->filter(fn ($related) => ! in_array(
+                $repository::uriKey().$repository->getKey().$related,
+                $request->related()->resolvedRelationships,
+                true
+            ))
             ->all();
 
         return $this
@@ -117,8 +121,8 @@ class RelatedCollection extends Collection
             );
         })->map(
             fn (Related $related) => $related
-            ->columns($request->related()->getColumnsFor($related->getRelation()))
-            ->nested($request->related()->getNestedFor($related->getRelation()))
+                ->columns($request->related()->getColumnsFor($related->getRelation()))
+                ->nested($request->related()->getNestedFor($related->getRelation()))
         );
     }
 
@@ -133,5 +137,24 @@ class RelatedCollection extends Collection
     {
         return $this->forBelongsToRelations($request)
             ->filter(fn (BelongsTo $field) => $field->isSearchable());
+    }
+
+    public function forRequest(RestifyRequest $request, Repository $repository): self
+    {
+        if (! $request->related()->hasRelated()) {
+            return self::make([]);
+        }
+
+        if (currentRepository()::class !== $repository::class) {
+//             When serializing nested relationships simply load nested
+            return self::make($repository->getNested());
+        }
+
+        return $this
+            ->authorized($request)
+            ->inRequest($request, $repository)
+            ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))
+            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository))
+            ->merge($repository->nested);
     }
 }

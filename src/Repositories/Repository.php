@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
-use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -30,7 +29,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
-use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -479,7 +478,7 @@ class Repository implements RestifySearchable, JsonSerializable
     {
         return [
             'authorizedToShow' => $this->authorizedToShow($request),
-            'authorizedToStore' => $this->authorizedToStore($request),
+            'authorizedToStore' => static::authorizedToStore($request),
             'authorizedToUpdate' => $this->authorizedToUpdate($request),
             'authorizedToDelete' => $this->authorizedToDelete($request),
         ];
@@ -513,15 +512,7 @@ class Repository implements RestifySearchable, JsonSerializable
     public function resolveRelationships($request): array
     {
         return static::collectRelated()
-            ->authorized($request)
-            ->inRequest($request, $this)
-            ->merge($this->nested)
-            ->when($request->isShowRequest(), function (RelatedCollection $collection) use ($request) {
-                return $collection->forShow($request, $this);
-            })
-            ->when($request->isIndexRequest(), function (RelatedCollection $collection) use ($request) {
-                return $collection->forIndex($request, $this);
-            })
+            ->forRequest($request, $this)
             ->mapIntoRelated($request)
             ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
             ->map(function (mixed $items) {
@@ -567,8 +558,8 @@ class Repository implements RestifySearchable, JsonSerializable
         );
 
         /** *
-         * Apply all of the query: search, match, sort, related.
-         * @var AbstractPaginator $paginator
+         * Apply search, match, sort, related.
+         * @var LengthAwarePaginator $paginator
          */
         $paginator = RepositorySearchService::make()->search($request, $this)
             ->paginate($request->pagination()->perPage ?? static::$defaultPerPage, page: $request->pagination()->page);
@@ -579,29 +570,38 @@ class Repository implements RestifySearchable, JsonSerializable
             return $repository->authorizedToShow($request);
         })->values();
 
-        return response()->json(
-            $this->filter([
-                'meta' => $this->when(
-                    $meta = $this->resolveIndexMainMeta(
-                        $request,
-                        $models = $items->map(fn (self $repository) => $repository->resource),
-                        RepositoryCollection::meta($paginator->toArray())
-                    ),
-                    $meta
+
+        $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
+
+        return response()->json($this->filter([
+            'meta' => $this->when(
+                $meta = $this->resolveIndexMainMeta(
+                    $request,
+                    $models = $items->map(fn (self $repository) => $repository->resource),
+                    [
+                        'current_page' => $paginator->currentPage(),
+                        'from' => $paginator->firstItem(),
+                        'last_page' => $paginator->lastPage(),
+                        'path' => $paginator->path(),
+                        'per_page' => $paginator->perPage(),
+                        'to' => $paginator->lastItem(),
+                        'total' => $paginator->total(),
+                    ]
                 ),
-                'links' => $this->when(
-                    $links = $this->resolveIndexLinks(
-                        $request,
-                        $models,
-                        array_merge(RepositoryCollection::paginationLinks($paginator->toArray()), [
-                            'filters' => Restify::path(static::uriKey().'/filters'),
-                        ])
-                    ),
-                    $links
-                ),
-                'data' => $items->map(fn (self $repository) => $repository->serializeForIndex($request)),
-            ])
-        );
+                $meta
+            ),
+            'links' => $this->when(
+                $links = $this->resolveIndexLinks($request, $models, [
+                    'first' => $paginator->url(1),
+                    'next' => $paginator->nextPageUrl(),
+                    'path' => $paginator->path(),
+                    'prev' => $paginator->previousPageUrl(),
+                    'filters' => Restify::path(static::uriKey().'/filters'),
+                ]),
+                $links
+            ),
+            'data' => $data,
+        ]));
     }
 
     public function indexCollection(RestifyRequest $request, Collection $items): Collection
@@ -994,7 +994,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function serializeForIndex(RestifyRequest $request): array
     {
-        return $this->filter([
+        $data = $this->filter([
             'id' => $this->when($id = $this->getId($request), $id),
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $this->when((bool) $attrs = $this->resolveIndexAttributes($request), $attrs),
@@ -1002,6 +1002,8 @@ class Repository implements RestifySearchable, JsonSerializable
             'meta' => $this->when(value($meta = $this->resolveIndexMeta($request)), $meta),
             'pivots' => $this->when(value($pivots = $this->resolveIndexPivots($request)), $pivots),
         ]);
+
+        return $data;
     }
 
     protected function getType(RestifyRequest $request): ?string
@@ -1127,8 +1129,8 @@ class Repository implements RestifySearchable, JsonSerializable
         // Set the nested relationship eager attribute from the related list
         collect($nested)
             ->map(fn ($key) => static::collectRelated()
-            ->filter(fn ($related) => $related instanceof EagerField)
-            ->first(fn (EagerField $k, $value) => $k->getAttribute() === $key))
+                ->filter(fn ($related) => $related instanceof EagerField)
+                ->first(fn (EagerField $k, $value) => $k->getAttribute() === $key))
             ->filter(fn ($related) => $related instanceof EagerField)
             ->each(function (EagerField $nestedEagerField) {
                 $this->nested[$nestedEagerField->getAttribute()] = $nestedEagerField;

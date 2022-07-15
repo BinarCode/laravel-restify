@@ -2,6 +2,7 @@
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
 use Binaryk\LaravelRestify\Repositories\Serializer;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Http\JsonResponse;
@@ -59,5 +60,12 @@ if (! function_exists('rest')) {
 
         return (new Serializer(app($repository)))
             ->models(collect($models));
+    }
+}
+
+if (! function_exists('currentRepository')) {
+    function currentRepository(): Repository
+    {
+        return app(RepositoryInstance::class)->current();
     }
 }

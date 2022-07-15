@@ -19,7 +19,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(CompanyRepository::route($company->id, ['include' => 'users']))
+        $this->withoutExceptionHandling()->getJson(CompanyRepository::route($company->id, ['include' => 'users']))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [

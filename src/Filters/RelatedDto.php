@@ -21,6 +21,10 @@ class RelatedDto extends DataTransferObject
     {
         $related = collect($this->related)->first(fn ($related) => $relation === Str::before($related, '['));
 
+        if (! $related) {
+            return '*';
+        }
+
         if (! (Str::contains($related, '[') && Str::contains($related, ']'))) {
             return '*';
         }
@@ -81,8 +85,14 @@ class RelatedDto extends DataTransferObject
 
     public function sync(RestifyRequest $request): self
     {
+        if (empty($query = ($request->input('related') ?? $request->input('include')))) {
+            $this->loaded = true;
+
+            return $this;
+        }
+
         if (! $this->loaded) {
-            $this->related = collect(str_getcsv($request->input('related') ?? $request->input('include')))->mapInto(Stringable::class)->map->ltrim()->map->rtrim()->all();
+            $this->related = collect(str_getcsv($query))->mapInto(Stringable::class)->map->ltrim()->map->rtrim()->all();
 
             $this->normalize();
 
@@ -99,5 +109,30 @@ class RelatedDto extends DataTransferObject
         $this->resolvedRelationships = [];
 
         return $this;
+    }
+
+    private function makeTreeFor(string $related, ?RelatedDto $dto = null): string
+    {
+        if (is_null($dto)) {
+            return $related;
+        }
+
+        $child = collect($dto->related)->first();
+
+        return $this->makeTreeFor("$related.".$child, collect(data_get($dto->nested, $child))->first());
+    }
+
+    public function makeTree(): array
+    {
+        return collect($this->related)->map(
+            fn (string $relation) => collect($this->nested[$relation] ?? [null])->map(
+                fn (?self $nested) => $this->makeTreeFor($relation, $nested)
+            )
+        )->flatten()->all();
+    }
+
+    public function hasRelated(): bool
+    {
+        return ! empty($this->related);
     }
 }
