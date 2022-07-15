@@ -12,6 +12,4 @@ class RelatedQuery
     ) {
         $this->nested = RelatedQueryCollection::make([]);
     }
-
-
 }
