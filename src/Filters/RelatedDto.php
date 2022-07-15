@@ -20,29 +20,22 @@ class RelatedDto extends DataTransferObject
 
     public function getColumnsFor(string $relation): array|string
     {
-        $related = collect($this->related)->first(fn ($related) => $relation === Str::before($related, '['));
-
-        if (! $related) {
-            return '*';
-        }
-
-        if (! (Str::contains($related, '[') && Str::contains($related, ']'))) {
-            return '*';
-        }
-
-        $columns = explode(',', Str::replace('|', ',', Str::between($related, '[', ']')));
-
-        return count($columns)
-            ? $columns
-            : '*';
+        return $this->getRelatedQueryFor($relation)?->columns() ?: '*';
     }
 
-    public function getNestedFor(string $relation): ?array
+    public function getRelatedQueryFor(string $relation): ?RelatedQuery
     {
-        // TODO: work here to support many nested levels
-        return collect(
-            collect($this->nested)->first(fn ($related, $key) => $relation === $key)
-        )->map(fn (self $nested) => [$nested->related])->flatten()->all();
+        return $this->related->firstWhere('relation', $relation);
+    }
+
+    public function getNestedForRelatedForRelation(RelatedQuery $relatedQuery, string $relation)
+    {
+
+    }
+
+    public function getNestedFor(string $relation): ?RelatedQueryCollection
+    {
+        return $this->getRelatedQueryFor($relation)?->nested;
     }
 
     public function normalize(): self

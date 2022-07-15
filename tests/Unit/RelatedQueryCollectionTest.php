@@ -82,9 +82,9 @@ class RelatedQueryCollectionTest extends IntegrationTest
         $this->assertEmpty($creatorRelated->columns);
         $this->assertCount(0, $creatorRelated->nested);
 
-//        $this->assertCount(1, $collection->getNestedFor('users'));
-//        $this->assertCount(1, $collection->getNestedFor('posts'));
-//        $this->assertCount(0, $collection->getNestedFor('tags'));
-//        $this->assertCount(0, $collection->getNestedFor('creator'));
+        $this->assertCount(2, $relatedDto->getNestedFor('users'));
+        $this->assertSame(['email', 'name'], $relatedDto->getColumnsFor('users'));
+        $this->assertSame(['title'], $relatedDto->getColumnsFor('buildings'));
+        $this->assertSame('*', $relatedDto->getColumnsFor('creator'));
     }
 }
