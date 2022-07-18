@@ -14,7 +14,7 @@ class RelatedQueryCollectionTest extends IntegrationTest
     public function test_can_create_collection_from_query(): void
     {
         $request = new RestifyRequest([
-            'include' => 'users[email|name].posts[title].tags[id, users.comments[comment], buildings[title], creator',
+            'include' => 'users[email|name].posts[title].tags[id], users.comments[comment], buildings[title], creator',
         ]);
 
         $company = Company::factory()->create();
