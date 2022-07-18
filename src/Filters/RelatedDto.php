@@ -26,7 +26,7 @@ class RelatedDto
 
     public function hasRelated(): bool
     {
-        return !empty($this->related);
+        return ! empty($this->related);
     }
 
     /**
@@ -47,7 +47,7 @@ class RelatedDto
 
     public function getRelatedQueryFor(string $relation): ?RelatedQuery
     {
-        return collect($this->relatedArray)->first(fn($object, $key) => str($key)->contains($relation));
+        return collect($this->relatedArray)->first(fn ($object, $key) => str($key)->contains($relation));
     }
 
     public function getNestedFor(string $relation): ?RelatedQueryCollection
@@ -87,8 +87,9 @@ class RelatedDto
         }
 
         if ($relatedQuery->nested->count()) {
-            return $relatedQuery->nested->first(fn(RelatedQuery $child) => $this->searchInRelatedQuery(
-                $child, $relation
+            return $relatedQuery->nested->first(fn (RelatedQuery $child) => $this->searchInRelatedQuery(
+                $child,
+                $relation
             ));
         }
 
@@ -116,9 +117,9 @@ class RelatedDto
     {
         return collect(array_keys($this->relatedArray))
             ->mapInto(Stringable::class)
-            ->map(fn(Stringable $relation) => $relation->after('.'))
+            ->map(fn (Stringable $relation) => $relation->after('.'))
             ->unique()
-            ->map(fn(Stringable $relation) => $relation->toString())
+            ->map(fn (Stringable $relation) => $relation->toString())
             ->all();
     }
 
@@ -157,7 +158,7 @@ class RelatedDto
             }
 
             // Here it's like `comments[id]`
-            if (!str($related)->contains('.')) {
+            if (! str($related)->contains('.')) {
                 /**
                  * @var RelatedQuery|null $relatedQuery
                  */
@@ -175,7 +176,7 @@ class RelatedDto
             /**
              * @var RelatedQuery|null $relatedQuery
              */
-            if (!$this->related->firstWhere('relation', $relation)) {
+            if (! $this->related->firstWhere('relation', $relation)) {
                 $this->related->push($parent);
             }
 

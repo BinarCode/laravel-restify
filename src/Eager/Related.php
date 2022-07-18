@@ -9,8 +9,6 @@ use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\Make;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -46,7 +44,7 @@ class Related implements JsonSerializable
 
     public function isEager(): bool
     {
-        return !is_null($this->field);
+        return ! is_null($this->field);
     }
 
     public function getRelation(): string
