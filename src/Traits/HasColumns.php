@@ -20,7 +20,9 @@ trait HasColumns
 
     public function getColumns(): array|string
     {
-        return $this->columns;
+        return $this->columns === ['*']
+            ? '*'
+            : $this->columns;
     }
 
     public function hasCustomColumns(): bool

@@ -5,6 +5,8 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
 class RelatedQueryCollectionTest extends IntegrationTest
@@ -15,11 +17,22 @@ class RelatedQueryCollectionTest extends IntegrationTest
             'include' => 'users[email|name].posts[title].tags[id, users.comments[comment], buildings[title], creator',
         ]);
 
-        $relatedDto = app(RelatedDto::class)->sync($request);
+        $company = Company::factory()->create();
+
+        $relatedDto = app(RelatedDto::class)->sync($request, CompanyRepository::resolveWith($company));
 
         $relatedCollection = $relatedDto->related;
 
-        $this->assertSame(['users.posts.tags', 'users.comments', 'buildings', 'creator'], $relatedDto->makeTree($request));
+        $this->assertSame(['title'], $relatedDto->getColumnsFor('companies.buildings'));
+
+        $this->assertSame([
+            'users',
+            'users.posts',
+            'users.posts.tags',
+            'users.comments',
+            'buildings',
+            'creator',
+        ], $relatedDto->makeTree());
 
         $this->assertCount(3, $relatedCollection);
 
@@ -81,12 +94,12 @@ class RelatedQueryCollectionTest extends IntegrationTest
         $creatorRelated = $relatedCollection->get(2);
 
         $this->assertSame('creator', $creatorRelated->relation);
-        $this->assertEmpty($creatorRelated->columns);
+        $this->assertSame(['*'], $creatorRelated->columns);
         $this->assertCount(0, $creatorRelated->nested);
 
-        $this->assertCount(2, $relatedDto->getNestedFor('users'));
-        $this->assertSame(['email', 'name'], $relatedDto->getColumnsFor('users'));
-        $this->assertSame(['title'], $relatedDto->getColumnsFor('buildings'));
-        $this->assertSame('*', $relatedDto->getColumnsFor('creator'));
+        $this->assertCount(2, $relatedDto->getNestedFor('companies.users'));
+        $this->assertSame(['email', 'name'], $relatedDto->getColumnsFor('companies.users'));
+        $this->assertSame(['title'], $relatedDto->getColumnsFor('companies.buildings'));
+        $this->assertSame(['*'], $relatedDto->getColumnsFor('creator'));
     }
 }

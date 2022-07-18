@@ -2,7 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Stringable;
 
 class RelatedDto
 {
@@ -12,6 +14,8 @@ class RelatedDto
 
     public array $resolvedRelationships = [];
 
+    public array $relatedArray = [];
+
     private bool $loaded = false;
 
     public function __construct(
@@ -20,14 +24,30 @@ class RelatedDto
         $this->related = $related ?? RelatedQueryCollection::make([]);
     }
 
-    public function getColumnsFor(string $relation): array|string
+    public function hasRelated(): bool
     {
-        return $this->getRelatedQueryFor($relation)?->columns() ?: '*';
+        return !empty($this->related);
+    }
+
+    /**
+     * Dot notation of the relationship. Could be a nested relation users.posts.tags
+     *
+     * @param  string  $relation
+     * @return bool
+     */
+    public function hasRelation(string $relation): bool
+    {
+        return (bool) $this->getRelatedQueryFor($relation);
+    }
+
+    public function getColumnsFor(string $relation): array
+    {
+        return $this->getRelatedQueryFor($relation)?->columns() ?: ['*'];
     }
 
     public function getRelatedQueryFor(string $relation): ?RelatedQuery
     {
-        return $this->related->firstWhere('relation', $relation);
+        return collect($this->relatedArray)->first(fn($object, $key) => str($key)->contains($relation));
     }
 
     public function getNestedFor(string $relation): ?RelatedQueryCollection
@@ -51,30 +71,38 @@ class RelatedDto
     {
         $this->loaded = false;
 
+        $this->related = RelatedQueryCollection::make([]);
+
         $this->resolvedRelationships = [];
+
+        $this->relatedArray = [];
 
         return $this;
     }
 
-    private function makeTreeFor(string $related, ?RelatedDto $dto = null): string
+    private function searchInRelatedQuery(RelatedQuery $relatedQuery, string $relation): ?RelatedQuery
     {
-        if (is_null($dto)) {
-            return $related;
+        if ($relatedQuery->matchTree($relation)) {
+            return $relatedQuery;
         }
 
-        $child = collect($dto->related)->first();
+        if ($relatedQuery->nested->count()) {
+            return $relatedQuery->nested->first(fn(RelatedQuery $child) => $this->searchInRelatedQuery(
+                $child, $relation
+            ));
+        }
 
-        return $this->makeTreeFor("$related.".$child, collect(data_get($dto->nested, $child))->first());
+        return null;
     }
 
-    private function makeTreeFroChild(RelatedQuery $relatedQuery, array &$base = [])
+    private function makeTreeForChild(RelatedQuery $relatedQuery, array &$base = []): array
     {
         if ($relatedQuery->nested->count()) {
             $relatedQuery->nested->each(function (RelatedQuery $child, $i) use (&$base, $relatedQuery) {
                 $base[$i] = data_get($base, $i, $relatedQuery->relation).".$child->relation";
 
                 if ($child->nested->count()) {
-                    $this->makeTreeFroChild($child, $base);
+                    $this->makeTreeForChild($child, $base);
                 }
             });
         } else {
@@ -84,21 +112,17 @@ class RelatedDto
         return $base;
     }
 
-    public function makeTree(Request $request): array
+    public function makeTree(): array
     {
-        $data = [];
-
-        return $this->related->map(function (RelatedQuery $relatedQuery) use ($data) {
-            return $this->makeTreeFroChild($relatedQuery, $data);
-        })->flatten()->all();
+        return collect(array_keys($this->relatedArray))
+            ->mapInto(Stringable::class)
+            ->map(fn(Stringable $relation) => $relation->after('.'))
+            ->unique()
+            ->map(fn(Stringable $relation) => $relation->toString())
+            ->all();
     }
 
-    public function hasRelated(): bool
-    {
-        return !empty($this->related);
-    }
-
-    public function sync(Request $request): self
+    public function sync(Request $request, Repository $repository): self
     {
         if ($this->loaded) {
             return $this;
@@ -112,7 +136,7 @@ class RelatedDto
 
         $roots = str($query)->replace(' ', '')->explode(',');
 
-        collect($roots)->map(function (string $related) {
+        collect($roots)->map(function (string $related) use ($repository) {
             if (str($related)->contains('.')) {
                 // users[id].comments[id] => users
                 $relation = str(collect(str($related)->explode('.'))->first())->before('[');
@@ -128,7 +152,8 @@ class RelatedDto
             if ($relatedQuery = $this->related->firstWhere('relation', $relation)) {
                 $parent = $relatedQuery;
             } else {
-                $parent = RelatedQueryCollection::fromToken(str($related)->before('.'));
+                $parent = RelatedQueryCollection::fromToken(str($related)->before('.'))->parent($repository::uriKey());
+                $this->relatedArray[$parent->tree] = clone $parent;
             }
 
             // Here it's like `comments[id]`
@@ -154,14 +179,15 @@ class RelatedDto
                 $this->related->push($parent);
             }
 
-            collect(str($related)->after('.')->explode('.'))
-                ->map(function (string $nested, $i) use ($parent) {
-                    if ($i === 0) {
-                        return $parent->nested->push(RelatedQueryCollection::fromToken($nested));
-                    }
+            collect(str($related)->after('.')->explode('.'))->map(function (string $nested) use (&$parent) {
+                $newParent = RelatedQueryCollection::fromToken($nested)->parent($parent->tree);
 
-                    return $parent->nested->nth($i)->first()->nested->push(RelatedQueryCollection::fromToken($nested));
-                });
+                $this->relatedArray[$newParent->tree] = $newParent;
+
+                return $parent->nested->push(
+                    $parent = $newParent
+                );
+            });
 
             $this->loaded();
 
