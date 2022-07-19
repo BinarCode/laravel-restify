@@ -77,6 +77,8 @@ abstract class IntegrationTest extends TestCase
     {
         config()->set('database.default', 'sqlite');
         config()->set('restify.auth.user_model', User::class);
+        config()->set('restify.repositories.serialize_index_meta', true);
+        config()->set('restify.repositories.serialize_show_meta', true);
 
         $migration = include __DIR__.'/../database/migrations/create_action_logs_table.php.stub';
         $migration->up();
