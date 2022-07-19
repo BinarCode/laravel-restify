@@ -94,7 +94,7 @@ class RelatedCollection extends Collection
     public function inRequest(RestifyRequest $request, Repository $repository): self
     {
         return $this->filter(function ($field, $key) use ($request, $repository) {
-            return $request->related()->hasRelation($repository::uriKey() . '.' . $key);
+            return $request->related()->hasRelation($repository::uriKey().'.'.$key);
         });
     }
 

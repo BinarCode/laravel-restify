@@ -47,7 +47,7 @@ class RelatedDto
 
     public function getRelatedQueryFor(string $relation): ?RelatedQuery
     {
-        return collect($this->relatedArray)->first(fn ($object, $key) => str($key)->contains($relation));
+        return collect($this->relatedArray)->first(fn ($object, $key) => str_contains($key, $relation));
     }
 
     public function getNestedFor(string $relation): ?RelatedQueryCollection
@@ -98,17 +98,17 @@ class RelatedDto
 
     private function makeTreeForChild(RelatedQuery $relatedQuery, array &$base = []): array
     {
-        if ($relatedQuery->nested->count()) {
-            $relatedQuery->nested->each(function (RelatedQuery $child, $i) use (&$base, $relatedQuery) {
-                $base[$i] = data_get($base, $i, $relatedQuery->relation).".$child->relation";
-
-                if ($child->nested->count()) {
-                    $this->makeTreeForChild($child, $base);
-                }
-            });
-        } else {
+        if (! $relatedQuery->nested->count()) {
             return [$relatedQuery->relation];
         }
+
+        $relatedQuery->nested->each(function (RelatedQuery $child, $i) use (&$base, $relatedQuery) {
+            $base[$i] = data_get($base, $i, $relatedQuery->relation).".$child->relation";
+
+            if ($child->nested->count()) {
+                $this->makeTreeForChild($child, $base);
+            }
+        });
 
         return $base;
     }
@@ -137,8 +137,8 @@ class RelatedDto
 
         $roots = str($query)->replace(' ', '')->explode(',');
 
-        collect($roots)->map(function (string $related) use ($repository) {
-            if (str($related)->contains('.')) {
+        collect($roots)->each(function (string $related) use ($repository) {
+            if (str_contains($related, '.')) {
                 // users[id].comments[id] => users
                 $relation = str(collect(str($related)->explode('.'))->first())->before('[');
             } else {
@@ -153,12 +153,12 @@ class RelatedDto
             if ($relatedQuery = $this->related->firstWhere('relation', $relation)) {
                 $parent = $relatedQuery;
             } else {
-                $parent = RelatedQueryCollection::fromToken(str($related)->before('.'))->parent($repository::uriKey());
+                $parent = RelatedQuery::fromToken(str($related)->before('.'))->parent($repository::uriKey());
                 $this->relatedArray[$parent->tree] = clone $parent;
             }
 
             // Here it's like `comments[id]`
-            if (! str($related)->contains('.')) {
+            if (! str_contains($related, '.')) {
                 /**
                  * @var RelatedQuery|null $relatedQuery
                  */
@@ -181,7 +181,7 @@ class RelatedDto
             }
 
             collect(str($related)->after('.')->explode('.'))->map(function (string $nested) use (&$parent) {
-                $newParent = RelatedQueryCollection::fromToken($nested)->parent($parent->tree);
+                $newParent = RelatedQuery::fromToken($nested)->parent($parent->tree);
 
                 $this->relatedArray[$newParent->tree] = $newParent;
 
