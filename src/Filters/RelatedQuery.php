@@ -66,7 +66,7 @@ class RelatedQuery
                 columns: str($token)->between('[', ']')->explode('|')->all(),
             );
         }
+
         return new RelatedQuery($token);
     }
-
 }
