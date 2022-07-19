@@ -54,12 +54,12 @@ class RelatedQuery
 
     public function matchTree(string $tree): bool
     {
-        return str($this->tree)->contains($tree);
+        return str_contains($this->tree, $tree);
     }
 
     public static function fromToken(string $token): RelatedQuery
     {
-        if (str($token)->contains('[')) {
+        if (str_contains($token, '[')) {
             // has columns
             return new RelatedQuery(
                 relation: str($token)->before('['),
@@ -67,7 +67,7 @@ class RelatedQuery
             );
         }
 
-        if (str($token)->contains('[')) {
+        if (str_contains($token, '[')) {
             // has columns
             return new RelatedQuery(
                 relation: str($token)->before('['),
