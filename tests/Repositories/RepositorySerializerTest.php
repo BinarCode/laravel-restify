@@ -46,7 +46,8 @@ class RepositorySerializerTest extends IntegrationTest
         config()->set('restify.repositories.serialize_show_meta', false);
 
         $this->getJson(PostRepository::route($posts->first()->id))
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->missing('data.meta')
                 ->etc()
             );
@@ -54,7 +55,8 @@ class RepositorySerializerTest extends IntegrationTest
         $this->getJson(PostRepository::route($posts->first()->id, [
             'withMeta' => true,
         ]))
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->has('data.meta')
                 ->etc()
             );
@@ -67,7 +69,8 @@ class RepositorySerializerTest extends IntegrationTest
         config()->set('restify.repositories.serialize_index_meta', false);
 
         $this->getJson(PostRepository::route())
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->missing('data.0.meta')
                 ->etc()
             );
@@ -75,7 +78,8 @@ class RepositorySerializerTest extends IntegrationTest
         $this->getJson(PostRepository::route(query: [
             'withMeta' => true,
         ]))
-            ->assertJson(fn(AssertableJson $json) => $json
+            ->assertJson(
+                fn (AssertableJson $json) => $json
                 ->has('data.0.meta')
                 ->etc()
             );
