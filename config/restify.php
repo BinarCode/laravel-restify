@@ -133,4 +133,16 @@ return [
         */
         'case_sensitive' => true,
     ],
+
+    'repositories' => [
+        /*
+        | Specify either to serialize index meta (policy) information or not. For performance reasons we recommend to disable it.
+        */
+        'serialize_index_meta' => false,
+
+        /*
+        | Specify either to serialize show meta (policy) information or not.
+        */
+        'serialize_show_meta' => true,
+    ],
 ];

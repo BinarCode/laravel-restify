@@ -12,12 +12,12 @@ class {{ class }}
 
     public function allowRestify(User $user = null): bool
     {
-        //
+        return true;
     }
 
     public function show(User $user, {{ model }} $model): bool
     {
-        //
+        return true;
     }
 
     public function store(User $user): bool

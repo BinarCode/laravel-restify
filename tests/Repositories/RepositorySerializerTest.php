@@ -38,4 +38,50 @@ class RepositorySerializerTest extends IntegrationTest
             ->count('data', 20)
             ->etc();
     }
+
+    public function test_disable_show_meta(): void
+    {
+        $posts = PostFactory::many();
+
+        config()->set('restify.repositories.serialize_show_meta', false);
+
+        $this->getJson(PostRepository::route($posts->first()->id))
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                ->missing('data.meta')
+                ->etc()
+            );
+
+        $this->getJson(PostRepository::route($posts->first()->id, [
+            'withMeta' => true,
+        ]))
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                ->has('data.meta')
+                ->etc()
+            );
+    }
+
+    public function test_disable_index_meta(): void
+    {
+        PostFactory::many();
+
+        config()->set('restify.repositories.serialize_index_meta', false);
+
+        $this->getJson(PostRepository::route())
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                ->missing('data.0.meta')
+                ->etc()
+            );
+
+        $this->getJson(PostRepository::route(query: [
+            'withMeta' => true,
+        ]))
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                ->has('data.0.meta')
+                ->etc()
+            );
+    }
 }

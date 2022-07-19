@@ -474,6 +474,19 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function resolveShowMeta($request)
     {
+        if ($request->boolean('withMeta')) {
+            return $this->policyMeta($request);
+        }
+
+        if (! config('restify.repositories.serialize_show_meta')) {
+            return null;
+        }
+
+        return $this->policyMeta($request);
+    }
+
+    private function policyMeta(Request $request): array
+    {
         return [
             'authorizedToShow' => $this->authorizedToShow($request),
             'authorizedToStore' => static::authorizedToStore($request),
@@ -532,7 +545,15 @@ class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveIndexMeta($request)
     {
-        return $this->resolveShowMeta($request);
+        if ($request->boolean('withMeta')) {
+            return $this->policyMeta($request);
+        }
+
+        if (! config('restify.repositories.serialize_index_meta')) {
+            return null;
+        }
+
+        return $this->policyMeta($request);
     }
 
     /**
