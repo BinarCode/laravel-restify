@@ -6,8 +6,9 @@ use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\HasColumns;
-use Binaryk\LaravelRestify\Traits\HasNested;
 use Binaryk\LaravelRestify\Traits\Make;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -18,7 +19,6 @@ class Related implements JsonSerializable
 {
     use Make;
     use HasColumns;
-    use HasNested;
 
     private string $relation;
 
@@ -29,7 +29,7 @@ class Related implements JsonSerializable
      */
     private $value;
 
-    private ?EagerField $field;
+    public ?EagerField $field;
 
     /**
      * @var callable
@@ -62,13 +62,12 @@ class Related implements JsonSerializable
         return $this
             ->field
             ->columns($this->getColumns())
-            ->nested(Arr::wrap($this->nested ?: []))
             ->resolve($repository);
     }
 
     public function resolve(RestifyRequest $request, Repository $repository): self
     {
-        $request->related()->resolved($repository::uriKey() . $repository->getKey() . $this->getRelation());
+        $request->related()->resolved($repository::uriKey().$repository->getKey().$this->getRelation());
 
         if (is_callable($this->resolverCallback)) {
             $this->value = call_user_func($this->resolverCallback, $request, $repository);
@@ -106,6 +105,14 @@ class Related implements JsonSerializable
         switch ($paginator) {
             case $paginator instanceof Collection:
                 $this->value = $paginator;
+
+                break;
+            case $paginator instanceof BelongsTo:
+                $this->value = $paginator->first();
+
+                break;
+            case $paginator instanceof Builder:
+                $this->value = $paginator->get();
 
                 break;
             default:

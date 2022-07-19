@@ -197,7 +197,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         Company::factory()->has(
             User::factory()->has(
-                Post::factory()
+                Post::factory()->count(2)
             )->has(
                 Role::factory()
             )

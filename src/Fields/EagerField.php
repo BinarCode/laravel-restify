@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\HasColumns;
-use Binaryk\LaravelRestify\Traits\HasNested;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -14,7 +13,6 @@ use Illuminate\Support\Facades\Gate;
 class EagerField extends Field
 {
     use HasColumns;
-    use HasNested;
 
     /**
      * Name of the relationship.

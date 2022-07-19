@@ -2,22 +2,24 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Binaryk\LaravelRestify\Filters\RelatedQueryCollection;
+
 trait HasNested
 {
-    public array $nested = [];
+    public ?RelatedQueryCollection $nested = null;
 
-    public function nested(array $nested = []): self
-    {
-        $this->nested = $nested;
+//    public function nested(?RelatedQueryCollection $nested = null): self
+//    {
+//        $this->nested = $nested;
+//
+//        return $this;
+//    }
 
-        return $this;
-    }
-
-    public function getNested(): array
-    {
-        return $this->nested;
-    }
-
+//    public function getNested(): RelatedQueryCollection
+//    {
+//        return $this->nested ?? RelatedQueryCollection::make([]);
+//    }
+//
     public function hasNested(): bool
     {
         return ! empty($this->nested);

@@ -13,7 +13,6 @@ use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class RelatedCollection extends Collection
 {
@@ -94,23 +93,14 @@ class RelatedCollection extends Collection
 
     public function inRequest(RestifyRequest $request, Repository $repository): self
     {
-        $queryRelated = collect($request->related()->related)
-            ->transform(fn ($related) => Str::before($related, '['))
-            ->filter(fn ($related) => ! in_array(
-                $repository::uriKey().$repository->getKey().$related,
-                $request->related()->resolvedRelationships,
-                true
-            ))
-            ->all();
-
-        return $this
-            ->filter(fn ($field, $key) => in_array($key, $queryRelated))
-            ->unique();
+        return $this->filter(function ($field, $key) use ($request, $repository) {
+            return $request->related()->hasRelation($repository::uriKey() . '.' . $key);
+        });
     }
 
-    public function mapIntoRelated(RestifyRequest $request): self
+    public function mapIntoRelated(RestifyRequest $request, Repository $repository): self
     {
-        return $this->map(function ($value, $key) {
+        return $this->map(function ($value, $key) use ($request) {
             return tap(
                 Related::make($key, $value instanceof EagerField ? $value : null),
                 function (Related $related) use ($value) {
@@ -121,8 +111,7 @@ class RelatedCollection extends Collection
             );
         })->map(
             fn (Related $related) => $related
-                ->columns($request->related()->getColumnsFor($related->getRelation()))
-                ->nested($request->related()->getNestedFor($related->getRelation()))
+                ->columns($request->related()->getColumnsFor($repository::uriKey().'.'.$related->getRelation()))
         );
     }
 
@@ -145,16 +134,19 @@ class RelatedCollection extends Collection
             return self::make([]);
         }
 
-        if (currentRepository()::class !== $repository::class) {
-//             When serializing nested relationships simply load nested
-            return self::make($repository->getNested());
-        }
-
         return $this
             ->authorized($request)
             ->inRequest($request, $repository)
             ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))
-            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository))
-            ->merge($repository->nested);
+            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository));
+    }
+
+    public function unserialized(RestifyRequest $request, Repository $repository)
+    {
+        return $this->filter(fn (Related $related) => ! in_array(
+            $repository::uriKey().$repository->getKey().$related->getRelation(),
+            $request->related()->resolvedRelationships,
+            true
+        ));
     }
 }
