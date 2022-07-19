@@ -56,4 +56,25 @@ class RelatedQuery
     {
         return str($this->tree)->contains($tree);
     }
+
+    public static function fromToken(string $token): RelatedQuery
+    {
+        if (str($token)->contains('[')) {
+            // has columns
+            return new RelatedQuery(
+                relation: str($token)->before('['),
+                columns: str($token)->between('[', ']')->explode('|')->all(),
+            );
+        }
+
+        if (str($token)->contains('[')) {
+            // has columns
+            return new RelatedQuery(
+                relation: str($token)->before('['),
+                columns: str($token)->between('[', ']')->explode('|')->all(),
+            );
+        }
+
+        return new RelatedQuery($token);
+    }
 }
