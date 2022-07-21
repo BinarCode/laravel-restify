@@ -9,6 +9,7 @@ use Illuminate\Support\Str;
 
 /**
  * Class ActionLog.
+ *
  * @property int $id
  * @property string $batch_id
  * @property string $user_id
@@ -41,7 +42,9 @@ class ActionLog extends Model
     public const STATUS_FINISHED = 'finished';
 
     public const ACTION_CREATED = 'Stored';
+
     public const ACTION_UPDATED = 'Updated';
+
     public const ACTION_DELETED = 'Deleted';
 
     public static function forRepositoryStored(Model $model, Authenticatable $user = null, array $dirty = null): self

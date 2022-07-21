@@ -8,13 +8,19 @@ namespace Binaryk\LaravelRestify\Contracts;
 interface RestifySearchable
 {
     public const DEFAULT_PER_PAGE = 15;
+
     public const DEFAULT_RELATABLE_PER_PAGE = 15;
 
     public const MATCH_TEXT = 'text';
+
     public const MATCH_BOOL = 'bool';
+
     public const MATCH_INTEGER = 'integer';
+
     public const MATCH_DATETIME = 'datetime';
+
     public const MATCH_BETWEEN = 'between';
+
     public const MATCH_ARRAY = 'array';
 
     /**
@@ -39,6 +45,7 @@ interface RestifySearchable
      *
      * To use this filter we have to send in query:
      * [  'match' => [ 'id' => 1 ] ]
+     *
      * @return array
      */
     public static function matches(): array;

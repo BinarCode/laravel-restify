@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Post.
+ *
  * @property mixed $id
  * @property mixed $user_id
  * @property mixed $image

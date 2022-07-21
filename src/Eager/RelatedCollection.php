@@ -100,7 +100,7 @@ class RelatedCollection extends Collection
 
     public function mapIntoRelated(RestifyRequest $request, Repository $repository): self
     {
-        return $this->map(function ($value, $key) use ($request) {
+        return $this->map(function ($value, $key) {
             return tap(
                 Related::make($key, $value instanceof EagerField ? $value : null),
                 function (Related $related) use ($value) {

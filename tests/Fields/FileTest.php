@@ -139,7 +139,7 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg')->deletable(true),
             ]);
 
-        $this->deleteJson(UserRepository::route($user->getKey(). '/field/avatar'))
+        $this->deleteJson(UserRepository::route($user->getKey().'/field/avatar'))
             ->assertNoContent();
 
         Storage::disk('customDisk')->assertMissing('avatar.jpg');
@@ -162,7 +162,7 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg')->deletable(false),
             ]);
 
-        $this->deleteJson(UserRepository::route($user->getKey(). '/field/avatar'))
+        $this->deleteJson(UserRepository::route($user->getKey().'/field/avatar'))
             ->assertNotFound();
     }
 

@@ -13,7 +13,7 @@ class RegisterController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
-            'email' => ['required', 'email', 'max:255', 'unique:' . Config::get('config.auth.table', 'users')],
+            'email' => ['required', 'email', 'max:255', 'unique:'.Config::get('config.auth.table', 'users')],
             'password' => ['required', 'confirmed'],
         ]);
 

@@ -9,7 +9,7 @@ trait InteractWithFields
     /**
      * Resolvable attributes.
      *
-     * @param RestifyRequest $request
+     * @param  RestifyRequest  $request
      * @return array
      */
     public function fields(RestifyRequest $request): array

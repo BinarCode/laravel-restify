@@ -68,7 +68,7 @@ class PostWithMorphOneRepository extends Repository
     public static function include(): array
     {
         return [
-            'user' => BelongsTo::make('user',  UserRepository::class),
+            'user' => BelongsTo::make('user', UserRepository::class),
         ];
     }
 
@@ -77,7 +77,7 @@ class PostWithMorphOneRepository extends Repository
         return [
             field('title'),
 
-            MorphOne::make('user',  UserRepository::class),
+            MorphOne::make('user', UserRepository::class),
         ];
     }
 }

@@ -28,7 +28,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             'name' => CustomSearchableFilter::make(),
         ];
 
-        $this->getJson(UserRepository::route(query: ['search' => 'John',]))->assertJsonCount(4, 'data');
+        $this->getJson(UserRepository::route(query: ['search' => 'John']))->assertJsonCount(4, 'data');
     }
 
     public function test_can_search_incase_sensitive(): void
@@ -47,7 +47,7 @@ class RepositorySearchServiceTest extends IntegrationTest
             'name',
         ];
 
-        $this->getJson(UserRepository::route(query: ['search' => 'John',]))->assertJsonCount(4, 'data');
+        $this->getJson(UserRepository::route(query: ['search' => 'John']))->assertJsonCount(4, 'data');
     }
 
     public function test_can_search_using_belongs_to_field(): void
@@ -69,7 +69,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         PostRepository::$related = [
-            'user' => BelongsTo::make('user',  UserRepository::class)->searchable([
+            'user' => BelongsTo::make('user', UserRepository::class)->searchable([
                 'users.name',
             ]),
         ];

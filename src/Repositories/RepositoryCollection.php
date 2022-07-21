@@ -9,7 +9,7 @@ class RepositoryCollection
     /**
      * Get the pagination links for the response.
      *
-     * @param array $paginated
+     * @param  array  $paginated
      * @return array
      */
     public static function paginationLinks($paginated)
@@ -29,7 +29,7 @@ class RepositoryCollection
     /**
      * Gather the meta data for the response.
      *
-     * @param array $paginated
+     * @param  array  $paginated
      * @return array
      */
     public static function meta($paginated)

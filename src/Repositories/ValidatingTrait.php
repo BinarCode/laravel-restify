@@ -75,6 +75,7 @@ trait ValidatingTrait
 
     /**
      * Validate a resource update request.
+     *
      * @param  RestifyRequest  $request
      * @param  null  $resource
      */

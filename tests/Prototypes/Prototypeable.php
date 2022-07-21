@@ -54,7 +54,6 @@ abstract class Prototypeable implements JsonSerializable
             ->singular()
             ->__toString();
 
-
         if (class_exists($guessedClass = "Binaryk\\LaravelRestify\\Tests\Fixtures\\{$model}\\{$model}")) {
             return $guessedClass;
         }

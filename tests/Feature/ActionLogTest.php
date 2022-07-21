@@ -105,7 +105,8 @@ class ActionLogTest extends IntegrationTest
 
         $user = User::factory()->create();
 
-        $action = new class () extends Action {
+        $action = new class() extends Action
+        {
             public static $uriKey = 'test action';
         };
 

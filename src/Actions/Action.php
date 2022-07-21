@@ -23,8 +23,8 @@ use ReturnTypeWillChange;
 
 /**
  * Class Action
+ *
  * @method JsonResponse handle(Request $request, ?Model|Collection $models = null, ?int $row = null)
- * @package Binaryk\LaravelRestify\Actions
  */
 abstract class Action implements JsonSerializable
 {
@@ -56,6 +56,7 @@ abstract class Action implements JsonSerializable
 
     /**
      * Default uri key for the action.
+     *
      * @var string
      */
     public static $uriKey;
@@ -116,6 +117,7 @@ abstract class Action implements JsonSerializable
      * Get the payload available on the action.
      *
      * @return array
+     *
      * @deprecated Use rules instead
      */
     public function payload(): array
@@ -175,7 +177,7 @@ abstract class Action implements JsonSerializable
                 Transaction::run(function () use ($models, $request, &$response) {
                     $response = $this->handle($request, $models);
 
-                    $models->each(function (Model $model) use ($request) {
+                    $models->each(function (Model $model) {
 //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
 //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
 //                        }
