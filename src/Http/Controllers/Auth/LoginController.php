@@ -18,7 +18,6 @@ class LoginController extends Controller
         ]);
 
         /** * @var User $user */
-
         if (! $user = config('restify.auth.user_model')::query()
             ->whereEmail($request->input('email'))
             ->first()) {

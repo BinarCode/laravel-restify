@@ -20,7 +20,6 @@ class ResetPasswordController extends Controller
         ]);
 
         /** * @var User $user */
-
         $user = config('config.auth.user_model')::query()->where($request->only('email'))->firstOrFail();
 
         if (! Password::getRepository()->exists($user, $request->input('token'))) {

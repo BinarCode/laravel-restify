@@ -79,6 +79,7 @@ class Restify
      *
      * @param  string  $key
      * @throw RepositoryNotFoundException
+     *
      * @return Repository
      */
     public static function repository(string $key): Repository
@@ -149,6 +150,7 @@ class Restify
      *
      * @param  string  $directory
      * @return void
+     *
      * @throws ReflectionException
      */
     public static function repositoriesFrom(string $directory): void

@@ -68,6 +68,7 @@ class Repository implements RestifySearchable, JsonSerializable
      * The list of relations available for the show or index.
      *
      * e.g. ?related=users
+     *
      * @var array
      */
     public static array $related;
@@ -579,6 +580,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
         /** *
          * Apply search, match, sort, related.
+         *
          * @var LengthAwarePaginator $paginator
          */
         $paginator = RepositorySearchService::make()->search($request, $this)
@@ -589,7 +591,6 @@ class Repository implements RestifySearchable, JsonSerializable
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
         })->values();
-
 
         $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
 
@@ -864,7 +865,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function destroy(RestifyRequest $request, $repositoryId)
     {
-        $status = DB::transaction(function () use ($request) {
+        $status = DB::transaction(function () {
             return $this->resource->delete();
         });
 
@@ -963,6 +964,7 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * @param $request
      * @return $this
+     *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function allowToShow($request): self
@@ -1139,6 +1141,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public static function serializer(): Serializer
     {
-        return (new Serializer(app(static::class)));
+        return new Serializer(app(static::class));
     }
 }

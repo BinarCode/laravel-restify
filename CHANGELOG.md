@@ -2,6 +2,13 @@
 
 All notable changes to `laravel-restify` will be documented in this file
 
+## [7.0.0] 2022-07-20
+- Nested relationship with custom columns (ie: `api/restify/company/include=users.posts[id, name].comments[title]`)
+- Restify will do not expose data without a defined policy for the resource
+- Performance improvements
+- 
+
+
 ## [5.0.0] 2021-05-23
 - Repositories CRUD + Bulk
 - Actions

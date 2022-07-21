@@ -30,6 +30,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Column name of the field.
+     *
      * @var string|callable|null
      */
     public $attribute;
@@ -43,6 +44,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * In case of the update, this will keep the previous value.
+     *
      * @var
      */
     public $valueBeforeUpdate;
@@ -61,18 +63,21 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Callback called when the value is filled, this callback will do not override the fill action.
+     *
      * @var Closure
      */
     public $storeCallback;
 
     /**
      * Callback called when the value is filled from a store bulk, this callback will do not override the fill action.
+     *
      * @var Closure
      */
     public $storeBulkCallback;
 
     /**
      * Callback called when update.
+     *
      * @var Closure
      */
     public $updateCallback;
@@ -335,6 +340,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Validation rules for store.
+     *
      * @param $rules
      * @return Field
      */
@@ -385,6 +391,7 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Validation rules for store.
+     *
      * @param $rules
      * @return Field
      */
@@ -677,6 +684,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * @param $value
      * @return $this
+     *
      * @deprecated
      */
     public function append($value)

@@ -27,7 +27,7 @@ class HasMany extends EagerField
     }
 
     /**
-     * @param Repository $repository
+     * @param  Repository  $repository
      * @param  null  $attribute
      * @return $this|EagerField|HasMany
      */

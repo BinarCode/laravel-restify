@@ -20,9 +20,10 @@
     "require": {
         "php": "^8.0",
         "illuminate/contracts": "^9.0",
+        "laravel/pint": "^1.0",
         "spatie/data-transfer-object": "^3.1",
-        "spatie/once": "^3.0",
-        "spatie/laravel-package-tools": "^1.12"
+        "spatie/laravel-package-tools": "^1.12",
+        "spatie/once": "^3.0"
     },
     "require-dev": {
         "brianium/paratest": "^6.2",
@@ -51,6 +52,7 @@
         }
     },
     "scripts": {
+        "format": "vendor/bin/pint",
         "psalm": "./vendor/bin/psalm --no-cache",
         "analyse": "vendor/bin/phpstan analyse",
         "test": "./vendor/bin/testbench package:test --parallel --no-coverage",

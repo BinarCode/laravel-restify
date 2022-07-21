@@ -27,8 +27,9 @@ class GetterCommand extends GeneratorCommand
      * Build the class with the given name.
      * This method should return the file class content.
      *
-     * @param string $name
+     * @param  string  $name
      * @return string
+     *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     protected function buildClass($name)

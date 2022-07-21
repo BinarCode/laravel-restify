@@ -29,6 +29,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      * Register the application's Rest resources.
      *
      * @return void
+     *
      * @throws ReflectionException
      */
     protected function repositories(): void

@@ -9,8 +9,8 @@ use Illuminate\Support\Str;
 
 /**
  * Trait InteractsWithModel
+ *
  * @mixin Repository
- * @package Binaryk\LaravelRestify\Repositories\Concerns
  */
 trait InteractsWithModel
 {

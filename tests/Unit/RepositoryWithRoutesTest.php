@@ -30,7 +30,6 @@ class RepositoryWithRoutesTest extends IntegrationTest
                 'success' => true,
             ]);
 
-
         $this->getJson(route('main.testing.route'))
             ->assertOk()
             ->assertJson([
