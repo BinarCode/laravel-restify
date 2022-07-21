@@ -31,7 +31,7 @@ trait InteractWithSearch
 
     public static function withs(): array
     {
-        return static::$withs ?? [];
+        return static::$with ?? [];
     }
 
     public static function related(): array

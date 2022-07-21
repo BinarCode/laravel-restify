@@ -159,6 +159,10 @@ class Restify
 
         $repositories = [];
 
+        if (! is_dir($directory)) {
+            return;
+        }
+
         foreach ((new Finder())->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
                 ['/', '.php'],

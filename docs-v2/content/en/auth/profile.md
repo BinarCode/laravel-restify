@@ -7,7 +7,7 @@ position: 1
 
 ## Sanctum middleware
 
-To ensure you can get your profile, you should add the `Authenticate` middleware to the restify config:
+To ensure you can get your profile, you should add the `auth:sanctum` middleware to the restify middleware config:
 
 ```php
 // config/restify.php
