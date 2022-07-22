@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 
 class SetupCommand extends Command
@@ -31,6 +32,11 @@ class SetupCommand extends Command
         $this->comment('Generating User Repository...');
         $this->callSilent('restify:repository', ['name' => 'User']);
         copy(__DIR__.'/stubs/user-repository.stub', app_path('Restify/UserRepository.php'));
+
+        if (! file_exists(app_path('Policies/UserPolicy.php'))) {
+            app(Filesystem::class)->ensureDirectoryExists(app_path('Policies'));
+            copy(__DIR__.'/stubs/user-policy.stub', app_path('Policies/UserPolicy.php'));
+        }
 
         $this->setAppNamespace();
 

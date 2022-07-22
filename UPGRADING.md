@@ -5,11 +5,11 @@
 High impact:
 
 - Any action permitted unless the Model Policy exists and the method is defined
-- PHP8.1 is required
+- PHP8.0 is required
 - Laravel 9 is required
 - Repository.php:
     - static `to` method renamed to `route`
-    - `related` static method deleted, replace with `include`
+    - `$withs` class property was renamed to `$with` so it matches the Eloquent default
 - Relations that are present into `include` or `related` will be preloaded, so if you didn't specify a repository to serialize the related relationship, and you're looking for the Eloquent to resolve it, it will do not invoke the `restify.casts.related` cast anymore, instead it'll load the relationship as it. This has a performance reason under the hood. 
 - Since related relationships will be preloaded, the format of the belongs to will be changed now. If you didn't specify the repository to serialize the `belongsTo` relationship, it'll be serialized as an object, not array anymore:
 

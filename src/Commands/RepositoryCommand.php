@@ -66,12 +66,14 @@ class RepositoryCommand extends GeneratorCommand
             $name .= 'Repository';
         }
 
-        return $this->replaceModel(parent::buildClass($name), $this->guessQualifiedModelName());
+        return $this->replaceModel(parent::buildClass($name), $this->guessBaseModelClass());
     }
 
     protected function replaceModel($stub, $class)
     {
-        return str_replace(['DummyClass', '{{ model }}', '{{model}}'], $class, $stub);
+        $model = str_replace(['DummyClass', '{{ modelBase }}', '{{modelBase}}'], "$class::class", $stub);
+
+        return  str_replace(['DummyClass', '{{ model }}', '{{model}}'], str($this->guessQualifiedModelName())->replace('\\\\', '\\').';', $model);
     }
 
     protected function guessBaseModelClass()

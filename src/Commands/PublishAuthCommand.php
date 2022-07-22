@@ -128,27 +128,18 @@ class PublishAuthCommand extends Command
      */
     protected function registerRoutes(): self
     {
-        $pathProvider = '../routes/api.php';
+        $apiPath = base_path('routes/api.php');
+        $initial = file_get_contents($apiPath);
+
+        $initial = str($initial)->replace('Route::restifyAuth();', '')->toString();
+
+        $file = fopen($apiPath, 'w');
+
         $routeStub = __DIR__.'/stubs/Routes/routes.stub';
 
-        file_put_contents(app_path($pathProvider), str_replace(
-            "use Illuminate\Support\Facades\Route;".PHP_EOL,
-            "use App\Http\Controllers\Restify\Auth\RegisterController;".PHP_EOL.
-            "use App\Http\Controllers\Restify\Auth\ForgotPasswordController;".PHP_EOL.
-            "use App\Http\Controllers\Restify\Auth\LoginController;".PHP_EOL.
-            "use App\Http\Controllers\Restify\Auth\ResetPasswordController;".PHP_EOL.
-            "use Illuminate\Support\Facades\Route;".PHP_EOL.
-            "use App\Http\Controllers\Restify\Auth\VerifyController;".PHP_EOL,
-            file_get_contents(app_path($pathProvider))
-        ));
+        fwrite($file, $initial."\n".file_get_contents($routeStub));
 
-        file_put_contents(app_path($pathProvider), str_replace(
-            'Route::middleware(\'auth:api\')->get(\'/user\', function (Request $request) {
-    return $request->user();
-});',
-            file_get_contents($routeStub),
-            file_get_contents(app_path($pathProvider))
-        ));
+        fclose($file);
 
         return $this;
     }
