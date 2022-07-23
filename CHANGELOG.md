@@ -7,6 +7,22 @@ All notable changes to `laravel-restify` will be documented in this file
 - Restify will do not expose data without a defined policy for the resource
 - Performance improvements
 - Hidden meta by default
+- You don't have to specify the key and the repository that serializes related entities:
+```php
+// before
+// related(): array
+return [
+    'posts' => HasMany::make('posts', PostRepository::class),
+];
+```
+
+```php
+// after
+// related(): array
+return [
+    HasMany::make('posts'),
+];
+```
 
 
 ## [5.0.0] 2021-05-23

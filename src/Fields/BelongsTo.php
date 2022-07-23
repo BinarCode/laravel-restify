@@ -17,18 +17,6 @@ class BelongsTo extends EagerField implements Sortable
 
     public ?array $searchablesAttributes = null;
 
-    public function __construct($relation, $parentRepository)
-    {
-        if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
-        }
-
-        parent::__construct(attribute: $relation);
-
-        $this->relation = $relation;
-        $this->repositoryClass = $parentRepository;
-    }
-
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
         /** * @var Model $relatedModel */
