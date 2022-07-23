@@ -41,10 +41,10 @@ class EagerField extends Field
 
         if (is_null($parentRepository)) {
             $this->repositoryClass = tap(Restify::repositoryClassForKey($attribute),
-                fn($repository) => abort_unless($repository, 400, "Repository not found for the key [$attribute]."));
+                fn ($repository) => abort_unless($repository, 400, "Repository not found for the key [$attribute]."));
         }
 
-        if (!isset($this->repositoryClass)) {
+        if (! isset($this->repositoryClass)) {
             abort(400, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
         }
     }

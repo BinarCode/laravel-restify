@@ -85,7 +85,7 @@ class RepositorySearchService
         $eager = ($this->repository)::collectRelated()
             ->forRequest($request, $this->repository)
             ->map(
-                fn($relation) => $relation instanceof EagerField
+                fn ($relation) => $relation instanceof EagerField
                     ? $relation->relation
                     : $relation
             )
@@ -97,8 +97,8 @@ class RepositorySearchService
             return $query;
         }
 
-        $filtered = collect($request->related()->makeTree())->filter(fn(string $relationships) => in_array(
-            str($relationships)->whenContains('.', fn(Stringable $string) => $string->before('.'))->toString(),
+        $filtered = collect($request->related()->makeTree())->filter(fn (string $relationships) => in_array(
+            str($relationships)->whenContains('.', fn (Stringable $string) => $string->before('.'))->toString(),
             $eager,
             true,
         ))->filter(function ($relation) use ($query) {
@@ -156,7 +156,7 @@ class RepositorySearchService
                     ->map(function (BelongsTo $field) {
                         return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
                     })
-                    ->each(fn(SearchableFilter $filter) => $filter->filter($request, $query, $search));
+                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
             }
         });
 
@@ -166,14 +166,14 @@ class RepositorySearchService
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
         if ($request->isIndexRequest() || $request->isGlobalRequest()) {
-            return fn($query) => $repository::indexQuery($request, $query);
+            return fn ($query) => $repository::indexQuery($request, $query);
         }
 
         if ($request->isShowRequest()) {
-            return fn($query) => $repository::showQuery($request, $query);
+            return fn ($query) => $repository::showQuery($request, $query);
         }
 
-        return fn($query) => $query;
+        return fn ($query) => $query;
     }
 
     public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
@@ -196,7 +196,7 @@ class RepositorySearchService
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository): callable
     {
-        return fn($query) => $repository::mainQuery($request, $query->with($repository::withs()));
+        return fn ($query) => $repository::mainQuery($request, $query->with($repository::withs()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)

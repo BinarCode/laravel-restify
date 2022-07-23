@@ -75,7 +75,7 @@ class PublishAuthCommand extends Command
      */
     public function checkDirectory(string $path): self
     {
-        if (!is_dir($directory = app_path($path))) {
+        if (! is_dir($directory = app_path($path))) {
             mkdir($directory, 0755, true);
         }
 
@@ -131,17 +131,15 @@ class PublishAuthCommand extends Command
         $apiPath = base_path('routes/api.php');
         $initial = file_get_contents($apiPath);
 
-        $initial = str($initial)->replace("Route::restifyAuth();", "")->toString();
+        $initial = str($initial)->replace('Route::restifyAuth();', '')->toString();
 
-        $file = fopen($apiPath, "w");
+        $file = fopen($apiPath, 'w');
 
         $routeStub = __DIR__.'/stubs/Routes/routes.stub';
 
         fwrite($file, $initial."\n".file_get_contents($routeStub));
 
         fclose($file);
-
-
 
         return $this;
     }

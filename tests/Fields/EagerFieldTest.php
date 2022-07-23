@@ -17,7 +17,7 @@ class EagerFieldTest extends IntegrationTest
 
     public function test_guess_repository_fails_when_key_not_found(): void
     {
-        $this->expectExceptionMessage("Repository not found for the key [usersss].");
+        $this->expectExceptionMessage('Repository not found for the key [usersss].');
 
         EagerField::make('usersss');
     }
