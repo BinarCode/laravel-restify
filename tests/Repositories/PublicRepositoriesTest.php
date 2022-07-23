@@ -16,7 +16,7 @@ class PublicRepositoriesTest extends IntegrationTest
         config()->set('restify.middleware', [
             'auth:sanctum' => function ($request, $next) {
                 abort(403);
-            }
+            },
         ]);
     }
 
