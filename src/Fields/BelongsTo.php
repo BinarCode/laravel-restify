@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Fields\Concerns\CanSort;
 use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
