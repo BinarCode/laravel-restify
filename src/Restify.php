@@ -66,9 +66,9 @@ class Restify
     {
         return collect(static::$repositories)->first(function ($value) use ($prefix) {
             /** * @var Repository $value */
-            return str($prefix)->whenStartsWith('/', fn($string) => $string->replaceFirst('/', ''))->contains(
+            return str($prefix)->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', ''))->contains(
                     $value::route()
-                        ->whenStartsWith('/', fn($string) => $string->replaceFirst('/', '')),
+                        ->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', '')),
                 );
         });
     }
@@ -158,7 +158,7 @@ class Restify
 
         $repositories = [];
 
-        if (!is_dir($directory)) {
+        if (! is_dir($directory)) {
             return;
         }
 
@@ -190,7 +190,7 @@ class Restify
      */
     public static function path($plus = null, array $query = [])
     {
-        if (!is_null($plus)) {
+        if (! is_null($plus)) {
             return empty($query)
                 ? config('restify.base', '/restify-api').'/'.$plus
                 : config('restify.base', '/restify-api').'/'.$plus.'?'.http_build_query($query);
@@ -235,8 +235,8 @@ class Restify
     public static function globallySearchableRepositories(RestifyRequest $request): array
     {
         return collect(static::$repositories)
-            ->filter(fn($repository) => $repository::authorizedToUseRepository($request))
-            ->filter(fn($repository) => $repository::$globallySearchable)
+            ->filter(fn ($repository) => $repository::authorizedToUseRepository($request))
+            ->filter(fn ($repository) => $repository::$globallySearchable)
             ->sortBy(static::sortResourcesWith())
             ->all();
     }
@@ -281,8 +281,8 @@ class Restify
             $request->is(trim($path.'/*', '/')) ||
             $request->is('restify-api/*') ||
             collect(static::$repositories)
-                ->filter(fn($repository) => $repository::prefix())
-                ->some(fn($repository) => $request->is($repository::prefix().'/*'));
+                ->filter(fn ($repository) => $repository::prefix())
+                ->some(fn ($repository) => $request->is($repository::prefix().'/*'));
     }
 
     /**
