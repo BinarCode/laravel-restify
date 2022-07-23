@@ -45,9 +45,9 @@ class BelongsTo extends EagerField implements Sortable
         );
     }
 
-    public function searchable(array $attributes): self
+    public function searchable(...$attributes): self
     {
-        $this->searchablesAttributes = $attributes;
+        $this->searchablesAttributes = collect($attributes)->flatten()->all();
 
         return $this;
     }

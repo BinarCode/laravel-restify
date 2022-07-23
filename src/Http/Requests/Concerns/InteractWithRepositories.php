@@ -60,7 +60,7 @@ trait InteractWithRepositories
 
             return $repository;
         } catch (RepositoryException $e) {
-            abort($e->getCode(), $e->getMessage());
+            abort($e->getCode() ?: 400, $e->getMessage());
         }
     }
 

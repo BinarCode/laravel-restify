@@ -30,6 +30,9 @@
         "doctrine/dbal": "^3.0",
         "nunomaduro/collision": "^6.0",
         "orchestra/testbench": "^7.0",
+        "pestphp/pest-plugin-laravel": "^1.2",
+        "pestphp/pest-plugin-parallel": "1.x-dev",
+        "pestphp/pest-plugin-watch": "1.x-dev",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
@@ -56,12 +59,14 @@
         "psalm": "./vendor/bin/psalm --no-cache",
         "analyse": "vendor/bin/phpstan analyse",
         "test": "./vendor/bin/testbench package:test --parallel --no-coverage",
+        "pest": "./vendor/bin/pest --parallel",
         "test-coverage": "./vendor/bin/phpunit --coverage-html coverage"
     },
     "config": {
         "sort-packages": true,
         "allow-plugins": true
     },
+    "minimum-stability": "dev",
     "extra": {
         "laravel": {
             "providers": [
