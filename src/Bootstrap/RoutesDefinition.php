@@ -11,6 +11,8 @@ use Illuminate\Support\Facades\Route;
 
 class RoutesDefinition
 {
+    private array $excludedMiddleware = [];
+
     public function __invoke(string $uriKey = null)
     {
         $prefix = $uriKey ?: '{repository}';
@@ -51,25 +53,25 @@ class RoutesDefinition
         Route::get(
             $prefix.'/getters',
             \Binaryk\LaravelRestify\Http\Controllers\ListGettersController::class
-        )->name('restify.getters.index');
+        )->name('restify.getters.index')->withoutMiddleware($this->excludedMiddleware);
         Route::get(
             $prefix.'/{repositoryId}/getters',
             \Binaryk\LaravelRestify\Http\Controllers\ListRepositoryGettersController::class
-        )->name('restify.getters.repository.index');
+        )->name('restify.getters.repository.index')->withoutMiddleware($this->excludedMiddleware);
         Route::get(
             $prefix.'/getters/{getter}',
             \Binaryk\LaravelRestify\Http\Controllers\PerformGetterController::class
-        )->name('restify.getters.perform');
+        )->name('restify.getters.perform')->withoutMiddleware($this->excludedMiddleware);
         Route::get(
             $prefix.'/{repositoryId}/getters/{getter}',
             \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryGetterController::class
-        )->name('restify.getters.repository.perform');
+        )->name('restify.getters.repository.perform')->withoutMiddleware($this->excludedMiddleware);
 
         // API CRUD
         Route::get(
             $prefix.'',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class
-        )->name('index');
+        )->name('index')->withoutMiddleware('auth:sanctum');
         Route::post(
             $prefix.'',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class
@@ -89,7 +91,7 @@ class RoutesDefinition
         Route::get(
             $prefix.'/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class
-        )->name('restify.show');
+        )->name('restify.show')->withoutMiddleware($this->excludedMiddleware);
         Route::patch(
             $prefix.'/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryPatchController::class
@@ -166,5 +168,12 @@ class RoutesDefinition
         Route::get('/restifyjs/setup', RestifyJsSetupController::class)->withoutMiddleware(
             RestifySanctumAuthenticate::class,
         );
+    }
+
+    public function withoutMiddleware(...$middleware): self
+    {
+        $this->excludedMiddleware = $middleware;
+
+        return $this;
     }
 }

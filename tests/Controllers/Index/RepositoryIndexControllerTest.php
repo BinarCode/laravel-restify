@@ -185,6 +185,8 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ->shouldReceive('include')
             ->andReturn([
                 'users' => HasMany::make('users', UserRepository::class),
+                'extraData' => fn () => ['country' => 'Romania'],
+                'extraMeta' => new InvokableExtraMeta,
             ]);
 
         UserRepository::partialMock()
@@ -204,7 +206,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         )->create();
 
         $this->withoutExceptionHandling()->getJson(CompanyRepository::route(null, [
-            'related' => 'users.companies.users, users.posts, users.roles',
+            'related' => 'users.companies.users, users.posts, users.roles, extraData, extraMeta',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
                 ->where('data.0.type', 'companies')
@@ -215,6 +217,8 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 ->where('data.0.relationships.users.0.relationships.posts.0.type', 'posts')
                 ->where('data.0.relationships.users.0.relationships.roles.0.type', 'roles')
                 ->where('data.0.relationships.users.0.relationships.companies.0.type', 'companies')
+                ->where('data.0.relationships.extraData', ['country' => 'Romania'])
+                ->where('data.0.relationships.extraMeta', ['userCount' => 10])
                 ->etc()
         );
     }
@@ -306,5 +310,15 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->assertEquals('Custom Meta Value', $response->json('meta.postKey'));
         $this->assertEquals('Post Title', $response->json('meta.first_title'));
+    }
+}
+
+class InvokableExtraMeta
+{
+    public function __invoke()
+    {
+        return [
+            'userCount' => 10,
+        ];
     }
 }

@@ -164,7 +164,12 @@ abstract class IntegrationTest extends TestCase
 
     protected function logout(): self
     {
-        $this->actingAs(null);
+        if ($this->authenticatedAs instanceof Mockery\MockInterface) {
+            $this->authenticatedAs->shouldReceive('getRememberToken')->andReturnNull();
+        }
+
+        $this->app['auth']->guard()->logout();
+        $this->authenticatedAs = null;
 
         return $this;
     }

@@ -33,6 +33,101 @@ Say we have a User that has a list of posts, we will define it this way:
 ```php
 HasMany::make('posts', PostRepository::class),
 ```
+or: 
+```php
+HasMany::make('posts'),
+```
+
+<alert type="info">
+Restify 7+ will guess the serialization repository using the key, so you don't necessarily have to specify it:
+
+</alert>
+
+### Related Declaration
+
+Let's see how can we inform a repository about its relationships:
+
+```php
+// CompanyRepository
+public static function related(): array
+{
+    return [
+        'usersRelationship' => HasMany::make('users', UserRepository::class),
+        
+        HasMany::make('posts'),
+        
+        'extraData' => fn() => ['location' => 'Romania'],
+        
+        'extraMeta' => new Invokable()
+        
+        'country',
+    ];
+}
+```
+
+Above we can see few types of relationship declaration Restify provides. Let's explain them. 
+
+#### Long definition
+
+```php
+'usersRelationship' => HasMany::make('users', UserRepository::class),
+```
+
+This means that there is a relationship of type `hasMany` declared in the Company model. The Eloquent relationship name is `users` (see the first argument of the HasMany field): 
+
+```php
+// app/Models/Company.php
+public function users(): \Illuminate\Database\Eloquent\Relations\HasMany
+{
+    return $this->hasMany(User::class);
+}
+```
+
+The key `usersRelationship` represents the query param the API exposes to load the list of users: 
+
+```http request
+GET: api/companies?related=usersRelationship
+```
+
+The `UserRepository` represents the repository class that serializes the users list.
+
+#### Short definition
+
+```php
+HasMany::make('posts'),
+```
+
+Usually the key (query param) and the actual Eloquent relationship names are the same, so Restify provides a shorter version of defining the relationship.
+
+In this case the name of the query param will be the same as the relationship name - `posts`. The name of the repository `PostRepository` will be resolved based on the same key and $uriKey of the repository. 
+
+The request will look like this: 
+
+```http request
+GET: api/companies?related=posts
+```
+
+#### Callables
+
+```php
+'extraData' => fn() => ['location' => 'Romania'],
+
+'extraMeta' => new Invokable()
+```
+Restify allow you to resolve specific data using callable functions or invokable (classes with a single public __invoke method). You can return any kind of data from these callables, it'll be serialized accordingly. The query param in this case should match the key:
+
+```http request
+GET: api/companies?related=extraData,extraMeta
+```
+
+#### Forwarding
+
+```php
+'country',
+```
+
+If you simply define a key in the `related`, Restify will forward your request to the associated model. Your model could return anything, it might be an Eloquent relationship or any primary data.
+
 
 Let's take a look over all relationships Restify provides:
 
@@ -57,10 +152,11 @@ GET /users/1?include=posts[title|description]
 Let's assume you have the `CompanyRepository`: 
 
 ```php
+// CompanyRepository
 public static function related(): array
 {
     return [
-        'users' => HasMany::make('users', UserRepository::class),
+        HasMany::make('users),
     ];
 }
 ```
@@ -68,11 +164,24 @@ public static function related(): array
 In the UserRepository you have a relationship to a list of user posts and roles:
 
 ```php
+// UserRepository
 public static function related(): array
 {
     return [
-        'posts' => HasMany::make('posts', PostRepository::class),
-        'roles' => MorphToMany::make('roles', RoleRepository::class),
+        HasMany::make('posts'),
+        MorphToMany::make('roles'),
+    ];
+}
+```
+
+And in `PostRepository` you might have a list of comments for each post: 
+
+```php
+// PostRepository
+public static function related(): array
+{
+    return [
+        HasMany::make('comments'),
     ];
 }
 ```
@@ -100,24 +209,12 @@ This request will return a list like this:
         "attributes": {
           "name": "Eduard"
         },
-        "meta": {
-          "authorizedToShow": true,
-          "authorizedToStore": true,
-          "authorizedToUpdate": false,
-          "authorizedToDelete": false
-        },
         "relationships": {
           "posts": [{
             "id": "1",
             "type": "posts",
             "attributes": {
               "title": "Post title"
-            },
-            "meta": {
-              "authorizedToShow": true,
-              "authorizedToStore": true,
-              "authorizedToUpdate": false,
-              "authorizedToDelete": false
             }
           }],
           "roles": [{
@@ -125,27 +222,35 @@ This request will return a list like this:
             "type": "roles",
             "attributes": {
               "name": "admin"
-            },
-            "meta": {
-              "authorizedToShow": true,
-              "authorizedToStore": true,
-              "authorizedToUpdate": false,
-              "authorizedToDelete": false
             }
           }]
         }
       }]
-    },
-    "meta": {
-      "authorizedToShow": true,
-      "authorizedToStore": true,
-      "authorizedToUpdate": true,
-      "authorizedToDelete": true
     }
   }
 }
 ```
 
+You can also specify load the `comments` of the `posts`: 
+
+```http request
+GET: /api/restify/companies?include=users.posts.comments,users.roles
+```
+
+Or specify exact columns you want to load for each nested layer: 
+
+```http request
+GET: /api/restify/companies?include=users[name].posts[id|title].comments[comment],users.roles[name]
+```
+
+<alert type="info">
+Getting specific columns will make your requests more performant.
+
+</alert>
+
+### Meta information
+
+Starting with Restify 7+ meta information for related (in index requests) will do not be displayed. For more details read the [repository meta](/api/repositories#index-item-meta).
 
 ## BelongsTo & MorphOne
 
@@ -217,14 +322,19 @@ GET: api/restify/posts/1?include=owner
 
 ### Searchable belongs to
 
-The `BelongsTo` field allows you to use the search endpoint to [search over a column](/search/basic-filters#repository-search) from the `belongsTo` relationship by simply using the `searchables`: 
+The `BelongsTo` field allows you to use the search endpoint to [search over a column](/search/basic-filters#repository-search) from the `belongsTo` relationship by simply using the `searchables` call: 
 
 ```php
-BelongsTo::make('user', UserRepository::class)->searchable(['name'])
+BelongsTo::make('user')->searchable('name')
 ```
 
-The `searchable` method accepts an array of database columns from the related entity (`users` in our case).
+The `searchable` method accepts a list of database attributes from the related entity (`users` in our case).
 
+So if we get the following search request, it'll also search into the related user's name: 
+
+```http request
+GET: api/restify/companies?related=user&search="John"
+```
 
 ## HasOne
 
@@ -237,7 +347,7 @@ For example, let's assume a `User` model `hasOne` `Phone` model. We may add the 
 public static function related(): array
 {
   return [
-      \Binaryk\LaravelRestify\Fields\HasOne::new('phone', PhoneRepository::class),
+      \Binaryk\LaravelRestify\Fields\HasOne::make('phone', PhoneRepository::class),
   ];
 }
 ```
@@ -279,7 +389,7 @@ model `hasMany` `Post` models. We may add the relationship to our `UserRepositor
 public static function related(): array
 {
   return [
-      \Binaryk\LaravelRestify\Fields\HasMany::new('posts', PostRepository::class),
+      \Binaryk\LaravelRestify\Fields\HasMany::make('posts', PostRepository::class),
   ];
 }
 ```
@@ -328,13 +438,17 @@ So you will get back the `posts` relationship:
 repository being in this case the class of the related resource) class using:
 
 ```php
-public static $defaultRelatablePerPage = 100;
+public static int $defaultRelatablePerPage = 100;
 ```
 
 
 ### Relatable per page
 
 You can also use the query `?relatablePerPage=100`.
+
+```http request
+GET: api/restify/users?related=posts&relatablePerPage=100
+```
 
 <alert type="warning"> 
 
@@ -352,7 +466,7 @@ model `belongsToMany` Role models. We may add the relationship to our UserReposi
 public static function related(): array
 {
   return [
-      \Binaryk\LaravelRestify\Fields\BelongsToMany::new('users', UserRepository::class),
+      \Binaryk\LaravelRestify\Fields\BelongsToMany::make('users', UserRepository::class),
   ];
 }
 ```
@@ -369,8 +483,8 @@ imagine we have a `policy` field that contains some simple text about the relati
 to the `BelongsToMany` field using the fields method:
 
 ```php
-BelongsToMany::new('users', RoleRepository::class)->withPivot(
-    Field::new('is_admin')
+BelongsToMany::make('users', RoleRepository::class)->withPivot(
+    field('is_admin')
 ),
 ```
 

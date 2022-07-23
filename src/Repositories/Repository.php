@@ -156,6 +156,13 @@ class Repository implements RestifySearchable, JsonSerializable
     public static array $detachers = [];
 
     /**
+     * Specify whether the repository could be accessed public.
+     *
+     * @var bool|array
+     */
+    public static bool|array $public = false;
+
+    /**
      * Indicates if the repository is serializing for a eager relationship.
      *
      * @var bool
@@ -1142,5 +1149,10 @@ class Repository implements RestifySearchable, JsonSerializable
     public static function serializer(): Serializer
     {
         return new Serializer(app(static::class));
+    }
+
+    public static function isPublic(): bool
+    {
+        return static::$public;
     }
 }

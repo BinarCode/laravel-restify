@@ -69,9 +69,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         PostRepository::$related = [
-            'user' => BelongsTo::make('user', UserRepository::class)->searchable([
-                'users.name',
-            ]),
+            BelongsTo::make('user', UserRepository::class)->searchable('name'),
         ];
 
         $this->getJson(PostRepository::route(query: ['search' => 'John']))

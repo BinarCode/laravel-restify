@@ -14,6 +14,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Stringable;
+use Throwable;
 
 class RepositorySearchService
 {
@@ -35,9 +36,9 @@ class RepositorySearchService
             $repository::usesScout()
                 ? $this->prepareRelations($request, $scoutQuery ?? $repository::query($request))
                 : $this->prepareSearchFields(
-                    $request,
-                    $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
-                ),
+                $request,
+                $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
+            ),
         );
 
         $query = $this->applyFilters($request, $repository, $query);
@@ -85,8 +86,8 @@ class RepositorySearchService
             ->forRequest($request, $this->repository)
             ->map(
                 fn ($relation) => $relation instanceof EagerField
-                ? $relation->relation
-                : $relation
+                    ? $relation->relation
+                    : $relation
             )
             ->values()
             ->unique()
@@ -100,7 +101,13 @@ class RepositorySearchService
             str($relationships)->whenContains('.', fn (Stringable $string) => $string->before('.'))->toString(),
             $eager,
             true,
-        ))->all();
+        ))->filter(function ($relation) use ($query) {
+            try {
+                return $query->getRelation($relation) instanceof Relation;
+            } catch (Throwable) {
+                return false;
+            }
+        })->all();
 
         return $query->with(
             array_merge($filtered, ($this->repository)::withs())

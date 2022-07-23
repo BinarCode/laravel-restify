@@ -21,6 +21,7 @@ class RoutesBoot
 
         $this
             ->registerPrefixed($config)
+            ->registerPublic($config)
             ->defaultRoutes($config);
     }
 
@@ -46,6 +47,25 @@ class RoutesBoot
                 $config['prefix'] = $repository::prefix();
                 Route::group($config, function () use ($repository) {
                     app(RoutesDefinition::class)($repository::uriKey());
+                });
+            });
+
+        return $this;
+    }
+
+    public function registerPublic($config): self
+    {
+        collect(Restify::$repositories)
+            ->each(function (string $repository) use ($config) {
+                /**
+                 * @var Repository $repository
+                 */
+                if (! $repository::isPublic()) {
+                    return;
+                }
+
+                Route::group($config, function () use ($repository) {
+                    app(RoutesDefinition::class)->withoutMiddleware('auth:sanctum')($repository::uriKey());
                 });
             });
 

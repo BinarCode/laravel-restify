@@ -66,11 +66,10 @@ class Restify
     {
         return collect(static::$repositories)->first(function ($value) use ($prefix) {
             /** * @var Repository $value */
-            return
-                $value::route()
-                    ->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', ''))->is(
-                        str($prefix)->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', ''))
-                    );
+            return str($prefix)->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', ''))->contains(
+                    $value::route()
+                        ->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', '')),
+                );
         });
     }
 
@@ -165,15 +164,15 @@ class Restify
 
         foreach ((new Finder())->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
-                ['/', '.php'],
-                ['\\', ''],
-                Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
-            );
+                    ['/', '.php'],
+                    ['\\', ''],
+                    Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+                );
 
             if (is_subclass_of(
-                $repository,
-                Repository::class
-            ) && (new ReflectionClass($repository))->isInstantiable()) {
+                    $repository,
+                    Repository::class
+                ) && (new ReflectionClass($repository))->isInstantiable()) {
                 $repositories[] = $repository;
             }
         }

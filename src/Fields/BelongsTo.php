@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Fields\Concerns\CanSort;
 use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -16,18 +15,6 @@ class BelongsTo extends EagerField implements Sortable
     use CanSort;
 
     public ?array $searchablesAttributes = null;
-
-    public function __construct($relation, $parentRepository)
-    {
-        if (! is_a(app($parentRepository), Repository::class)) {
-            abort(500, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
-        }
-
-        parent::__construct(attribute: $relation);
-
-        $this->relation = $relation;
-        $this->repositoryClass = $parentRepository;
-    }
 
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
     {
@@ -57,9 +44,9 @@ class BelongsTo extends EagerField implements Sortable
         );
     }
 
-    public function searchable(array $attributes): self
+    public function searchable(...$attributes): self
     {
-        $this->searchablesAttributes = $attributes;
+        $this->searchablesAttributes = collect($attributes)->flatten()->all();
 
         return $this;
     }
