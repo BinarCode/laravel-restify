@@ -1,20 +1,36 @@
 <?php
 
+namespace Binaryk\LaravelRestify\Tests\Repositories;
+
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use function Pest\Laravel\get;
+use Binaryk\LaravelRestify\Tests\IntegrationTest;
 
-beforeEach(function() {
-    UserRepository::$public = true;
+class PublicRepositoriesTest extends IntegrationTest
+{
+    protected function setUp(): void
+    {
+        UserRepository::$public = true;
 
-    config()->set('restify.middleware', [
-        'auth:sanctum' => function ($request, $next) {
-            abort(403);
-        }
-    ]);
-});
+        parent::setUp();
 
-it('cannot access repositories publicly', function() {
-    $this->logout();
+        config()->set('restify.middleware', [
+            'auth:sanctum' => function ($request, $next) {
+                abort(403);
+            }
+        ]);
+    }
 
-    get(UserRepository::route())->assertForbidden();
-});
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        UserRepository::$public = false;
+    }
+
+    public function test_cannot_access_public_repository(): void
+    {
+        $this->logout();
+
+        $this->getJson(UserRepository::route())->assertForbidden();
+    }
+}
