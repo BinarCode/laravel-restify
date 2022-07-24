@@ -39,6 +39,16 @@ class UserPolicy
         return $_SERVER['restify.users.storeBulk'] ?? true;
     }
 
+    public function updateBulk($user)
+    {
+        return $_SERVER['restify.users.updateBulk'] ?? true;
+    }
+
+    public function deleteBulk($user)
+    {
+        return $_SERVER['restify.users.deleteBulk'] ?? true;
+    }
+
     public function update($user, $model)
     {
         return $_SERVER['restify.users.update'] ?? true;

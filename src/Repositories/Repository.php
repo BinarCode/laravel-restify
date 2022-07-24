@@ -530,6 +530,10 @@ class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveRelationships($request): array
     {
+        if (! $request->related()->hasRelated()) {
+            return [];
+        }
+
         return static::collectRelated()
             ->forRequest($request, $this)
             ->mapIntoRelated($request, $this)
@@ -726,6 +730,7 @@ class Repository implements RestifySearchable, JsonSerializable
                 });
         });
 
+        static::savedBulk($entities, $request);
         static::storedBulk($entities, $request);
 
         return data($entities);
@@ -808,14 +813,12 @@ class Repository implements RestifySearchable, JsonSerializable
             ->authorizedUpdateBulk($request)
             ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
-        static::updatedBulk($this->resource, $request);
-
-        return ok();
+        return response()->json();
     }
 
     public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)
     {
-        $status = DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request) {
             if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
                 Restify::actionLog()
                     ->forRepositoryDestroy($this->resource, $request->user())
@@ -824,8 +827,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
             return $this->resource->delete();
         });
-
-        static::deleted($status, $request);
 
         return ok(code: 204);
     }
@@ -986,7 +987,17 @@ class Repository implements RestifySearchable, JsonSerializable
         //
     }
 
-    public static function updatedBulk($model, $request)
+    public static function updatedBulk(Collection $repositories, $request)
+    {
+        //
+    }
+
+    public static function savedBulk(Collection $repositories, $request)
+    {
+        //
+    }
+
+    public static function deletedBulk(Collection $repositories, $request)
     {
         //
     }
