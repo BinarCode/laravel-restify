@@ -120,8 +120,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
         $kernel->pushMiddleware(RestifyInjector::class);
 
-        if (App::runningInConsole()) {
-            app(RoutesBoot::class)->boot();
-        }
+        app(RoutesBoot::class)->boot();
     }
 }
