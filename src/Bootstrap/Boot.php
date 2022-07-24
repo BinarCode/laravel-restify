@@ -17,8 +17,6 @@ class Boot
     {
         RestifyBeforeEach::dispatch($this->request);
 
-        ray('is restify');
-        ray(isRestify($this->request));
         if (isRestify($this->request)) {
             $this->routesBoot->boot();
         }
