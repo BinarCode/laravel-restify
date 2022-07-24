@@ -53,8 +53,8 @@ class SetupCommand extends Command
         $namespace = Str::replaceLast('\\', '', $this->laravel->getNamespace());
 
         file_put_contents(config_path('app.php'), str_replace(
-            "{$namespace}\\Providers\EventServiceProvider::class,".PHP_EOL,
-            "{$namespace}\\Providers\EventServiceProvider::class,".PHP_EOL."        {$namespace}\Providers\RestifyServiceProvider::class,".PHP_EOL,
+            "{$namespace}\\Providers\RouteServiceProvider::class,".PHP_EOL,
+            "{$namespace}\\Providers\RouteServiceProvider::class,".PHP_EOL."        {$namespace}\Providers\RestifyServiceProvider::class,".PHP_EOL,
             file_get_contents(config_path('app.php'))
         ));
     }
