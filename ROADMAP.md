@@ -18,6 +18,10 @@
 - [x] Make sure any action isn't permitted unless the Model Policy exists
 - [x] Having a helper method that allow to return data using the repository from a custom controller `PostRepository::withModels(Post::query()->take(5)->get())->include('user')->serializeForShow()`
 - [x] Serialize nested relationships
+- [x] Ability to make an endpoint public using a policy method
+- [x] Load specific fields for nested relationships
+- [x] Load nested for relationships with a nested level higher than 2
+- [x] Shorter definition of Related fields
 
 8.x 
 
@@ -32,7 +36,4 @@
 ### Features
 
 - [ ] Adding a command that lists all Restify registered routes `php artisan restify:routes`
-- [ ] Ability to make an endpoint public using a policy method
 - [ ] UI for Restify
-- [ ] Load specific fields for nested relationships
-- [ ] Load nested for relationships with a nested level higher than 2
