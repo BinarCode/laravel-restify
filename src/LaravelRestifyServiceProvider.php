@@ -62,7 +62,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
             $kernel->pushMiddleware(RestifyInjector::class);
         }
 
-        $this->app->singleton(RelatedDto::class, fn($app) => new RelatedDto());
+        $this->app->singleton(RelatedDto::class, fn ($app) => new RelatedDto());
     }
 
     public function packageRegistered(): void
