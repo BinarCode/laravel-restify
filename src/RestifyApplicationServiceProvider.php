@@ -29,6 +29,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      * Register the application's Rest resources.
      *
      * @return void
+     *
      * @throws ReflectionException
      */
     protected function repositories(): void
@@ -69,7 +70,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function gate(): void
     {
-        Gate::define('viewRestify', function ($user) {
+        Gate::define('viewRestify', function ($user = null) {
             return in_array($user->email, [
                 //
             ], true);

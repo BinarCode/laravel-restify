@@ -59,6 +59,8 @@ class PostRepository extends Repository
             field('title')->storingRules('required')->messages([
                 'required' => 'This field is required',
             ]),
+
+            field('is_active'),
         ];
     }
 

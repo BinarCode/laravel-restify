@@ -58,6 +58,7 @@ abstract class RestController extends BaseController
 
     /**
      * @return RestifyRequest
+     *
      * @throws BindingResolutionException
      */
     public function request()
@@ -73,6 +74,7 @@ abstract class RestController extends BaseController
 
     /**
      * @return Config
+     *
      * @throws BindingResolutionException
      */
     public function config()
@@ -126,8 +128,9 @@ abstract class RestController extends BaseController
     /**
      * Returns with a list of errors.
      *
-     * @param array $errors
+     * @param  array  $errors
      * @return JsonResponse
+     *
      * @throws BindingResolutionException
      */
     protected function errors(array $errors)

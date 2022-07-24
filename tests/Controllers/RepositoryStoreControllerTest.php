@@ -3,13 +3,13 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
+use Illuminate\Testing\TestResponse;
 
 class RepositoryStoreControllerTest extends IntegrationTest
 {
@@ -19,9 +19,9 @@ class RepositoryStoreControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_basic_validation_works(): void
+    public function test_store_basic_validation_works(): void
     {
-        $this->postJson('posts', [])
+        $this->postJson(PostRepository::route(), [])
             ->assertStatus(422);
     }
 
@@ -31,42 +31,53 @@ class RepositoryStoreControllerTest extends IntegrationTest
 
         Gate::policy(Post::class, PostPolicy::class);
 
-        $this->postJson('posts', [
-            'title' => 'Title',
-            'description' => 'Title',
-        ])->assertStatus(403);
+        $this
+            ->posts()
+            ->create(tap: function (TestResponse $response) {
+                $response->assertForbidden();
+            });
     }
 
     public function test_success_storing(): void
     {
-        $this->postJson('posts', $data = [
-            'user_id' => ($user = $this->mockUsers()->first())->id,
-            'title' => $title = 'Some post title',
-        ])->assertCreated()->assertHeader('Location', '/posts/1')
-            ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $title)
-                ->where('data.attributes.user_id', 1)
-                ->where('data.id', '1')
-                ->where('data.type', 'posts')
-            );
+        $_SERVER['restify.post.store'] = true;
 
-        $this->assertDatabaseHas('posts', $data);
+        $post = $this
+            ->posts()
+            ->fake()
+            ->attributes([
+                'title' => $title = 'Some post title',
+            ])
+            ->create(tap: fn (TestResponse $testResponse) => $testResponse
+                ->assertHeader('Location', PostRepository::route(1))
+                ->assertJson(
+                    fn (AssertableJson $json) => $json
+                        ->where('data.attributes.title', $title)
+                        ->where('data.attributes.user_id', 1)
+                        ->where('data.id', '1')
+                        ->where('data.type', PostRepository::uriKey()),
+                ))
+            ->model();
+
+        $this->assertModelExists($post);
     }
 
     public function test_will_store_only_defined_fields_from_fieldsForStore(): void
     {
         $user = $this->mockUsers()->first();
-        $response = $this->postJson('posts', [
-            'user_id' => $user->id,
+
+        $this->postJson(PostRepository::route(), [
+            'user_id' => $user->getKey(),
             'title' => 'Some post title',
             'description' => 'A very short description',
-        ])
-            ->assertStatus(201)
-            ->assertHeader('Location', '/posts/1');
-
-        $this->assertEquals('Some post title', $response->json('data.attributes.title'));
-        $this->assertNull($response->json('data.attributes.description'));
+        ])->assertCreated()
+            ->assertHeader('Location', PostRepository::route(1))
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->missing('data.attributes.description')
+                    ->where('data.attributes.title', 'Some post title')
+                    ->etc()
+            );
     }
 
     public function test_cannot_store_unauthorized_fields(): void
@@ -79,15 +90,15 @@ class RepositoryStoreControllerTest extends IntegrationTest
                 Field::new('description')->canStore(fn () => false),
             ]);
 
-        $this->postJson(PostRepository::to(), [
+        $this->postJson(PostRepository::route(), [
             'description' => 'Description',
             'title' => $updated = 'Title',
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $updated)
-                ->where('data.attributes.description', null)
-                ->etc()
+                    ->where('data.attributes.title', $updated)
+                    ->where('data.attributes.description', null)
+                    ->etc()
             );
     }
 
@@ -101,34 +112,15 @@ class RepositoryStoreControllerTest extends IntegrationTest
                 Field::new('description')->readonly(),
             ]);
 
-        $this->postJson(PostRepository::to(), [
+        $this->postJson(PostRepository::route(), [
             'description' => 'Description',
             'title' => $updated = 'Title',
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $updated)
-                ->where('data.attributes.description', null)
-                ->etc()
+                    ->where('data.attributes.title', $updated)
+                    ->where('data.attributes.description', null)
+                    ->etc()
             );
-    }
-
-    public function test_storing_repository_log_action(): void
-    {
-        $this->authenticate();
-
-        $this->postJson('posts', $data = [
-            'title' => 'Some post title',
-        ])->assertCreated();
-
-        $this->assertDatabaseHas('action_logs', [
-            'user_id' => $this->authenticatedAs->getAuthIdentifier(),
-            'name' => ActionLog::ACTION_CREATED,
-            'actionable_type' => Post::class,
-        ]);
-
-        $log = ActionLog::latest()->first();
-
-        $this->assertSame($data, $log->changes);
     }
 }

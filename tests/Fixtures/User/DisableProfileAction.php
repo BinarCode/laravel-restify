@@ -12,10 +12,10 @@ class DisableProfileAction extends Action
 
     public static $uriKey = 'disable_profile';
 
-    public function handle(ActionRequest $request, $foo = 'foo'): JsonResponse
+    public function handle(ActionRequest $request, string $foo = 'foo'): JsonResponse
     {
         static::$applied[] = $foo;
 
-        return data(['succes' => 'true']);
+        return data(['success' => 'true']);
     }
 }

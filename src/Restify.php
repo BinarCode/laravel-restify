@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify;
 use Binaryk\LaravelRestify\Bootstrap\BootRepository;
 use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
+use Binaryk\LaravelRestify\Exceptions\RepositoryNotFoundException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -48,11 +49,50 @@ class Restify
      * @param  string  $key
      * @return string|null
      */
-    public static function repositoryForKey(string $key): ?string
+    public static function repositoryClassForKey(string $key): ?string
     {
         return collect(static::$repositories)->first(function ($value) use ($key) {
             return $value::uriKey() === $key;
         });
+    }
+
+    /**
+     * Get the repository class for the prefix.
+     *
+     * @param  string  $prefix
+     * @return string|null
+     */
+    public static function repositoryClassForPrefix(string $prefix): ?string
+    {
+        return collect(static::$repositories)->first(function ($value) use ($prefix) {
+            /** * @var Repository $value */
+            return str($prefix)->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', ''))->contains(
+                    $value::route()
+                        ->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', '')),
+                );
+        });
+    }
+
+    /**
+     * Return the repository instance for a given key.
+     *
+     * @param  string  $key
+     * @throw RepositoryNotFoundException
+     *
+     * @return Repository
+     */
+    public static function repository(string $key): Repository
+    {
+        /**
+         * @var Repository|string $repositoryClass
+         */
+        if (is_null($repositoryClass = static::repositoryClassForKey($key))) {
+            throw RepositoryNotFoundException::make($repositoryClass);
+        }
+
+        return $repositoryClass::isMock()
+            ? $repositoryClass::getMock()
+            : $repositoryClass::resolveWith($repositoryClass::newModel());
     }
 
     /**
@@ -109,6 +149,7 @@ class Restify
      *
      * @param  string  $directory
      * @return void
+     *
      * @throws ReflectionException
      */
     public static function repositoriesFrom(string $directory): void
@@ -117,17 +158,21 @@ class Restify
 
         $repositories = [];
 
+        if (! is_dir($directory)) {
+            return;
+        }
+
         foreach ((new Finder())->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
-                ['/', '.php'],
-                ['\\', ''],
-                Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
-            );
+                    ['/', '.php'],
+                    ['\\', ''],
+                    Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+                );
 
             if (is_subclass_of(
-                $repository,
-                Repository::class
-            ) && (new ReflectionClass($repository))->isInstantiable()) {
+                    $repository,
+                    Repository::class
+                ) && (new ReflectionClass($repository))->isInstantiable()) {
                 $repositories[] = $repository;
             }
         }
@@ -143,13 +188,17 @@ class Restify
      * @param  null  $plus
      * @return string
      */
-    public static function path($plus = null)
+    public static function path($plus = null, array $query = [])
     {
         if (! is_null($plus)) {
-            return config('restify.base', '/restify-api').'/'.$plus;
+            return empty($query)
+                ? config('restify.base', '/restify-api').'/'.$plus
+                : config('restify.base', '/restify-api').'/'.$plus.'?'.http_build_query($query);
         }
 
-        return config('restify.base', '/restify-api');
+        return empty($query)
+            ? config('restify.base', '/restify-api')
+            : config('restify.base', '/restify-api').'?'.http_build_query($query);
     }
 
     /**
@@ -233,9 +282,16 @@ class Restify
             $request->is('restify-api/*') ||
             collect(static::$repositories)
                 ->filter(fn ($repository) => $repository::prefix())
-                ->some(fn ($repository) => $request->is($repository::prefix().'/*')) ||
-            collect(static::$repositories)
-                ->filter(fn ($repository) => $repository::indexPrefix())
-                ->some(fn ($repository) => $request->is($repository::indexPrefix().'/*'));
+                ->some(fn ($repository) => $request->is($repository::prefix().'/*'));
+    }
+
+    /**
+     * @throws ReflectionException
+     */
+    public static function ensureRepositoriesLoaded(): void
+    {
+        if (empty(static::$repositories)) {
+            static::repositoriesFrom(app_path('Restify'));
+        }
     }
 }

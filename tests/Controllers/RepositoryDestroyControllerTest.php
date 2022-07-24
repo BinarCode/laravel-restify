@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
-use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -14,6 +13,7 @@ class RepositoryDestroyControllerTest extends IntegrationTest
     protected function setUp(): void
     {
         parent::setUp();
+
         $this->authenticate();
     }
 
@@ -23,7 +23,9 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $this->assertInstanceOf(Post::class, Post::find($post->id));
 
-        $this->deleteJson('posts/'.$post->id, [
+        $_SERVER['restify.post.delete'] = true;
+
+        $this->deleteJson(PostRepository::route($post->id), [
             'title' => 'Updated title',
         ])
             ->assertStatus(204);
@@ -39,30 +41,8 @@ class RepositoryDestroyControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.delete'] = false;
 
-        $this->deleteJson(PostRepository::to($post->id))->assertStatus(403);
+        $this->deleteJson(PostRepository::route($post->id))->assertStatus(403);
 
         $this->assertInstanceOf(Post::class, $post->refresh());
-    }
-
-    public function test_destroying_repository_log_action(): void
-    {
-        $this->authenticate();
-
-        $post = Post::factory()->create([
-            'title' => 'Original title',
-        ]);
-
-        $this->deleteJson("posts/$post->id")->assertNoContent();
-
-        $this->assertDatabaseHas('action_logs', [
-            'user_id' => $this->authenticatedAs->getAuthIdentifier(),
-            'name' => ActionLog::ACTION_DELETED,
-            'actionable_type' => Post::class,
-            'actionable_id' => $post->getKey(),
-        ]);
-
-        $log = ActionLog::latest()->first();
-
-        $this->assertSame($post->title, data_get($log->original, 'title'));
     }
 }

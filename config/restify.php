@@ -95,25 +95,9 @@ return [
 
     'middleware' => [
         'api',
-        //auth.sanctum,
+        //'auth:sanctum',
         DispatchRestifyStartingEvent::class,
         AuthorizeRestify::class,
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Used to format data.
-    |--------------------------------------------------------------------------
-    |
-    */
-    'casts' => [
-        /*
-        |--------------------------------------------------------------------------
-        | Casting the related entities format.
-        |--------------------------------------------------------------------------
-        |
-        */
-        'related' => \Binaryk\LaravelRestify\Repositories\Casts\RelatedCast::class,
     ],
 
     /*
@@ -126,6 +110,16 @@ return [
         | Repository used to list logs.
         */
         'repository' => ActionLogRepository::class,
+
+        /**
+         | Inform restify to log or not action logs.
+         */
+        'enable' => env('RESTIFY_ENABLE_LOGS', true),
+
+        /**
+        | Inform restify to log model changes from any source, or just restify. Set to `false` to log just restify logs.
+         */
+        'all' => env('RESTIFY_WRITE_ALL_LOGS', false),
     ],
 
     /*
@@ -138,5 +132,17 @@ return [
         | Specify either the search should be case-sensitive or not.
         */
         'case_sensitive' => true,
+    ],
+
+    'repositories' => [
+        /*
+        | Specify either to serialize index meta (policy) information or not. For performance reasons we recommend to disable it.
+        */
+        'serialize_index_meta' => false,
+
+        /*
+        | Specify either to serialize show meta (policy) information or not.
+        */
+        'serialize_show_meta' => true,
     ],
 ];

@@ -25,7 +25,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
             },
         ];
 
-        $this->getJson(PostRepository::to())->assertNotFound();
+        $this->getJson(PostRepository::route())->assertNotFound();
     }
 
     public function test_foreign_repository_middleware_should_not_be_invoked(): void
@@ -42,7 +42,7 @@ class RepositoryMiddlewaresTest extends IntegrationTest
             UserRepository::class,
         ]);
 
-        $this->getJson(PostRepository::to())->assertOk();
+        $this->getJson(PostRepository::route())->assertOk();
 
         UserRepository::$middleware = [];
     }

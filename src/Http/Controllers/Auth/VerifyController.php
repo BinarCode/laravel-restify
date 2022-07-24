@@ -15,7 +15,7 @@ class VerifyController extends Controller
     {
         $user = User::query()->findOrFail($id);
 
-        if ($user instanceof Sanctumable && ! hash_equals((string)$hash, sha1($user->getEmailForVerification()))) {
+        if ($user instanceof Sanctumable && ! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
             throw new AuthorizationException('Invalid hash');
         }
 

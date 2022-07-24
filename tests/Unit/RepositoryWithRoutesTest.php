@@ -13,8 +13,6 @@ class RepositoryWithRoutesTest extends IntegrationTest
     {
         parent::setUp();
 
-        $this->loadRepositories();
-
         Restify::repositories([
             RepositoryWithRoutes::class,
             WithCustomPrefix::class,
@@ -26,12 +24,11 @@ class RepositoryWithRoutesTest extends IntegrationTest
 
     public function test_can_add_custom_routes(): void
     {
-        $this->getJson(RepositoryWithRoutes::to('main-testing'))
+        $this->getJson(RepositoryWithRoutes::route('main-testing'))
             ->assertOk()
             ->assertJson([
                 'success' => true,
             ]);
-
 
         $this->getJson(route('main.testing.route'))
             ->assertOk()

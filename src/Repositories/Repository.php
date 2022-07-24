@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
-use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -29,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
-use Illuminate\Pagination\AbstractPaginator;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -38,9 +37,9 @@ use JsonSerializable;
 use ReturnTypeWillChange;
 
 /**
- * @property static $type Repository type
+ * @property string $type
  */
-abstract class Repository implements RestifySearchable, JsonSerializable
+class Repository implements RestifySearchable, JsonSerializable
 {
     use InteractWithSearch;
     use ValidatingTrait;
@@ -69,6 +68,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * The list of relations available for the show or index.
      *
      * e.g. ?related=users
+     *
      * @var array
      */
     public static array $related;
@@ -154,6 +154,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      * @var array
      */
     public static array $detachers = [];
+
+    /**
+     * Specify whether the repository could be accessed public.
+     *
+     * @var bool|array
+     */
+    public static bool|array $public = false;
 
     /**
      * Indicates if the repository is serializing for a eager relationship.
@@ -313,13 +320,13 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * Resolve repository with given model.
      *
-     * @param $model
+     * @param  Model  $model
      * @return Repository
      */
-    public static function resolveWith($model): Repository
+    public static function resolveWith(Model $model): Repository
     {
         if (static::isMock()) {
-            return static::getMock()->withResource($model);
+            return static::getMock()?->withResource($model);
         }
 
         return resolve(static::class)->withResource($model);
@@ -475,9 +482,22 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function resolveShowMeta($request)
     {
+        if ($request->boolean('withMeta')) {
+            return $this->policyMeta($request);
+        }
+
+        if (! config('restify.repositories.serialize_show_meta')) {
+            return null;
+        }
+
+        return $this->policyMeta($request);
+    }
+
+    private function policyMeta(Request $request): array
+    {
         return [
             'authorizedToShow' => $this->authorizedToShow($request),
-            'authorizedToStore' => $this->authorizedToStore($request),
+            'authorizedToStore' => static::authorizedToStore($request),
             'authorizedToUpdate' => $this->authorizedToUpdate($request),
             'authorizedToDelete' => $this->authorizedToDelete($request),
         ];
@@ -511,15 +531,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function resolveRelationships($request): array
     {
         return static::collectRelated()
-            ->authorized($request)
-            ->inRequest($request)
-            ->when($request->isShowRequest(), function (RelatedCollection $collection) use ($request) {
-                return $collection->forShow($request, $this);
-            })
-            ->when($request->isIndexRequest(), function (RelatedCollection $collection) use ($request) {
-                return $collection->forIndex($request, $this);
-            })
-            ->mapIntoRelated($request)
+            ->forRequest($request, $this)
+            ->mapIntoRelated($request, $this)
+            ->unserialized($request, $this)
             ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
             ->map(function (mixed $items) {
                 if ($items instanceof Collection) {
@@ -539,7 +553,15 @@ abstract class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveIndexMeta($request)
     {
-        return $this->resolveShowMeta($request);
+        if ($request->boolean('withMeta')) {
+            return $this->policyMeta($request);
+        }
+
+        if (! config('restify.repositories.serialize_index_meta')) {
+            return null;
+        }
+
+        return $this->policyMeta($request);
     }
 
     /**
@@ -564,8 +586,9 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         );
 
         /** *
-         * Apply all of the query: search, match, sort, related.
-         * @var AbstractPaginator $paginator
+         * Apply search, match, sort, related.
+         *
+         * @var LengthAwarePaginator $paginator
          */
         $paginator = RepositorySearchService::make()->search($request, $this)
             ->paginate($request->pagination()->perPage ?? static::$defaultPerPage, page: $request->pagination()->page);
@@ -576,29 +599,37 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             return $repository->authorizedToShow($request);
         })->values();
 
-        return response()->json(
-            $this->filter([
-                'meta' => $this->when(
-                    $meta = $this->resolveIndexMainMeta(
-                        $request,
-                        $models = $items->map(fn (self $repository) => $repository->resource),
-                        RepositoryCollection::meta($paginator->toArray())
-                    ),
-                    $meta
+        $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
+
+        return response()->json($this->filter([
+            'meta' => $this->when(
+                $meta = $this->resolveIndexMainMeta(
+                    $request,
+                    $models = $items->map(fn (self $repository) => $repository->resource),
+                    [
+                        'current_page' => $paginator->currentPage(),
+                        'from' => $paginator->firstItem(),
+                        'last_page' => $paginator->lastPage(),
+                        'path' => $paginator->path(),
+                        'per_page' => $paginator->perPage(),
+                        'to' => $paginator->lastItem(),
+                        'total' => $paginator->total(),
+                    ]
                 ),
-                'links' => $this->when(
-                    $links = $this->resolveIndexLinks(
-                        $request,
-                        $models,
-                        array_merge(RepositoryCollection::paginationLinks($paginator->toArray()), [
-                            'filters' => Restify::path(static::uriKey().'/filters'),
-                        ])
-                    ),
-                    $links
-                ),
-                'data' => $items->map(fn (self $repository) => $repository->serializeForIndex($request)),
-            ])
-        );
+                $meta
+            ),
+            'links' => $this->when(
+                $links = $this->resolveIndexLinks($request, $models, [
+                    'first' => $paginator->url(1),
+                    'next' => $paginator->nextPageUrl(),
+                    'path' => $paginator->path(),
+                    'prev' => $paginator->previousPageUrl(),
+                    'filters' => Restify::path(static::uriKey().'/filters'),
+                ]),
+                $links
+            ),
+            'data' => $data,
+        ]));
     }
 
     public function indexCollection(RestifyRequest $request, Collection $items): Collection
@@ -618,7 +649,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function show(RestifyRequest $request, $repositoryId)
     {
-        return $this->response()->data($this->serializeForShow($request));
+        return data($this->serializeForShow($request));
     }
 
     public function store(RestifyRequest $request)
@@ -634,8 +665,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                     ->merge($this->collectFields($request)->forBelongsTo($request))
             );
 
-            $dirty = $this->resource->getDirty();
-
             if ($request->isViaRepository()) {
                 $this->resource = $request->viaQuery()->save($this->resource);
             } else {
@@ -646,12 +675,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 } else {
                     $this->resource->save();
                 }
-            }
-
-            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
-                Restify::actionLog()
-                    ->forRepositoryStored($this->resource, $request->user(), $dirty)
-                    ->save();
             }
 
             $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
@@ -668,12 +691,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             call_user_func([static::class, 'stored'], $this->resource, $request);
         }
 
-        return $this->response()
-            ->created()
-            ->header('Location', static::uriTo($this->resource))
-            ->data($this->serializeForShow(
-                $request,
-            ));
+        return data($this->serializeForShow($request), 201, ['Location' => static::uriTo($this->resource)]);
     }
 
     public function storeBulk(RepositoryStoreBulkRequest $request)
@@ -710,9 +728,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         static::storedBulk($entities, $request);
 
-        return $this->response()
-            ->data($entities)
-            ->success();
+        return data($entities);
     }
 
     public function update(RestifyRequest $request, $repositoryId)
@@ -725,12 +741,6 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 ->merge($this->collectFields($request)->forBelongsTo($request));
 
             static::fillFields($request, $this->resource, $fields);
-
-            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
-                Restify::actionLog()
-                    ->forRepositoryUpdated($this->resource, $request->user())
-                    ->save();
-            }
 
             $this->resource->save();
 
@@ -746,9 +756,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             ->authorizedUpdate($request)
             ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
 
-        return $this->response()
-            ->data($this->serializeForShow($request))
-            ->success();
+        return data($this->serializeForShow($request));
     }
 
     public function patch(RestifyRequest $request, $repositoryId)
@@ -779,9 +787,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             fn (Field $field) => $field->invokeAfter($request, $this->resource)
         );
 
-        return $this->response()
-            ->data($this->serializeForShow($request))
-            ->success();
+        return data($this->serializeForShow($request));
     }
 
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
@@ -804,7 +810,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
         static::updatedBulk($this->resource, $request);
 
-        return response()->json();
+        return ok();
     }
 
     public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)
@@ -846,9 +852,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             })->each->save();
         });
 
-        return $this->response()
-            ->created()
-            ->data($pivots);
+        return data($pivots, 201);
     }
 
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
@@ -863,26 +867,18 @@ abstract class Repository implements RestifySearchable, JsonSerializable
                 ->map(fn ($pivot) => $eagerField->authorizeToDetach($request, $pivot) && $pivot->delete());
         });
 
-        return $this->response()
-            ->data($deleted)
-            ->deleted();
+        return data($deleted, 204);
     }
 
     public function destroy(RestifyRequest $request, $repositoryId)
     {
-        $status = DB::transaction(function () use ($request) {
-            if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
-                Restify::actionLog()
-                    ->forRepositoryDestroy($this->resource, $request->user())
-                    ->save();
-            }
-
+        $status = DB::transaction(function () {
             return $this->resource->delete();
         });
 
         static::deleted($status, $request);
 
-        return $this->response()->deleted();
+        return ok(code: 204);
     }
 
     public function allowToUpdate(RestifyRequest $request, $payload = null): self
@@ -975,6 +971,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     /**
      * @param $request
      * @return $this
+     *
      * @throws \Illuminate\Auth\Access\AuthorizationException
      */
     public function allowToShow($request): self
@@ -1012,7 +1009,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public function serializeForShow(RestifyRequest $request): array
     {
         return $this->filter([
-            'id' => $this->when(optional($this->resource)->id, fn () => $this->getId($request)),
+            'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
             'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
@@ -1026,7 +1023,7 @@ abstract class Repository implements RestifySearchable, JsonSerializable
 
     public function serializeForIndex(RestifyRequest $request): array
     {
-        return $this->filter([
+        $data = $this->filter([
             'id' => $this->when($id = $this->getId($request), $id),
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $this->when((bool) $attrs = $this->resolveIndexAttributes($request), $attrs),
@@ -1034,6 +1031,8 @@ abstract class Repository implements RestifySearchable, JsonSerializable
             'meta' => $this->when(value($meta = $this->resolveIndexMeta($request)), $meta),
             'pivots' => $this->when(value($pivots = $this->resolveIndexPivots($request)), $pivots),
         ]);
+
+        return $data;
     }
 
     protected function getType(RestifyRequest $request): ?string
@@ -1109,9 +1108,15 @@ abstract class Repository implements RestifySearchable, JsonSerializable
         return static::$detachers;
     }
 
-    public function eagerState($state = true): Repository
+    public function eager(EagerField $field = null): Repository
     {
-        $this->eagerState = $state;
+        if (! $field) {
+            $this->eagerState = false;
+
+            return $this;
+        }
+
+        $this->columns($field->getColumns());
 
         return $this;
     }
@@ -1139,5 +1144,15 @@ abstract class Repository implements RestifySearchable, JsonSerializable
     public static function usesScout(): bool
     {
         return in_array("Laravel\Scout\Searchable", class_uses_recursive(static::newModel()));
+    }
+
+    public static function serializer(): Serializer
+    {
+        return new Serializer(app(static::class));
+    }
+
+    public static function isPublic(): bool
+    {
+        return static::$public;
     }
 }

@@ -3,50 +3,66 @@
 namespace Binaryk\LaravelRestify\Tests;
 
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
+use Binaryk\LaravelRestify\Models\ActionLog;
+use Binaryk\LaravelRestify\Models\ActionLogPolicy;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
+use Binaryk\LaravelRestify\Tests\Concerns\Mockers;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Prototypes;
+use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
+use Binaryk\LaravelRestify\Tests\Fixtures\Role\RolePolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\MockUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\Factory;
-use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Gate;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
 use Orchestra\Testbench\TestCase;
 
 abstract class IntegrationTest extends TestCase
 {
-    protected Mockery\MockInterface | User $authenticatedAs;
+    use Mockers;
+    use Prototypes;
+
+    protected Mockery\MockInterface|User|null $authenticatedAs = null;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->loadRepositories()
-            ->loadMigrations();
-
-        $this->app['config']->set('config.auth.user_model', User::class);
-
-        $this->app->register(RestifyApplicationServiceProvider::class);
+        $this
+            ->repositories()
+            ->policies()
+            ->migrations();
 
         Factory::guessFactoryNamesUsing(
-            fn (string $modelName) => 'Binaryk\\LaravelRestify\\Tests\\Factories\\' . class_basename($modelName) . 'Factory'
+            fn (
+                string $modelName
+            ) => 'Binaryk\\LaravelRestify\\Tests\\Database\\Factories\\'.class_basename($modelName).'Factory'
         );
 
         Restify::$authUsing = static function () {
             return true;
         };
+
+        $this->ensureLoggedIn();
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
-        Mockery::close();
+
         Repository::clearResolvedInstances();
     }
 
@@ -59,46 +75,41 @@ abstract class IntegrationTest extends TestCase
 
     protected function getEnvironmentSetUp($app): void
     {
-        $app['config']->set('database.default', 'sqlite');
-        $app['config']->set('auth.providers.users.model', User::class);
-        $app['config']->set('restify.base', '/');
+        config()->set('database.default', 'sqlite');
+        config()->set('restify.auth.user_model', User::class);
+        config()->set('restify.repositories.serialize_index_meta', true);
+        config()->set('restify.repositories.serialize_show_meta', true);
 
-        $app['config']->set('database.connections.sqlite', [
-            'driver' => 'sqlite',
-            'database' => ':memory:',
-            'prefix' => '',
-        ]);
-
-        include_once __DIR__ . '/../database/migrations/create_action_logs_table.php.stub';
-        (new \CreateActionLogsTable())->up();
+        $migration = include __DIR__.'/../database/migrations/create_action_logs_table.php.stub';
+        $migration->up();
     }
 
-    protected function loadMigrations(): self
+    private function migrations(): self
     {
         $this->loadMigrationsFrom([
             '--database' => 'sqlite',
-            '--path' => realpath(__DIR__ . DIRECTORY_SEPARATOR . 'Migrations'),
+            '--path' => realpath(__DIR__.'/database/migrations'),
         ]);
 
         return $this;
     }
 
-    public function loadRepositories(): self
+    public function repositories(): self
     {
         Restify::repositories([
             UserRepository::class,
             PostRepository::class,
             CompanyRepository::class,
-            \Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithHiddenFieldRepository::class,
+            PostWithHiddenFieldRepository::class,
             RoleRepository::class,
         ]);
 
         return $this;
     }
 
-    protected function authenticate(Authenticatable $user = null)
+    protected function authenticate(Authenticatable $user = null): self
     {
-        $this->actingAs($this->authenticatedAs = $user ?? Mockery::mock(Authenticatable::class));
+        $this->actingAs($this->authenticatedAs = $user ?? Mockery::mock(MockUser::class));
 
         if (is_null($user)) {
             $this->authenticatedAs->shouldReceive('getAuthIdentifier')->andReturn(1);
@@ -108,47 +119,58 @@ abstract class IntegrationTest extends TestCase
         return $this;
     }
 
-    public function mockUsers($count = 1, array $predefinedEmails = []): Collection
-    {
-        return Collection::times($count, fn ($i) => User::factory()->create())
-            ->merge(collect($predefinedEmails)->each(fn (string $email) => User::factory()->create([
-                'email' => $email,
-            ])))
-            ->shuffle();
-    }
-
-    public function mockPosts($userId = null, $count = 1): Collection
-    {
-        return Collection::times($count, fn () => Post::factory()->create([
-            'user_id' => $userId,
-        ]))->shuffle();
-    }
-
-    protected function mockPost(array $attributes = []): Post
-    {
-        return Post::factory()->create($attributes);
-    }
-
     public function getTempDirectory($suffix = ''): string
     {
-        return __DIR__ . '/TestSupport/temp' . ($suffix === '' ? '' : '/' . $suffix);
+        return __DIR__.'/TestSupport/temp'.($suffix === '' ? '' : '/'.$suffix);
     }
 
     #[Pure]
- public function getMediaDirectory($suffix = ''): string
- {
-     return $this->getTempDirectory() . '/media' . ($suffix === '' ? '' : '/' . $suffix);
- }
+    public function getMediaDirectory($suffix = ''): string
+    {
+        return $this->getTempDirectory().'/media'.($suffix === '' ? '' : '/'.$suffix);
+    }
 
     #[Pure]
- public function getTestFilesDirectory($suffix = ''): string
- {
-     return $this->getTempDirectory() . '/testfiles' . ($suffix === '' ? '' : '/' . $suffix);
- }
+    public function getTestFilesDirectory($suffix = ''): string
+    {
+        return $this->getTempDirectory().'/testfiles'.($suffix === '' ? '' : '/'.$suffix);
+    }
 
     #[Pure]
- public function getTestJpg(): string
- {
-     return $this->getTestFilesDirectory('test.jpg');
- }
+    public function getTestJpg(): string
+    {
+        return $this->getTestFilesDirectory('test.jpg');
+    }
+
+    private function policies(): self
+    {
+        Gate::policy(Post::class, PostPolicy::class);
+        Gate::policy(User::class, UserPolicy::class);
+        Gate::policy(Company::class, CompanyPolicy::class);
+        Gate::policy(Role::class, RolePolicy::class);
+        Gate::policy(ActionLog::class, ActionLogPolicy::class);
+
+        return $this;
+    }
+
+    protected function ensureLoggedIn(): self
+    {
+        if (is_null($this->authenticatedAs)) {
+            $this->authenticate();
+        }
+
+        return $this;
+    }
+
+    protected function logout(): self
+    {
+        if ($this->authenticatedAs instanceof Mockery\MockInterface) {
+            $this->authenticatedAs->shouldReceive('getRememberToken')->andReturnNull();
+        }
+
+        $this->app['auth']->guard()->logout();
+        $this->authenticatedAs = null;
+
+        return $this;
+    }
 }

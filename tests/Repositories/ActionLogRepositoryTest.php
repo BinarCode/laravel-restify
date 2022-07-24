@@ -30,7 +30,7 @@ class ActionLogRepositoryTest extends IntegrationTest
 
         $log->save();
 
-        $this->getJson(ActionLogRepository::uriKey())
+        $this->getJson(ActionLogRepository::route())
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [

@@ -12,10 +12,10 @@ class CompanyRepository extends Repository
 {
     public static $model = Company::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
-            'users' => BelongsToMany::make('users',  UserRepository::class)->withPivot(
+            'users' => BelongsToMany::make('users', UserRepository::class)->withPivot(
                 Field::make('is_admin')->rules('required')
             )->canDetach(fn ($request, $pivot) => isset($_SERVER['roles.canDetach.users']) && $_SERVER['roles.canDetach.users']),
         ];

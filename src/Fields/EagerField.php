@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
@@ -24,9 +25,29 @@ class EagerField extends Field
     /**
      * The class name of the related repository.
      *
-     * @var Repository
+     * @var string
      */
     public string $repositoryClass;
+
+    public function __construct($attribute, string $parentRepository = null)
+    {
+        parent::__construct(attribute: $attribute);
+
+        $this->relation = $attribute;
+
+        if (is_string($parentRepository)) {
+            $this->repositoryClass = $parentRepository;
+        }
+
+        if (is_null($parentRepository)) {
+            $this->repositoryClass = tap(Restify::repositoryClassForKey($attribute),
+                fn ($repository) => abort_unless($repository, 400, "Repository not found for the key [$attribute]."));
+        }
+
+        if (! isset($this->repositoryClass)) {
+            abort(400, "Invalid parent repository [{$parentRepository}]. Expended instance of ".Repository::class);
+        }
+    }
 
     /**
      * Determine if the field should be displayed for the given request.
@@ -37,9 +58,9 @@ class EagerField extends Field
     public function authorize(Request $request)
     {
         return call_user_func(
-            [$this->repositoryClass, 'authorizedToUseRepository'],
-            $request
-        ) && parent::authorize($request);
+                [$this->repositoryClass, 'authorizedToUseRepository'],
+                $request
+            ) && parent::authorize($request);
     }
 
     public function resolve($repository, $attribute = null)
@@ -60,8 +81,8 @@ class EagerField extends Field
         try {
             $this->value = $this->repositoryClass::resolveWith($relatedModel)
                 ->allowToShow(app(Request::class))
-                ->columns($this->getColumns())
-                ->eagerState();
+                ->columns()
+                ->eager($this);
         } catch (AuthorizationException $e) {
             if (is_null($relatedModel)) {
                 abort(403, 'You are not authorized to perform this action.');

@@ -18,9 +18,9 @@ trait InteractWithSearch
 {
     use AuthorizableModels;
 
-    public static $defaultPerPage = 15;
+    public static int $defaultPerPage = 15;
 
-    public static $defaultRelatablePerPage = 15;
+    public static int $defaultRelatablePerPage = 15;
 
     public static function searchables(): array
     {
@@ -31,7 +31,7 @@ trait InteractWithSearch
 
     public static function withs(): array
     {
-        return static::$withs ?? [];
+        return static::$with ?? [];
     }
 
     public static function related(): array
@@ -39,9 +39,14 @@ trait InteractWithSearch
         return static::$related ?? [];
     }
 
+    public static function include(): array
+    {
+        return static::related();
+    }
+
     public static function collectRelated(): RelatedCollection
     {
-        return RelatedCollection::make(static::related());
+        return RelatedCollection::make(static::include());
     }
 
     public static function matches(): array
@@ -60,7 +65,7 @@ trait InteractWithSearch
 
     public static function collectSorts(RestifyRequest $request, Repository $repository): SortCollection
     {
-        return SortCollection::make(explode(',', $request->input('sort', '')))
+        return (new SortCollection(explode(',', $request->input('sort', ''))))
             ->normalize()
             ->hydrateDefinition($repository)
             ->authorized($request)
@@ -70,7 +75,7 @@ trait InteractWithSearch
 
     public static function collectMatches(RestifyRequest $request, Repository $repository): MatchesCollection
     {
-        return MatchesCollection::make($repository::matches())
+        return (new MatchesCollection($repository::matches()))
             ->normalize()
             ->authorized($request)
             ->inQuery($request)

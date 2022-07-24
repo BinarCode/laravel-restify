@@ -33,7 +33,7 @@ use App\Restify\Repository;
 
 class PostRepository extends Repository
 {
-    public static $model = Post::class;
+    public static string $model = Post::class;
     
     public function fields(RestifyRequest $request)
     {
@@ -41,6 +41,11 @@ class PostRepository extends Repository
     }
 }
 ```
+
+<alert type="info">
+If if you don't specify the $model property, Restify will try to guess the model automatically.
+</alert>
+
 
 The `fields` method returns the default set of attributes definitions that should be applied during API requests.
 
@@ -59,23 +64,27 @@ Having this in place you're basically ready for the CRUD actions over posts. You
 | Verb       | URI                                                   | Action                                       |
 |:-----------|:------------------------------------------------------|:---------------------------------------------|
 | **GET**    | `/api/restify/posts`                                  | index                                        |
-| **GET**    | `/api/restify/posts/actions`                          | index actions                                |
+| **GET**    | `/api/restify/posts/actions`                          | display index actions                        |
+| **GET**    | `/api/restify/posts/getters`                          | display index getters                        |
 | **GET**    | `/api/restify/posts/{post}`                           | show                                         |
-| **GET**    | `/api/restify/posts/{post}/actions`                   | individual actions                           |
+| **GET**    | `/api/restify/posts/{post}/actions`                   | display individual actions                   |
+| **GET**    | `/api/restify/posts/{post}/getters`                   | display individual getters                   |
 | **POST**   | `/api/restify/posts`                                  | store                                        |
 | **POST**   | `/api/restify/posts/actions?action=actionName`        | perform index actions                        |
+| **GET**    | `/api/restify/posts/getters?getter=getterName`        | retrieve index getters                       |
 | **POST**   | `/api/restify/posts/bulk`                             | store multiple                               |
 | **DELETE** | `/api/restify/posts/bulk/delete`                      | delete multiple                              |
 | **POST**   | `/api/restify/posts/bulk/update`                      | update multiple                              |
 | **PATCH**  | `/api/restify/posts/{post}`                           | partial update                               | 
 | **PUT**    | `/api/restify/posts/{post}`                           | full update                                  |
 | **POST**   | `/api/restify/posts/{post}`                           | partial of full update including attachments | 
-| **POST**   | `/api/restify/posts/{post}/actions?action=actionName` | perform index actions                        |
+| **POST**   | `/api/restify/posts/{post}/actions?action=actionName` | perform individual actions                   |
+| **GET**    | `/api/restify/posts/{post}/getters?getter=getterName` | retrieve individual getter                   |
 | **DELETE** | `/api/restify/posts/{post}`                           | destroy                                      |
 
 <alert> 
 
-Update with files As you can see we provide 3 Verbs for the model update (PUT, PATCH, POST), the reason of that is
+As you can see we provide 3 Verbs for the model update (PUT, PATCH, POST), the reason of that is
 because you cannot send files via `PATCH` or `PUT` verbs, so we have `POST`. Where the `PUT` or `PATCH` could be used
 for full model update and respectively partial update.
 
@@ -85,10 +94,114 @@ for full model update and respectively partial update.
 
 As we already noticed, each repository basically works as a wrapper over a specific resource. The fancy
 naming `resource` is nothing more than a database entity (posts, users etc.). Well, to make the repository aware of the
-entity it should take care of, we have to define the model property:
+entity it should take care of, we have to define the model property associated to that resource:
 
 ```php
-public static $model = 'App\\Models\\Post'; 
+public static string $model = 'App\\Models\\Post'; 
+```
+
+## Public repository
+
+Sometimes you need to expose a public information (so unauthenticated users could access it).
+
+<alert type="warning">
+
+We highly recommend avoid this kind of exposure. If you need to expose custom data, you can use the [serializer](/api/serializer) to return a json:api format from any custom route/controller (still using the power of repositories).
+
+</alert>
+
+Restify allows you to define a public repositories by adding the `$public` property on true:
+
+
+```php
+public static bool|array $public = true;
+```
+
+When adding the `$public` flag, the repository will expose ONLY GET requests publicly. These requests are: 
+
+
+| Verb       | URI                                                   | Action                                       |
+|:-----------|:------------------------------------------------------|:---------------------------------------------|
+| **GET**    | `/api/restify/posts`                                  | index                                        |
+| **GET**    | `/api/restify/posts/getters`                          | display index getters                        |
+| **GET**    | `/api/restify/posts/{post}`                           | show                                         |
+| **GET**    | `/api/restify/posts/{post}/getters`                   | display individual getters                   |
+| **GET**    | `/api/restify/posts/getters?getter=getterName`        | retrieve index getters                       |
+| **GET**    | `/api/restify/posts/{post}/getters?getter=getterName` | retrieve individual getter                   |
+
+In order to get the public functionality you need to take few extra steps to inform your setup it might have public access.
+
+### Public gate
+
+Make sure you allow your global gate a nullable user: 
+
+```php
+// app/Providers/RestifyApplicationServiceProvider.php
+
+protected function gate(): void
+{
+    Gate::define('viewRestify', function ($user = null) {
+        if (is_null($user)) {
+           return true;
+        }
+        
+        return in_array($user->email, [...])
+    });
+}
+```
+
+### Public Policies
+
+As we know, each model should be protected by a policy. The policy that corresponds to a public repository should also allow nullable authenticated user: 
+
+```php
+// ie: PostPolicy
+public function allowRestify(User $user = null): bool
+{
+    return true;
+}
+
+public function show(User $user = null, User $model): bool
+{
+    return true;
+}
+```
+
+Having these configurations in place, you should be good to expose the repository publicly. 
+
+## Repository key
+
+The repository URI segment is automatically generated using the repository name. The php method that does that is: 
+
+```php
+public static function uriKey(): string
+{
+    if (property_exists(static::class, 'uriKey') && is_string(static::$uriKey)) {
+        return static::$uriKey;
+    }
+
+    $kebabWithoutRepository = Str::kebab(Str::replaceLast('Repository', '', class_basename(get_called_class())));
+
+    /**
+     * e.g. UserRepository => users
+     * e.g. LaravelEntityRepository => laravel-entities.
+     */
+    return Str::plural($kebabWithoutRepository);
+}
+```
+
+As you can see, you can override this, or define your own `public static string $uriKey` to the repository, so you get a custom repository uri segment. For example, if we want to call our users as `members` we will do:
+
+```php
+// UserRepository
+
+public static string $uriKey = 'members';
+```
+
+So the request is: 
+
+```http request
+GET: api/restify/members
 ```
 
 ## Fields
@@ -112,9 +225,9 @@ class PostRepository extends Repository
     public function fields(RestifyRequest $request) 
     {
         return [
-            Field::make('title'),
+            field('title'),
             
-            Field::make('description'),
+            field('description'),
         ];
     }
 }
@@ -270,6 +383,12 @@ This is a standard index `api/restify/posts` response:
 }
 ```
 
+<alert type="warning">
+
+From Restify 7+ the meta on index requests will do not be loaded any more because of performance reasons. See [index item meta](/api/repositories#index-item-meta) for more details.
+
+</alert>
+
 ### Index main meta
 
 Firstly we have the `meta` object, by default this includes pagination information, so your frontend could be adapted
@@ -331,6 +450,16 @@ so, if not, it will be filtered out from this response.
 
 ### Index item meta
 
+In order to optimize requests Restify 7+ will do not provide any meta information about the repositories (including nested relationships) for index requests (ie / `posts`). You can enable them by editing the config `restify.repositories.serialize_index_meta`.
+
+Or you can enable them specifically per request by adding the query param `withMeta=true`:
+
+```http request
+GET: /api/restify/posts?withMeta=true
+```
+
+This also applies for any related information.
+
 The individual item object format is pretty much the same as we have for the [show](#show-request). However, you can
 specify a custom metadata for these items by using:
 
@@ -362,7 +491,7 @@ By default, attributes used to serialize the index item, are the same from the `
 public function fieldsForIndex(RestifyRequest $request): array
 {
     return [
-        Field::make('title'),
+        field('title'),
    ];
 }
 ```
@@ -382,9 +511,9 @@ Store, is a `post` request, usually used to create/store entities. Let's take a 
   public function fields(RestifyRequest $request) 
   {
       return [
-          Field::make('title'),
+          field('title'),
           
-          Field::make('description'),
+          field('description'),
       ];
   }
 ```
@@ -448,7 +577,7 @@ $request->validate([
 To do this in Restify, you have to apply the Field's `storingRules`: 
 
 ```php
-Field::make('description')->storingRules('required'),
+field('description')->storingRules('required'),
 ```
 
 So the rules list will be applied for the underlining field.
@@ -521,7 +650,7 @@ The Restify response contains the http 200 status, and the following response:
 To validate certain fields we can use the Field's `updatingRules` method: 
 
 ```php
-Field::make('description')->updatingRules('required'),
+field('description')->updatingRules('required'),
 ```
 
 ### Custom update

@@ -15,7 +15,8 @@ class FieldActionTest extends IntegrationTest
     /** * @test */
     public function can_use_actionable_field(): void
     {
-        $action = new class () extends Action {
+        $action = new class() extends Action
+        {
             public bool $showOnShow = true;
 
             public function handle(RestifyRequest $request, Post $post)
@@ -23,7 +24,7 @@ class FieldActionTest extends IntegrationTest
                 $description = $request->input('description');
 
                 $post->update([
-                    'description' => 'Actionable ' . $description,
+                    'description' => 'Actionable '.$description,
                 ]);
             }
         };
@@ -37,11 +38,11 @@ class FieldActionTest extends IntegrationTest
             ]);
 
         $this
-            ->withoutExceptionHandling()
-            ->postJson(PostRepository::to(), [
-            'description' => 'Description',
-            'title' => $updated = 'Title',
-        ])
+            ->postJson(PostRepository::route(), [
+                'description' => 'Description',
+                'title' => $updated = 'Title',
+            ])
+            ->assertCreated()
             ->assertJson(
                 fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', $updated)
@@ -53,7 +54,8 @@ class FieldActionTest extends IntegrationTest
     /** @test */
     public function can_use_actionable_field_on_bulk_store(): void
     {
-        $action = new class () extends Action {
+        $action = new class() extends Action
+        {
             public bool $showOnShow = true;
 
             public function handle(RestifyRequest $request, Post $post, int $row)
@@ -61,7 +63,7 @@ class FieldActionTest extends IntegrationTest
                 $description = data_get($request[$row], 'description');
 
                 $post->update([
-                    'description' => 'Actionable ' . $description,
+                    'description' => 'Actionable '.$description,
                 ]);
             }
         };
@@ -76,7 +78,7 @@ class FieldActionTest extends IntegrationTest
 
         $this
             ->withoutExceptionHandling()
-            ->postJson(PostRepository::to('bulk'), [
+            ->postJson(PostRepository::route('bulk'), [
                 [
                     'title' => $title1 = 'First title',
                     'description' => 'first description',
@@ -99,7 +101,8 @@ class FieldActionTest extends IntegrationTest
     /** @test */
     public function can_use_actionable_field_on_bulk_update(): void
     {
-        $action = new class () extends Action {
+        $action = new class() extends Action
+        {
             public bool $showOnShow = true;
 
             public function handle(RestifyRequest $request, Post $post, int $row)
@@ -107,7 +110,7 @@ class FieldActionTest extends IntegrationTest
                 $description = data_get($request[$row], 'description');
 
                 $post->update([
-                    'description' => 'Actionable ' . $description,
+                    'description' => 'Actionable '.$description,
                 ]);
             }
         };
@@ -122,19 +125,19 @@ class FieldActionTest extends IntegrationTest
 
         $postId1 = $this
             ->withoutExceptionHandling()
-            ->postJson(PostRepository::to(), [
+            ->postJson(PostRepository::route(), [
                 'title' => 'First title',
             ])->json('data.id');
 
         $postId2 = $this
             ->withoutExceptionHandling()
-            ->postJson(PostRepository::to(), [
+            ->postJson(PostRepository::route(), [
                 'title' => 'Second title',
             ])->json('data.id');
 
         $this
             ->withoutExceptionHandling()
-            ->postJson(PostRepository::to('bulk/update'), [
+            ->postJson(PostRepository::route('bulk/update'), [
                 [
                     'id' => $postId1,
                     'description' => 'first description',

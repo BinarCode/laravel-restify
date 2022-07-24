@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class MorphToManyFieldTest extends IntegrationTest
 {
@@ -33,30 +34,29 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles")
-            ->assertJsonStructure([
-                'data' => [
-                    'relationships' => [
-                        'roles' => [],
-                    ],
-                ],
-            ])->assertJsonCount(3, 'data.relationships.roles');
+        $this->getJson(UserWithRolesRepository::route($user->getKey(), [
+            'related' => 'roles',
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+            ->count('data.relationships.roles', 3)
+            ->etc()
+        );
     }
 
-    public function test_morph_to_many_works_with_belongs_to_many()
+    public function test_morph_to_many_works_with_belongs_to_many(): void
     {
         /** * @var User $user */
         $user = User::factory()->create();
 
         tap(Company::factory()->create(), function (Company $company) use ($user) {
-            $company->users()->attach($user->id);
+            $company->users()->attach($user->getKey());
 
             $user->roles()->attach(
                 Role::factory(3)->create()
             );
         });
 
-        $this->getJson(UserWithRolesRepository::uriKey()."/$user->id?related=roles,companies")
+        $this->getJson(UserWithRolesRepository::route($user->id, ['related' => 'roles,companies']))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -67,12 +67,12 @@ class MorphToManyFieldTest extends IntegrationTest
             ])->assertJsonCount(3, 'data.relationships.roles');
     }
 
-    public function test_morph_to_many_ignored_when_store()
+    public function test_morph_to_many_ignored_when_store(): void
     {
         /** * @var User $user */
         $user = User::factory()->make();
 
-        $id = $this->postJson(UserWithRolesRepository::uriKey(), array_merge($user->toArray(), [
+        $id = $this->postJson(UserWithRolesRepository::route(), array_merge($user->toArray(), [
             'password' => 'password',
             'users' => [1],
         ]))->json('data.id');
@@ -85,10 +85,10 @@ class UserWithRolesRepository extends Repository
 {
     public static $model = User::class;
 
-    public static function related(): array
+    public static function include(): array
     {
         return [
-            'roles' => MorphToMany::make('roles',  RoleRepository::class),
+            'roles' => MorphToMany::make('roles', RoleRepository::class),
             'companies' => BelongsToMany::make('companies', CompanyRepository::class),
         ];
     }

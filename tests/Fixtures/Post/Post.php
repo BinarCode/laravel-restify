@@ -10,13 +10,14 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Post.
+ *
  * @property mixed $id
  * @property mixed $user_id
  * @property mixed $image
- * @property mixed $title
- * @property mixed $description
+ * @property string $title
+ * @property string $description
  * @property mixed $category
- * @property mixed $is_active
+ * @property bool $is_active
  */
 class Post extends Model
 {
@@ -31,6 +32,10 @@ class Post extends Model
         'description',
         'category',
         'is_active',
+    ];
+
+    protected $casts = [
+        'is_active' => 'bool',
     ];
 
     public function user(): BelongsTo

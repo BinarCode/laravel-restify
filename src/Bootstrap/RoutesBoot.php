@@ -2,24 +2,16 @@
 
 namespace Binaryk\LaravelRestify\Bootstrap;
 
-use Binaryk\LaravelRestify\Getters\Getter;
-use Binaryk\LaravelRestify\Http\Controllers\PerformGetterController;
-use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Illuminate\Contracts\Foundation\CachesRoutes;
-use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
 
 class RoutesBoot
 {
-    public function __construct(
-        private Application $app,
-    ) {
-    }
-
     public function boot(): void
     {
+        Restify::ensureRepositoriesLoaded();
+
         $config = [
             'namespace' => null,
             'as' => 'restify.api.',
@@ -28,16 +20,16 @@ class RoutesBoot
         ];
 
         $this
-//            ->registerCustomGettersPerforms($config)
-            ->defaultRoutes($config)
             ->registerPrefixed($config)
-            ->registerIndexPrefixed($config);
+            ->registerPublic($config)
+            ->defaultRoutes($config);
     }
 
     public function defaultRoutes($config): self
     {
         Route::group($config, function () {
-            $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
+            app(RoutesDefinition::class)->once();
+            app(RoutesDefinition::class)();
         });
 
         return $this;
@@ -46,57 +38,35 @@ class RoutesBoot
     public function registerPrefixed($config): self
     {
         collect(Restify::$repositories)
-            ->filter(fn ($repository) => $repository::prefix())
+            /** * @var Repository $repository */
             ->each(function (string $repository) use ($config) {
+                if (! $repository::prefix()) {
+                    return;
+                }
+
                 $config['prefix'] = $repository::prefix();
-                Route::group($config, function () {
-                    $this->loadRoutesFrom(__DIR__.'/../../routes/api.php');
+                Route::group($config, function () use ($repository) {
+                    app(RoutesDefinition::class)($repository::uriKey());
                 });
             });
 
         return $this;
     }
 
-    public function registerIndexPrefixed($config): self
+    public function registerPublic($config): self
     {
         collect(Restify::$repositories)
-            ->filter(fn ($repository) => $repository::hasIndexPrefix())
-            ->each(function ($repository) use ($config) {
-                $config['prefix'] = $repository::indexPrefix();
-                Route::group($config, function () {
-                    Route::get('/{repository}', '\\'.RepositoryIndexController::class);
+            ->each(function (string $repository) use ($config) {
+                /**
+                 * @var Repository $repository
+                 */
+                if (! $repository::isPublic()) {
+                    return;
+                }
+
+                Route::group($config, function () use ($repository) {
+                    app(RoutesDefinition::class)->withoutMiddleware('auth:sanctum')($repository::uriKey());
                 });
-            });
-
-        return $this;
-    }
-
-    private function loadRoutesFrom(string $path): self
-    {
-        if (! ($this->app instanceof CachesRoutes && $this->app->routesAreCached())) {
-            require $path;
-        }
-
-        return $this;
-    }
-
-    // @deprecated
-    public function registerCustomGettersPerforms($config): self
-    {
-        collect(Restify::$repositories)
-            ->filter(function ($repository) use ($config) {
-                return collect(app($repository)
-                    ->getters(app(RestifyRequest::class)))
-                    ->each(function (Getter $getter) use ($config, $repository) {
-                        if (count($excludedMiddleware = $getter->excludedMiddleware())) {
-                            Route::group($config, function () use ($excludedMiddleware, $repository, $getter) {
-                                $getterKey = $getter->uriKey();
-
-                                Route::get("/{repository}/getters/$getterKey", PerformGetterController::class)
-                                    ->withoutMiddleware($excludedMiddleware);
-                            });
-                        }
-                    });
             });
 
         return $this;

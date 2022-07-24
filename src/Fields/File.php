@@ -65,7 +65,7 @@ class File extends Field implements StorableContract, DeletableContract
     /**
      * Specify the callback or the name that should be used to determine the file's storage name.
      *
-     * @param callable|string $storeAsCallback
+     * @param  callable|string  $storeAsCallback
      * @return $this
      */
     public function storeAs($storeAs): self
@@ -78,7 +78,7 @@ class File extends Field implements StorableContract, DeletableContract
     /**
      * Prepare the storage callback.
      *
-     * @param callable|null $storageCallback
+     * @param  callable|null  $storageCallback
      * @return void
      */
     protected function prepareStorageCallback(callable $storageCallback = null): void
@@ -93,7 +93,7 @@ class File extends Field implements StorableContract, DeletableContract
     /**
      * Specify the column where the file's original name should be stored.
      *
-     * @param string $column
+     * @param  string  $column
      * @return $this
      */
     public function storeOriginalName($column)
@@ -106,7 +106,7 @@ class File extends Field implements StorableContract, DeletableContract
     /**
      * Specify the column where the file size should be stored.
      *
-     * @param string $column
+     * @param  string  $column
      * @return $this
      */
     public function storeSize($column)
@@ -132,7 +132,7 @@ class File extends Field implements StorableContract, DeletableContract
     /**
      * Specify the callback that should be used to store the file.
      *
-     * @param callable|Storable $storageCallback
+     * @param  callable|Storable  $storageCallback
      * @return $this
      */
     public function store($storageCallback): self
@@ -147,8 +147,8 @@ class File extends Field implements StorableContract, DeletableContract
     /**
      * Merge the specified extra file information columns into the storable attributes.
      *
-     * @param \Illuminate\Http\Request $request
-     * @param array $attributes
+     * @param  \Illuminate\Http\Request  $request
+     * @param  array  $attributes
      * @return array
      */
     protected function mergeExtraStorageColumns($request, array $attributes): array

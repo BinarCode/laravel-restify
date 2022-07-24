@@ -13,7 +13,6 @@ use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class RelatedCollection extends Collection
 {
@@ -23,7 +22,7 @@ class RelatedCollection extends Collection
             $mapKey = is_numeric($key) ? $value : $key;
 
             if ($value instanceof EagerField) {
-                $mapKey = $value->getAttribute();
+                $mapKey = $key ?: $value->getAttribute();
             }
 
             return [
@@ -34,7 +33,8 @@ class RelatedCollection extends Collection
 
     public function forEager(RestifyRequest $request): self
     {
-        return $this->filter(fn ($value, $key) => $value instanceof EagerField)
+        return $this
+            ->filter(fn ($value, $key) => $value instanceof EagerField)
             ->filter(fn (Field $field) => $field->authorize($request))
             ->unique('attribute');
     }
@@ -91,18 +91,14 @@ class RelatedCollection extends Collection
         });
     }
 
-    public function inRequest(RestifyRequest $request): self
+    public function inRequest(RestifyRequest $request, Repository $repository): self
     {
-        $queryRelated = collect($request->related()->related)
-            ->transform(fn ($related) => Str::before($related, '['))
-            ->all();
-
-        return $this
-            ->filter(fn ($field, $key) => in_array($key, $queryRelated))
-            ->unique();
+        return $this->filter(function ($field, $key) use ($request, $repository) {
+            return $request->related()->hasRelation($repository::uriKey().'.'.$key);
+        });
     }
 
-    public function mapIntoRelated(RestifyRequest $request): self
+    public function mapIntoRelated(RestifyRequest $request, Repository $repository): self
     {
         return $this->map(function ($value, $key) {
             return tap(
@@ -113,14 +109,16 @@ class RelatedCollection extends Collection
                     }
                 }
             );
-        })->map(fn (Related $related) => $related->columns(
-            $request->related()->getColumnsFor($related->getRelation())
-        ));
+        })->map(
+            fn (Related $related) => $related
+                ->columns($request->related()->getColumnsFor($repository::uriKey().'.'.$related->getRelation()))
+        );
     }
 
     public function authorized(RestifyRequest $request)
     {
-        return $this->intoAssoc()
+        return $this
+            ->intoAssoc()
             ->filter(fn ($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
     }
 
@@ -128,5 +126,27 @@ class RelatedCollection extends Collection
     {
         return $this->forBelongsToRelations($request)
             ->filter(fn (BelongsTo $field) => $field->isSearchable());
+    }
+
+    public function forRequest(RestifyRequest $request, Repository $repository): self
+    {
+        if (! $request->related()->hasRelated()) {
+            return self::make([]);
+        }
+
+        return $this
+            ->authorized($request)
+            ->inRequest($request, $repository)
+            ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))
+            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository));
+    }
+
+    public function unserialized(RestifyRequest $request, Repository $repository)
+    {
+        return $this->filter(fn (Related $related) => ! in_array(
+            $repository::uriKey().$repository->getKey().$related->getRelation(),
+            $request->related()->resolvedRelationships,
+            true
+        ));
     }
 }

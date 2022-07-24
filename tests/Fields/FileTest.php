@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Storage;
 
 class FileTest extends IntegrationTest
 {
-    public function test_can_correctly_fill_the_main_attribute_and_store_file()
+    public function test_can_correctly_fill_the_main_attribute_and_store_file(): void
     {
         Storage::fake();
         Storage::fake('public');
@@ -36,7 +36,7 @@ class FileTest extends IntegrationTest
         Storage::disk('public')->assertExists('avatar.jpg');
     }
 
-    public function test_can_upload_file()
+    public function test_can_upload_file(): void
     {
         Storage::fake('customDisk');
 
@@ -57,7 +57,7 @@ class FileTest extends IntegrationTest
 
         $user = $this->mockUsers()->first();
 
-        $this->postJson(UserRepository::uriKey()."/{$user->id}", [
+        $this->postJson(UserRepository::route($user->getKey()), [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar_original' => 'image.jpg',
@@ -67,7 +67,7 @@ class FileTest extends IntegrationTest
         Storage::disk('customDisk')->assertExists('avatar.jpg');
     }
 
-    public function test_can_prune_prunable_files()
+    public function test_can_prune_prunable_files(): void
     {
         Storage::fake('customDisk');
 
@@ -93,13 +93,13 @@ class FileTest extends IntegrationTest
                     ->storeAs('avatar.jpg'),
             ]);
 
-        $this->deleteJson(UserRepository::uriKey()."/{$user->id}")
+        $this->deleteJson(UserRepository::route($user->getKey()))
             ->assertNoContent();
 
         Storage::disk('customDisk')->assertMissing('avatar.jpg');
     }
 
-    public function test_cannot_prune_unpruneable_files()
+    public function test_cannot_prune_unpruneable_files(): void
     {
         Storage::fake('customDisk');
 
@@ -116,13 +116,13 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg'),
             ]);
 
-        $this->deleteJson(UserRepository::uriKey()."/{$user->id}")
+        $this->deleteJson(UserRepository::route($user->getKey()))
             ->assertNoContent();
 
         Storage::disk('customDisk')->assertExists('avatar.jpg');
     }
 
-    public function test_deletable_file_could_be_deleted()
+    public function test_deletable_file_could_be_deleted(): void
     {
         Storage::fake('customDisk');
 
@@ -139,13 +139,13 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg')->deletable(true),
             ]);
 
-        $this->deleteJson(UserRepository::uriKey()."/{$user->id}/field/avatar")
+        $this->deleteJson(UserRepository::route($user->getKey().'/field/avatar'))
             ->assertNoContent();
 
         Storage::disk('customDisk')->assertMissing('avatar.jpg');
     }
 
-    public function test_not_deletable_file_cannot_be_deleted()
+    public function test_not_deletable_file_cannot_be_deleted(): void
     {
         Storage::fake('customDisk');
 
@@ -162,11 +162,11 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg')->deletable(false),
             ]);
 
-        $this->deleteJson(UserRepository::uriKey()."/{$user->id}/field/avatar")
+        $this->deleteJson(UserRepository::route($user->getKey().'/field/avatar'))
             ->assertNotFound();
     }
 
-    public function test_can_upload_file_using_storable()
+    public function test_can_upload_file_using_storable(): void
     {
         Storage::fake('customDisk');
 
@@ -180,7 +180,7 @@ class FileTest extends IntegrationTest
 
         $user = $this->mockUsers()->first();
 
-        $this->postJson(UserRepository::uriKey()."/{$user->id}", [
+        $this->postJson(UserRepository::route($user->getKey()), [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar' => '/storage/avatar.jpg',
@@ -189,7 +189,7 @@ class FileTest extends IntegrationTest
         Storage::disk('customDisk')->assertExists('avatar.jpg');
     }
 
-    public function test_model_updating_will_replace_file()
+    public function test_model_updating_will_replace_file(): void
     {
         Storage::fake('customDisk');
 
@@ -208,7 +208,7 @@ class FileTest extends IntegrationTest
                 Image::make('avatar')->disk('customDisk')->storeAs('newAvatar.jpg')->prunable(),
             ]);
 
-        $this->postJson(UserRepository::uriKey()."/{$user->id}", [
+        $this->postJson(UserRepository::route($user->getKey()), [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar' => '/storage/newAvatar.jpg',

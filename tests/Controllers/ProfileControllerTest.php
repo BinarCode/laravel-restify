@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Fields\Image;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
@@ -27,9 +28,9 @@ class ProfileControllerTest extends IntegrationTest
         );
     }
 
-    public function test_profile_returns_authenticated_user()
+    public function test_profile_returns_authenticated_user(): void
     {
-        $response = $this->getJson('profile')
+        $response = $this->getJson(Restify::path('profile'))
             ->assertOk()
             ->assertJsonStructure([
                 'data',
@@ -40,9 +41,11 @@ class ProfileControllerTest extends IntegrationTest
         ]);
     }
 
-    public function test_profile_returns_authenticated_user_with_related_posts()
+    public function test_profile_returns_authenticated_user_with_related_posts(): void
     {
-        $this->getJson('profile?related=posts')
+        $this->getJson(Restify::path('profile', [
+            'related' => 'posts',
+        ]))
             ->assertOk()
             ->assertJsonStructure([
                 'data' => [
@@ -57,7 +60,7 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_update()
     {
-        $response = $this->putJson('profile', [
+        $response = $this->putJson(Restify::path('profile'), [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
         ])->assertOk();
@@ -70,7 +73,7 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_update_password()
     {
-        $this->putJson('profile', [
+        $this->putJson(Restify::path('profile'), [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
             'password' => 'secret',
@@ -86,7 +89,7 @@ class ProfileControllerTest extends IntegrationTest
             'email' => 'existing@gmail.com',
         ]);
 
-        $this->putJson('profile', [
+        $this->putJson(Restify::path('profile'), [
             'email' => 'existing@gmail.com',
             'name' => 'Eduard',
         ])->assertStatus(422);
@@ -96,15 +99,15 @@ class ProfileControllerTest extends IntegrationTest
     {
         UserRepository::$canUseForProfileUpdate = true;
 
-        $this->putJson('profile', [
+        $this->putJson(Restify::path('profile'), [
             'email' => 'contact@binarschool.com',
             'name' => 'Ed',
         ])
             ->assertStatus(422)
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('message')
-                ->has('errors')
+                    ->has('message')
+                    ->has('errors')
             );
     }
 
@@ -112,13 +115,13 @@ class ProfileControllerTest extends IntegrationTest
     {
         UserRepository::$canUseForProfile = true;
 
-        $this->getJson('profile')
+        $this->getJson(Restify::path('profile'))
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data')
-                ->where('data.attributes.email', $this->authenticatedAs->email)
-                ->etc()
+                    ->has('data')
+                    ->where('data.attributes.email', $this->authenticatedAs->email)
+                    ->etc()
             );
     }
 
@@ -126,15 +129,17 @@ class ProfileControllerTest extends IntegrationTest
     {
         UserRepository::$canUseForProfile = true;
 
-        $this->getJson('profile?related=posts')
+        $this->getJson(Restify::path('profile', [
+            'related' => 'posts',
+        ]))
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data')
-                ->has('data.attributes')
-                ->has('data.relationships.posts')
-                ->where('data.attributes.email', $this->authenticatedAs->email)
-                ->etc()
+                    ->has('data')
+                    ->has('data.attributes')
+                    ->has('data.relationships.posts')
+                    ->where('data.attributes.email', $this->authenticatedAs->email)
+                    ->etc()
             );
     }
 
@@ -146,12 +151,12 @@ class ProfileControllerTest extends IntegrationTest
             'roles' => '',
         ];
 
-        $this->getJson('profile')
+        $this->getJson(Restify::path('profile'))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data.attributes')
-                ->has('data.meta.roles')
-                ->etc()
+                    ->has('data.attributes')
+                    ->has('data.meta.roles')
+                    ->etc()
             );
     }
 
@@ -159,12 +164,12 @@ class ProfileControllerTest extends IntegrationTest
     {
         UserRepository::$canUseForProfileUpdate = true;
 
-        $this->putJson('profile', [
+        $this->putJson(Restify::path('profile'), [
             'email' => $email = 'contact@binarschool.com',
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.email', $email)
+                    ->where('data.attributes.email', $email)
             );
     }
 
@@ -172,7 +177,7 @@ class ProfileControllerTest extends IntegrationTest
     {
         Storage::fake('customDisk');
 
-        $mock = UserRepository::partialMock()
+        UserRepository::partialMock()
             ->shouldReceive('canUseForProfileUpdate')
             ->andReturnTrue()
             ->shouldReceive('fields')
@@ -189,7 +194,7 @@ class ProfileControllerTest extends IntegrationTest
                     ->storeAs('avatar.jpg'),
             ]);
 
-        $this->postJson('profile', [
+        $this->postJson(Restify::path('profile'), [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar_original' => 'image.jpg',

@@ -25,8 +25,8 @@ use Throwable;
 
 /**
  * Class Getter
+ *
  * @method Response|JsonResponse handle(RestifyRequest $request, ?Model $model = null)
- * @package Binaryk\LaravelRestify\Getters
  */
 abstract class Getter implements JsonSerializable
 {

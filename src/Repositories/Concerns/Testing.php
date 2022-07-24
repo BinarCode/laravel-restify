@@ -5,25 +5,31 @@ namespace Binaryk\LaravelRestify\Repositories\Concerns;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Support\Str;
+use Illuminate\Support\Stringable;
 
 /**
  * Trait Testing
  *
  * @mixin Repository
- *
- * @package Binaryk\LaravelRestify\Repositories\Concerns
  */
 trait Testing
 {
-    public static function to(string $path = null, array $query = []): string
+    public static function route(string $path = null, array $query = []): Stringable
     {
-        $base = Restify::path().'/'.static::uriKey();
+        if (str($path)->startsWith('/')) {
+            $path = str($path)->replaceFirst('/', '')->toString();
+        }
+
+        $base = (static::prefix() ?: Str::replaceFirst('//', '/', Restify::path())).'/'.static::uriKey();
 
         $route = $path
             ? $base.'/'.$path
             : $base;
 
-        return $route.'?'.http_build_query($query);
+        return str(empty($query)
+            ? $route
+            : $route.'?'.http_build_query($query));
     }
 
     /**
@@ -33,7 +39,7 @@ trait Testing
     {
         $path = $key ? "$key/actions" : 'actions';
 
-        return static::to($path, [
+        return static::route($path, [
             'action' => app($action)->uriKey(),
         ]);
     }
@@ -42,7 +48,7 @@ trait Testing
     {
         $path = $key ? "$key/getters" : 'getters';
 
-        return  static::to($path . '/' .app($getter)->uriKey());
+        return static::route($path.'/'.app($getter)->uriKey());
     }
 
     public function dd(string $prop = null): void

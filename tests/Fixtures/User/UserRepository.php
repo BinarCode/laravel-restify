@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\UserProfile;
@@ -12,9 +11,9 @@ class UserRepository extends Repository
 {
     use UserProfile;
 
-    public static $model = User::class;
+    public static string $model = User::class;
 
-    public static $wasBooted = false;
+    public static bool $wasBooted = false;
 
     public static array $search = [
         'id',
@@ -34,11 +33,11 @@ class UserRepository extends Repository
     public function fields(RestifyRequest $request): array
     {
         return [
-            Field::new('name')->rules('sometimes', 'nullable', 'min:4'),
+            field('name')->rules('sometimes', 'nullable', 'min:4'),
 
-            Field::new('email')->rules('required', 'unique:users'),
+            field('email')->rules('required', 'unique:users'),
 
-            Field::new('password'),
+            field('password'),
         ];
     }
 
@@ -51,7 +50,7 @@ class UserRepository extends Repository
         ];
     }
 
-    protected static function booted()
+    protected static function booted(): void
     {
         static::$wasBooted = true;
     }

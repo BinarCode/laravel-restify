@@ -14,23 +14,11 @@
             <directory>tests</directory>
         </testsuite>
     </testsuites>
-    <filter>
-        <whitelist>
-            <directory suffix=".php">src/</directory>
-            <exclude>
-                <directory suffix="CheckPassport.php">src/Commands</directory>
-            </exclude>
-        </whitelist>
-    </filter>
-<!--    <logging>-->
-<!--        <log type="tap" target="build/report.tap"/>-->
-<!--        <log type="junit" target="build/report.junit.xml"/>-->
-<!--        <log type="coverage-html" target="build/coverage" charset="UTF-8" yui="true" highlight="true"/>-->
-<!--        <log type="coverage-text" target="build/coverage.txt"/>-->
-<!--        <log type="coverage-clover" target="build/logs/clover.xml"/>-->
-<!--    </logging>-->
     <php>
         <env name="APP_KEY" value="base64:la8jDWcqBHfGO6PR+OA9FAZqdi0XQKuhnzqc5tUATZs="/>
         <env name="MAIL_DRIVER" value="log"/>
+        <env name="DB_CONNECTION" value="sqlite"/>
+        <env name="DB_DATABASE" value=":memory:"/>
+        <env name="DB_FOREIGN_KEYS" value="false"/>
     </php>
 </phpunit>

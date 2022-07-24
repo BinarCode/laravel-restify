@@ -51,19 +51,33 @@ class RestResponse extends JsonResponse implements Responsable
      * Response Codes.
      */
     public const REST_RESPONSE_AUTH_CODE = 401;
+
     public const REST_RESPONSE_REFRESH_CODE = 103;
+
     public const REST_RESPONSE_CREATED_CODE = 201;
+
     public const REST_RESPONSE_UPDATED_CODE = 200;
+
     public const REST_RESPONSE_DELETED_CODE = 204; // update or delete with success
+
     public const REST_RESPONSE_BLANK_CODE = 204;
+
     public const REST_RESPONSE_ERROR_CODE = 500;
+
     public const REST_RESPONSE_INVALID_CODE = 400;
+
     public const REST_RESPONSE_UNAUTHORIZED_CODE = 401;
+
     public const REST_RESPONSE_FORBIDDEN_CODE = 403;
+
     public const REST_RESPONSE_MISSING_CODE = 404;
+
     public const REST_RESPONSE_NOTFOUND_CODE = 404;
+
     public const REST_RESPONSE_THROTTLE_CODE = 429;
+
     public const REST_RESPONSE_SUCCESS_CODE = 200;
+
     public const REST_RESPONSE_UNAVAILABLE_CODE = 503;
 
     public const CODES = [
@@ -96,12 +110,14 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Where specified, a meta member can be used to include non-standard meta-information.
      * The value of each meta member MUST be an object (a “meta object”).
+     *
      * @var array
      */
     protected ?array $meta = null;
 
     /**
      * A links object containing links related to the resource.
+     *
      * @var array
      */
     protected array $links;
@@ -125,12 +141,14 @@ class RestResponse extends JsonResponse implements Responsable
 
     /**
      * Model related entities.
+     *
      * @var
      */
     protected $relationships;
 
     /**
      * Indicate if response could include sensitive information (file, line).
+     *
      * @var bool
      */
     public bool $debug = false;
@@ -151,7 +169,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set response errors.
      *
-     * @param mixed $errors
+     * @param  mixed  $errors
      * @return $this|null
      */
     public function errors($errors): self
@@ -164,7 +182,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Add error to response errors.
      *
-     * @param mixed $message
+     * @param  mixed  $message
      * @return $this
      */
     public function addError($message): self
@@ -205,7 +223,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Magic to get response code constants.
      *
-     * @param string $key
+     * @param  string  $key
      * @return mixed|null
      */
     public function __get($key)
@@ -241,8 +259,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Build a new response with our response data.
      *
-     * @param mixed $response
-     *
+     * @param  mixed  $response
      * @return JsonResponse
      */
     public function respond($response = null): JsonResponse
@@ -334,6 +351,7 @@ class RestResponse extends JsonResponse implements Responsable
 
     /**
      * Set message on response.
+     *
      * @param $message
      * @return RestResponse
      */
@@ -356,7 +374,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set attributes at root level.
      *
-     * @param array $attributes
+     * @param  array  $attributes
      * @return mixed
      */
     public function setAttributes(array $attributes)
@@ -390,8 +408,8 @@ class RestResponse extends JsonResponse implements Responsable
      * Useful when newly created repository, will prepare the response according
      * with JSON:API https://jsonapi.org/format/#document-resource-object-fields.
      *
-     * @param Repository $repository
-     * @param bool $withRelations
+     * @param  Repository  $repository
+     * @param  bool  $withRelations
      * @return $this
      */
     public function forRepository(Repository $repository, $withRelations = false): self
@@ -439,7 +457,7 @@ class RestResponse extends JsonResponse implements Responsable
     }
 
     /**
-     * @param \Illuminate\Http\Request $request
+     * @param  \Illuminate\Http\Request  $request
      * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
      */
     public function toResponse($request = null)
@@ -507,7 +525,7 @@ class RestResponse extends JsonResponse implements Responsable
     }
 
     /**
-     * @param Throwable $exception
+     * @param  Throwable  $exception
      * @param $condition
      * @return $this
      */
@@ -529,7 +547,7 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Debug the log if the environment is local.
      *
-     * @param Throwable $exception
+     * @param  Throwable  $exception
      * @return $this
      */
     public function dumpLocal(Throwable $exception): self
@@ -542,7 +560,7 @@ class RestResponse extends JsonResponse implements Responsable
      *
      * $this->model( User::find(1) )
      *
-     * @param Model $model
+     * @param  Model  $model
      * @return $this
      */
     public function model(Model $model): self
@@ -563,10 +581,10 @@ class RestResponse extends JsonResponse implements Responsable
     {
         return response()->json(
             [
-            'meta' => array_merge(RepositoryCollection::meta($paginator->toArray()), $meta),
-            'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
-            'data' => $paginator->getCollection(),
-        ]
+                'meta' => array_merge(RepositoryCollection::meta($paginator->toArray()), $meta),
+                'links' => RepositoryCollection::paginationLinks($paginator->toArray()),
+                'data' => $paginator->getCollection(),
+            ]
         );
     }
 }

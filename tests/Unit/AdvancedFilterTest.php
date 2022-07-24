@@ -14,7 +14,8 @@ class AdvancedFilterTest extends IntegrationTest
 {
     public function test_advanced_filters_can_serialize(): void
     {
-        $filter = new class () extends AdvancedFilter {
+        $filter = new class() extends AdvancedFilter
+        {
             public static $uriKey = 'status-filter';
 
             public string $type = 'multiselect';
@@ -49,7 +50,6 @@ class AdvancedFilterTest extends IntegrationTest
             AssertableJson::fromArray($filter->jsonSerialize()),
             function (AssertableJson $json) {
                 $json
-                    ->dump()
                     ->where('type', 'multiselect')
                     ->where('advanced', true)
                     ->where('title', 'Status filter')

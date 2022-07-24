@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -20,11 +19,11 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         $this->authenticate();
     }
 
-    public function test_basic_update_works()
+    public function test_basic_simple_update_works(): void
     {
         $post = Post::factory()->create();
 
-        $this->putJson('posts/'.$post->id, [
+        $this->putJson(PostRepository::route($post->id), [
             'title' => 'Updated title',
         ])->assertOk();
 
@@ -35,7 +34,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
     {
         $post = Post::factory()->create();
 
-        $this->putJson('posts/'.$post->id, [
+        $this->putJson(PostRepository::route($post->id), [
             'title' => 'Updated title',
         ])->assertOk();
 
@@ -50,7 +49,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
 
         $_SERVER['restify.post.update'] = false;
 
-        $this->putJson('posts/'.$post->id, [
+        $this->putJson(PostRepository::route($post->id), [
             'title' => 'Updated title',
         ])->assertStatus(403);
     }
@@ -65,7 +64,9 @@ class RepositoryUpdateControllerTest extends IntegrationTest
                 Field::new('title'),
             ]);
 
-        $this->putJson(PostRepository::to(Post::factory()->create([
+        $_SERVER['restify.post.update'] = true;
+
+        $this->putJson(PostRepository::route(Post::factory()->create([
             'image' => null,
             'title' => 'Initial',
         ])->id), [
@@ -90,7 +91,7 @@ class RepositoryUpdateControllerTest extends IntegrationTest
                 Field::new('title'),
             ]);
 
-        $this->putJson(PostRepository::to(Post::factory()->create([
+        $this->putJson(PostRepository::route(Post::factory()->create([
             'image' => null,
             'title' => 'Initial',
         ])->id), [
@@ -103,30 +104,5 @@ class RepositoryUpdateControllerTest extends IntegrationTest
                 ->where('data.attributes.image', null)
                 ->etc()
             );
-    }
-
-    public function test_updating_repository_log_action(): void
-    {
-        $this->authenticate();
-
-        $post = Post::factory()->create([
-            'title' => 'Original',
-        ]);
-
-        $this->postJson("posts/$post->id", $data = [
-            'title' => 'Title changed',
-        ])->assertSuccessful();
-
-        $this->assertDatabaseHas('action_logs', [
-            'user_id' => $this->authenticatedAs->getAuthIdentifier(),
-            'name' => ActionLog::ACTION_UPDATED,
-            'actionable_type' => Post::class,
-            'actionable_id' => (string) $post->id,
-        ]);
-
-        $log = ActionLog::latest()->first();
-
-        $this->assertSame($data, $log->changes);
-        $this->assertSame(['title' => 'Original'], $log->original);
     }
 }

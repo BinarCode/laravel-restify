@@ -19,7 +19,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(CompanyRepository::uriKey()."/{$company->id}?include=users")
+        $this->withoutExceptionHandling()->getJson(CompanyRepository::route($company->id, ['include' => 'users']))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -38,12 +38,12 @@ class BelongsToManyFieldTest extends IntegrationTest
         });
 
         CompanyRepository::partialMock()
-            ->expects('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)->hideFromShow(),
             ]);
 
-        $this->getJson(CompanyRepository::uriKey()."/{$company->id}?related=users")
+        $this->getJson(CompanyRepository::route($company->id, ['include' => 'users']))
             ->assertJsonStructure([
                 'data' => [],
             ])->assertJsonMissing([
@@ -60,7 +60,7 @@ class BelongsToManyFieldTest extends IntegrationTest
         });
 
         CompanyRepository::partialMock()
-            ->shouldReceive('related')
+            ->shouldReceive('include')
             ->andReturn([
                 'users' => BelongsToMany::make('users', UserRepository::class)->hideFromIndex(),
             ]);
@@ -79,7 +79,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $response = $this->getJson(CompanyRepository::uriKey()."/{$company->id}/users")
+        $response = $this->getJson(CompanyRepository::route("$company->id/users"))
             ->assertOk();
 
         $this->assertSame(
@@ -97,7 +97,7 @@ class BelongsToManyFieldTest extends IntegrationTest
 
         $user->companies()->attach($companies);
 
-        $this->postJson(CompanyRepository::uriKey(), [
+        $this->postJson(CompanyRepository::route(), [
             'name' => 'Binar Code',
             'users' => [1, 2],
         ])->assertJsonMissing([

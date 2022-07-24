@@ -50,17 +50,17 @@ protected function gate()
 This is the first gate to access the Restify repositories. In a real life project, you may allow every authenticated user to have access to repositories, and just after that, using policies you can restrict specific actions. To do so: 
 
 ```php
-  Gate::define('viewRestify', function ($user) {
-      return true;
-  });
+Gate::define('viewRestify', function ($user) {
+    return true;
+});
 ```
 
 If you want to allow unauthenticated users to be authorized to see restify routes, you can nullify the `$user`:
 
 ```php
-  Gate::define('viewRestify', function ($user = null) {
-      return true;
-  });
+Gate::define('viewRestify', function ($user = null) {
+    return true;
+});
 ```
 
 From this point, it's highly recommended having a policy for each model have exposed via Restify. Otherwise, users may access unauthorized resources, which is not what we want.
@@ -78,11 +78,15 @@ php artisan restify:policy UserPolicy
 It will automatically detect the `User` model (the word before `Policy`). However, you can specify the model: 
 
 ```shell script
-php artisan restify:policy PostPolicy --model=User
+php artisan restify:policy PostPolicy --model=Post
 ```
 
 <alert>
 It will consider that the model lives into the `app/Models` directory.
+</alert>
+
+<alert type="warning">
+By default, Restify will unauthorized any requests if there isn't a defined policy method associated to the request endpoint. Or, if you don't have a policy at all, all requests to that repository will be unauthorized.
 </alert>
 
 If you already have a policy, here is the Restify default scaffolded one, so you can take methods on your own:
@@ -98,115 +102,55 @@ class PostPolicy
 {
     use HandlesAuthorization;
 
-    /**
-     * Determine whether the user can use restify feature for each CRUD operation.
-     * So if this is not allowed, all operations will be disabled
-     * @param User $user
-     * @return mixed
-     */
-    public function allowRestify(User $user = null)
+    public function allowRestify(User $user = null): bool
     {
         //
     }
 
-    /**
-     * Determine whether the user can get the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function show(User $user, Post $model)
+    public function show(User $user, Post $model): bool
     {
         //
     }
 
-    /**
-     * Determine whether the user can create models.
-     *
-     * @param User $user
-     * @return mixed
-     */
-    public function store(User $user)
+    public function store(User $user): bool
     {
         //
     }
 
-    /**
-     * Determine whether the user can create multiple models at once.
-     *
-     * @param User $user
-     * @return mixed
-     */
-    public function storeBulk(User $user)
+    public function storeBulk(User $user): bool
     {
         //
     }
 
-    /**
-     * Determine whether the user can update the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function update(User $user, Post $model)
+    public function update(User $user, Post $model): bool
     {
         //
     }
 
-    /**
-     * Determine whether the user can update bulk the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function updateBulk(User $user, Post $model)
+    public function updateBulk(User $user, Post $model): bool
     {
         //
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function delete(User $user, Post $model)
+    public function delete(User $user, Post $model): bool
     {
         //
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function restore(User $user, Post $model)
+    public function restore(User $user, Post $model): bool
     {
         //
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function forceDelete(User $user, Post $model)
+    public function forceDelete(User $user, Post $model): bool
     {
         //
     }
 }
 ```
 
-<alert type="warning">
-For the examples bellow, we will consider `PostRepository` as being an example.
+<alert type="info">
+For the examples bellow, we will consider PostRepository as being an example.
 </alert>
 
 ### Allow restify
@@ -214,17 +158,17 @@ For the examples bellow, we will consider `PostRepository` as being an example.
 Just after Restify detects the repository class, it will invoke this method, to check if the given user can load this repository at all. You can check if the user is admin for some specific repositories, for example:
 
 ```php
-    // PostPolicy
-    /**
-     * Determine whether the user can use restify feature for each CRUD operation.
-     * So if this is not allowed, all operations will be disabled
-     * @param User $user
-     * @return mixed
-     */
-    public function allowRestify(User $user)
-    {
-        return $user->isAdmin();
-    }
+// PostPolicy
+/**
+ * Determine whether the user can use restify feature for each CRUD operation.
+ * So if this is not allowed, all operations will be disabled
+ * @param User $user
+ * @return mixed
+ */
+public function allowRestify(User $user)
+{
+    return $user->isAdmin();
+}
 ```
 
 ### Allow show
@@ -246,17 +190,17 @@ POST: /api/restify/posts/{id} // it will give 403 Forbidden status if you don't 
 Definition:
  
 ```php
-    /**
-     * Determine whether the user can get the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function show(User $user, Post $model)
-    {
-        //
-    }
+/**
+ * Determine whether the user can get the model.
+ *
+ * @param User $user
+ * @param Post $model
+ * @return mixed
+ */
+public function show(User $user, Post $model)
+{
+    //
+}
 ```
 
 ### Allow store
@@ -272,16 +216,16 @@ POST: /api/restify/posts
 Definition:
 
 ```php
-    /**
-     * Determine whether the user can create models.
-     *
-     * @param User $user
-     * @return mixed
-     */
-    public function store(User $user)
-    {
-        //
-    }
+/**
+ * Determine whether the user can create models.
+ *
+ * @param User $user
+ * @return mixed
+ */
+public function store(User $user)
+{
+    //
+}
 ```
 ### Allow storeBulk
 
@@ -296,16 +240,16 @@ POST: api/posts/bulk
 Definition:
 
 ```php
-    /**
-     * Determine whether the user can create multiple models at once.
-     *
-     * @param User $user
-     * @return mixed
-     */
-    public function storeBulk(User $user)
-    {
-        //
-    }
+/**
+ * Determine whether the user can create multiple models at once.
+ *
+ * @param User $user
+ * @return mixed
+ */
+public function storeBulk(User $user)
+{
+    //
+}
 ```
 
 ### Allow update
@@ -342,17 +286,17 @@ The `update` method, correspond to the routes:
 Definition:
 
 ```php
-    /**
-     * Determine whether the user can update the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function update(User $user, Post $model)
-    {
-        //
-    }
+/**
+ * Determine whether the user can update the model.
+ *
+ * @param User $user
+ * @param Post $model
+ * @return mixed
+ */
+public function update(User $user, Post $model)
+{
+    //
+}
 ```
 
 ### Allow updateBulk
@@ -366,17 +310,17 @@ POST: api/restify/posts/bulk/update
 
 Definition:
 ```php
-    /**
-     * Determine whether the user can update bulk the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function updateBulk(User $user = null, Post $model)
-    {
-        return true;
-    }
+/**
+ * Determine whether the user can update bulk the model.
+ *
+ * @param User $user
+ * @param Post $model
+ * @return mixed
+ */
+public function updateBulk(User $user = null, Post $model)
+{
+    return true;
+}
 ```
 
 ### Allow delete
@@ -392,17 +336,17 @@ DELETE: api/restify/posts/{id}
 Definition:
 
 ```php
-    /**
-     * Determine whether the user can delete the model.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function delete(User $user, Post $model)
-    {
-        //
-    }
+/**
+ * Determine whether the user can delete the model.
+ *
+ * @param User $user
+ * @param Post $model
+ * @return mixed
+ */
+public function delete(User $user, Post $model)
+{
+    //
+}
 ```
 
 ### Allow Attach
@@ -425,19 +369,19 @@ POST: api/restify/users/{id}/attach/posts
 In this case, Restify will guess the policy name, by the related entity, in this case it will be `attachPost`:
 
 ```php
-    // UserPolicy.php
+// UserPolicy.php
 
-    /**
-     * Determine if the post could be attached to the user.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function attachPost(User $user, Post $model)
-    {
-        return $user->is($model->creator()->first());
-    }
+/**
+ * Determine if the post could be attached to the user.
+ *
+ * @param User $user
+ * @param Post $model
+ * @return mixed
+ */
+public function attachPost(User $user, Post $model)
+{
+    return $user->is($model->creator()->first());
+}
 ```
 
 The `attachPost` method, will be called for each post in part.
@@ -462,17 +406,17 @@ POST: api/restify/users/{id}/detach/posts
 In this case, Restify will guess the policy name, by the related entity, in this case it will be `detachPost`:
 
 ```php
-    /**
-     * Determine if the post could be attached to the user.
-     *
-     * @param User $user
-     * @param Post $model
-     * @return mixed
-     */
-    public function attachPost(User $user, Post $model)
-    {
-        return $user->is($model->creator()->first());
-    }
+/**
+ * Determine if the post could be attached to the user.
+ *
+ * @param User $user
+ * @param Post $model
+ * @return mixed
+ */
+public function attachPost(User $user, Post $model)
+{
+    return $user->is($model->creator()->first());
+}
 ```
 
 The `detachPost` method, will be called for each post in part.

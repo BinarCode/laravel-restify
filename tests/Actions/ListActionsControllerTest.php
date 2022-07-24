@@ -13,7 +13,7 @@ class ListActionsControllerTest extends IntegrationTest
     {
         $_SERVER['actions.posts.invalidate'] = false;
 
-        $this->getJson(PostRepository::to('actions'))
+        $this->getJson(PostRepository::route('actions'))
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
@@ -30,7 +30,7 @@ class ListActionsControllerTest extends IntegrationTest
         $_SERVER['actions.posts.invalidate'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->getJson('posts/1/actions')
+        $this->getJson(PostRepository::route('1/actions'))
             ->assertSuccessful()
             ->assertJsonCount(2, 'data')
             ->assertJsonStructure([
@@ -43,19 +43,19 @@ class ListActionsControllerTest extends IntegrationTest
             ]);
     }
 
-    public function test_can_list_actions_only_for_show()
+    public function test_can_list_actions_only_for_show(): void
     {
         $this->mockPosts(1, 2);
 
         $_SERVER['actions.posts.onlyOnShow'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = false;
 
-        $response = $this->getJson('posts/1/actions')
+        $response = $this->getJson(PostRepository::route('1/actions'))
             ->assertJsonCount(1, 'data');
 
         $this->assertEquals('invalidate-post-action', $response->json('data.0.uriKey'));
 
-        $response = $this->getJson('posts/actions')
+        $response = $this->getJson(PostRepository::route('actions'))
             ->assertJsonCount(1, 'data');
 
         $this->assertEquals('publish-post-action', $response->json('data.0.uriKey'));
@@ -63,10 +63,10 @@ class ListActionsControllerTest extends IntegrationTest
         $_SERVER['actions.posts.onlyOnShow'] = false;
         $_SERVER['actions.posts.publish.onlyOnShow'] = false;
 
-        $this->getJson('posts/1/actions')
+        $this->getJson(PostRepository::route('1/actions'))
             ->assertJsonCount(0, 'data');
 
-        $response = $this->getJson('posts/actions')
+        $response = $this->getJson(PostRepository::route('actions'))
             ->assertJsonCount(2, 'data');
 
         $this->assertEquals('publish-post-action', $response->json('data.0.uriKey'));

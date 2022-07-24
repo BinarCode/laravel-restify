@@ -1,8 +1,12 @@
 <?php
 
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
+use Binaryk\LaravelRestify\Repositories\Serializer;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 if (! function_exists('field')) {
     function field(...$args): Field
@@ -12,7 +16,7 @@ if (! function_exists('field')) {
 }
 
 if (! function_exists('isRestify')) {
-    function isRestify(\Illuminate\Http\Request $request): bool
+    function isRestify(Request $request): bool
     {
         return Restify::isRestify($request);
     }
@@ -44,5 +48,24 @@ if (! function_exists('id')) {
     function id(): Field
     {
         return field('id')->readonly();
+    }
+}
+
+if (! function_exists('rest')) {
+    function rest(...$models): Serializer
+    {
+        $models = collect($models)->flatten();
+
+        $repository = Restify::repositoryForModel(get_class($models->first())) ?? Repository::class;
+
+        return (new Serializer(app($repository)))
+            ->models(collect($models));
+    }
+}
+
+if (! function_exists('currentRepository')) {
+    function currentRepository(): Repository
+    {
+        return app(RepositoryInstance::class)->current();
     }
 }

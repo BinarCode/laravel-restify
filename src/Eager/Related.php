@@ -7,8 +7,8 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\Make;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Contracts\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -29,7 +29,7 @@ class Related implements JsonSerializable
      */
     private $value;
 
-    private ?EagerField $field;
+    public ?EagerField $field;
 
     /**
      * @var callable
@@ -67,6 +67,8 @@ class Related implements JsonSerializable
 
     public function resolve(RestifyRequest $request, Repository $repository): self
     {
+        $request->related()->resolved($repository::uriKey().$repository->getKey().$this->getRelation());
+
         if (is_callable($this->resolverCallback)) {
             $this->value = call_user_func($this->resolverCallback, $request, $repository);
 
@@ -84,7 +86,7 @@ class Related implements JsonSerializable
         }
 
         /** * To avoid circular relationships and deep stack calls, we will do not load eager fields. */
-        if ($this->isEager() && $repository->isEagerState() === false) {
+        if ($this->isEager()) {
             $this->value = $this->resolveField($repository)->value;
 
             return $this;
@@ -101,16 +103,16 @@ class Related implements JsonSerializable
         }
 
         switch ($paginator) {
-            case $paginator instanceof Builder:
-                $this->value = ($repository::$relatedCast)::fromBuilder($request, $paginator, $repository);
-
-                break;
-            case $paginator instanceof Relation:
-                $this->value = ($repository::$relatedCast)::fromRelation($request, $paginator, $repository);
-
-                break;
             case $paginator instanceof Collection:
                 $this->value = $paginator;
+
+                break;
+            case $paginator instanceof BelongsTo:
+                $this->value = $paginator->first();
+
+                break;
+            case $paginator instanceof Builder:
+                $this->value = $paginator->get();
 
                 break;
             default:

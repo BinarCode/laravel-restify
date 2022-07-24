@@ -28,7 +28,7 @@ class RepositoryPatchControllerTest extends IntegrationTest
                 field('description')->rules('required'),
             ]);
 
-        $this->patchJson(PostRepository::to($post->id), [
+        $this->patchJson(PostRepository::route($post->id), [
             'title' => 'Updated title.',
         ])->assertOk();
 

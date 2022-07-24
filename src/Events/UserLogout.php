@@ -15,7 +15,7 @@ class UserLogout
     public $user;
 
     /**
-     * @param Authenticatable $user
+     * @param  Authenticatable  $user
      */
     public function __construct($user)
     {

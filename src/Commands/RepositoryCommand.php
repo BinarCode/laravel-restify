@@ -55,8 +55,9 @@ class RepositoryCommand extends GeneratorCommand
      * Build the class with the given name.
      * This method should return the file class content.
      *
-     * @param string $name
+     * @param  string  $name
      * @return string
+     *
      * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
      */
     protected function buildClass($name)
@@ -65,12 +66,14 @@ class RepositoryCommand extends GeneratorCommand
             $name .= 'Repository';
         }
 
-        return $this->replaceModel(parent::buildClass($name), $this->guessQualifiedModelName());
+        return $this->replaceModel(parent::buildClass($name), $this->guessBaseModelClass());
     }
 
     protected function replaceModel($stub, $class)
     {
-        return str_replace(['DummyClass', '{{ model }}', '{{model}}'], $class, $stub);
+        $model = str_replace(['DummyClass', '{{ modelBase }}', '{{modelBase}}'], "$class::class", $stub);
+
+        return  str_replace(['DummyClass', '{{ model }}', '{{model}}'], str($this->guessQualifiedModelName())->replace('\\\\', '\\').';', $model);
     }
 
     protected function guessBaseModelClass()

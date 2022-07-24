@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Illuminate\Foundation\Http\FormRequest;
+use Throwable;
 
 class RestifyRequest extends FormRequest
 {
@@ -34,7 +35,7 @@ class RestifyRequest extends FormRequest
         /** * @var EagerField $eagerField */
         $eagerField = $parentRepository::collectRelated()
             ->forEager($this)
-            ->first(fn ($field, $key) => $key === $this->route('repository'));
+            ->first(fn (EagerField $field, $key) => $field->getAttribute() === $this->route('repository'));
 
         if (is_null($eagerField)) {
             abort(403, 'Eager field missing from the parent ['.$this->route('parentRepository').'] related fields.');
@@ -63,8 +64,10 @@ class RestifyRequest extends FormRequest
 
     public function related(): RelatedDto
     {
-        return new RelatedDto(
-            related: str_getcsv($this->input('related') ?? $this->input('include'))
-        );
+        try {
+            return app(RelatedDto::class)->sync($this, currentRepository() ?? $this->repository());
+        } catch (Throwable) {
+            return app(RelatedDto::class);
+        }
     }
 }

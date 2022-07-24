@@ -43,7 +43,7 @@ trait Attachable
     }
 
     /**
-     * @param Closure $callback
+     * @param  Closure  $callback
      * @return $this
      */
     public function canDetach(callable|Closure $callback)
@@ -137,7 +137,7 @@ trait Attachable
     /**
      * Set the columns on the pivot table to retrieve.
      *
-     * @param array|mixed $fields
+     * @param  array|mixed  $fields
      * @return $this
      */
     public function withPivot($fields)

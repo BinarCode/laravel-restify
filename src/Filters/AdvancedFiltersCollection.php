@@ -20,6 +20,10 @@ class AdvancedFiltersCollection extends Collection
 
     public static function collectQueryFilters(RestifyRequest $request, Repository $repository): self
     {
+        if (! $request->input('filters')) {
+            return static::make([]);
+        }
+
         $filters = json_decode(base64_decode($request->input('filters')), true);
 
         $allowedFilters = $repository->collectAdvancedFilters($request);

@@ -7,7 +7,7 @@ class UserPolicy
     /**
      * Determine if the given user can use repository.
      *
-     * @param User|null $user
+     * @param  User|null  $user
      * @return bool|mixed
      */
     public function allowRestify($user = null)

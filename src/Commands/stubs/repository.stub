@@ -2,16 +2,17 @@
 
 namespace DummyNamespace;
 
-use Binaryk\LaravelRestify\Fields\Field;
+use {{model}}
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 class DummyClass extends Repository
 {
-    public static $model = '{{ model }}';
+    public static string $model = {{ modelBase }};
 
     public function fields(RestifyRequest $request): array
     {
         return [
+            id(),
         ];
     }
 }

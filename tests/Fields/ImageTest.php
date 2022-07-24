@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Storage;
 
 class ImageTest extends IntegrationTest
 {
-    public function test_image_has_default()
+    public function test_image_has_default(): void
     {
         $image = Image::make('image')->default($default = 'https://lorempixel.com/500x500.png');
 
@@ -28,7 +28,7 @@ class ImageTest extends IntegrationTest
         );
     }
 
-    public function test_ignore_image_default_value_when_image_exists()
+    public function test_ignore_image_default_value_when_image_exists(): void
     {
         Storage::fake('customDisk');
 
@@ -40,7 +40,7 @@ class ImageTest extends IntegrationTest
 
         $user = $this->mockUsers()->first();
 
-        $this->postJson(UserRepository::uriKey()."/{$user->id}", [
+        $this->postJson(UserRepository::route($user->getKey()), [
             'avatar' => UploadedFile::fake()->image('image.jpg'),
         ])->assertOk()->assertJsonFragment([
             'avatar' => '/storage/avatar.jpg',
