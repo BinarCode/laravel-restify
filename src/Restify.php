@@ -87,7 +87,7 @@ class Restify
          * @var Repository|string $repositoryClass
          */
         if (is_null($repositoryClass = static::repositoryClassForKey($key))) {
-            throw RepositoryNotFoundException::make($repositoryClass);
+            throw RepositoryNotFoundException::make($key);
         }
 
         return $repositoryClass::isMock()

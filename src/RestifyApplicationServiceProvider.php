@@ -2,12 +2,16 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\LoginController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
+use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -23,6 +27,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         $this->authorization();
         $this->repositories();
         $this->authRoutes();
+        $this->routes();
     }
 
     /**
@@ -104,5 +109,19 @@ class RestifyApplicationServiceProvider extends ServiceProvider
                     ->name('restify.resetPassword');
             });
         });
+    }
+
+    protected function routes(): void
+    {
+        /**
+         * @var Kernel $kernel
+         */
+        $kernel = $this->app->make(Kernel::class);
+
+        $kernel->pushMiddleware(RestifyInjector::class);
+
+        if (App::runningInConsole()) {
+            app(RoutesBoot::class)->boot();
+        }
     }
 }

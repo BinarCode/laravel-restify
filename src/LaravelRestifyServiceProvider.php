@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
@@ -18,7 +17,6 @@ use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
 use Spatie\LaravelPackageTools\Package;
@@ -49,24 +47,19 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
             ]);
     }
 
-    /**
-     * @throws BindingResolutionException
-     */
     public function packageBooted(): void
     {
         if ($this->app->runningInConsole()) {
             $this->registerPublishing();
         }
 
-        /**
-         * @var Kernel $kernel
-         */
-        $kernel = $this->app->make(Kernel::class);
+        if (App::runningUnitTests()) {
+            /**
+             * @var Kernel $kernel
+             */
+            $kernel = $this->app->make(Kernel::class);
 
-        $kernel->pushMiddleware(RestifyInjector::class);
-
-        if (! App::runningUnitTests()) {
-            app(RoutesBoot::class)->boot();
+            $kernel->pushMiddleware(RestifyInjector::class);
         }
 
         $this->app->singleton(RelatedDto::class, fn ($app) => new RelatedDto());
