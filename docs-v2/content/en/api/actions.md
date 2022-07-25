@@ -18,7 +18,7 @@ $router->post('posts/publish', PublishPostsController::class);
 
 public function __invoke(RestifyRequest $request)
 {
-  ...
+  //...
 }
 ```
 
