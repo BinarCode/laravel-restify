@@ -39,7 +39,9 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function repositories(): void
     {
-        app(Filesystem::class)->ensureDirectoryExists(app_path('Restify'));
+        if (! is_dir(app_path('Restify'))) {
+            app(Filesystem::class)->ensureDirectoryExists(app_path('Restify'));
+        }
 
         Restify::repositoriesFrom(app_path('Restify'));
     }
