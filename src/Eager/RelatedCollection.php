@@ -135,6 +135,7 @@ class RelatedCollection extends Collection
         }
 
         return $this
+            ->intoAssoc()
             ->authorized($request)
             ->inRequest($request, $repository)
             ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))

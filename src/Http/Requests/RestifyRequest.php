@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\App;
 use Throwable;
 
 class RestifyRequest extends FormRequest
@@ -65,7 +66,13 @@ class RestifyRequest extends FormRequest
     public function related(): RelatedDto
     {
         try {
-            return app(RelatedDto::class)->sync($this, currentRepository() ?? $this->repository());
+            $dto = app(RelatedDto::class);
+
+//            if (App::runningUnitTests()) {
+//                $dto->reset();
+//            }
+
+            return $dto->sync($this, currentRepository() ?? $this->repository());
         } catch (Throwable) {
             return app(RelatedDto::class);
         }
