@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Support\Facades\App;
 use Throwable;
 
 /**
@@ -37,10 +38,6 @@ trait InteractWithRepositories
 
             $repository = Restify::repository($key);
 
-            if ($repository::class === currentRepository()::class) {
-                return currentRepository();
-            }
-
             throw_unless(
                 $repository::authorizedToUseRepository($this),
                 RepositoryException::unauthorized($repository::uriKey())
@@ -56,7 +53,7 @@ trait InteractWithRepositories
                 ->through(optional($repository::collectMiddlewares($this))->all())
                 ->thenReturn();
 
-            app()->singleton(RepositoryInstance::class, fn ($app) => new RepositoryInstance($repository));
+            app()->singleton(RepositoryInstance::class, fn($app) => new RepositoryInstance($repository));
 
             return $repository;
         } catch (RepositoryException $e) {
@@ -80,7 +77,7 @@ trait InteractWithRepositories
 
     public function newQuery(string $uriKey = null): Builder|Relation
     {
-        if (! $this->isViaRepository()) {
+        if (!$this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
         }
 
@@ -114,7 +111,7 @@ trait InteractWithRepositories
         $parentRepositoryId = $this->route('parentRepositoryId');
 
         //TODO: Find another implementation for prefixes:
-        $matchSomePrefixes = collect(Restify::$repositories)->some(fn (
+        $matchSomePrefixes = collect(Restify::$repositories)->some(fn(
             $repository
         ) => $repository::prefix() === "$parentRepository/$parentRepositoryId");
 
