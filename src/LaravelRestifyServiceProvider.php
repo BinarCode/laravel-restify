@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
@@ -14,10 +15,7 @@ use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
-use Binaryk\LaravelRestify\Filters\RelatedDto;
-use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -53,16 +51,9 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
             $this->registerPublishing();
         }
 
-        if (App::runningUnitTests()) {
-            /**
-             * @var Kernel $kernel
-             */
-            $kernel = $this->app->make(Kernel::class);
-
-            $kernel->pushMiddleware(RestifyInjector::class);
+        if (App::runningInConsole() && ! isset($_SERVER['dont_boot_console_routes'])) {
+            app(RoutesBoot::class)->boot();
         }
-
-        $this->app->singleton(RelatedDto::class, fn ($app) => new RelatedDto());
     }
 
     public function packageRegistered(): void

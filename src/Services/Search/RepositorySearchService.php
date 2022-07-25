@@ -103,6 +103,11 @@ class RepositorySearchService
             true,
         ))->filter(function ($relation) use ($query) {
             try {
+                if ($relation === 'target') {
+                    ray($query->getRelation($relation));
+                    ray($query->getRelation($relation) instanceof Relation);
+                }
+
                 return $query->getRelation($relation) instanceof Relation;
             } catch (Throwable) {
                 return false;

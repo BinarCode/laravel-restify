@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\ActionLogPolicy;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\Concerns\Mockers;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
@@ -70,6 +71,7 @@ abstract class IntegrationTest extends TestCase
     {
         return [
             LaravelRestifyServiceProvider::class,
+            RestifyApplicationServiceProvider::class,
         ];
     }
 

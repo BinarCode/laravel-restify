@@ -19,7 +19,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
     {
         $_SERVER['roles.canDetach.users'] = true;
 
-        $company = tap(Company::factory()->create(), function (Company $company) {
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id, [
                 'is_admin' => true,
             ]);
@@ -84,12 +84,16 @@ class RepositoryDetachControllerTest extends IntegrationTest
         ])->assertForbidden();
     }
 
-    public function test_many_to_many_field_can_intercept_detach_method()
+    public function test_many_to_many_field_can_intercept_detach_method(): void
     {
         CompanyRepository::partialMock()
             ->shouldReceive('include')
             ->andReturn([
-                'users' => BelongsToMany::make('users', UserRepository::class)->detachCallback(function ($request, $repository, $model) {
+                'users' => BelongsToMany::make('users', UserRepository::class)->detachCallback(function (
+                    $request,
+                    $repository,
+                    $model
+                ) {
                     $this->assertInstanceOf(Request::class, $request);
                     $this->assertInstanceOf(CompanyRepository::class, $repository);
                     $this->assertInstanceOf(Company::class, $model);
@@ -100,7 +104,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
                 }),
             ]);
 
-        $company = tap(Company::factory()->create(), function (Company $company) {
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
@@ -131,7 +135,7 @@ class RepositoryDetachControllerTest extends IntegrationTest
             },
         ];
 
-        $company = tap(Company::factory()->create(), function (Company $company) {
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company) {
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 

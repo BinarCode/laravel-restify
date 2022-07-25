@@ -11,6 +11,8 @@ class RepositoryWithRoutesTest extends IntegrationTest
 {
     protected function setUp(): void
     {
+        $_SERVER['dont_boot_console_routes'] = true;
+
         parent::setUp();
 
         Restify::repositories([

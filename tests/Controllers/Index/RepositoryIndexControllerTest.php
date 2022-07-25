@@ -184,6 +184,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         CompanyRepository::partialMock()
             ->shouldReceive('include')
             ->andReturn([
+                'owner',
                 'users' => HasMany::make('users', UserRepository::class),
                 'extraData' => fn () => ['country' => 'Romania'],
                 'extraMeta' => new InvokableExtraMeta,
@@ -197,7 +198,11 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 'companies' => BelongsToMany::make('companies', CompanyRepository::class),
             ]);
 
-        Company::factory()->has(
+        Company::factory()
+            ->for(User::factory()->state([
+                'email' => 'owner@owner.com',
+            ]), 'owner')
+            ->has(
             User::factory()->has(
                 Post::factory()->count(2)
             )->has(
@@ -206,7 +211,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         )->create();
 
         $this->withoutExceptionHandling()->getJson(CompanyRepository::route(null, [
-            'related' => 'users.companies.users, users.posts, users.roles, extraData, extraMeta',
+            'related' => 'users.companies.users, users.posts, users.roles, extraData, extraMeta, owner',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
                 ->where('data.0.type', 'companies')
@@ -218,7 +223,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 ->where('data.0.relationships.users.0.relationships.roles.0.type', 'roles')
                 ->where('data.0.relationships.users.0.relationships.companies.0.type', 'companies')
                 ->where('data.0.relationships.extraData', ['country' => 'Romania'])
-                ->where('data.0.relationships.extraMeta', ['userCount' => 10])
+                ->where('data.0.relationships.owner.email', 'owner@owner.com')
                 ->etc()
         );
     }
