@@ -2,16 +2,16 @@
 
 ## Introduction
 
-The API response format must stay consistent along the application. Ideally it would be good to follow a standard as
-the [JSON:API](https://jsonapi.org/format/) so your frontend app could align with the API.
+The API response format must stay consistent throughout the application. Ideally, it would be good to follow a standard such as
+the [JSON:API](https://jsonapi.org/format/), so your frontend app could align with the API nicely.
 
-Restify provides several different approaches to respond consistent to the application's incoming request. By default,
+Restify provides several different approaches to respond consistently to the application's incoming request. By default,
 Restify's base rest controller class uses a `RestResponse` structure which provides a convenient method to respond to
-the HTTP request with a variety of handy magic methods.
+the HTTP request with a variety of handy magical methods.
 
 ## Restify Response Quickstart
 
-To learn about Restify's handy response, let's look at a complete example of responding a request and returning the data
+To learn about Restify's helpful response, let's take a look at a complete example of responding to a request and returning the data
 back to the client.
 
 ### Defining The Route
@@ -28,7 +28,7 @@ The `GET` route will return back a user for the given `id`.
 
 ### Creating The Controller
 
-Next, let's take a look at a simple `API` controller that handles this route. We'll leave the `show` and `store` methods
+Next, let's take a closer look at a simple `API` controller that handles this route. We'll leave the `show` and `store` methods
 empty for now:
 
 ```php
@@ -66,7 +66,7 @@ class UserController extends RestController
 
 ### Writing The API Response Logic
 
-Now we are ready to fill in our `show` method with the logic to respond with the user resource. To do this, we will use
+Now, we are ready to fill in our `show` method with the logic to respond with the user resource. To do this, we will use
 the `respond` method provided by the parent `Binaryk\LaravelRestify\Controllers\RestController` class. A JSON response
 will be sent for `API` request containing `data` and `errors` properties.
 
@@ -86,11 +86,11 @@ public function show($id)
 ```
 
 As you can see, we pass the desired data into the `respond` method. This method will wrap the passed data into a JSON
-object and attach it to the `data` response property.
+object and attach it to the `data` response's property.
 
 ### Receiving API Response
 
-Once the `respond` method wrapping the data, the HTTP request will receive back a response having always the structure:
+Once the `respond` method wraps up the data, the HTTP request will receive back a response with the following structure:
 
 ```json
 {
@@ -116,7 +116,7 @@ or:
 
 ## Response factory
 
-In addition the parent `RestController` provides a powerful `response` factory method. To understand this let's return
+In addition, the parent `RestController` provides a powerful `response` factory method. To understand this, let's return
 back to our `store` method from the `UserController`:
 
 ```php
@@ -162,8 +162,8 @@ The response will look like:
 
 ### Displaying Response Errors
 
-As we saw above, the response always contains an `errors` property. This can be either an empty array, or a list with
-errors. For example, what if the incoming request parameters do not pass the given validation rules? This can be handled
+As we saw above, the response always contains an `errors` property. This can be either an empty array or a list with
+errors. For example, what if the incoming request parameters can not pass the given validation rules? This can be handled
 by the `errors` proxy method:
 
 ```php
@@ -188,7 +188,7 @@ public function store(Request $request)
 }
 ```
 
-And returned `API` response will have the `400` HTTP code and the following format:
+The returned `API` response will have the `400` HTTP code and the following format:
 
 ```json
 {
@@ -202,9 +202,8 @@ And returned `API` response will have the `400` HTTP code and the following form
 
 ## Custom Header
 
-Sometimes you may need to respond with a custom header, for example according
-with [JSON:API](https://jsonapi.org/format/#crud-creating-responses-201)
-after storing an entity, we should respond with a `Location` header which has the value endpoint to the resource:
+Sometimes you may need to respond with a custom header, according to [JSON:API](https://jsonapi.org/format/#crud-creating-responses-201).
+After storing an entity, we should respond with a `Location` header that has the value endpoint to the resource:
 
 ```php
 return $this->response()
@@ -214,9 +213,9 @@ return $this->response()
 
 ## Optional Attributes
 
-By default Restify returns `data` and `errors` attributes in the API response. It also wrap the message into a `meta`
-object. But what if we have to send some custom attributes. In addition to generating default fields, you may add extra
-fields to the response by using `setMeta` method from the `RestResponse` object:
+Therefore, Restify returns the `data` and `errors` attributes in the API's response. It also wraps the message into a `meta`
+object. But what if we have to send some custom attributes? In addition to generating the default fields, you can add extra
+fields to the response by using the `setMeta` method from the `RestResponse` object:
 
 ```php
 return $this->response()
@@ -226,12 +225,12 @@ return $this->response()
 
 ## Hiding Default Attribute
 
-Restify has a list of predefined attributes: `'line', 'file', 'stack', 'data', 'errors', 'meta'`.
+Restify has a list of predefined attributes, such as: `'line', 'file', 'stack', 'data', 'errors', 'meta'`.
 
-Some of those are hidden in production: `'line', 'file', 'stack'`, since they are only used for tracking exceptions.
+Some of these are hidden in production though: `'line', 'file', 'stack'`, since they are only used for tracking exceptions.
 
-If you would like the API response to not contain any of these fields (or hiding a specific one, `errors` for example),
-this can be done by setting in the application provider the:
+If you would like the API's response to not contain any of these fields (or hide a specific one like `errors`, for example),
+this action can be done by setting in the application provider the:
 
 ```php
 RestResponse::$RESPONSE_DEFAULT_ATTRIBUTES = ['data', 'meta'];
@@ -239,12 +238,12 @@ RestResponse::$RESPONSE_DEFAULT_ATTRIBUTES = ['data', 'meta'];
 
 ## Rest Response Methods
 
-The `$this->response()` returns an instance of `Binaryk\LaravelRestify\Controllers\RestResponse`. This expose multiple
-magic methods for your consistent API response.
+The `$this->response()` returns an instance of `Binaryk\LaravelRestify\Controllers\RestResponse`. This exposes multiple
+magical methods for your consistent API response.
 
 ### Attach data
 
-As we already have seen, attaching data to the response can be done by using:
+As we have already seen, attaching data to the response can be done by using:
 
 ```php
 ->data($info)
@@ -252,7 +251,7 @@ As we already have seen, attaching data to the response can be done by using:
 
 ### Headers setup
 
-Header could be set by using `header` method, it accept two arguments, the header name and header value:
+The header could be set by using `header` method, as it accepts only two arguments - the header's name and header's value:
 
 ```php
 ->header('Location', 'api/users/1')
@@ -260,8 +259,8 @@ Header could be set by using `header` method, it accept two arguments, the heade
 
 ### Meta information
 
-In addition with `data` you may want to send some extra attributes to the client, a message for example, or anything
-else:
+In addition to the `data`, you may want to send some extra attributes to the client. A message would be a good example, or even anything
+else for that matter:
 
 ```php
 ->setMeta('name', 'Eduard Lupacescu')
@@ -273,7 +272,7 @@ else:
 
 ## Response code modifiers
 
-Very often we have to send an informative response code. The follow methods are used for setting the response code:
+Oftentimes, we have to send an informative response code. The following methods are used for setting the code's response:
 
 ### Refresh 103
 
@@ -341,7 +340,7 @@ Very often we have to send an informative response code. The follow methods are 
 
 ## Debugging
 
-The follow methods could be used to debug some information in the dev mode:
+The following methods could be used to debug some information in the dev mode:
 
 ### Line debugging
 
@@ -352,7 +351,7 @@ $this->line($lineNumber)
 
 ### Debug to file
 
-This could be used for debugging the file name
+This could be used for debugging the file's name
 
 ```php
 $this->file($exception->getFile())
@@ -360,7 +359,7 @@ $this->file($exception->getFile())
 
 ### Stack traces
 
-With this you may log the exception stach trace
+With this you can log the exception stach trace
 
 ```php
 $this->stack($exception->getTraceAsString())
@@ -368,7 +367,7 @@ $this->stack($exception->getTraceAsString())
 
 ### Errors methods
 
-The follow methods could be used for adding errors to the response:
+The following methods could be used for adding errors to the response:
 
 ### Adding multiple errors
 
@@ -380,7 +379,7 @@ $this->errors([ 'Something went wrong' ])
 
 ### addError function
 
-Adding error by error in a response instance:
+Adding error by error in a response's instance:
 
 ```php
 $this->addError('Something went wrong')
@@ -388,7 +387,7 @@ $this->addError('Something went wrong')
 
 ## Custom Paginator
 
-Sometimes you have a custom paginator collection, and you want to keep the same response format as the `Repository`does.
+Every so often you have a customed paginator collection. You want to keep the same response format, just as the `Repository`does.
 
 You can use this static call:
 
