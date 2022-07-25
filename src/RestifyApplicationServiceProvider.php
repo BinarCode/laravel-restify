@@ -123,6 +123,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
     protected function singleton(): void
     {
-        $this->app->singletonIf(RelatedDto::class, fn($app) => new RelatedDto());
+        $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
     }
 }
