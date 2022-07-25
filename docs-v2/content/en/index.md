@@ -23,9 +23,7 @@ If you don't have an application written with Nova, you can start with Laravel R
 </list>
 
 
-
-
-## Videosssa
+## Videos
 
 You can find the [full course here](https://www.binarcode.com/learn/restify) with features and insights about how Laravel Restify works.
 
