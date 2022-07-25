@@ -5,7 +5,7 @@ category: API
 position: 8
 ---
 
-Field is basically the model attribute representation.
+A field is basically the model's attribute representation.
 
 ## Declaration
 
@@ -15,7 +15,7 @@ a fluent API for a variety of mutators, interceptors and validators.
 To add a field to a repository, we can simply add it to the repository's fields method. Typically, fields may be created
 using their static `new` or `make` method. 
 
-The first argument is always the attribute name, and usually matches the database `column`.
+The first argument is always the attribute name and usually matches the database `column`.
 
 ```php
 
@@ -55,11 +55,11 @@ The second optional argument is a callback or invokable, and it represents the d
 field('name', fn() => 'John Doe')
 ```
 
-The field above will always return the `name` value as `John Doe`. The field is still writeable, so you can update or create an entity using it.
+The field above will always return the `name` value as `John Doe`. The field is still writeable, so you can update or create an entity by using it.
 
 ### Readonly field
 
-If you don't want a field to be writeable you can mark it readonly: 
+If you don't want a field to be writeable you can mark it as readonly: 
 
 ```php
 field('title')->readonly()
@@ -82,13 +82,13 @@ field('name', fn() => "$this->first_name $this->last_name")->readonly()
 
 ## Authorization
 
-The `Field` class provides few methods to authorize certain actions. Each authorization method accept a `Closure` that
+The `Field` class provides a few methods in order to authorize certain actions. Each authorization method accepts a `Closure` that
 should return `true`
 or `false`. The `Closure` will receive the incoming `\Illuminate\Http\Request` request.
 
 ### Can see
 
-Sometimes you may want to hide certain fields from a group of users. You may easily accomplish this by chaining
+Sometimes, you may want to hide certain fields from a group of users. You may easily accomplish this by chaining
 the `canSee`:
 
  ```php
@@ -126,14 +126,14 @@ public function fields(RestifyRequest $request)
 
 ## Validation
 
-There is a gold rule saying - catch the exception as soon as possible on its request way.
+There is a gold rule that's saying - catch the exception as soon as possible on its request way.
 
-Validations are the first bridge of your request information, it would be a good start to validate your input. So you
+Validations are the first bridge of your request information, so it would be a good start to validate your input. In this manner, you
 don't have to worry about the payload anymore.
 
 ### Attaching rules
 
-Validation rules could be adding by chaining the `rules` method to
+Validation rules could be added by chaining the `rules` method to
 attach [validation rules](https://laravel.com/docs/validation#available-validation-rules) to the field:
 
 ```php
@@ -141,7 +141,7 @@ field('email')->rules('required', 'email'),
 ```
 
 Of course, if you are leveraging Laravel's support
-for [validation rule objects](https://laravel.com/docs/validation#using-rule-objects), you may attach those to resources
+for [validation rule objects](https://laravel.com/docs/validation#using-rule-objects), you may attach those to the resources
 as well:
 
 ```php
@@ -166,11 +166,11 @@ helper: `field('email')->required()`
 
 </alert>
 
-These rules will be applied for all update and store requests.
+These rules will be applied for all the update and store requests.
 
 ### Storing Rules
 
-If you would like to define more specific rules that only apply when a resource is being storing, you may use
+If you would like to define more specific rules that only apply when a resource is being stored, you might want to use
 the `storingRules` method:
 
 ```php
@@ -179,7 +179,7 @@ Field::new('email')
     ->storingRules('unique:users,email');
 ```
 
-Considering Restify concatenates rules provided by the `rules()` method, the entire validation for a POST request on
+Considering the fact that Restify concatenates rules provided by the `rules()` method, the entire validation for a POST request on
 this repository will look like this:
 
 ```php
@@ -190,7 +190,7 @@ $request->validate([
 
 ### Updating Rules
 
-Likewise, if you would like to define rules that only apply when a resource is being updated, you may use
+On this wise, if you would like to define rules that only apply when a resource is being updated, you may use
 the `updatingRules` method.
 
 ```php
@@ -199,15 +199,15 @@ Field::new('email')->updatingRules('required', 'email');
 
 ## Interceptors
 
-Sometimes you may want to take the control over certain Field actions. 
+Sometimes you might want to take control over certain Field actions. 
 
-That's why the Field class expose a lot of chained methods you can call to configure it.
+That's why the Field class exposes a lot of chained methods you can call to configure it.
 
 ### Fill callback
 
 During the `store` and `update` requests, there are two steps before the value from the Request is attached to the model attribute. 
 
-Firstly it is retrieved from the application request, and passed to the `fillCallback` and secondly, the value is passed through the `storeCallback` or `updateCallback`:
+First, it is retrieved from the application request and passed to the `fillCallback`. Then, the value is passed through the `storeCallback` or `updateCallback`:
 
 You may intercept each of those with closures.
 
@@ -223,7 +223,7 @@ This way you can get anything from the `$request` and perform any transformation
 
 ### Store callback
 
-Another handy interceptor is the `storeCallback`, this is the step immediately before attaching the value from the
+Another handy interceptor is the `storeCallback`. This is the step that comes immediately before attaching the value from the
 request to the model attribute:
 
 This interceptor may be useful for modifying the value passed through the `$request`.
@@ -236,7 +236,7 @@ Field::new('password')->storeCallback(function (RestifyRequest $request) {
 
 ### Update callback
 
-Likewise, works the `updateCallback`. Let's use an invokable this time:
+The `updateCallback` works in the same manner. Let's use an invokable this time:
 
 ```php
 Field::new('password')->updateCallback(new PasswordUpdateInvokable);
@@ -256,9 +256,9 @@ class PasswordUpdateInvokable
 
 ### Index Callback
 
-Sometimes you may want to transform some attribute from the database right before it is returned to the frontend.
+Sometimes, you might want to transform an attribute from the database right before it is returned to the frontend.
 
-Transform the value for the index request:
+Transform the value for the following index request:
 
 ```php
 Field::new('password')->indexCallback(function ($value) {
@@ -268,7 +268,7 @@ Field::new('password')->indexCallback(function ($value) {
 
 ### Show callback
 
-Transform the value for the show request:
+Transform the value for the following show request:
 
 ```php
 Field::new('password')->showRequest(function ($value) {
@@ -278,9 +278,9 @@ Field::new('password')->showRequest(function ($value) {
 
 ### Fields actionable
 
-Sometime storing attributes might require the stored model before saving it. 
+At times, storing attributes might require the stored model before saving it. 
 
-For example, say the Post model uses the [media library](https://spatie.be/docs/laravel-medialibrary/v9/introduction) and has the `media` relationship, that's a list of Media files:
+For example, let's say the Post model uses the [media library](https://spatie.be/docs/laravel-medialibrary/v9/introduction), and has the `media` relationship that is a list of Media files:
 
 ```php
 // PostRepository
@@ -298,7 +298,7 @@ public function fields(RestifyRequest $request): array
 }
 ```
 
-So we have a virtual `files` field (it's not an actual database column) that uses a [computed field](#computed-field) to display the list of Post's files names. The `->action()` call, accept an instance of a class that extends `Binaryk\LaravelRestify\Actions\Action`: 
+So we have a virtual `files` field (it's not an actual database column) that uses a [computed field](#computed-field) to display the list of Post's files names. The `->action()` calls and accepts an instance of a class that extends `Binaryk\LaravelRestify\Actions\Action`: 
 
 ```php
 class AttachPostFileRestifyAction extends Action
@@ -310,7 +310,7 @@ class AttachPostFileRestifyAction extends Action
 }
 ```
 
-The action gets the `$request` and the current `$post` model. Say the frontend has to create a post with a file:
+The action gets the `$request` and the current `$post` model. Let's say the frontend has to create a post with a file:
 
 ```javascript
 const data = new FormData;
@@ -320,7 +320,7 @@ data.append('title', 'Post title');
 axios.post(`api/restify/posts`, data);
 ```
 
-In a single request we're able to create the post and attach file using media library, otherwise it would involve 2 separate requests (post creation and file attaching).
+We were able to create the post and attach a file using media library in a single request. Otherwise, it would have implied creating 2 separate requests (post creation and file attaching).
 
 Actionable fields handle [store](/repositories#store-request), put, [bulk store](/repositories#store-bulk-flow) and bulk update requests.
 
@@ -335,7 +335,7 @@ you specify the `value` value for it:
 Field::new('user_id')->value(Auth::id());
 ```
 
-or using a closure:
+or by using a closure:
 
 ```php
 Field::new('user_id')->hidden()->value(function(RestifyRequest $request, $model, $attribute) {
@@ -345,14 +345,14 @@ Field::new('user_id')->hidden()->value(function(RestifyRequest $request, $model,
 
 ### Default Displayed Value
 
-If you have a field which has `null` value into the database, however, you want to return a fallback default value for
+If you have a field which has `null` value into the database, you might want to return a fallback default value for
 the frontend:
 
 ```php
 Field::new('description')->default('N/A');
 ```
 
-So now, for fields which don't have a description into the database, it will return `N/A`.
+Now, for the fields that don't have a description into the database, it will return `N/A`.
 
 <alert type="info">
 The default value is ONLY used for the READ, not for WRITE requests.
@@ -368,7 +368,7 @@ Field label, so you can replace a field attribute spelling when it is returned t
 Field::new('created_at')->label('sent_at')
 ```
 
-Of course if you want to populate this value from a frontend request, you can use the label as a payload key.
+If you want to populate this value from a frontend request, you can use the label as a payload key.
 
 ### Hidden field
 
@@ -378,7 +378,7 @@ Field can be setup as hidden:
 Field::new('token')->hidden(); // this will not be visible 
 ```
 
-However, you can populate the field value when the entity is stored, by using `value`:
+However, you can populate the field value when the entity is stored by using `value`:
 
 ```php
 Field::new('token')->value(Str::random(32))->hidden();
@@ -409,7 +409,7 @@ Field::new('title')->afterUpdate(function($value, $oldValue) {
 ## File fields
 
 To illustrate the behavior of Restify file upload fields, let's assume our application's users can upload "avatar
-photos" to their account. So, our users database table will have an `avatar` column. This column will contain the path
+photos" to their account. Our users' database table will have an `avatar` column. This column will contain the path
 to the profile on disk, or, when using a cloud storage provider such as Amazon S3, the profile photo's path within its "
 bucket".
 
@@ -438,8 +438,8 @@ You can use `field('avatar')->file()` instead of `File::make('avatar')` as well.
 
 ### How Files Are Stored
 
-When a file is uploaded using this field, Restify will use
-Laravel's [Filesystem integration](https://laravel.com/docs/filesystem) to store the file on the disk of your choosing
+When a file is uploaded by using this field, Restify will use
+Laravel's [Filesystem integration](https://laravel.com/docs/filesystem) to store the file from the disk of your choice
 with a randomly generated filename. Once the file is stored, Restify will store the relative path to the file in the
 file field's underlying database column.
 
@@ -475,7 +475,7 @@ Image::make('avatar')->storeAs('avatar.jpg')
 
 In addition to storing the path to the file within the storage system, you may also instruct Restify to store the
 original client filename and its size (in bytes). You may accomplish this using the `storeOriginalName` and `storeSize`
-methods. Each of these methods accept the name of the column you would like to store the file information:
+methods. Each of these methods accepts the name of the column that you would want to store the file's information in:
 
 ```php
 Image::make('avatar')
@@ -484,7 +484,7 @@ Image::make('avatar')
     ->storeAs('avatar.jpg')
 ```
 
-The image above will store the file, with name `avatar.jpg` in the `avatar` column, the file original name
+The image above will store the file with the name `avatar.jpg` in the `avatar` column, the original file name
 into `avatar_original` column and file size in bytes under `avatar_size` column (only if these columns are fillable on
 your model).
 
@@ -496,7 +496,7 @@ You can use `field('avatar')->image()` instead of `Image::make('avatar')` as wel
 
 ### Pruning & Deletion
 
-File fields are deletable by default, so considering the following field definition:
+File fields are deletable by default, so check out the following field definition:
 
 ```php
 File::make('avatar')
@@ -514,7 +514,7 @@ You can override this behavior by using the `deletable` method:
 File::make('Photo')->disk('public')->deletable(false)
 ```
 
-So now the field will do not be deletable anymore.
+Now, the field will not be deletable anymore.
 
 ### Customizing File Storage
 
@@ -540,8 +540,8 @@ File::make('avatar')
 
 #### Customizing The Entire Storage Process
 
-However, if you would like to take **total** control over the file storage logic of a field, you may use the `store`
-method. The `store` method accepts a callable which receives the incoming HTTP request and the model instance associated
+However, if you would like to take **full** control over the file storage logic of a field, you may use the `store`
+method. The `store` method accepts a callable which receives the incoming HTTP request and the model's instance associated
 with the request:
 
 ```php
@@ -558,7 +558,7 @@ File::make('avatar')
 ```
 
 As you can see in the example above, the `store` callback is returning an array of keys and values. These key / value
-pairs are mapped onto your model instance before it is saved to the database, allowing you to update one or many of the
+pairs are mapped onto your model's instance before it is saved to the database, allowing you to update one or many of the
 model's database columns after your file is stored.
 
 #### Storeables
@@ -570,7 +570,7 @@ that reason, Restify allows you to pass an "Storable" class to the `store` metho
 File::make('avatar')->store(AvatarStore::class),
 ```
 
-The storable class should be a simple PHP class and extends the `Binaryk\LaravelRestify\Repositories\Storable` contract:
+The storable class should be a simple PHP class, because it extends the `Binaryk\LaravelRestify\Repositories\Storable` contract:
 
 ```php
 <?php
