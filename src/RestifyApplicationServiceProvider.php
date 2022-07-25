@@ -10,7 +10,6 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -39,10 +38,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function repositories(): void
     {
-        if (! is_dir(app_path('Restify'))) {
-            app(Filesystem::class)->ensureDirectoryExists(app_path('Restify'));
-        }
-
         Restify::repositoriesFrom(app_path('Restify'));
     }
 
