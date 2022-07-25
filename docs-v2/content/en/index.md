@@ -25,7 +25,7 @@ If you don't have an application written with Nova, you can start with Laravel R
 
 ## Videos
 
-You can find the [full course here](https://www.binarcode.com/learn/restify) with many useful features and insights about how Laravel Restify works.
+You can find the [full course here](https://www.binarcode.com/learn/restify) with many useful features and insights on how Laravel Restify works.
 
 <iframe src="https://player.vimeo.com/video/501764861" width="640" height="480">
 </iframe>
