@@ -554,7 +554,7 @@ class Repository implements RestifySearchable, JsonSerializable
 //                ->intoAssoc()
 //                ->forRequest($request, $this)
 //                ->mapIntoRelated($request, $this)
-////                ->unserialized($request, $this)
+        ////                ->unserialized($request, $this)
 //                ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
 //                ->map(function (mixed $items) {
 //                    if ($items instanceof Collection) {
