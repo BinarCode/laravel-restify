@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
+use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\LoginController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
@@ -27,6 +27,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         $this->repositories();
         $this->authRoutes();
         $this->routes();
+        $this->singleton();
     }
 
     /**
@@ -118,7 +119,10 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         $kernel = $this->app->make(Kernel::class);
 
         $kernel->pushMiddleware(RestifyInjector::class);
+    }
 
-        app(RoutesBoot::class)->boot();
+    protected function singleton(): void
+    {
+        $this->app->singletonIf(RelatedDto::class, fn($app) => new RelatedDto());
     }
 }

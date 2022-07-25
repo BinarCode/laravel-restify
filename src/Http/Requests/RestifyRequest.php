@@ -66,13 +66,7 @@ class RestifyRequest extends FormRequest
     public function related(): RelatedDto
     {
         try {
-            $dto = app(RelatedDto::class);
-
-//            if (App::runningUnitTests()) {
-//                $dto->reset();
-//            }
-
-            return $dto->sync($this, currentRepository() ?? $this->repository());
+            return app(RelatedDto::class)->sync($this, currentRepository() ?? $this->repository());
         } catch (Throwable) {
             return app(RelatedDto::class);
         }
