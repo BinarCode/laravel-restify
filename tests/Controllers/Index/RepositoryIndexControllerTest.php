@@ -203,12 +203,12 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 'email' => 'owner@owner.com',
             ]), 'owner')
             ->has(
-            User::factory()->has(
-                Post::factory()->count(2)
-            )->has(
-                Role::factory()
-            )
-        )->create();
+                User::factory()->has(
+                    Post::factory()->count(2)
+                )->has(
+                    Role::factory()
+                )
+            )->create();
 
         $this->withoutExceptionHandling()->getJson(CompanyRepository::route(null, [
             'related' => 'users.companies.users, users.posts, users.roles, extraData, extraMeta, owner',
