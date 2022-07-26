@@ -77,15 +77,15 @@ class FieldActionTest extends IntegrationTest
             ]);
 
         $this->postJson(PostRepository::route('bulk'), [
-                [
-                    'title' => $title1 = 'First title',
-                    'description' => 'first description',
-                ],
-                [
-                    'title' => $title2 = 'Second title',
-                    'description' => 'second description',
-                ],
-            ])
+            [
+                'title' => $title1 = 'First title',
+                'description' => 'first description',
+            ],
+            [
+                'title' => $title2 = 'Second title',
+                'description' => 'second description',
+            ],
+        ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
                     ->where('data.0.title', $title1)
