@@ -11,8 +11,8 @@ Laravel Restify has a few requirements that you should be mindful of before inst
 
 <list :items="[
   'PHP >= 8.0',
-  'Laravel Framework >= 8.0' for Restify <= 6.x
-  'Laravel Framework >= 9.0' for Restify >= 7.x
+  'Laravel Framework >= 8.0 for Restify <= 6.x',
+  'Laravel Framework >= 9.0 for Restify >= 7.x'
 ]">
 </list>
 
