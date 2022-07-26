@@ -5,32 +5,32 @@ category: Auth
 position: 1
 ---
 
-After setting up the Restify configuration, and the authentication. The next logical step is to protect your API Repositories against unauthorized users. 
+After setting up the Restify configuration and the authentication, the next logical step is to protect your API Repositories against unauthorized users. 
 
 ## Request lifecycle
 
-Before diving in details about authorization, it's important for you to understand what is the actual lifecycle of the request. So you can know what to expect, and how to debug your app at any point.
+Before diving into details about authorization, it is important for you to understand what is the actual lifecycle of the request. On that account, you can know what to expect and how to debug your app at any point.
 
 ### Booting
 
 When you run a request (ie via Postman), it hits the Laravel application. Laravel will load every single Service Provider it has defined into `config/app.php` and [auto discovered ](https://laravel.com/docs/packages#package-discovery) providers as well.
 
-Restify injects the `RestifyApplicationServiceProvider`, it is injected in your `config/app.php` and it also has an auto discovered provider called `LaravelRestify\LaravelRestifyServiceProvider`.
+Restify injects the `RestifyApplicationServiceProvider` in your `config/app.php` and it also has an auto discovered provider called `LaravelRestify\LaravelRestifyServiceProvider`.
 
-- The `LaravelRestifyServiceProvider` is booted firstly, this will push the `RestifyInjector` middleware at the end of the middleware stack. 
+- The `LaravelRestifyServiceProvider` is booted first. This will basically push the `RestifyInjector` middleware at the end of the middleware stack. 
 
-- Then `RestifyApplicationServiceProvider` is booted, this will define the gate, will load repositories and make the auth routes macro. You have the full control over this provider.
+- Then, the `RestifyApplicationServiceProvider` is booted. This will define the gate, will load repositories and make the auth routes macro. You now have full control over this provider.
 
-- The `RestifyInjector` will be handled. It will register all routes.
+- The `RestifyInjector` will be handled. It will register all the routes.
 
-- On each request, if the request route is a Restify route, Laravel will handle other middlewares defined in the `restify.php` -> `middleware`.
+- On each request, if the requested route is a Restify route, Laravel will handle other middlewares defined in the `restify.php` -> `middleware`.
 
 
 ## View Restify
 
-Since we are now aware of how Restify boot itself, let's see how to guard it.
+Since we are now aware of how Restify boots itself, let's see how to guard it.
 
-Let's take a closer look to the package global gate:
+Let's take a closer look at the package's global gate:
 
 <alert> This gate is only active in a non-local environment. </alert>
 
@@ -47,7 +47,7 @@ protected function gate()
 }
 ```
 
-This is the first gate to access the Restify repositories. In a real life project, you may allow every authenticated user to have access to repositories, and just after that, using policies you can restrict specific actions. To do so: 
+This is the first gate to access the Restify repositories. In a real-life project, you may allow every authenticated user to have access to repositories and just after that, by using policies you can restrict certain specific actions. To do so: 
 
 ```php
 Gate::define('viewRestify', function ($user) {
@@ -55,7 +55,7 @@ Gate::define('viewRestify', function ($user) {
 });
 ```
 
-If you want to allow unauthenticated users to be authorized to see restify routes, you can nullify the `$user`:
+If you want to allow unauthenticated users to be authorized to see the restify routes, you can nullify the `$user`:
 
 ```php
 Gate::define('viewRestify', function ($user = null) {
@@ -63,33 +63,33 @@ Gate::define('viewRestify', function ($user = null) {
 });
 ```
 
-From this point, it's highly recommended having a policy for each model have exposed via Restify. Otherwise, users may access unauthorized resources, which is not what we want.
+From this point, it's highly recommended to have a policy for each model exposed via Restify. Otherwise, users may access unauthorized resources, which is not what we want.
 
 ## Policies
 
 If you are not aware of what a policy is, we highly recommend reading the [documentation](https://laravel.com/docs/authorization#creating-policies) before you move forward.
 
-You can use the Laravel command for generating a policy, it's recommended to generate a policy using Restify command, because it will scaffold Restify CRUD authorization methods for you:
+You can use the Laravel command for generating a policy. It is greatly recommended to generate a policy using the Restify command because it will scaffold Restify's CRUD authorization methods for you:
 
 ```shell script
 php artisan restify:policy UserPolicy
 ```
 
-It will automatically detect the `User` model (the word before `Policy`). However, you can specify the model: 
+It will automatically detect the `User` model (the word before `Policy`). However, you can set out the following example: 
 
 ```shell script
 php artisan restify:policy PostPolicy --model=Post
 ```
 
 <alert>
-It will consider that the model lives into the `app/Models` directory.
+It will ultimately be considered that the model lives into the `app/Models` directory.
 </alert>
 
 <alert type="warning">
-By default, Restify will unauthorized any requests if there isn't a defined policy method associated to the request endpoint. Or, if you don't have a policy at all, all requests to that repository will be unauthorized.
+By default, Restify will unauthorize any requests if there isn't a defined policy method associated to the request's endpoint. Or, if you don't have a policy at all, all requests from that repository will be unauthorized.
 </alert>
 
-If you already have a policy, here is the Restify default scaffolded one, so you can take methods on your own:
+If you already have a policy, here is the Restify default scaffolded one so you can apply these methods on your own:
 
 ```php
 namespace App\Policies;
@@ -150,12 +150,12 @@ class PostPolicy
 ```
 
 <alert type="info">
-For the examples bellow, we will consider PostRepository as being an example.
+For the examples below, we will consider PostRepository as being a pertinent example.
 </alert>
 
 ### Allow restify
 
-Just after Restify detects the repository class, it will invoke this method, to check if the given user can load this repository at all. You can check if the user is admin for some specific repositories, for example:
+Just after Restify detects the repository class, it will invoke this method to check if the given user can load this repository in any manner. You can also check if the user is an admin for some specific repositories, such as:
 
 ```php
 // PostPolicy
@@ -173,18 +173,18 @@ public function allowRestify(User $user)
 
 ### Allow show
 
-From here, bellow, each policy corresponds to an exposed Restify route.
+From here, each policy corresponds to an exposed Restify route.
 
-The `show` method, correspond to the routes:
+In addition, the `show` method, corresponds to the following routes:
 
 ```http request
-POST: /api/restify/posts // it will filter out from the pagination the entities you don't have access to
+POST: /api/restify/posts // it will filter out the entities you don't have access to from the pagination
 ```
 
 and:
 
 ```http request
-POST: /api/restify/posts/{id} // it will give 403 Forbidden status if you don't have access to the resource
+POST: /api/restify/posts/{id} // it will give a 403 Forbidden status if you don't have access to the resource
 ```
 
 Definition:
@@ -205,9 +205,9 @@ public function show(User $user, Post $model)
 
 ### Allow store
 
-Determine if a specific user has access to the POST route for creation an entity. 
+Determine if a specific user has access to the POST's route in order to create an entity. 
 
-The `store` method, correspond to the route:
+The `store` method, corresponds to the following route:
 
 ```http request
 POST: /api/restify/posts
@@ -231,7 +231,7 @@ public function store(User $user)
 
 Determine if the user can store multiple entities at once.
 
-The `storeBulk` method, correspond to the route:
+The `storeBulk` method corresponds to the following route:
 
 ```http request
 POST: api/posts/bulk
@@ -256,7 +256,7 @@ public function storeBulk(User $user)
 
 Determine if the user can update a specific model.
 
-The `update` method, correspond to the routes:
+The `update` method corresponds to the following routes:
 
 <code-group>
 
@@ -300,9 +300,9 @@ public function update(User $user, Post $model)
 ```
 
 ### Allow updateBulk
-Determine if the user can update multiple entities at once. When you bulk update, this method will be invoked for each entity you're trying to update, and if at least one will return false, no one will be updated, this is because the bulk update is a DB transaction.
+Determine if the user can update multiple entities at once. When you bulk update, this method will be invoked for each entity you're trying to update. If at least one will return false - none will be updated. The reason behind that is that the bulk update is a DB transaction.
 
-The `updateBulk` method, correspond to the route:
+The `updateBulk` method, corresponds to the following route:
 
 ```http request
 POST: api/restify/posts/bulk/update
@@ -327,7 +327,7 @@ public function updateBulk(User $user = null, Post $model)
 
 The delete endpoint policy.
 
-The `delete` method, correspond to the route:
+The `delete` method, corresponds to the following route:
 
 ```http request
 DELETE: api/restify/posts/{id}
@@ -353,11 +353,11 @@ public function delete(User $user, Post $model)
 
 <alert type="warning">
 
-Here we're talking about pivot tables. Many to many relationships.
+Here is where we're talking about pivot tables. Many to many relationships.
 
 </alert>
 
-When attaching a model to another, we should check if the user is able to do that. For example attaching posts to a user:
+When attaching a model to another, we should check if the user is also able to do that. For example, attaching posts to a user:
 
 ```http request
 POST: api/restify/users/{id}/attach/posts
@@ -366,7 +366,7 @@ POST: api/restify/users/{id}/attach/posts
 { "posts": [1, 2, 3] }
 ```
 
-In this case, Restify will guess the policy name, by the related entity, in this case it will be `attachPost`:
+Restify will guess the policy's name by the related entity. For this reason, it will be `attachPost`:
 
 ```php
 // UserPolicy.php
@@ -384,7 +384,7 @@ public function attachPost(User $user, Post $model)
 }
 ```
 
-The `attachPost` method, will be called for each post in part.
+The `attachPost` method will be called for each individual post.
 
 ### Allow Detach
 
@@ -394,7 +394,7 @@ Here we're talking about pivot tables. Many to many relationships.
 
 </alert>
 
-When detaching a model from another, we should check if the user is able to do that. For example detaching posts from a user:
+When detaching a model from another, we should check if the user is also able to do that. For example, detaching posts from a user:
 
 ```http request
 POST: api/restify/users/{id}/detach/posts
@@ -403,7 +403,7 @@ POST: api/restify/users/{id}/detach/posts
 { "posts": [1, 2, 3] }
 ```
 
-In this case, Restify will guess the policy name, by the related entity, in this case it will be `detachPost`:
+ Restify will guess the policy's name by the related entity. For this reason, it will be `detachPost`:
 
 ```php
 /**
@@ -423,6 +423,6 @@ The `detachPost` method, will be called for each post in part.
 
 ## Register Policy
 
-A common mistake, is that sometimes you may define a policy, but you don't attach it to a model in your `app/Providers/AuthServiceProvider.php`. Make sure you have it defined there.
+A common mistake is that sometimes you may define a policy, but you don't attach it to a model in your `app/Providers/AuthServiceProvider.php`. Make sure you have it figured out here.
 
 See [documentation](https://laravel.com/docs/authorization#registering-policies).
