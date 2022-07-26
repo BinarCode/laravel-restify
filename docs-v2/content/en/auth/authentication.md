@@ -5,19 +5,19 @@ category: Auth
 position: 1
 ---
 
-Laravel Restify has support for authentication with [Laravel Sanctum](https://laravel.com/docs/sanctum#api-token-authentication).
+Laravel Restify has the support for a facile authentication with [Laravel Sanctum](https://laravel.com/docs/sanctum#api-token-authentication).
 
-You'll finally enjoy the auth setup (`register`, `login`, `forgot` and `reset password`).
+Now you can finally enjoy the auth setup (`register`, `login`, `forgot`, and `reset password`).
 
 ## Prerequisites
 
-Migrate the `users`, `password_resets` table (they already exists into a fresh Laravel app).
+Migrate the `users`, `password_resets` table (they already exist into a fresh Laravel app).
 
 ### Install sanctum
 
 See the docs [here](https://laravel.com/docs/sanctum#installation). You don't need to add `\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,` in your `'api'` middleware group. 
 
-So you only have to run these 3 commands: 
+You only have to run these 3 commands: 
 
 ```shell script
 composer require laravel/sanctum
@@ -42,7 +42,7 @@ The `User` model should extend the `Illuminate\Foundation\Auth\User` class or im
 
 <alert type="info">
 
-Ensure you didn't skip to add the `\Laravel\Sanctum\HasApiTokens` trait to your `User` model.
+Make sure you didn't skip adding the `\Laravel\Sanctum\HasApiTokens` trait to your `User` model.
 
 </alert>
 
@@ -60,7 +60,7 @@ class User extends Authenticatable
 
 ## Define routes
 
-Restify provides you a simple way to add all of your auth routes ready. Simply add in your `routes/api.php`:
+Restify provides you a simple way to add all of your auth routes prepared. Simply add in your `routes/api.php`:
 
 ```php
 Route::restifyAuth();
@@ -68,7 +68,7 @@ Route::restifyAuth();
 
 And voila, now you have auth routes ready to be used.
 
-These are default routes provided by restify: 
+These are the default routes provided by restify: 
 
 | Verb           | URI                                      | Action           | 
 | :------------- |:-----------------------------------------| :----------------|
@@ -86,16 +86,16 @@ The `register` and `login` routes are outside the base `restify` prefix because 
 
 ## Export auth controllers
 
-All of these routes are handle by default, so you can just use them. However, you can customize each of them by exporting auth controllers: 
+All of these routes are handled by default, so you can just use them facilely. However, you can customize each of them by exporting auth controllers: 
 
 ```shell
 php artisan restify:auth
 ```
-So you have all auth controllers, blade email files exported into your project.
+Now you have all the auth controllers and blade email files exported into your project.
 
 ## Sanctum Middleware
 
-Next, add the `auth:sanctum` middleware after the `api` middleware in your config file to protect all restify routes:
+Next, add the `auth:sanctum` middleware after the `api` middleware in your config file to protect all the restify's routes:
 
 ```php
 /config/restify.php
