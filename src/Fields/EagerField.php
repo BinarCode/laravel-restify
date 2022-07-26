@@ -134,8 +134,8 @@ class EagerField extends Field
 
     public function withRelatedQuery(RelatedQuery $relatedQuery): self
     {
-       $this->relatedQuery = $relatedQuery ;
+        $this->relatedQuery = $relatedQuery;
 
-       return $this;
+        return $this;
     }
 }
