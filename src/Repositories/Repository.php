@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
-use App\Restify\MediaRepository;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
@@ -537,8 +536,9 @@ class Repository implements RestifySearchable, JsonSerializable
 
         return static::collectRelated()
             ->forRequest($request, $this)
-            ->mapIntoRelated($request, $this)
-            ->unserialized($request, $this)
+//            ->mapIntoRelated($request, $this)
+//            ->unserialized($request, $this)
+            ->markQuerySerialized($request, $this)
             ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
             ->map(function (mixed $items) {
                 if ($items instanceof Collection) {

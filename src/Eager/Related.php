@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Eager;
 
 use Binaryk\LaravelRestify\Fields\EagerField;
+use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\HasColumns;
@@ -35,6 +36,8 @@ class Related implements JsonSerializable
      * @var callable
      */
     private $resolverCallback;
+
+    public ?RelatedQuery $relatedQuery = null;
 
     public function __construct(string $relation, EagerField $field = null)
     {
@@ -125,6 +128,13 @@ class Related implements JsonSerializable
     public function resolveUsing(callable $resolver): self
     {
         $this->resolverCallback = $resolver;
+
+        return $this;
+    }
+
+    public function withRelatedQuery(RelatedQuery $relatedQuery): self
+    {
+        $this->relatedQuery = $relatedQuery;
 
         return $this;
     }

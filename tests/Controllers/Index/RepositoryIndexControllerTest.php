@@ -340,6 +340,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->getJson(CompanyRepository::route(query: [
             'related' => 'users.creator',
         ]))->assertJson(fn(AssertableJson $json) => $json
+            ->missing('data.0.relationships.users.0.relationships.creator.relationships.creator')
             ->where('data.0.relationships.users.0.relationships.creator.attributes.email', 'creator@creator.com')
             ->etc()
         );

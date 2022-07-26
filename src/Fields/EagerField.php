@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\HasColumns;
@@ -28,6 +29,8 @@ class EagerField extends Field
      * @var string
      */
     public string $repositoryClass;
+
+    public RelatedQuery $relatedQuery;
 
     public function __construct($attribute, string $parentRepository = null)
     {
@@ -127,5 +130,12 @@ class EagerField extends Field
         Repository $repository
     ): string {
         return $this->getRelation($repository)->getRelated()->getQualifiedKeyName();
+    }
+
+    public function withRelatedQuery(RelatedQuery $relatedQuery): self
+    {
+       $this->relatedQuery = $relatedQuery ;
+
+       return $this;
     }
 }

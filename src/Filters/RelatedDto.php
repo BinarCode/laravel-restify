@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Stringable;
 
 class RelatedDto
@@ -45,9 +46,13 @@ class RelatedDto
         return $this->getRelatedQueryFor($relation)?->columns() ?: ['*'];
     }
 
-    public function getRelatedQueryFor(string $relation): ?RelatedQuery
+    public function getRelatedQueryFor(string $relation, bool $unserialized = true): ?RelatedQuery
     {
-        return collect($this->relatedArray)->first(fn ($object, $key) => str_contains($key, $relation));
+        $exactMatch = currentRepository()::uriKey() === str($relation)->before('.')->toString();
+
+        return collect($this->relatedArray)
+//            ->when($unserialized, fn (Collection $related) => $related->filter(fn(RelatedQuery $relatedQuery) => $relatedQuery->isSerialized() === false))
+            ->first(fn ($object, $key) => $exactMatch ? $key === $relation : str_contains($key, $relation));
     }
 
     public function getNestedFor(string $relation): ?RelatedQueryCollection
