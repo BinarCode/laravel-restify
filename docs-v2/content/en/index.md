@@ -22,6 +22,10 @@ If you don't have an application written with Nova, you can start with Laravel R
 ]">
 </list>
 
+## Playground
+
+You can find a playground in the [Restify Demo GitHub repository](https://github.com/BinarCode/restify-demo).
+
 ## Videos
 
 You can find the [full course here](https://www.binarcode.com/learn/restify) with features and insights about how Laravel Restify works.
