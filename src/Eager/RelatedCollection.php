@@ -22,7 +22,7 @@ class RelatedCollection extends Collection
             $mapKey = is_numeric($key) ? $value : $key;
 
             if ($value instanceof EagerField) {
-                $mapKey = $key ?: $value->getAttribute();
+                $mapKey = (is_numeric($key) || empty($key)) ? $value->getAttribute() : $key;
             }
 
             return [

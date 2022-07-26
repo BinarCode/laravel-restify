@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\UserProfile;
@@ -27,6 +28,7 @@ class UserRepository extends Repository
     public static array $middleware = [];
 
     public static array $match = [
+        'id' => 'int',
         'created_at' => RestifySearchable::MATCH_DATETIME,
     ];
 

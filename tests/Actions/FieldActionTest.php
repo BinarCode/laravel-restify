@@ -76,9 +76,7 @@ class FieldActionTest extends IntegrationTest
                 Field::new('description')->action($action),
             ]);
 
-        $this
-            ->withoutExceptionHandling()
-            ->postJson(PostRepository::route('bulk'), [
+        $this->postJson(PostRepository::route('bulk'), [
                 [
                     'title' => $title1 = 'First title',
                     'description' => 'first description',
