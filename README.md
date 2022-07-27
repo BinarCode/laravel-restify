@@ -23,6 +23,10 @@ You can install the package via composer:
 composer require binaryk/laravel-restify
 ```
 
+## Playground
+
+You can find a playground in the [Restify Demo GitHub repository](https://github.com/BinarCode/restify-demo).
+
 ## Videos
 
 If you are a visual learner, checkout [our video course](https://www.binarcode.com/learn/restify) for the Laravel Restify.

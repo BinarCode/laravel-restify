@@ -9,7 +9,7 @@ position: 10
 
 Eloquent provides a large variety of relationships. You can read about them [here](https://laravel.com/docs/eloquent-relationships).
 
-Restify handles all relationships and give you an expressive way to list resource relationships.
+Restify handles all relationships and gives you an expressive way to list resource relationships.
 
 ## Definition
 
@@ -24,11 +24,11 @@ public static function related(): array
 
 ### Eager fields
 
-The `related` method will return an array that should be a key value pair, where the key is the related name the API will request, and value could be an instance of `Binaryk\LaravelRestify\Fields\EagerField` or a relationship name defined in your model.
+The `related` method will return an array that should be a key-value pair, where the key is the related name that the API will request, and the value could be an instance of `Binaryk\LaravelRestify\Fields\EagerField` or a relationship name defined in your model.
 
 Each `EagerField` declaration is similar to the `Field` one. The first argument is the `model` relationship name. The second argument is a repository that represents the related entity. 
 
-Say we have a User that has a list of posts, we will define it this way: 
+Let's say we have a User that has a list of posts. We will define it this way: 
 
 ```php
 HasMany::make('posts', PostRepository::class),
@@ -65,7 +65,7 @@ public static function related(): array
 }
 ```
 
-Above we can see few types of relationship declaration Restify provides. Let's explain them. 
+Above we can see a few types of relationships declarations that Restify provides. Let's explain them. 
 
 #### Long definition
 
@@ -73,7 +73,7 @@ Above we can see few types of relationship declaration Restify provides. Let's e
 'usersRelationship' => HasMany::make('users', UserRepository::class),
 ```
 
-This means that there is a relationship of type `hasMany` declared in the Company model. The Eloquent relationship name is `users` (see the first argument of the HasMany field): 
+This means that there is a relationship of the `hasMany` type declared in the Company model. The Eloquent relationship name is `users` (see the first argument of the HasMany field): 
 
 ```php
 // app/Models/Company.php
@@ -114,7 +114,7 @@ GET: api/companies?related=posts
 
 'extraMeta' => new Invokable()
 ```
-Restify allow you to resolve specific data using callable functions or invokable (classes with a single public __invoke method). You can return any kind of data from these callables, it'll be serialized accordingly. The query param in this case should match the key:
+Restify allows you to resolve specific data using callable functions or invokable (classes with a single public __invoke method). You can return any kind of data from these callables. It'll be serialized accordingly. The query param in this case should match the key:
 
 ```http request
 GET: api/companies?related=extraData,extraMeta
@@ -126,10 +126,10 @@ GET: api/companies?related=extraData,extraMeta
 'country',
 ```
 
-If you simply define a key in the `related`, Restify will forward your request to the associated model. Your model could return anything, it might be an Eloquent relationship or any primary data.
+If you simply define a key in the `related`, Restify will forward your request to the associated model. Your model could return anything, as it might be an Eloquent relationship or any primary data.
 
 
-Let's take a look over all relationships Restify provides:
+Let's take a look over all the relationships that Restify provides:
 
 ### Frontend request
 
@@ -139,9 +139,9 @@ In order to get the related resources, you need to send a `GET` request to:
 GET `/api/restify/users?include=posts`
 ```
 
-Sometimes you might want to load specific columns from the database into the response. For example, if you have a `Post` model with an `id`, `title` and a `description` column, you might want to load only the `title` and the `description` column in the response.
+Sometimes, you might want to load specific columns from the database into the response. For example, if you have a `Post` model with an `id`, `title`, and a `description` column, you might want to load only the `title` and the `description` column in the response.
 
-In order to do this, you can use in the request:
+In order to do this, you can use the following request:
 
 ```http request
 GET /users/1?include=posts[title|description]
@@ -174,7 +174,7 @@ public static function related(): array
 }
 ```
 
-And in `PostRepository` you might have a list of comments for each post: 
+In `PostRepository` you might have a list of comments for each post: 
 
 ```php
 // PostRepository
@@ -186,7 +186,7 @@ public static function related(): array
 }
 ```
 
-In order to get the company users with their posts and roles you can follow the [laravel syntax for eager loading](https://laravel.com/docs/master/eloquent-relationships#nested-eager-loading) into the request query: 
+In order to get the company's users with their posts and roles, you can follow the [laravel syntax for eager loading](https://laravel.com/docs/master/eloquent-relationships#nested-eager-loading) into the request query: 
 
 ```http request
 GET: /api/restify/companies?include=users.posts,users.roles
@@ -231,13 +231,13 @@ This request will return a list like this:
 }
 ```
 
-You can also specify load the `comments` of the `posts`: 
+You can also specify and load the `comments` of the `posts`: 
 
 ```http request
 GET: /api/restify/companies?include=users.posts.comments,users.roles
 ```
 
-Or specify exact columns you want to load for each nested layer: 
+Or specify the exact columns that you want to load for each nested layer: 
 
 ```http request
 GET: /api/restify/companies?include=users[name].posts[id|title].comments[comment],users.roles[name]
@@ -250,13 +250,13 @@ Getting specific columns will make your requests more performant.
 
 ### Meta information
 
-Starting with Restify 7+ meta information for related (in index requests) will do not be displayed. For more details read the [repository meta](/api/repositories#index-item-meta).
+Starting with Restify 7+, meta information for related (in index requests) will not be displayed. For more details read the [repository meta](/api/repositories#index-item-meta).
 
 ## BelongsTo & MorphOne
 
-The `BelongsTo` and `MorphOne` eager fields works in a similar way. So let's take the `BelongsTo` as an example.
+The `BelongsTo` and `MorphOne` eager fields work in a similar way, so let's take the `BelongsTo` as an example.
 
-Let's assume each `Post` [belongsTo](https://laravel.com/docs/eloquent-relationships#one-to-many-inverse) a `User`. To return the post's owner we will define it this way:
+Let's assume each `Post` [belongsTo](https://laravel.com/docs/eloquent-relationships#one-to-many-inverse) a `User`. To return the post's owner, we will have it defined just like this:
 
 ```php
 // PostRepository
@@ -268,7 +268,7 @@ public static function related(): array
 }
 ```
 
-And the model should define the relationship `user`: 
+The model should define the relationship `user`: 
 
 ```php
 // Post.php
@@ -279,7 +279,7 @@ public function user()
 }
 ```
 
-Now the frontend can list post or posts including the relationship: 
+Now the frontend can list post or posts including the following relationship: 
 
 ```http request
 GET: api/restify/posts/1?include=owner
@@ -330,7 +330,7 @@ BelongsTo::make('user')->searchable('name')
 
 The `searchable` method accepts a list of database attributes from the related entity (`users` in our case).
 
-So if we get the following search request, it'll also search into the related user's name: 
+Therefore, if we get the following search request, it'll also search into the related user's name: 
 
 ```http request
 GET: api/restify/companies?related=user&search="John"
@@ -381,8 +381,8 @@ The json response structure will be the same as previously:
 
 ## HasMany & MorphMany
 
-The `HasMany` and `MorphMany` fields corresponds to a `hasMany` and `morphMany` Eloquent relationship. For example, let's assume a User
-model `hasMany` `Post` models. We may add the relationship to our `UserRepository` like so:
+The `HasMany` and `MorphMany` fields correspond to a `hasMany` and `morphMany` Eloquent relationship. For example, let's assume a User
+model `hasMany` `Post` models. We may add the relationship to our `UserRepository` as shown:
 
 ```php
 // UserRepository
@@ -394,7 +394,7 @@ public static function related(): array
 }
 ```
 
-So you will get back the `posts` relationship:
+In addition, you will get back the `posts` relationship:
 
 ```json
 {
@@ -435,7 +435,7 @@ So you will get back the `posts` relationship:
 ### Paginate
 
 `HasMany` field returns 15 entries in the `relationships`. This could be customizable from the repository (the
-repository being in this case the class of the related resource) class using:
+repository being in this case the class of the related resource) class by using:
 
 ```php
 public static int $defaultRelatablePerPage = 100;
@@ -452,14 +452,14 @@ GET: api/restify/users?related=posts&relatablePerPage=100
 
 <alert type="warning"> 
 
-When using `relatablePerPage` query param, it will paginate all relatable entities with that size.
+When using `relatablePerPage` query param, it will paginate all the relatable entities with that size.
 
 </alert>
 
 ## BelongsToMany & MorphToMany
 
 The `BelongsToMany` and `MorphToMany` field corresponds to a `belongsToMany` or `morphToMany` Eloquent relationship. For example, let's assume a `User`
-model `belongsToMany` Role models. We may add the relationship to our UserRepository like so:
+model `belongsToMany` Role models. We may add the relationship to our UserRepository in such wise:
 
 ```php
 // CompanyRepository
@@ -475,12 +475,12 @@ public static function related(): array
 
 If your `belongsToMany` relationship interacts with additional "pivot" attributes that are stored on the intermediate
 table of the `many-to-many` relationship, you may also attach those to your `BelongsToMany` Restify Field. Once these
-fields are attached to the relationship field, and the relationship has been defined on both sides, they will be
+fields are attached to the relationship field and the relationship has been defined on both sides, they will be
 displayed on the request.
 
 For example, let's assume our `User` model `belongsToMany` Role models. On our `user_role` intermediate table, let's
-imagine we have a `policy` field that contains some simple text about the relationship. We can attach this pivot field
-to the `BelongsToMany` field using the fields method:
+imagine we have a `policy` field that contains a simple text about the relationship. We can attach this pivot field
+to the `BelongsToMany` field by using the fields method:
 
 ```php
 BelongsToMany::make('users', RoleRepository::class)->withPivot(
@@ -488,7 +488,7 @@ BelongsToMany::make('users', RoleRepository::class)->withPivot(
 ),
 ```
 
-And you also have to define this in the `User` model:
+You'll might as well have to define this in the `User` model:
 
 ```php
 public function users()
@@ -497,7 +497,7 @@ public function users()
 }
 ```
 
-Let's try to get now the list of companies with users: 
+Now, let's try to get the list of companies with users: 
 
 ```http request
 GET: /api/restify/company/1?include=users
@@ -544,7 +544,7 @@ GET: /api/restify/company/1?include=users
 
 ### Attach related
 
-Once you have defined the `BelongsToMany` field, you can now attach User to a Company like so:
+Once you have defined the `BelongsToMany` field, you can now attach User to a Company just like this:
 
 ```http request
 POST: api/restify/companies/1/attach/users
@@ -561,9 +561,9 @@ Payload:
 
 ### Authorize attach
 
-You have few options to authorize the `attach` endpoint. 
+You have a few options to authorize the `attach` endpoint. 
 
-Firstly, you can define the policy method `attachUsers`, the name should start with `attach` and suffix with the `CamelCase` name of the model relationship name: 
+First, you can define the policy method `attachUsers`. The name should start with `attach` and suffix with the `CamelCase` name of the model's relationship name: 
 
 ```php
 // CompanyPolicy.php
@@ -574,9 +574,9 @@ public function attachUsers(User $authenticatedUser, Company $company, User $use
 }
 ```
 
-The policy `attachUsers` method will be called for each individual `userToBeAttached`. Say you attach - [1, 3] ids, this method will be called twice.
+The policy `attachUsers` method will be called for each individual `userToBeAttached`. However, if you attach - [1, 3] ids, this method will be called twice.
 
-Another way to authorize this, is by using the `canAttach` method to the Eager field directly. This method accepts an invokable class instance or a closure:
+Another way to authorize this is by using the `canAttach` method to the Eager field directly. This method accepts an invokable class instance or a closure:
 
 ```php
 'users' => BelongsToMany::make('users',  UserRepository::class)
@@ -587,7 +587,7 @@ Another way to authorize this, is by using the `canAttach` method to the Eager f
 
 ### Override attach
 
-You are free to intercept the attach operation entirely and override it using a closure or an invokable: 
+You are free to intercept the attach operation entirely and override it by using a closure or an invokable: 
 
 ```php
 'users' => BelongsToMany::make('users',  UserRepository::class)
@@ -636,9 +636,9 @@ Using the payload:
 
 ### Authorize detach
 
-You have few options to authorize the `detach` endpoint.
+You have a few options to authorize the `detach` endpoint.
 
-Firstly, you can define the policy method `detachUsers`, the name should start with `detach` and suffix with the `CamelCase` name of the model relationship name:
+Primarily, you can define the policy method `detachUsers`, as the name should start with `detach` and suffix with the `CamelCase` name of the model relationship name:
 
 ```php
 // CompanyPolicy.php
@@ -649,9 +649,9 @@ public function detachUsers(User $authenticatedUser, Company $company, User $use
 }
 ```
 
-The policy `detachUsers` method will be called for each individual `userToBeDetached`. Say you detach - [1, 3] ids, this method will be called twice.
+The policy `detachUsers` method will be called for each individual `userToBeDetached`. If you detach - [1, 3] ids, this method will be called twice.
 
-Another way to authorize this, is by using the `canDetach` method to the Eager field directly. This method accepts an `invokable` class instance or a `closure`:
+Another way to authorize this is by using the `canDetach` method to the Eager field directly. This method accepts an `invokable` class instance or a `closure`:
 
 ```php
 'users' => BelongsToMany::make('users',  UserRepository::class)
@@ -662,7 +662,7 @@ Another way to authorize this, is by using the `canDetach` method to the Eager f
 
 ### Override detach
 
-You are free to intercept the detach method entirely and override it using a closure or an invokable:
+You are free to intercept the detach method entirely and override it by using a closure or an invokable:
 
 ```php
 'users' => BelongsToMany::make('users',  UserRepository::class)

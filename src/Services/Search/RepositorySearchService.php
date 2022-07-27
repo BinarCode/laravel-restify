@@ -36,9 +36,9 @@ class RepositorySearchService
             $repository::usesScout()
                 ? $this->prepareRelations($request, $scoutQuery ?? $repository::query($request))
                 : $this->prepareSearchFields(
-                $request,
-                $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
-            ),
+                    $request,
+                    $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
+                ),
         );
 
         $query = $this->applyFilters($request, $repository, $query);

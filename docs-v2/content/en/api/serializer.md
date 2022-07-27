@@ -7,7 +7,7 @@ position: 12
 
 ## Introduction
 
-The API response format must stay consistent along the application. Ideally it would be good to follow a standard as
+The API response format must stay consistent throughout the application. Ideally, it would be good to follow a standard as
 the [JSON:API](https://jsonapi.org/format/) so your frontend app could align with the API.
 
 Restify provides a convenient way to quickly return a response in a consistent format.
@@ -21,7 +21,7 @@ return rest(Company::first())
     ->sortDesc('id');
 ```
 
-The `rest` helper accept a list of models and returns a `\Binaryk\LaravelRestify\Repositories\Serializer` instance, so you can call its fluent API.
+The `rest` helper accepts a list of models and returns a `\Binaryk\LaravelRestify\Repositories\Serializer` instance, so you can call its fluent API.
 
 The `Serializer` will look for the repository associated with your models. If there is a repository associated with your Company (ie CompanyRepository), Serializer will use that repository to serialize your models accordingly:
 
@@ -66,7 +66,7 @@ The `Serializer` will look for the repository associated with your models. If th
 
 In case there isn't a repository associated with your models, the response will simply be a data object with models.
 
-The `rest` helper accept a model as well as a list (collection) of models, and it'll serialize the response accordingly: 
+The `rest` helper accepts a model as well as a list (collection) of models, and it'll serialize the response accordingly: 
 
 ```php
 rest(Post::all())
@@ -81,7 +81,7 @@ rest(Post::all())
 data(User::first(), 200)
 ```
 
-This helper simply wrap provided data into an object with `data` key:
+This helper simply wraps the provided data into an object with a `data` key:
 
 ```json
 {
