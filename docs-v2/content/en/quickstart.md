@@ -35,7 +35,7 @@ The command above:
 - **publishes** the `config/restify.php` configuration file
 - **creates** the `providers/RestifyServiceProvider` and will add it in the `config/app.php`
 - **creates** a new `app/Restify` directory
-- **creates** an abstract `app/Restif/Repository.php`
+- **creates** an abstract `app/Restify/Repository.php`
 - **scaffolds** a `app/Restify/UserRepository` repository for users CRUD
 
 ### Package Stability
