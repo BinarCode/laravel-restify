@@ -1,5 +1,11 @@
 # Upgrading
 
+## From 7.3.1 to 7.3.2
+
+## Breaking
+
+- The `$eagerState` repository property is now private, and it is of type `null|string` because it holds the parent repository that renders it.
+
 ## From 6.x to 7.x
 
 High impact:
