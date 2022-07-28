@@ -34,11 +34,11 @@ class Comment extends Model
 
     public function parent(): BelongsTo
     {
-       return $this->belongsTo(static::class, 'parent_comment_id');
+        return $this->belongsTo(static::class, 'parent_comment_id');
     }
 
     public function children(): HasMany
     {
-       return $this->hasMany(static::class, 'parent_comment_id');
+        return $this->hasMany(static::class, 'parent_comment_id');
     }
 }
