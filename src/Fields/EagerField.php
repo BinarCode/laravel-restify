@@ -30,7 +30,7 @@ class EagerField extends Field
      */
     public string $repositoryClass;
 
-    public RelatedQuery $relatedQuery;
+    private RelatedQuery $relatedQuery;
 
     public function __construct($attribute, string $parentRepository = null)
     {
@@ -138,5 +138,10 @@ class EagerField extends Field
         $this->relatedQuery = $relatedQuery;
 
         return $this;
+    }
+
+    public function queryKeyThatRendered(): string
+    {
+        return $this->relatedQuery->relation;
     }
 }

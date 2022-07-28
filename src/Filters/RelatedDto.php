@@ -18,6 +18,8 @@ class RelatedDto
 
     private bool $loaded = false;
 
+    public string $rootKey = '';
+
     public function __construct(
         ?RelatedQueryCollection $related = null,
     ) {
@@ -47,8 +49,6 @@ class RelatedDto
 
     public function getRelatedQueryFor(string $relation): ?RelatedQuery
     {
-        ray($relation, array_keys($this->relatedArray), (bool) collect($this->relatedArray)->first(fn ($object, $key) => str_contains($key, $relation)));
-
         return collect($this->relatedArray)->first(fn ($object, $key) => str_contains($key, $relation));
     }
 
@@ -127,6 +127,8 @@ class RelatedDto
 
     public function sync(Request $request, Repository $repository): self
     {
+        $this->rootKey = $repository::uriKey();
+
         if ($this->loaded) {
             return $this;
         }

@@ -34,8 +34,8 @@ class RelatedCollection extends Collection
     public function forEager(RestifyRequest $request): self
     {
         return $this
-            ->filter(fn ($value, $key) => $value instanceof EagerField)
-            ->filter(fn (Field $field) => $field->authorize($request))
+            ->filter(fn($value, $key) => $value instanceof EagerField)
+            ->filter(fn(Field $field) => $field->authorize($request))
             ->unique('attribute');
     }
 
@@ -43,21 +43,21 @@ class RelatedCollection extends Collection
     {
         return $this->filter(function ($field) {
             return $field instanceof BelongsToMany || $field instanceof MorphToMany;
-        })->filter(fn (EagerField $field) => $field->authorize($request));
+        })->filter(fn(EagerField $field) => $field->authorize($request));
     }
 
     public function forBelongsToRelations(RestifyRequest $request): self
     {
         return $this->filter(function ($field) {
             return $field instanceof BelongsTo;
-        })->filter(fn (EagerField $field) => $field->authorize($request));
+        })->filter(fn(EagerField $field) => $field->authorize($request));
     }
 
     public function mapIntoSortable(): self
     {
         return $this
-            ->filter(fn ($key) => $key instanceof Sortable)
-            ->filter(fn (Sortable $field) => $field->isSortable())
+            ->filter(fn($key) => $key instanceof Sortable)
+            ->filter(fn(Sortable $field) => $field->isSortable())
             ->map(function (Sortable $field) {
                 $filter = SortableFilter::make();
 
@@ -93,37 +93,30 @@ class RelatedCollection extends Collection
 
     public function inRequest(RestifyRequest $request, Repository $repository): self
     {
-        return $this->filter(function (Related $related, $key) use ($request, $repository) {
-            ray($related);
-
-            $parent = $repository::uriKey();
-
-            if ($immediateParent = $repository->parentRepository()) {
-                $parent = $immediateParent::uriKey().".$parent";
-
-                if ($immediateParent = $immediateParent->parentRepository()) {
-                    $parent = $immediateParent::uriKey().".$parent";
-
-                    if ($immediateParent = $immediateParent->parentRepository()) {
-                        $parent = $immediateParent::uriKey().".$parent";
-                    }
+        return $this->filter(function (mixed $repositoryRelatedField, $repositoryRelatedKey) use (
+            $request,
+            $repository
+        ) {
+            if ($repositoryRelatedField instanceof EagerField) {
+                if ($repository->getEagerParent()) {
+                    $relatedKey = $repository->getEagerParent().".".$repositoryRelatedKey;
+                } else if ($request->related()->rootKey === $repository::uriKey()) {
+                    $relatedKey = $repository::uriKey().".".$repositoryRelatedKey;
+                } else {
+                    $relatedKey = $repositoryRelatedKey;
                 }
+
+                $relatedQuery = $request->related()->getRelatedQueryFor($relatedKey);
+
+                if ($relatedQuery) {
+                    $repositoryRelatedField->withRelatedQuery($relatedQuery);
+                }
+
+                return (bool) $relatedQuery;
             }
 
-            ray($parent, $key);
-
-            if ($related->isEager()) {
-                dd($related->field->repositoryClass::uriKey());
-            }
-
-            dd($related->getRepos);
-            if ($relatedQuery = $request->related()->getRelatedQueryFor($repository::uriKey().'.'.$key)) {
-                $related->withRelatedQuery($relatedQuery);
-
-                return true;
-            }
-
-            return false;
+            // might be a closure or a normal relationship
+            return $request->related()->hasRelation($repository::uriKey().'.'.$repositoryRelatedKey);
         });
     }
 
@@ -139,7 +132,7 @@ class RelatedCollection extends Collection
                 }
             );
         })->map(
-            fn (Related $related) => $related
+            fn(Related $related) => $related
                 ->columns($request->related()->getColumnsFor($repository::uriKey().'.'.$related->getRelation()))
         );
     }
@@ -148,37 +141,38 @@ class RelatedCollection extends Collection
     {
         return $this
             ->intoAssoc()
-            ->filter(fn ($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
+            ->filter(fn($key, $value) => $key instanceof EagerField ? $key->authorize($request) : true);
     }
 
     public function onlySearchable(RestifyRequest $request): self
     {
         return $this->forBelongsToRelations($request)
-            ->filter(fn (BelongsTo $field) => $field->isSearchable());
+            ->filter(fn(BelongsTo $field) => $field->isSearchable());
     }
 
     public function forRequest(RestifyRequest $request, Repository $repository): self
     {
-        if (! $request->related()->hasRelated()) {
+        if (!$request->related()->hasRelated()) {
             return self::make([]);
         }
 
         return $this
             ->intoAssoc()
             ->authorized($request)
-            ->mapIntoRelated($request, $repository)
             ->inRequest($request, $repository)
-            ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))
-            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository));
+            ->when($request->isShowRequest(), fn(self $collection) => $collection->forShow($request, $repository))
+            ->when($request->isIndexRequest(), fn(self $collection) => $collection->forIndex($request, $repository));
     }
 
     public function unserialized(RestifyRequest $request, Repository $repository)
     {
-        return $this->filter(fn (Related $related) => ! in_array(
-            $repository::uriKey().$repository->getKey().$related->getRelation(),
-            $request->related()->resolvedRelationships,
-            true
-        ));
+        return $this->filter(function (Related $related) use ($request, $repository) {
+            return !in_array(
+                $related->uniqueIdentifierForRepository($repository),
+                $request->related()->resolvedRelationships,
+                true
+            );
+        });
     }
 
     public function markQuerySerialized(RestifyRequest $request, Repository $repository): self

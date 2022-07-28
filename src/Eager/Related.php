@@ -47,7 +47,7 @@ class Related implements JsonSerializable
 
     public function isEager(): bool
     {
-        return ! is_null($this->field);
+        return !is_null($this->field);
     }
 
     public function getRelation(): string
@@ -70,7 +70,11 @@ class Related implements JsonSerializable
 
     public function resolve(RestifyRequest $request, Repository $repository): self
     {
-        $request->related()->resolved($repository::uriKey().$repository->getKey().$this->getRelation());
+        $request->related()->resolved($this->uniqueIdentifierForRepository($repository));
+
+        ray($request->related()->resolvedRelationships);
+
+
 
         if (is_callable($this->resolverCallback)) {
             $this->value = call_user_func($this->resolverCallback, $request, $repository);
@@ -137,6 +141,11 @@ class Related implements JsonSerializable
         $this->relatedQuery = $relatedQuery;
 
         return $this;
+    }
+
+    public function uniqueIdentifierForRepository(Repository $repository): string
+    {
+        return $repository::uriKey().$repository->getKey().$this->getRelation();
     }
 
     #[ReturnTypeWillChange]

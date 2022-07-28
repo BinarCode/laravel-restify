@@ -2,28 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers\Index;
 
-use Binaryk\LaravelRestify\Fields\BelongsTo;
-use Binaryk\LaravelRestify\Fields\BelongsToMany;
-use Binaryk\LaravelRestify\Fields\HasMany;
-use Binaryk\LaravelRestify\Fields\MorphToMany;
-use Binaryk\LaravelRestify\Filters\RelatedDto;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Tests\Database\Factories\CommentFactory;
 use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
-use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
-use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
-use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Http\Request;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 class RepositoryIndexControllerTest extends IntegrationTest
@@ -161,151 +147,6 @@ class RepositoryIndexControllerTest extends IntegrationTest
         );
     }
 
-    public function test_repository_can_resolve_related_using_callables(): void
-    {
-        PostRepository::$related = [
-            'user' => function ($request, $repository) {
-                $this->assertInstanceOf(Request::class, $request);
-                $this->assertInstanceOf(Repository::class, $repository);
-
-                return 'foo';
-            },
-        ];
-
-        PostFactory::one();
-
-        $this->getJson(PostRepository::route(null, [
-            'related' => 'user',
-        ]))->assertJson(
-            fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.user', 'foo')
-                ->etc()
-        );
-    }
-
-    public function test_can_retrieve_nested_relationships(): void
-    {
-        CompanyRepository::partialMock()
-            ->shouldReceive('include')
-            ->andReturn([
-                'owner',
-                'users' => HasMany::make('users', UserRepository::class),
-                'extraData' => fn () => ['country' => 'Romania'],
-                'extraMeta' => new InvokableExtraMeta,
-            ]);
-
-        UserRepository::partialMock()
-            ->shouldReceive('include')
-            ->andReturn([
-                'posts' => HasMany::make('posts', PostRepository::class),
-                'roles' => MorphToMany::make('roles', RoleRepository::class),
-                'companies' => BelongsToMany::make('companies', CompanyRepository::class),
-            ]);
-
-        Company::factory()
-            ->for(User::factory()->state([
-                'email' => 'owner@owner.com',
-            ]), 'owner')
-            ->has(
-                User::factory()->has(
-                    Post::factory()->count(2)
-                )->has(
-                    Role::factory()
-                )
-            )->create();
-
-        $this->withoutExceptionHandling()->getJson(CompanyRepository::route(null, [
-            'related' => 'users.companies.users, users.posts, users.roles, extraData, extraMeta, owner',
-        ]))->assertJson(
-            fn (AssertableJson $json) => $json
-                ->where('data.0.type', 'companies')
-                ->has('data.0.relationships')
-                ->has('data.0.relationships.users')
-                ->where('data.0.relationships.users.0.type', 'users')
-                ->has('data.0.relationships.users.0.relationships.posts')
-                ->where('data.0.relationships.users.0.relationships.posts.0.type', 'posts')
-                ->where('data.0.relationships.users.0.relationships.roles.0.type', 'roles')
-                ->where('data.0.relationships.users.0.relationships.companies.0.type', 'companies')
-                ->where('data.0.relationships.extraData', ['country' => 'Romania'])
-                ->where('data.0.relationships.owner.email', 'owner@owner.com')
-                ->etc()
-        );
-    }
-
-    public function test_related_doesnt_load_for_nested_relationships_that_didnt_require_it(): void
-    {
-        CommentRepository::partialMock()
-            ->shouldReceive('include')
-            ->andReturn([
-                BelongsTo::make('user'),
-                BelongsTo::make('post'),
-            ]);
-
-        PostRepository::partialMock()
-            ->shouldReceive('include')
-            ->andReturn([
-                BelongsTo::make('user'),
-            ]);
-
-        $comment = CommentFactory::one();
-
-        $this->withoutExceptionHandling();
-
-        $this->getJson(CommentRepository::route($comment->id, [
-            'related' => 'post.user',
-        ]))->assertJson(
-            fn (AssertableJson $json) => $json
-                ->dd()
-                ->has('data.relationships.user')
-                ->has('data.relationships.post')
-                ->has('data.relationships.post.relationships.user')
-                ->etc()
-        );
-
-        app(RelatedDto::class)->reset();
-
-        $this->getJson(CommentRepository::route($comment->id, [
-            'related' => 'user, post',
-        ]))->assertJson(
-            fn (AssertableJson $json) => $json
-                ->has('data.relationships.user')
-                ->has('data.relationships.post')
-                ->missing('data.relationships.post.relationships.user')
-                ->etc()
-        );
-    }
-
-    /** * @test */
-    public function it_can_paginate_keeping_relationships(): void
-    {
-        PostRepository::$related = [
-            'user',
-        ];
-
-        PostRepository::$sort = [
-            'id',
-        ];
-
-        PostFactory::many(5);
-
-        Post::factory()->for(User::factory()->state([
-            'name' => $owner = 'John Doe',
-        ]))->create();
-
-        $this->getJson(PostRepository::route(null, [
-            'perPage' => 5,
-            'related' => 'user',
-            'sort' => 'id',
-            'page' => 2,
-        ]))
-            ->assertJson(
-                fn (AssertableJson $json) => $json
-                    ->count('data', 1)
-                    ->where('data.0.relationships.user.name', $owner)
-                    ->etc()
-            );
-    }
-
     public function test_index_unmergeable_repository_contains_only_explicitly_defined_fields(): void
     {
         PostFactory::one();
@@ -362,55 +203,5 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->assertEquals('Custom Meta Value', $response->json('meta.postKey'));
         $this->assertEquals('Post Title', $response->json('meta.first_title'));
-    }
-
-    public function test_can_load_nested_parent_from_the_same_table(): void
-    {
-        UserRepository::partialMock()
-            ->shouldReceive('include')
-            ->andReturn([
-                BelongsTo::make('creator', UserRepository::class),
-            ]);
-
-        $company = Company::factory()->has(
-            User::factory()->state(['email' => 'user@user.com'])->for(
-                User::factory()->state(['email' => 'creator@creator.com']), 'creator'
-            )->has(
-                Post::factory()->count(2)
-            )
-        )->create();
-
-        $userId = $company->users()->first()->id;
-        $this->withoutExceptionHandling();
-
-        $this->getJson(CompanyRepository::route(query: [
-            'related' => 'users.creator',
-        ]))->assertJson(fn (AssertableJson $json) => $json
-            ->dd()
-            ->missing('data.0.relationships.users.0.relationships.creator.relationships.creator')
-            ->where('data.0.relationships.users.0.relationships.creator.attributes.email', 'creator@creator.com')
-            ->etc()
-        );
-
-        app(RelatedDto::class)->reset();
-
-        $this->getJson(UserRepository::route(query: [
-            'id' => $userId,
-            'related' => 'posts',
-        ]))->assertJson(fn (AssertableJson $json) => $json
-            ->dd()
-            ->where('data.0.relationships.creator.attributes.email', 'creator@creator.com')
-            ->etc()
-        );
-    }
-}
-
-class InvokableExtraMeta
-{
-    public function __invoke()
-    {
-        return [
-            'userCount' => 10,
-        ];
     }
 }
