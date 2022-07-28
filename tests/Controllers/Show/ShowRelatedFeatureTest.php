@@ -56,5 +56,4 @@ class ShowRelatedFeatureTest extends IntegrationTest
                 ->etc()
         );
     }
-
 }
