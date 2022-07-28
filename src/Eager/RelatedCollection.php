@@ -96,17 +96,16 @@ class RelatedCollection extends Collection
         return $this->filter(function (Related $related, $key) use ($request, $repository) {
             ray($related);
 
-
             $parent = $repository::uriKey();
 
             if ($immediateParent = $repository->parentRepository()) {
-                $parent = $immediateParent::uriKey() . ".$parent";
+                $parent = $immediateParent::uriKey().".$parent";
 
                 if ($immediateParent = $immediateParent->parentRepository()) {
-                    $parent = $immediateParent::uriKey() . ".$parent";
+                    $parent = $immediateParent::uriKey().".$parent";
 
                     if ($immediateParent = $immediateParent->parentRepository()) {
-                        $parent = $immediateParent::uriKey() . ".$parent";
+                        $parent = $immediateParent::uriKey().".$parent";
                     }
                 }
             }

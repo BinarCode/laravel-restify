@@ -14,6 +14,6 @@ class RelatedQueryCollection extends Collection
             ->intoAssoc()
             ->mapIntoRelated($request, $repository);
 
-        return $this->filter(fn(RelatedQuery $relatedQuery) => $repositoryRelated->contains('relation', $relatedQuery->relation));
+        return $this->filter(fn (RelatedQuery $relatedQuery) => $repositoryRelated->contains('relation', $relatedQuery->relation));
     }
 }
