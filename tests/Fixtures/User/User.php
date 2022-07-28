@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
 use Binaryk\LaravelRestify\Contracts\Sanctumable;
+use Binaryk\LaravelRestify\Tests\Fixtures\Comment\Comment;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
@@ -124,5 +125,10 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
     public function creator(): BelongsTo
     {
         return $this->belongsTo(static::class, 'creator_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
     }
 }

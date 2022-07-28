@@ -46,13 +46,11 @@ class RelatedDto
         return $this->getRelatedQueryFor($relation)?->columns() ?: ['*'];
     }
 
-    public function getRelatedQueryFor(string $relation, bool $unserialized = true): ?RelatedQuery
+    public function getRelatedQueryFor(string $relation): ?RelatedQuery
     {
-        $exactMatch = currentRepository()::uriKey() === str($relation)->before('.')->toString();
+        ray($relation, array_keys($this->relatedArray), (bool) collect($this->relatedArray)->first(fn ($object, $key) => str_contains($key, $relation)));
 
-        return collect($this->relatedArray)
-//            ->when($unserialized, fn (Collection $related) => $related->filter(fn(RelatedQuery $relatedQuery) => $relatedQuery->isSerialized() === false))
-            ->first(fn ($object, $key) => $exactMatch ? $key === $relation : str_contains($key, $relation));
+        return collect($this->relatedArray)->first(fn ($object, $key) => str_contains($key, $relation));
     }
 
     public function getNestedFor(string $relation): ?RelatedQueryCollection

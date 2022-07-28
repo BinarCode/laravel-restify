@@ -21,7 +21,7 @@ class Related implements JsonSerializable
     use Make;
     use HasColumns;
 
-    private string $relation;
+    public string $relation;
 
     /**
      * This is the default value.

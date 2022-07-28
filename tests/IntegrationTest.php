@@ -9,6 +9,9 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\Concerns\Mockers;
+use Binaryk\LaravelRestify\Tests\Fixtures\Comment\Comment;
+use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
@@ -104,6 +107,7 @@ abstract class IntegrationTest extends TestCase
             CompanyRepository::class,
             PostWithHiddenFieldRepository::class,
             RoleRepository::class,
+            CommentRepository::class,
         ]);
 
         return $this;
@@ -151,6 +155,7 @@ abstract class IntegrationTest extends TestCase
         Gate::policy(Company::class, CompanyPolicy::class);
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(ActionLog::class, ActionLogPolicy::class);
+        Gate::policy(Comment::class, CommentPolicy::class);
 
         return $this;
     }

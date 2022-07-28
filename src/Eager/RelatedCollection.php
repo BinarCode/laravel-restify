@@ -94,6 +94,30 @@ class RelatedCollection extends Collection
     public function inRequest(RestifyRequest $request, Repository $repository): self
     {
         return $this->filter(function (Related $related, $key) use ($request, $repository) {
+            ray($related);
+
+
+            $parent = $repository::uriKey();
+
+            if ($immediateParent = $repository->parentRepository()) {
+                $parent = $immediateParent::uriKey() . ".$parent";
+
+                if ($immediateParent = $immediateParent->parentRepository()) {
+                    $parent = $immediateParent::uriKey() . ".$parent";
+
+                    if ($immediateParent = $immediateParent->parentRepository()) {
+                        $parent = $immediateParent::uriKey() . ".$parent";
+                    }
+                }
+            }
+
+            ray($parent, $key);
+
+            if ($related->isEager()) {
+                dd($related->field->repositoryClass::uriKey());
+            }
+
+            dd($related->getRepos);
             if ($relatedQuery = $request->related()->getRelatedQueryFor($repository::uriKey().'.'.$key)) {
                 $related->withRelatedQuery($relatedQuery);
 
@@ -161,6 +185,7 @@ class RelatedCollection extends Collection
     public function markQuerySerialized(RestifyRequest $request, Repository $repository): self
     {
         return $this->each(function (Related $related) {
+//            dd($related->getValue());
             $related->relatedQuery?->serialized();
 
             return $related;

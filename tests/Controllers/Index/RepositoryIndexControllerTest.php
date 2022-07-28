@@ -9,7 +9,10 @@ use Binaryk\LaravelRestify\Fields\MorphToMany;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Database\Factories\CommentFactory;
 use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
+use Binaryk\LaravelRestify\Tests\Fixtures\Comment\Comment;
+use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
@@ -230,6 +233,49 @@ class RepositoryIndexControllerTest extends IntegrationTest
         );
     }
 
+    public function test_related_doesnt_load_for_nested_relationships_that_didnt_require_it(): void
+    {
+        CommentRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                BelongsTo::make('user'),
+                BelongsTo::make('post'),
+            ]);
+
+        PostRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                BelongsTo::make('user'),
+            ]);
+
+        $comment = CommentFactory::one();
+
+        $this->withoutExceptionHandling();
+
+        $this->getJson(CommentRepository::route($comment->id, [
+            'related' => 'post.user',
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->dd()
+                ->has('data.relationships.user')
+                ->has('data.relationships.post')
+                ->has('data.relationships.post.relationships.user')
+                ->etc()
+        );
+
+        app(RelatedDto::class)->reset();
+
+        $this->getJson(CommentRepository::route($comment->id, [
+            'related' => 'user, post',
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->has('data.relationships.user')
+                ->has('data.relationships.post')
+                ->missing('data.relationships.post.relationships.user')
+                ->etc()
+        );
+    }
+
     /** * @test */
     public function it_can_paginate_keeping_relationships(): void
     {
@@ -319,7 +365,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         $this->assertEquals('Post Title', $response->json('meta.first_title'));
     }
 
-    public function test_can_load_nested_from_the_same_table(): void
+    public function test_can_load_nested_parent_from_the_same_table(): void
     {
         UserRepository::partialMock()
             ->shouldReceive('include')
@@ -336,10 +382,12 @@ class RepositoryIndexControllerTest extends IntegrationTest
         )->create();
 
         $userId = $company->users()->first()->id;
+        $this->withoutExceptionHandling();
 
         $this->getJson(CompanyRepository::route(query: [
             'related' => 'users.creator',
         ]))->assertJson(fn (AssertableJson $json) => $json
+            ->dd()
             ->missing('data.0.relationships.users.0.relationships.creator.relationships.creator')
             ->where('data.0.relationships.users.0.relationships.creator.attributes.email', 'creator@creator.com')
             ->etc()
@@ -349,8 +397,9 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         $this->getJson(UserRepository::route(query: [
             'id' => $userId,
-            'related' => 'creator',
+            'related' => 'posts',
         ]))->assertJson(fn (AssertableJson $json) => $json
+            ->dd()
             ->where('data.0.relationships.creator.attributes.email', 'creator@creator.com')
             ->etc()
         );

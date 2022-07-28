@@ -43,7 +43,7 @@ class EagerField extends Field
         }
 
         if (is_null($parentRepository)) {
-            $this->repositoryClass = tap(Restify::repositoryClassForKey($attribute),
+            $this->repositoryClass = tap(Restify::repositoryClassForKey(str($attribute)->pluralStudly()->kebab()->toString()),
                 fn ($repository) => abort_unless($repository, 400, "Repository not found for the key [$attribute]."));
         }
 
@@ -82,15 +82,16 @@ class EagerField extends Field
         }
 
         try {
-            $this->value = $this->repositoryClass::resolveWith($relatedModel)
+            /**
+             * @var Repository $serializableRepository
+             */
+            $serializableRepository = $this->repositoryClass::resolveWith($relatedModel);
+
+            $this->value = $serializableRepository
                 ->allowToShow(app(Request::class))
                 ->columns()
                 ->eager($this);
-        } catch (AuthorizationException $e) {
-            if (is_null($relatedModel)) {
-                abort(403, 'You are not authorized to perform this action.');
-            }
-
+        } catch (AuthorizationException) {
             $class = get_class($relatedModel);
             $field = class_basename(get_called_class());
             $policy = get_class(Gate::getPolicyFor($relatedModel));
