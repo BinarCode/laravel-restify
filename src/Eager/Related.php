@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Eager;
 
 use Binaryk\LaravelRestify\Fields\EagerField;
+use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\HasColumns;
@@ -36,6 +37,8 @@ class Related implements JsonSerializable
      */
     private $resolverCallback;
 
+    public ?RelatedQuery $relatedQuery = null;
+
     public function __construct(string $relation, EagerField $field = null)
     {
         $this->relation = $relation;
@@ -67,7 +70,9 @@ class Related implements JsonSerializable
 
     public function resolve(RestifyRequest $request, Repository $repository): self
     {
-        $request->related()->resolved($repository::uriKey().$repository->getKey().$this->getRelation());
+        $request->related()->resolved($this->uniqueIdentifierForRepository($repository));
+
+        ray($request->related()->resolvedRelationships);
 
         if (is_callable($this->resolverCallback)) {
             $this->value = call_user_func($this->resolverCallback, $request, $repository);
@@ -127,6 +132,18 @@ class Related implements JsonSerializable
         $this->resolverCallback = $resolver;
 
         return $this;
+    }
+
+    public function withRelatedQuery(RelatedQuery $relatedQuery): self
+    {
+        $this->relatedQuery = $relatedQuery;
+
+        return $this;
+    }
+
+    public function uniqueIdentifierForRepository(Repository $repository): string
+    {
+        return $repository::uriKey().$repository->getKey().$this->getRelation();
     }
 
     #[ReturnTypeWillChange]

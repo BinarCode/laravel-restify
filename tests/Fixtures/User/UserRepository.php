@@ -27,6 +27,7 @@ class UserRepository extends Repository
     public static array $middleware = [];
 
     public static array $match = [
+        'id' => 'int',
         'created_at' => RestifySearchable::MATCH_DATETIME,
     ];
 

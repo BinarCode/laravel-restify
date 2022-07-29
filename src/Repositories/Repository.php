@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
-use App\Restify\MediaRepository;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
@@ -164,11 +163,13 @@ class Repository implements RestifySearchable, JsonSerializable
     public static bool|array $public = false;
 
     /**
-     * Indicates if the repository is serializing for a eager relationship.
+     * Indicates if the repository is serializing for an eager relationship.
      *
-     * @var bool
+     * The $eagerState will reference to the parent that renders this via related.
+     *
+     * @var null|string
      */
-    public bool $eagerState = false;
+    private null|string $eagerState = null;
 
     /**
      * Extra fields attached to the repository. Useful when display pivot fields.
@@ -183,6 +184,8 @@ class Repository implements RestifySearchable, JsonSerializable
      * @var PivotsCollection
      */
     private PivotsCollection $pivots;
+
+    private ?Repository $parentRepository = null;
 
     public function __construct()
     {
@@ -327,7 +330,7 @@ class Repository implements RestifySearchable, JsonSerializable
     public static function resolveWith(Model $model): Repository
     {
         if (static::isMock()) {
-            return static::getMock()?->withResource($model);
+            return clone static::getMock()?->withResource($model);
         }
 
         return resolve(static::class)->withResource($model);
@@ -393,12 +396,6 @@ class Repository implements RestifySearchable, JsonSerializable
         $fields = $this->collectFields($request)
             ->forShow($request, $this)
             ->filter(fn (Field $field) => $field->authorize($request))
-            ->when(
-                $this->isEagerState(),
-                function ($items) {
-                    return $items->filter(fn (Field $field) => ! $field instanceof EagerField);
-                }
-            )
             ->each(fn (Field $field) => $field->resolveForShow($this))
             ->map(fn (Field $field) => $field->serializeToValue($request))
             ->mapWithKeys(fn ($value) => $value)
@@ -535,7 +532,7 @@ class Repository implements RestifySearchable, JsonSerializable
             return [];
         }
 
-        $related = static::collectRelated()
+        return static::collectRelated()
             ->forRequest($request, $this)
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
@@ -548,26 +545,6 @@ class Repository implements RestifySearchable, JsonSerializable
                 return $items;
             })
             ->all();
-
-//        if (static::class === MediaRepository::class) {
-//            $related = static::collectRelated()
-//                ->intoAssoc()
-//                ->forRequest($request, $this)
-//                ->mapIntoRelated($request, $this)
-        ////                ->unserialized($request, $this)
-//                ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
-//                ->map(function (mixed $items) {
-//                    if ($items instanceof Collection) {
-//                        return $items->filter();
-//                    }
-//
-//                    return $items;
-//                })
-//                ->all();
-//
-//        }
-
-        return $related;
     }
 
     /**
@@ -1148,6 +1125,7 @@ class Repository implements RestifySearchable, JsonSerializable
             return $this;
         }
 
+        $this->eagerState = $field->queryKeyThatRendered();
         $this->columns($field->getColumns());
 
         return $this;
@@ -1155,7 +1133,12 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function isEagerState(): bool
     {
-        return $this->eagerState === true;
+        return ! is_null($this->eagerState);
+    }
+
+    public function getEagerParent(): string
+    {
+        return $this->eagerState ?? '';
     }
 
     public function restifyjsSerialize(RestifyRequest $request): array
@@ -1186,5 +1169,17 @@ class Repository implements RestifySearchable, JsonSerializable
     public static function isPublic(): bool
     {
         return static::$public;
+    }
+
+    public function withParentRepository(Repository $repository): self
+    {
+        $this->parentRepository = $repository;
+
+        return $this;
+    }
+
+    public function parentRepository(): ?Repository
+    {
+        return $this->parentRepository;
     }
 }

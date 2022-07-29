@@ -18,6 +18,8 @@ class RelatedDto
 
     private bool $loaded = false;
 
+    public string $rootKey = '';
+
     public function __construct(
         ?RelatedQueryCollection $related = null,
     ) {
@@ -125,6 +127,8 @@ class RelatedDto
 
     public function sync(Request $request, Repository $repository): self
     {
+        $this->rootKey = $repository::uriKey();
+
         if ($this->loaded) {
             return $this;
         }
