@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Models\Concerns;
 
 use Binaryk\LaravelRestify\Models\ActionLogObserver;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -19,10 +18,10 @@ trait HasActionLogs
         }
 
         if (Restify::isRestify(request())) {
-            Post::observe(ActionLogObserver::class);
+            static::observe(ActionLogObserver::class);
         } else {
             if (config('restify.logs.all')) {
-                Post::observe(ActionLogObserver::class);
+                static::observe(ActionLogObserver::class);
             }
         }
     }
