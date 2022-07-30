@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Binaryk\LaravelRestify\Cache\PolicyCache;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
@@ -28,9 +29,19 @@ trait AuthorizableModels
             return false;
         }
 
-        return method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
-            ? Gate::check('allowRestify', get_class(static::newModel()))
-            : false;
+        $resolver = function () {
+            return method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
+                ? Gate::check('allowRestify', get_class(static::newModel()))
+                : false;
+        };
+
+        if (! PolicyCache::enabled()) {
+            return $resolver();
+        }
+
+        $key = PolicyCache::keyForAllowRestify(static::uriKey());
+
+        return PolicyCache::resolve($key, $resolver);
     }
 
     /**
@@ -105,7 +116,8 @@ trait AuthorizableModels
             : abort(403, "Missing method [$method] in your [$policyClass] policy.");
 
         if (false === $authorized) {
-            abort(403, 'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.');
+            abort(403,
+                'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.');
         }
 
         return false;
@@ -169,7 +181,14 @@ trait AuthorizableModels
 
     public function authorizedTo(Request $request, iterable|string $ability): bool
     {
-        return static::authorizable() && Gate::check($ability, $this->resource);
+        if (! static::authorizable()) {
+            return false;
+        }
+
+        return PolicyCache::resolve(
+            PolicyCache::keyForPolicyMethods(static::uriKey(), $ability, $this->resource->getKey()),
+            fn () => Gate::check($ability, $this->resource)
+        );
     }
 
     public static function isRepositoryContext(): bool

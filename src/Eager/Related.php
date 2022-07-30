@@ -72,8 +72,6 @@ class Related implements JsonSerializable
     {
         $request->related()->resolved($this->uniqueIdentifierForRepository($repository));
 
-        ray($request->related()->resolvedRelationships);
-
         if (is_callable($this->resolverCallback)) {
             $this->value = call_user_func($this->resolverCallback, $request, $repository);
 

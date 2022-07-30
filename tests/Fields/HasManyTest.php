@@ -193,6 +193,8 @@ class HasManyTest extends IntegrationTest
 
         $_SERVER['restify.post.allowRestify'] = false;
 
+        $this->authenticate(User::factory()->create());
+
         $this->getJson(UserWithPosts::route("$u->id/posts"))
             ->assertForbidden();
     }
