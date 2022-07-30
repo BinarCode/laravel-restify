@@ -39,6 +39,7 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
     public static $withs = ['posts'];
 
     protected $fillable = [
+        'id',
         'name',
         'email',
         'active',

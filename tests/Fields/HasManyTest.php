@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
 
@@ -192,6 +193,8 @@ class HasManyTest extends IntegrationTest
             ->assertJsonCount(0, 'data');
 
         $_SERVER['restify.post.allowRestify'] = false;
+
+        $this->authenticate(User::factory()->create());
 
         $this->getJson(UserWithPosts::route("$u->id/posts"))
             ->assertForbidden();

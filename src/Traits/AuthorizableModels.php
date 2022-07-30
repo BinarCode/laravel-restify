@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -28,9 +29,19 @@ trait AuthorizableModels
             return false;
         }
 
-        return method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
+        $key = "restify.policy.allowRestify.repository-".static::uriKey(). ".{$request->user()?->getKey()}";
+
+        if (Cache::has($key)) {
+            return Cache::get($key);
+        }
+
+        $authorized = method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
             ? Gate::check('allowRestify', get_class(static::newModel()))
             : false;
+
+        Cache::put($key, $authorized, now()->addMinutes(5));
+
+        return $authorized;
     }
 
     /**
