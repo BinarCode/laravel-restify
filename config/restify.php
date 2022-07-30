@@ -145,4 +145,19 @@ return [
         */
         'serialize_show_meta' => true,
     ],
+
+    'cache' => [
+        /*
+        | Specify the cache configuration for the resources policies.
+        | When enabled, methods from the policy will be cached for the active user.
+        */
+        'policies' => [
+            'enabled' => false,
+
+            /*
+            | ttl in seconds
+            */
+            'ttl' => 5 * 60,
+        ],
+    ],
 ];

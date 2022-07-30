@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Binaryk\LaravelRestify\Cache\PolicyCache;
+use Binaryk\LaravelRestify\Cache\RestifyCache;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
@@ -20,28 +22,28 @@ trait AuthorizableModels
 {
     public static function authorizable(): bool
     {
-        return ! is_null(Gate::getPolicyFor(static::newModel()));
+        return !is_null(Gate::getPolicyFor(static::newModel()));
     }
 
     public static function authorizedToUseRepository(Request $request): bool
     {
-        if (! static::authorizable()) {
+        if (!static::authorizable()) {
             return false;
         }
 
-        $key = "restify.policy.allowRestify.repository-".static::uriKey(). ".{$request->user()?->getKey()}";
+        $resolver = function () {
+            return method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
+                ? Gate::check('allowRestify', get_class(static::newModel()))
+                : false;
+        };
 
-        if (Cache::has($key)) {
-            return Cache::get($key);
+        if (!PolicyCache::enabled()) {
+            return $resolver();
         }
 
-        $authorized = method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
-            ? Gate::check('allowRestify', get_class(static::newModel()))
-            : false;
+        $key = PolicyCache::keyForAllowRestify(static::uriKey());
 
-        Cache::put($key, $authorized, now()->addMinutes(5));
-
-        return $authorized;
+        return PolicyCache::resolve($key, $resolver);
     }
 
     /**
@@ -62,7 +64,7 @@ trait AuthorizableModels
      */
     public static function authorizeToStore(Request $request): void
     {
-        if (! static::authorizedToStore($request)) {
+        if (!static::authorizedToStore($request)) {
             throw new AuthorizationException('Unauthorized to store.');
         }
     }
@@ -72,7 +74,7 @@ trait AuthorizableModels
      */
     public static function authorizeToStoreBulk(Request $request): void
     {
-        if (! static::authorizedToStoreBulk($request)) {
+        if (!static::authorizedToStoreBulk($request)) {
             throw new AuthorizationException('Unauthorized to store bulk.');
         }
     }
@@ -105,7 +107,7 @@ trait AuthorizableModels
 
     public function authorizeToAttach(Request $request, $method, $model): bool
     {
-        if (! static::authorizable()) {
+        if (!static::authorizable()) {
             return false;
         }
 
@@ -116,7 +118,8 @@ trait AuthorizableModels
             : abort(403, "Missing method [$method] in your [$policyClass] policy.");
 
         if (false === $authorized) {
-            abort(403, 'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.');
+            abort(403,
+                'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.');
         }
 
         return false;
@@ -124,7 +127,7 @@ trait AuthorizableModels
 
     public function authorizeToDetach(Request $request, $method, $model)
     {
-        if (! static::authorizable()) {
+        if (!static::authorizable()) {
             throw new AuthorizationException();
         }
 
@@ -180,7 +183,14 @@ trait AuthorizableModels
 
     public function authorizedTo(Request $request, iterable|string $ability): bool
     {
-        return static::authorizable() && Gate::check($ability, $this->resource);
+        if (! static::authorizable()) {
+            return false;
+        }
+
+        return PolicyCache::resolve(
+            PolicyCache::keyForPolicyMethods(static::uriKey(), $ability, $this->resource->getKey()),
+            fn() => Gate::check($ability, $this->resource)
+        );
     }
 
     public static function isRepositoryContext(): bool
