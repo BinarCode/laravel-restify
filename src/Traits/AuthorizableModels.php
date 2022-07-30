@@ -3,12 +3,10 @@
 namespace Binaryk\LaravelRestify\Traits;
 
 use Binaryk\LaravelRestify\Cache\PolicyCache;
-use Binaryk\LaravelRestify\Cache\RestifyCache;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -22,12 +20,12 @@ trait AuthorizableModels
 {
     public static function authorizable(): bool
     {
-        return !is_null(Gate::getPolicyFor(static::newModel()));
+        return ! is_null(Gate::getPolicyFor(static::newModel()));
     }
 
     public static function authorizedToUseRepository(Request $request): bool
     {
-        if (!static::authorizable()) {
+        if (! static::authorizable()) {
             return false;
         }
 
@@ -37,7 +35,7 @@ trait AuthorizableModels
                 : false;
         };
 
-        if (!PolicyCache::enabled()) {
+        if (! PolicyCache::enabled()) {
             return $resolver();
         }
 
@@ -64,7 +62,7 @@ trait AuthorizableModels
      */
     public static function authorizeToStore(Request $request): void
     {
-        if (!static::authorizedToStore($request)) {
+        if (! static::authorizedToStore($request)) {
             throw new AuthorizationException('Unauthorized to store.');
         }
     }
@@ -74,7 +72,7 @@ trait AuthorizableModels
      */
     public static function authorizeToStoreBulk(Request $request): void
     {
-        if (!static::authorizedToStoreBulk($request)) {
+        if (! static::authorizedToStoreBulk($request)) {
             throw new AuthorizationException('Unauthorized to store bulk.');
         }
     }
@@ -107,7 +105,7 @@ trait AuthorizableModels
 
     public function authorizeToAttach(Request $request, $method, $model): bool
     {
-        if (!static::authorizable()) {
+        if (! static::authorizable()) {
             return false;
         }
 
@@ -127,7 +125,7 @@ trait AuthorizableModels
 
     public function authorizeToDetach(Request $request, $method, $model)
     {
-        if (!static::authorizable()) {
+        if (! static::authorizable()) {
             throw new AuthorizationException();
         }
 
@@ -189,7 +187,7 @@ trait AuthorizableModels
 
         return PolicyCache::resolve(
             PolicyCache::keyForPolicyMethods(static::uriKey(), $ability, $this->resource->getKey()),
-            fn() => Gate::check($ability, $this->resource)
+            fn () => Gate::check($ability, $this->resource)
         );
     }
 

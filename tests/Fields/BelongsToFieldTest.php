@@ -226,11 +226,11 @@ class BelongsToFieldTest extends IntegrationTest
             'include' => 'user[name]',
         ]))
             ->assertJson(
-            fn (AssertableJson $json) => $json
-            ->has('data.relationships.user.attributes.name')
-            ->missing('data.relationships.user.attributes.email')
-            ->etc()
-        );
+                fn (AssertableJson $json) => $json
+                ->has('data.relationships.user.attributes.name')
+                ->missing('data.relationships.user.attributes.email')
+                ->etc()
+            );
     }
 }
 

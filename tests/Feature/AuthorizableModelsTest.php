@@ -85,7 +85,6 @@ class AuthorizableModelsTest extends IntegrationTest
             ->times(4)
             ->andReturn(true);
 
-
         $this->authenticate(User::factory()->create());
         PostFactory::many()->each(function (Post $post) {
             $this->getJson(PostRepository::route($post->id))

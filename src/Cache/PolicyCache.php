@@ -11,7 +11,7 @@ class PolicyCache
 {
     public static function enabled(): bool
     {
-        return config("restify.cache.policies.enabled", false);
+        return config('restify.cache.policies.enabled', false);
     }
 
     public static function keyForAllowRestify(string $repositoryKey): string
