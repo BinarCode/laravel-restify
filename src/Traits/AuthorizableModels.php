@@ -29,7 +29,7 @@ trait AuthorizableModels
             return false;
         }
 
-        $key = "restify.policy.allowRestify.repository-".static::uriKey(). ".{$request->user()?->getKey()}";
+        $key = 'restify.policy.allowRestify.repository-'.static::uriKey().".{$request->user()?->getKey()}";
 
         if (Cache::has($key)) {
             return Cache::get($key);
