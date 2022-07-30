@@ -136,7 +136,7 @@ return [
 
     'repositories' => [
         /*
-        | Specify either to serialize index meta (policy) information or not. For performance reasons we recommend to disable it.
+        | Specify either to serialize index meta (policy) information or not. For performance reasons we recommend disabling it.
         */
         'serialize_index_meta' => false,
 
@@ -154,10 +154,7 @@ return [
         'policies' => [
             'enabled' => false,
 
-            /*
-            | ttl in seconds
-            */
-            'ttl' => 5 * 60,
+            'ttl' => 5 * 60, // seconds
         ],
     ],
 ];
