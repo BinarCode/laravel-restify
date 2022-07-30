@@ -35,13 +35,7 @@ trait AuthorizableModels
                 : false;
         };
 
-        if (! PolicyCache::enabled()) {
-            return $resolver();
-        }
-
-        $key = PolicyCache::keyForAllowRestify(static::uriKey());
-
-        return PolicyCache::resolve($key, $resolver);
+        return PolicyCache::resolve(PolicyCache::keyForAllowRestify(static::uriKey()), $resolver);
     }
 
     /**
