@@ -32,6 +32,10 @@ class PolicyCache
 
     public static function resolve(string $key, callable|Closure $data): mixed
     {
+        if (! static::enabled()) {
+            return $data();
+        }
+
         if (Cache::has($key)) {
             return Cache::get($key);
         }
