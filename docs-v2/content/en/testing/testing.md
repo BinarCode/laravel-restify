@@ -3,7 +3,7 @@ title: Testing Repositories
 menuTitle: Testing Repositories
 description: Unlike traditional static method calls, repositories may be mocked. This provides a great advantage over traditional static methods and grants you the same testability you would have if you were using dependency injection. When testing, you may often want to mock a call to a Restify repository in one of your controllers. For example, consider the following controller action
 category: Testing
-position: 13
+position: 15
 ---
 
 ```php
