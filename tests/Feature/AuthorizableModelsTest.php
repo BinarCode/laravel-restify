@@ -61,9 +61,9 @@ class AuthorizableModelsTest extends IntegrationTest
 
         $post = PostFactory::one();
 
-        $this->getJson(PostRepository::route($post->id))
+        $this->getJson(PostRepository::route($post))
             ->assertOk();
-        $this->getJson(PostRepository::route($post->id))
+        $this->getJson(PostRepository::route($post))
             ->assertOk();
 
         // for 2 models and the same user it'll be called twice (once for each model)
@@ -73,9 +73,9 @@ class AuthorizableModelsTest extends IntegrationTest
             ->andReturn(true);
 
         PostFactory::many()->each(function (Post $post) {
-            $this->getJson(PostRepository::route($post->id))
+            $this->getJson(PostRepository::route($post))
                 ->assertOk();
-            $this->getJson(PostRepository::route($post->id))
+            $this->getJson(PostRepository::route($post))
                 ->assertOk();
         });
 
@@ -87,17 +87,17 @@ class AuthorizableModelsTest extends IntegrationTest
 
         $this->authenticate(User::factory()->create());
         PostFactory::many()->each(function (Post $post) {
-            $this->getJson(PostRepository::route($post->id))
+            $this->getJson(PostRepository::route($post))
                 ->assertOk();
-            $this->getJson(PostRepository::route($post->id))
+            $this->getJson(PostRepository::route($post))
                 ->assertOk();
         });
 
         $this->authenticate(User::factory()->create());
         PostFactory::many()->each(function (Post $post) {
-            $this->getJson(PostRepository::route($post->id))
+            $this->getJson(PostRepository::route($post))
                 ->assertOk();
-            $this->getJson(PostRepository::route($post->id))
+            $this->getJson(PostRepository::route($post))
                 ->assertOk();
         });
     }

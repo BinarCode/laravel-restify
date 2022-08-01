@@ -34,7 +34,7 @@ class AdvancedFilterTest extends IntegrationTest
             'title',
         ];
 
-        $this->getJson(PostRepository::route('filters', [
+        $this->getJson(PostRepository::route('filters', query: [
             'only' => 'matches,searchables,sortables',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -117,7 +117,7 @@ class AdvancedFilterTest extends IntegrationTest
             ],
         ], JSON_THROW_ON_ERROR));
 
-        $this->getJson(PostRepository::route(null, ['filters' => $filters]))
+        $this->getJson(PostRepository::route(query: ['filters' => $filters]))
             ->assertJsonCount(0, 'data');
     }
 
@@ -127,7 +127,7 @@ class AdvancedFilterTest extends IntegrationTest
         Post::factory(2)->create(['is_active' => true]);
 
         $this
-            ->getJson(PostRepository::route('filters', [
+            ->getJson(PostRepository::route('filters', query: [
                 'include' => 'matches',
             ]))
             ->assertOk()
@@ -167,7 +167,7 @@ class AdvancedFilterTest extends IntegrationTest
             ],
         ], JSON_THROW_ON_ERROR));
 
-        $this->getJson(PostRepository::route(null, ['filters' => $filters]))
+        $this->getJson(PostRepository::route(query: ['filters' => $filters]))
             ->assertOk()
             ->assertJsonCount(1, 'data');
     }

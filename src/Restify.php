@@ -65,10 +65,10 @@ class Restify
     public static function repositoryClassForPrefix(string $prefix): ?string
     {
         return collect(static::$repositories)->first(function ($value) use ($prefix) {
-            /** * @var Repository $value */
-            return str($prefix)->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', ''))->contains(
-                $value::route()
-                    ->whenStartsWith('/', fn ($string) => $string->replaceFirst('/', '')),
+            /** @var Repository $value */
+            return str_contains(
+                ltrim($prefix, '/'),
+                ltrim($value::route(), '/')
             );
         });
     }

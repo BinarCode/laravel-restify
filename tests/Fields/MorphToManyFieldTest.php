@@ -34,7 +34,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(UserWithRolesRepository::route($user->getKey(), [
+        $this->getJson(UserWithRolesRepository::route($user, query: [
             'related' => 'roles',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -56,7 +56,7 @@ class MorphToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->getJson(UserWithRolesRepository::route($user->id, ['related' => 'roles,companies']))
+        $this->getJson(UserWithRolesRepository::route($user, query: ['related' => 'roles,companies']))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
