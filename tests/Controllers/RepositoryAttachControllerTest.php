@@ -14,7 +14,6 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
-
 use function PHPUnit\Framework\assertInstanceOf;
 
 class RepositoryAttachControllerTest extends IntegrationTest
