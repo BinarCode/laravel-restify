@@ -30,7 +30,7 @@ trait Testing
         }
 
         $route = implode('/', array_filter([
-            Restify::path(),
+            static::prefix() ?: Restify::path(),
             static::uriKey(),
             $path,
             $action ? 'actions' : null,
