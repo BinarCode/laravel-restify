@@ -30,7 +30,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
                     ->etc()
             );
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'perPage' => 10,
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -38,7 +38,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 ->etc()
         );
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'page[size]' => 10,
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -46,7 +46,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 ->etc()
         );
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'perPage' => 10,
             'page' => '2',
         ]))->assertJson(
@@ -55,7 +55,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 ->etc()
         );
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'page[size]' => 10,
             'page[number]' => 2,
         ]))->assertJson(
@@ -86,7 +86,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
 
         PostRepository::$search = ['title'];
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'search' => 'code',
         ]))->assertJson(fn (AssertableJson $json) => $json->count('data', 2)->etc());
     }
@@ -106,7 +106,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             'title',
         ];
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'sort' => '-title',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -115,7 +115,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
                 ->etc()
         );
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'sort' => 'title',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -138,7 +138,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
             ])
         )->create();
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'related' => 'user',
         ]))->assertJson(
             fn (AssertableJson $json) => $json

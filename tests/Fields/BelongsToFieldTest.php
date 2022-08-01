@@ -47,7 +47,7 @@ class BelongsToFieldTest extends IntegrationTest
                 'user' => BelongsTo::make('user', UserRepository::class),
             ]);
 
-        $this->getJson(PostRepository::route($post->id, [
+        $this->getJson(PostRepository::route($post, query: [
             'related' => 'user',
         ]))
             ->assertJsonStructure([
@@ -62,7 +62,7 @@ class BelongsToFieldTest extends IntegrationTest
                 ],
             ]);
 
-        $relationships = $this->getJson(PostRepository::route($post->id))
+        $relationships = $this->getJson(PostRepository::route($post))
             ->json('data.relationships');
 
         $this->assertNull($relationships);
@@ -77,7 +77,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => User::factory(),
         ]), function ($post) {
-            $this->getJson(PostWithUserRepository::route($post->id, [
+            $this->getJson(PostWithUserRepository::route($post, query: [
                 'related' => 'user',
             ]))->assertForbidden();
         });
@@ -92,7 +92,7 @@ class BelongsToFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => null,
         ]), function ($post) {
-            $this->getJson(PostWithUserRepository::route($post->id, [
+            $this->getJson(PostWithUserRepository::route($post, query: [
                 'related' => 'user',
             ]))
                 ->assertJsonFragment([
@@ -181,7 +181,7 @@ class BelongsToFieldTest extends IntegrationTest
             'user_id' => User::factory(),
         ]), function ($post) {
             $newOwner = User::factory()->create();
-            $this->putJson(PostWithUserRepository::route($post->id), [
+            $this->putJson(PostWithUserRepository::route($post), [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertOk();
@@ -201,7 +201,7 @@ class BelongsToFieldTest extends IntegrationTest
         ]), function ($post) {
             $firstOwnerId = $post->user->id;
             $newOwner = User::factory()->create();
-            $this->putJson(PostWithUserRepository::route($post->id), [
+            $this->putJson(PostWithUserRepository::route($post), [
                 'title' => 'Can change post owner.',
                 'user' => $newOwner->id,
             ])->assertForbidden();
@@ -222,7 +222,7 @@ class BelongsToFieldTest extends IntegrationTest
 
         $this->withoutExceptionHandling();
 
-        $this->getJson(PostRepository::route($post->id, [
+        $this->getJson(PostRepository::route($post, query: [
             'include' => 'user[name]',
         ]))
             ->assertJson(

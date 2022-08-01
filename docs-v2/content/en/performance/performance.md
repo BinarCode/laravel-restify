@@ -2,7 +2,7 @@
 title: Performance
 menuTitle: Performance
 description: Performance
-category: Performance
+category: Advanced
 position: 14
 ---
 

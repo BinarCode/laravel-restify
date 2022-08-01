@@ -60,7 +60,7 @@ class PerformActionControllerTest extends IntegrationTest
                 },
             ]);
 
-        $this->postJson(PostRepository::route('actions', ['action' => 'publish']), [
+        $this->postJson(PostRepository::route('actions', query: ['action' => 'publish']), [
             'repositories' => 'all',
         ])->assertOk()->assertJsonFragment([
             'fromHandle' => 0,

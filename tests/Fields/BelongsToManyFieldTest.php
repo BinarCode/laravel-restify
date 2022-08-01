@@ -19,7 +19,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->withoutExceptionHandling()->getJson(CompanyRepository::route($company->id, ['include' => 'users']))
+        $this->withoutExceptionHandling()->getJson(CompanyRepository::route($company, query: ['include' => 'users']))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -43,7 +43,7 @@ class BelongsToManyFieldTest extends IntegrationTest
                 'users' => BelongsToMany::make('users', UserRepository::class)->hideFromShow(),
             ]);
 
-        $this->getJson(CompanyRepository::route($company->id, ['include' => 'users']))
+        $this->getJson(CompanyRepository::route($company, query: ['include' => 'users']))
             ->assertJsonStructure([
                 'data' => [],
             ])->assertJsonMissing([

@@ -99,7 +99,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
             $company->users()->attach($this->mockUsers()->first()->id);
         });
 
-        $this->getJson(CompanyRepository::route($company->id, [
+        $this->getJson(CompanyRepository::route($company->id, query: [
             'include' => 'users',
         ]))->assertOk()->assertJson(
             fn (AssertableJson $json) => $json
