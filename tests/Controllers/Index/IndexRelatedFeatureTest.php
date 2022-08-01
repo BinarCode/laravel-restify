@@ -37,7 +37,7 @@ class IndexRelatedFeatureTest extends IntegrationTest
                 'owner',
                 'users' => HasMany::make('users', UserRepository::class),
                 'extraData' => fn () => ['country' => 'Romania'],
-                'extraMeta' => new InvokableExtraMeta,
+                'extraMeta' => new InvokableExtraMeta(),
             ]);
 
         UserRepository::partialMock()
@@ -60,7 +60,7 @@ class IndexRelatedFeatureTest extends IntegrationTest
                 )
             )->create();
 
-        $this->withoutExceptionHandling()->getJson(CompanyRepository::route(null, [
+        $this->withoutExceptionHandling()->getJson(CompanyRepository::route(query: [
             'related' => 'users.companies.users, users.posts, users.roles, extraData, extraMeta, owner',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -102,7 +102,8 @@ class IndexRelatedFeatureTest extends IntegrationTest
 
         $this->getJson(CommentRepository::route(query: [
             'related' => 'parent, children',
-        ]))->assertJson(fn (AssertableJson $json) => $json
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
             ->where('data.2.attributes.comment', 'Root comment')
             ->has('data.2.relationships.parent')
             ->missing('data.2.relationships.parent.relationships.parent')
@@ -180,7 +181,7 @@ class IndexRelatedFeatureTest extends IntegrationTest
 
         PostFactory::one();
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'related' => 'user',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -206,7 +207,7 @@ class IndexRelatedFeatureTest extends IntegrationTest
             'name' => $owner = 'John Doe',
         ]))->create();
 
-        $this->getJson(PostRepository::route(null, [
+        $this->getJson(PostRepository::route(query: [
             'perPage' => 5,
             'related' => 'user',
             'sort' => 'id',

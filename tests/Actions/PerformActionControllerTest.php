@@ -47,8 +47,7 @@ class PerformActionControllerTest extends IntegrationTest
         PostRepository::partialMock()
             ->shouldReceive('actions')
             ->andReturn([
-                new class() extends Action
-                {
+                new class () extends Action {
                     public static $uriKey = 'publish';
 
                     public function handle(Request $request, Collection $collection)
@@ -60,7 +59,7 @@ class PerformActionControllerTest extends IntegrationTest
                 },
             ]);
 
-        $this->postJson(PostRepository::route('actions', ['action' => 'publish']), [
+        $this->postJson(PostRepository::route('actions', query: ['action' => 'publish']), [
             'repositories' => 'all',
         ])->assertOk()->assertJsonFragment([
             'fromHandle' => 0,

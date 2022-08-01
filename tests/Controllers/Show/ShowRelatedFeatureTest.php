@@ -34,7 +34,7 @@ class ShowRelatedFeatureTest extends IntegrationTest
 
         $this->withoutExceptionHandling();
 
-        $this->getJson(CommentRepository::route($comment->id, [
+        $this->getJson(CommentRepository::route($comment, query: [
             'related' => 'user, post.user',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
@@ -46,7 +46,7 @@ class ShowRelatedFeatureTest extends IntegrationTest
 
         app(RelatedDto::class)->reset();
 
-        $this->getJson(CommentRepository::route($comment->id, [
+        $this->getJson(CommentRepository::route($comment, query: [
             'related' => 'user, post',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
