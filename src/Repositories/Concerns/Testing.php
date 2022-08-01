@@ -23,7 +23,7 @@ trait Testing
             $path = $path->getKey();
         }
 
-        $path = ltrim($path, '/');
+        $path = ltrim((string) $path, '/');
 
         if ($action) {
             $query['action'] = $action->uriKey();
@@ -48,11 +48,7 @@ trait Testing
      */
     public static function action(string $action, string|int $key = null): string
     {
-        $path = $key ? "$key/actions" : 'actions';
-
-        return static::route($path, [
-            'action' => app($action)->uriKey(),
-        ]);
+        return static::route($key, action: app($action));
     }
 
     public static function getter(string $getter, string|int $key = null): string
