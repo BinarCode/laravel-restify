@@ -16,8 +16,8 @@ trait Testing
 {
     public static function route(
         string|Model $path = null,
-        Action $action = null,
         array $query = [],
+        Action $action = null,
     ): string {
         if ($path instanceof Model) {
             $path = $path->getKey();
