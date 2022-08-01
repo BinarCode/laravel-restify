@@ -5,8 +5,7 @@ namespace Binaryk\LaravelRestify\Repositories\Concerns;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Illuminate\Support\Str;
-use Illuminate\Support\Stringable;
+use Illuminate\Database\Eloquent\Model;
 
 /**
  * Trait Testing
@@ -15,21 +14,33 @@ use Illuminate\Support\Stringable;
  */
 trait Testing
 {
-    public static function route(string $path = null, array $query = []): Stringable
-    {
-        if (str($path)->startsWith('/')) {
-            $path = str($path)->replaceFirst('/', '')->toString();
+    public static function route(
+        string|Model $path = null,
+        Action $action = null,
+        array $query = [],
+    ): string {
+        if ($path instanceof Model) {
+            $path = $path->getKey();
         }
 
-        $base = (static::prefix() ?: Str::replaceFirst('//', '/', Restify::path())).'/'.static::uriKey();
+        $path = ltrim($path, '/');
 
-        $route = $path
-            ? $base.'/'.$path
-            : $base;
+        if ($action) {
+            $query['action'] = $action->uriKey();
+        }
 
-        return str(empty($query)
-            ? $route
-            : $route.'?'.http_build_query($query));
+        $route = implode('/', array_filter([
+            Restify::path(),
+            static::uriKey(),
+            $path,
+            $action ? 'actions' : null,
+        ]));
+
+        if (empty($query)) {
+            return $route;
+        }
+
+        return $route.'?'.http_build_query($query);
     }
 
     /**
