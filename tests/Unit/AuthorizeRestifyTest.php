@@ -15,7 +15,7 @@ class AuthorizeRestifyTest extends IntegrationTest
     {
         $this->logout();
 
-        Restify::$authUsing = fn() => false;
+        Restify::$authUsing = fn () => false;
 
         $this->getJson(UserRepository::route())
             ->assertStatus(401);
