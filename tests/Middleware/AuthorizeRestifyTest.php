@@ -10,12 +10,12 @@ class AuthorizeRestifyTest extends IntegrationTest
 {
     public function test_unauthorized_http_code_is_401(): void
     {
-        Restify::$authUsing = fn() => false;
+        Restify::$authUsing = fn () => false;
 
         $this->getJson(UserRepository::route())
             ->assertStatus(401);
 
-        Restify::$authUsing = fn() => true;
+        Restify::$authUsing = fn () => true;
 
         $this->getJson(UserRepository::route())
             ->assertStatus(200);
