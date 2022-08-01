@@ -27,7 +27,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-restify')
             ->hasConfigFile()
-//            ->hasMigration('create_action_logs_table')
+            ->hasMigration('create_action_logs_table')
             ->runsMigrations()
             ->hasCommands([
                 RepositoryCommand::class,
