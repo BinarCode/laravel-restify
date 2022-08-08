@@ -491,7 +491,7 @@ class Repository implements RestifySearchable, JsonSerializable
         return $this->policyMeta($request);
     }
 
-    private function policyMeta(Request $request): array
+    protected function policyMeta(Request $request): array
     {
         return [
             'authorizedToShow' => $this->authorizedToShow($request),
