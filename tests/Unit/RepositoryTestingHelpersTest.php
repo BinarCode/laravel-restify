@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsShowGetter;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
