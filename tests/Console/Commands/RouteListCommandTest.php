@@ -13,7 +13,7 @@ class RouteListCommandTest extends IntegrationTest
         app(RoutesBoot::class)->boot();
 
         if (method_exists($command = $this->artisan('route:list'), 'expectsOutputToContain')) {
-            $command->expectsOutputToContain("api/restify/{repository}");
+            $command->expectsOutputToContain('api/restify/{repository}');
         }
     }
 }
