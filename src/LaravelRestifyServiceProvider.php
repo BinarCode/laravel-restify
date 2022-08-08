@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
@@ -16,7 +15,6 @@ use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Support\Facades\App;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -49,10 +47,6 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->registerPublishing();
-        }
-
-        if (App::runningInConsole() && ! isset($_SERVER['dont_boot_console_routes'])) {
-            app(RoutesBoot::class)->boot();
         }
     }
 

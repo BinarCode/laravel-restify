@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -120,6 +121,8 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
     protected function singleton(): void
     {
-        $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
+        if (! App::runningUnitTests()) {
+            $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
+        }
     }
 }
