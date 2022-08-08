@@ -12,6 +12,6 @@ class RouteListCommandTest extends IntegrationTest
         // This is automatically registered in RestifyInjector middleware in a non console env mode.
         app(RoutesBoot::class)->boot();
 
-        $this->artisan('route:list')->expectsOutputToContain("api/restify/{repository}");
+        $this->artisan('route:list')->expectsOutputToContain('api/restify/{repository}');
     }
 }
