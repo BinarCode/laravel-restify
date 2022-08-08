@@ -29,6 +29,13 @@ class IndexRelatedFeatureTest extends IntegrationTest
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
+    }
+
     public function test_can_retrieve_nested_relationships(): void
     {
         CompanyRepository::partialMock()
