@@ -187,7 +187,7 @@ class RepositorySearchService
          * @var Collection $keys
          */
         $keys = tap(
-            $repository::newModel()->search($request->input('search')),
+            is_null($request->input('search')) ? $repository::newModel() : $repository::newModel()->search($request->input('search')),
             function ($scoutBuilder) use ($repository, $request) {
                 return $repository::scoutQuery($request, $scoutBuilder);
             }
