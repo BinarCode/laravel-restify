@@ -100,15 +100,12 @@ class Serializer implements JsonSerializable, Responsable
 
     public function jsonSerialize(): mixed
     {
-        if (is_null($this->items)) {
-            return [];
-        }
-
-        if ($this->items->count() === 1) {
+        if (is_null($this->items) || $this->items->count() === 1) {
             return $this->repository->serializeForShow(
                 $this->request(RepositoryShowRequest::class)
             );
         }
+
 
         $paginator = new Paginator($this->items->values(), $this->perPage);
 
