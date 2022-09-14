@@ -10,7 +10,6 @@ class PublicRepositoriesTest extends IntegrationTest
 {
     protected function setUp(): void
     {
-
         UserRepository::$public = true;
 //        Restify::repositories([
 //            UserRepository::class,

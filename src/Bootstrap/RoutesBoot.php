@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Bootstrap;
 
-use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Support\Facades\Route;
@@ -34,7 +33,7 @@ class RoutesBoot
         collect(Restify::$repositories)
             /** * @var Repository $repository */
             ->each(function (string $repository) {
-                if (!$repository::prefix()) {
+                if (! $repository::prefix()) {
                     return;
                 }
 

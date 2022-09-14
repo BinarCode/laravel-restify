@@ -67,8 +67,8 @@ class CustomRoutesBoot
                 }
 
                 $config['middleware'] = collect($config['middleware'])
-                    ->filter(fn(string $middleware) => $middleware !== 'auth:sanctum')
-                    ->filter(fn(string $middleware) => $middleware !== AuthorizeRestify::class)
+                    ->filter(fn (string $middleware) => $middleware !== 'auth:sanctum')
+                    ->filter(fn (string $middleware) => $middleware !== AuthorizeRestify::class)
                     ->all();
 
                 Route::group($config, function () use ($repository) {
