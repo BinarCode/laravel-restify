@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Bootstrap;
 
+use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Support\Facades\Route;
@@ -48,5 +49,33 @@ class CustomRoutesBoot
                 $repository::routes($router, $config);
             });
         });
+
+        $this->registerPublic();
+    }
+
+    public function registerPublic(): self
+    {
+        $config = app(RoutesBoot::class)->routesBaseConfig();
+
+        collect(Restify::$repositories)
+            ->each(function (string $repository) use ($config) {
+                /**
+                 * @var Repository $repository
+                 */
+                if (! $repository::isPublic()) {
+                    return;
+                }
+
+                $config['middleware'] = collect($config['middleware'])
+                    ->filter(fn(string $middleware) => $middleware !== 'auth:sanctum')
+                    ->filter(fn(string $middleware) => $middleware !== AuthorizeRestify::class)
+                    ->all();
+
+                Route::group($config, function () use ($repository) {
+                    app(PublicRoutesDefinition::class)->withoutMiddleware('auth:sanctum', AuthorizeRestify::class)($repository::uriKey());
+                });
+            });
+
+        return $this;
     }
 }

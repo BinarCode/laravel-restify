@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Bootstrap;
 
+use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Support\Facades\Route;
@@ -12,37 +13,32 @@ class RoutesBoot
     {
         Restify::ensureRepositoriesLoaded();
 
-        $config = [
-            'namespace' => null,
-            'as' => 'restify.api.',
-            'prefix' => Restify::path(),
-            'middleware' => config('restify.middleware', []),
-        ];
-
         $this
-            ->registerPrefixed($config)
-            ->registerPublic($config)
-            ->defaultRoutes($config);
+            ->registerPrefixed()
+            ->defaultRoutes();
     }
 
-    public function defaultRoutes($config): self
+    public function defaultRoutes(): self
     {
-        Route::group($config, function () {
+        Route::group($this->routesBaseConfig(), function () {
             app(RoutesDefinition::class)->once();
+            dd(Restify::$repositories);
             app(RoutesDefinition::class)();
         });
 
         return $this;
     }
 
-    public function registerPrefixed($config): self
+    public function registerPrefixed(): self
     {
         collect(Restify::$repositories)
             /** * @var Repository $repository */
-            ->each(function (string $repository) use ($config) {
-                if (! $repository::prefix()) {
+            ->each(function (string $repository) {
+                if (!$repository::prefix()) {
                     return;
                 }
+
+                $config = $this->routesBaseConfig();
 
                 $config['prefix'] = $repository::prefix();
                 Route::group($config, function () use ($repository) {
@@ -53,22 +49,13 @@ class RoutesBoot
         return $this;
     }
 
-    public function registerPublic($config): self
+    public function routesBaseConfig(): array
     {
-        collect(Restify::$repositories)
-            ->each(function (string $repository) use ($config) {
-                /**
-                 * @var Repository $repository
-                 */
-                if (! $repository::isPublic()) {
-                    return;
-                }
-
-                Route::group($config, function () use ($repository) {
-                    app(RoutesDefinition::class)->withoutMiddleware('auth:sanctum')($repository::uriKey());
-                });
-            });
-
-        return $this;
+        return [
+            'namespace' => null,
+            'as' => 'restify.api.',
+            'prefix' => Restify::path(),
+            'middleware' => config('restify.middleware', []),
+        ];
     }
 }
