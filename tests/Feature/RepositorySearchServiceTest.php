@@ -76,6 +76,49 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(2, 'data');
     }
 
+    public function test_can_search_using_belongs_to_field_with_custom_foreign_key(): void
+    {
+        $foreignUser = User::factory()->create([
+            'name' => 'Curtis Dog',
+        ]);
+
+        Post::factory(4)->create([
+            'edited_by' => $foreignUser->id,
+        ]);
+
+        $john = User::factory()->create([
+            'name' => 'John Doe',
+        ]);
+
+        Post::factory(2)->create([
+            'edited_by' => $john->id,
+        ]);
+
+        PostRepository::$related = [
+            'editor' => BelongsTo::make('editor',  UserRepository::class)->searchable([
+                'users.name',
+            ]),
+        ];
+
+        $this->withoutExceptionHandling();
+        $this->getJson(PostRepository::route(query: ['search' => 'John']))
+            ->assertJsonCount(2, 'data');
+    }
+
+    public function test_can_match_closure(): void
+    {
+        User::factory(4)->create();
+
+        UserRepository::$match = [
+            'is_active' => function ($request, $query) {
+                $this->assertInstanceOf(Request::class, $request);
+                $this->assertInstanceOf(Builder::class, $query);
+            },
+        ];
+
+        $this->getJson('users?is_active=true');
+    }
+
     public function test_can_match_custom_matcher(): void
     {
         User::factory(1)->create([

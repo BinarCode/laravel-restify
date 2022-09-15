@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  *
  * @property mixed $id
  * @property mixed $user_id
+ * @property mixed $edited_by
  * @property mixed $image
  * @property string $title
  * @property string $description
@@ -28,6 +29,7 @@ class Post extends Model
 
     protected $fillable = [
         'id',
+        'edited_by',
         'user_id',
         'image',
         'title',
@@ -43,6 +45,11 @@ class Post extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function editor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'edited_by');
     }
 
     public function comments(): HasMany

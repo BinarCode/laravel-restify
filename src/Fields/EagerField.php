@@ -123,7 +123,7 @@ class EagerField extends Field
         Repository $repository
     ): string {
         return $repository->resource->qualifyColumn(
-            $this->getRelation($repository)->getRelated()->getForeignKey()
+            $repository->resource->{$this->relation}()->getForeignKeyName()
         );
     }
 
