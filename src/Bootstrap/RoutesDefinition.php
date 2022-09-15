@@ -71,7 +71,7 @@ class RoutesDefinition
         Route::get(
             $prefix.'',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class
-        )->name('index')->withoutMiddleware('auth:sanctum');
+        )->name('index')->withoutMiddleware($this->excludedMiddleware);
         Route::post(
             $prefix.'',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class
