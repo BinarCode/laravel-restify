@@ -136,7 +136,7 @@ return [
 
     'repositories' => [
         /*
-        | Specify either to serialize index meta (policy) information or not. For performance reasons we recommend to disable it.
+        | Specify either to serialize index meta (policy) information or not. For performance reasons we recommend disabling it.
         */
         'serialize_index_meta' => false,
 
@@ -144,5 +144,17 @@ return [
         | Specify either to serialize show meta (policy) information or not.
         */
         'serialize_show_meta' => true,
+    ],
+
+    'cache' => [
+        /*
+        | Specify the cache configuration for the resources policies.
+        | When enabled, methods from the policy will be cached for the active user.
+        */
+        'policies' => [
+            'enabled' => false,
+
+            'ttl' => 5 * 60, // seconds
+        ],
     ],
 ];

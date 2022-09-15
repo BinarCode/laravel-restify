@@ -45,14 +45,14 @@ class RepositorySerializerTest extends IntegrationTest
 
         config()->set('restify.repositories.serialize_show_meta', false);
 
-        $this->getJson(PostRepository::route($posts->first()->id))
+        $this->getJson(PostRepository::route($posts->first()))
             ->assertJson(
                 fn (AssertableJson $json) => $json
                 ->missing('data.meta')
                 ->etc()
             );
 
-        $this->getJson(PostRepository::route($posts->first()->id, [
+        $this->getJson(PostRepository::route($posts->first(), query: [
             'withMeta' => true,
         ]))
             ->assertJson(

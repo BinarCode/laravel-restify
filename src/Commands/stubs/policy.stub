@@ -15,7 +15,7 @@ class {{ class }}
         return true;
     }
 
-    public function show(User $user, {{ model }} $model): bool
+    public function show(User $user = null, {{ model }} $model): bool
     {
         return true;
     }

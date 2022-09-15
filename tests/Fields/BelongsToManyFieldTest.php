@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Illuminate\Testing\Fluent\AssertableJson;
 
 class BelongsToManyFieldTest extends IntegrationTest
 {
@@ -19,7 +20,7 @@ class BelongsToManyFieldTest extends IntegrationTest
             );
         });
 
-        $this->withoutExceptionHandling()->getJson(CompanyRepository::route($company->id, ['include' => 'users']))
+        $this->withoutExceptionHandling()->getJson(CompanyRepository::route($company, query: ['include' => 'users']))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -27,6 +28,23 @@ class BelongsToManyFieldTest extends IntegrationTest
                     ],
                 ],
             ])->assertJsonCount(5, 'data.relationships.users');
+    }
+
+    public function test_belongs_to_many_displays_pivot_fields(): void
+    {
+        tap(Company::factory()->create(), function (Company $company) {
+            $company->users()->attach(
+                User::factory(5)->create(),
+                ['is_admin' => false],
+            );
+        });
+
+        $this->getJson(CompanyRepository::route(query: ['include' => 'users']))
+            ->assertJson(function (AssertableJson $json) {
+                return $json
+                    ->where('data.0.relationships.users.0.pivots.is_admin', false)
+                    ->etc();
+            });
     }
 
     public function test_belongs_to_many_can_hide_relationships_from_show(): void
@@ -43,7 +61,7 @@ class BelongsToManyFieldTest extends IntegrationTest
                 'users' => BelongsToMany::make('users', UserRepository::class)->hideFromShow(),
             ]);
 
-        $this->getJson(CompanyRepository::route($company->id, ['include' => 'users']))
+        $this->getJson(CompanyRepository::route($company, query: ['include' => 'users']))
             ->assertJsonStructure([
                 'data' => [],
             ])->assertJsonMissing([

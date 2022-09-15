@@ -14,11 +14,7 @@ use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
-use Binaryk\LaravelRestify\Filters\RelatedDto;
-use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Support\Facades\App;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
 
@@ -52,17 +48,6 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         if ($this->app->runningInConsole()) {
             $this->registerPublishing();
         }
-
-        if (App::runningUnitTests()) {
-            /**
-             * @var Kernel $kernel
-             */
-            $kernel = $this->app->make(Kernel::class);
-
-            $kernel->pushMiddleware(RestifyInjector::class);
-        }
-
-        $this->app->singleton(RelatedDto::class, fn ($app) => new RelatedDto());
     }
 
     public function packageRegistered(): void

@@ -44,7 +44,7 @@ class HasManyTest extends IntegrationTest
             'user_id' => $user->getKey(),
         ]);
 
-        $this->getJson(UserWithPosts::route($user->getKey(), [
+        $this->getJson(UserWithPosts::route($user, query: [
             'related' => 'posts',
         ]))->assertJsonStructure([
             'data' => [
@@ -70,7 +70,7 @@ class HasManyTest extends IntegrationTest
             'user_id' => $user->getKey(),
         ]);
 
-        $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts[title]']))
+        $this->getJson(UserWithPosts::route($user, query: ['related' => 'posts[title]']))
             ->assertJson(
                 fn (AssertableJson $json) => $json
                     ->where('data.relationships.posts.0.attributes.title', 'Title')
@@ -79,7 +79,7 @@ class HasManyTest extends IntegrationTest
 
         app(RelatedDto::class)->reset();
 
-        $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts[title|description]']))
+        $this->getJson(UserWithPosts::route($user, query: ['related' => 'posts[title|description]']))
             ->assertJson(
                 fn (AssertableJson $json) => $json
                     ->where('data.relationships.posts.0.attributes.title', 'Title')
@@ -94,7 +94,7 @@ class HasManyTest extends IntegrationTest
             $this->mockPosts($user->getKey(), 22);
         });
 
-        $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts', 'relatablePerPage' => 20]))
+        $this->getJson(UserWithPosts::route($user, query: ['related' => 'posts', 'relatablePerPage' => 20]))
             ->assertJsonCount(20, 'data.relationships.posts');
     }
 
@@ -107,7 +107,7 @@ class HasManyTest extends IntegrationTest
             $this->mockPosts($user->getKey(), 20);
         });
 
-        $this->getJson(UserWithPosts::route($user->getKey(), ['related' => 'posts']))
+        $this->getJson(UserWithPosts::route($user, query: ['related' => 'posts']))
             ->assertOk()
             ->assertJson(fn (AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
     }
@@ -140,7 +140,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', PostRepository::class),
             ]);
 
-        $this->getJson(UserWithPosts::route("$u->id/posts", ['perPage' => 5]))
+        $this->getJson(UserWithPosts::route("$u->id/posts", query: ['perPage' => 5]))
             ->assertJsonCount(5, 'data');
     }
 
@@ -164,7 +164,7 @@ class HasManyTest extends IntegrationTest
                 HasMany::make('posts', PostRepository::class),
             ]);
 
-        $this->getJson(UserWithPosts::route("$u->id/posts", ['title' => 'wew']))
+        $this->getJson(UserWithPosts::route("$u->id/posts", query: ['title' => 'wew']))
             ->assertJsonCount(1, 'data');
     }
 
@@ -192,6 +192,8 @@ class HasManyTest extends IntegrationTest
             ->assertJsonCount(0, 'data');
 
         $_SERVER['restify.post.allowRestify'] = false;
+
+        $this->authenticate(User::factory()->create());
 
         $this->getJson(UserWithPosts::route("$u->id/posts"))
             ->assertForbidden();

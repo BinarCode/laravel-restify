@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\HasColumns;
@@ -29,6 +30,8 @@ class EagerField extends Field
      */
     public string $repositoryClass;
 
+    private RelatedQuery $relatedQuery;
+
     public function __construct($attribute, string $parentRepository = null)
     {
         parent::__construct(attribute: $attribute);
@@ -40,7 +43,7 @@ class EagerField extends Field
         }
 
         if (is_null($parentRepository)) {
-            $this->repositoryClass = tap(Restify::repositoryClassForKey($attribute),
+            $this->repositoryClass = tap(Restify::repositoryClassForKey(str($attribute)->pluralStudly()->kebab()->toString()),
                 fn ($repository) => abort_unless($repository, 400, "Repository not found for the key [$attribute]."));
         }
 
@@ -58,9 +61,9 @@ class EagerField extends Field
     public function authorize(Request $request)
     {
         return call_user_func(
-                [$this->repositoryClass, 'authorizedToUseRepository'],
-                $request
-            ) && parent::authorize($request);
+            [$this->repositoryClass, 'authorizedToUseRepository'],
+            $request
+        ) && parent::authorize($request);
     }
 
     public function resolve($repository, $attribute = null)
@@ -79,15 +82,16 @@ class EagerField extends Field
         }
 
         try {
-            $this->value = $this->repositoryClass::resolveWith($relatedModel)
+            /**
+             * @var Repository $serializableRepository
+             */
+            $serializableRepository = $this->repositoryClass::resolveWith($relatedModel);
+
+            $this->value = $serializableRepository
                 ->allowToShow(app(Request::class))
                 ->columns()
                 ->eager($this);
-        } catch (AuthorizationException $e) {
-            if (is_null($relatedModel)) {
-                abort(403, 'You are not authorized to perform this action.');
-            }
-
+        } catch (AuthorizationException) {
             $class = get_class($relatedModel);
             $field = class_basename(get_called_class());
             $policy = get_class(Gate::getPolicyFor($relatedModel));
@@ -127,5 +131,17 @@ class EagerField extends Field
         Repository $repository
     ): string {
         return $this->getRelation($repository)->getRelated()->getQualifiedKeyName();
+    }
+
+    public function withRelatedQuery(RelatedQuery $relatedQuery): self
+    {
+        $this->relatedQuery = $relatedQuery;
+
+        return $this;
+    }
+
+    public function queryKeyThatRendered(): string
+    {
+        return $this->relatedQuery->relation;
     }
 }

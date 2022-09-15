@@ -7,7 +7,7 @@ position: 10
 
 ## Motivation
 
-Restify already provides powerful filters and get routes with relationships. However, sometimes you might want to get some extra data for your repositories.
+Restify provides powerful filters and gets routes with relationships. However, sometimes you might want to get some extra data for your repositories.
 
 Let's say you have a stripe user. This is how you retrieve the stripe user information through a get request:
 
@@ -22,15 +22,15 @@ public function __invoke(Request $request)
 }
 ```
 
-The `classic` approach is good, however, it has a few limitations. Firstly, you have to manually take care of the route `middleware`, the testability for these endpoints should be done separately which is hard to maintain. And finally, the endpoint is disconnected from the repository, which makes it feel out of context so has a bad readability.
+The `classic` approach is good, although it has a few limitations. First, you have to take care of the route `middleware` manually, as the testability for these endpoints should be done separately, which might be hard to maintain. At last, the endpoint is disconnected from the repository, which makes it feel out of context so has a bad readability.
 
-So, code readability, testability and maintainability become hard.
+That way, code readability, testability, and maintainability can become hard.
 
 ## Getter definition
 
-Getters are very similar to getters. The big difference, is that getters only allow get requests, and should not perform any kind of DB data writing:
+Getters are very similar to getters. The big difference is that getters only allow getting requests, and should not perform any kind of DB data writing:
 
-The getter is nothing more than a class, that extends the `Binaryk\LaravelRestify\Getters\Getter` abstract class.
+The getter is nothing more than a class that extends the `Binaryk\LaravelRestify\Getters\Getter` abstract class.
 
 An example of a getter class:
 
@@ -112,9 +112,9 @@ public function handle(Request $request)
 
 Getters could be easily customized.
 
-### Custom uri key
+### Custom keys
 
-Since your class names could change along the way, you can define a `$uriKey` property to your getters, so the frontend will use always the same `getter` query when applying an getter:
+Since your class names could change along the way, you can define a `$uriKey` property to your getters, so the frontend will use always the same `getter` query when applying a getter:
 
 ```php
 class StripeInformationGetter extends Getter
@@ -131,13 +131,13 @@ By default, any getter could be used on [index](#index-getters) as well as on [s
 
 ## Show getters
 
-Show getters are used when you have to apply it for a single item.
+Show getters are used when you have to apply them for a single item.
 
 ### Show getter definition
 
-The show getter definition is different in the way it receives arguments for the `handle` method. 
+The show getter definition differs in how it receives arguments for the `handle` method. 
 
-Restify automatically resolves Eloquent models defined in the route id and passes it to the getter's handle method:
+Restify automatically resolves Eloquent models defined in the route id and passes them to the getter's handle method:
 
 ```php
 public function handle(Request $request, User $user): JsonResponse
@@ -177,11 +177,11 @@ GET: api/api/restify/posts/1/getters
 
 ## Index getters
 
-Index getters are used when you have to apply it for a many items.
+Index getters are used when you have to apply them for many items.
 
 ### Index getter definition
 
-The index getter definition is different in the way it receives arguments for the `handle` method. 
+The index getter definition differs in how it receives arguments for the `handle` method. 
 
 ```php
 public function handle(Request $request): JsonResponse

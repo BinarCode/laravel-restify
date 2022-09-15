@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
+use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\LoginController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
@@ -10,7 +11,7 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Illuminate\Contracts\Http\Kernel;
-use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
@@ -27,6 +28,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         $this->repositories();
         $this->authRoutes();
         $this->routes();
+        $this->singleton();
     }
 
     /**
@@ -38,8 +40,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function repositories(): void
     {
-        app(Filesystem::class)->ensureDirectoryExists(app_path('Restify'));
-
         Restify::repositoriesFrom(app_path('Restify'));
     }
 
@@ -119,6 +119,16 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
         $kernel->pushMiddleware(RestifyInjector::class);
 
-        app(RoutesBoot::class)->boot();
+        // List routes when running artisan route:list
+        if (App::runningInConsole() && ! App::runningUnitTests()) {
+            app(RoutesBoot::class)->boot();
+        }
+    }
+
+    protected function singleton(): void
+    {
+        if (! App::runningUnitTests()) {
+            $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
+        }
     }
 }

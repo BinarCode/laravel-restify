@@ -43,7 +43,7 @@ class MatchFilterTest extends IntegrationTest
             'title' => 'string',
         ];
 
-        $this->getJson(PostRepository::route('filters', [
+        $this->getJson(PostRepository::route('filters', query: [
             'only' => 'matches',
         ]))
             ->assertJsonStructure([

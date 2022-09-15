@@ -1,5 +1,11 @@
 # Upgrading
 
+## From 7.3.1 to 7.4.0
+
+## Breaking
+
+- The `$eagerState` repository property is now private, and it is of type `null|string` because it holds the parent repository that renders it.
+
 ## From 6.x to 7.x
 
 High impact:
@@ -13,6 +19,7 @@ High impact:
     - `$defaultPerPage` and `$defaultRelatablePerPage` has a type of `int`, if you override this make sure you add `int` type
     - `eagerState` method was deleted from the repository, there is no need to call it anymore, the repository will be resolved automatically
     - `$prefix` property requires a `string` type
+    - `resolveShowMeta` is not inherited for the `resolveIndexMeta` anymore, both methods are now using `policyMeta` method, so override the `policyMeta` instead. This could be simply solved if you replace in all repositories `resolveShowMeta` with `policyMeta`.
 - Relations that are present into `include` or `related` will be preloaded, so if you didn't specify a repository to serialize the related relationship, and you're looking for the Eloquent to resolve it, it will not invoke the `restify.casts.related` cast anymore, instead it'll load the relationship as it. This has a performance reason under the hood. 
 - Since related relationships will be preloaded, the format of the belongs to will be changed now. If you didn't specify the repository to serialize the `belongsTo` relationship, it'll be serialized as an object, not array anymore:
 

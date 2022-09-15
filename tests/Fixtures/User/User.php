@@ -3,11 +3,13 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
 use Binaryk\LaravelRestify\Contracts\Sanctumable;
+use Binaryk\LaravelRestify\Tests\Fixtures\Comment\Comment;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\Builder;
@@ -37,10 +39,12 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
     public static $withs = ['posts'];
 
     protected $fillable = [
+        'id',
         'name',
         'email',
         'active',
         'password',
+        'creator_id',
         'email_verified_at',
         'avatar',
         'created_at',
@@ -117,5 +121,15 @@ class User extends Authenticatable implements Sanctumable, MustVerifyEmail
                 'admin',
             ],
         ];
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(static::class, 'creator_id');
+    }
+
+    public function comments(): HasMany
+    {
+        return $this->hasMany(Comment::class);
     }
 }

@@ -41,7 +41,7 @@ class HasOneFieldTest extends IntegrationTest
     {
         $post = Post::factory()->create();
 
-        $this->getJson(UserWithPostRepository::route($post->user_id, ['include' => 'post']))->assertJsonStructure([
+        $this->getJson(UserWithPostRepository::route($post->user_id, query: ['include' => 'post']))->assertJsonStructure([
             'data' => [
                 'relationships' => [
                     'post',
@@ -61,7 +61,7 @@ class HasOneFieldTest extends IntegrationTest
         tap(Post::factory()->create([
             'user_id' => User::factory(),
         ]), function (Post $post) {
-            $this->postJson(UserWithPostRepository::route($post->user_id, [
+            $this->postJson(UserWithPostRepository::route($post->user_id, query: [
                 'include' => 'post',
             ]))->assertForbidden();
         });

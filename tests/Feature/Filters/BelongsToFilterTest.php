@@ -57,6 +57,8 @@ class BelongsToFilterTest extends IntegrationTest
                     ->etc()
             );
 
+        app(RelatedDto::class)->reset();
+
         $this
             ->getJson(PostRepository::route(query: [
                 'related' => 'user',
@@ -109,8 +111,8 @@ class BelongsToFilterTest extends IntegrationTest
                 'perPage' => 5,
             ]))->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.user.attributes.name', 'Ame')
-                ->etc()
+                    ->where('data.0.relationships.user.attributes.name', 'Ame')
+                    ->etc()
             );
 
         $this
@@ -121,8 +123,8 @@ class BelongsToFilterTest extends IntegrationTest
                 'page' => 4,
             ]))->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.5.relationships.user.attributes.name', 'Zez')
-                ->etc()
+                    ->where('data.5.relationships.user.attributes.name', 'Zez')
+                    ->etc()
             );
     }
 

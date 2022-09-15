@@ -36,9 +36,9 @@ class RepositorySearchService
             $repository::usesScout()
                 ? $this->prepareRelations($request, $scoutQuery ?? $repository::query($request))
                 : $this->prepareSearchFields(
-                $request,
-                $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
-            ),
+                    $request,
+                    $this->prepareRelations($request, $scoutQuery ?? $repository::query($request)),
+                ),
         );
 
         $query = $this->applyFilters($request, $repository, $query);
@@ -103,6 +103,11 @@ class RepositorySearchService
             true,
         ))->filter(function ($relation) use ($query) {
             try {
+                if ($relation === 'target') {
+                    ray($query->getRelation($relation));
+                    ray($query->getRelation($relation) instanceof Relation);
+                }
+
                 return $query->getRelation($relation) instanceof Relation;
             } catch (Throwable) {
                 return false;
@@ -182,7 +187,7 @@ class RepositorySearchService
          * @var Collection $keys
          */
         $keys = tap(
-            $repository::newModel()->search($request->input('search')),
+            is_null($request->input('search')) ? $repository::newModel() : $repository::newModel()->search($request->input('search')),
             function ($scoutBuilder) use ($repository, $request) {
                 return $repository::scoutQuery($request, $scoutBuilder);
             }

@@ -38,7 +38,7 @@ class MorphOneFieldTest extends IntegrationTest
 
         $relationships = $this
             ->withoutExceptionHandling()
-            ->getJson(PostWithMorphOneRepository::route($post->id, ['related' => 'user']))
+            ->getJson(PostWithMorphOneRepository::route($post, query: ['related' => 'user']))
             ->assertJsonStructure([
                 'data' => [
                     'relationships' => [
@@ -54,7 +54,7 @@ class MorphOneFieldTest extends IntegrationTest
 
         $this->assertNotNull($relationships);
 
-        $relationships = $this->getJson(PostWithMorphOneRepository::route($post->id))
+        $relationships = $this->getJson(PostWithMorphOneRepository::route($post))
             ->json('data.relationships');
 
         $this->assertNull($relationships);
