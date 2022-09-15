@@ -10,7 +10,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
-
 use function PHPUnit\Framework\assertInstanceOf;
 use function PHPUnit\Framework\assertSame;
 

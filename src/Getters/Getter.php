@@ -19,10 +19,8 @@ use Illuminate\Support\Str;
 use JsonSerializable;
 use ReturnTypeWillChange;
 use Symfony\Component\HttpFoundation\Response;
-
 use function tap;
 use function throw_unless;
-
 use Throwable;
 
 /**

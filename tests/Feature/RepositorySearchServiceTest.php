@@ -95,7 +95,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         ]);
 
         PostRepository::$related = [
-            'editor' => BelongsTo::make('editor',  UserRepository::class)->searchable([
+            'editor' => BelongsTo::make('editor', UserRepository::class)->searchable([
                 'users.name',
             ]),
         ];
