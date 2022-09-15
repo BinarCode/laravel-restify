@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify;
 
-use Binaryk\LaravelRestify\Bootstrap\Boot;
 use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
@@ -121,7 +120,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         $kernel->pushMiddleware(RestifyInjector::class);
 
         // List routes when running artisan route:list
-        if (App::runningInConsole() && !App::runningUnitTests()) {
+        if (App::runningInConsole() && ! App::runningUnitTests()) {
             app(RoutesBoot::class)->boot();
         }
     }
