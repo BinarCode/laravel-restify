@@ -228,6 +228,34 @@ class RepositorySearchServiceTest extends IntegrationTest
             ->assertJsonCount(2, 'data');
     }
 
+    public function test_can_search_using_belongs_to_field_with_custom_foreign_key(): void
+    {
+        $foreignUser = User::factory()->create([
+            'name' => 'Curtis Dog',
+        ]);
+
+        Post::factory(4)->create([
+            'edited_by' => $foreignUser->id,
+        ]);
+
+        $john = User::factory()->create([
+            'name' => 'John Doe',
+        ]);
+
+        Post::factory(2)->create([
+            'edited_by' => $john->id,
+        ]);
+
+        PostRepository::$related = [
+            'editor' => BelongsTo::make('editor',  UserRepository::class)->searchable([
+                'users.name',
+            ]),
+        ];
+
+        $this->getJson('posts?search=John')
+            ->assertJsonCount(2, 'data');
+    }
+
     public function test_can_order_using_filter_sortable_definition(): void
     {
         User::factory()->create([
