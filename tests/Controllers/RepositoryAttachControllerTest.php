@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTest;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+
 use function PHPUnit\Framework\assertInstanceOf;
 
 class RepositoryAttachControllerTest extends IntegrationTest

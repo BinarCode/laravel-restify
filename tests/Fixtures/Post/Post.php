@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * Class Post.
  * @property mixed $id
  * @property mixed $user_id
+ * @property mixed $edited_by
  * @property mixed $image
  * @property mixed $title
  * @property mixed $description
@@ -25,6 +26,7 @@ class Post extends Model
 
     protected $fillable = [
         'id',
+        'edited_by',
         'user_id',
         'image',
         'title',
@@ -36,5 +38,10 @@ class Post extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function editor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'edited_by');
     }
 }
