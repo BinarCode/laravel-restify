@@ -106,7 +106,6 @@ class Serializer implements JsonSerializable, Responsable
             );
         }
 
-
         $paginator = new Paginator($this->items->values(), $this->perPage);
 
         if (! $this->hasCustomRepository()) {
