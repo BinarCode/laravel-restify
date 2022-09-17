@@ -24,12 +24,11 @@ class RepositorySyncControllerTest extends IntegrationTest
         $company->users()->first()->is($user1);
 
         $this->postJson(CompanyRepository::route("$company->id/sync/users"), [
-            'users' => $user->getKey()
+            'users' => $user->getKey(),
         ])->assertCreated();
 
         $company->users()->first()->is($user);
 
         $this->assertCount(1, Company::first()->users);
     }
-
 }
