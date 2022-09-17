@@ -655,8 +655,6 @@ public function syncPermissions(User $authenticatedUser, Company $company, Colle
 }
 ```
 
-The policy `attachUsers` method will be called for each individual `userToBeAttached`. However, if you attach - [1, 3] ids, this method will be called twice.
-
 ### Detach related
 
 As soon we declared the `BelongsToMany` relationship, Restify automatically registers the `detach` endpoint:
