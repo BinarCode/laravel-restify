@@ -867,7 +867,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
         $this->model()->{$eagerField->relation}()->sync($pivots->all());
 
-        return data($pivots, 201);
+        return ok();
     }
 
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
