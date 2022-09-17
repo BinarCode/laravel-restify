@@ -14,6 +14,9 @@ class RepositorySyncControllerTest extends IntegrationTest
         $user1 = $this->mockUsers()->first();
         $user2 = $this->mockUsers()->first();
 
+        /**
+         * @var Company $company
+         */
         $company = Company::factory()->create();
 
         $company->users()->attach($user1);
@@ -29,6 +32,6 @@ class RepositorySyncControllerTest extends IntegrationTest
 
         $company->users()->first()->is($user);
 
-        $this->assertCount(1, Company::first()->users()->get());
+        $this->assertCount(1, $company->users()->get());
     }
 }
