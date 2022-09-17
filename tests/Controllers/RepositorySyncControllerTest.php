@@ -25,7 +25,7 @@ class RepositorySyncControllerTest extends IntegrationTest
 
         $this->postJson(CompanyRepository::route("$company->id/sync/users"), [
             'users' => $user->getKey(),
-        ])->assertCreated();
+        ])->assertOk();
 
         $company->users()->first()->is($user);
 
