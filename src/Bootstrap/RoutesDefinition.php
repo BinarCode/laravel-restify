@@ -128,6 +128,10 @@ class RoutesDefinition
             $prefix.'/{repositoryId}/detach/{relatedRepository}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryDetachController::class
         );
+        Route::post(
+            $prefix.'/{repositoryId}/sync/{relatedRepository}',
+            \Binaryk\LaravelRestify\Http\Controllers\RepositorySyncController::class
+        );
 
         // Relatable
         Route::get(
