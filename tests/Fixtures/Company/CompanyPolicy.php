@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures\Company;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
+use Illuminate\Support\Collection;
 
 class CompanyPolicy
 {
@@ -118,6 +119,11 @@ class CompanyPolicy
     public function attachUsers(User $user, Company $model, User $userToBeAttached)
     {
         return $_SERVER['allow_attach_users'] ?? true;
+    }
+
+    public function syncUsers(User $user, Company $model, Collection $keys)
+    {
+        return $_SERVER['allow_sync_users'] ?? true;
     }
 
     public function detachUsers(User $user, Company $model, User $userToBeDetached)

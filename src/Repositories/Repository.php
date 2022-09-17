@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
 use ReturnTypeWillChange;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @property string $type
@@ -854,6 +855,21 @@ class Repository implements RestifySearchable, JsonSerializable
         return data($pivots, 201);
     }
 
+    public function sync(RestifyRequest $request, $repositoryId, Collection $pivots)
+    {
+        $eagerField = $this->authorizeBelongsToMany($request)->belongsToManyField($request);
+
+        if (! $eagerField) {
+            throw new NotFoundHttpException('Belongs to many field not found.');
+        }
+
+        $eagerField->authorizeToSync($request);
+
+        $this->model()->{$eagerField->relation}()->sync($pivots->all());
+
+        return ok();
+    }
+
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
     {
         /** * @var BelongsToMany $eagerField */
@@ -907,6 +923,15 @@ class Repository implements RestifySearchable, JsonSerializable
         $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
 
         $attachers->each(fn ($model) => $this->authorizeToAttach($request, $methodGuesser, $model));
+
+        return $this;
+    }
+
+    public function allowToSync(RestifyRequest $request, Collection $attachers): self
+    {
+        $methodGuesser = 'sync'.Str::studly($request->relatedRepository);
+
+        $this->authorizeToSync($request, $methodGuesser, $attachers);
 
         return $this;
     }

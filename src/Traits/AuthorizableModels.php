@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -112,6 +113,26 @@ trait AuthorizableModels
         if (false === $authorized) {
             abort(403,
                 'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.');
+        }
+
+        return false;
+    }
+
+    public function authorizeToSync(Request $request, $method, Collection $keys): bool
+    {
+        if (! static::authorizable()) {
+            return false;
+        }
+
+        $policyClass = get_class(Gate::getPolicyFor($this->model()));
+
+        $authorized = method_exists($policy = Gate::getPolicyFor($this->model()), $method)
+            ? Gate::check($method, [$this->model(), $keys])
+            : abort(403, "Missing method [$method] in your [$policyClass] policy.");
+
+        if (false === $authorized) {
+            abort(403,
+                'You cannot sync key to the model:'.get_class($this->model()).', check your permissions.');
         }
 
         return false;

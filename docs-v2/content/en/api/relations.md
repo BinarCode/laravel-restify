@@ -618,6 +618,43 @@ class AttachCompanyUsers
 ```
 
 
+### Sync related
+
+You can also `sync` your `BelongsToMany` field. Say you have to sync permissions to a role. You can do it like this:
+
+```http request
+POST: api/restify/roles/1/sync/permissions
+```
+
+Payload:
+
+```json
+{
+  "permissions": [1, 2]
+}
+```
+
+Under the hood this will call the `sync` method on the `BelongsToMany` relationship: 
+
+```php
+// $role of the id 1
+
+$role->permissions()->sync($request->input('permissions'));
+```
+
+### Authorize sync
+
+You can define a policy method `syncPermissions`. The name should start with `sync` and suffix with the plural `CamelCase` name of the model's relationship name:
+
+```php
+// RolePolicy.php
+
+public function syncPermissions(User $authenticatedUser, Company $company, Collection $keys): bool
+{ 
+    // $keys are the primary keys of the related model (permissions in our case) Restify is trying to `sync`
+}
+```
+
 ### Detach related
 
 As soon we declared the `BelongsToMany` relationship, Restify automatically registers the `detach` endpoint:
