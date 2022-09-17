@@ -19,7 +19,7 @@ class RepositorySyncControllerTest extends IntegrationTest
         $company->users()->attach($user1);
         $company->users()->attach($user2);
 
-        $this->assertCount(2, Company::first()->users);
+        $this->assertCount(2, Company::first()->users()->get());
 
         $company->users()->first()->is($user1);
 
@@ -29,6 +29,6 @@ class RepositorySyncControllerTest extends IntegrationTest
 
         $company->users()->first()->is($user);
 
-        $this->assertCount(1, Company::first()->users);
+        $this->assertCount(1, Company::first()->users()->get());
     }
 }
