@@ -83,11 +83,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
         $this->postJson(CompanyRepository::route("$company->id/attach/users"), [
             'users' => $user->getKey(),
-        ])->assertStatus(429)->assertJsonFragment([
-            'is_admin' => [
-                $message,
-            ],
-        ]);
+        ])->assertStatus(429);
     }
 
     public function test_pivot_field_present_when_show(): void
