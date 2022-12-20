@@ -55,7 +55,7 @@
         "format": "vendor/bin/pint",
         "psalm": "./vendor/bin/psalm --no-cache",
         "analyse": "vendor/bin/phpstan analyse",
-        "test": "./vendor/bin/testbench package:test --parallel --no-coverage",
+        "test": "./vendor/bin/testbench package:test --no-coverage",
         "test-coverage": "./vendor/bin/phpunit --coverage-html coverage"
     },
     "config": {
