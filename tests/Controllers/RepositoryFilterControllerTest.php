@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTest;
@@ -33,15 +34,15 @@ class RepositoryFilterControllerTest extends IntegrationTest
             // 1 sort
             // 2 searchable
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->where('data.0.rules.is_active', 'bool')
-                ->where('data.4.type', 'text')
-                ->where('data.4.column', 'title')
-                ->where('data.5.type', 'value')
-                ->where('data.5.column', 'title')
-                ->where('data.6.type', 'value')
-                ->where('data.6.column', 'id')
-                ->etc()
+                fn(AssertableJson $json) => $json
+                    ->where('data.0.rules.is_active', 'bool')
+                    ->where('data.4.type', 'text')
+                    ->where('data.4.column', 'title')
+                    ->where('data.5.type', 'value')
+                    ->where('data.5.column', 'title')
+                    ->where('data.6.type', 'value')
+                    ->where('data.6.column', 'id')
+                    ->etc()
             )
             ->assertJsonCount(8, 'data');
     }
@@ -72,5 +73,27 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::route('filters', query: ['only' => 'searchables']))
             ->assertJsonCount(2, 'data');
+    }
+
+    public function test_filters_will_render_placeholder(): void
+    {
+        PostRepository::$match = [
+            'title' => MatchFilter::make()
+                ->setDescription('Sort by title')
+                ->setPlaceholder('-title')
+                ->setType('string')
+        ];
+
+        $this->getJson(PostRepository::route('filters', query: [
+            'only' => 'matches',
+        ]))
+            ->assertJson(function (AssertableJson $json) {
+                $json
+                    ->where('data.0.placeholder', '-title')
+                    ->where('data.0.description', 'Sort by title')
+                    ->where('data.0.type', 'string')
+                    ->where('data.0.column', 'title')
+                    ->etc();
+            });
     }
 }
