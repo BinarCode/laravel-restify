@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Middleware;
 
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Restify;
 
 class AuthorizeRestify
