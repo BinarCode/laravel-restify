@@ -77,6 +77,7 @@ class Restify
      * Return the repository instance for a given key.
      *
      * @param  string  $key
+     *
      * @throw RepositoryNotFoundException
      *
      * @return Repository
