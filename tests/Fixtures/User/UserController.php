@@ -71,7 +71,7 @@ class UserController extends RestController
             $this->gate('access', $user);
 
             return $this->respond($user);
-        } catch (EntityNotFoundException | GatePolicy | BindingResolutionException $e) {
+        } catch (EntityNotFoundException|GatePolicy|BindingResolutionException $e) {
             return $this->response()
                 ->addError('Entity not found.')
                 ->missing()

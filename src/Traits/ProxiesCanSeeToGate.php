@@ -14,7 +14,7 @@ trait ProxiesCanSeeToGate
      * @param  null|array  $arguments
      * @return self
      */
-    public function canSeeWhen(string $ability, null | array $arguments = [])
+    public function canSeeWhen(string $ability, null|array $arguments = [])
     {
         $arguments = Arr::wrap($arguments);
 
