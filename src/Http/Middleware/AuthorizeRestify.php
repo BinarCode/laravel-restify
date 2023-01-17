@@ -14,7 +14,8 @@ class AuthorizeRestify
      * @param  \Closure  $next
      * @return \Illuminate\Http\Response
      *
-     * @throws UnauthorizedException
+     * @throws UnauthorizedExceptio
+     * n
      */
     public function handle($request, $next)
     {

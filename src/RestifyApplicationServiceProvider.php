@@ -92,19 +92,19 @@ class RestifyApplicationServiceProvider extends ServiceProvider
                     ->name('restify.register');
 
                 Route::post('login', LoginController::class)
-                    ->middleware('throttle:6,1')
+                    ->middleware('throttle:600,1')
                     ->name('restify.login');
 
                 Route::post('verify/{id}/{hash}', VerifyController::class)
-                    ->middleware('throttle:6,1')
+                    ->middleware('throttle:600,1')
                     ->name('restify.verify');
 
                 Route::post('forgotPassword', ForgotPasswordController::class)
-                    ->middleware('throttle:6,1')
+                    ->middleware('throttle:600,1')
                     ->name('restify.forgotPassword');
 
                 Route::post('resetPassword', ResetPasswordController::class)
-                    ->middleware('throttle:6,1')
+                    ->middleware('throttle:600,1')
                     ->name('restify.resetPassword');
             });
         });
