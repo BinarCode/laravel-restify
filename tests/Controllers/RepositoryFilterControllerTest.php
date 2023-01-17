@@ -34,7 +34,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
             // 1 sort
             // 2 searchable
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.rules.is_active', 'bool')
                     ->where('data.4.type', 'text')
                     ->where('data.4.column', 'title')
@@ -81,7 +81,7 @@ class RepositoryFilterControllerTest extends IntegrationTest
             'title' => MatchFilter::make()
                 ->setDescription('Sort by title')
                 ->setPlaceholder('-title')
-                ->setType('string')
+                ->setType('string'),
         ];
 
         $this->getJson(PostRepository::route('filters', query: [
