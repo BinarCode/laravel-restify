@@ -81,8 +81,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
                 ),
             ]);
 
-        $this
-            ->postJson(CompanyRepository::route("$company->id/attach/users"), [
+        $this->postJson(CompanyRepository::route("$company->id/attach/users"), [
             'users' => $user->getKey(),
         ])->assertStatus(422)->assertJsonFragment([
             'is_admin' => [
