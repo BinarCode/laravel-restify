@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
-use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
+use Binaryk\LaravelRestify\Http\Requests\ProfileRequestRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends RepositoryController
 {
-    public function __invoke(RepositoryShowRequest $request): JsonResponse
+    public function __invoke(ProfileRequestRequest $request): JsonResponse
     {
         if ($repository = $this->guessRepository($request)) {
             return data($repository->serializeForShow($request));

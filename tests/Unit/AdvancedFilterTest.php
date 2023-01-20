@@ -33,7 +33,7 @@ class AdvancedFilterTest extends IntegrationTest
                 ];
             }
 
-            public function filter(RestifyRequest $request, Relation | Builder $query, $value)
+            public function filter(RestifyRequest $request, Relation|Builder $query, $value)
             {
                 return $query;
             }
