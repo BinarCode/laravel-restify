@@ -436,28 +436,11 @@ class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveIndexAttributes($request)
     {
-        // Resolve the show method, and attach the value to the array
-        $fields = $this
-            ->collectFields($request)
-            ->when($this->hasCustomColumns(), fn (FieldCollection $fields) => $fields->inList($this->getColumns()))
-            ->forIndex($request, $this)
-            ->filter(fn (Field $field) => $field->authorize($request))
-            ->when(
-                $this->eagerState,
-                function ($items) {
-                    return $items->filter(fn (Field $field) => ! $field instanceof EagerField);
-                }
-            )
-            ->each(fn (Field $field) => $field->resolveForIndex($this))
-            ->map(fn (Field $field) => $field->serializeToValue($request))
-            ->mapWithKeys(fn ($value) => $value)
-            ->all();
-
         if ($this instanceof Mergeable) {
             // Hidden and authorized index fields
-            $fields = $this->modelAttributes($request)
+            return $this->modelAttributes($request)
                 ->filter(function ($value, $attribute) use ($request) {
-                    /** * @var Field $field */
+                    /** @var Field $field */
                     $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
 
                     if (is_null($field)) {
@@ -476,7 +459,23 @@ class Repository implements RestifySearchable, JsonSerializable
                 })->all();
         }
 
-        return $fields;
+        // Resolve the show method, and attach the value to the array
+        return $this
+            ->collectFields($request)
+            ->when(
+                $this->hasCustomColumns(),
+                fn (FieldCollection $fields) => $fields->inList($this->getColumns())
+            )
+            ->forIndex($request, $this)
+            ->filter(fn (Field $field) => $field->authorize($request))
+            ->when(
+                $this->eagerState,
+                fn ($items) => $items->filter(fn (Field $field) => ! $field instanceof EagerField)
+            )
+            ->each(fn (Field $field) => $field->resolveForIndex($this))
+            ->map(fn (Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn ($value) => $value)
+            ->all();
     }
 
     public function resolveShowMeta($request)
