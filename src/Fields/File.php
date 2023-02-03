@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Fields\Concerns\Deletable;
 use Binaryk\LaravelRestify\Fields\Concerns\FileStorable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Storable;
+use Carbon\CarbonInterface;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -71,6 +72,54 @@ class File extends Field implements StorableContract, DeletableContract
     public function storeAs($storeAs): self
     {
         $this->storeAs = $storeAs;
+
+        return $this;
+    }
+
+    /**
+     * Resolve a temporary URL for s3 compatible disks.
+     *
+     * @param  bool  $resolveTemporaryUrl
+     * @param  CarbonInterface|null  $expiration
+     * @param  array  $options
+     * @return $this
+     */
+    public function resolveUsingTemporaryUrl(bool $resolveTemporaryUrl = true, CarbonInterface $expiration = null, array $options = []): self
+    {
+        if (! $resolveTemporaryUrl) {
+            return $this;
+        }
+
+        $callback = function ($value) use ($expiration) {
+            if (!$value) {
+                return;
+            }
+            return Storage::disk($this->getStorageDisk())->temporaryUrl(
+                $value,
+                $expiration ?? now()->addMinutes(5)
+            );
+        };
+
+        $this->resolveCallback($callback);
+
+        return $this;
+    }
+
+    /**
+     * Resolve a full path for the file.
+     *
+     * @return $this
+     */
+    public function resolveUsingFullUrl(): self
+    {
+        $callback = function ($value) {
+            if (!$value) {
+                return;
+            }
+            return Storage::disk($this->getStorageDisk())->url($value);
+        };
+
+        $this->resolveCallback($callback);
 
         return $this;
     }
