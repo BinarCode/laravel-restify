@@ -91,9 +91,10 @@ class File extends Field implements StorableContract, DeletableContract
         }
 
         $callback = function ($value) use ($expiration) {
-            if (!$value) {
+            if (! $value) {
                 return;
             }
+
             return Storage::disk($this->getStorageDisk())->temporaryUrl(
                 $value,
                 $expiration ?? now()->addMinutes(5)
@@ -113,9 +114,10 @@ class File extends Field implements StorableContract, DeletableContract
     public function resolveUsingFullUrl(): self
     {
         $callback = function ($value) {
-            if (!$value) {
+            if (! $value) {
                 return;
             }
+
             return Storage::disk($this->getStorageDisk())->url($value);
         };
 
