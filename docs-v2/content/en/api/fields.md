@@ -315,7 +315,8 @@ class AttachPostFileRestifyAction extends Action
 {
     public function handle(RestifyRequest $request, Post $post): void
     {
-        $post->addMediaFromRequest('file');
+        $post->addMediaFromRequest('file')
+            ->toMediaCollection();
     }
 }
 ```
