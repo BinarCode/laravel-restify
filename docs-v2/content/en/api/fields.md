@@ -271,7 +271,17 @@ Field::new('password')->indexCallback(function ($value) {
 Transform the value for the following show request:
 
 ```php
-Field::new('password')->showRequest(function ($value) {
+Field::new('password')->showCallback(function ($value) {
+    return Hash::make($value);
+});
+```
+
+### Resolve callback
+
+Transform the value for both `show` and `index` requests:
+
+```php
+Field::new('password')->showCallback(function ($value) {
     return Hash::make($value);
 });
 ```
@@ -560,6 +570,45 @@ File::make('avatar')
 As you can see in the example above, the `store` callback is returning an array of keys and values. These key / value
 pairs are mapped onto your model's instance before it is saved to the database, allowing you to update one or many of the
 model's database columns after your file is stored.
+
+### Customizing File Display
+
+By default, Restify will display the file's stored path name. However, you may customize this behavior.
+
+#### Displaying temporary url
+
+For disks such as S3, you may instruct Restify to display a temporary URL to the file instead of the stored path name:
+
+```php
+  field('path')
+      ->file()
+      ->path("documents/".Auth::id())
+      ->resolveUsingTemporaryUrl()
+      ->disk('s3'),
+
+```
+
+The `resolveUsingTemporaryUrl` accepts 3 arguments:
+
+
+- `$resolveTemporaryUrl` - a boolean to determine if the temporary url should be resolved. Defaults to `true`.
+
+- `$expiration` - A CarbonInterface to determine the time before the URL expires. Defaults to 5 minutes.
+
+- `$options` - An array of options to pass to the `temporaryUrl` method of the `Illuminate\Contracts\Filesystem\Filesystem` implementation. Defaults to an empty array.
+
+#### Displaying full url
+
+For disks such as `public`, you may instruct Restify to display a full URL to the file instead of the stored path name:
+
+```php
+  field('path')
+      ->file()
+      ->path("documents/".Auth::id())
+      ->resolveUsingFullUrl()
+      ->disk('public'),
+
+```
 
 #### Storeables
 
