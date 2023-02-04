@@ -29,6 +29,7 @@
         "brianium/paratest": "^6.2",
         "doctrine/dbal": "^3.0",
         "nunomaduro/collision": "^6.0",
+        "openai-php/laravel": "^0.3.1",
         "orchestra/testbench": "^7.0",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0",
