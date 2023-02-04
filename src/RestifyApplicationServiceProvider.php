@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify;
 
 use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
+use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\LoginController;
@@ -16,6 +17,7 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use ReflectionException;
+use Illuminate\Contracts\Debug\ExceptionHandler;
 
 class RestifyApplicationServiceProvider extends ServiceProvider
 {
@@ -29,6 +31,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         $this->authRoutes();
         $this->routes();
         $this->singleton();
+        $this->handler();
     }
 
     /**
@@ -129,6 +132,13 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     {
         if (! App::runningUnitTests()) {
             $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
+        }
+    }
+
+    protected function handler(): void
+    {
+        if (config('restify.ai_solutions')) {
+            $this->app->bind(ExceptionHandler::class, RestifyHandler::class);
         }
     }
 }

@@ -157,4 +157,10 @@ return [
             'ttl' => 5 * 60, // seconds
         ],
     ],
+
+    /*
+    | Specify if restify can override the default laravel exception handler and generate AI based solutions for exceptions.
+    | This feature requires you to have an OpenAI API key.
+     */
+    'ai_solutions' => false,
 ];
