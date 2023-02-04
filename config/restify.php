@@ -159,8 +159,9 @@ return [
     ],
 
     /*
-    | Specify if restify can override the default laravel exception handler and generate AI based solutions for exceptions.
-    | This feature requires you to have an OpenAI API key.
+    | Specify if restify can call OpenAI for solution generation.
+    |
+    | By default this feature is enabled, but you still have to extend the Exception handler with the Restify one and set the API key.
      */
-    'ai_solutions' => false,
+    'ai_solutions' => true,
 ];

@@ -8,19 +8,24 @@ position: 14
 
 ## Generate solution
 
-Restify can generate an AI based solution to your problem. In order to enable that you need to enable the feature in the config file: 
+Restify can generate an AI based solution to your problem. In order to enable that you need to extend the `App\Exceptions\Handler` with the `Binaryk\LaravelRestify\Exceptions\RestifyHandler`: 
 
 ```php
-/*
-| Specify if restify can override the default laravel exception handler and generate AI based solutions for exceptions.
-| This feature requires you to have an OpenAI API key.
- */
-'ai_solutions' => true,
+use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
+use Throwable;
+
+class Handler extends RestifyHandler
+{
+    //...
+}
 ```
 
+<alert type="warning">
 This feature is only enabled when the `app.debug` is set to `true`.
+</alert>
 
-Considering this feature is using the openai php package, you should also publish the config file of the [openai-php/laravel](https://github.com/openai-php/laravel#get-started) package:
+
+This feature is using the [openai-php/laravel](https://github.com/openai-php/laravel#get-started), you should also publish the config file:
 
 ```
 php artisan vendor:publish --provider="OpenAI\Laravel\ServiceProvider"
@@ -28,7 +33,7 @@ php artisan vendor:publish --provider="OpenAI\Laravel\ServiceProvider"
 
 and set the `OPENAI_API_KEY` in the `.env` file.
 
-The open ai key can be obtained from [here](https://platform.openai.com/account/api-keys).
+The OpenAI key can be obtained from [here](https://platform.openai.com/account/api-keys).
 
 
 Now the solution to your problems will automatically appear in the response: 
@@ -43,4 +48,14 @@ Now the solution to your problems will automatically appear in the response:
     "trace": [
 ...
 }
+```
+
+## Disable solution
+
+
+If you want to disable the solution feature you can set the `restify.ai_solution` to `false` in the `config/restify.php` file so Restify will not call the OpenAI API even you extended the exception handler. This might be useful in automated tests or other environments:
+
+```php
+// config/restify.php
+'ai_solutions' => true,
 ```
