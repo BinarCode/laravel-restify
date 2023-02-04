@@ -16,11 +16,11 @@ class RestifyHandler extends Handler
             return $response;
         }
 
-        if (!config('app.debug')) {
+        if (! config('app.debug')) {
             return $response;
         }
 
-        if (!config('openai.api_key')) {
+        if (! config('openai.api_key')) {
             return $response;
         }
 
