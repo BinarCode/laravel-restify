@@ -6,6 +6,8 @@ category: Advanced
 position: 14
 ---
 
+Inspired by the [Marcel's Article](https://beyondco.de/blog/ai-powered-error-solutions-for-laravel).
+
 ## Generate solution
 
 Restify can generate an AI based solution to your problem. In order to enable that you need to extend the `App\Exceptions\Handler` with the `Binaryk\LaravelRestify\Exceptions\RestifyHandler`: 
