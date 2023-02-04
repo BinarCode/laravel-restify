@@ -12,7 +12,7 @@ Snippet including line numbers:
 196             '9.x' => '9.x',
 
 Possible Fix:
-Line 192 in Documentation.php file has a syntax error (missing a closing parenthesis). The code should look like this: `public static function getDocVersions()`
+Line 192 in /Users/binarcode/Code/ai-errors/app/Documentation.php file has a syntax error (missing a closing parenthesis). The code should look like this: `public static function getDocVersions()`
 
 File: {!! $file !!}
 Exception: {!! $exception !!}
