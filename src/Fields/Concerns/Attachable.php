@@ -161,7 +161,7 @@ trait Attachable
             ]);
         }
 
-        $fields = $this->collectPivotFields()->filter(fn ($pivotField) => $request->has($pivotField->attribute))->values();
+        $fields = $this->collectPivotFields()->values();
 
         $repository = $request->repository();
 
