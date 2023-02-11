@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\PivotsCollection;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
@@ -55,6 +56,7 @@ class BelongsToMany extends EagerField
                     ->withPivots(
                         PivotsCollection::make($this->pivotFields)
                             ->map(fn (Field $field) => clone $field)
+                            ->filter(fn (Field $field) => !$field->isHidden(app(RestifyRequest::class)))
                             ->resolveFromPivot($item->pivot)
                     )
                     ->eager($this);
