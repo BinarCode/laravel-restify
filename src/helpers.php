@@ -56,7 +56,11 @@ if (! function_exists('rest')) {
     {
         $models = collect($models)->flatten();
 
-        $repository = Restify::repositoryForModel(get_class($models->first())) ?? Repository::class;
+        if ($models->first()) {
+            $repository = Restify::repositoryForModel(get_class($models->first())) ?? Repository::class;
+        } else {
+            $repository = Repository::class;
+        }
 
         return (new Serializer(app($repository)))
             ->models(collect($models));
