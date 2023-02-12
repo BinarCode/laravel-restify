@@ -3,11 +3,14 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Closure;
 use Illuminate\Http\Request;
 
 abstract class OrganicField extends BaseField
 {
+    use ProxiesCanSeeToGate;
+
     public $canSeeCallback;
 
     public $canUpdateCallback;
