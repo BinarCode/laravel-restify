@@ -79,9 +79,6 @@ class File extends Field implements StorableContract, DeletableContract
     /**
      * Resolve a temporary URL for s3 compatible disks.
      *
-     * @param  bool  $resolveTemporaryUrl
-     * @param  CarbonInterface|null  $expiration
-     * @param  array  $options
      * @return $this
      */
     public function resolveUsingTemporaryUrl(bool $resolveTemporaryUrl = true, CarbonInterface $expiration = null, array $options = []): self
@@ -128,9 +125,6 @@ class File extends Field implements StorableContract, DeletableContract
 
     /**
      * Prepare the storage callback.
-     *
-     * @param  callable|null  $storageCallback
-     * @return void
      */
     protected function prepareStorageCallback(callable $storageCallback = null): void
     {
@@ -199,8 +193,6 @@ class File extends Field implements StorableContract, DeletableContract
      * Merge the specified extra file information columns into the storable attributes.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  array  $attributes
-     * @return array
      */
     protected function mergeExtraStorageColumns($request, array $attributes): array
     {
@@ -219,8 +211,6 @@ class File extends Field implements StorableContract, DeletableContract
 
     /**
      * Get an array of the columns that should be deleted and their values.
-     *
-     * @return array
      */
     protected function columnsThatShouldBeDeleted(): array
     {

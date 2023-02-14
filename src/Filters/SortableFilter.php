@@ -25,7 +25,6 @@ class SortableFilter extends Filter
     public const TYPE = 'sortable';
 
     /**
-     * @param  RestifyRequest  $request
      * @param  Builder  $query
      * @param  string  $value
      * @return Builder

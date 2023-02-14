@@ -10,8 +10,6 @@ abstract class AdvancedFilter extends Filter
 {
     /**
      * This is the value resolved from the frontend when applying the filter.
-     *
-     * @var AdvancedFilterPayloadDto
      */
     public AdvancedFilterPayloadDto $dto;
 

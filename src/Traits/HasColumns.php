@@ -6,8 +6,6 @@ trait HasColumns
 {
     /**
      * Specify the list of columns to be resolved from the database.
-     *
-     * @var array|string
      */
     public array|string $columns = '*';
 

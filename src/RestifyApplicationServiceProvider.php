@@ -34,7 +34,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     /**
      * Register the application's Rest resources.
      *
-     * @return void
      *
      * @throws ReflectionException
      */
@@ -45,8 +44,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
     /**
      * Configure the Restify authorization services.
-     *
-     * @return void
      */
     protected function authorization(): void
     {
@@ -69,8 +66,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      *
      * This gate is checked in `authorization` method above and it should be overrided in the child
      * service provider
-     *
-     * @return void
      */
     protected function gate(): void
     {

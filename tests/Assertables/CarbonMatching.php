@@ -12,7 +12,6 @@ trait CarbonMatching
     /**
      * Asserts that the property matches the Carbon date.
      *
-     * @param  string  $key
      * @param  mixed|\Closure  $expected
      * @return $this
      */

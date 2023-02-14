@@ -25,8 +25,6 @@ class CompanyPolicy
     /**
      * Determine whether the user can get the model.
      *
-     * @param  User  $user
-     * @param  Company  $model
      * @return mixed
      */
     public function show(User $user, Company $model)
@@ -37,7 +35,6 @@ class CompanyPolicy
     /**
      * Determine whether the user can create models.
      *
-     * @param  User  $user
      * @return mixed
      */
     public function store(User $user)
@@ -48,7 +45,6 @@ class CompanyPolicy
     /**
      * Determine whether the user can create multiple models at once.
      *
-     * @param  User  $user
      * @return mixed
      */
     public function storeBulk(User $user)
@@ -59,8 +55,6 @@ class CompanyPolicy
     /**
      * Determine whether the user can update the model.
      *
-     * @param  User  $user
-     * @param  Company  $model
      * @return mixed
      */
     public function update(User $user, Company $model)
@@ -71,8 +65,6 @@ class CompanyPolicy
     /**
      * Determine whether the user can update bulk the model.
      *
-     * @param  User  $user
-     * @param  Company  $model
      * @return mixed
      */
     public function updateBulk(User $user, Company $model)
@@ -83,8 +75,6 @@ class CompanyPolicy
     /**
      * Determine whether the user can delete the model.
      *
-     * @param  User  $user
-     * @param  Company  $model
      * @return mixed
      */
     public function delete(User $user, Company $model)
@@ -95,8 +85,6 @@ class CompanyPolicy
     /**
      * Determine whether the user can restore the model.
      *
-     * @param  User  $user
-     * @param  Company  $model
      * @return mixed
      */
     public function restore(User $user, Company $model)
@@ -107,8 +95,6 @@ class CompanyPolicy
     /**
      * Determine whether the user can permanently delete the model.
      *
-     * @param  User  $user
-     * @param  Company  $model
      * @return mixed
      */
     public function forceDelete(User $user, Company $model)

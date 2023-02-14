@@ -130,7 +130,6 @@ trait Mockable
     /**
      * Clear a resolved repository instance.
      *
-     * @param $name
      * @return void
      */
     public static function clearResolvedInstance($name)

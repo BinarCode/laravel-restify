@@ -33,9 +33,6 @@ class RelatedDto
 
     /**
      * Dot notation of the relationship. Could be a nested relation users.posts.tags
-     *
-     * @param  string  $relation
-     * @return bool
      */
     public function hasRelation(string $relation): bool
     {

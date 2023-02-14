@@ -128,7 +128,6 @@ abstract class RestController extends BaseController
     /**
      * Returns with a list of errors.
      *
-     * @param  array  $errors
      * @return JsonResponse
      *
      * @throws BindingResolutionException
