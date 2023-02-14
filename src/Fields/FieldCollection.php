@@ -7,6 +7,12 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
+/**
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @extends \Illuminate\Support\Collection<TKey, TValue>
+ */
 class FieldCollection extends Collection
 {
     public function authorized(Request $request): self

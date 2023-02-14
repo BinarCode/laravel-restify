@@ -6,6 +6,12 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Collection;
 
+/**
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @extends \Illuminate\Support\Collection<TKey, TValue>
+ */
 class PivotsCollection extends Collection
 {
     public function resolveFromPivot(Pivot $pivot): self

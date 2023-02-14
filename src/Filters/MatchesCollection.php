@@ -9,6 +9,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 
+/**
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @extends \Illuminate\Support\Collection<TKey, TValue>
+ */
 class MatchesCollection extends Collection
 {
     public function __construct($items = [])
