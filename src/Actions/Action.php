@@ -35,22 +35,16 @@ abstract class Action implements JsonSerializable
 
     /**
      * Number of models into a chunk when action for 'all'.
-     *
-     * @var int
      */
     public static int $chunkCount = 200;
 
     /**
      * Indicated if this action don't require any models.
-     *
-     * @var bool
      */
     public bool $standalone = false;
 
     /**
      * Indicates if Restify should skip the field default update behavior in case it's actionable field.
-     *
-     * @var bool
      */
     public bool $skipFieldFill = true;
 
@@ -68,8 +62,6 @@ abstract class Action implements JsonSerializable
 
     /**
      * The callback used to authorize running the action.
-     *
-     * @var Closure|null
      */
     public ?Closure $runCallback;
 
@@ -91,7 +83,6 @@ abstract class Action implements JsonSerializable
     /**
      * Determine if the action is executable for the given request.
      *
-     * @param  Request  $request
      * @param  Model  $model
      * @return bool
      */
@@ -103,7 +94,6 @@ abstract class Action implements JsonSerializable
     /**
      * Set the callback to be run to authorize running the action.
      *
-     * @param  Closure  $callback
      * @return $this
      */
     public function canRun(Closure $callback)
@@ -116,7 +106,6 @@ abstract class Action implements JsonSerializable
     /**
      * Get the payload available on the action.
      *
-     * @return array
      *
      * @deprecated Use rules instead
      */
@@ -127,8 +116,6 @@ abstract class Action implements JsonSerializable
 
     /**
      * Validation rules to be applied before the action is called.
-     *
-     * @return array
      */
     public function rules(): array
     {
@@ -137,9 +124,6 @@ abstract class Action implements JsonSerializable
 
     /**
      * Make current action being standalone. No model query will be performed.
-     *
-     * @param  bool  $standalone
-     * @return self
      */
     public function standalone(bool $standalone = true): self
     {
@@ -150,8 +134,6 @@ abstract class Action implements JsonSerializable
 
     /**
      * Check if the action is standalone.
-     *
-     * @return bool
      */
     public function isStandalone(): bool
     {

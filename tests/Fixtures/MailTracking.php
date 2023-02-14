@@ -164,8 +164,6 @@ trait MailTracking
 
     /**
      * Store a new swift message.
-     *
-     * @param  Swift_Message  $email
      */
     public function addEmail(Swift_Message $email)
     {

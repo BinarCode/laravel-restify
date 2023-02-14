@@ -25,15 +25,11 @@ interface RestifySearchable
 
     /**
      * Get available attributes for query params search.
-     *
-     * @return array
      */
     public static function searchables(): array;
 
     /**
      * Get relations available for query params.
-     *
-     * @return array
      */
     public static function withs(): array;
 
@@ -45,13 +41,8 @@ interface RestifySearchable
      *
      * To use this filter we have to send in query:
      * [  'match' => [ 'id' => 1 ] ]
-     *
-     * @return array
      */
     public static function matches(): array;
 
-    /**
-     * @return array
-     */
     public static function sorts(): array;
 }

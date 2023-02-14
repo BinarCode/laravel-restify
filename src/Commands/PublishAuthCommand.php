@@ -70,7 +70,6 @@ class PublishAuthCommand extends Command
     }
 
     /**
-     * @param  string  $path
      * @return $this
      */
     public function checkDirectory(string $path): self
@@ -83,9 +82,6 @@ class PublishAuthCommand extends Command
     }
 
     /**
-     * @param  string  $path
-     * @param  string  $stubDirectory
-     * @param  string  $format
      * @return $this
      */
     protected function copyDirectory(string $path, string $stubDirectory, string $format): self
@@ -105,13 +101,6 @@ class PublishAuthCommand extends Command
         return $this;
     }
 
-    /**
-     * @param  string  $stubDirectory
-     * @param  string  $fileName
-     * @param  string  $path
-     * @param  string  $fullPath
-     * @return string
-     */
     protected function setNamespace(string $stubDirectory, string $fileName, string $path, string $fullPath): string
     {
         $path = substr(str_replace('/', '\\', $path), 0, -1);

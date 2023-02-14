@@ -18,15 +18,11 @@ class EagerField extends Field
 
     /**
      * Name of the relationship.
-     *
-     * @var string
      */
     public string $relation;
 
     /**
      * The class name of the related repository.
-     *
-     * @var string
      */
     public string $repositoryClass;
 
@@ -55,7 +51,6 @@ class EagerField extends Field
     /**
      * Determine if the field should be displayed for the given request.
      *
-     * @param  Request  $request
      * @return bool
      */
     public function authorize(Request $request)

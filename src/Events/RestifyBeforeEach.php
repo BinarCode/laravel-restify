@@ -15,8 +15,6 @@ class RestifyBeforeEach
 
     /**
      * RestifyAfterEach constructor.
-     *
-     * @param    $request
      */
     public function __construct($request)
     {

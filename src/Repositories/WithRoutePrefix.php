@@ -32,8 +32,6 @@ trait WithRoutePrefix
 
     /**
      * Determines whether a repository has prefix.
-     *
-     * @return bool
      */
     protected static function hasPrefix(): bool
     {

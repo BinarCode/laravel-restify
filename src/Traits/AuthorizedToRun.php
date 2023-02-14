@@ -10,15 +10,12 @@ trait AuthorizedToRun
 {
     /**
      * The callback used to authorize running the action.
-     *
-     * @var Closure|null
      */
     public ?Closure $runCallback;
 
     /**
      * Determine if the action is executable for the given request.
      *
-     * @param  Request  $request
      * @param  Model  $model
      * @return bool
      */
@@ -30,7 +27,6 @@ trait AuthorizedToRun
     /**
      * Set the callback to be run to authorize running the action.
      *
-     * @param  Closure  $callback
      * @return $this
      */
     public function canRun(Closure $callback)
