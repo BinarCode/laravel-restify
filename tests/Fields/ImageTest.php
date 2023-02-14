@@ -5,11 +5,11 @@ namespace Binaryk\LaravelRestify\Tests\Fields;
 use Binaryk\LaravelRestify\Fields\Image;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\AvatarStore;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-class ImageTest extends IntegrationTest
+class ImageTest extends IntegrationTestCase
 {
     public function test_image_has_default(): void
     {

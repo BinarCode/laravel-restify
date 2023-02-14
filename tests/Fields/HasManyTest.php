@@ -11,12 +11,12 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class HasManyTest extends IntegrationTest
+class HasManyTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {

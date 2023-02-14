@@ -11,10 +11,10 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\SelectCategoryFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class AdvancedFilterTest extends IntegrationTest
+class AdvancedFilterTest extends IntegrationTestCase
 {
     public function test_filters_can_have_definition(): void
     {

@@ -3,10 +3,10 @@
 namespace Binaryk\LaravelRestify\Tests\Getters;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class ListGettersControllerTest extends IntegrationTest
+class ListGettersControllerTest extends IntegrationTestCase
 {
     public function test_could_list_getters_for_repository(): void
     {

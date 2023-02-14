@@ -4,9 +4,9 @@ namespace Binaryk\LaravelRestify\Tests\Repositories;
 
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class RepositoryCustomPrefixTest extends IntegrationTest
+class RepositoryCustomPrefixTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {

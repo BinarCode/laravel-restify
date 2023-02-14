@@ -7,13 +7,13 @@ use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
 use function PHPUnit\Framework\assertInstanceOf;
 use function PHPUnit\Framework\assertSame;
 
-class FieldTest extends IntegrationTest
+class FieldTest extends IntegrationTestCase
 {
     public function test_fields_can_have_custom_index_callback()
     {

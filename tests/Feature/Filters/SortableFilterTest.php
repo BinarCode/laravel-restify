@@ -5,9 +5,9 @@ namespace Binaryk\LaravelRestify\Tests\Feature\Filters;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class SortableFilterTest extends IntegrationTest
+class SortableFilterTest extends IntegrationTestCase
 {
     public function test_can_order_using_filter_sortable_definition(): void
     {

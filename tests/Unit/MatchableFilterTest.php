@@ -3,10 +3,10 @@
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Filters\MatchFilter;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class MatchableFilterTest extends IntegrationTest
+class MatchableFilterTest extends IntegrationTestCase
 {
     public function test_matchable_filter_has_key(): void
     {

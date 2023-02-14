@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <phpunit bootstrap="vendor/autoload.php"
-         backupGlobals="false"
-         backupStaticAttributes="false"
-         colors="true"
-         verbose="true"
-         convertErrorsToExceptions="true"
-         convertNoticesToExceptions="true"
-         convertWarningsToExceptions="true"
-         processIsolation="false"
-         stopOnFailure="true">
-    <testsuites>
-        <testsuite name="Test Suite">
-            <directory>tests</directory>
-        </testsuite>
-    </testsuites>
-    <php>
-        <env name="APP_KEY" value="base64:la8jDWcqBHfGO6PR+OA9FAZqdi0XQKuhnzqc5tUATZs="/>
-        <env name="MAIL_DRIVER" value="log"/>
-        <env name="DB_CONNECTION" value="sqlite"/>
-        <env name="DB_DATABASE" value=":memory:"/>
-        <env name="DB_FOREIGN_KEYS" value="false"/>
-    </php>
+  backupGlobals="false"
+  backupStaticProperties="false"
+  cacheDirectory=".phpunit.cache"
+  colors="true"
+  processIsolation="false"
+  stopOnFailure="true"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.0/phpunit.xsd"
+>
+  <testsuites>
+    <testsuite name="Test Suite">
+      <directory>tests</directory>
+    </testsuite>
+  </testsuites>
+  <php>
+    <env name="APP_KEY" value="base64:la8jDWcqBHfGO6PR+OA9FAZqdi0XQKuhnzqc5tUATZs="/>
+    <env name="MAIL_DRIVER" value="log"/>
+    <env name="DB_CONNECTION" value="sqlite"/>
+    <env name="DB_DATABASE" value=":memory:"/>
+    <env name="DB_FOREIGN_KEYS" value="false"/>
+  </php>
 </phpunit>

@@ -6,12 +6,12 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Illuminate\Testing\TestResponse;
 
-class RepositoryStoreControllerTest extends IntegrationTest
+class RepositoryStoreControllerTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {

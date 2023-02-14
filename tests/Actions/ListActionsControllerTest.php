@@ -3,11 +3,11 @@
 namespace Binaryk\LaravelRestify\Tests\Actions;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 // TODO: Please refactor all tests using assertJson (as the first test does).
-class ListActionsControllerTest extends IntegrationTest
+class ListActionsControllerTest extends IntegrationTestCase
 {
     public function test_could_list_actions_for_repository(): void
     {

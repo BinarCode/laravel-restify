@@ -4,9 +4,9 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class RepositorySyncControllerTest extends IntegrationTest
+class RepositorySyncControllerTest extends IntegrationTestCase
 {
     public function test_can_sync_repositories(): void
     {

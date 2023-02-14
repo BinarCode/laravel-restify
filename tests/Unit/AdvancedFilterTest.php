@@ -4,13 +4,13 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Filters\AdvancedFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class AdvancedFilterTest extends IntegrationTest
+class AdvancedFilterTest extends IntegrationTestCase
 {
     public function test_advanced_filters_can_serialize(): void
     {

@@ -4,9 +4,9 @@ namespace Binaryk\LaravelRestify\Tests\Middleware;
 
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class AuthorizeRestifyTest extends IntegrationTest
+class AuthorizeRestifyTest extends IntegrationTestCase
 {
     public function test_unauthorized_http_code_is_401(): void
     {

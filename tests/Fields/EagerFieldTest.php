@@ -4,9 +4,9 @@ namespace Binaryk\LaravelRestify\Tests\Fields;
 
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class EagerFieldTest extends IntegrationTest
+class EagerFieldTest extends IntegrationTestCase
 {
     public function test_guess_repository_name_from_key(): void
     {

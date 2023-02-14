@@ -6,7 +6,7 @@ use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Assertables\AssertableModel;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
@@ -19,7 +19,7 @@ abstract class Prototypeable implements JsonSerializable
     use Make;
 
     public function __construct(
-        public IntegrationTest $test,
+        public IntegrationTestCase $test,
     ) {
     }
 

@@ -10,9 +10,9 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\VerifiedMatcher;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class RepositorySearchServiceTest extends IntegrationTest
+class RepositorySearchServiceTest extends IntegrationTestCase
 {
     public function test_can_search_using_filter_searchable_definition(): void
     {
@@ -116,7 +116,8 @@ class RepositorySearchServiceTest extends IntegrationTest
             },
         ];
 
-        $this->getJson('users?is_active=true');
+        $this->getJson('users?is_active=true')
+            ->assertStatus(404);
     }
 
     public function test_can_match_custom_matcher(): void

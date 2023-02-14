@@ -8,11 +8,11 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\ActivateAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\DisableProfileAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
-class PerformActionControllerTest extends IntegrationTest
+class PerformActionControllerTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {

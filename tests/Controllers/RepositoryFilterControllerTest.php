@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class RepositoryFilterControllerTest extends IntegrationTest
+class RepositoryFilterControllerTest extends IntegrationTestCase
 {
     public function test_available_filters_contains_matches_sortables_searches(): void
     {

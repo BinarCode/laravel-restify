@@ -11,11 +11,11 @@ use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Testing\TestResponse;
 
-class ActionLogTest extends IntegrationTest
+class ActionLogTest extends IntegrationTestCase
 {
     public function test_can_create_log_for_repository_storing(): void
     {

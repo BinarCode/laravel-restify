@@ -35,7 +35,7 @@ use JetBrains\PhpStorm\Pure;
 use Mockery;
 use Orchestra\Testbench\TestCase;
 
-abstract class IntegrationTest extends TestCase
+abstract class IntegrationTestCase extends TestCase
 {
     use Mockers;
     use Prototypes;

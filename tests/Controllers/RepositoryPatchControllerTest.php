@@ -4,9 +4,9 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class RepositoryPatchControllerTest extends IntegrationTest
+class RepositoryPatchControllerTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {

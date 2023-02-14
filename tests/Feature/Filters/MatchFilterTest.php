@@ -7,12 +7,12 @@ use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class MatchFilterTest extends IntegrationTest
+class MatchFilterTest extends IntegrationTestCase
 {
     public function test_matchable_filter_has_key(): void
     {
