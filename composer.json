@@ -26,7 +26,7 @@
         "spatie/once": "^3.0"
     },
     "require-dev": {
-        "brianium/paratest": "^7.0",
+        "brianium/paratest": "^7.0.6",
         "doctrine/dbal": "^3.0",
         "nunomaduro/collision": "^7.0",
         "openai-php/laravel": "^0.3.1",
