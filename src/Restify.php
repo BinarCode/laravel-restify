@@ -45,9 +45,6 @@ class Restify
 
     /**
      * Get the repository class name for a given key.
-     *
-     * @param  string  $key
-     * @return string|null
      */
     public static function repositoryClassForKey(string $key): ?string
     {
@@ -58,9 +55,6 @@ class Restify
 
     /**
      * Get the repository class for the prefix.
-     *
-     * @param  string  $prefix
-     * @return string|null
      */
     public static function repositoryClassForPrefix(string $prefix): ?string
     {
@@ -76,11 +70,8 @@ class Restify
     /**
      * Return the repository instance for a given key.
      *
-     * @param  string  $key
      *
      * @throw RepositoryNotFoundException
-     *
-     * @return Repository
      */
     public static function repository(string $key): Repository
     {
@@ -129,7 +120,6 @@ class Restify
     /**
      * Register the given repositories.
      *
-     * @param  array  $repositories
      * @return static
      */
     public static function repositories(array $repositories)
@@ -148,8 +138,6 @@ class Restify
     /**
      * Register all of the repository classes in the given directory.
      *
-     * @param  string  $directory
-     * @return void
      *
      * @throws ReflectionException
      */

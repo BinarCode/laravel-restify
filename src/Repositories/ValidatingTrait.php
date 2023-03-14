@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Validator;
 trait ValidatingTrait
 {
     /**
-     * @param  RestifyRequest  $request
      * @return Collection
      */
     abstract public function collectFields(RestifyRequest $request);
@@ -23,7 +22,6 @@ trait ValidatingTrait
     abstract public static function newModel();
 
     /**
-     * @param  RestifyRequest  $request
      * @param  array  $plainPayload
      * @return \Illuminate\Contracts\Validation\Validator
      */
@@ -76,7 +74,6 @@ trait ValidatingTrait
     /**
      * Validate a resource update request.
      *
-     * @param  RestifyRequest  $request
      * @param  null  $resource
      */
     public static function validateForUpdate(RestifyRequest $request, $resource = null)
@@ -189,7 +186,6 @@ trait ValidatingTrait
     /**
      * Handle any post-validation processing.
      *
-     * @param  RestifyRequest  $request
      * @param  \Illuminate\Validation\Validator  $validator
      * @return void
      */
@@ -215,7 +211,6 @@ trait ValidatingTrait
     }
 
     /**
-     * @param  RestifyRequest  $request
      * @return array
      */
     public function getStoringRules(RestifyRequest $request)

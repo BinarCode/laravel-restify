@@ -91,7 +91,6 @@ class MatchesCollection extends Collection
     }
 
     /**
-     * @param  RestifyRequest  $request
      * @param  Builder|Relation  $builder
      * @return $this
      */

@@ -44,15 +44,11 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * In case of the update, this will keep the previous value.
-     *
-     * @var
      */
     public $valueBeforeUpdate;
 
     /**
      * Closure to resolve the index method.
-     *
-     * @var
      */
     private $indexCallback;
 
@@ -212,9 +208,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill attribute with value from the request or delegate this action to the user defined callback.
      *
-     * @param  RestifyRequest  $request
-     * @param $model
-     * @param  int|null  $bulkRow
      * @return mixed|void
      */
     public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
@@ -264,11 +257,6 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Fill the model with value from the request.
-     *
-     * @param  RestifyRequest  $request
-     * @param $model
-     * @param $attribute
-     * @param  int|null  $bulkRow
      */
     protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
     {
@@ -290,11 +278,6 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Fill the model with value from the callback.
-     *
-     * @param  RestifyRequest  $request
-     * @param $model
-     * @param $attribute
-     * @param  int|null  $bulkRow
      */
     protected function fillAttributeFromCallback(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
     {
@@ -312,9 +295,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill the model with the value from value.
      *
-     * @param  RestifyRequest  $request
-     * @param $model
-     * @param $attribute
      * @return Field
      */
     protected function fillAttributeFromValue(RestifyRequest $request, $model, $attribute)
@@ -341,7 +321,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Validation rules for store.
      *
-     * @param $rules
      * @return Field
      */
     public function storingRules($rules)
@@ -368,7 +347,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Alias for storingRules - to maintain it consistent.
      *
-     * @param $rules
      * @return $this
      */
     public function storeRules($rules)
@@ -379,7 +357,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Validation rules for update.
      *
-     * @param $rules
      * @return Field
      */
     public function updatingRules($rules)
@@ -392,7 +369,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Validation rules for store.
      *
-     * @param $rules
      * @return Field
      */
     public function rules($rules)
@@ -578,7 +554,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Set the callback to be used for determining the field's default value.
      *
-     * @param $callback
      * @return $this
      */
     public function default($callback)
@@ -591,7 +566,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Resolve the default value for the field.
      *
-     * @param  RestifyRequest  $request
      * @return callable|mixed
      */
     protected function resolveDefaultValue(RestifyRequest $request)
@@ -606,7 +580,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Define the callback that should be used to resolve the field's value.
      *
-     * @param  callable  $resolveCallback
      * @return $this
      */
     public function resolveCallback(callable $resolveCallback)
@@ -682,7 +655,6 @@ class Field extends OrganicField implements JsonSerializable
     }
 
     /**
-     * @param $value
      * @return $this
      *
      * @deprecated

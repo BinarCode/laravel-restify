@@ -15,8 +15,6 @@ class RestifyStarting
 
     /**
      * RestifyServing constructor.
-     *
-     * @param    $request
      */
     public function __construct($request)
     {

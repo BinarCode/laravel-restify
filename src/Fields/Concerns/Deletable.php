@@ -23,16 +23,11 @@ trait Deletable
 
     /**
      * Indicates if the underlying field is prunable.
-     *
-     * @var bool
      */
     public bool $prunable = false;
 
     /**
      * Specify the callback that should be used to delete the field.
-     *
-     * @param  callable  $deleteCallback
-     * @return DeletableContract
      */
     public function delete(callable $deleteCallback): DeletableContract
     {
@@ -56,8 +51,6 @@ trait Deletable
 
     /**
      * Determine if the underlying file should be pruned when the resource is deleted.
-     *
-     * @return bool
      */
     public function isPrunable(): bool
     {
@@ -66,8 +59,6 @@ trait Deletable
 
     /**
      * Determine if the underlying file should be pruned when the resource is deleted.
-     *
-     * @return bool
      */
     public function isDeletable(): bool
     {

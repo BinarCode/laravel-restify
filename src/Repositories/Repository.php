@@ -60,8 +60,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
-     *
-     * @var Model
      */
     public Model $resource;
 
@@ -69,64 +67,46 @@ class Repository implements RestifySearchable, JsonSerializable
      * The list of relations available for the show or index.
      *
      * e.g. ?related=users
-     *
-     * @var array
      */
     public static array $related;
 
     /**
      * The relationships that should be eager loaded when performing an index query.
-     *
-     * @var array
      */
     public static array $with = [];
 
     /**
      * The list of searchable fields.
-     *
-     * @var array
      */
     public static array $search;
 
     /**
      * The list of matchable fields.
-     *
-     * @var array
      */
     public static array $match;
 
     /**
      * The list of fields to be sortable.
-     *
-     * @var array
      */
     public static array $sort;
 
     /**
      * Attribute that should be used for displaying single model.
-     *
-     * @var string
      */
     public static string $title = 'id';
 
     /**
      * Attribute that should be used for displaying the `id` in the json:format.
-     *
-     * @var string
      */
     public static string $id = 'id';
 
     /**
      * Indicates if the repository should be globally searchable.
-     *
-     * @var bool
      */
     public static bool $globallySearchable = true;
 
     /**
      * The number of results to display in the global search.
-     *
-     * @var int
      */
     public static int $globalSearchResults = 5;
 
@@ -137,29 +117,21 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * The list of middlewares for the current repository.
-     *
-     * @var array
      */
     public static array $middleware = [];
 
     /**
      * The list of attach callable's.
-     *
-     * @var array
      */
     public static array $attachers = [];
 
     /**
      * The list of detach callable's.
-     *
-     * @var array
      */
     public static array $detachers = [];
 
     /**
      * Specify whether the repository could be accessed public.
-     *
-     * @var bool|array
      */
     public static bool|array $public = false;
 
@@ -167,22 +139,16 @@ class Repository implements RestifySearchable, JsonSerializable
      * Indicates if the repository is serializing for an eager relationship.
      *
      * The $eagerState will reference to the parent that renders this via related.
-     *
-     * @var null|string
      */
     private null|string $eagerState = null;
 
     /**
      * Extra fields attached to the repository. Useful when display pivot fields.
-     *
-     * @var array
      */
     public array $extraFields = [];
 
     /**
      * A collection of pivots for the nested relationships.
-     *
-     * @var PivotsCollection
      */
     private PivotsCollection $pivots;
 
@@ -195,8 +161,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * Get the URI key for the repository.
-     *
-     * @return string
      */
     public static function uriKey(): string
     {
@@ -231,8 +195,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * Get the value that should be displayed to represent the repository.
-     *
-     * @return string
      */
     public function title(): string
     {
@@ -241,8 +203,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * Get the search result subtitle for the repository.
-     *
-     * @return string|null
      */
     public function subtitle(): ?string
     {
@@ -324,9 +284,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * Resolve repository with given model.
-     *
-     * @param  Model  $model
-     * @return Repository
      */
     public static function resolveWith(Model $model): Repository
     {
@@ -352,8 +309,6 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Forward calls to the model (getKey() for example).
      *
-     * @param $method
-     * @param $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
@@ -370,8 +325,6 @@ class Repository implements RestifySearchable, JsonSerializable
      *
      * However all options could be customized by passing an $options argument
      *
-     * @param  Router  $router
-     * @param  array  $attributes
      * @param  bool  $wrap  Choose the routes defined in the @routes method, should be wrapped in a group with attributes by default.
      * If true then all routes will be grouped in a configuration attributes passed by restify, otherwise
      * you should take care of that, by adding $router->group($attributes) in the @routes method
@@ -389,7 +342,6 @@ class Repository implements RestifySearchable, JsonSerializable
      * Resolve all model fields through showCallback methods and exclude from the final response if
      * that is required by method
      *
-     * @param $request
      * @return array
      */
     public function resolveShowAttributes(RestifyRequest $request)
@@ -524,7 +476,6 @@ class Repository implements RestifySearchable, JsonSerializable
      * Return a list with relationship for the current model.
      *
      * @param  RestifyRequest  $request
-     * @return array
      */
     public function resolveRelationships($request): array
     {
@@ -550,7 +501,6 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Returns the format of the metadata for individual item in the index response.
      *
-     * @param $request
      * @return array
      */
     public function resolveIndexMeta($request)
@@ -569,7 +519,6 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Return a list with relationship for the current model.
      *
-     * @param $request
      * @return array
      */
     public function resolveIndexRelationships($request)
@@ -992,7 +941,6 @@ class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * @param $request
      * @return $this
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
@@ -1100,9 +1048,6 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Fill each field separately.
      *
-     * @param  RestifyRequest  $request
-     * @param  Model  $model
-     * @param  Collection  $fields
      * @return Collection
      */
     protected static function fillFields(RestifyRequest $request, Model $model, Collection $fields)

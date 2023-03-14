@@ -61,7 +61,6 @@ class RepositorySearchService
     /**
      * Resolve orders.
      *
-     * @param  RestifyRequest  $request
      * @param  Builder  $query
      * @return Builder
      */
