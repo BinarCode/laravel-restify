@@ -747,7 +747,7 @@ class Repository implements RestifySearchable, JsonSerializable
             )
             ->forUpdate($request, $this)
             ->withActions($request, $this)
-            ->authorizedUpdate($request)
+            ->authorizedPatch($request)
             ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
 
         return data($this->serializeForShow($request));
