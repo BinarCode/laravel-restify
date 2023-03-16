@@ -713,14 +713,15 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function patch(RestifyRequest $request, $repositoryId)
     {
-        DB::transaction(function () use ($request) {
-            $keys = $request->json()->keys();
+        $keys = $request->json()->keys();
 
+        DB::transaction(function () use ($request, $keys) {
             $fields = $this->collectFields($request)
                 ->filter(
                     fn (Field $field) => in_array($field->attribute, $keys),
                 )
                 ->forUpdate($request, $this)
+                ->withoutActions($request, $this)
                 ->authorizedPatch($request)
                 ->merge($this->collectFields($request)->forBelongsTo($request));
 
@@ -738,6 +739,16 @@ class Repository implements RestifySearchable, JsonSerializable
         })->each(
             fn (Field $field) => $field->invokeAfter($request, $this->resource)
         );
+
+        $this
+            ->collectFields($request)
+            ->filter(
+                fn (Field $field) => in_array($field->attribute, $keys),
+            )
+            ->forUpdate($request, $this)
+            ->withActions($request, $this)
+            ->authorizedPatch($request)
+            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
 
         return data($this->serializeForShow($request));
     }

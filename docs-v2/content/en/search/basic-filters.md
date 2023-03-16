@@ -276,6 +276,18 @@ Request:
 GET: /api/restify/posts?published_at=2020-12-01
 ```
 
+If the request contains two dates instead of one, it will perform a `whereBetween` query:
+
+```http request
+GET: /api/restify/posts?published_at=2020-12-01,2021-01-01
+```
+
+Eloquent will do: 
+
+```php
+$query->whereBetween('published_at', ['2020-12-01', '2021-01-01']);
+```
+
 ### Match between
 
 The `between` match works similarly as the `whereBetween` Eloquent method: 
