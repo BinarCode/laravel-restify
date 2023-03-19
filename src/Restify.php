@@ -17,6 +17,7 @@ use Illuminate\Support\Str;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Finder\Finder;
+use XtendLunar\Addons\RestifyApi\Base\RestifyApi;
 
 class Restify
 {
@@ -136,16 +137,13 @@ class Restify
     }
 
     /**
-     * Register all of the repository classes in the given directory.
-     *
+     * Register all repository classes in the given directory and namespace.
      *
      * @throws ReflectionException
      */
-    public static function repositoriesFrom(string $directory): void
+    public static function repositoriesFrom(string $directory, string $namespace): void
     {
-        $namespace = config('restify.repositories.namespace', app()->getNamespace());
-        $basePath = $namespace === 'App\\' ?  app_path() : $directory;
-
+        $basePath = $namespace === 'App\\' ? app_path() : $directory;
         $repositories = [];
 
         if (! is_dir($directory)) {
@@ -281,7 +279,7 @@ class Restify
     public static function ensureRepositoriesLoaded(): void
     {
         if (empty(static::$repositories)) {
-            static::repositoriesFrom(config('restify.repositories.path', app_path('Restify')));
+            static::repositoriesFrom(app_path('Restify'), app()->getNamespace());
         }
     }
 }
