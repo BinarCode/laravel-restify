@@ -144,6 +144,7 @@ class Restify
     public static function repositoriesFrom(string $directory): void
     {
         $namespace = config('restify.repositories.namespace', app()->getNamespace());
+        $basePath = $namespace === 'App\\' ?  app_path() : $directory;
 
         $repositories = [];
 
@@ -155,7 +156,7 @@ class Restify
             $repository = $namespace.str_replace(
                 ['/', '.php'],
                 ['\\', ''],
-                Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+                Str::after($repository->getPathname(), $basePath.DIRECTORY_SEPARATOR)
             );
 
             if (is_subclass_of(
