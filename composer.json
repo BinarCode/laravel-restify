@@ -72,5 +72,6 @@
                 "Restify": "Binaryk\\LaravelRestify\\RestifyFacade"
             }
         }
-    }
+    },
+    "minimum-stability": "dev"
 }
