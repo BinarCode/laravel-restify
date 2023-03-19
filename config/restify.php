@@ -135,6 +135,17 @@ return [
     ],
 
     'repositories' => [
+
+        /*
+         | Specify the path where the repositories will be created.
+         */
+        'path' => app_path('Restify'),
+
+        /*
+         | Specify the namespace for the repositories.
+         */
+        'namespace' => 'App\Restify',
+
         /*
         | Specify either to serialize index meta (policy) information or not. For performance reasons we recommend disabling it.
         */

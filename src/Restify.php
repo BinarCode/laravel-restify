@@ -143,7 +143,7 @@ class Restify
      */
     public static function repositoriesFrom(string $directory): void
     {
-        $namespace = app()->getNamespace();
+        $namespace = config('restify.repositories.namespace', app()->getNamespace());
 
         $repositories = [];
 
@@ -280,7 +280,7 @@ class Restify
     public static function ensureRepositoriesLoaded(): void
     {
         if (empty(static::$repositories)) {
-            static::repositoriesFrom(app_path('Restify'));
+            static::repositoriesFrom(config('restify.repositories.path', app_path('Restify')));
         }
     }
 }

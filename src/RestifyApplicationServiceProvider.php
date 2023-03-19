@@ -39,7 +39,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function repositories(): void
     {
-        Restify::repositoriesFrom(app_path('Restify'));
+        Restify::repositoriesFrom(config('restify.repositories.path', app_path('Restify')));
     }
 
     /**
