@@ -33,6 +33,6 @@ class ForgotPasswordController extends Controller
             new ForgotPasswordMail($url)
         );
 
-        return data(__('Email sent.'));
+        return data(__('Reset password link sent to your email.'));
     }
 }

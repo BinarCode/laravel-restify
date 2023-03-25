@@ -13,6 +13,12 @@ Now you can finally enjoy the auth setup (`register`, `login`, `forgot`, and `re
 
 Migrate the `users`, `password_resets` table (they already exist into a fresh Laravel app).
 
+<alert type="success">
+
+Laravel 10 automatically ships with Sanctum, so you don't have to install it.
+
+</alert>
+
 ### Install sanctum
 
 See the docs [here](https://laravel.com/docs/sanctum#installation). You don't need to add `\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,` in your `'api'` middleware group. 
@@ -42,7 +48,8 @@ The `User` model should extend the `Illuminate\Foundation\Auth\User` class or im
 
 <alert type="info">
 
-Make sure you didn't skip adding the `\Laravel\Sanctum\HasApiTokens` trait to your `User` model.
+Make sure you have the `\Laravel\Sanctum\HasApiTokens` trait to your `User` model. 
+Laravel 10 will automatically add this trait to your `User` model.
 
 </alert>
 
@@ -105,3 +112,157 @@ Next, add the `auth:sanctum` middleware after the `api` middleware in your confi
         ...
     ],
 ```
+
+## Login
+
+Let's ensure the authentication is working correctly. Create a user in the DatabaseSeeder class:
+
+```php
+// DatabaseSeeder.php
+\App\Models\User::factory()->create([
+   'name' => 'Test User',
+   'email' => 'test@example.com',
+]);
+```
+
+Seed it: 
+
+```shell
+php artisan db:seed
+```
+
+Now you can test the login with Curl or Postman:
+
+```shell
+curl -X POST "http://restify-app.test/api/login" \
+     -H "Accept: application/json" \
+     -H "Content-Type: application/json" \
+     -d '{
+             "email": "test@example.com",
+             "password": "password"
+         }'
+```
+
+So you should see the response like this: 
+
+```json
+{
+    "id": "11",
+    "type": "users",
+    "attributes": {
+        "name": "Test User",
+        "email": "test@example.com"
+    },
+    "meta": {
+        "authorizedToShow": true,
+        "authorizedToStore": false,
+        "authorizedToUpdate": false,
+        "authorizedToDelete": false,
+        "token": "1|f7D1qkALtM9GKDkjREKpwMRKTZg2ZnFqDZTSe53k"
+    }
+}
+```
+
+## Register
+
+Let's see how to register a new user in the application. You can test the registration using Curl or Postman.
+
+Use the following endpoint for registration:
+
+`http://restify-app.test/api/register`
+
+And send this payload:
+
+```json
+{
+    "name": "John Doe",
+    "email": "demo@restify.com",
+    "password": "secret!",
+    "password_confirmation": "secret!"
+}
+```
+
+Note: Email and password fields are required.
+
+Now, you can send a POST request with Curl:
+
+```shell
+curl -X POST "http://restify-app.test/api/register" \
+     -H "Accept: application/json" \
+     -H "Content-Type: application/json" \
+     -d '{
+             "name": "John Doe",
+             "email": "demo@restify.com",
+             "password": "secret!",
+             "password_confirmation": "secret!"
+         }'
+```
+
+You should see the response like this:
+
+```json
+{
+    "id": "12",
+    "type": "users",
+    "attributes": {
+        "name": "John Doe",
+        "email": "demo@restify.com"
+    },
+    "meta": {
+        "authorizedToShow": true,
+        "authorizedToStore": false,
+        "authorizedToUpdate": false,
+        "authorizedToDelete": false,
+        "token": "2|z8D2rkBLtN8GKDkjREKpwMRKTZg2ZnFqDZTSe53k"
+    }
+}
+```
+
+## Forgot Password
+
+To initiate the password reset process, use the following endpoint:
+
+`{{host}}/api/forgotPassword`
+
+And send this payload:
+
+```json
+{
+    "email": "demo@restify.com"
+}
+```
+
+After making a POST request to this endpoint, an email will be sent to the provided email address containing a link to reset the password. The link looks like this:
+
+`'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',`
+
+This configuration can be found in the `config/restify.php` file. The FRONTEND_APP_URL should be set to the URL of your frontend app, where the user lands when they click the action button in the email. The "token" is a variable that will be used to reset the password later on.
+
+To view the email content during development, you can change the following configuration in your .env file:
+
+```dotenv
+MAIL_MAILER=log
+```
+
+This will log the email content to the `laravel.log` file, allowing you to see the password reset email without actually sending it.
+
+Now, you can send a POST request with Curl:
+
+```shell
+curl -X POST "http://restify-app.test/api/forgotPassword" \
+     -H "Accept: application/json" \
+     -H "Content-Type: application/json" \
+     -d '{
+            "email": "demo@restify.com"
+         }'
+```
+
+If the email is successfully sent, you'll receive a response similar to the following:
+
+```json
+{
+    "message": "Reset password link sent to your email."
+}
+```
+
+Now, the user can follow the link in the email to reset their password.

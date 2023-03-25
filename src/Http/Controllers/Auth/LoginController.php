@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request)
     {
         $request->validate([
             'email' => ['required', 'email'],
@@ -18,19 +18,18 @@ class LoginController extends Controller
         ]);
 
         /** * @var User $user */
-        if (! $user = config('restify.auth.user_model')::query()
+        if (!$user = config('restify.auth.user_model')::query()
             ->whereEmail($request->input('email'))
             ->first()) {
             abort(401, 'Invalid credentials.');
         }
 
-        if (! Hash::check($request->input('password'), $user->password)) {
+        if (!Hash::check($request->input('password'), $user->password)) {
             abort(401, 'Invalid credentials.');
         }
 
-        return data([
-            'user' => $user,
-            'token' => $user->createToken('login'),
+        return rest($user)->indexMeta([
+            'token' => $user->createToken('login')->plainTextToken,
         ]);
     }
 }
