@@ -37,3 +37,5 @@
 
 - [ ] Adding a command that lists all Restify registered routes `php artisan restify:routes`
 - [ ] UI for Restify
+- [ ] Support for Laravel 10
+- [ ] Custom namespace and base directory for repositories
