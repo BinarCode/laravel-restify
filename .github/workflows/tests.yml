@@ -39,5 +39,12 @@ jobs:
                   composer require "laravel/framework:${{ matrix.laravel }}" "orchestra/testbench:${{ matrix.testbench }}" --no-interaction --no-update
                   composer update --${{ matrix.stability }} --prefer-dist --no-interaction
 
+            - name: Grant Full Control Permissions (Windows)
+              if: runner.os == 'Windows'
+              run: icacls "vendor\orchestra\testbench-core\laravel\bootstrap\cache" /grant Everyone:F /T /C /Q
+
+            - name: Clear Composer cache
+              run: composer clear-cache
+
             - name: Execute tests
               run: ./vendor/bin/testbench package:test --parallel --no-coverage
