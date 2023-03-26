@@ -73,17 +73,17 @@ Restify provides you a simple way to add all of your auth routes prepared. Simpl
 Route::restifyAuth();
 ```
 
-And voila, now you have auth routes ready to be used.
+And voilà, now you have auth routes ready to be used.
 
 These are the default routes provided by restify: 
 
-| Verb           | URI                                      | Action           | 
-| :------------- |:-----------------------------------------| :----------------|
-| **POST**           | `/api/register`                          | register         |
-| **POST**           | `/api/login`                             | login            |
-| **POST**           | `/api/restify/forgotPassword`            | forgot password  |
-| **POST**           | `/api/restify/resetPassword`             | reset password   |
-| **POST**           | `/api/restify/verify/{id}/{emailHash}`   | verify user      |
+| Verb           | URI                                      | Action         | 
+| :------------- |:-----------------------------------------|:---------------|
+| **POST**           | `/api/register`                          | register       |
+| **POST**           | `/api/login`                             | login          |
+| **POST**           | `/api/restify/forgotPassword`            | forgotPassword |
+| **POST**           | `/api/restify/resetPassword`             | resetPassword  |
+| **POST**           | `/api/restify/verify/{id}/{emailHash}`   | verifyEmail    |
 
 <alert type="info">
 
@@ -91,14 +91,15 @@ The `register` and `login` routes are outside the base `restify` prefix because 
 
 </alert>
 
-## Export auth controllers
 
-All of these routes are handled by default, so you can just use them facilely. However, you can customize each of them by exporting auth controllers: 
+You can also pass an `actions` argument, which is an array of actions you want to register. For example:
 
-```shell
-php artisan restify:auth
+```php
+Route::restifyAuth(actions: ['login', 'register']);
 ```
-Now you have all the auth controllers and blade email files exported into your project.
+
+By using the `actions` argument, only the specified routes will be registered. If no `actions` argument is passed, Restify will register all the routes by default.
+
 
 ## Sanctum Middleware
 
@@ -309,3 +310,59 @@ If the password reset is successful, you should receive a response similar to th
 
 Now the user's password has been successfully reset, and they can log in with their new password.
 
+
+## Customizing Authentication Controllers
+
+You can publish the authentication controllers from the Restify package to your own application, allowing you to customize their behavior as needed. To publish the controllers, run the following command:
+
+```shell
+php artisan restify:auth
+```
+
+This command will copy the authentication controllers to the `app/Http/Controllers/Restify` directory in your Laravel project.
+
+The command accepts an optional `--actions` parameter, which allows you to specify which controllers you want to publish. If no action is passed, the command will publish all controllers and the `ForgotPasswordNotification`. For example, to publish only the `login` and `register` controllers, run:
+
+```shell
+php artisan restify:auth --actions=login,register
+```
+
+Now, you can make any necessary changes to these controllers to fit your specific requirements.
+
+### Customizing the Register Route
+
+In a real-world scenario, you might need to customize only the register route. To do this, you can use the `restify:auth` command with the `--actions` option to publish only the register controller:
+
+  ```shell
+php artisan restify:auth --actions=register
+```
+
+After running the command, the register controller will be published to your application, and you can modify it to fit your requirements.
+
+<alert type="warning">
+
+Important Note: If you want to publish other actions in the future, you'll need to manually update the `routes/api.php` file before running the restify:auth command again. Remove any previously published Restify routes, and keep the `Route::restifyAuth();` line so that the new routes can be correctly published.
+
+</alert>
+
+For example, if you previously published the register route, your `routes/api.php` file might look like this:
+
+```php
+// ...
+
+Route::restifyAuth(actions: ["login", "resetPassword", "forgotPassword", "verifyEmail"]);
+
+// ...
+```
+
+Before running the `restify:auth` command again, revert the file to its original state:
+
+```php
+// ...
+
+Route::restifyAuth();
+
+// ...
+```
+
+Now you can run the `restify:auth` command with other actions, and the routes will be published correctly.

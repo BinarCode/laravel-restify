@@ -32,6 +32,6 @@ class ForgotPasswordController extends Controller
 
         (new AnonymousNotifiable())->route('mail', $user->email)->notify(new ForgotPasswordNotification($url));
 
-        return data(__('Reset password link sent to your email.'));
+        return ok(__('Reset password link sent to your email.'));
     }
 }

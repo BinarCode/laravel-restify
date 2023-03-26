@@ -78,29 +78,39 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
     protected function authRoutes(): void
     {
-        Route::macro('restifyAuth', function ($prefix = '/') {
+        Route::macro('restifyAuth', function ($prefix = '/', array $actions = ['register', 'login', 'verifyEmail', 'forgotPassword', 'resetPassword']) {
             Route::group([
                 'prefix' => $prefix,
                 'middleware' => ['api'],
-            ], function () {
-                Route::post('register', RegisterController::class)
-                    ->name('restify.register');
+            ], function () use ($actions) {
+                if (in_array('register', $actions, true)) {
+                    Route::post('register', RegisterController::class)
+                        ->name('restify.register');
+                }
 
-                Route::post('login', LoginController::class)
-                    ->middleware('throttle:6,1')
-                    ->name('restify.login');
+                if (in_array('login', $actions, true)) {
+                    Route::post('login', LoginController::class)
+                        ->middleware('throttle:6,1')
+                        ->name('restify.login');
+                }
 
-                Route::post('verify/{id}/{hash}', VerifyController::class)
-                    ->middleware('throttle:6,1')
-                    ->name('restify.verify');
+                if (in_array('verifyEmail', $actions, true)) {
+                    Route::post('verify/{id}/{hash}', VerifyController::class)
+                        ->middleware('throttle:6,1')
+                        ->name('restify.verify');
+                }
 
-                Route::post('forgotPassword', ForgotPasswordController::class)
-                    ->middleware('throttle:6,1')
-                    ->name('restify.forgotPassword');
+                if (in_array('forgotPassword', $actions, true)) {
+                    Route::post('forgotPassword', ForgotPasswordController::class)
+                        ->middleware('throttle:6,1')
+                        ->name('restify.forgotPassword');
+                }
 
-                Route::post('resetPassword', ResetPasswordController::class)
-                    ->middleware('throttle:6,1')
-                    ->name('restify.resetPassword');
+                if (in_array('resetPassword', $actions, true)) {
+                    Route::post('resetPassword', ResetPasswordController::class)
+                        ->middleware('throttle:6,1')
+                        ->name('restify.resetPassword');
+                }
             });
         });
     }

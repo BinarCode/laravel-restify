@@ -26,6 +26,6 @@ class VerifyController extends Controller
             event(new Verified($user));
         }
 
-        return $user;
+        return rest($user);
     }
 }
