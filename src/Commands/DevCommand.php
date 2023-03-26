@@ -22,8 +22,7 @@ class DevCommand extends Command
     public function __construct(
         private Resolver $resolver,
         private Faker $faker,
-    )
-    {
+    ) {
         parent::__construct();
     }
 
