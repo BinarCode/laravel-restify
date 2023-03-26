@@ -136,15 +136,13 @@ class Restify
     }
 
     /**
-     * Register all of the repository classes in the given directory.
-     *
+     * Register all repository classes in the given directory and namespace.
      *
      * @throws ReflectionException
      */
-    public static function repositoriesFrom(string $directory): void
+    public static function repositoriesFrom(string $directory, string $namespace): void
     {
-        $namespace = app()->getNamespace();
-
+        $basePath = $namespace === 'App\\' ? app_path() : $directory;
         $repositories = [];
 
         if (! is_dir($directory)) {
@@ -155,7 +153,7 @@ class Restify
             $repository = $namespace.str_replace(
                 ['/', '.php'],
                 ['\\', ''],
-                Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+                Str::after($repository->getPathname(), $basePath.DIRECTORY_SEPARATOR)
             );
 
             if (is_subclass_of(
@@ -280,7 +278,7 @@ class Restify
     public static function ensureRepositoriesLoaded(): void
     {
         if (empty(static::$repositories)) {
-            static::repositoriesFrom(app_path('Restify'));
+            static::repositoriesFrom(app_path('Restify'), app()->getNamespace());
         }
     }
 }

@@ -135,6 +135,7 @@ return [
     ],
 
     'repositories' => [
+
         /*
         | Specify either to serialize index meta (policy) information or not. For performance reasons we recommend disabling it.
         */
