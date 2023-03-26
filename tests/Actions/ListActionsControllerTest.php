@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-// TODO: Please refactor all tests using assertJson (as the first test does).
 class ListActionsControllerTest extends IntegrationTestCase
 {
     public function test_could_list_actions_for_repository(): void
@@ -32,15 +31,13 @@ class ListActionsControllerTest extends IntegrationTestCase
 
         $this->getJson(PostRepository::route('1/actions'))
             ->assertSuccessful()
-            ->assertJsonCount(2, 'data')
-            ->assertJsonStructure([
-                'data' => [
-                    [
-                        'name',
-                        'uriKey',
-                    ],
-                ],
-            ]);
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->count('data', 2)
+                    ->where('data.0.uriKey', 'publish-post-action')
+                    ->where('data.1.uriKey', 'invalidate-post-action')
+                    ->etc()
+            );
     }
 
     public function test_can_list_actions_only_for_show(): void
@@ -50,26 +47,43 @@ class ListActionsControllerTest extends IntegrationTestCase
         $_SERVER['actions.posts.onlyOnShow'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = false;
 
-        $response = $this->getJson(PostRepository::route('1/actions'))
-            ->assertJsonCount(1, 'data');
+        $this->getJson(PostRepository::route('1/actions'))
+            ->assertSuccessful()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->count('data', 1)
+                    ->where('data.0.uriKey', 'invalidate-post-action')
+                    ->etc()
+            );
 
-        $this->assertEquals('invalidate-post-action', $response->json('data.0.uriKey'));
-
-        $response = $this->getJson(PostRepository::route('actions'))
-            ->assertJsonCount(1, 'data');
-
-        $this->assertEquals('publish-post-action', $response->json('data.0.uriKey'));
+        $this->getJson(PostRepository::route('actions'))
+            ->assertSuccessful()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->count('data', 1)
+                    ->where('data.0.uriKey', 'publish-post-action')
+                    ->etc()
+            );
 
         $_SERVER['actions.posts.onlyOnShow'] = false;
         $_SERVER['actions.posts.publish.onlyOnShow'] = false;
 
         $this->getJson(PostRepository::route('1/actions'))
-            ->assertJsonCount(0, 'data');
+            ->assertSuccessful()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->count('data', 0)
+                    ->etc()
+            );
 
-        $response = $this->getJson(PostRepository::route('actions'))
-            ->assertJsonCount(2, 'data');
-
-        $this->assertEquals('publish-post-action', $response->json('data.0.uriKey'));
-        $this->assertEquals('invalidate-post-action', $response->json('data.1.uriKey'));
+        $this->getJson(PostRepository::route('actions'))
+            ->assertSuccessful()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->count('data', 2)
+                    ->where('data.0.uriKey', 'publish-post-action')
+                    ->where('data.1.uriKey', 'invalidate-post-action')
+                    ->etc()
+            );
     }
 }
