@@ -122,6 +122,7 @@ Let's ensure the authentication is working correctly. Create a user in the Datab
 \App\Models\User::factory()->create([
    'name' => 'Test User',
    'email' => 'test@example.com',
+   'password' => \Illuminate\Support\Facades\Hash::make('password'),
 ]);
 ```
 
@@ -266,3 +267,45 @@ If the email is successfully sent, you'll receive a response similar to the foll
 ```
 
 Now, the user can follow the link in the email to reset their password.
+
+
+## Reset Password
+
+After the user has received the password reset email from the Forgot Password process, they can reset their password using the following endpoint:
+
+`http://restify-app.test/api/resetPassword`
+
+The payload should include the token and email received from the password reset email:
+
+```json
+{
+    "token": "7e474bb9118e736306de27126343644a7cb0ecdaec558fdef30946d15225bc07",
+    "email": "demo@restify.com",
+    "password": "new_password",
+    "password_confirmation": "new_password"
+}
+```
+Now, you can send a POST request with Curl:
+
+```shell
+curl -X POST "http://restify-app.test/api/resetPassword" \
+     -H "Accept: application/json" \
+     -H "Content-Type: application/json" \
+     -d '{
+             "token": "0d20b6cfa48f2bbbb83bf913d5e329207149f74d7b22d59a383d321c7af7fd5e",
+             "email": "demo@restify.com",
+             "password": "new_password",
+             "password_confirmation": "new_password"
+         }'
+```
+
+If the password reset is successful, you should receive a response similar to the following:
+
+```json
+{
+    "message": "Your password has been successfully reset."
+}
+```
+
+Now the user's password has been successfully reset, and they can log in with their new password.
+
