@@ -47,7 +47,7 @@ return [
 
         'user_verify_url' => env('FRONTEND_APP_URL').'/verify/{id}/{emailHash}',
 
-        'user_model' => \Illuminate\Foundation\Auth\User::class,
+        'user_model' => "\App\Models\User",
     ],
 
     /*

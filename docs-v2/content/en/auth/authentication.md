@@ -9,6 +9,21 @@ Laravel Restify has the support for a facile authentication with [Laravel Sanctu
 
 Now you can finally enjoy the auth setup (`register`, `login`, `forgot`, and `reset password`).
 
+## Quick start
+
+tl;dr: 
+
+If you run on Laravel 10 or higher, you can use this command that will do all the setup for you:
+
+```shell script
+php artisan restify:setup-auth
+```
+
+This command will:
+
+- **ensures** that `Sanctum` is installed and configured as the authentication provider in the `config/restify.php` file
+- **appends** the `Route::restifyAuth();` line to the `routes/api.php` file to add the authentication routes
+
 ## Prerequisites
 
 Migrate the `users`, `password_resets` table (they already exist into a fresh Laravel app).
@@ -116,7 +131,7 @@ Next, add the `auth:sanctum` middleware after the `api` middleware in your confi
 
 ## Login
 
-Let's ensure the authentication is working correctly. Create a user in the DatabaseSeeder class:
+Let's ensure the authentication is working correctly. Create a user in the `DatabaseSeeder` class:
 
 ```php
 // DatabaseSeeder.php
@@ -164,6 +179,42 @@ So you should see the response like this:
     }
 }
 ```
+
+### Authorization
+
+We will discuss the authorization in more details here [Authorization](/auth/authorization). But for now let's see a simple example. 
+
+After a successful login, you will receive an authentication token. You should include this token as a `Bearer` token in the Authorization header for your subsequent API requests using [Postman](https://learning.postman.com/docs/sending-requests/authorization/#bearer-token), axios library, or cURL.
+
+Here's an axios example for retrieving the user's profile with the generated token:
+
+```js
+import axios from 'axios';
+
+const token = '1|f7D1qkALtM9GKDkjREKpwMRKTZg2ZnFqDZTSe53k';
+
+axios.get('http://restify-app.test/api/restify/profile', {
+    headers: {
+        'Authorization': `Bearer ${token}`,
+        'Accept': 'application/json'
+    }
+})
+.then(response => {
+    console.log(response.data);
+})
+.catch(error => {
+    console.error(error);
+});
+```
+
+Here's a cURL example for retrieving the user's profile with the generated token:
+```bash
+curl -X GET "http://restify-app.test/api/restify/profile" \
+     -H "Accept: application/json" \
+     -H "Authorization: Bearer 1|f7D1qkALtM9GKDkjREKpwMRKTZg2ZnFqDZTSe53k"
+```
+
+Replace `http://restify-app.test` with your actual domain and use the authentication token you received after logging in.
 
 ## Register
 

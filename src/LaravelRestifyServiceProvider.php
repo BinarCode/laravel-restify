@@ -8,9 +8,12 @@ use Binaryk\LaravelRestify\Commands\DevCommand;
 use Binaryk\LaravelRestify\Commands\FilterCommand;
 use Binaryk\LaravelRestify\Commands\GetterCommand;
 use Binaryk\LaravelRestify\Commands\PolicyCommand;
+use Binaryk\LaravelRestify\Commands\PrepareSanctumCommand;
 use Binaryk\LaravelRestify\Commands\PublishAuthCommand;
 use Binaryk\LaravelRestify\Commands\Refresh;
 use Binaryk\LaravelRestify\Commands\RepositoryCommand;
+use Binaryk\LaravelRestify\Commands\RestifyRouteListCommand;
+use Binaryk\LaravelRestify\Commands\SetupAuthCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
@@ -40,6 +43,9 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
                 Refresh::class,
                 StubCommand::class,
                 PublishAuthCommand::class,
+                RestifyRouteListCommand::class,
+                PrepareSanctumCommand::class,
+                SetupAuthCommand::class,
             ]);
     }
 
