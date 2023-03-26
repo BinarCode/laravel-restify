@@ -27,9 +27,8 @@ class RepositoryLoadedFromServiceProviderTest extends IntegrationTestCase
         string $directory,
         string $namespace,
         ?string $serviceProvider = null,
-    ): void
-    {
-        if (!$serviceProvider) {
+    ): void {
+        if (! $serviceProvider) {
             $this->markTestSkipped('No service provider was found in directory '.$directory.' skipping this iteration.');
         }
 

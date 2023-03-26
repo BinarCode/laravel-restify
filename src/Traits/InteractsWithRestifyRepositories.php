@@ -7,7 +7,7 @@ use ReflectionException;
 
 trait InteractsWithRestifyRepositories
 {
-     /**
+    /**
      * Register the application's Rest resources.
      *
      * @throws ReflectionException
