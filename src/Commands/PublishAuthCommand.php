@@ -43,7 +43,7 @@ class PublishAuthCommand extends Command
     {
         $actions = $this->option('actions') ? explode(',', $this->option('actions')) : null;
 
-        if (!empty($actions) && ! in_array('forgotPassword', $actions)) {
+        if (! empty($actions) && ! in_array('forgotPassword', $actions)) {
             return $this;
         }
 
@@ -70,7 +70,7 @@ class PublishAuthCommand extends Command
     {
         $filesystem = new Filesystem();
 
-        collect($filesystem->allFiles(__DIR__ . $stubDirectory))
+        collect($filesystem->allFiles(__DIR__.$stubDirectory))
             ->filter(function (SplFileInfo $file) use ($actions) {
                 if (empty($actions)) {
                     return true;
@@ -83,7 +83,7 @@ class PublishAuthCommand extends Command
             ->each(function (SplFileInfo $file) use ($filesystem, $path, $format, $stubDirectory) {
                 $filesystem->copy(
                     $file->getPathname(),
-                    $fullPath = app_path($path . Str::replaceLast('.stub', $format, $file->getFilename()))
+                    $fullPath = app_path($path.Str::replaceLast('.stub', $format, $file->getFilename()))
                 );
 
                 $this->setNamespace($stubDirectory, $file->getFilename(), $path, $fullPath);
@@ -141,8 +141,8 @@ class PublishAuthCommand extends Command
         $routeStubs = '';
 
         foreach ($routes as $action => $routeStub) {
-            if (!$actions || in_array($action, $actions, true)) {
-                $routeStubs .= file_get_contents($stubDirectory . $routeStub);
+            if (! $actions || in_array($action, $actions, true)) {
+                $routeStubs .= file_get_contents($stubDirectory.$routeStub);
             }
         }
 
@@ -163,6 +163,6 @@ class PublishAuthCommand extends Command
             return '';
         }
 
-        return 'Route::restifyAuth(actions: ' . json_encode(array_values($remainingActions)) . ');';
+        return 'Route::restifyAuth(actions: '.json_encode(array_values($remainingActions)).');';
     }
 }
