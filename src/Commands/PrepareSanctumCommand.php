@@ -4,8 +4,8 @@ namespace Binaryk\LaravelRestify\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Symfony\Component\Process\Process;
 use Symfony\Component\Process\Exception\ProcessFailedException;
+use Symfony\Component\Process\Process;
 
 class PrepareSanctumCommand extends Command
 {
