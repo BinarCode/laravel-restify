@@ -52,5 +52,3 @@ jobs:
 
             - name: Execute tests
               run: ./vendor/bin/testbench package:test --parallel --no-coverage
-              retry:
-                  max-attempts: 3
