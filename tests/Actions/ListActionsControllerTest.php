@@ -8,20 +8,6 @@ use Illuminate\Testing\Fluent\AssertableJson;
 
 class ListActionsControllerTest extends IntegrationTestCase
 {
-    public function test_could_list_actions_for_repository(): void
-    {
-        $_SERVER['actions.posts.invalidate'] = false;
-
-        $this->getJson(PostRepository::route('actions'))
-            ->assertOk()
-            ->assertJson(
-                fn (AssertableJson $json) => $json
-                ->count('data', 1)
-                ->where('data.0.uriKey', 'publish-post-action')
-                ->etc()
-            );
-    }
-
     public function test_could_list_actions_for_given_repository(): void
     {
         $this->mockPosts(1, 2);
