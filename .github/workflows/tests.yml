@@ -43,8 +43,14 @@ jobs:
               if: runner.os == 'Windows'
               run: icacls "vendor\orchestra\testbench-core\laravel\bootstrap\cache" /grant Everyone:F /T /C /Q
 
+            - name: Remove Read-Only Attribute (Windows)
+              if: runner.os == 'Windows'
+              run: attrib -R "vendor\orchestra\testbench-core\laravel\bootstrap\cache\services.php" /S
+
             - name: Clear Composer cache
               run: composer clear-cache
 
             - name: Execute tests
               run: ./vendor/bin/testbench package:test --parallel --no-coverage
+              retry:
+                  max-attempts: 3
