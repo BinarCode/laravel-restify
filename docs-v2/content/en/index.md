@@ -9,6 +9,12 @@ Laravel Restify is an extraordinary tool inspired by [Laravel Nova](https://nova
 
 If you don't have an application written with Nova, you can start with Laravel Restify from scratch and get a powerful API in a few minutes.
 
+<alert type="warning">
+
+This documentation is for the latest version of Laravel Restify. Please ensure you are using the most recent release of the package to guarantee compatibility with the information provided in this documentation. To update Laravel Restify, refer to the upgrade guide for instructions.
+
+</alert>
+
 ## Features
 
 <list :items="[
@@ -21,6 +27,8 @@ If you don't have an application written with Nova, you can start with Laravel R
 'Laravel Compatible Authorization'
 ]">
 </list>
+
+
 
 ## Playground
 

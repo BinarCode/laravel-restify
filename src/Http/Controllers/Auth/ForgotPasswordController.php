@@ -2,11 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
-use Binaryk\LaravelRestify\Mail\ForgotPasswordMail;
+use Binaryk\LaravelRestify\Notifications\ForgotPasswordNotification;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Illuminate\Http\Request;
+use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Password;
 
 class ForgotPasswordController extends Controller
@@ -29,10 +29,8 @@ class ForgotPasswordController extends Controller
             $request->input('url') ?? config('restify.auth.password_reset_url')
         );
 
-        Mail::to($user->email)->send(
-            new ForgotPasswordMail($url)
-        );
+        (new AnonymousNotifiable())->route('mail', $user->email)->notify(new ForgotPasswordNotification($url));
 
-        return data(__('Email sent.'));
+        return ok(__('Reset password link sent to your email.'));
     }
 }

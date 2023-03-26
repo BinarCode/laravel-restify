@@ -3,14 +3,13 @@
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request)
     {
         $request->validate([
             'email' => ['required', 'email'],
@@ -28,9 +27,8 @@ class LoginController extends Controller
             abort(401, 'Invalid credentials.');
         }
 
-        return data([
-            'user' => $user,
-            'token' => $user->createToken('login'),
+        return rest($user)->indexMeta([
+            'token' => $user->createToken('login')->plainTextToken,
         ]);
     }
 }

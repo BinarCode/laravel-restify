@@ -9,58 +9,46 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class PublishAuthCommand extends Command
 {
-    protected $name = 'restify:auth';
+    protected $signature = 'restify:auth {--actions= : Comma-separated list of actions to publish}';
 
-    protected $description = 'Publish auth controllers & blades.';
+    protected $description = 'Publish auth controllers & notification.';
 
     public function handle()
     {
+        $actions = $this->option('actions') ? explode(',', $this->option('actions')) : null;
+
         $this
             ->publishControllers()
-            ->publishBlades()
-            ->publishEmails()
-            ->registerRoutes();
+            ->publishNotifications()
+            ->registerRoutes($actions);
 
-        $this->info('Restify Controllers & Emails published successfully');
+        $this->info('Auth controllers published.');
     }
 
-    /**
-     * @return $this
-     */
     public function publishControllers(): self
     {
         $path = 'Http/Controllers/Restify/Auth/';
         $stubDirectory = '/../Commands/stubs/Auth';
         $format = '.php';
 
+        $actions = $this->option('actions') ? explode(',', $this->option('actions')) : null;
+
         $this->checkDirectory($path)
-            ->copyDirectory($path, $stubDirectory, $format);
+            ->copyDirectory($path, $stubDirectory, $format, $actions);
 
         return $this;
     }
 
-    /**
-     * @return $this
-     */
-    public function publishBlades(): self
+    public function publishNotifications(): self
     {
-        $path = '../resources/views/Restify/Auth/';
-        $stubDirectory = '/../Commands/stubs/Blades';
-        $format = '.blade.php';
+        $actions = $this->option('actions') ? explode(',', $this->option('actions')) : null;
 
-        $this->checkDirectory($path)
-            ->copyDirectory($path, $stubDirectory, $format);
+        if (! empty($actions) && ! in_array('forgotPassword', $actions)) {
+            return $this;
+        }
 
-        return $this;
-    }
-
-    /**
-     * @return $this
-     */
-    public function publishEmails(): self
-    {
-        $path = 'Mail/Restify/Auth/';
-        $stubDirectory = '/../Commands/stubs/Email';
+        $path = 'Notifications/Restify/';
+        $stubDirectory = '/../Commands/stubs/Notifications';
         $format = '.php';
 
         $this->checkDirectory($path)
@@ -69,9 +57,6 @@ class PublishAuthCommand extends Command
         return $this;
     }
 
-    /**
-     * @return $this
-     */
     public function checkDirectory(string $path): self
     {
         if (! is_dir($directory = app_path($path))) {
@@ -81,14 +66,20 @@ class PublishAuthCommand extends Command
         return $this;
     }
 
-    /**
-     * @return $this
-     */
-    protected function copyDirectory(string $path, string $stubDirectory, string $format): self
+    protected function copyDirectory(string $path, string $stubDirectory, string $format, ?array $actions = []): self
     {
         $filesystem = new Filesystem();
 
         collect($filesystem->allFiles(__DIR__.$stubDirectory))
+            ->filter(function (SplFileInfo $file) use ($actions) {
+                if (empty($actions)) {
+                    return true;
+                }
+
+                $actionName = Str::before($file->getFilename(), 'Controller');
+
+                return in_array($actionName, $actions, true) || in_array(Str::lower($actionName), $actions, true);
+            })
             ->each(function (SplFileInfo $file) use ($filesystem, $path, $format, $stubDirectory) {
                 $filesystem->copy(
                     $file->getPathname(),
@@ -112,24 +103,66 @@ class PublishAuthCommand extends Command
         ));
     }
 
-    /**
-     * @return $this
-     */
-    protected function registerRoutes(): self
+    protected function registerRoutes(?array $actions): self
     {
         $apiPath = base_path('routes/api.php');
         $initial = file_get_contents($apiPath);
 
-        $initial = str($initial)->replace('Route::restifyAuth();', '')->toString();
+        $remainingActionsString = $this->getRemainingActionsString($actions);
+        $initial = str($initial)->replace('Route::restifyAuth();', $remainingActionsString)->toString();
 
         $file = fopen($apiPath, 'w');
 
-        $routeStub = __DIR__.'/stubs/Routes/routes.stub';
+        $routeStub = $this->getRouteStubs();
 
-        fwrite($file, $initial."\n".file_get_contents($routeStub));
+        fwrite($file, $initial."\n".$routeStub);
 
         fclose($file);
 
         return $this;
+    }
+
+    protected function getRouteStubs(): string
+    {
+        $actions = $this->option('actions') ? explode(',', $this->option('actions')) : null;
+
+        $stubDirectory = __DIR__.'/stubs/Routes/';
+        $routes = [
+            'login' => 'loginRoute.stub',
+            'register' => 'registerRoute.stub',
+            'forgotPassword' => 'forgotPasswordRoute.stub',
+            'ForgotPassword' => 'forgotPasswordRoute.stub',
+            'resetPassword' => 'forgotPasswordRoute.stub',
+            'ResetPassword' => 'resetPasswordRoute.stub',
+            'verifyEmail' => 'verifyRoute.stub',
+            'verify' => 'verifyRoute.stub',
+        ];
+
+        $routeStubs = '';
+
+        foreach ($routes as $action => $routeStub) {
+            if (! $actions || in_array($action, $actions, true)) {
+                $routeStubs .= file_get_contents($stubDirectory.$routeStub);
+            }
+        }
+
+        return $routeStubs;
+    }
+
+    protected function getRemainingActionsString(?array $actions = null): string
+    {
+        $allActions = ['login', 'register', 'resetPassword', 'forgotPassword', 'verifyEmail'];
+
+        if ($actions === null) {
+            return 'Route::restifyAuth();';
+        }
+
+        $remainingActions = array_diff($allActions, $actions);
+
+        if (empty($remainingActions)) {
+            return '';
+        }
+
+        return 'Route::restifyAuth(actions: '.json_encode(array_values($remainingActions)).');';
     }
 }

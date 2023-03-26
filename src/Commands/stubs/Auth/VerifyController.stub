@@ -13,9 +13,12 @@ class VerifyController extends Controller
 {
     public function __invoke(int $id, string $hash)
     {
-        $user = User::query()->findOrFail($id);
+        /**
+         * @var User $user
+         */
+        $user = config('restify.auth.user_model')::query()->findOrFail($id);
 
-        if ($user instanceof Sanctumable && ! hash_equals((string)$hash, sha1($user->getEmailForVerification()))) {
+        if ($user instanceof Sanctumable && ! hash_equals((string) $hash, sha1($user->getEmailForVerification()))) {
             throw new AuthorizationException('Invalid hash');
         }
 
@@ -23,6 +26,6 @@ class VerifyController extends Controller
             event(new Verified($user));
         }
 
-        return $user;
+        return rest($user);
     }
 }

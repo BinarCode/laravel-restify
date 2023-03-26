@@ -1,0 +1,4 @@
+Route::post('verify/{id}/{hash}', \App\Http\Controllers\Restify\Auth\VerifyController::class)
+    ->middleware('throttle:6,1')
+    ->name('restify.verify');
+
