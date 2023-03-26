@@ -15,7 +15,7 @@ class RestifyRouteListCommand extends RouteListCommand
     protected function getRoutes()
     {
         $base = str(config('restify.base'))
-            ->whenStartsWith('/', fn($replace) => $replace->replaceFirst('/', ''))
+            ->whenStartsWith('/', fn ($replace) => $replace->replaceFirst('/', ''))
             ->toString();
 
         $routes = collect($this->router->getRoutes())
