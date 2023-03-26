@@ -36,7 +36,7 @@ class PrepareSanctumCommand extends Command
             }
         }
 
-        if (!$sanctumInstalled) {
+        if (! $sanctumInstalled) {
             $this->info('Laravel Sanctum is not installed. Installing now...');
             $this->runProcess(['composer', 'require', 'laravel/sanctum']);
             $this->runProcess(['php', 'artisan', 'vendor:publish', '--provider="Laravel\Sanctum\SanctumServiceProvider"']);
@@ -51,8 +51,9 @@ class PrepareSanctumCommand extends Command
     {
         $configPath = config_path('restify.php');
 
-        if (!File::exists($configPath)) {
+        if (! File::exists($configPath)) {
             $this->error('The config/restify.php file does not exist.');
+
             return 1;
         }
 
@@ -93,7 +94,7 @@ class PrepareSanctumCommand extends Command
             $this->output->write($buffer);
         });
 
-        if (!$process->isSuccessful()) {
+        if (! $process->isSuccessful()) {
             throw new ProcessFailedException($process);
         }
     }
@@ -102,8 +103,9 @@ class PrepareSanctumCommand extends Command
     {
         $userModelPath = app_path('Models/User.php');
 
-        if (!File::exists($userModelPath)) {
+        if (! File::exists($userModelPath)) {
             $this->error('The User model does not exist.');
+
             return;
         }
 
@@ -112,6 +114,7 @@ class PrepareSanctumCommand extends Command
         // Check if HasApiTokens trait is already used
         if (strpos($content, 'use HasApiTokens;') !== false) {
             $this->info('The User model already uses the HasApiTokens trait.');
+
             return;
         }
 
