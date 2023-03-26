@@ -44,7 +44,7 @@ class StubCommand extends Command
             return true;
         }
 
-        DB::connection()->getDoctrineSchemaManager()->getDatabasePlatform()->registerDoctrineTypeMapping('enum', 'string');
+        DB::connection()->getDoctrineConnection()->getDatabasePlatform()?->registerDoctrineTypeMapping('enum', 'string');
 
         collect(explode(',', $this->argument('table')))->each(function ($table) {
             if (! $this->resolver->connection()->getSchemaBuilder()->hasTable($table)) {

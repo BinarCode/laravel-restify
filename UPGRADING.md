@@ -1,5 +1,10 @@
 # Upgrading
 
+## From 7.x to 8.x
+
+- The `Action` `payload` method was renamed to `rules`
+- The `Filter` `getColumn` method was renamed to `column`
+
 ## From 7.3.1 to 7.4.0
 
 ## Breaking

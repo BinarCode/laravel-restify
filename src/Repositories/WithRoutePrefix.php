@@ -67,6 +67,8 @@ trait WithRoutePrefix
             // the rest
             return $request->is(static::prefix().'/*');
         }
+
+        return false;
     }
 
     protected static function shouldAuthorizeRouteUsage(): bool

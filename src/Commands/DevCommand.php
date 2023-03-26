@@ -19,14 +19,12 @@ class DevCommand extends Command
 
     protected $description = 'Add laravel-restify from a local directory.';
 
-    /** * @var Faker */
-    private $faker;
-
-    public function __construct(Resolver $resolver, Faker $faker)
+    public function __construct(
+        private Resolver $resolver,
+        private Faker $faker,
+    )
     {
         parent::__construct();
-        $this->resolver = $resolver;
-        $this->faker = $faker;
     }
 
     public function handle()

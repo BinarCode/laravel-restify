@@ -29,7 +29,7 @@ trait InteractsWithModel
 
     public static function guessModelClassName(): string
     {
-        if (property_exists(static::class, 'model')) {
+        if (property_exists(static::class, 'model') && is_string(static::$model)) {
             return static::$model;
         }
 

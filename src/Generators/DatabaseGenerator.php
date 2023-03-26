@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Doctrine\DBAL\Platforms\AbstractPlatform;
 
 class DatabaseGenerator
 {
@@ -25,6 +26,8 @@ class DatabaseGenerator
     public function fake(Column $columnDefinition)
     {
         $column = $columnDefinition->getName();
+
+        // @phpstan-ignore-next-line
         $type = $columnDefinition->getType()->getName();
 
         switch ($type) {

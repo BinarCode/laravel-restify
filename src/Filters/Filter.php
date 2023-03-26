@@ -15,6 +15,9 @@ use Illuminate\Support\Str;
 use JsonSerializable;
 use ReturnTypeWillChange;
 
+/**
+ * @mixin AdvancedFilter
+ */
 abstract class Filter implements JsonSerializable
 {
     use Make;
@@ -81,14 +84,6 @@ abstract class Filter implements JsonSerializable
     public function key(): string
     {
         return static::class;
-    }
-
-    /**
-     * @deprecated use `column()` instead
-     */
-    public function getColumn(): ?string
-    {
-        return $this->column;
     }
 
     public function column(): ?string

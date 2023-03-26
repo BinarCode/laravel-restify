@@ -29,6 +29,7 @@
         "brianium/paratest": "^7.0.6",
         "doctrine/dbal": "^3.0",
         "nunomaduro/collision": "^7.0",
+        "nunomaduro/larastan": "^2.5",
         "openai-php/laravel": "^0.3.1",
         "orchestra/testbench": "^8.0",
         "phpstan/extension-installer": "^1.1",

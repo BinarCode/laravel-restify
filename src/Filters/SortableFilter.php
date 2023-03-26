@@ -55,7 +55,7 @@ class SortableFilter extends Filter
             return $query;
         }
 
-        $query->orderBy($this->column, $value);
+        return $query->orderBy($this->column, $value);
     }
 
     public function usingRelation(HasOne|BelongsTo $field): self

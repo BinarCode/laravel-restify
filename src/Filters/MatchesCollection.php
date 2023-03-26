@@ -79,15 +79,15 @@ class MatchesCollection extends Collection
     public function hydrateDefinition(RestifyRequest $request, Repository $repository): MatchesCollection
     {
         return $this->each(function (MatchFilter $filter) use ($repository, $request) {
-            if ($request->has('-'.$filter->getColumn())) {
+            if ($request->has('-'.$filter->column())) {
                 $filter->negate();
             }
 
-            if (data_get($request->input('filter'), '-'.$filter->getColumn())) {
+            if (data_get($request->input('filter'), '-'.$filter->column())) {
                 $filter->negate();
             }
 
-            return $filter->setColumn($repository->model()->qualifyColumn($filter->getColumn()));
+            return $filter->setColumn($repository->model()->qualifyColumn($filter->column()));
         });
     }
 

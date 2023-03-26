@@ -41,8 +41,6 @@ class RestifyRouteListCommand extends RouteListCommand
 
     protected function configureOptions()
     {
-        parent::configureOptions();
-
         $this->addOption('command', null, InputOption::VALUE_OPTIONAL, 'Filter the routes by the given command.');
     }
 }

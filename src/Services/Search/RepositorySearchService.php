@@ -25,11 +25,9 @@ class RepositorySearchService
     {
         $this->repository = $repository;
 
-        $scoutQuery = null;
-
-        if ($repository::usesScout()) {
-            $scoutQuery = $this->initializeQueryUsingScout($request, $repository);
-        }
+        $scoutQuery = $repository::usesScout()
+            ? $this->initializeQueryUsingScout($request, $repository)
+            : null;
 
         $query = $this->prepareMatchFields(
             $request,

@@ -104,17 +104,6 @@ abstract class Action implements JsonSerializable
     }
 
     /**
-     * Get the payload available on the action.
-     *
-     *
-     * @deprecated Use rules instead
-     */
-    public function payload(): array
-    {
-        return $this->rules();
-    }
-
-    /**
      * Validation rules to be applied before the action is called.
      */
     public function rules(): array
@@ -192,7 +181,7 @@ abstract class Action implements JsonSerializable
             'name' => $this->name(),
             'destructive' => $this instanceof DestructiveAction,
             'uriKey' => $this->uriKey(),
-            'payload' => $this->payload(),
+            'payload' => $this->rules(),
         ]);
     }
 }

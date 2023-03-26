@@ -264,7 +264,7 @@ class File extends Field implements StorableContract, DeletableContract
         }
 
         if (! is_array($result)) {
-            return $model->{$attribute} = $result;
+            return $model->{$this->attribute} = $result;
         }
 
         foreach ($result as $key => $value) {

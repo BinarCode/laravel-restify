@@ -12,3 +12,4 @@ parameters:
     ignoreErrors:
         - '#Unsafe usage of new static#'
 
+

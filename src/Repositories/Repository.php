@@ -37,9 +37,6 @@ use JsonSerializable;
 use ReturnTypeWillChange;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-/**
- * @property string $type
- */
 class Repository implements RestifySearchable, JsonSerializable
 {
     use InteractWithSearch;
@@ -62,6 +59,26 @@ class Repository implements RestifySearchable, JsonSerializable
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
      */
     public Model $resource;
+
+    /**
+     * This is the fully qualified name of the model.
+     */
+    protected static $model;
+
+    /**
+     * This is the name of the repository path used in the routes.
+     */
+    protected static $uriKey;
+
+    /**
+     * This is the name of the table of the resource.
+     */
+    protected static $type;
+
+    /**
+     * This is the human-readable name of the repository.
+     */
+    protected static $label;
 
     /**
      * The list of relations available for the show or index.
@@ -177,12 +194,7 @@ class Repository implements RestifySearchable, JsonSerializable
         return Str::plural($kebabWithoutRepository);
     }
 
-    /**
-     * Get the label for the resource.
-     *
-     * @return string
-     */
-    public static function label()
+    public static function label(): string
     {
         if (property_exists(static::class, 'label') && is_string(static::$label)) {
             return static::$label;
@@ -937,7 +949,7 @@ class Repository implements RestifySearchable, JsonSerializable
     {
         static::authorizeToStoreBulk($request);
 
-        $validator = static::validatorForStoringBulk($request, $payload, $row);
+        $validator = static::validatorForStoringBulk($request, $payload);
 
         $validator->validate();
 
@@ -1004,12 +1016,12 @@ class Repository implements RestifySearchable, JsonSerializable
             'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
-            'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
+            'relationships' => $this->when((bool) $related = $this->resolveRelationships($request), $related),
             'meta' => $this->when(
-                value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
+                (bool) ($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
                 $meta
             ),
-            'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots),
+            'pivots' => $this->when((bool) $pivots = $this->resolveShowPivots($request), $pivots),
         ]);
     }
 
@@ -1019,9 +1031,9 @@ class Repository implements RestifySearchable, JsonSerializable
             'id' => $this->when($id = $this->getId($request), $id),
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $this->when((bool) $attrs = $this->resolveIndexAttributes($request), $attrs),
-            'relationships' => $this->when(value($related = $this->resolveIndexRelationships($request)), $related),
-            'meta' => $this->when(value($meta = $this->resolveIndexMeta($request)), $meta),
-            'pivots' => $this->when(value($pivots = $this->resolveIndexPivots($request)), $pivots),
+            'relationships' => $this->when((bool) $related = $this->resolveIndexRelationships($request), $related),
+            'meta' => $this->when((bool) $meta = $this->resolveIndexMeta($request), $meta),
+            'pivots' => $this->when((bool) $pivots = $this->resolveIndexPivots($request), $pivots),
         ]);
 
         return $data;
