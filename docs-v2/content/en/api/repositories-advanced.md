@@ -146,6 +146,33 @@ public static function collectMiddlewares(RestifyRequest $request): ?Collection
 }
 ```
 
+## Repository registration
+
+Laravel Restify registers all repositories automatically in the App namespace. However, you can register your own repositories from any service provider using the InteractsWithRestifyRepositories trait. Here's an example:
+
+```php
+<?php
+
+namespace MyPackage\Cart;
+
+use Binaryk\LaravelRestify\Traits\InteractsWithRestifyRepositories;
+use Illuminate\Support\ServiceProvider;
+
+class MyPackageCart extends ServiceProvider
+{
+    use InteractsWithRestifyRepositories;
+
+    public function register(): void
+    {
+        $this->loadRestifyFrom(__DIR__.'/Restify', __NAMESPACE__.'\\Restify\\');
+        
+        // The rest of your package's registration code goes here.
+    }
+}
+```
+
+If you want to load Restify from your own service provider, you must use the InteractsWithRestifyRepositories trait in the service provider class. The loadRestifyFrom method takes the path to the directory containing the repositories and the namespace under which the repositories will be registered.
+
 ## Dependency injection
 
 The Laravel [service container](https://laravel.com/docs/7.x/container) is used to resolve all the Laravel Restify
