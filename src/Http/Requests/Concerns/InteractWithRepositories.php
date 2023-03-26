@@ -10,7 +10,7 @@ use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
-use Illuminate\Support\Facades\Pipeline;
+use Illuminate\Pipeline\Pipeline;
 use Throwable;
 
 /**
@@ -47,7 +47,8 @@ trait InteractWithRepositories
                 RepositoryException::routeUnauthorized($this->getRequestUri())
             );
 
-            Pipeline::send($this)
+            app(Pipeline::class)
+                ->send($this)
                 ->through(optional($repository::collectMiddlewares($this))->all())
                 ->thenReturn();
 
