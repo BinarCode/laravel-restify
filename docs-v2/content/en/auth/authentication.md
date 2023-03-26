@@ -9,6 +9,21 @@ Laravel Restify has the support for a facile authentication with [Laravel Sanctu
 
 Now you can finally enjoy the auth setup (`register`, `login`, `forgot`, and `reset password`).
 
+## Quick start
+
+tl;dr: 
+
+If you run on Laravel 10 or higher, you can use this command that will do all the setup for you:
+
+```shell script
+php artisan restify:setup-auth
+```
+
+This command will:
+
+- **ensures** that `Sanctum` is installed and configured as the authentication provider in the `config/restify.php` file
+- **appends** the `Route::restifyAuth();` line to the `routes/api.php` file to add the authentication routes
+
 ## Prerequisites
 
 Migrate the `users`, `password_resets` table (they already exist into a fresh Laravel app).

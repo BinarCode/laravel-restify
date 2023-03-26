@@ -21,51 +21,51 @@ class RoutesDefinition
         Route::get(
             $prefix.'/filters',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryFilterController::class
-        );
+        )->name('filters.index');
 
         // Actions
         Route::get(
             $prefix.'/actions',
             \Binaryk\LaravelRestify\Http\Controllers\ListActionsController::class
-        )->name('restify.actions.index');
+        )->name('actions.index');
         Route::get(
             $prefix.'/{repositoryId}/actions',
             \Binaryk\LaravelRestify\Http\Controllers\ListRepositoryActionsController::class
-        )->name('restify.actions.repository.index');
+        )->name('actions.repository.index');
         Route::post(
             $prefix.'/action',
             \Binaryk\LaravelRestify\Http\Controllers\PerformActionController::class
-        )->name('restify.actions.perform');
+        )->name('actions.perform');
         Route::post(
             $prefix.'/actions',
             \Binaryk\LaravelRestify\Http\Controllers\PerformActionController::class
-        ); // alias to the previous route
+        )->name('actions.performs'); // alias to the previous route
         Route::post(
             $prefix.'/{repositoryId}/action',
             \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController::class
-        )->name('restify.actions.repository.perform');
+        )->name('actions.repository.perform');
         Route::post(
             $prefix.'/{repositoryId}/actions',
             \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController::class
-        ); // alias to the previous route
+        )->name('actions.repository.performs'); // alias to the previous route
 
         // Getters
         Route::get(
             $prefix.'/getters',
             \Binaryk\LaravelRestify\Http\Controllers\ListGettersController::class
-        )->name('restify.getters.index')->withoutMiddleware($this->excludedMiddleware);
+        )->name('getters.index')->withoutMiddleware($this->excludedMiddleware);
         Route::get(
             $prefix.'/{repositoryId}/getters',
             \Binaryk\LaravelRestify\Http\Controllers\ListRepositoryGettersController::class
-        )->name('restify.getters.repository.index')->withoutMiddleware($this->excludedMiddleware);
+        )->name('getters.repository.index')->withoutMiddleware($this->excludedMiddleware);
         Route::get(
             $prefix.'/getters/{getter}',
             \Binaryk\LaravelRestify\Http\Controllers\PerformGetterController::class
-        )->name('restify.getters.perform')->withoutMiddleware($this->excludedMiddleware);
+        )->name('getters.perform')->withoutMiddleware($this->excludedMiddleware);
         Route::get(
             $prefix.'/{repositoryId}/getters/{getter}',
             \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryGetterController::class
-        )->name('restify.getters.repository.perform')->withoutMiddleware($this->excludedMiddleware);
+        )->name('getters.repository.perform')->withoutMiddleware($this->excludedMiddleware);
 
         // API CRUD
         Route::get(
@@ -75,39 +75,39 @@ class RoutesDefinition
         Route::post(
             $prefix.'',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class
-        )->name('restify.store');
+        )->name('store');
         Route::post(
             $prefix.'/bulk',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreBulkController::class
-        )->name('restify.store.bulk');
+        )->name('store.bulk');
         Route::post(
             $prefix.'/bulk/update',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController::class
-        )->name('restify.update.bulk');
+        )->name('update.bulk');
         Route::delete(
             $prefix.'/bulk/delete',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyBulkController::class
-        )->name('restify.destroy.bulk');
+        )->name('destroy.bulk');
         Route::get(
             $prefix.'/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class
-        )->name('restify.show')->withoutMiddleware($this->excludedMiddleware);
+        )->name('show')->withoutMiddleware($this->excludedMiddleware);
         Route::patch(
             $prefix.'/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryPatchController::class
-        )->name('restify.patch');
+        )->name('patch');
         Route::put(
             $prefix.'/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class
-        )->name('restify.put');
+        )->name('put');
         Route::post(
             $prefix.'/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class
-        )->name('restify.update');
+        )->name('update');
         Route::delete(
             $prefix.'/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController::class
-        )->name('restify.destroy');
+        )->name('destroy');
 
         if ($uriKey) {
             return;
@@ -117,61 +117,61 @@ class RoutesDefinition
         Route::delete(
             $prefix.'/{repositoryId}/field/{field}',
             \Binaryk\LaravelRestify\Http\Controllers\FieldDestroyController::class
-        );
+        )->name('field.destroy');
 
         // Attach related repository id
         Route::post(
             $prefix.'/{repositoryId}/attach/{relatedRepository}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryAttachController::class
-        );
+        )->name('attach');
         Route::post(
             $prefix.'/{repositoryId}/detach/{relatedRepository}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryDetachController::class
-        );
+        )->name('detach');
         Route::post(
             $prefix.'/{repositoryId}/sync/{relatedRepository}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositorySyncController::class
-        );
+        )->name('sync');
 
         // Relatable
         Route::get(
             '/{parentRepository}/{parentRepositoryId}/{repository}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class
-        );
+        )->name('relatable.index');
         Route::post(
             '/{parentRepository}/{parentRepositoryId}/{repository}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class
-        );
+        )->name('relatable.store');
         Route::get(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class
-        );
+        )->name('relatable.show');
         Route::post(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class
-        );
+        )->name('relatable.update');
         Route::put(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class
-        );
+        )->name('relatable.update');
         Route::delete(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController::class
-        );
+        )->name('relatable.destroy');
     }
 
     public function once(): void
     {
-        Route::get('/search', GlobalSearchController::class);
+        Route::get('/search', GlobalSearchController::class)->name('search');
 
-        Route::get('/profile', ProfileController::class);
-        Route::put('/profile', ProfileUpdateController::class);
-        Route::post('/profile', ProfileUpdateController::class);
+        Route::get('/profile', ProfileController::class)->name('profile');
+        Route::put('/profile', ProfileUpdateController::class)->name('profile.updatePut');
+        Route::post('/profile', ProfileUpdateController::class)->name('profile.updatePost');
 
         // RestifyJS
         Route::get('/restifyjs/setup', RestifyJsSetupController::class)->withoutMiddleware(
             RestifySanctumAuthenticate::class,
-        );
+        )->name('restifyjs.setup');
     }
 
     public function withoutMiddleware(...$middleware): self
