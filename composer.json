@@ -49,7 +49,9 @@
     "autoload-dev": {
         "psr-4": {
             "Binaryk\\LaravelRestify\\Tests\\": "tests",
-            "Binaryk\\LaravelRestify\\Tests\\Database\\Factories\\": "tests/database/factories"
+            "Binaryk\\LaravelRestify\\Tests\\Database\\Factories\\": "tests/database/factories",
+            "App\\": "tests/Fixtures/App",
+            "CustomNamespace\\": "tests/Fixtures/CustomNamespace"
         }
     },
     "scripts": {
