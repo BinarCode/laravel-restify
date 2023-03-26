@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
