@@ -79,6 +79,98 @@ A virtual field, is a field that's [computed](#computed-field) and [readonly](#r
 field('name', fn() => "$this->first_name $this->last_name")->readonly()
 ```
 
+### Default fields
+
+Optionally when setting up restify, you have the option to quickly set default fields to all repositories, alternatively you can set default fields for a specific repository.
+Simply add the `InteractsWithDefaultFields` trait to your custom extended repository class or add this trait to the repository class you want to set default fields for.
+
+Example usage to apply to all repositories:
+```php
+<?php
+
+namespace App\Restify;
+
+use Binaryk\LaravelRestify\Repositories\Repository as RestifyRepository;
+use Binaryk\LaravelRestify\Traits\InteractsWithDefaultFields;
+
+abstract class Repository extends RestifyRepository
+{
+    use InteractsWithDefaultFields;
+}
+```
+Example usage to apply to a specific repository:
+```php
+<?php
+
+namespace App\Restify;
+
+use Binaryk\LaravelRestify\Traits\InteractsWithDefaultFields;
+
+class CategoryRepository extends Repository
+{
+    use InteractsWithDefaultFields;
+}
+```
+
+Exclude certain fields from being added to a repository by simply declaring the static `excludeFields` property array to your repository:
+```php
+<?php
+
+namespace App\Restify;
+
+use App\Models\Collection;
+use App\Restify\Getters\CategoriesTreeGetter;
+use App\Restify\Getters\FilterGroupsGetter;
+use Binaryk\LaravelRestify\Fields\HasMany;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Traits\InteractsWithDefaultFields;
+
+class CategoryRepository extends Repository
+{
+    use InteractsWithDefaultFields;
+
+    public static string $model = Collection::class;
+
+    public static array $excludeFields = ['_lft', '_rgt'];
+
+    public static bool|array $public = true;
+
+    public function getters(RestifyRequest $request): array
+    {
+        return [
+            FilterGroupsGetter::make(),
+            CategoriesTreeGetter::make(),
+        ];
+    }
+}
+```
+If you decide to use this optional feature to add default fields to repositories, you may still define your own fields in your repository by simply merging with the default fields, here is an example:
+```php
+<?php
+
+namespace App\Restify;
+
+use App\Models\User;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Traits\InteractsWithDefaultFields;
+
+class UserRepository extends Repository
+{
+    use InteractsWithDefaultFields;
+
+    public static string $model = User::class;
+
+    public function fields(RestifyRequest $request): array
+    {
+        return array_merge($this->getDefaultFields(), [
+            field('name')->rules('required'),
+            field('email')->storingRules('required', 'unique:users')->messages([
+                'required' => 'This field is required.',
+            ]),
+        ]);
+    }
+}
+```
 
 ## Authorization
 
