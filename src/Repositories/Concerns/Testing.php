@@ -56,7 +56,7 @@ trait Testing
     {
         $path = $key ? "$key/getters" : 'getters';
 
-        return static::route($path.'/'. Getter::guessUriKey(app($getter)));
+        return static::route($path.'/'.Getter::guessUriKey(app($getter)));
     }
 
     public function dd(string $prop = null): void

@@ -20,19 +20,18 @@ trait ResolvesGetters
             ->values();
     }
 
-
     public function resolveInvokable(GetterRequest $request): Collection
     {
         return $this->resolveGetters($request)
-            ->filter(fn($getter) => is_callable($getter))
+            ->filter(fn ($getter) => is_callable($getter))
             ->values();
     }
 
     public function resolveIndexGetters(GetterRequest $request): Collection
     {
         return $this->resolveGetters($request)
-            ->filter(fn($getter) => $getter instanceof Getter)
-            ->filter(fn($getter) => $getter->isShownOnIndex(
+            ->filter(fn ($getter) => $getter instanceof Getter)
+            ->filter(fn ($getter) => $getter->isShownOnIndex(
                 $request,
                 $request->repository()
             ))->values();
@@ -41,8 +40,8 @@ trait ResolvesGetters
     public function resolveShowGetters(GetterRequest $request): Collection
     {
         return $this->resolveGetters($request)
-            ->filter(fn($getter) => $getter instanceof Getter)
-            ->filter(fn($getter) => $getter->isShownOnShow(
+            ->filter(fn ($getter) => $getter instanceof Getter)
+            ->filter(fn ($getter) => $getter->isShownOnShow(
                 $request,
                 $request->repositoryWith(
                     $request->findModelOrFail()

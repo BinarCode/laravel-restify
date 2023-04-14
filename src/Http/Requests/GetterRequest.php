@@ -3,12 +3,10 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Getters\Getter;
-use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Str;
 
 class GetterRequest extends RestifyRequest
 {
