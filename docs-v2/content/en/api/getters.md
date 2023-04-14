@@ -89,7 +89,7 @@ public function getters(RestifyRequest $request): array
 To call a getter, you simply access:
 
 ```http request
-POST: api/restify/posts/getters/stripe-information
+GET: api/restify/posts/getters/stripe-information
 ```
 
 The `getter` query param value is the `ke-bab` form of the filter class name by default, or a custom `$uriKey` [defined in the getter](#custom-uri-key)
@@ -165,7 +165,7 @@ public function getters(RestifyRequest $request)
 The post URL should include the key of the model we want Restify to resolve:
 
 ```http request
-POST: api/restfiy/users/1/getters/stripe-information
+GET: api/restfiy/users/1/getters/stripe-information
 ```
 ### List show getters
 
@@ -209,7 +209,7 @@ public function getters(RestifyRequest $request)
 The post URL:
 
 ```http request
-POST: api/restfiy/posts/getters/stripe-information
+GET: api/restfiy/posts/getters/stripe-information
 ```
 
 ### List index getters
