@@ -411,7 +411,7 @@ This could be done using the `Binaryk\LaravelRestify\Filters\MatchFilter` class:
 public static function matches(): array
 {
     return [
-        MatchFilter::make()->setType('text')->partial()
+        'title' => MatchFilter::make()->setType('text')->partial()
     ];
 }
 ```
