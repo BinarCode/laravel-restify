@@ -19,7 +19,7 @@ class ListActionsControllerTest extends IntegrationTestCase
             ->assertSuccessful()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                    ->count('data', 2)
+                    ->count('data', 3)
                     ->where('data.0.uriKey', 'publish-post-action')
                     ->where('data.1.uriKey', 'invalidate-post-action')
                     ->etc()
@@ -37,7 +37,7 @@ class ListActionsControllerTest extends IntegrationTestCase
             ->assertSuccessful()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                    ->count('data', 1)
+                    ->count('data', 2)
                     ->where('data.0.uriKey', 'invalidate-post-action')
                     ->etc()
             );
@@ -46,7 +46,7 @@ class ListActionsControllerTest extends IntegrationTestCase
             ->assertSuccessful()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                    ->count('data', 1)
+                    ->count('data', 2)
                     ->where('data.0.uriKey', 'publish-post-action')
                     ->etc()
             );
@@ -58,7 +58,7 @@ class ListActionsControllerTest extends IntegrationTestCase
             ->assertSuccessful()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                    ->count('data', 0)
+                    ->count('data', 1)
                     ->etc()
             );
 
@@ -66,7 +66,7 @@ class ListActionsControllerTest extends IntegrationTestCase
             ->assertSuccessful()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                    ->count('data', 2)
+                    ->count('data', 3)
                     ->where('data.0.uriKey', 'publish-post-action')
                     ->where('data.1.uriKey', 'invalidate-post-action')
                     ->etc()

@@ -8,7 +8,9 @@ use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsIndexGetter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsIndexInvokableGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsShowGetter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsShowInvokableGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\UnauthenticatedActionGetter;
 use Illuminate\Support\Collection;
 
@@ -118,6 +120,7 @@ class PostRepository extends Repository
                 ->canSee(function (ActionRequest $request) {
                     return $_SERVER['actions.posts.invalidate'] ?? true;
                 }),
+            new PublishInvokablePostAction,
         ];
     }
 
@@ -127,6 +130,8 @@ class PostRepository extends Repository
             PostsIndexGetter::make(),
             PostsShowGetter::make()->onlyOnShow(),
             UnauthenticatedActionGetter::make()->withoutMiddleware(AuthorizeRestify::class),
+            new PostsShowInvokableGetter,
+            new PostsIndexInvokableGetter,
         ];
     }
 }

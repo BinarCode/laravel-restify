@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
+use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -1129,10 +1130,18 @@ class Repository implements RestifySearchable, JsonSerializable
             'sort' => static::collectFilters('sortables'),
             'match' => static::collectFilters('matches'),
             'searchables' => static::collectFilters('searchables'),
-            'actions' => $this->resolveActions($request)->filter(fn (Action $action) => $action->isShownOnIndex(
-                $request,
-                $this
-            ))->values(),
+            'actions' => $this->resolveActions($request)
+                ->filter(fn (mixed $action) => $action instanceof Action)
+                ->filter(fn (Action $action) => $action->isShownOnIndex(
+                    $request,
+                    $this
+                ))->values(),
+            'getters' => $this->resolveGetters($request)
+                ->filter(fn (mixed $action) => $action instanceof Getter)
+                ->filter(fn (Getter $action) => $action->isShownOnIndex(
+                    $request,
+                    $this
+                ))->values(),
         ];
     }
 

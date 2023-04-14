@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Repositories\Concerns;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,7 @@ trait Testing
     public static function route(
         string|Model $path = null,
         array $query = [],
-        Action $action = null,
+        Action|callable $action = null,
     ): string {
         if ($path instanceof Model) {
             $path = $path->getKey();
@@ -25,8 +26,8 @@ trait Testing
 
         $path = ltrim((string) $path, '/');
 
-        if ($action) {
-            $query['action'] = $action->uriKey();
+        if ($action || is_callable($action)) {
+            $query['action'] = Action::guessUriKey($action);
         }
 
         $route = implode('/', array_filter([
@@ -55,7 +56,7 @@ trait Testing
     {
         $path = $key ? "$key/getters" : 'getters';
 
-        return static::route($path.'/'.app($getter)->uriKey());
+        return static::route($path.'/'.Getter::guessUriKey(app($getter)));
     }
 
     public function dd(string $prop = null): void

@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests\Actions;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishInvokablePostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\ActivateAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\DisableProfileAction;
@@ -40,6 +41,22 @@ class PerformActionControllerTest extends IntegrationTestCase
         $this->assertEquals(1, PublishPostAction::$applied[0][1]->id);
     }
 
+    public function test_could_perform_invokable_action_for_multiple_repositories(): void
+    {
+        $post = $this->mockPosts(1, 2);
+
+        $this->postJson(PostRepository::action(PublishInvokablePostAction::class), [
+            'repositories' => [
+                $post->first()->id,
+                $post->last()->id,
+            ],
+        ])
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                'data',
+            ]);
+    }
+
     public function test_could_perform_action_using_all(): void
     {
         $this->assertDatabaseCount('posts', 0);
@@ -71,7 +88,8 @@ class PerformActionControllerTest extends IntegrationTestCase
     {
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->postJson(PostRepository::action(PublishPostAction::class), [])
+        $this
+            ->postJson(PostRepository::action(PublishPostAction::class), [])
             ->assertNotFound();
     }
 

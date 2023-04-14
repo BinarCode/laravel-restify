@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
+use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Http\Requests\GetterRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Collection;
@@ -14,25 +15,38 @@ trait ResolvesGetters
             ? $this->resolveShowGetters($request)
             : $this->resolveIndexGetters($request);
 
-        return $getters->filter->authorizedToSee($request)->values();
+        return $getters->filter->authorizedToSee($request)
+            ->merge($this->resolveInvokableGetters($request))
+            ->values();
+    }
+
+    public function resolveInvokableGetters(GetterRequest $request): Collection
+    {
+        return $this->resolveGetters($request)
+            ->filter(fn ($getter) => is_callable($getter))
+            ->values();
     }
 
     public function resolveIndexGetters(GetterRequest $request): Collection
     {
-        return $this->resolveGetters($request)->filter(fn ($getter) => $getter->isShownOnIndex(
-            $request,
-            $request->repository()
-        ))->values();
+        return $this->resolveGetters($request)
+            ->filter(fn ($getter) => $getter instanceof Getter)
+            ->filter(fn ($getter) => $getter->isShownOnIndex(
+                $request,
+                $request->repository()
+            ))->values();
     }
 
     public function resolveShowGetters(GetterRequest $request): Collection
     {
-        return $this->resolveGetters($request)->filter(fn ($getter) => $getter->isShownOnShow(
-            $request,
-            $request->repositoryWith(
-                $request->findModelOrFail()
-            )
-        ))->values();
+        return $this->resolveGetters($request)
+            ->filter(fn ($getter) => $getter instanceof Getter)
+            ->filter(fn ($getter) => $getter->isShownOnShow(
+                $request,
+                $request->repositoryWith(
+                    $request->findModelOrFail()
+                )
+            ))->values();
     }
 
     public function resolveGetters(RestifyRequest $request): Collection
