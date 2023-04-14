@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Repositories\Concerns;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Model;
@@ -55,7 +56,7 @@ trait Testing
     {
         $path = $key ? "$key/getters" : 'getters';
 
-        return static::route($path.'/'.app($getter)->uriKey());
+        return static::route($path.'/'. Getter::guessUriKey(app($getter)));
     }
 
     public function dd(string $prop = null): void

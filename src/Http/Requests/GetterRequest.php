@@ -3,10 +3,12 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Getters\Getter;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Str;
 
 class GetterRequest extends RestifyRequest
 {
@@ -15,13 +17,15 @@ class GetterRequest extends RestifyRequest
         return collect($this->repository()->availableGetters($this));
     }
 
-    public function getter(): Getter
+    public function getter()
     {
         return once(function () {
             return $this->availableGetters()->first(function ($getter) {
+                $uriKey = Getter::guessUriKey($getter);
+
                 return $this->route('getter')
-                    ? $this->route('getter') === $getter->uriKey()
-                    : $this->query('getter') === $getter->uriKey();
+                    ? $this->route('getter') === $uriKey
+                    : $this->query('getter') === $uriKey;
             }) ?: abort(
                 $this->getterExists() ? 403 : 404,
                 'Getter does not exists or you don\'t have enough permissions to perform it.'

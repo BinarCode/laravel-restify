@@ -26,9 +26,44 @@ The `classic` approach is good, although it has a few limitations. First, you ha
 
 That way, code readability, testability, and maintainability can become hard.
 
+## Invokable Getter Format
+
+The simplest way to define a getter is to use the invokable getter format.
+
+Here's an example:
+
+```php
+namespace App\Restify\Getters;
+
+class StripeInformationGetter
+{
+    public function __invoke()
+    {
+        return response()->json([
+            'foo' => 'bar',
+        ]);
+    }
+}
+```
+
+Then add the getter instance to the repository `getters` method:
+
+```php
+...
+public function getters(RestifyRequest $request): array
+{
+    return [
+        new StripeInformationGetter,
+    ];
+}
+...
+```
+
+Bellow we will see how to define getters in a more advanced way.
+
 ## Getter definition
 
-Getters are very similar to getters. The big difference is that getters only allow getting requests, and should not perform any kind of DB data writing:
+Getters are very similar to actions in this sense. The big difference is that getters only allow GET requests, and should not perform any kind of DB data writing:
 
 The getter is nothing more than a class that extends the `Binaryk\LaravelRestify\Getters\Getter` abstract class.
 

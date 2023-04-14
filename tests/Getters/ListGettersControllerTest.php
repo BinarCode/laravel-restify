@@ -16,7 +16,7 @@ class ListGettersControllerTest extends IntegrationTestCase
                 fn (AssertableJson $json) => $json
                 ->has('data')
                 ->where('data.0.uriKey', 'posts-index-getter')
-                ->count('data', 2)
+                ->count('data', 4)
                 ->etc()
             );
     }
@@ -31,7 +31,7 @@ class ListGettersControllerTest extends IntegrationTestCase
                 fn (AssertableJson $json) => $json
                 ->has('data')
                 ->where('data.1.uriKey', 'posts-show-getter')
-                ->count('data', 3)
+                ->count('data', 5)
                 ->etc()
             );
     }
