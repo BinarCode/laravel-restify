@@ -23,15 +23,15 @@ trait ResolvesActions
     public function resolveInvokableActions(ActionRequest $request): Collection
     {
         return $this->resolveActions($request)
-            ->filter(fn($action) => is_callable($action))
+            ->filter(fn ($action) => is_callable($action))
             ->values();
     }
 
     public function resolveIndexActions(ActionRequest $request): Collection
     {
         return $this->resolveActions($request)
-            ->filter(fn($action) => $action instanceof Action)
-            ->filter(fn($action) => $action->isShownOnIndex(
+            ->filter(fn ($action) => $action instanceof Action)
+            ->filter(fn ($action) => $action->isShownOnIndex(
                 $request,
                 $request->repository()
             ))->values();
@@ -40,8 +40,8 @@ trait ResolvesActions
     public function resolveShowActions(ActionRequest $request): Collection
     {
         return $this->resolveActions($request)
-            ->filter(fn($action) => $action instanceof Action)
-            ->filter(fn($action) => $action->isShownOnShow(
+            ->filter(fn ($action) => $action instanceof Action)
+            ->filter(fn ($action) => $action->isShownOnShow(
                 $request,
                 $request->repositoryWith(
                     $request->findModelOrFail()
