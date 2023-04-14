@@ -16,11 +16,11 @@ trait ResolvesGetters
             : $this->resolveIndexGetters($request);
 
         return $getters->filter->authorizedToSee($request)
-            ->merge($this->resolveInvokable($request))
+            ->merge($this->resolveInvokableGetters($request))
             ->values();
     }
 
-    public function resolveInvokable(GetterRequest $request): Collection
+    public function resolveInvokableGetters(GetterRequest $request): Collection
     {
         return $this->resolveGetters($request)
             ->filter(fn ($getter) => is_callable($getter))
