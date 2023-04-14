@@ -9,7 +9,9 @@ class RestifyJsSetupControllerTest extends IntegrationTestCase
 {
     public function test_returns_configurations(): void
     {
-        $this->getJson(Restify::path('restifyjs/setup'))
+        $this
+            ->withoutExceptionHandling()
+            ->getJson(Restify::path('restifyjs/setup'))
             ->assertJsonStructure([
                 'config' => [
                     'domain',
