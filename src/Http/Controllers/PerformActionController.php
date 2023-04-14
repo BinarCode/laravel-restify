@@ -12,7 +12,11 @@ class PerformActionController extends RepositoryController
 
         $action = $request->action();
 
-        if (! $action->isStandalone()) {
+        if (is_callable($action)) {
+            return $action($request);
+        }
+
+        if (!$action->isStandalone()) {
             $request->validate([
                 'repositories' => 'required',
             ]);

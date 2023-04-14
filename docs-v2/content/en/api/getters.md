@@ -28,7 +28,7 @@ That way, code readability, testability, and maintainability can become hard.
 
 ## Invokable Getter Format
 
-The simplest way to define a getter is to use the invokable getter format.
+The simplest way to define a getter is to use the `invokable` class format.
 
 Here's an example:
 

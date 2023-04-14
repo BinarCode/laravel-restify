@@ -120,6 +120,7 @@ class PostRepository extends Repository
                 ->canSee(function (ActionRequest $request) {
                     return $_SERVER['actions.posts.invalidate'] ?? true;
                 }),
+            new PublishInvokablePostAction,
         ];
     }
 

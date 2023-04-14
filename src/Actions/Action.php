@@ -80,6 +80,17 @@ abstract class Action implements JsonSerializable
         return static::$uriKey ?? Str::slug($this->name(), '-', null);
     }
 
+    public static function guessUriKey(mixed $target): string
+    {
+        if ($target instanceof self) {
+            return $target->uriKey();
+        }
+
+        return property_exists($target, 'uriKey')
+            ? $target::$uriKey
+            : Str::slug(Restify::humanize($target), '-', null);
+    }
+
     /**
      * Determine if the action is executable for the given request.
      *

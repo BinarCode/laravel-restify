@@ -26,6 +26,45 @@ The `classic` approach is good. However, it has a few limitations. First, you ha
 
 On that wise, code readability, testability and maintainability may become hard.
 
+## Invokable Action Format
+
+The simplest way to define an action is to use the `invokable` class format.
+
+Here's an example:
+
+```php
+namespace App\Restify\Actions;
+
+use Illuminate\Http\Request;
+
+class PublishPostAction
+{
+    public function __invoke(Request $request)
+    {
+        // $request->input(...)
+        
+        return response()->json([
+            'message' => 'Post published successfully',
+        ]);
+    }
+}
+```
+
+Then add the `action` instance to the repository `actions` method:
+
+```php
+...
+public function actions(RestifyRequest $request): array
+{
+    return [
+        new PublishPostAction,
+    ];
+}
+...
+```
+
+Bellow we will see how to define actions in a more advanced way.
+
 ## Action definition
 
 The action is nothing more than a class that extends the `Binaryk\LaravelRestify\Actions\Action` abstract class.
