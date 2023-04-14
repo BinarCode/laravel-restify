@@ -88,7 +88,8 @@ class PerformActionControllerTest extends IntegrationTestCase
     {
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->postJson(PostRepository::action(PublishPostAction::class), [])
+        $this
+            ->postJson(PostRepository::action(PublishPostAction::class), [])
             ->assertNotFound();
     }
 

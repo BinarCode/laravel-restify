@@ -12,6 +12,10 @@ class PerformRepositoryActionController extends RepositoryController
 
         $action = $request->action();
 
+        if (is_callable($action)) {
+            return $action($request);
+        }
+
         return $action->handleRequest(
             $request,
         );

@@ -33,8 +33,8 @@ class GetterRequest extends RestifyRequest
 
     protected function getterExists(): bool
     {
-        return $this->availableGetters()->contains(function (Getter $getter) {
-            return $getter->uriKey() === $this->route('getter') ?? $this->query('getter');
+        return $this->availableGetters()->contains(function (mixed $getter) {
+            return Getter::guessUriKey($getter) === $this->route('getter') ?? $this->query('getter');
         });
     }
 
