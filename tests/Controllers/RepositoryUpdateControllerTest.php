@@ -75,9 +75,9 @@ class RepositoryUpdateControllerTest extends IntegrationTestCase
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $updated)
-                ->where('data.attributes.image', null)
-                ->etc()
+                    ->where('data.attributes.title', $updated)
+                    ->where('data.attributes.image', null)
+                    ->etc()
             );
     }
 
@@ -100,9 +100,9 @@ class RepositoryUpdateControllerTest extends IntegrationTestCase
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $updated)
-                ->where('data.attributes.image', null)
-                ->etc()
+                    ->where('data.attributes.title', $updated)
+                    ->where('data.attributes.image', null)
+                    ->etc()
             );
     }
 }

@@ -47,8 +47,8 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
         $this->getJson(UserRepository::route("$post->user_id/posts/$post->id"))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', 'Post.')
-                ->etc()
+                    ->where('data.attributes.title', 'Post.')
+                    ->etc()
             );
 
         UserRepository::$related = [];

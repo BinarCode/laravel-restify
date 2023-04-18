@@ -47,8 +47,8 @@ class RepositoryShowControllerTest extends IntegrationTestCase
         $this->getJson(PostRepository::route(1))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->missing('data.attributes.title')
-                ->etc()
+                    ->missing('data.attributes.title')
+                    ->etc()
             );
 
         $_SERVER['postAuthorize.can.see.title'] = true;
@@ -56,8 +56,8 @@ class RepositoryShowControllerTest extends IntegrationTestCase
         $this->getJson(PostRepository::route(1))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data.attributes.title')
-                ->etc()
+                    ->has('data.attributes.title')
+                    ->etc()
             );
     }
 
@@ -76,7 +76,7 @@ class RepositoryShowControllerTest extends IntegrationTestCase
         ))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', 'WEW')
+                    ->where('data.attributes.title', 'WEW')
             );
     }
 
@@ -119,9 +119,9 @@ class RepositoryShowControllerTest extends IntegrationTestCase
         ))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->missing('data.attributes.description')
-                ->has('data.attributes.title')
-                ->etc()
+                    ->missing('data.attributes.description')
+                    ->has('data.attributes.title')
+                    ->etc()
             );
     }
 
@@ -142,9 +142,9 @@ class RepositoryShowControllerTest extends IntegrationTestCase
             'description' => 'Updated description',
         ])->assertJson(
             fn (AssertableJson $json) => $json
-            ->missing('data.attributes.description')
-            ->where('data.attributes.title', $title)
-            ->etc()
+                ->missing('data.attributes.description')
+                ->where('data.attributes.title', $title)
+                ->etc()
         );
 
         $this->assertSame(

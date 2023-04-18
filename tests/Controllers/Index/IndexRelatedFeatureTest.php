@@ -111,19 +111,19 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             'related' => 'parent, children',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-            ->where('data.2.attributes.comment', 'Root comment')
-            ->has('data.2.relationships.parent')
-            ->missing('data.2.relationships.parent.relationships.parent')
-            ->missing('data.2.relationships.parent.relationships.children')
-            ->has('data.2.relationships.children')
-            ->count('data.2.relationships.children', 2)
-            ->missing('data.2.relationships.children.0.relationships.parent')
-            ->missing('data.2.relationships.children.1.relationships.parent')
-            ->where('data.0.attributes.comment', 'Children comments')
-            ->has('data.0.relationships.parent')
-            ->has('data.0.relationships.children')
-            ->count('data.0.relationships.children', 0)
-            ->etc()
+                ->where('data.2.attributes.comment', 'Root comment')
+                ->has('data.2.relationships.parent')
+                ->missing('data.2.relationships.parent.relationships.parent')
+                ->missing('data.2.relationships.parent.relationships.children')
+                ->has('data.2.relationships.children')
+                ->count('data.2.relationships.children', 2)
+                ->missing('data.2.relationships.children.0.relationships.parent')
+                ->missing('data.2.relationships.children.1.relationships.parent')
+                ->where('data.0.attributes.comment', 'Children comments')
+                ->has('data.0.relationships.parent')
+                ->has('data.0.relationships.children')
+                ->count('data.0.relationships.children', 0)
+                ->etc()
         );
     }
 

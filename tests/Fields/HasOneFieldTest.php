@@ -110,9 +110,9 @@ class HasOneFieldTest extends IntegrationTestCase
                 'perPage' => 5,
             ]))->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.0.attributes.name', 'Last')
-                ->where('data.1.attributes.name', 'First')
-                ->etc()
+                    ->where('data.0.attributes.name', 'Last')
+                    ->where('data.1.attributes.name', 'First')
+                    ->etc()
             );
 
         $this
@@ -122,9 +122,9 @@ class HasOneFieldTest extends IntegrationTestCase
                 'perPage' => 5,
             ]))->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.0.attributes.name', 'First')
-                ->where('data.1.attributes.name', 'Last')
-                ->etc()
+                    ->where('data.0.attributes.name', 'First')
+                    ->where('data.1.attributes.name', 'Last')
+                    ->etc()
             );
     }
 }

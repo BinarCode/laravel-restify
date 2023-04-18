@@ -226,8 +226,8 @@ class MatchFilterTest extends IntegrationTestCase
             ->getJson(UserRepository::route(query: ['is_active' => true]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->count('data', 1)
-                ->etc()
+                    ->count('data', 1)
+                    ->etc()
             );
     }
 }

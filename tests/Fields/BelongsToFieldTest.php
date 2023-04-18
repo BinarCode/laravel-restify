@@ -227,9 +227,9 @@ class BelongsToFieldTest extends IntegrationTestCase
         ]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data.relationships.user.attributes.name')
-                ->missing('data.relationships.user.attributes.email')
-                ->etc()
+                    ->has('data.relationships.user.attributes.name')
+                    ->missing('data.relationships.user.attributes.email')
+                    ->etc()
             );
     }
 }

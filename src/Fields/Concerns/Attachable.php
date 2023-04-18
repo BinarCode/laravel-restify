@@ -214,8 +214,8 @@ trait Attachable
     {
         $this->validationCallback = function (RestifyRequest $request, $pivot) {
             $valid = $this->getRelation($request->repository())
-                    ->where($pivot->toArray())
-                    ->count() === 0;
+                ->where($pivot->toArray())
+                ->count() === 0;
 
             throw_unless($valid, ValidationException::withMessages([__('Invalid data. The relation must be unique.')]));
 

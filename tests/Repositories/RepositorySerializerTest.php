@@ -48,8 +48,8 @@ class RepositorySerializerTest extends IntegrationTestCase
         $this->getJson(PostRepository::route($posts->first()))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->missing('data.meta')
-                ->etc()
+                    ->missing('data.meta')
+                    ->etc()
             );
 
         $this->getJson(PostRepository::route($posts->first(), query: [
@@ -57,8 +57,8 @@ class RepositorySerializerTest extends IntegrationTestCase
         ]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data.meta')
-                ->etc()
+                    ->has('data.meta')
+                    ->etc()
             );
     }
 
@@ -71,8 +71,8 @@ class RepositorySerializerTest extends IntegrationTestCase
         $this->getJson(PostRepository::route())
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->missing('data.0.meta')
-                ->etc()
+                    ->missing('data.0.meta')
+                    ->etc()
             );
 
         $this->getJson(PostRepository::route(query: [
@@ -80,8 +80,8 @@ class RepositorySerializerTest extends IntegrationTestCase
         ]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data.0.meta')
-                ->etc()
+                    ->has('data.0.meta')
+                    ->etc()
             );
     }
 }

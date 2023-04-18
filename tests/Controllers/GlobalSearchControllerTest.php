@@ -46,8 +46,8 @@ class GlobalSearchControllerTest extends IntegrationTestCase
             'search' => 1,
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-            ->count('data', 1)
-            ->etc()
+                ->count('data', 1)
+                ->etc()
         );
 
         $_SERVER['restify.post.allowRestify'] = true;
@@ -66,8 +66,8 @@ class GlobalSearchControllerTest extends IntegrationTestCase
             'search' => 1,
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-            ->count('data', 1)
-            ->etc()
+                ->count('data', 1)
+                ->etc()
         );
 
         $_SERVER['restify.post.indexQueryCallback'] = null;

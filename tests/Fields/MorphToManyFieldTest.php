@@ -38,8 +38,8 @@ class MorphToManyFieldTest extends IntegrationTestCase
             'related' => 'roles',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-            ->count('data.relationships.roles', 3)
-            ->etc()
+                ->count('data.relationships.roles', 3)
+                ->etc()
         );
     }
 
