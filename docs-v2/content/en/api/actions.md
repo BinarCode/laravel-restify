@@ -106,7 +106,7 @@ Then add the action instance to the repository `actions` method:
 public function actions(RestifyRequest $request): array
 {
     return [
-        PublishPostAction::new()
+        PublishPostAction::new();
     ];
 }
 ```
