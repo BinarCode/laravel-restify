@@ -120,7 +120,7 @@ public function actions(RestifyRequest $request): array
 {
     return [
         PublishPostAction::new()->canSee(function (Request $request) {
-            return $request->user()->can('publishAnyPost', Post::class),
+            return $request->user()->can('publishAnyPost', Post::class);
         }),
     ];
 }
