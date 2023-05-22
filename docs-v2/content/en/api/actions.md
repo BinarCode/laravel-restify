@@ -106,7 +106,7 @@ Then add the action instance to the repository `actions` method:
 public function actions(RestifyRequest $request): array
 {
     return [
-        PublishPostAction::new()
+        PublishPostAction::new();
     ];
 }
 ```
@@ -120,7 +120,7 @@ public function actions(RestifyRequest $request): array
 {
     return [
         PublishPostAction::new()->canSee(function (Request $request) {
-            return $request->user()->can('publishAnyPost', Post::class),
+            return $request->user()->can('publishAnyPost', Post::class);
         }),
     ];
 }
