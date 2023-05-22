@@ -22,7 +22,7 @@ class HasOneFieldTest extends IntegrationTestCase
     protected function setUp(): void
     {
         parent::setUp();
-//        $this->authenticate();
+        //        $this->authenticate();
 
         unset($_SERVER['restify.post.show']);
 

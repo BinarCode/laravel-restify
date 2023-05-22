@@ -235,7 +235,7 @@ class File extends Field implements StorableContract, DeletableContract
 
         if ($this->isPrunable()) {
             // Delete old file if exists.
-//            return function () use ($model, $request) {
+            //            return function () use ($model, $request) {
             call_user_func(
                 $this->deleteCallback,
                 $request,
@@ -243,7 +243,7 @@ class File extends Field implements StorableContract, DeletableContract
                 $this->getStorageDisk(),
                 $this->getStoragePath()
             );
-//            };
+            //            };
         }
 
         $result = call_user_func(

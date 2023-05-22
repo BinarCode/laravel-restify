@@ -171,9 +171,9 @@ abstract class Action implements JsonSerializable
                     $response = $this->handle($request, $models);
 
                     $models->each(function (Model $model) {
-//                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
-//                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
-//                        }
+                        //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
+                        //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
+                        //                        }
                     });
                 });
             });
