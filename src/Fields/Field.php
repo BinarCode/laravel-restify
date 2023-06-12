@@ -693,7 +693,10 @@ class Field extends OrganicField implements JsonSerializable
 
     public function required(): self
     {
-        $this->rules += ['required'];
+        $this->rules = [
+            ...$this->rules,
+            'required'
+        ];
 
         return $this;
     }
