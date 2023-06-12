@@ -371,9 +371,16 @@ class Field extends OrganicField implements JsonSerializable
      *
      * @return Field
      */
-    public function rules($rules)
+    public function rules($rules, bool $overwrite = false)
     {
-        $this->rules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
+        if ($overwrite) {
+            $this->rules = [];
+        }
+
+        $this->rules = [
+            ...$this->rules,
+            ...(($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules)
+        ];
 
         return $this;
     }
