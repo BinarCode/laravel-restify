@@ -153,7 +153,7 @@ class RoutesDefinition
         Route::put(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class
-        )->name('relatable.update');
+        )->name('relatable.updatePut');
         Route::delete(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController::class
