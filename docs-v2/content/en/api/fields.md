@@ -168,6 +168,19 @@ helper: `field('email')->required()`
 
 These rules will be applied for all the update and store requests.
 
+<alert type="warning">
+Note that subsequent calls to the `rules` or `required` method will concatenate the rules instead of overwriting them.
+To overwrite (or reset) them, you should call the `overwriteRules` method.
+
+```php
+Field::new('email')
+    ->required() // Rules: ['required']
+    ->rules(new CustomRule) // Rules: ['required', CustomRule]
+    ->overwriteRules('email'); // Rules: ['email']
+```
+
+</alert>
+
 ### Storing Rules
 
 If you would like to define more specific rules that only apply when a resource is being stored, you might want to use
