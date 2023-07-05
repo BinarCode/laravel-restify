@@ -21,7 +21,7 @@ class AdvancedFiltersCollection extends Collection
 
     public function apply(RestifyRequest $request, $query): self
     {
-        return $this->each(fn (AdvancedFilter $filter) => $filter->filter($request, $query, $filter->dto->value));
+        return $this->each(fn (AdvancedFilter $filter) => $filter->filter($request, $query, $filter->dataObject->value));
     }
 
     public static function collectQueryFilters(RestifyRequest $request, Repository $repository): self
@@ -47,7 +47,7 @@ class AdvancedFiltersCollection extends Collection
 
                 $advancedFilter = clone $advancedFilter;
 
-                return $advancedFilter->resolve($request, $dto = new AdvancedFilterPayloadDto(
+                return $advancedFilter->resolve($request, $dto = new AdvancedFilterPayloadDataObject(
                     key: data_get($queryFilter, 'key'),
                     value: data_get($queryFilter, 'value'),
                 ))->validatePayload($request, $dto);

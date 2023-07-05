@@ -21,7 +21,7 @@
         "php": "^8.1",
         "illuminate/contracts": "^10.0",
         "laravel/pint": "^1.0",
-        "spatie/data-transfer-object": "^3.1",
+        "spatie/laravel-data": "dev-main",
         "spatie/laravel-package-tools": "^1.12",
         "spatie/once": "^3.0"
     },
