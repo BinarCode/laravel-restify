@@ -149,7 +149,7 @@ class PublishAuthCommand extends Command
         return $routeStubs;
     }
 
-    protected function getRemainingActionsString(?array $actions = null): string
+    protected function getRemainingActionsString(array $actions = null): string
     {
         $allActions = ['login', 'register', 'resetPassword', 'forgotPassword', 'verifyEmail'];
 

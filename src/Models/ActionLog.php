@@ -139,7 +139,7 @@ class ActionLog extends Model
         string $name,
         Model $actionable,
         array $attributes = [],
-        ?Authenticatable $user = null
+        Authenticatable $user = null
     ): self {
         return new static(array_merge([
             'batch_id' => (string) Str::uuid(),
