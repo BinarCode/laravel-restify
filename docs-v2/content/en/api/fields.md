@@ -281,7 +281,7 @@ Field::new('password')->showCallback(function ($value) {
 Transform the value for both `show` and `index` requests:
 
 ```php
-Field::new('password')->showCallback(function ($value) {
+Field::new('password')->resolveCallback(function ($value) {
     return Hash::make($value);
 });
 ```
