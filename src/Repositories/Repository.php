@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
+use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -29,8 +30,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
+use Illuminate\Http\Resources\MissingValue;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Router;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -137,11 +140,16 @@ class Repository implements RestifySearchable, JsonSerializable
     public static bool|array $public = false;
 
     /**
-     * Indicates if the repository is serializing for an eager relationship.
+     * Indicates if the repository is serializing for an eager relationship (included).
      *
      * The $eagerState will reference to the parent that renders this via related.
      */
     private ?string $eagerState = null;
+
+    /**
+     * @var bool Indicates if the repository is serializing for a relationship listing.
+     */
+    public bool $isRelationship = false;
 
     /**
      * Extra fields attached to the repository. Useful when display pivot fields.
@@ -480,6 +488,33 @@ class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveRelationships($request): array
     {
+        return static::collectRelated()
+            ->mapIntoRelated($request, $this)
+            ->unserialized($request, $this)
+            ->groupBy(fn (Related $related) => $related->field->label)
+            // Get only the related model ID
+            ->map(fn (RelatedCollection $items) => [
+                'data' => $items
+                    ->each(fn (Related $related) => $related->columns([$related->field->getRelatedModel($this)->getKeyName()]))
+                    ->flatMap(fn (Related $related) => $related->resolve($request, $this)->getValue())
+                    ->each(static function (mixed $items) {
+                        if ($items instanceof Collection) {
+                            $items->each(static fn (Repository $items) => $items->isRelationship = true);
+                        } elseif ($items instanceof self) {
+                            $items->isRelationship = true;
+                        }
+                    }),
+            ])
+            ->filter()
+            ->all();
+    }
+    /**
+     * Return a list with relationship for the current model.
+     *
+     * @param  RestifyRequest  $request
+     */
+    public function resolveIncluded($request): array
+    {
         if (! $request->related()->hasRelated()) {
             return [];
         }
@@ -518,13 +553,23 @@ class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * Return a list with relationship for the current model.
+     * Return a list of relationships for the current model.
      *
      * @return array
      */
     public function resolveIndexRelationships($request)
     {
         return $this->resolveRelationships($request);
+    }
+
+    /**
+     * Return a list of the included relationships for the current model.
+     *
+     * @return array
+     */
+    public function resolveIndexIncluded($request)
+    {
+        return $this->resolveIncluded($request);
     }
 
     public function index(RestifyRequest $request)
@@ -552,6 +597,10 @@ class Repository implements RestifySearchable, JsonSerializable
         })->values();
 
         $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
+        $included = $items
+            ->map(static fn (Repository $repository) => $repository->serializeIncluded($request))
+            ->flatten(2)
+            ->filter(static fn ($value) => ! $value instanceof MissingValue);
 
         return response()->json($this->filter([
             'meta' => $this->when(
@@ -581,6 +630,7 @@ class Repository implements RestifySearchable, JsonSerializable
                 $links
             ),
             'data' => $data,
+            'included' => $this->when($included->isNotEmpty(), $included),
         ]));
     }
 
@@ -1006,11 +1056,14 @@ class Repository implements RestifySearchable, JsonSerializable
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
             'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
-            'meta' => $this->when(
-                value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
-                $meta
-            ),
-            'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots),
+            'meta' => [
+                ...$this->when(
+                    value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
+                    $meta
+                ),
+                'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots),
+            ],
+            'included' => $this->when(value($included = Arr::flatten($this->resolveIncluded($request), 1)), $included),
         ]);
     }
 
@@ -1021,11 +1074,36 @@ class Repository implements RestifySearchable, JsonSerializable
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $this->when((bool) $attrs = $this->resolveIndexAttributes($request), $attrs),
             'relationships' => $this->when(value($related = $this->resolveIndexRelationships($request)), $related),
-            'meta' => $this->when(value($meta = $this->resolveIndexMeta($request)), $meta),
-            'pivots' => $this->when(value($pivots = $this->resolveIndexPivots($request)), $pivots),
+            'meta' => [
+                ...$this->when(value($meta = $this->resolveIndexMeta($request)), $meta),
+                'pivots' => $this->when(value($pivots = $this->resolveIndexPivots($request)), $pivots),
+            ],
         ]);
 
         return $data;
+    }
+
+    public function serializeForRelationship(RestifyRequest $request): array {
+        // TODO: https://jsonapi.org/format/#document-resource-object-linkage (links)
+        return $this->filter([
+            'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
+            'type' => $this->when($type = $this->getType($request), $type),
+            'meta' => [
+                ...$this->when(
+                value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
+                $meta
+                ),
+                'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots)
+            ]
+        ]);
+    }
+
+    public function serializeIncluded(RestifyRequest $request): array|MissingValue
+    {
+        return $this->when(
+            value($included = $this->resolveIncluded($request)),
+            $included
+        );
     }
 
     protected function getType(RestifyRequest $request): ?string
@@ -1049,7 +1127,7 @@ class Repository implements RestifySearchable, JsonSerializable
     #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
-        return $this->serializeForShow(app(RestifyRequest::class));
+        return $this->isRelationship ? $this->serializeForRelationship(app(RestifyRequest::class)) : $this->serializeForShow(app(RestifyRequest::class));
     }
 
     private function modelAttributes(Request $request = null): Collection
