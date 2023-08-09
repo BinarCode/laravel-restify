@@ -137,6 +137,6 @@ class EagerField extends Field
 
     public function queryKeyThatRendered(): string
     {
-        return $this->relatedQuery->relation;
+        return $this->relatedQuery->relation ?? $this->relation;
     }
 }
