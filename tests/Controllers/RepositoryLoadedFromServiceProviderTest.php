@@ -26,7 +26,7 @@ class RepositoryLoadedFromServiceProviderTest extends IntegrationTestCase
     public function test_repositories_can_be_loaded_with_service_provider_register_method(
         string $directory,
         string $namespace,
-        ?string $serviceProvider = null,
+        string $serviceProvider = null,
     ): void {
         if (! $serviceProvider) {
             $this->markTestSkipped('No service provider was found in directory '.$directory.' skipping this iteration.');

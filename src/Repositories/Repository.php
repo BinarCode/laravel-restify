@@ -141,7 +141,7 @@ class Repository implements RestifySearchable, JsonSerializable
      *
      * The $eagerState will reference to the parent that renders this via related.
      */
-    private null|string $eagerState = null;
+    private ?string $eagerState = null;
 
     /**
      * Extra fields attached to the repository. Useful when display pivot fields.
