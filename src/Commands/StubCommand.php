@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Commands;
 
 use Binaryk\LaravelRestify\Generators\DatabaseGenerator;
 use Doctrine\DBAL\Schema\Column;
-use Faker\Generator as Faker;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Database\ConnectionResolverInterface as Resolver;
@@ -22,20 +21,14 @@ class StubCommand extends Command
     protected $description = 'Based on table definition, will try to seed the table with mock data.';
 
     /**
-     * @var Faker
-     */
-    private $faker;
-
-    /**
      * @var Resolver
      */
     private $resolver;
 
-    public function __construct(Resolver $resolver, Faker $faker)
+    public function __construct(Resolver $resolver)
     {
         parent::__construct();
         $this->resolver = $resolver;
-        $this->faker = $faker;
     }
 
     public function handle()

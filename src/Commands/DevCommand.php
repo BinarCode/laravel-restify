@@ -2,10 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
-use Faker\Generator as Faker;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
-use Illuminate\Database\ConnectionResolverInterface as Resolver;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
 
@@ -18,16 +16,6 @@ class DevCommand extends Command
     ';
 
     protected $description = 'Add laravel-restify from a local directory.';
-
-    /** * @var Faker */
-    private $faker;
-
-    public function __construct(Resolver $resolver, Faker $faker)
-    {
-        parent::__construct();
-        $this->resolver = $resolver;
-        $this->faker = $faker;
-    }
 
     public function handle()
     {
