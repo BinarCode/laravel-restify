@@ -567,9 +567,15 @@ class Repository implements RestifySearchable, JsonSerializable
      *
      * @return array
      */
-    public function resolveIndexIncluded($request)
+    public function resolveIndexIncluded($request, Collection $items)
     {
-        return $this->resolveIncluded($request);
+        return $items
+            ->map(static fn (self $repository) => $repository->serializeIncluded($request))
+            ->flatten(2)
+            ->filter(static fn ($value) => ! $value instanceof MissingValue)
+            ->unique(static fn (?self $repository) => "$repository?->type.$repository?->id")
+            ->filter()
+            ->all();
     }
 
     public function index(RestifyRequest $request)
@@ -597,10 +603,6 @@ class Repository implements RestifySearchable, JsonSerializable
         })->values();
 
         $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
-        $included = $items
-            ->map(static fn (Repository $repository) => $repository->serializeIncluded($request))
-            ->flatten(2)
-            ->filter(static fn ($value) => ! $value instanceof MissingValue);
 
         return response()->json($this->filter([
             'meta' => $this->when(
@@ -630,7 +632,7 @@ class Repository implements RestifySearchable, JsonSerializable
                 $links
             ),
             'data' => $data,
-            'included' => $this->when($included->isNotEmpty(), $included),
+            'included' => $this->when($included = $this->resolveIndexIncluded($request, $items), $included),
         ]));
     }
 
