@@ -528,13 +528,15 @@ class Repository implements RestifySearchable, JsonSerializable
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
             ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
-            ->map(function (mixed $items) {
-                if ($items instanceof Collection) {
-                    return $items->filter()->values();
-                }
+            ->flatMap(static function (mixed $items) use ($request) {
+                $items = $items instanceof Collection ? $items : collect([$items]);
 
-                return $items;
+                $items = $items->map(static fn (self $repository) => $repository->serializeForShow($request));
+                $nested_relationships = $items->map(static fn (array $repository) => $repository['included'] ?? []);
+
+                return $items->map(static fn (array $repository) => $repository['data'])->merge(...$nested_relationships)->filter()->values();
             })
+            ->filter(fn (array $included) => !($included['type'] === $this->getType($request) && $included['id'] === $this->getId($request)))
             ->all();
     }
 
@@ -575,7 +577,6 @@ class Repository implements RestifySearchable, JsonSerializable
     {
         return $items
             ->map(static fn (self $repository) => $repository->serializeIncluded($request))
-            ->flatten(2)
             ->filter(static fn ($value) => ! $value instanceof MissingValue)
             ->unique(static fn (?self $repository) => "$repository?->type.$repository?->id")
             ->filter()
@@ -657,7 +658,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function show(RestifyRequest $request, $repositoryId)
     {
-        return data($this->serializeForShow($request));
+        return response()->json($this->serializeForShow($request));
     }
 
     public function store(RestifyRequest $request)
@@ -1071,7 +1072,7 @@ class Repository implements RestifySearchable, JsonSerializable
                     'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots),
                 ],
             ],
-            'included' => $this->when(value($included = Arr::flatten($this->resolveIncluded($request), 1)), $included),
+            'included' => $this->when(value($included = $this->resolveIncluded($request)), $included),
         ]);
     }
 
