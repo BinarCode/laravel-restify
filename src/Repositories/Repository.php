@@ -1054,16 +1054,18 @@ class Repository implements RestifySearchable, JsonSerializable
     public function serializeForShow(RestifyRequest $request): array
     {
         return $this->filter([
-            'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
-            'type' => $this->when($type = $this->getType($request), $type),
-            'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
-            'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
-            'meta' => [
-                ...$this->when(
-                    value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
-                    $meta
-                ),
-                'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots),
+            'data' => [
+                'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
+                'type' => $this->when($type = $this->getType($request), $type),
+                'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
+                'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
+                'meta' => [
+                    ...$this->when(
+                        value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
+                        $meta
+                    ),
+                    'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots),
+                ],
             ],
             'included' => $this->when(value($included = Arr::flatten($this->resolveIncluded($request), 1)), $included),
         ]);
