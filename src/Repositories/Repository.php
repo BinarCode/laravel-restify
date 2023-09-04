@@ -496,7 +496,11 @@ class Repository implements RestifySearchable, JsonSerializable
             ->map(fn (RelatedCollection $items) => [
                 'data' => $items
                     ->each(fn (Related $related) => $related->columns([$related->field->getRelatedModel($this)->getKeyName()]))
-                    ->flatMap(fn (Related $related) => $related->resolve($request, $this)->getValue())
+                    ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
+                    ->when(
+                        static fn (Collection $collection) => $collection->contains(static fn ($item) => $item instanceof Collection),
+                        static fn (Collection $collection) => $collection->flatMap(static fn ($value) => $value instanceof Collection ? $value->values() : [$value])
+                    )
                     ->each(static function (mixed $items) {
                         if ($items instanceof Collection) {
                             $items->each(static fn (Repository $items) => $items->isRelationship = true);
