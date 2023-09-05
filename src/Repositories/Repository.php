@@ -578,7 +578,9 @@ class Repository implements RestifySearchable, JsonSerializable
         return $items
             ->map(static fn (self $repository) => $repository->serializeIncluded($request))
             ->filter(static fn ($value) => ! $value instanceof MissingValue)
-            ->unique(static fn (?self $repository) => "$repository?->type.$repository?->id")
+            ->flatten(1)
+            ->unique(static fn (array $repository) => "{$repository['type']}.{$repository['id']}")
+            ->sortBy(['type', 'id'])
             ->filter()
             ->all();
     }
