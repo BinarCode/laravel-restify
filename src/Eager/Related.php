@@ -18,8 +18,8 @@ use ReturnTypeWillChange;
 
 class Related implements JsonSerializable
 {
-    use Make;
     use HasColumns;
+    use Make;
 
     private string $relation;
 

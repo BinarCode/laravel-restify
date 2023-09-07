@@ -14,11 +14,11 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-class File extends Field implements StorableContract, DeletableContract
+class File extends Field implements DeletableContract, StorableContract
 {
-    use FileStorable;
     use AcceptsTypes;
     use Deletable;
+    use FileStorable;
 
     /**
      * The callback that should be used to determine the file's storage name.

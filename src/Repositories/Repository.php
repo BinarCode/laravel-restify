@@ -41,23 +41,23 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 /**
  * @property string $type
  */
-class Repository implements RestifySearchable, JsonSerializable
+class Repository implements JsonSerializable, RestifySearchable
 {
-    use InteractWithSearch;
-    use ValidatingTrait;
-    use PerformsQueries;
     use ConditionallyLoadsAttributes;
     use DelegatesToResource;
+    use HasColumns;
+    use InteractsWithAttachers;
+    use InteractsWithModel;
+    use InteractWithFields;
+    use InteractWithSearch;
+    use Mockable;
+    use PerformsQueries;
+    use RepositoryEvents;
     use ResolvesActions;
     use ResolvesGetters;
-    use RepositoryEvents;
-    use WithRoutePrefix;
-    use InteractWithFields;
-    use InteractsWithModel;
-    use InteractsWithAttachers;
-    use HasColumns;
-    use Mockable;
     use Testing;
+    use ValidatingTrait;
+    use WithRoutePrefix;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.

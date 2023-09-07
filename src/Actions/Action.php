@@ -29,8 +29,8 @@ use ReturnTypeWillChange;
 abstract class Action implements JsonSerializable
 {
     use AuthorizedToSee;
-    use ProxiesCanSeeToGate;
     use Make;
+    use ProxiesCanSeeToGate;
     use Visibility;
 
     /**

@@ -31,8 +31,8 @@ abstract class RestController extends BaseController
 {
     use AuthorizesRequests;
     use DispatchesJobs;
-    use ValidatesRequests;
     use ForwardsCalls;
+    use ValidatesRequests;
 
     protected RestResponse $response;
 

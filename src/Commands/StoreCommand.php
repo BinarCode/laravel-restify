@@ -34,7 +34,7 @@ class StoreCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
-        if (false === Str::endsWith($name, 'Store')) {
+        if (Str::endsWith($name, 'Store') === false) {
             $name .= 'Store';
         }
 
@@ -52,7 +52,7 @@ class StoreCommand extends GeneratorCommand
 
     protected function getPath($name)
     {
-        if (false === Str::endsWith($name, 'Store')) {
+        if (Str::endsWith($name, 'Store') === false) {
             $name .= 'Store';
         }
 

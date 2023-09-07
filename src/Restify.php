@@ -172,7 +172,6 @@ class Restify
     /**
      * Get the URI path prefix utilized by Restify.
      *
-     * @param  null  $plus
      * @return string
      */
     public static function path($plus = null, array $query = [])

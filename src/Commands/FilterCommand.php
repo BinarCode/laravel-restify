@@ -26,7 +26,7 @@ class FilterCommand extends GeneratorCommand
 
     protected function buildClass($name)
     {
-        if (false === Str::endsWith($name, 'Filter')) {
+        if (Str::endsWith($name, 'Filter') === false) {
             $name .= 'Filter';
         }
 
@@ -107,7 +107,7 @@ class FilterCommand extends GeneratorCommand
 
     protected function getPath($name)
     {
-        if (false === Str::endsWith($name, 'Filter')) {
+        if (Str::endsWith($name, 'Filter') === false) {
             $name .= 'Filter';
         }
 

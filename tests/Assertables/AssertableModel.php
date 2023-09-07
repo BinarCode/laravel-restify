@@ -11,18 +11,19 @@ use Illuminate\Testing\Fluent\Concerns\Debugging;
 use Illuminate\Testing\Fluent\Concerns\Has;
 use Illuminate\Testing\Fluent\Concerns\Interaction;
 use Illuminate\Testing\Fluent\Concerns\Matching;
+
 use function PHPUnit\Framework\assertNotNull;
 
 abstract class AssertableModel
 {
-    use Has;
-    use Matching;
+    use CarbonMatching;
     use Debugging;
+    use Has;
     use Interaction;
     use Macroable;
-    use Tappable;
     use Make;
-    use CarbonMatching;
+    use Matching;
+    use Tappable;
 
     public function __construct(
         protected Model $model,
