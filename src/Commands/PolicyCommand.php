@@ -56,7 +56,7 @@ class PolicyCommand extends GeneratorCommand
     {
         $name = $this->getNameInput();
 
-        if (false === Str::endsWith($name, 'Policy')) {
+        if (Str::endsWith($name, 'Policy') === false) {
             $name .= 'Policy';
         }
 

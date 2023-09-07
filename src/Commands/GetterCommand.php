@@ -34,7 +34,7 @@ class GetterCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
-        if (false === Str::endsWith($name, 'Getter')) {
+        if (Str::endsWith($name, 'Getter') === false) {
             $name .= 'Getter';
         }
 
@@ -48,7 +48,7 @@ class GetterCommand extends GeneratorCommand
 
     protected function getPath($name)
     {
-        if (false === Str::endsWith($name, 'Getter')) {
+        if (Str::endsWith($name, 'Getter') === false) {
             $name .= 'Getter';
         }
 

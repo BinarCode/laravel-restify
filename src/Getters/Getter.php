@@ -19,9 +19,10 @@ use Illuminate\Support\Str;
 use JsonSerializable;
 use ReturnTypeWillChange;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
+
 use function tap;
 use function throw_unless;
-use Throwable;
 
 /**
  * Class Getter
@@ -30,9 +31,9 @@ use Throwable;
  */
 abstract class Getter implements JsonSerializable
 {
-    use Make;
-    use AuthorizedToSee;
     use AuthorizedToRun;
+    use AuthorizedToSee;
+    use Make;
     use ProxiesCanSeeToGate;
     use Visibility;
 

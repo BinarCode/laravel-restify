@@ -90,7 +90,7 @@ abstract class OrganicField extends BaseField
 
     public function isHiddenOnShow(RestifyRequest $request, $repository): bool
     {
-        return false === $this->isShownOnShow($request, $repository);
+        return $this->isShownOnShow($request, $repository) === false;
     }
 
     public function isShownOnIndex(RestifyRequest $request, $repository): bool
@@ -99,7 +99,7 @@ abstract class OrganicField extends BaseField
             return false;
         }
 
-        return false === $this->isHiddenOnIndex($request, $repository);
+        return $this->isHiddenOnIndex($request, $repository) === false;
     }
 
     public function isHiddenOnIndex(RestifyRequest $request, $repository): bool
