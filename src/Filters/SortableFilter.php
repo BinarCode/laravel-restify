@@ -32,7 +32,7 @@ class SortableFilter extends Filter
     public function filter(RestifyRequest $request, Builder|Relation $query, $value)
     {
         if (isset($this->resolver) && is_callable($this->resolver)) {
-            return call_user_func($this->resolver, $request, $query, $value);
+            return call_user_func($this->resolver, $request, $query, $value, $this->column());
         }
 
         if (isset($this->relation)) {
@@ -155,7 +155,7 @@ class SortableFilter extends Filter
         return $this->asc();
     }
 
-    public function usingClosure(Closure $closure): self
+    public function usingClosure(callable|Closure $closure): self
     {
         $this->resolver = $closure;
 
