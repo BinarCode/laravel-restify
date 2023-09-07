@@ -20,7 +20,10 @@ class SortableFilter extends Filter
 
     private HasOne|BelongsTo $relation;
 
-    private Closure $resolver;
+    /**
+     * @var callable|Closure
+     */
+    private $resolver;
 
     public const TYPE = 'sortable';
 
