@@ -86,7 +86,8 @@ class SortableFilterTest extends IntegrationTestCase
 
     public function test_can_order_using_invokable(): void
     {
-        $invokable = new class {
+        $invokable = new class
+        {
             public function __invoke(RestifyRequest $request, Builder $query, string $order, string $column): void
             {
                 $query->orderBy($column, $order);
