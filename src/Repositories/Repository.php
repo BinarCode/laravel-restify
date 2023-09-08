@@ -306,8 +306,8 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Handle dynamic static method calls into the method.
      *
-     * @param  string  $method
-     * @param  array  $parameters
+     * @param string $method
+     * @param array $parameters
      * @return mixed
      */
     public static function __callStatic($method, $parameters)
@@ -334,7 +334,7 @@ class Repository implements RestifySearchable, JsonSerializable
      *
      * However all options could be customized by passing an $options argument
      *
-     * @param  bool  $wrap  Choose the routes defined in the @routes method, should be wrapped in a group with attributes by default.
+     * @param bool $wrap Choose the routes defined in the @routes method, should be wrapped in a group with attributes by default.
      * If true then all routes will be grouped in a configuration attributes passed by restify, otherwise
      * you should take care of that, by adding $router->group($attributes) in the @routes method
      */
@@ -357,10 +357,10 @@ class Repository implements RestifySearchable, JsonSerializable
     {
         $fields = $this->collectFields($request)
             ->forShow($request, $this)
-            ->filter(fn (Field $field) => $field->authorize($request))
-            ->each(fn (Field $field) => $field->resolveForShow($this))
-            ->map(fn (Field $field) => $field->serializeToValue($request))
-            ->mapWithKeys(fn ($value) => $value)
+            ->filter(fn(Field $field) => $field->authorize($request))
+            ->each(fn(Field $field) => $field->resolveForShow($this))
+            ->map(fn(Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn($value) => $value)
             ->all();
 
         if ($this instanceof Mergeable) {
@@ -378,7 +378,7 @@ class Repository implements RestifySearchable, JsonSerializable
                         return false;
                     }
 
-                    if (! $field->authorize($request)) {
+                    if (!$field->authorize($request)) {
                         return false;
                     }
 
@@ -392,7 +392,7 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Return the attributes list.
      *
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      * @return array
      */
     public function resolveIndexAttributes($request)
@@ -412,7 +412,7 @@ class Repository implements RestifySearchable, JsonSerializable
                         return false;
                     }
 
-                    if (! $field->authorize($request)) {
+                    if (!$field->authorize($request)) {
                         return false;
                     }
 
@@ -425,17 +425,17 @@ class Repository implements RestifySearchable, JsonSerializable
             ->collectFields($request)
             ->when(
                 $this->hasCustomColumns(),
-                fn (FieldCollection $fields) => $fields->inList($this->getColumns())
+                fn(FieldCollection $fields) => $fields->inList($this->getColumns())
             )
             ->forIndex($request, $this)
-            ->filter(fn (Field $field) => $field->authorize($request))
+            ->filter(fn(Field $field) => $field->authorize($request))
             ->when(
                 $this->eagerState,
-                fn ($items) => $items->filter(fn (Field $field) => ! $field instanceof EagerField)
+                fn($items) => $items->filter(fn(Field $field) => !$field instanceof EagerField)
             )
-            ->each(fn (Field $field) => $field->resolveForIndex($this))
-            ->map(fn (Field $field) => $field->serializeToValue($request))
-            ->mapWithKeys(fn ($value) => $value)
+            ->each(fn(Field $field) => $field->resolveForIndex($this))
+            ->map(fn(Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn($value) => $value)
             ->all();
     }
 
@@ -445,7 +445,7 @@ class Repository implements RestifySearchable, JsonSerializable
             return $this->policyMeta($request);
         }
 
-        if (! config('restify.repositories.serialize_show_meta')) {
+        if (!config('restify.repositories.serialize_show_meta')) {
             return null;
         }
 
@@ -469,10 +469,10 @@ class Repository implements RestifySearchable, JsonSerializable
         }
 
         return $pivots
-            ->filter(fn (Field $field) => $field->authorize($request))
-            ->each(fn (Field $field) => $field->resolve($this))
-            ->map(fn (Field $field) => $field->serializeToValue($request))
-            ->mapWithKeys(fn ($value) => $value)
+            ->filter(fn(Field $field) => $field->authorize($request))
+            ->each(fn(Field $field) => $field->resolve($this))
+            ->map(fn(Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn($value) => $value)
             ->all();
     }
 
@@ -484,26 +484,26 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Return a list with relationship for the current model.
      *
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      */
     public function resolveRelationships($request): array
     {
         return static::collectRelated()
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
-            ->groupBy(fn (Related $related) => $related->field->label)
+            ->groupBy(fn(Related $related) => $related->field->label)
             // Get only the related model ID
-            ->map(fn (RelatedCollection $items) => [
+            ->map(fn(RelatedCollection $items) => [
                 'data' => $items
-                    ->each(fn (Related $related) => $related->columns([$related->field->getRelatedModel($this)->getKeyName()]))
-                    ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
+                    ->each(fn(Related $related) => $related->columns([$related->field->getRelatedModel($this)->getKeyName()]))
+                    ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
                     ->when(
-                        static fn (Collection $collection) => $collection->contains(static fn ($item) => $item instanceof Collection),
-                        static fn (Collection $collection) => $collection->flatMap(static fn ($value) => $value instanceof Collection ? $value->values() : [$value])
+                        static fn(Collection $collection) => $collection->contains(static fn($item) => $item instanceof Collection),
+                        static fn(Collection $collection) => $collection->flatMap(static fn($value) => $value instanceof Collection ? $value->values() : [$value])
                     )
                     ->each(static function (mixed $items) {
                         if ($items instanceof Collection) {
-                            $items->each(static fn (Repository $items) => $items->isRelationship = true);
+                            $items->each(static fn(Repository $items) => $items->isRelationship = true);
                         } elseif ($items instanceof self) {
                             $items->isRelationship = true;
                         }
@@ -512,14 +512,15 @@ class Repository implements RestifySearchable, JsonSerializable
             ->filter()
             ->all();
     }
+
     /**
      * Return a list with relationship for the current model.
      *
-     * @param  RestifyRequest  $request
+     * @param RestifyRequest $request
      */
     public function resolveIncluded($request): array
     {
-        if (! $request->related()->hasRelated()) {
+        if (!$request->related()->hasRelated()) {
             return [];
         }
 
@@ -527,16 +528,16 @@ class Repository implements RestifySearchable, JsonSerializable
             ->forRequest($request, $this)
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
-            ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
+            ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
             ->flatMap(static function (mixed $items) use ($request) {
                 $items = $items instanceof Collection ? $items : collect([$items]);
 
-                $items = $items->map(static fn (self $repository) => $repository->serializeForShow($request));
-                $nested_relationships = $items->map(static fn (array $repository) => $repository['included'] ?? []);
+                $items = $items->map(static fn(self $repository) => $repository->serializeForShow($request));
+                $nested_relationships = $items->map(static fn(array $repository) => $repository['included'] ?? []);
 
                 return $items->map(static fn (array $repository) => $repository['data'])->merge(...$nested_relationships)->filter()->values();
             })
-            ->filter(fn (array $included) => !($included['type'] === $this->getType($request) && $included['id'] === $this->getId($request)))
+            ->filter(fn(array $included) => !($included['type'] === $this->getType($request) && $included['id'] === $this->getId($request)))
             ->all();
     }
 
@@ -551,7 +552,7 @@ class Repository implements RestifySearchable, JsonSerializable
             return $this->policyMeta($request);
         }
 
-        if (! config('restify.repositories.serialize_index_meta')) {
+        if (!config('restify.repositories.serialize_index_meta')) {
             return null;
         }
 
@@ -576,10 +577,10 @@ class Repository implements RestifySearchable, JsonSerializable
     public function resolveIndexIncluded($request, Collection $items)
     {
         return $items
-            ->map(static fn (self $repository) => $repository->serializeIncluded($request))
-            ->filter(static fn ($value) => ! $value instanceof MissingValue)
+            ->map(static fn(self $repository) => $repository->serializeIncluded($request))
+            ->filter(static fn($value) => !$value instanceof MissingValue)
             ->flatten(1)
-            ->unique(static fn (array $repository) => "{$repository['type']}.{$repository['id']}")
+            ->unique(static fn(array $repository) => "{$repository['type']}.{$repository['id']}")
             ->sortBy(['type', 'id'])
             ->filter()
             ->all();
@@ -609,13 +610,13 @@ class Repository implements RestifySearchable, JsonSerializable
             return $repository->authorizedToShow($request);
         })->values();
 
-        $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
+        $data = $items->map(fn(self $repository) => $repository->serializeForIndex($request));
 
         return response()->json($this->filter([
             'meta' => $this->when(
                 $meta = $this->resolveIndexMainMeta(
                     $request,
-                    $models = $items->map(fn (self $repository) => $repository->resource),
+                    $models = $items->map(fn(self $repository) => $repository->resource),
                     [
                         'current_page' => $paginator->currentPage(),
                         'from' => $paginator->firstItem(),
@@ -634,7 +635,7 @@ class Repository implements RestifySearchable, JsonSerializable
                     'next' => $paginator->nextPageUrl(),
                     'path' => $paginator->path(),
                     'prev' => $paginator->previousPageUrl(),
-                    'filters' => Restify::path(static::uriKey().'/filters'),
+                    'filters' => Restify::path(static::uriKey() . '/filters'),
                 ]),
                 $links
             ),
@@ -688,14 +689,14 @@ class Repository implements RestifySearchable, JsonSerializable
                 }
             }
 
-            $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
+            $fields->each(fn(Field $field) => $field->invokeAfter($request, $this->resource));
 
             $this
                 ->collectFields($request)
                 ->forStore($request, $this)
                 ->withActions($request, $this)
                 ->authorizedStore($request)
-                ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
+                ->each(fn(Field $field) => $field->actionHandler->handle($request, $this->resource));
         });
 
         if (method_exists(static::class, 'stored')) {
@@ -724,14 +725,14 @@ class Repository implements RestifySearchable, JsonSerializable
 
                     $this->resource->save();
 
-                    $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
+                    $fields->each(fn(Field $field) => $field->invokeAfter($request, $this->resource));
 
                     $this
                         ->collectFields($request)
                         ->forStoreBulk($request, $this)
                         ->withActions($request, $this, $row)
                         ->authorizedUpdateBulk($request)
-                        ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
+                        ->each(fn(Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
                     return $this->resource;
                 });
@@ -758,7 +759,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
             return $fields;
         })->each(
-            fn (Field $field) => $field->invokeAfter($request, $this->resource)
+            fn(Field $field) => $field->invokeAfter($request, $this->resource)
         );
 
         $this
@@ -766,7 +767,7 @@ class Repository implements RestifySearchable, JsonSerializable
             ->forUpdate($request, $this)
             ->withActions($request, $this)
             ->authorizedUpdate($request)
-            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
+            ->each(fn(Field $field) => $field->actionHandler->handle($request, $this->resource));
 
         return data($this->serializeForShow($request));
     }
@@ -778,7 +779,7 @@ class Repository implements RestifySearchable, JsonSerializable
         DB::transaction(function () use ($request, $keys) {
             $fields = $this->collectFields($request)
                 ->filter(
-                    fn (Field $field) => in_array($field->attribute, $keys),
+                    fn(Field $field) => in_array($field->attribute, $keys),
                 )
                 ->forUpdate($request, $this)
                 ->withoutActions($request, $this)
@@ -797,18 +798,18 @@ class Repository implements RestifySearchable, JsonSerializable
 
             return $fields;
         })->each(
-            fn (Field $field) => $field->invokeAfter($request, $this->resource)
+            fn(Field $field) => $field->invokeAfter($request, $this->resource)
         );
 
         $this
             ->collectFields($request)
             ->filter(
-                fn (Field $field) => in_array($field->attribute, $keys),
+                fn(Field $field) => in_array($field->attribute, $keys),
             )
             ->forUpdate($request, $this)
             ->withActions($request, $this)
             ->authorizedPatch($request)
-            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
+            ->each(fn(Field $field) => $field->actionHandler->handle($request, $this->resource));
 
         return data($this->serializeForShow($request));
     }
@@ -829,7 +830,7 @@ class Repository implements RestifySearchable, JsonSerializable
             ->forUpdateBulk($request, $this)
             ->withActions($request, $this, $row)
             ->authorizedUpdateBulk($request)
-            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
+            ->each(fn(Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
         return response()->json();
     }
@@ -854,7 +855,7 @@ class Repository implements RestifySearchable, JsonSerializable
         $eagerField = $this->authorizeBelongsToMany($request)->belongsToManyField($request);
 
         DB::transaction(function () use ($request, $pivots, $eagerField) {
-            $fields = $eagerField->collectPivotFields()->filter(fn (
+            $fields = $eagerField->collectPivotFields()->filter(fn(
                 $pivotField
             ) => $request->has($pivotField->attribute))->values();
 
@@ -878,7 +879,7 @@ class Repository implements RestifySearchable, JsonSerializable
     {
         $eagerField = $this->authorizeBelongsToMany($request)->belongsToManyField($request);
 
-        if (! $eagerField) {
+        if (!$eagerField) {
             throw new NotFoundHttpException('Belongs to many field not found.');
         }
 
@@ -898,7 +899,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
         $deleted = DB::transaction(function () use ($pivots, $eagerField, $request) {
             return $pivots
-                ->map(fn ($pivot) => $eagerField->authorizeToDetach($request, $pivot) && $pivot->delete());
+                ->map(fn($pivot) => $eagerField->authorizeToDetach($request, $pivot) && $pivot->delete());
         });
 
         return data($deleted, 204);
@@ -939,16 +940,16 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function allowToAttach(RestifyRequest $request, Collection $attachers): self
     {
-        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'attach' . Str::studly($request->relatedRepository);
 
-        $attachers->each(fn ($model) => $this->authorizeToAttach($request, $methodGuesser, $model));
+        $attachers->each(fn($model) => $this->authorizeToAttach($request, $methodGuesser, $model));
 
         return $this;
     }
 
     public function allowToSync(RestifyRequest $request, Collection $attachers): self
     {
-        $methodGuesser = 'sync'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'sync' . Str::studly($request->relatedRepository);
 
         $this->authorizeToSync($request, $methodGuesser, $attachers);
 
@@ -957,9 +958,9 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function allowToDetach(RestifyRequest $request, Collection $attachers): self
     {
-        $methodGuesser = 'detach'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'detach' . Str::studly($request->relatedRepository);
 
-        $attachers->each(fn ($model) => $this->authorizeToDetach($request, $methodGuesser, $model));
+        $attachers->each(fn($model) => $this->authorizeToDetach($request, $methodGuesser, $model));
 
         return $this;
     }
@@ -1062,7 +1063,7 @@ class Repository implements RestifySearchable, JsonSerializable
     {
         return $this->filter([
             'data' => [
-                'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
+                'id' => $this->when(optional($this->resource)?->getKey(), fn() => $this->getId($request)),
                 'type' => $this->when($type = $this->getType($request), $type),
                 'attributes' => $request->isShowRequest() ? $this->resolveShowAttributes($request) : $this->resolveIndexAttributes($request),
                 'relationships' => $this->when(value($related = $this->resolveRelationships($request)), $related),
@@ -1083,7 +1084,7 @@ class Repository implements RestifySearchable, JsonSerializable
         $data = $this->filter([
             'id' => $this->when($id = $this->getId($request), $id),
             'type' => $this->when($type = $this->getType($request), $type),
-            'attributes' => $this->when((bool) $attrs = $this->resolveIndexAttributes($request), $attrs),
+            'attributes' => $this->when((bool)$attrs = $this->resolveIndexAttributes($request), $attrs),
             'relationships' => $this->when(value($related = $this->resolveIndexRelationships($request)), $related),
             'meta' => [
                 ...$this->when(value($meta = $this->resolveIndexMeta($request)), $meta),
@@ -1094,15 +1095,16 @@ class Repository implements RestifySearchable, JsonSerializable
         return $data;
     }
 
-    public function serializeForRelationship(RestifyRequest $request): array {
+    public function serializeForRelationship(RestifyRequest $request): array
+    {
         // TODO: https://jsonapi.org/format/#document-resource-object-linkage (links)
         return $this->filter([
-            'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
+            'id' => $this->when(optional($this->resource)?->getKey(), fn() => $this->getId($request)),
             'type' => $this->when($type = $this->getType($request), $type),
             'meta' => [
                 ...$this->when(
-                value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
-                $meta
+                    value($meta = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)),
+                    $meta
                 ),
                 'pivots' => $this->when(value($pivots = $this->resolveShowPivots($request)), $pivots)
             ]
@@ -1126,7 +1128,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
     protected function getId(RestifyRequest $request): ?string
     {
-        if (! static::$id) {
+        if (!static::$id) {
             return null;
         }
 
@@ -1153,15 +1155,16 @@ class Repository implements RestifySearchable, JsonSerializable
      */
     protected static function fillFields(RestifyRequest $request, Model $model, Collection $fields)
     {
-        return $fields->map(fn (Field $field) => $field->fillAttribute($request, $model));
+        return $fields->map(fn(Field $field) => $field->fillAttribute($request, $model));
     }
 
     protected static function fillBulkFields(
         RestifyRequest $request,
-        Model $model,
-        Collection $fields,
-        int $bulkRow = null
-    ) {
+        Model          $model,
+        Collection     $fields,
+        int            $bulkRow = null
+    )
+    {
         return $fields->map(function (Field $field) use ($request, $model, $bulkRow) {
             return $field->fillAttribute($request, $model, $bulkRow);
         });
@@ -1169,7 +1172,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public static function uriTo(Model $model): string
     {
-        return Str::replaceFirst('//', '/', Restify::path().'/'.static::uriKey().'/'.$model->getKey());
+        return Str::replaceFirst('//', '/', Restify::path() . '/' . static::uriKey() . '/' . $model->getKey());
     }
 
     public static function collectMiddlewares(RestifyRequest $request): Collection
@@ -1189,7 +1192,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function eager(EagerField $field = null): Repository
     {
-        if (! $field) {
+        if (!$field) {
             $this->eagerState = false;
 
             return $this;
@@ -1203,7 +1206,7 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function isEagerState(): bool
     {
-        return ! is_null($this->eagerState);
+        return !is_null($this->eagerState);
     }
 
     public function getEagerParent(): string
@@ -1220,14 +1223,14 @@ class Repository implements RestifySearchable, JsonSerializable
             'match' => static::collectFilters('matches'),
             'searchables' => static::collectFilters('searchables'),
             'actions' => $this->resolveActions($request)
-                ->filter(fn (mixed $action) => $action instanceof Action)
-                ->filter(fn (Action $action) => $action->isShownOnIndex(
+                ->filter(fn(mixed $action) => $action instanceof Action)
+                ->filter(fn(Action $action) => $action->isShownOnIndex(
                     $request,
                     $this
                 ))->values(),
             'getters' => $this->resolveGetters($request)
-                ->filter(fn (mixed $action) => $action instanceof Getter)
-                ->filter(fn (Getter $action) => $action->isShownOnIndex(
+                ->filter(fn(mixed $action) => $action instanceof Getter)
+                ->filter(fn(Getter $action) => $action->isShownOnIndex(
                     $request,
                     $this
                 ))->values(),
