@@ -3,9 +3,11 @@
 namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Str;
 
@@ -19,6 +21,8 @@ class MatchFilter extends Filter
 
     public const TYPE = 'matchable';
 
+    private ?EagerField $eagerField = null;
+
     public function filter(RestifyRequest $request, Builder|Relation $query, $value)
     {
         if (isset($this->resolver)) {
@@ -26,6 +30,15 @@ class MatchFilter extends Filter
         }
 
         $field = $this->column;
+        if ($this->eagerField instanceof EagerField) {
+            $relation = $this->eagerField->getRelation($this->repository);
+            if ($relation instanceof BelongsToMany) {
+                $query->join($relation->getTable(), $relation->getQualifiedParentKeyName(), '=', $relation->getQualifiedForeignPivotKeyName());
+                $query->join($relation->getRelated()->getTable(), $relation->getQualifiedRelatedPivotKeyName(), '=', $relation->getQualifiedRelatedKeyName());
+            } else {
+                $query->join($relation->getRelated()->getTable(), $relation->getQualifiedParentKeyName(), '=', $relation->getQualifiedForeignKeyName());
+            }
+        }
 
         if ($value === 'null') {
             if ($this->negation) {
@@ -102,6 +115,14 @@ class MatchFilter extends Filter
         return $query;
     }
 
+    public function getQueryKey(): ?string
+    {
+        if ($this->eagerField instanceof EagerField) {
+            return $this->eagerField->getRelatedModel($this->repository)->getTable() . "." . parent::getQueryKey();
+        }
+        return parent::getQueryKey();
+    }
+
     public function negate(): self
     {
         $this->negation = true;
@@ -125,6 +146,13 @@ class MatchFilter extends Filter
     public function usingClosure(Closure $closure): self
     {
         $this->resolver = $closure;
+
+        return $this;
+    }
+
+    public function usingRelated(EagerField $related): self
+    {
+        $this->eagerField = $related;
 
         return $this;
     }
