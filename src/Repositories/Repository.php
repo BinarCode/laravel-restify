@@ -535,7 +535,11 @@ class Repository implements RestifySearchable, JsonSerializable
                 $items = $items->map(static fn(self $repository) => $repository->serializeForShow($request));
                 $nested_relationships = $items->map(static fn(array $repository) => $repository['included'] ?? []);
 
-                return $items->map(static fn (array $repository) => $repository['data'])->merge(...$nested_relationships)->filter()->values();
+                return $items
+                    ->map(static fn(array $repository) => $repository['data'])
+                    ->when($nested_relationships->isNotEmpty(), static fn(Collection $collection) => $collection->merge(...$nested_relationships))
+                    ->filter()
+                    ->values();
             })
             ->filter(fn(array $included) => !($included['type'] === $this->getType($request) && $included['id'] === $this->getId($request)))
             ->all();
