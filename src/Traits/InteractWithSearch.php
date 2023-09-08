@@ -51,9 +51,15 @@ trait InteractWithSearch
 
     public static function matches(): array
     {
-        return empty(static::$match)
-            ? [static::newModel()->getKeyName()]
-            : static::$match;
+        $matches = static::$match ?? [];
+        if (empty($matches)) {
+            $model = static::newModel();
+            $matches = [
+                $model->getKeyName() => $model->getKeyType()
+            ];
+        }
+
+        return $matches;
     }
 
     public static function sorts(): array
