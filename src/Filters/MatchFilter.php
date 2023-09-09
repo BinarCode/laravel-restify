@@ -9,6 +9,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 class MatchFilter extends Filter
@@ -23,21 +24,33 @@ class MatchFilter extends Filter
 
     private ?EagerField $eagerField = null;
 
-    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
+    public function filter(RestifyRequest $request, Builder|Relation $query, $value, bool $no_eager = false)
     {
         if (isset($this->resolver)) {
             return call_user_func($this->resolver, $request, $query, $value);
         }
 
         $field = $this->column;
-        if ($this->eagerField instanceof EagerField) {
+        if ($this->eagerField instanceof EagerField && ! $no_eager) {
             $relation = $this->eagerField->getRelation($this->repository);
+            $related = $this->eagerField->getRelatedModel($this->repository)->query();
+            // TODO: This might be optimized more
+            // Subquery has been done to avoid empty included and relationships responses.
+            // The join method would work but it would return empty included and relationships arrays.
+            // In the future, we should find a way to make the join method work (joins are commented below)
             if ($relation instanceof BelongsToMany) {
-                $query->join($relation->getTable(), $relation->getQualifiedParentKeyName(), '=', $relation->getQualifiedForeignPivotKeyName());
-                $query->join($relation->getRelated()->getTable(), $relation->getQualifiedRelatedPivotKeyName(), '=', $relation->getQualifiedRelatedKeyName());
+                $related->join($relation->getTable(), $relation->getQualifiedRelatedPivotKeyName(), '=', $relation->getQualifiedRelatedKeyName());
+//                $related->join($this->repository->resource->getTable(), $relation->getQualifiedRelatedPivotKeyName(), '=', $relation->getQualifiedRelatedKeyName());
+//                $related->where($relation->getQualifiedParentKeyName(), $this->eagerField->getRelatedModel($this->repository)->getKey());
+                $related->where($relation->getQualifiedForeignPivotKeyName(), DB::raw($relation->getQualifiedParentKeyName()));
             } else {
-                $query->join($relation->getRelated()->getTable(), $relation->getQualifiedParentKeyName(), '=', $relation->getQualifiedForeignKeyName());
+                $related->where($relation->getQualifiedForeignKeyName(), DB::raw($relation->getQualifiedParentKeyName()));
+//                $related->join($this->repository->resource->getTable(), $relation->getQualifiedParentKeyName(), '=', $relation->getQualifiedForeignKeyName());
             }
+            $this->filter($request, $related, $value, true);
+//            $relation_query = $this->filter($request, $relation->getQuery(), $value, true);
+            $query->whereExists($related);
+            return $query;
         }
 
         if ($value === 'null') {
