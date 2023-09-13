@@ -49,6 +49,7 @@ class FieldActionTest extends IntegrationTestCase
                     ->where('data.attributes.description', 'Actionable Description')
                     ->etc()
             );
+
     }
 
     /** @test */
