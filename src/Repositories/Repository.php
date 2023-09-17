@@ -494,6 +494,11 @@ class Repository implements RestifySearchable, JsonSerializable
             ->groupBy(fn(Related $related) => $related->field->label)
             // Get only the related model ID
             ->map(fn(RelatedCollection $items) => [
+                'links' => [
+                    // TODO: linkage route
+                    //  'self' => $items->first()->field->getRelatedModel($this)->uriKey() . '/{repositoryId}/relationships/' . $items->first()->field->attribute,
+                    'related' => config()->get('restify.auth.frontend_app_url') . Restify::path('{repositoryId}/' . $items->first()->field->getAttribute()),
+                ],
                 'data' => $items
                     ->each(fn(Related $related) => $related->columns([$related->field->getRelatedModel($this)->getKeyName()]))
                     ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
@@ -1066,6 +1071,9 @@ class Repository implements RestifySearchable, JsonSerializable
     public function serializeForShow(RestifyRequest $request): array
     {
         return $this->filter([
+            'links' => [
+                'self' => config()->get('restify.auth.frontend_app_url') . static::uriTo($this->resource),
+            ],
             'data' => [
                 'id' => $this->when(optional($this->resource)?->getKey(), fn() => $this->getId($request)),
                 'type' => $this->when($type = $this->getType($request), $type),
@@ -1101,7 +1109,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function serializeForRelationship(RestifyRequest $request): array
     {
-        // TODO: https://jsonapi.org/format/#document-resource-object-linkage (links)
         return $this->filter([
             'id' => $this->when(optional($this->resource)?->getKey(), fn() => $this->getId($request)),
             'type' => $this->when($type = $this->getType($request), $type),
