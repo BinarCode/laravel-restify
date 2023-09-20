@@ -147,7 +147,7 @@ trait ValidatingTrait
 
         $rules = $pivotFields->mapWithKeys(function (Field $k) {
             return [
-                $k->attribute => $k->getStoringRules(),
+                $k->getAttribute() => $k->getStoringRules(),
             ];
         })->all();
 
@@ -217,7 +217,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                $k->attribute => $k->getStoringRules(),
+                $k->getAttribute() => $k->getStoringRules(),
             ];
         })->toArray();
     }
@@ -226,7 +226,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                "*.{$k->attribute}" => $k->getStoringBulkRules(),
+                "*.{$k->getAttribute()}" => $k->getStoringBulkRules(),
             ];
         })->toArray();
     }
@@ -235,7 +235,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                $k->attribute => $k->getUpdatingRules(),
+                $k->getAttribute() => $k->getUpdatingRules(),
             ];
         })->toArray();
     }
@@ -244,7 +244,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                "*.{$k->attribute}" => $k->getUpdatingBulkRules(),
+                "*.{$k->getAttribute()}" => $k->getUpdatingBulkRules(),
             ];
         })->toArray();
     }
