@@ -173,7 +173,7 @@ class RelatedCollection extends Collection
     public function unserialized(RestifyRequest $request, Repository $repository)
     {
         return $this->filter(function (Related $related) use ($request, $repository) {
-            if($request->related()->isDeepRelation($related->getRelation())) {
+            if ($request->related()->isDeepRelation($related->getRelation())) {
                 return true;
             }
 
