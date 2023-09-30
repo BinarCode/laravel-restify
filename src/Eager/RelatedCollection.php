@@ -173,6 +173,10 @@ class RelatedCollection extends Collection
     public function unserialized(RestifyRequest $request, Repository $repository)
     {
         return $this->filter(function (Related $related) use ($request, $repository) {
+            if($request->related()->isDeepRelation($related->getRelation())) {
+                return true;
+            }
+
             return ! in_array(
                 $related->uniqueIdentifierForRepository($repository),
                 $request->related()->resolvedRelationships,
@@ -184,7 +188,6 @@ class RelatedCollection extends Collection
     public function markQuerySerialized(RestifyRequest $request, Repository $repository): self
     {
         return $this->each(function (Related $related) {
-            //            dd($related->getValue());
             $related->relatedQuery?->serialized();
 
             return $related;

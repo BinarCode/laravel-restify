@@ -20,6 +20,8 @@ class RelatedDto
 
     public string $rootKey = '';
 
+    public string $query = '';
+
     public function __construct(
         RelatedQueryCollection $related = null,
     ) {
@@ -136,7 +138,11 @@ class RelatedDto
             return $this;
         }
 
-        $roots = str($query)->replace(' ', '')->explode(',');
+        $query = str($query)->replace(' ', '');
+
+        $this->query = $query->toString();
+
+        $roots = $query->explode(',');
 
         collect($roots)->each(function (string $related) use ($repository) {
             if (str_contains($related, '.')) {
@@ -209,5 +215,10 @@ class RelatedDto
     private function query(Request $request): ?string
     {
         return $request->input('related') ?? $request->input('include');
+    }
+
+    public function isDeepRelation(string $relationship, int $nested = 2): bool
+    {
+        return array_search($relationship, str($this->query)->explode('.')->toArray(), true) >= $nested;
     }
 }
