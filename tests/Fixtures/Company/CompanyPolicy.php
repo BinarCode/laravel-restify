@@ -14,7 +14,6 @@ class CompanyPolicy
      * Determine whether the user can use restify feature for each CRUD operation.
      * So if this is not allowed, all operations will be disabled.
      *
-     * @param  User  $user
      * @return mixed
      */
     public function allowRestify(User $user = null)
