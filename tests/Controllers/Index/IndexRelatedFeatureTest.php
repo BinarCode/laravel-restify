@@ -33,7 +33,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
+        $this->app->singletonIf(RelatedDto::class, fn($app) => new RelatedDto());
     }
 
     public function test_can_retrieve_nested_relationships(): void
@@ -43,7 +43,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             ->andReturn([
                 'owner',
                 'users' => HasMany::make('users', UserRepository::class),
-                'extraData' => fn () => ['country' => 'Romania'],
+                'extraData' => fn() => ['country' => 'Romania'],
                 'extraMeta' => new InvokableExtraMeta(),
             ]);
 
@@ -70,7 +70,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->withoutExceptionHandling()->getJson(CompanyRepository::route(query: [
             'related' => 'users.companies.users, users.posts, users.roles, extraData, extraMeta, owner',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
+            fn(AssertableJson $json) => $json
                 ->where('data.0.type', 'companies')
                 ->has('data.0.relationships')
                 ->has('data.0.relationships.users')
@@ -81,6 +81,64 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
                 ->where('data.0.relationships.users.0.relationships.companies.0.type', 'companies')
                 ->where('data.0.relationships.extraData', ['country' => 'Romania'])
                 ->where('data.0.relationships.owner.email', 'owner@owner.com')
+                ->etc()
+        );
+    }
+
+    public function test_can_load_deep_relationships(): void
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'owner' => BelongsTo::make('owner', UserRepository::class),
+            ]);
+
+        UserRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'posts' => HasMany::make('posts', PostRepository::class),
+            ]);
+
+        PostRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'comments' => HasMany::make('comments', CommentRepository::class),
+            ]);
+
+        $user = User::factory()->create();
+
+        /**
+         * @var Post $post
+         */
+        $post = Post::factory()
+            ->state([
+                'user_id' => $user->id,
+            ])
+            ->create();
+
+        $post->comments()->create([
+            'comment' => 'Test comment',
+        ]);
+
+        Company::factory()
+            ->count(2)
+            ->for($user, 'owner')
+            ->create();
+
+        $this->getJson(CompanyRepository::route(query: [
+            'related' => 'owner.posts.comments',
+        ]))->assertJson(
+            fn(AssertableJson $json) => $json
+                ->has('data.0.relationships.owner.attributes.email')
+                ->where('data.0.relationships.owner.attributes.email', $user->email)
+                ->has('data.0.relationships.owner.relationships.posts.0.relationships.comments.0.attributes.comment')
+                ->where('data.0.relationships.owner.relationships.posts.0.relationships.comments.0.attributes.comment',
+                    'Test comment')
+                ->has('data.1.relationships.owner.attributes.email')
+                ->where('data.1.relationships.owner.attributes.email', $user->email)
+                ->has('data.1.relationships.owner.relationships.posts.0.relationships.comments.0.attributes.comment')
+                ->where('data.1.relationships.owner.relationships.posts.0.relationships.comments.0.attributes.comment',
+                    'Test comment')
                 ->etc()
         );
     }
@@ -110,7 +168,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->getJson(CommentRepository::route(query: [
             'related' => 'parent, children',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
+            fn(AssertableJson $json) => $json
                 ->where('data.2.attributes.comment', 'Root comment')
                 ->has('data.2.relationships.parent')
                 ->missing('data.2.relationships.parent.relationships.parent')
@@ -147,7 +205,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->getJson(CommentRepository::route(query: [
             'related' => 'user, post.user',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
+            fn(AssertableJson $json) => $json
                 ->where('data.0.id', '2')
                 ->has('data.0.relationships.user')
                 ->has('data.0.relationships.post')
@@ -164,7 +222,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->getJson(CommentRepository::route(query: [
             'related' => 'user, post',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
+            fn(AssertableJson $json) => $json
                 ->has('data.0.relationships.user')
                 ->has('data.0.relationships.post')
                 ->missing('data.0.relationships.post.relationships.user')
@@ -191,7 +249,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->getJson(PostRepository::route(query: [
             'related' => 'user',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
+            fn(AssertableJson $json) => $json
                 ->where('data.0.relationships.user', 'foo')
                 ->etc()
         );
@@ -221,7 +279,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             'page' => 2,
         ]))
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->count('data', 1)
                     ->where('data.0.relationships.user.name', $owner)
                     ->etc()
