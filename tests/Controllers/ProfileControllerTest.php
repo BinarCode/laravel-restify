@@ -61,8 +61,12 @@ class ProfileControllerTest extends IntegrationTestCase
     public function test_profile_update()
     {
         $response = $this->putJson(Restify::path('profile'), [
-            'email' => 'contact@binarschool.com',
-            'name' => 'Eduard',
+            'data' => [
+                'attributes' => [
+                    'email' => 'contact@binarschool.com',
+                    'name' => 'Eduard',
+                ]
+            ]
         ])->assertOk();
 
         $response->assertJsonFragment([

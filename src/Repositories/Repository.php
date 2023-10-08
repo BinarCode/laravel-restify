@@ -489,6 +489,7 @@ class Repository implements RestifySearchable, JsonSerializable
     public function resolveRelationships($request): array
     {
         return static::collectRelated()
+            ->forEager($request)
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
             ->groupBy(fn(Related $related) => $related->field->label)
@@ -537,16 +538,16 @@ class Repository implements RestifySearchable, JsonSerializable
             ->flatMap(static function (mixed $items) use ($request) {
                 $items = $items instanceof Collection ? $items : collect([$items]);
 
-                $items = $items->map(static fn(self $repository) => $repository->serializeForShow($request));
-                $nested_relationships = $items->map(static fn(array $repository) => $repository['included'] ?? []);
+                $items = $items->map(static fn($repository) => $repository instanceof self ? $repository->serializeForShow($request) : $repository);
+                $nested_relationships = $items->map(static fn($repository) => $repository['included'] ?? [$repository]);
 
                 return $items
-                    ->map(static fn(array $repository) => $repository['data'])
+                    ->map(static fn($repository) => $repository['data'] ?? $repository)
                     ->when($nested_relationships->isNotEmpty(), static fn(Collection $collection) => $collection->merge(...$nested_relationships))
                     ->filter()
                     ->values();
             })
-            ->filter(fn(array $included) => !($included['type'] === $this->getType($request) && $included['id'] === $this->getId($request)))
+            ->filter(fn($included) => isset($included['type']) ? !($included['type'] === $this->getType($request) && $included['id'] === $this->getId($request)) : $included)
             ->all();
     }
 
@@ -589,7 +590,7 @@ class Repository implements RestifySearchable, JsonSerializable
             ->map(static fn(self $repository) => $repository->serializeIncluded($request))
             ->filter(static fn($value) => !$value instanceof MissingValue)
             ->flatten(1)
-            ->unique(static fn(array $repository) => "{$repository['type']}.{$repository['id']}")
+            ->unique(static fn($repository) => isset($repository['type']) ? "{$repository['type']}.{$repository['id']}" : ($repository instanceof Model ? "{$repository->getTable()}.$repository->getKey()}" : $repository))
             ->sortBy(['type', 'id'])
             ->filter()
             ->all();

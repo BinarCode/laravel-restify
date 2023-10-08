@@ -84,6 +84,7 @@ trait InteractWithSearch
     {
         return (new MatchesCollection($repository::matches()))
             ->merge($repository::collectRelated()
+                ->forEager($request)
                 ->onlyMatchable()
                 ->map(static fn(EagerField $field) => collect($field->getMatchables())
                     ->map(static fn ($type, $attribute) => MatchFilter::make()

@@ -151,11 +151,11 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
                 ->where('data.0.id', '2')
                 ->has('data.0.relationships.user')
                 ->has('data.0.relationships.post')
-                ->has('data.0.relationships.post.relationships.user')
+                ->where('included.2.type', 'users')
                 ->where('data.1.id', '1')
                 ->has('data.1.relationships.user')
                 ->has('data.1.relationships.post')
-                ->has('data.1.relationships.post.relationships.user')
+                ->where('included.3.type', 'users')
                 ->etc()
         );
 
@@ -192,7 +192,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             'related' => 'user',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.user', 'foo')
+                ->where('included.0', 'foo')
                 ->etc()
         );
     }

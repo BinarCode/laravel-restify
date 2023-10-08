@@ -142,7 +142,7 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
             'related' => 'user',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.user.name', $name)
+                ->where('included.0.name', $name)
                 ->etc()
         );
     }

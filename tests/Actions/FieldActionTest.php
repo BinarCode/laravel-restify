@@ -39,8 +39,12 @@ class FieldActionTest extends IntegrationTestCase
 
         $this
             ->postJson(PostRepository::route(), [
-                'description' => 'Description',
-                'title' => $updated = 'Title',
+                'data' => [
+                    'attributes' => [
+                        'description' => 'Description',
+                        'title' => $updated = 'Title',
+                    ]
+                ]
             ])
             ->assertCreated()
             ->assertJson(
