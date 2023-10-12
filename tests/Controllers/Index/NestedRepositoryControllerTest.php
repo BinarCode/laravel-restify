@@ -66,7 +66,11 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
         $user = UserFactory::one();
 
         $this->postJson(UserRepository::route("$user->id/posts"), [
-            'title' => $title = 'Post.',
+            'data' => [
+                'attributes' => [
+                    'title' => $title = 'Post.',
+                ]
+            ]
         ])
             ->assertStatus(201)
             ->assertJson(
@@ -79,7 +83,11 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
 
         UserRepository::$related = [];
         $this->postJson(UserRepository::route("$user->id/posts"), [
-            'title' => 'Post.',
+            'data' => [
+                'attributes' => [
+                    'title' => 'Post.',
+                ]
+            ]
         ])->assertForbidden();
     }
 

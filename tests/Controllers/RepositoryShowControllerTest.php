@@ -77,6 +77,7 @@ class RepositoryShowControllerTest extends IntegrationTestCase
             ->assertJson(
                 fn (AssertableJson $json) => $json
                     ->where('data.attributes.title', 'WEW')
+                    ->etc()
             );
     }
 
