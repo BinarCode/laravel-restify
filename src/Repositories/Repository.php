@@ -539,7 +539,7 @@ class Repository implements RestifySearchable, JsonSerializable
                 $items = $items instanceof Collection ? $items : collect([$items]);
 
                 $items = $items->map(static fn($repository) => $repository instanceof self ? $repository->serializeForShow($request) : $repository);
-                $nested_relationships = $items->map(static fn($repository) => $repository['included'] ?? [$repository]);
+                $nested_relationships = $items->map(static fn($repository) => $repository['included'] ?? []);
 
                 return $items
                     ->map(static fn($repository) => $repository['data'] ?? $repository)
@@ -713,7 +713,7 @@ class Repository implements RestifySearchable, JsonSerializable
             call_user_func([static::class, 'stored'], $this->resource, $request);
         }
 
-        return data($this->serializeForShow($request), 201, ['Location' => static::uriTo($this->resource)]);
+        return data($this->serializeForShow($request)['data'], 201, ['Location' => static::uriTo($this->resource)]);
     }
 
     public function storeBulk(RepositoryStoreBulkRequest $request)
@@ -779,7 +779,7 @@ class Repository implements RestifySearchable, JsonSerializable
             ->authorizedUpdate($request)
             ->each(fn(Field $field) => $field->actionHandler->handle($request, $this->resource));
 
-        return data($this->serializeForShow($request));
+        return data($this->serializeForShow($request)['data']);
     }
 
     public function patch(RestifyRequest $request, $repositoryId)
@@ -882,7 +882,7 @@ class Repository implements RestifySearchable, JsonSerializable
             })->each->save();
         });
 
-        return data($pivots, 201);
+        return response()->json($pivots, 201);
     }
 
     public function sync(RestifyRequest $request, $repositoryId, Collection $pivots)
