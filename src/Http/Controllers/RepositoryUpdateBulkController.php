@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateBulkRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\DB;
 
 class RepositoryUpdateBulkController extends RepositoryController
@@ -14,7 +15,7 @@ class RepositoryUpdateBulkController extends RepositoryController
             return $request->collectInput()
                 ->each(function (array $item, int $row) use ($request) {
                     $model = $request->modelQuery(
-                        $id = $item['id']
+                        $id = Arr::get($item, 'data.id')
                     )->lockForUpdate()->firstOrFail();
 
                     /** * @var Repository $repository */

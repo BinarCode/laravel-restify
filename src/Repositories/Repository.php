@@ -27,6 +27,7 @@ use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
@@ -687,6 +688,36 @@ class Repository implements RestifySearchable, JsonSerializable
                     ->merge($this->collectFields($request)->forBelongsTo($request))
             );
 
+            if ($relationships = $request->input('data.relationships')) {
+                self::collectRelated()
+                    ->authorized($request)
+                    ->filter(static fn(EagerField $related) => array_key_exists($related->getAttribute(), $relationships))
+                    // Authorize attaches (BelongsToMany only)
+                    ->each(function (EagerField $related) use ($relationships, $request) {
+                        if ($related->getRelation($this) instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+                            $repository = app($related->repositoryClass);
+                            assert($repository instanceof self);
+
+                            $methodGuesser = 'attach' . Str::studly($related->getAttribute());
+
+                            collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
+                                ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
+                                ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
+                        }
+                    })
+                    ->each(function (EagerField $related) use ($relationships) {
+                        $attach = Arr::pluck($relationships[$related->getAttribute()], 'id');
+                        $relation = $related->getRelation($this);
+
+                        if ($relation instanceof BelongsTo) {
+                            $relation->associate($attach[0]);
+                        } elseif ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+                            $pivots = Arr::pluck($relationships[$related->getAttribute()], 'meta.pivots');
+                            $relation->attach($attach, $pivots);
+                        }
+                    });
+            }
+
             if ($request->isViaRepository()) {
                 $this->resource = $request->viaQuery()->save($this->resource);
             } else {
@@ -765,6 +796,38 @@ class Repository implements RestifySearchable, JsonSerializable
 
             static::fillFields($request, $this->resource, $fields);
 
+//            if ($relationships = $request->input('data.relationships')) {
+//                $currentRelationships = $this->resource->getRelations();
+//
+//                self::collectRelated()
+//                    ->authorized($request)
+//                    ->filter(static fn(EagerField $related) => array_key_exists($related->getAttribute(), $relationships))
+//                    // Authorize attaches (BelongsToMany only)
+//                    ->each(function (EagerField $related) use ($relationships, $request) {
+//                        if ($related->getRelation($this) instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+//                            $repository = app($related->repositoryClass);
+//                            assert($repository instanceof self);
+//
+//                            $methodGuesser = 'attach' . Str::studly($related->getAttribute());
+//
+//                            collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
+//                                ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
+//                                ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
+//                        }
+//                    })
+//                    ->each(function (EagerField $related) use ($relationships) {
+//                        $attach = Arr::pluck($relationships[$related->getAttribute()], 'id');
+//                        $relation = $related->getRelation($this);
+//
+//                        if ($relation instanceof BelongsTo) {
+//                            $relation->associate($attach[0]);
+//                        } elseif ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+//                            $pivots = Arr::pluck($relationships[$related->getAttribute()], 'meta.pivots');
+//                            $relation->attach($attach, $pivots);
+//                        }
+//                    });
+//            }
+
             $this->resource->save();
 
             return $fields;
@@ -784,12 +847,12 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function patch(RestifyRequest $request, $repositoryId)
     {
-        $keys = $request->json()->keys();
+        $attrs = array_keys($request->json('data.attributes'));
 
-        DB::transaction(function () use ($request, $keys) {
+        DB::transaction(function () use ($request, $attrs) {
             $fields = $this->collectFields($request)
                 ->filter(
-                    fn(Field $field) => in_array($field->attribute, $keys),
+                    fn(Field $field) => in_array($field->attribute, $attrs),
                 )
                 ->forUpdate($request, $this)
                 ->withoutActions($request, $this)
@@ -814,14 +877,15 @@ class Repository implements RestifySearchable, JsonSerializable
         $this
             ->collectFields($request)
             ->filter(
-                fn(Field $field) => in_array($field->attribute, $keys),
+                fn(Field $field) => in_array($field->attribute, $attrs),
             )
             ->forUpdate($request, $this)
             ->withActions($request, $this)
             ->authorizedPatch($request)
             ->each(fn(Field $field) => $field->actionHandler->handle($request, $this->resource));
 
-        return data($this->serializeForShow($request));
+        // TODO: Add relationships
+        return data($this->serializeForShow($request)['data']);
     }
 
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)

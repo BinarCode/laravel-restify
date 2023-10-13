@@ -22,17 +22,19 @@ class ProfileUpdateController extends RepositoryController
         }
 
         $request->validate([
-            'email' => 'sometimes|required|unique:users,email,'.$user->getKey(),
-            'password' => 'sometimes|required|min:5|confirmed',
+            'data.attributes.email' => 'sometimes|required|unique:users,email,'.$user->getKey(),
+            'data.attributes.password' => 'sometimes|required|min:5|confirmed',
         ]);
 
-        if ($request->has('password')) {
-            $request->merge([
+        $attributes = collect($request->input('data.attributes'));
+
+        if ($attributes->has('password')) {
+            $attributes->merge([
                 'password' => Hash::make($request->get('password')),
             ]);
         }
 
-        $user->update($request->only($user->getFillable()));
+        $user->update($attributes->only($user->getFillable())->all());
 
         return data($user->fresh());
     }
