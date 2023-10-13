@@ -67,9 +67,13 @@ class RepositoryStoreControllerTest extends IntegrationTestCase
         $user = $this->mockUsers()->first();
 
         $this->postJson(PostRepository::route(), [
-            'user_id' => $user->getKey(),
-            'title' => 'Some post title',
-            'description' => 'A very short description',
+            'data' => [
+                'attributes' => [
+                    'user_id' => $user->getKey(),
+                    'title' => 'Some post title',
+                    'description' => 'A very short description',
+                ],
+            ]
         ])->assertCreated()
             ->assertHeader('Location', PostRepository::route(1))
             ->assertJson(
@@ -91,8 +95,12 @@ class RepositoryStoreControllerTest extends IntegrationTestCase
             ]);
 
         $this->postJson(PostRepository::route(), [
-            'description' => 'Description',
-            'title' => $updated = 'Title',
+            'data' => [
+                'attributes' => [
+                    'description' => 'Description',
+                    'title' => $updated = 'Title',
+                ],
+            ]
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
@@ -113,8 +121,12 @@ class RepositoryStoreControllerTest extends IntegrationTestCase
             ]);
 
         $this->postJson(PostRepository::route(), [
-            'description' => 'Description',
-            'title' => $updated = 'Title',
+            'data' => [
+                'attributes' => [
+                    'description' => 'Description',
+                    'title' => $updated = 'Title',
+                ],
+            ]
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json

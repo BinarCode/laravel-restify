@@ -20,7 +20,11 @@ class RepositoryStoreBulkControllerTest extends IntegrationTestCase
     {
         $this->postJson(PostRepository::route('bulk'), [
             [
-                'title' => null,
+                'data' => [
+                    'attributes' => [
+                        'title' => null,
+                    ],
+                ]
             ],
         ])
             ->assertStatus(422);
@@ -48,12 +52,20 @@ class RepositoryStoreBulkControllerTest extends IntegrationTestCase
 
         $this->postJson(PostRepository::route('bulk'), [
             [
-                'user_id' => $user->getKey(),
-                'title' => 'First post.',
+                'data' => [
+                    'attributes' => [
+                        'user_id' => $user->getKey(),
+                        'title' => 'First post.',
+                    ],
+                ]
             ],
             [
-                'user_id' => $user->getKey(),
-                'title' => 'Second post.',
+                'data' => [
+                    'attributes' => [
+                        'user_id' => $user->getKey(),
+                        'title' => 'Second post.',
+                    ],
+                ]
             ],
         ])->assertSuccessful();
 

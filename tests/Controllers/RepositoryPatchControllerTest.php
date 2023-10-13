@@ -29,7 +29,11 @@ class RepositoryPatchControllerTest extends IntegrationTestCase
             ]);
 
         $this->patchJson(PostRepository::route($post), [
-            'title' => 'Updated title.',
+            'data' => [
+                'attributes' => [
+                    'title' => 'Updated title.',
+                ],
+            ]
         ])->assertOk();
 
         self::assertEquals('Updated title.', $post->fresh()->title);

@@ -94,8 +94,12 @@ class ProfileControllerTest extends IntegrationTestCase
         ]);
 
         $this->putJson(Restify::path('profile'), [
-            'email' => 'existing@gmail.com',
-            'name' => 'Eduard',
+            'data' => [
+                'attributes' => [
+                    'email' => 'existing@gmail.com',
+                    'name' => 'Eduard',
+                ]
+            ]
         ])->assertStatus(422);
     }
 
@@ -104,12 +108,16 @@ class ProfileControllerTest extends IntegrationTestCase
         UserRepository::$canUseForProfileUpdate = true;
 
         $this->putJson(Restify::path('profile'), [
-            'email' => 'contact@binarschool.com',
-            'name' => 'Ed',
+            'data' => [
+                'attributes' => [
+                    'email' => 'contact@binarschool.com',
+                    'name' => 'Ed',
+                ]
+            ]
         ])
             ->assertStatus(422)
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->has('message')
                     ->has('errors')
             );
@@ -122,7 +130,7 @@ class ProfileControllerTest extends IntegrationTestCase
         $this->getJson(Restify::path('profile'))
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->has('data')
                     ->where('data.attributes.email', $this->authenticatedAs->email)
                     ->etc()
@@ -138,10 +146,10 @@ class ProfileControllerTest extends IntegrationTestCase
         ]))
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->has('data')
                     ->has('data.attributes')
-                    ->has('data.relationships.posts')
+                    ->where('included.0.user_id', $this->authenticatedAs->id)
                     ->where('data.attributes.email', $this->authenticatedAs->email)
                     ->etc()
             );
@@ -157,7 +165,7 @@ class ProfileControllerTest extends IntegrationTestCase
 
         $this->getJson(Restify::path('profile'))
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->has('data.attributes')
                     ->has('data.meta.roles')
                     ->etc()
@@ -169,10 +177,14 @@ class ProfileControllerTest extends IntegrationTestCase
         UserRepository::$canUseForProfileUpdate = true;
 
         $this->putJson(Restify::path('profile'), [
-            'email' => $email = 'contact@binarschool.com',
+            'data' => [
+                'attributes' => [
+                    'email' => $email = 'contact@binarschool.com',
+                ]
+            ]
         ])
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->where('data.attributes.email', $email)
             );
     }
@@ -199,10 +211,18 @@ class ProfileControllerTest extends IntegrationTestCase
             ]);
 
         $this->postJson(Restify::path('profile'), [
-            'avatar' => UploadedFile::fake()->image('image.jpg'),
+            'data' => [
+                'attributes' => [
+                    'avatar' => UploadedFile::fake()->image('image.jpg'),
+                ]
+            ],
         ])->assertOk()->assertJsonFragment([
-            'avatar_original' => 'image.jpg',
-            'avatar' => '/storage/avatar.jpg',
+            'data' => [
+                'attributes' => [
+                    'avatar_original' => 'image.jpg',
+                    'avatar' => '/storage/avatar.jpg',
+                ]
+            ]
         ]);
 
         Storage::disk('customDisk')->assertExists('avatar.jpg');

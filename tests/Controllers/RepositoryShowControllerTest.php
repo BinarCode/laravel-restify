@@ -139,8 +139,12 @@ class RepositoryShowControllerTest extends IntegrationTestCase
         $this->putJson(PostRepository::route(
             $post = $this->mockPost(['description' => 'Description'])->id
         ), [
-            'title' => $title = 'Updated title',
-            'description' => 'Updated description',
+            'data' => [
+                'attributes' => [
+                    'title' => $title = 'Updated title',
+                    'description' => 'Updated description',
+                ],
+            ]
         ])->assertJson(
             fn (AssertableJson $json) => $json
                 ->missing('data.attributes.description')

@@ -103,8 +103,8 @@ class RepositoryAttachControllerTest extends IntegrationTestCase
             'include' => 'users',
         ]))->assertOk()->assertJson(
             fn (AssertableJson $json) => $json
-                ->where('data.relationships.users.0.pivots.is_admin', true)
-                ->where('data.relationships.users.1.pivots.is_admin', false)
+                ->where('data.relationships.users.data.0.meta.pivots.is_admin', true)
+                ->where('data.relationships.users.data.1.meta.pivots.is_admin', false)
                 ->etc()
         );
     }
@@ -122,8 +122,8 @@ class RepositoryAttachControllerTest extends IntegrationTestCase
             'include' => 'users',
         ]))->assertOk()->assertJson(
             fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.users.0.pivots.is_admin', true)
-                ->where('data.0.relationships.users.1.pivots.is_admin', false)
+                ->where('data.0.relationships.users.data.0.meta.pivots.is_admin', true)
+                ->where('data.0.relationships.users.data.1.meta.pivots.is_admin', false)
                 ->etc()
         );
     }

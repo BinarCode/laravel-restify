@@ -24,7 +24,11 @@ class RepositoryUpdateControllerTest extends IntegrationTestCase
         $post = Post::factory()->create();
 
         $this->putJson(PostRepository::route($post), [
-            'title' => 'Updated title',
+            'data' => [
+                'attributes' => [
+                    'title' => 'Updated title',
+                ],
+            ]
         ])->assertOk();
 
         $this->assertEquals('Updated title', Post::find($post->id)->title);
@@ -35,7 +39,11 @@ class RepositoryUpdateControllerTest extends IntegrationTestCase
         $post = Post::factory()->create();
 
         $this->putJson(PostRepository::route($post), [
-            'title' => 'Updated title',
+            'data' => [
+                'attributes' => [
+                    'title' => 'Updated title',
+                ],
+            ]
         ])->assertOk();
 
         $this->assertEquals('Updated title', Post::find($post->id)->title);
@@ -70,8 +78,12 @@ class RepositoryUpdateControllerTest extends IntegrationTestCase
             'image' => null,
             'title' => 'Initial',
         ])->id), [
-            'image' => 'avatar.png',
-            'title' => $updated = 'Updated',
+            'data' => [
+                'attributes' => [
+                    'image' => 'avatar.png',
+                    'title' => $updated = 'Updated',
+                ],
+            ]
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
@@ -95,8 +107,12 @@ class RepositoryUpdateControllerTest extends IntegrationTestCase
             'image' => null,
             'title' => 'Initial',
         ])->id), [
-            'image' => 'avatar.png',
-            'title' => $updated = 'Updated',
+            'data' => [
+                'attributes' => [
+                    'image' => 'avatar.png',
+                    'title' => $updated = 'Updated',
+                ],
+            ]
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json

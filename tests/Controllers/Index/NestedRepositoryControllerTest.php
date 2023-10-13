@@ -105,7 +105,11 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
         ]);
 
         $this->putJson(UserRepository::route("$post->user_id/posts/$post->id"), [
-            'title' => $title = 'Updated.',
+            'data' => [
+                'attributes' => [
+                    'title' => $title = 'Updated.',
+                ]
+            ]
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json

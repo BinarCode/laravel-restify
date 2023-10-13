@@ -53,7 +53,7 @@ class BelongsToFilterTest extends IntegrationTestCase
                 'perPage' => 5,
             ]))->assertJson(
                 fn (AssertableJson $json) => $json
-                    ->where('data.0.relationships.user.attributes.name', 'Zez')
+                    ->where('included.0.data.attributes.name', 'Zez')
                     ->etc()
             );
 
@@ -67,7 +67,7 @@ class BelongsToFilterTest extends IntegrationTestCase
                 'page' => 4,
             ]))->assertJson(
                 fn (AssertableJson $json) => $json
-                    ->where('data.5.relationships.user.attributes.name', 'Ame')
+                    ->where('included.3.attributes.name', 'Ame')
                     ->etc()
             );
     }
