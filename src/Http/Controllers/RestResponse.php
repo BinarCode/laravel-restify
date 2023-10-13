@@ -392,7 +392,7 @@ class RestResponse extends JsonResponse implements Responsable
     {
         $model = $repository->model();
 
-        if (false === $model instanceof Model) {
+        if ($model instanceof Model === false) {
             return $this;
         }
 

@@ -79,8 +79,6 @@ trait ValidatingTrait
 
     /**
      * Validate a resource update request.
-     *
-     * @param  null  $resource
      */
     public static function validateForUpdate(RestifyRequest $request, $resource = null)
     {

@@ -24,11 +24,11 @@ use Mockery;
  * @property string avatar_size
  * @property string avatar_original
  */
-class User extends Authenticatable implements Sanctumable, MustVerifyEmail
+class User extends Authenticatable implements MustVerifyEmail, Sanctumable
 {
+    use HasFactory;
     use \Illuminate\Auth\MustVerifyEmail;
     use Notifiable;
-    use HasFactory;
 
     public static $search = ['id', 'email'];
 

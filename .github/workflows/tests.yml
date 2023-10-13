@@ -46,4 +46,4 @@ jobs:
               run: sleep 5
 
             - name: Execute tests
-              run: ./vendor/bin/testbench package:test --parallel --no-coverage
+              run: ./vendor/bin/testbench package:test --no-coverage

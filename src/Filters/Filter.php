@@ -17,8 +17,8 @@ use ReturnTypeWillChange;
 
 abstract class Filter implements JsonSerializable
 {
-    use Make;
     use HasMode;
+    use Make;
     use Metable;
 
     public string $type = 'value';

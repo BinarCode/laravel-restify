@@ -80,6 +80,10 @@ class SortCollection extends Collection
 
             $definition = Arr::get($repository::sorts(), $filter->column());
 
+            if (is_string($definition) && class_exists($definition)) {
+                $definition = app($definition);
+            }
+
             if (is_callable($definition)) {
                 return $filter->usingClosure($definition);
             }

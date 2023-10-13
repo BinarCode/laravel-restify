@@ -17,8 +17,8 @@ use ReturnTypeWillChange;
 
 class Field extends OrganicField implements JsonSerializable
 {
-    use Make;
     use HasAction;
+    use Make;
 
     /**
      * The resource associated with the field.
@@ -378,7 +378,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function rules($rules)
     {
-        $this->rules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
+        $this->rules += ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
 
         return $this;
     }

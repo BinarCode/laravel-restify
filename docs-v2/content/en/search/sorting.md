@@ -152,6 +152,57 @@ public static function sorts(): array
 }
 ```
 
+## Invokable Custom Sort Classes
+
+Alongside the already provided sorting mechanisms, you can also use an invokable class. This provides you with a flexible way to create your own custom sort logic using classes.
+
+### Basic Usage
+
+Such classes should implement the `__invoke` method, which will be called during sorting. Here's an example:
+
+```php
+class NaturalSort {
+    public function __invoke(RestifyRequest $request, Builder $query, string $order, string $column): void
+    {
+        $query->orderBy($column, $order);
+    }
+};
+```
+
+You can then use it in your Repository's `sorts` method like this:
+
+```php
+public static function sorts(): array
+{
+    return [
+        'name' => app(NaturalSort::class),
+    ];
+}
+```
+
+However, for even more convenience, you can also directly specify the invokable class name as a string:
+
+```php
+PostRepository::$sort = [
+    'name' => NaturalSort::class,
+];
+```
+
+### Built-in Natural Sort Filter
+
+For those not looking to write their own sort filters, `binaryk/laravel-restify` already provides a built-in natural sort filter. This allows you to quickly sort fields in a natural order without additional implementations:
+
+```php
+use Binaryk\LaravelRestify\Filters\Sorts\NaturalSortFilter;
+
+PostRepository::$sort = [
+    'name' => NaturalSortFilter::class,
+];
+```
+
+Using the `NaturalSortFilter` class, you can effortlessly apply natural sorting to your repository fields.
+
+
 ## Get available sorts
 
 You can use the following request to get sortable attributes for a repository:

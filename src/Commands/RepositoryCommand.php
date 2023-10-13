@@ -62,7 +62,7 @@ class RepositoryCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
-        if (false === Str::endsWith($name, 'Repository')) {
+        if (Str::endsWith($name, 'Repository') === false) {
             $name .= 'Repository';
         }
 
@@ -94,7 +94,7 @@ class RepositoryCommand extends GeneratorCommand
 
         $guessMigration = 'Create'.Str::studly($table).'Table';
 
-        if (false === class_exists($guessMigration)) {
+        if (class_exists($guessMigration) === false) {
             $migration = Str::snake($guessMigration);
             $yes = $this->confirm("Do you want to generate the migration [{$migration}]?");
 
@@ -120,7 +120,7 @@ class RepositoryCommand extends GeneratorCommand
     {
         $model = $this->guessQualifiedModelName();
 
-        if (false === class_exists($model)) {
+        if (class_exists($model) === false) {
             $yes = $this->confirm("Do you want to generate the model [{$model}]?");
 
             if ($yes) {
@@ -146,7 +146,7 @@ class RepositoryCommand extends GeneratorCommand
 
     protected function getPath($name)
     {
-        if (false === Str::endsWith($name, 'Repository')) {
+        if (Str::endsWith($name, 'Repository') === false) {
             $name .= 'Repository';
         }
 
