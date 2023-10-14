@@ -499,7 +499,7 @@ class Repository implements JsonSerializable, RestifySearchable
                 'links' => [
                     // TODO: linkage route
                     //  'self' => $items->first()->field->getRelatedModel($this)->uriKey() . '/{repositoryId}/relationships/' . $items->first()->field->attribute,
-                    'related' => config()->get('restify.auth.frontend_app_url') . Restify::path('{repositoryId}/' . $items->first()->field->getAttribute()),
+                    'related' => config()->get('restify.auth.frontend_app_url') . Restify::path($this->getId($request) . '/' . $items->first()->field->getAttribute()),
                 ],
                 'data' => $items
                     ->each(fn(Related $related) => $related->columns([$related->field->getRelatedModel($this)->getKeyName()]))
