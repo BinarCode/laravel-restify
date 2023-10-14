@@ -692,7 +692,6 @@ class Repository implements JsonSerializable, RestifySearchable
                 self::collectRelated()
                     ->authorized($request)
                     ->filter(static fn(EagerField $related) => array_key_exists($related->getAttribute(), $relationships))
-                    // Authorize attaches (BelongsToMany only)
                     ->each(function (EagerField $related) use ($relationships, $request) {
                         if ($related->getRelation($this) instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
                             $repository = app($related->repositoryClass);
@@ -704,16 +703,14 @@ class Repository implements JsonSerializable, RestifySearchable
                                 ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
                                 ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
                         }
-                    })
-                    ->each(function (EagerField $related) use ($relationships) {
-                        $attach = Arr::pluck($relationships[$related->getAttribute()], 'id');
+
                         $relation = $related->getRelation($this);
 
                         if ($relation instanceof BelongsTo) {
-                            $relation->associate($attach[0]);
+                            $relation->associate(Arr::get($relationships, "{$related->getAttribute()}.id"));
                         } elseif ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-                            $pivots = Arr::pluck($relationships[$related->getAttribute()], 'meta.pivots');
-                            $relation->attach($attach, $pivots);
+                            $values = Arr::pluck($relationships[$related->getAttribute()], 'meta.pivots', 'id');
+                            $relation->attach($values);
                         }
                     });
             }
@@ -796,37 +793,32 @@ class Repository implements JsonSerializable, RestifySearchable
 
             static::fillFields($request, $this->resource, $fields);
 
-//            if ($relationships = $request->input('data.relationships')) {
-//                $currentRelationships = $this->resource->getRelations();
-//
-//                self::collectRelated()
-//                    ->authorized($request)
-//                    ->filter(static fn(EagerField $related) => array_key_exists($related->getAttribute(), $relationships))
-//                    // Authorize attaches (BelongsToMany only)
-//                    ->each(function (EagerField $related) use ($relationships, $request) {
-//                        if ($related->getRelation($this) instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-//                            $repository = app($related->repositoryClass);
-//                            assert($repository instanceof self);
-//
-//                            $methodGuesser = 'attach' . Str::studly($related->getAttribute());
-//
-//                            collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
-//                                ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
-//                                ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
-//                        }
-//                    })
-//                    ->each(function (EagerField $related) use ($relationships) {
-//                        $attach = Arr::pluck($relationships[$related->getAttribute()], 'id');
-//                        $relation = $related->getRelation($this);
-//
-//                        if ($relation instanceof BelongsTo) {
-//                            $relation->associate($attach[0]);
-//                        } elseif ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-//                            $pivots = Arr::pluck($relationships[$related->getAttribute()], 'meta.pivots');
-//                            $relation->attach($attach, $pivots);
-//                        }
-//                    });
-//            }
+            if ($relationships = $request->input('data.relationships')) {
+                self::collectRelated()
+                    ->authorized($request)
+                    ->filter(static fn(EagerField $related) => array_key_exists($related->getAttribute(), $relationships))
+                    ->each(function (EagerField $related) use ($relationships, $request) {
+                        if ($related->getRelation($this) instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+                            $repository = app($related->repositoryClass);
+                            assert($repository instanceof self);
+
+                            $methodGuesser = 'attach' . Str::studly($related->getAttribute());
+
+                            collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
+                                ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
+                                ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
+                        }
+
+                        $relation = $related->getRelation($this);
+
+                        if ($relation instanceof BelongsTo) {
+                            $relation->associate(Arr::get($relationships, "{$related->getAttribute()}.id"));
+                        } elseif ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+                            $values = Arr::pluck($relationships[$related->getAttribute()] ?? [], 'meta.pivots', 'id');
+                            $relation->attach($values);
+                        }
+                    });
+            }
 
             $this->resource->save();
 
@@ -874,6 +866,33 @@ class Repository implements JsonSerializable, RestifySearchable
             fn(Field $field) => $field->invokeAfter($request, $this->resource)
         );
 
+        if ($relationships = $request->input('data.relationships')) {
+            self::collectRelated()
+                ->authorized($request)
+                ->filter(static fn(EagerField $related) => array_key_exists($related->getAttribute(), $relationships))
+                ->each(function (EagerField $related) use ($relationships, $request) {
+                    if ($related->getRelation($this) instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+                        $repository = app($related->repositoryClass);
+                        assert($repository instanceof self);
+
+                        $methodGuesser = 'attach' . Str::studly($related->getAttribute());
+
+                        collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
+                            ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
+                            ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
+                    }
+
+                    $relation = $related->getRelation($this);
+
+                    if ($relation instanceof BelongsTo) {
+                        $relation->associate(Arr::get($relationships, "{$related->getAttribute()}.id"));
+                    } elseif ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
+                        $values = Arr::pluck($relationships[$related->getAttribute()] ?? [], 'meta.pivots', 'id');
+                        $relation->attach($values);
+                    }
+                });
+        }
+
         $this
             ->collectFields($request)
             ->filter(
@@ -884,7 +903,6 @@ class Repository implements JsonSerializable, RestifySearchable
             ->authorizedPatch($request)
             ->each(fn(Field $field) => $field->actionHandler->handle($request, $this->resource));
 
-        // TODO: Add relationships
         return data($this->serializeForShow($request)['data']);
     }
 
