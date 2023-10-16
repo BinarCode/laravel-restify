@@ -695,21 +695,18 @@ class Repository implements JsonSerializable, RestifySearchable
                     ->authorized($request)
                     ->filter(static fn(EagerField $related) => array_key_exists($related->getAttribute(), $relationships))
                     ->each(function (EagerField $related) use ($relationships, $request) {
-                        if ($related->getRelation($this) instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-                            $repository = app($related->repositoryClass);
-                            assert($repository instanceof self);
+                        $repository = app($related->repositoryClass);
+                        assert($repository instanceof self);
 
-                            $methodGuesser = 'attach' . Str::studly($related->getAttribute());
+                        $methodGuesser = 'attach' . Str::studly($related->getAttribute());
 
-                            collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
-                                ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
-                                ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
-                        }
+                        collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
+                            ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
+                            ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
 
                         $relation = $related->getRelation($this);
-
-                        if ($relation instanceof BelongsTo) {
-                            $relation->associate(Arr::get($relationships, "{$related->getAttribute()}.id"));
+                        if ($related instanceof \Binaryk\LaravelRestify\Fields\BelongsTo) {
+                            $relation->associate(Arr::get($relationships, "{$related->getAttribute()}.data.id"));
                         } elseif ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
                             $values = Arr::pluck($relationships[$related->getAttribute()], 'meta.pivots', 'id');
                             $relation->attach($values);
@@ -800,23 +797,20 @@ class Repository implements JsonSerializable, RestifySearchable
                     ->authorized($request)
                     ->filter(static fn(EagerField $related) => array_key_exists($related->getAttribute(), $relationships))
                     ->each(function (EagerField $related) use ($relationships, $request) {
-                        if ($related->getRelation($this) instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-                            $repository = app($related->repositoryClass);
-                            assert($repository instanceof self);
+                        $repository = app($related->repositoryClass);
+                        assert($repository instanceof self);
 
-                            $methodGuesser = 'attach' . Str::studly($related->getAttribute());
+                        $methodGuesser = 'attach' . Str::studly($related->getAttribute());
 
-                            collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
-                                ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
-                                ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
-                        }
+                        collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
+                            ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
+                            ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
 
                         $relation = $related->getRelation($this);
-
-                        if ($relation instanceof BelongsTo) {
-                            $relation->associate(Arr::get($relationships, "{$related->getAttribute()}.id"));
+                        if ($related instanceof \Binaryk\LaravelRestify\Fields\BelongsTo) {
+                            $relation->associate(Arr::get($relationships, "{$related->getAttribute()}.data.id"));
                         } elseif ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-                            $values = Arr::pluck($relationships[$related->getAttribute()] ?? [], 'meta.pivots', 'id');
+                            $values = Arr::pluck($relationships[$related->getAttribute()], 'meta.pivots', 'id');
                             $relation->attach($values);
                         }
                     });
@@ -873,23 +867,20 @@ class Repository implements JsonSerializable, RestifySearchable
                 ->authorized($request)
                 ->filter(static fn(EagerField $related) => array_key_exists($related->getAttribute(), $relationships))
                 ->each(function (EagerField $related) use ($relationships, $request) {
-                    if ($related->getRelation($this) instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-                        $repository = app($related->repositoryClass);
-                        assert($repository instanceof self);
+                    $repository = app($related->repositoryClass);
+                    assert($repository instanceof self);
 
-                        $methodGuesser = 'attach' . Str::studly($related->getAttribute());
+                    $methodGuesser = 'attach' . Str::studly($related->getAttribute());
 
-                        collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
-                            ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
-                            ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
-                    }
+                    collect(Arr::pluck($relationships[$related->getAttribute()], 'id'))
+                        ->map(static fn(string $id) => $repository->model()->newModelQuery()->whereKey($id)->first())
+                        ->each(fn(Model $model) => $this->authorizeToAttach($request, $methodGuesser, $model));
 
                     $relation = $related->getRelation($this);
-
-                    if ($relation instanceof BelongsTo) {
-                        $relation->associate(Arr::get($relationships, "{$related->getAttribute()}.id"));
+                    if ($related instanceof \Binaryk\LaravelRestify\Fields\BelongsTo) {
+                        $relation->associate(Arr::get($relationships, "{$related->getAttribute()}.data.id"));
                     } elseif ($relation instanceof \Illuminate\Database\Eloquent\Relations\BelongsToMany) {
-                        $values = Arr::pluck($relationships[$related->getAttribute()] ?? [], 'meta.pivots', 'id');
+                        $values = Arr::pluck($relationships[$related->getAttribute()], 'meta.pivots', 'id');
                         $relation->attach($values);
                     }
                 });
