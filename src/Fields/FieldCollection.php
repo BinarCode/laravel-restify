@@ -164,8 +164,8 @@ class FieldCollection extends Collection
     {
         return $this
             ->filter(
-                fn (Field $field) => $request->hasAny($field->attribute, $row.'.'.$field->attribute)
-                    || $request->hasFile($field->attribute)
+                fn (Field $field) => $request->hasAny("data.attributes.$field->attribute", $row.'.data.attributes.'.$field->attribute)
+                    || $request->hasFile("data.attributes.$field->attribute")
             )
             ->values();
     }
