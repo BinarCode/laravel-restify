@@ -595,7 +595,6 @@ class Repository implements JsonSerializable, RestifySearchable
             ->filter(static fn($value) => !$value instanceof MissingValue)
             ->flatten(1)
             ->unique(static fn($repository) => isset($repository['type']) ? "{$repository['type']}.{$repository['id']}" : ($repository instanceof Model ? "{$repository->getTable()}.$repository->getKey()}" : $repository))
-            ->sortBy(['type', 'id'])
             ->filter()
             ->all();
     }
