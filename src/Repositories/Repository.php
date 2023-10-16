@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
+use Binaryk\LaravelRestify\Fields\HasMany;
 use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
@@ -487,7 +488,7 @@ class Repository implements JsonSerializable, RestifySearchable
      *
      * @param RestifyRequest $request
      */
-    public function resolveRelationships($request): array
+    public function resolveRelationships(RestifyRequest $request): array
     {
         return static::collectRelated()
             ->forEager($request)
@@ -495,13 +496,15 @@ class Repository implements JsonSerializable, RestifySearchable
             ->unserialized($request, $this)
             ->groupBy(fn(Related $related) => $related->field->label)
             // Get only the related model ID
-            ->map(fn(RelatedCollection $items) => [
+            ->map(
+                /** @param RelatedCollection<int, Related> $items */
+                fn(RelatedCollection $items) => [
                 'links' => [
                     // TODO: linkage route
                     //  'self' => $items->first()->field->getRelatedModel($this)->uriKey() . '/{repositoryId}/relationships/' . $items->first()->field->attribute,
                     'related' => config()->get('restify.auth.frontend_app_url') . Restify::path($this->getId($request) . '/' . $items->first()->field->getAttribute()),
                 ],
-                'data' => $items
+                'data' => ($data = $items
                     ->each(fn(Related $related) => $related->columns([$related->field->getRelatedModel($this)->getKeyName()]))
                     ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
                     ->when(
@@ -514,7 +517,7 @@ class Repository implements JsonSerializable, RestifySearchable
                         } elseif ($items instanceof self) {
                             $items->isRelationship = true;
                         }
-                    }),
+                    }))->containsOneItem() && !(($field = $items->first()->field) instanceof BelongsToMany || $field instanceof HasMany) ? $data->first() : $data,
             ])
             ->filter()
             ->all();
