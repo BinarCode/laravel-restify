@@ -21,7 +21,7 @@ class FieldActionTest extends IntegrationTestCase
 
             public function handle(RestifyRequest $request, Post $post)
             {
-                $description = $request->input('description');
+                $description = $request->input('data.attributes.description');
 
                 $post->update([
                     'description' => 'Actionable '.$description,
@@ -65,7 +65,7 @@ class FieldActionTest extends IntegrationTestCase
 
             public function handle(RestifyRequest $request, Post $post, int $row)
             {
-                $description = data_get($request[$row], 'description');
+                $description = data_get($request[$row], 'data.attributes.description');
 
                 $post->update([
                     'description' => 'Actionable '.$description,
@@ -83,12 +83,20 @@ class FieldActionTest extends IntegrationTestCase
 
         $this->postJson(PostRepository::route('bulk'), [
             [
-                'title' => $title1 = 'First title',
-                'description' => 'first description',
+                'data' => [
+                    'attributes' => [
+                        'title' => $title1 = 'First title',
+                        'description' => 'first description',
+                    ]
+                ]
             ],
             [
-                'title' => $title2 = 'Second title',
-                'description' => 'second description',
+                'data' => [
+                    'attributes' => [
+                        'title' => $title2 = 'Second title',
+                        'description' => 'second description',
+                    ]
+                ]
             ],
         ])
             ->assertJson(
@@ -110,7 +118,7 @@ class FieldActionTest extends IntegrationTestCase
 
             public function handle(RestifyRequest $request, Post $post, int $row)
             {
-                $description = data_get($request[$row], 'description');
+                $description = data_get($request[$row], 'data.attributes.description');
 
                 $post->update([
                     'description' => 'Actionable '.$description,
@@ -129,25 +137,41 @@ class FieldActionTest extends IntegrationTestCase
         $postId1 = $this
             ->withoutExceptionHandling()
             ->postJson(PostRepository::route(), [
-                'title' => 'First title',
+                'data' => [
+                    'attributes' => [
+                        'title' => 'First title',
+                    ]
+                ]
             ])->json('data.id');
 
         $postId2 = $this
             ->withoutExceptionHandling()
             ->postJson(PostRepository::route(), [
-                'title' => 'Second title',
+                'data' => [
+                    'attributes' => [
+                        'title' => 'Second title',
+                    ]
+                ]
             ])->json('data.id');
 
         $this
             ->withoutExceptionHandling()
             ->postJson(PostRepository::route('bulk/update'), [
                 [
-                    'id' => $postId1,
-                    'description' => 'first description',
+                    'data' => [
+                        'id' => $postId1,
+                        'attributes' => [
+                            'description' => 'first description',
+                        ]
+                    ]
                 ],
                 [
-                    'id' => $postId2,
-                    'description' => 'second description',
+                    'data' => [
+                        'id' => $postId2,
+                        'attributes' => [
+                            'description' => 'second description',
+                        ]
+                    ]
                 ],
             ])->assertOk();
 

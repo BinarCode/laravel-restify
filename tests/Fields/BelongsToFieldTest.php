@@ -51,19 +51,17 @@ class BelongsToFieldTest extends IntegrationTestCase
             'related' => 'user',
         ]))
             ->assertJsonStructure([
-                'data' => [
-                    'relationships' => [
-                        'user' => [
-                            'id',
-                            'type',
-                            'attributes',
-                        ],
+                'included' => [
+                    [
+                        'id',
+                        'type',
+                        'attributes'
                     ],
                 ],
             ]);
 
         $relationships = $this->getJson(PostRepository::route($post))
-            ->json('data.relationships');
+            ->json('included');
 
         $this->assertNull($relationships);
     }
@@ -95,9 +93,10 @@ class BelongsToFieldTest extends IntegrationTestCase
             $this->getJson(PostWithUserRepository::route($post, query: [
                 'related' => 'user',
             ]))
-                ->assertJsonFragment([
-                    'user' => null,
-                ])
+                ->assertJson(fn (AssertableJson $json) => $json
+                    ->where('data.relationships.user.data', null)
+                    ->etc()
+                )
                 ->assertOk();
         });
     }
@@ -106,9 +105,23 @@ class BelongsToFieldTest extends IntegrationTestCase
     {
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::route(), [
-                'title' => 'Create post with owner.',
-                'user' => $user->getKey(),
-            ])->assertCreated();
+                'data' => [
+                    'attributes' => [
+                        'title' => 'Create post with owner.',
+                    ],
+                    'relationships' => [
+                        'user' => [
+                            'data' => [
+                                'type' => 'users',
+                                'id' => $user->getKey(),
+                            ],
+                        ],
+                    ],
+                ],
+            ])->assertCreated()->assertJson(fn (AssertableJson $json) => $json
+                ->where('data.relationships.user.data.id', (string) ($user->getKey()))
+                ->etc()
+            );
         });
     }
 
@@ -146,8 +159,19 @@ class BelongsToFieldTest extends IntegrationTestCase
 
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::route(), [
-                'title' => 'Create post with owner.',
-                'user' => $user->getKey(),
+                'data' => [
+                    'attributes' => [
+                        'title' => 'Create post with owner.',
+                    ],
+                    'relationships' => [
+                        'user' => [
+                            'data' => [
+                                'type' => 'users',
+                                'id' => $user->getKey(),
+                            ],
+                        ],
+                    ],
+                ],
             ])->assertForbidden();
 
             $this->assertDatabaseCount('posts', 0);
@@ -155,8 +179,19 @@ class BelongsToFieldTest extends IntegrationTestCase
             $_SERVER['restify.post.allowAttachUser'] = true;
 
             $this->postJson(PostWithUserRepository::route(), [
-                'title' => 'Create post with owner.',
-                'user' => $user->getKey(),
+                'data' => [
+                    'attributes' => [
+                        'title' => 'Create post with owner.',
+                    ],
+                    'relationships' => [
+                        'user' => [
+                            'data' => [
+                                'type' => 'users',
+                                'id' => $user->getKey(),
+                            ],
+                        ],
+                    ],
+                ],
             ])->assertCreated();
         });
 
@@ -249,8 +284,12 @@ class PostWithUserRepository extends Repository
     {
         return [
             field('title'),
+        ];
+    }
 
-            BelongsTo::make('user', UserRepository::class),
+    public static function related(): array {
+        return [
+            'user' => BelongsTo::make('user', UserRepository::class),
         ];
     }
 }

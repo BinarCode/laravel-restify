@@ -216,14 +216,11 @@ class ProfileControllerTest extends IntegrationTestCase
                     'avatar' => UploadedFile::fake()->image('image.jpg'),
                 ]
             ],
-        ])->assertOk()->assertJsonFragment([
-            'data' => [
-                'attributes' => [
-                    'avatar_original' => 'image.jpg',
-                    'avatar' => '/storage/avatar.jpg',
-                ]
-            ]
-        ]);
+        ])->assertOk()->assertJson(
+                fn(AssertableJson $json) => $json
+                    ->where('data.attributes.avatar_original', 'image.jpg')
+                    ->where('data.attributes.avatar', '/storage/avatar.jpg')
+        );
 
         Storage::disk('customDisk')->assertExists('avatar.jpg');
     }

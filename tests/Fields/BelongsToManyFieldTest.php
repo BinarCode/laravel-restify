@@ -27,7 +27,7 @@ class BelongsToManyFieldTest extends IntegrationTestCase
                         'users' => [],
                     ],
                 ],
-            ])->assertJsonCount(5, 'data.relationships.users');
+            ])->assertJsonCount(5, 'data.relationships.users.data');
     }
 
     public function test_belongs_to_many_displays_pivot_fields(): void
@@ -42,7 +42,7 @@ class BelongsToManyFieldTest extends IntegrationTestCase
         $this->getJson(CompanyRepository::route(query: ['include' => 'users']))
             ->assertJson(function (AssertableJson $json) {
                 return $json
-                    ->where('data.0.relationships.users.0.pivots.is_admin', false)
+                    ->where('data.0.relationships.users.data.0.meta.pivots.is_admin', false)
                     ->etc();
             });
     }
@@ -65,7 +65,7 @@ class BelongsToManyFieldTest extends IntegrationTestCase
             ->assertJsonStructure([
                 'data' => [],
             ])->assertJsonMissing([
-                'users',
+                'included',
             ]);
     }
 
@@ -84,7 +84,7 @@ class BelongsToManyFieldTest extends IntegrationTestCase
             ]);
 
         $this->getJson(CompanyRepository::uriKey().'?related=users')->assertJsonMissing([
-            'users',
+            'included',
         ]);
     }
 
