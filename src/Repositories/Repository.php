@@ -497,28 +497,28 @@ class Repository implements JsonSerializable, RestifySearchable
             ->groupBy(fn(Related $related) => $related->field->label)
             // Get only the related model ID
             ->map(
-                /** @param RelatedCollection<int, Related> $items */
+            /** @param RelatedCollection<int, Related> $items */
                 fn(RelatedCollection $items) => [
-                'links' => [
-                    // TODO: linkage route
-                    //  'self' => $items->first()->field->getRelatedModel($this)->uriKey() . '/{repositoryId}/relationships/' . $items->first()->field->attribute,
-                    'related' => config()->get('restify.auth.frontend_app_url') . Restify::path($this->getId($request) . '/' . $items->first()->field->getAttribute()),
-                ],
-                'data' => ($data = $items
-                    ->each(fn(Related $related) => $related->columns([$related->field->getRelatedModel($this)->getKeyName()]))
-                    ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
-                    ->when(
-                        static fn(Collection $collection) => $collection->contains(static fn($item) => $item instanceof Collection),
-                        static fn(Collection $collection) => $collection->flatMap(static fn($value) => $value instanceof Collection ? $value->values() : [$value])
-                    )
-                    ->each(static function (mixed $items) {
-                        if ($items instanceof Collection) {
-                            $items->each(static fn(Repository $items) => $items->isRelationship = true);
-                        } elseif ($items instanceof self) {
-                            $items->isRelationship = true;
-                        }
-                    }))->containsOneItem() && !(($field = $items->first()->field) instanceof BelongsToMany || $field instanceof HasMany) ? $data->first() : $data,
-            ])
+                    'links' => [
+                        // TODO: linkage route
+                        //  'self' => $items->first()->field->getRelatedModel($this)->uriKey() . '/{repositoryId}/relationships/' . $items->first()->field->attribute,
+                        'related' => config()->get('restify.auth.frontend_app_url') . Restify::path($this->getId($request) . '/' . $items->first()->field->getAttribute()),
+                    ],
+                    'data' => ($data = $items
+                        ->each(fn(Related $related) => $related->columns([$related->field->getRelatedModel($this)->getKeyName()]))
+                        ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
+                        ->when(
+                            static fn(Collection $collection) => $collection->contains(static fn($item) => $item instanceof Collection),
+                            static fn(Collection $collection) => $collection->flatMap(static fn($value) => $value instanceof Collection ? $value->values() : [$value])
+                        )
+                        ->each(static function (mixed $items) {
+                            if ($items instanceof Collection) {
+                                $items->each(static fn(Repository $items) => $items->isRelationship = true);
+                            } elseif ($items instanceof self) {
+                                $items->isRelationship = true;
+                            }
+                        }))->containsOneItem() && !(($field = $items->first()->field) instanceof BelongsToMany || $field instanceof HasMany) ? $data->first() : $data,
+                ])
             ->filter()
             ->all();
     }
@@ -530,8 +530,16 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function resolveIncluded($request): array
     {
+        $relatedDto = $request->related();
         if (!$request->related()->hasRelated()) {
             return [];
+        }
+
+        // Reset the resolved relationships since we are going to resolve them again
+        // TODO: This might be made better
+        if (!$relatedDto->resolvedIncluded) {
+            $relatedDto->reset();
+            $relatedDto->resolvedIncluded = true;
         }
 
         return static::collectRelated()
@@ -539,7 +547,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
             ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
-            ->flatMap(static function (mixed $items) use ($request) {
+            ->flatMap(function (mixed $items) use ($request) {
                 $items = $items instanceof Collection ? $items : collect([$items]);
 
                 $items = $items->map(static fn($repository) => $repository instanceof self ? $repository->serializeForShow($request) : $repository);
@@ -552,6 +560,7 @@ class Repository implements JsonSerializable, RestifySearchable
                     ->values();
             })
             ->filter(fn($included) => isset($included['type']) ? !($included['type'] === $this->getType($request) && $included['id'] === $this->getId($request)) : $included)
+            ->values()
             ->all();
     }
 
@@ -590,13 +599,7 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function resolveIndexIncluded($request, Collection $items)
     {
-        return $items
-            ->map(static fn(self $repository) => $repository->serializeIncluded($request))
-            ->filter(static fn($value) => !$value instanceof MissingValue)
-            ->flatten(1)
-            ->unique(static fn($repository) => isset($repository['type']) ? "{$repository['type']}.{$repository['id']}" : ($repository instanceof Model ? "{$repository->getTable()}.$repository->getKey()}" : $repository))
-            ->filter()
-            ->all();
+        return $this->resolveIncluded($request);
     }
 
     public function index(RestifyRequest $request)
@@ -1159,7 +1162,8 @@ class Repository implements JsonSerializable, RestifySearchable
                     ...$this->when(value($pivots = $this->resolveShowPivots($request)), compact('pivots'), []),
                     ...$this->when(value($metaElements = $request->isShowRequest() ? $this->resolveShowMeta($request) : $this->resolveIndexMeta($request)), $metaElements, []),
                 ]), $meta)
-             ]
+            ],
+            'included' => $this->when($included = $this->resolveIncluded($request), $included),
         ]);
     }
 

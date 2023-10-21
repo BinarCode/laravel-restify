@@ -75,12 +75,12 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
                 ->has('data.0.relationships')
                 ->has('data.0.relationships.users')
                 ->where('data.0.relationships.users.data.0.type', 'users')
-                ->has('included.0.relationships.posts')
-                ->where('included.0.relationships.posts.0.type', 'posts')
-                ->where('included.0.relationships.roles.0.type', 'roles')
-                ->where('included.0.relationships.companies.0.type', 'companies')
-                ->where('included.extraData', ['country' => 'Romania'])
-                ->where('included.3.owner.email', 'owner@owner.com')
+                ->has('included.1.relationships.posts')
+                ->where('included.1.relationships.posts.data.0.type', 'posts')
+                ->where('included.1.relationships.roles.data.0.type', 'roles')
+                ->where('included.1.relationships.companies.data.0.type', 'companies')
+                ->where('included.2', ['country' => 'Romania'])
+                ->where('included.0.email', 'owner@owner.com')
                 ->etc()
         );
     }

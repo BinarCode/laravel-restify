@@ -17,6 +17,7 @@ class RelatedDto
     public array $relatedArray = [];
 
     private bool $loaded = false;
+    public bool $resolvedIncluded = false;
 
     public string $rootKey = '';
 
