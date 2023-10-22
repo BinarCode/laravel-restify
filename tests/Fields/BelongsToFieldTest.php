@@ -204,8 +204,19 @@ class BelongsToFieldTest extends IntegrationTestCase
 
         tap(User::factory()->create(), function ($user) {
             $this->postJson(PostWithUserRepository::route(), [
-                'title' => 'Create post with owner.',
-                'user' => $user->getKey(),
+                'data' => [
+                    'attributes' => [
+                        'title' => 'Create post with owner.',
+                    ],
+                    'relationships' => [
+                        'user' => [
+                            'data' => [
+                                'type' => 'users',
+                                'id' => $user->getKey(),
+                            ],
+                        ],
+                    ],
+                ]
             ])->assertForbidden();
         });
     }
@@ -217,8 +228,19 @@ class BelongsToFieldTest extends IntegrationTestCase
         ]), function ($post) {
             $newOwner = User::factory()->create();
             $this->putJson(PostWithUserRepository::route($post), [
-                'title' => 'Can change post owner.',
-                'user' => $newOwner->id,
+                'data' => [
+                    'attributes' => [
+                        'title' => 'Can change post owner.',
+                    ],
+                    'relationships' => [
+                        'user' => [
+                            'data' => [
+                                'type' => 'users',
+                                'id' => $newOwner->getKey(),
+                            ],
+                        ],
+                    ],
+                ],
             ])->assertOk();
 
             $this->assertSame($post->fresh()->user->id, $newOwner->id);
@@ -237,8 +259,19 @@ class BelongsToFieldTest extends IntegrationTestCase
             $firstOwnerId = $post->user->id;
             $newOwner = User::factory()->create();
             $this->putJson(PostWithUserRepository::route($post), [
-                'title' => 'Can change post owner.',
-                'user' => $newOwner->id,
+                'data' => [
+                    'attributes' => [
+                        'title' => 'Can change post owner.',
+                    ],
+                    'relationships' => [
+                        'user' => [
+                            'data' => [
+                                'type' => 'users',
+                                'id' => $newOwner->getKey(),
+                            ],
+                        ],
+                    ],
+                ],
             ])->assertForbidden();
 
             $this->assertSame($post->fresh()->user->id, $firstOwnerId);
@@ -262,8 +295,8 @@ class BelongsToFieldTest extends IntegrationTestCase
         ]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                    ->has('data.relationships.user.attributes.name')
-                    ->missing('data.relationships.user.attributes.email')
+                    ->has('included.0.attributes.name')
+                    ->missing('included.0.attributes.email')
                     ->etc()
             );
     }

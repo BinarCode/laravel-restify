@@ -43,19 +43,29 @@ class MorphOneFieldTest extends IntegrationTestCase
                 'data' => [
                     'relationships' => [
                         'user' => [
-                            'id',
-                            'type',
-                            'attributes',
+                            'data' => [
+                                'id',
+                                'type',
+                            ],
+                        ],
+                    ],
+                ],
+                'included' => [
+                    [
+                        'id',
+                        'type',
+                        'attributes' => [
+                            'name',
                         ],
                     ],
                 ],
             ])
-            ->json('data.relationships');
+            ->json('included');
 
         $this->assertNotNull($relationships);
 
         $relationships = $this->getJson(PostWithMorphOneRepository::route($post))
-            ->json('data.relationships');
+            ->json('included');
 
         $this->assertNull($relationships);
     }

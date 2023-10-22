@@ -78,10 +78,14 @@ class HasOneFieldTest extends IntegrationTestCase
             });
 
         $this->postJson(UserWithPostRepository::route(), [
-            'name' => 'Eduard Lupacescu',
-            'email' => 'eduard.lupacescu@binarcode.com',
-            'password' => 'strong!',
-            'post' => 'wew',
+            'data' => [
+                'attributes' => [
+                    'name' => 'Eduard Lupacescu',
+                    'email' => 'eduard.lupacescu@binarcode.com',
+                    'password' => 'strong!',
+                    'post' => 'wew',
+                ],
+            ]
         ])->assertCreated();
     }
 

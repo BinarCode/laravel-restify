@@ -41,7 +41,12 @@ class ImageTest extends IntegrationTestCase
         $user = $this->mockUsers()->first();
 
         $this->postJson(UserRepository::route($user), [
-            'avatar' => UploadedFile::fake()->image('image.jpg'),
+            'data' => [
+                'type' => 'users',
+                'attributes' => [
+                    'avatar' => UploadedFile::fake()->image('image.jpg'),
+                ],
+            ],
         ])->assertOk()->assertJsonFragment([
             'avatar' => '/storage/avatar.jpg',
         ]);
