@@ -41,7 +41,21 @@ class RepositoryCustomPrefixTest extends IntegrationTestCase
         $this->getJson(PostRepository::route())
             ->assertOk();
 
-        $this->postJson(PostRepository::route(), ['title' => 'Title', 'user_id' => 1])
+        $this->postJson(PostRepository::route(), [
+            'data' => [
+                'attributes' => [
+                    'title' => 'Title'
+                ],
+                'relationships' => [
+                    'user' => [
+                        'data' => [
+                            'type' => 'users',
+                            'id' => 1,
+                        ],
+                    ],
+                ],
+            ]
+        ])
             ->assertCreated();
     }
 }

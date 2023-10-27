@@ -648,10 +648,12 @@ class Repository implements JsonSerializable, RestifySearchable
                 $links
             ),
             'data' => $data->map(fn($value) => Arr::except($value, 'included')),
-            'included' => $data->pluck('included')
+            'included' => $this->when($included = $data->pluck('included')
                 ->flatten(1)
                 ->unique(static fn($repository) => isset($repository['type']) ? "{$repository['type']}.{$repository['id']}" : ($repository instanceof Model ? "{$repository->getTable()}.$repository->getKey()}" : $repository))
-                ->values(),
+                ->filter()
+                ->values()
+                ->all(), $included),
         ]));
     }
 
