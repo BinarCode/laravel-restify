@@ -539,7 +539,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
             ->map(fn(Related $related) => $related->resolve($request, $this)->getValue())
-            ->flatMap(function (mixed $items) use ($request) {
+            ->flatMap(static function (mixed $items) {
                 $items = $items instanceof Collection ? $items : collect([$items]);
 
                 $items = $items->map(static fn($repository) => $repository instanceof self ? $repository->jsonSerialize() : $repository);
@@ -584,16 +584,6 @@ class Repository implements JsonSerializable, RestifySearchable
         return $this->resolveRelationships($request);
     }
 
-    /**
-     * Return a list of the included relationships for the current model.
-     *
-     * @return array
-     */
-    public function resolveIndexIncluded($request, Collection $items)
-    {
-        return $this->resolveIncluded($request);
-    }
-
     public function index(RestifyRequest $request)
     {
         // Check if the user has the policy allowRestify
@@ -619,6 +609,7 @@ class Repository implements JsonSerializable, RestifySearchable
         })->values();
 
         $data = $items->map(fn(self $repository) => $repository->serializeForIndex($request));
+        assert($data instanceof Collection);
 
         return response()->json($this->filter([
             'meta' => $this->when(
@@ -647,8 +638,11 @@ class Repository implements JsonSerializable, RestifySearchable
                 ]),
                 $links
             ),
-            'data' => $data,
-            'included' => $this->when($included = $this->resolveIndexIncluded($request, $items), $included),
+            'data' => $data->map(fn($value) => Arr::except($value, 'included')),
+            'included' => $data->pluck('included')
+                ->flatten(1)
+                ->unique(static fn($repository) => isset($repository['type']) ? "{$repository['type']}.{$repository['id']}" : ($repository instanceof Model ? "{$repository->getTable()}.$repository->getKey()}" : $repository))
+            ,
         ]));
     }
 
@@ -1169,7 +1163,8 @@ class Repository implements JsonSerializable, RestifySearchable
             'meta' => $this->when(!empty($meta = [
                 ...$this->when(value($pivots = $this->resolveIndexPivots($request)), compact('pivots'), []),
                 ...$this->when(value($metaElements = $this->resolveIndexMeta($request)), $metaElements, []),
-            ]), $meta)
+            ]), $meta),
+            'included' => $this->when($included = $this->resolveIncluded($request), $included),
         ]);
 
         return $data;
