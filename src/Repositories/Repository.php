@@ -530,16 +530,8 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function resolveIncluded($request): array
     {
-        $relatedDto = $request->related();
         if (!$request->related()->hasRelated()) {
             return [];
-        }
-
-        // Reset the resolved relationships since we are going to resolve them again
-        // TODO: This might be made better
-        if (!$relatedDto->resolvedIncluded) {
-            $relatedDto->reset();
-            $relatedDto->resolvedIncluded = true;
         }
 
         return static::collectRelated()
@@ -550,7 +542,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->flatMap(function (mixed $items) use ($request) {
                 $items = $items instanceof Collection ? $items : collect([$items]);
 
-                $items = $items->map(static fn($repository) => $repository instanceof self ? $repository->serializeForShow($request) : $repository);
+                $items = $items->map(static fn($repository) => $repository instanceof self ? $repository->jsonSerialize() : $repository);
                 $nested_relationships = $items->map(static fn($repository) => $repository['included'] ?? []);
 
                 return $items
