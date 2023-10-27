@@ -530,8 +530,17 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function resolveIncluded($request): array
     {
+        $relatedDto = $request->related();
         if (!$request->related()->hasRelated()) {
             return [];
+        }
+
+        // Reset the resolved relationships since we are going to resolve them again
+        // This fixes an issue for some nested relationships with Laravel models and not repositories
+        // TODO: This might be made better
+        if (!$relatedDto->resolvedIncluded) {
+            $relatedDto->reset();
+            $relatedDto->resolvedIncluded = true;
         }
 
         return static::collectRelated()
@@ -642,7 +651,7 @@ class Repository implements JsonSerializable, RestifySearchable
             'included' => $data->pluck('included')
                 ->flatten(1)
                 ->unique(static fn($repository) => isset($repository['type']) ? "{$repository['type']}.{$repository['id']}" : ($repository instanceof Model ? "{$repository->getTable()}.$repository->getKey()}" : $repository))
-            ,
+                ->values(),
         ]));
     }
 
