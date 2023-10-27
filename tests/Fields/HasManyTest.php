@@ -299,7 +299,11 @@ class HasManyTest extends IntegrationTestCase
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
 
         $this->postJson(UserWithPosts::route("/{$userId}/posts/{$post->id}"), [
-            'title' => 'Test',
+            'data' => [
+                'attributes' => [
+                    'title' => 'Test',
+                ]
+            ]
         ])->assertOk();
 
         $this->assertSame('Test', $post->fresh()->title);
