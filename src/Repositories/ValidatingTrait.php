@@ -22,7 +22,6 @@ trait ValidatingTrait
     abstract public static function newModel();
 
     /**
-     * @param  array  $plainPayload
      * @return \Illuminate\Contracts\Validation\Validator
      */
     public static function validatorForStoring(RestifyRequest $request, array $plainPayload = null)

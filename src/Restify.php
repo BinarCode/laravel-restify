@@ -237,7 +237,7 @@ class Restify
     /**
      * Humanize the given value into a proper name.
      *
-     * @param  string  $value
+     * @param  string|object  $value
      * @return string
      */
     public static function humanize($value)
