@@ -108,8 +108,6 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Where specified, a meta member can be used to include non-standard meta-information.
      * The value of each meta member MUST be an object (a “meta object”).
-     *
-     * @var array
      */
     protected ?array $meta = null;
 
