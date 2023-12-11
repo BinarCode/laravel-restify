@@ -835,7 +835,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function patch(RestifyRequest $request, $repositoryId)
     {
-        $attrs = array_keys($request->json('data.attributes'));
+        $attrs = array_keys($request->json('data.attributes', []));
 
         DB::transaction(function () use ($request, $attrs) {
             $fields = $this->collectFields($request)
