@@ -127,6 +127,8 @@ class Field extends OrganicField implements JsonSerializable
 
     public $label;
 
+    public $meta;
+
     /**
      * Create a new field.
      *
@@ -540,6 +542,13 @@ class Field extends OrganicField implements JsonSerializable
     public function label($label)
     {
         $this->label = $label;
+
+        return $this;
+    }
+
+    public function meta($meta)
+    {
+        $this->meta = $meta
 
         return $this;
     }
