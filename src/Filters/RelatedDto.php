@@ -46,7 +46,7 @@ class RelatedDto
 
     public function getRelatedQueryFor(string $relation): ?RelatedQuery
     {
-        return collect($this->relatedArray)->first(fn ($object, $key) => str_contains($key, $relation));
+        return collect($this->relatedArray)->first(fn ($object, $key) => str_contains($relation, $key));
     }
 
     public function getNestedFor(string $relation): ?RelatedQueryCollection
