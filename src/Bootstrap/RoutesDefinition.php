@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController;
 use Binaryk\LaravelRestify\Http\Controllers\RestifyJsSetupController;
-use Binaryk\LaravelRestify\Http\Middleware\RestifySanctumAuthenticate;
 use Illuminate\Support\Facades\Route;
 
 class RoutesDefinition
@@ -169,9 +168,8 @@ class RoutesDefinition
         Route::post('/profile', ProfileUpdateController::class)->name('profile.updatePost');
 
         // RestifyJS
-        Route::get('/restifyjs/setup', RestifyJsSetupController::class)->withoutMiddleware(
-            RestifySanctumAuthenticate::class,
-        )->name('restifyjs.setup');
+        Route::get('/restifyjs/setup',
+            RestifyJsSetupController::class)->withoutMiddleware('auth:sanctum')->name('restifyjs.setup');
     }
 
     public function withoutMiddleware(...$middleware): self
