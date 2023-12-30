@@ -21,7 +21,7 @@ class RelatedDto
     public string $rootKey = '';
 
     public function __construct(
-        RelatedQueryCollection $related = null,
+        ?RelatedQueryCollection $related = null,
     ) {
         $this->related = $related ?? RelatedQueryCollection::make([]);
     }

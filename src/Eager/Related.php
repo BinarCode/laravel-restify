@@ -39,7 +39,7 @@ class Related implements JsonSerializable
 
     public ?RelatedQuery $relatedQuery = null;
 
-    public function __construct(string $relation, EagerField $field = null)
+    public function __construct(string $relation, ?EagerField $field = null)
     {
         $this->relation = $relation;
         $this->field = $field;

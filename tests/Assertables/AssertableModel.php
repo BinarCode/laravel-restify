@@ -30,7 +30,7 @@ abstract class AssertableModel
     ) {
     }
 
-    public function first(Closure $callback = null): Model
+    public function first(?Closure $callback = null): Model
     {
         return $this->model;
     }
@@ -45,7 +45,7 @@ abstract class AssertableModel
         return $key;
     }
 
-    protected function prop(string $key = null)
+    protected function prop(?string $key = null)
     {
         if (is_null($key)) {
             return $this->model->toArray();

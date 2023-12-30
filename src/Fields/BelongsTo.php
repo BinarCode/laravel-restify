@@ -16,7 +16,7 @@ class BelongsTo extends EagerField implements Sortable
 
     public ?array $searchablesAttributes = null;
 
-    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
+    public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
         /** * @var Model $relatedModel */
         $relatedModel = $model->{$this->relation}()->getModel();
