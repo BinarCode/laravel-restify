@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController;
 use Binaryk\LaravelRestify\Http\Controllers\RestifyJsSetupController;
-use Binaryk\LaravelRestify\Http\Middleware\RestifySanctumAuthenticate;
 use Illuminate\Support\Facades\Route;
 
 class RoutesDefinition
