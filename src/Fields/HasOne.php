@@ -10,7 +10,7 @@ class HasOne extends EagerField implements Sortable
 {
     use CanSort;
 
-    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
+    public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
         //
     }

@@ -12,7 +12,7 @@ class HasMany extends EagerField
 {
     protected $canEnableRelationshipCallback;
 
-    public function __construct($relation, string $parentRepository = null)
+    public function __construct($relation, ?string $parentRepository = null)
     {
         parent::__construct($relation, $parentRepository);
 
@@ -48,7 +48,7 @@ class HasMany extends EagerField
         return $this;
     }
 
-    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
+    public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
         //
     }

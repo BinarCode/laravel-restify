@@ -116,7 +116,7 @@ abstract class IntegrationTestCase extends TestCase
         return $this;
     }
 
-    protected function authenticate(Authenticatable $user = null): self
+    protected function authenticate(?Authenticatable $user = null): self
     {
         $this->actingAs($this->authenticatedAs = $user ?? Mockery::mock(MockUser::class));
 

@@ -133,7 +133,7 @@ class Serializer implements JsonSerializable, Responsable
         ]);
     }
 
-    private function request(string $class = null): RestifyRequest
+    private function request(?string $class = null): RestifyRequest
     {
         /**
          * @var RestifyRequest $request

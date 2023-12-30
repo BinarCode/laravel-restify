@@ -76,7 +76,7 @@ trait WithRoutePrefix
         ])->some(fn ($prefix) => (bool) $prefix);
     }
 
-    public static function setPrefix(?string $prefix, string $uriKey = null): void
+    public static function setPrefix(?string $prefix, ?string $uriKey = null): void
     {
         static::$prefixes[$uriKey ?? static::uriKey()] = $prefix;
         static::$prefix = $prefix;

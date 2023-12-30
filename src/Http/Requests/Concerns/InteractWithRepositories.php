@@ -60,21 +60,21 @@ trait InteractWithRepositories
         }
     }
 
-    public function repositoryWith(Model $model, string $uriKey = null): Repository
+    public function repositoryWith(Model $model, ?string $uriKey = null): Repository
     {
         $repository = $this->repository($uriKey);
 
         return $repository::resolveWith($model);
     }
 
-    public function model(string $uriKey = null): Model
+    public function model(?string $uriKey = null): Model
     {
         $repository = $this->repository($uriKey);
 
         return $repository::newModel();
     }
 
-    public function newQuery(string $uriKey = null): Builder|Relation
+    public function newQuery(?string $uriKey = null): Builder|Relation
     {
         if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
@@ -88,7 +88,7 @@ trait InteractWithRepositories
         return $this->relatedEagerField()->getRelation();
     }
 
-    public function modelQuery(string $repositoryId = null, string $uriKey = null): Builder|Relation
+    public function modelQuery(?string $repositoryId = null, ?string $uriKey = null): Builder|Relation
     {
         return $this->newQuery($uriKey)->whereKey(
             $repositoryId ?? $this->route('repositoryId')
