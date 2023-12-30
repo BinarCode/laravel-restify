@@ -29,7 +29,7 @@ class BelongsToMany extends EagerField
      */
     public $detachCallback;
 
-    public function __construct($relation, string $parentRepository = null)
+    public function __construct($relation, ?string $parentRepository = null)
     {
         parent::__construct($relation, $parentRepository);
 

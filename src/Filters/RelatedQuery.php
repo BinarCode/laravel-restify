@@ -14,7 +14,7 @@ class RelatedQuery
         public string $relation,
         public bool $loaded = false,
         public array $columns = ['*'],
-        RelatedQueryCollection $nested = null,
+        ?RelatedQueryCollection $nested = null,
     ) {
         $this->nested = $nested ?? RelatedQueryCollection::make([]);
         $this->tree = $relation;
