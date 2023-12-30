@@ -16,9 +16,9 @@ use Illuminate\Database\Eloquent\Model;
 trait Testing
 {
     public static function route(
-        string|Model $path = null,
+        string|Model|null $path = null,
         array $query = [],
-        Action|callable $action = null,
+        Action|callable|null $action = null,
     ): string {
         if ($path instanceof Model) {
             $path = $path->getKey();
@@ -47,19 +47,19 @@ trait Testing
     /**
      * @param  Action  $action
      */
-    public static function action(string $action, string|int $key = null): string
+    public static function action(string $action, string|int|null $key = null): string
     {
         return static::route($key, action: app($action));
     }
 
-    public static function getter(string $getter, string|int $key = null): string
+    public static function getter(string $getter, string|int|null $key = null): string
     {
         $path = $key ? "$key/getters" : 'getters';
 
         return static::route($path.'/'.Getter::guessUriKey(app($getter)));
     }
 
-    public function dd(string $prop = null): void
+    public function dd(?string $prop = null): void
     {
         if (is_null($prop)) {
             dd($this);

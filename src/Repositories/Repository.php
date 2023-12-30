@@ -1052,7 +1052,7 @@ class Repository implements JsonSerializable, RestifySearchable
         return $this->serializeForShow(app(RestifyRequest::class));
     }
 
-    private function modelAttributes(Request $request = null): Collection
+    private function modelAttributes(?Request $request = null): Collection
     {
         return collect(method_exists($this->resource, 'toArray') ? $this->resource->toArray() : []);
     }
@@ -1071,7 +1071,7 @@ class Repository implements JsonSerializable, RestifySearchable
         RestifyRequest $request,
         Model $model,
         Collection $fields,
-        int $bulkRow = null
+        ?int $bulkRow = null
     ) {
         return $fields->map(function (Field $field) use ($request, $model, $bulkRow) {
             return $field->fillAttribute($request, $model, $bulkRow);
@@ -1098,7 +1098,7 @@ class Repository implements JsonSerializable, RestifySearchable
         return static::$detachers;
     }
 
-    public function eager(EagerField $field = null): Repository
+    public function eager(?EagerField $field = null): Repository
     {
         if (! $field) {
             $this->eagerState = false;

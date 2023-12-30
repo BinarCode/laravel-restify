@@ -133,7 +133,7 @@ class Field extends OrganicField implements JsonSerializable
      * @param  string|callable|null  $attribute
      * @param  callable|null  $resolveCallback
      */
-    public function __construct($attribute, callable|Closure $resolveCallback = null)
+    public function __construct($attribute, callable|Closure|null $resolveCallback = null)
     {
         $this->attribute = $attribute;
 
@@ -210,7 +210,7 @@ class Field extends OrganicField implements JsonSerializable
      *
      * @return mixed|void
      */
-    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
+    public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
         $this->resolveValueBeforeUpdate($request, $model);
 
@@ -258,7 +258,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill the model with value from the request.
      */
-    protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
+    protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute, ?int $bulkRow = null)
     {
         $attribute = is_null($bulkRow)
             ? $attribute
@@ -279,7 +279,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill the model with value from the callback.
      */
-    protected function fillAttributeFromCallback(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
+    protected function fillAttributeFromCallback(RestifyRequest $request, $model, $attribute, ?int $bulkRow = null)
     {
         if (is_callable($cb = $this->guessBeforeFillableCallable($request))) {
             $value = $request->input($attribute ?? $this->attribute);

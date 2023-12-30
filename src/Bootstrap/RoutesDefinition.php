@@ -13,7 +13,7 @@ class RoutesDefinition
 {
     private array $excludedMiddleware = [];
 
-    public function __invoke(string $uriKey = null)
+    public function __invoke(?string $uriKey = null)
     {
         $prefix = $uriKey ?: '{repository}';
 

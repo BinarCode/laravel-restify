@@ -16,7 +16,7 @@ class CompanyPolicy
      *
      * @return mixed
      */
-    public function allowRestify(User $user = null)
+    public function allowRestify(?User $user = null)
     {
         return true;
     }

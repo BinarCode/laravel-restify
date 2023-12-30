@@ -35,6 +35,8 @@ class RepositorySerializerTest extends IntegrationTestCase
         $assertable
             ->has('meta')
             ->has('data')
+            ->has('data.0.relationships.user')
+            ->where('data.0.type', 'posts')
             ->count('data', 20)
             ->etc();
     }
