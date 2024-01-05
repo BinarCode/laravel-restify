@@ -3,6 +3,9 @@
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Http\Requests\IndexRepositoryActionRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\UserProfile;
