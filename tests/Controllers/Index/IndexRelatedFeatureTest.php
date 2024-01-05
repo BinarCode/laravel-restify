@@ -33,7 +33,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        $this->app->singletonIf(RelatedDto::class, fn($app) => new RelatedDto());
+        $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
     }
 
     public function test_can_retrieve_nested_relationships(): void
@@ -43,7 +43,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             ->andReturn([
                 'owner',
                 'users' => HasMany::make('users', UserRepository::class),
-                'extraData' => fn() => ['country' => 'Romania'],
+                'extraData' => fn () => ['country' => 'Romania'],
                 'extraMeta' => new InvokableExtraMeta(),
             ]);
 
@@ -70,7 +70,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->withoutExceptionHandling()->getJson(CompanyRepository::route(query: [
             'related' => 'users.companies.users, users.posts, users.roles, extraData, extraMeta, owner',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.0.type', 'companies')
                 ->has('data.0.relationships')
                 ->has('data.0.relationships.users')
@@ -110,7 +110,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->getJson(CommentRepository::route(query: [
             'related' => 'parent, children',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.2.attributes.comment', 'Root comment')
                 ->has('data.2.relationships.parent')
                 ->missing('data.2.relationships.parent.relationships.parent')
@@ -147,7 +147,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->getJson(CommentRepository::route(query: [
             'related' => 'user, post.user',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.0.id', '2')
                 ->has('data.0.relationships.user')
                 ->has('data.0.relationships.post')
@@ -164,7 +164,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->getJson(CommentRepository::route(query: [
             'related' => 'user, post',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->has('data.0.relationships.user')
                 ->has('data.0.relationships.post')
                 ->missing('data.0.relationships.post.relationships.user')
@@ -191,7 +191,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->getJson(PostRepository::route(query: [
             'related' => 'user',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->where('data.0.relationships.user', 'foo')
                 ->etc()
         );
@@ -221,7 +221,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             'page' => 2,
         ]))
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->count('data', 1)
                     ->where('data.0.relationships.user.name', $owner)
                     ->etc()
@@ -235,7 +235,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             ->shouldReceive('fields')
             ->once()
             ->andReturn([
-                field('name')
+                field('name'),
             ]);
 
         PostRepository::$related = [
@@ -247,7 +247,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         $this->getJson(PostRepository::route(query: [
             'related' => 'user',
         ]))->assertJson(
-            fn(AssertableJson $json) => $json
+            fn (AssertableJson $json) => $json
                 ->has('data.0.relationships.user.attributes.name')
                 ->etc()
         );
