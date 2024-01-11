@@ -85,6 +85,64 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         );
     }
 
+    public function test_can_load_deep_relationships(): void
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'owner' => BelongsTo::make('owner', UserRepository::class),
+            ]);
+
+        UserRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'posts' => HasMany::make('posts', PostRepository::class),
+            ]);
+
+        PostRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'comments' => HasMany::make('comments', CommentRepository::class),
+            ]);
+
+        $user = User::factory()->create();
+
+        /**
+         * @var Post $post
+         */
+        $post = Post::factory()
+            ->state([
+                'user_id' => $user->id,
+            ])
+            ->create();
+
+        $post->comments()->create([
+            'comment' => 'Test comment',
+        ]);
+
+        Company::factory()
+            ->count(2)
+            ->for($user, 'owner')
+            ->create();
+
+        $this->getJson(CompanyRepository::route(query: [
+            'related' => 'owner.posts.comments',
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->has('data.0.relationships.owner.attributes.email')
+                ->where('data.0.relationships.owner.attributes.email', $user->email)
+                ->has('data.0.relationships.owner.relationships.posts.0.relationships.comments.0.attributes.comment')
+                ->where('data.0.relationships.owner.relationships.posts.0.relationships.comments.0.attributes.comment',
+                    'Test comment')
+                ->has('data.1.relationships.owner.attributes.email')
+                ->where('data.1.relationships.owner.attributes.email', $user->email)
+                ->has('data.1.relationships.owner.relationships.posts.0.relationships.comments.0.attributes.comment')
+                ->where('data.1.relationships.owner.relationships.posts.0.relationships.comments.0.attributes.comment',
+                    'Test comment')
+                ->etc()
+        );
+    }
+
     public function test_can_load_nested_parent_from_the_same_table(): void
     {
         CommentRepository::partialMock()

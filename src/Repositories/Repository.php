@@ -487,7 +487,7 @@ class Repository implements JsonSerializable, RestifySearchable
         return static::collectRelated()
             ->forRequest($request, $this)
             ->mapIntoRelated($request, $this)
-            ->unserialized($request, $this)
+//            ->unserialized($request, $this)
             ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
             ->map(function (mixed $items) {
                 if ($items instanceof Collection) {
