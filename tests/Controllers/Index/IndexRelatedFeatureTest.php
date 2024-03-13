@@ -227,6 +227,31 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
                     ->etc()
             );
     }
+
+    /** * @test */
+    public function it_will_call_fields_method_for_related(): void
+    {
+        UserRepository::partialMock()
+            ->shouldReceive('fields')
+            ->once()
+            ->andReturn([
+                field('name'),
+            ]);
+
+        PostRepository::$related = [
+            'user' => BelongsTo::make('user', UserRepository::class),
+        ];
+
+        PostFactory::one();
+
+        $this->getJson(PostRepository::route(query: [
+            'related' => 'user',
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->has('data.0.relationships.user.attributes.name')
+                ->etc()
+        );
+    }
 }
 
 class InvokableExtraMeta

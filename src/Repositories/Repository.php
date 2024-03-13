@@ -1225,7 +1225,7 @@ class Repository implements JsonSerializable, RestifySearchable
         return $this->isRelationship ? $this->serializeForRelationship(app(RestifyRequest::class)) : $this->serializeForShow(app(RestifyRequest::class));
     }
 
-    private function modelAttributes(Request $request = null): Collection
+    private function modelAttributes(?Request $request = null): Collection
     {
         return collect(method_exists($this->resource, 'toArray') ? $this->resource->toArray() : []);
     }
@@ -1242,11 +1242,10 @@ class Repository implements JsonSerializable, RestifySearchable
 
     protected static function fillBulkFields(
         RestifyRequest $request,
-        Model          $model,
-        Collection     $fields,
-        int            $bulkRow = null
-    )
-    {
+        Model $model,
+        Collection $fields,
+        ?int $bulkRow = null
+    ) {
         return $fields->map(function (Field $field) use ($request, $model, $bulkRow) {
             return $field->fillAttribute($request, $model, $bulkRow);
         });
@@ -1272,7 +1271,7 @@ class Repository implements JsonSerializable, RestifySearchable
         return static::$detachers;
     }
 
-    public function eager(EagerField $field = null): Repository
+    public function eager(?EagerField $field = null): Repository
     {
         if (!$field) {
             $this->eagerState = false;

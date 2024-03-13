@@ -42,10 +42,12 @@ class SearchableFilter extends Filter
         }
 
         if (! config('restify.search.case_sensitive')) {
-            return $query->orWhereRaw("UPPER({$this->column}) LIKE '%".strtoupper($value)."%'");
+            $upper = strtoupper($value);
+
+            return $query->orWhereRaw("UPPER({$this->column}) LIKE \"%{$upper}%\"");
         }
 
-        return $query->orWhere($this->column, $likeOperator, '%'.$value.'%');
+        return $query->orWhere($this->column, $likeOperator, "%{$value}%");
     }
 
     public function usingBelongsTo(BelongsTo $field): self

@@ -10,7 +10,7 @@ class PostsShowGetter extends Getter
 {
     public static $uriKey = 'posts-show-getter';
 
-    public function handle(Request $request, Model $model = null)
+    public function handle(Request $request, ?Model $model = null)
     {
         return ok('show works');
     }

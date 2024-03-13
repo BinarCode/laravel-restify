@@ -48,7 +48,7 @@ class File extends Field implements DeletableContract, StorableContract
      */
     public $storageCallback;
 
-    public function __construct($attribute, callable $resolveCallback = null)
+    public function __construct($attribute, ?callable $resolveCallback = null)
     {
         parent::__construct($attribute, $resolveCallback);
 
@@ -81,7 +81,7 @@ class File extends Field implements DeletableContract, StorableContract
      *
      * @return $this
      */
-    public function resolveUsingTemporaryUrl(bool $resolveTemporaryUrl = true, CarbonInterface $expiration = null, array $options = []): self
+    public function resolveUsingTemporaryUrl(bool $resolveTemporaryUrl = true, ?CarbonInterface $expiration = null, array $options = []): self
     {
         if (! $resolveTemporaryUrl) {
             return $this;
@@ -126,7 +126,7 @@ class File extends Field implements DeletableContract, StorableContract
     /**
      * Prepare the storage callback.
      */
-    protected function prepareStorageCallback(callable $storageCallback = null): void
+    protected function prepareStorageCallback(?callable $storageCallback = null): void
     {
         $this->storageCallback = $storageCallback ?? function ($request, $model) {
             return $this->mergeExtraStorageColumns($request, [
@@ -227,7 +227,7 @@ class File extends Field implements DeletableContract, StorableContract
         return $attributes;
     }
 
-    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
+    public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
         if (is_null($file = $request->file("data.attributes.$this->attribute")) || ! $file->isValid()) {
             return $this;

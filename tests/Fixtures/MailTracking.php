@@ -76,10 +76,9 @@ trait MailTracking
      * Assert that the last email's body equals the given text.
      *
      * @param  string  $body
-     * @param  Swift_Message  $message
      * @return MailTracking
      */
-    protected function assertEmailEquals($body, Swift_Message $message = null)
+    protected function assertEmailEquals($body, ?Swift_Message $message = null)
     {
         $this->assertEquals(
             $body,
@@ -94,10 +93,9 @@ trait MailTracking
      * Assert that the last email's body contains the given text.
      *
      * @param  string  $excerpt
-     * @param  Swift_Message  $message
      * @return MailTracking
      */
-    protected function assertEmailContains($excerpt, Swift_Message $message = null)
+    protected function assertEmailContains($excerpt, ?Swift_Message $message = null)
     {
         $this->assertContains(
             $excerpt,
@@ -112,10 +110,9 @@ trait MailTracking
      * Assert that the last email's subject matches the given string.
      *
      * @param  string  $subject
-     * @param  Swift_Message  $message
      * @return MailTracking
      */
-    protected function assertEmailSubject($subject, Swift_Message $message = null)
+    protected function assertEmailSubject($subject, ?Swift_Message $message = null)
     {
         $this->assertEquals(
             $subject,
@@ -130,10 +127,9 @@ trait MailTracking
      * Assert that the last email was sent to the given recipient.
      *
      * @param  string  $recipient
-     * @param  Swift_Message  $message
      * @return MailTracking
      */
-    protected function assertEmailTo($recipient, Swift_Message $message = null)
+    protected function assertEmailTo($recipient, ?Swift_Message $message = null)
     {
         $this->assertArrayHasKey(
             $recipient,
@@ -148,10 +144,9 @@ trait MailTracking
      * Assert that the last email was delivered by the given address.
      *
      * @param  string  $sender
-     * @param  Swift_Message  $message
      * @return MailTracking
      */
-    protected function assertEmailFrom($sender, Swift_Message $message = null)
+    protected function assertEmailFrom($sender, ?Swift_Message $message = null)
     {
         $this->assertArrayHasKey(
             $sender,
@@ -173,10 +168,9 @@ trait MailTracking
     /**
      * Retrieve the appropriate swift message.
      *
-     * @param  Swift_Message  $message
      * @return mixed
      */
-    protected function getEmail(Swift_Message $message = null)
+    protected function getEmail(?Swift_Message $message = null)
     {
         $this->assertEmailWasSent();
 

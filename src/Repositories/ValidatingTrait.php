@@ -23,10 +23,9 @@ trait ValidatingTrait
     abstract public static function newModel();
 
     /**
-     * @param  array  $plainPayload
      * @return \Illuminate\Contracts\Validation\Validator
      */
-    public static function validatorForStoring(RestifyRequest $request, array $plainPayload = null)
+    public static function validatorForStoring(RestifyRequest $request, ?array $plainPayload = null)
     {
         $on = static::resolveWith(static::newModel());
 
@@ -54,7 +53,7 @@ trait ValidatingTrait
         });
     }
 
-    public static function validatorForStoringBulk(RestifyRequest $request, array $plainPayload = null)
+    public static function validatorForStoringBulk(RestifyRequest $request, ?array $plainPayload = null)
     {
         $on = static::resolveWith(static::newModel());
 
@@ -85,7 +84,7 @@ trait ValidatingTrait
         static::validatorForUpdate($request, $resource)->validate();
     }
 
-    public static function validatorForUpdate(RestifyRequest $request, $resource = null, array $plainPayload = null)
+    public static function validatorForUpdate(RestifyRequest $request, $resource = null, ?array $plainPayload = null)
     {
         /** * @var Repository $on */
         $on = $resource ?? static::resolveWith(static::newModel());
@@ -114,7 +113,7 @@ trait ValidatingTrait
         });
     }
 
-    public static function validatorForPatch(RestifyRequest $request, $resource = null, array $plainPayload = null)
+    public static function validatorForPatch(RestifyRequest $request, $resource = null, ?array $plainPayload = null)
     {
         /** * @var Repository $on */
         $on = $resource ?? static::resolveWith(static::newModel());
@@ -140,7 +139,7 @@ trait ValidatingTrait
         });
     }
 
-    public static function validatorForAttach(RestifyRequest $request, $resource = null, array $plainPayload = null)
+    public static function validatorForAttach(RestifyRequest $request, $resource = null, ?array $plainPayload = null)
     {
         /** * @var Repository $on */
         $on = $resource ?? static::resolveWith(static::newModel());
@@ -168,7 +167,7 @@ trait ValidatingTrait
         });
     }
 
-    public static function validatorForUpdateBulk(RestifyRequest $request, $resource = null, array $plainPayload = null)
+    public static function validatorForUpdateBulk(RestifyRequest $request, $resource = null, ?array $plainPayload = null)
     {
         /** * @var Repository $on */
         $on = $resource ?? static::resolveWith(static::newModel());

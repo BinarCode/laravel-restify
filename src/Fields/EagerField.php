@@ -30,7 +30,7 @@ class EagerField extends Field
     /** @var array<string, string>|null  */
     public ?array $matchableAttributes = null;
 
-    public function __construct($attribute, string $parentRepository = null)
+    public function __construct($attribute, ?string $parentRepository = null)
     {
         parent::__construct(attribute: $attribute);
 
@@ -103,7 +103,7 @@ class EagerField extends Field
     }
 
     public function getRelation(
-        Repository $repository = null
+        ?Repository $repository = null
     ): Relation {
         $repository = $repository ?? $this->parentRepository;
 
