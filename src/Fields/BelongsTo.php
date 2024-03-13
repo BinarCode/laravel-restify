@@ -22,7 +22,7 @@ class BelongsTo extends EagerField implements Sortable
         $relatedModel = $model->{$this->relation}()->getModel();
 
         $belongsToModel = $relatedModel->newQuery()->whereKey(
-            $request->input($this->attribute)
+            $request->input($this->getAttribute())
         )->firstOrFail();
 
         $methodGuesser = 'attach'.Str::studly(class_basename($relatedModel));

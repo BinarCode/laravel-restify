@@ -60,7 +60,7 @@ class MatchesCollection extends Collection
                 "-{$filter->column()}",
             ]);
 
-            if ($filters = collect($request->input('filter', []))) {
+            if ($filters = collect($request->input('filter', []))->dot()) {
                 if ($filters->keys()->intersect($possibleKeys)->count()) {
                     return true;
                 }

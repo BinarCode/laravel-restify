@@ -24,8 +24,12 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
 
         $this->postJson(PostRepository::route('bulk/update'), [
             [
-                'id' => $post->id,
-                'title' => null,
+                'data' => [
+                    'id' => $post->id,
+                    'attributes' => [
+                        'title' => null,
+                    ],
+                ]
             ],
         ])->assertStatus(422);
     }
@@ -43,12 +47,20 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
 
         $this->postJson(PostRepository::route('bulk/update'), [
             [
-                'id' => $post1->id,
-                'title' => 'Updated first title',
+                'data' => [
+                    'id' => $post1->id,
+                    'attributes' => [
+                        'title' => 'Updated first title',
+                    ],
+                ]
             ],
             [
-                'id' => $post2->id,
-                'title' => 'Updated second title',
+                'data' => [
+                    'id' => $post2->id,
+                    'attributes' => [
+                        'title' => 'Updated second title',
+                    ],
+                ]
             ],
         ])
             ->assertOk();

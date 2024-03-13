@@ -38,7 +38,7 @@ class MorphToManyFieldTest extends IntegrationTestCase
             'related' => 'roles',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-                ->count('data.relationships.roles', 3)
+                ->count('data.relationships.roles.data', 3)
                 ->etc()
         );
     }
@@ -64,7 +64,7 @@ class MorphToManyFieldTest extends IntegrationTestCase
                         'companies' => [],
                     ],
                 ],
-            ])->assertJsonCount(3, 'data.relationships.roles');
+            ])->assertJsonCount(3, 'data.relationships.roles.data');
     }
 
     public function test_morph_to_many_ignored_when_store(): void
@@ -72,10 +72,14 @@ class MorphToManyFieldTest extends IntegrationTestCase
         /** * @var User $user */
         $user = User::factory()->make();
 
-        $id = $this->postJson(UserWithRolesRepository::route(), array_merge($user->toArray(), [
-            'password' => 'password',
-            'users' => [1],
-        ]))->json('data.id');
+        $id = $this->postJson(UserWithRolesRepository::route(), [
+            'data' => [
+                'attributes' => array_merge($user->toArray(), [
+                    'password' => 'password',
+                    'users' => [1],
+                ])
+            ]
+        ])->json('data.id');
 
         $this->assertCount(0, User::find($id)->roles);
     }

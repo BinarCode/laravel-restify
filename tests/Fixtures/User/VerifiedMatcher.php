@@ -7,7 +7,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 class VerifiedMatcher extends MatchFilter
 {
-    public function filter(RestifyRequest $request, $query, $value)
+    public function filter(RestifyRequest $request, $query, $value, bool $no_eager = false)
     {
         if ($request->boolean($this->getQueryKey())) {
             $query->whereNotNull('email_verified_at');

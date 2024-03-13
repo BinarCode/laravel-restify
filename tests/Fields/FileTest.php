@@ -26,7 +26,11 @@ class FileTest extends IntegrationTestCase
         });
 
         $request = RestifyRequest::create('/', 'GET', [], [], [
-            'avatar' => UploadedFile::fake()->image('image.jpg'),
+            'data' => [
+                'attributes' => [
+                    'avatar' => UploadedFile::fake()->image('image.jpg'),
+                ],
+            ]
         ]);
 
         $field->fillAttribute($request, $model);
@@ -58,7 +62,12 @@ class FileTest extends IntegrationTestCase
         $user = $this->mockUsers()->first();
 
         $this->postJson(UserRepository::route($user), [
-            'avatar' => UploadedFile::fake()->image('image.jpg'),
+            'data' => [
+                'type' => 'users',
+                'attributes' => [
+                    'avatar' => UploadedFile::fake()->image('image.jpg'),
+                ],
+            ]
         ])->assertOk()->assertJsonFragment([
             'avatar_original' => 'image.jpg',
             'avatar' => '/storage/avatar.jpg',
@@ -139,7 +148,7 @@ class FileTest extends IntegrationTestCase
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg')->deletable(true),
             ]);
 
-        $this->deleteJson(UserRepository::route($user->getKey().'/field/avatar'))
+        $this->deleteJson(UserRepository::route($user->getKey() . '/field/avatar'))
             ->assertNoContent();
 
         Storage::disk('customDisk')->assertMissing('avatar.jpg');
@@ -162,7 +171,7 @@ class FileTest extends IntegrationTestCase
                 Image::make('avatar')->disk('customDisk')->storeAs('avatar.jpg')->deletable(false),
             ]);
 
-        $this->deleteJson(UserRepository::route($user.'/field/avatar'))
+        $this->deleteJson(UserRepository::route($user . '/field/avatar'))
             ->assertNotFound();
     }
 
@@ -181,7 +190,12 @@ class FileTest extends IntegrationTestCase
         $user = $this->mockUsers()->first();
 
         $this->postJson(UserRepository::route($user), [
-            'avatar' => UploadedFile::fake()->image('image.jpg'),
+            'data' => [
+                'type' => 'users',
+                'attributes' => [
+                    'avatar' => UploadedFile::fake()->image('image.jpg'),
+                ],
+            ]
         ])->assertOk()->assertJsonFragment([
             'avatar' => '/storage/avatar.jpg',
         ]);
@@ -209,7 +223,12 @@ class FileTest extends IntegrationTestCase
             ]);
 
         $this->postJson(UserRepository::route($user), [
-            'avatar' => UploadedFile::fake()->image('image.jpg'),
+            'data' => [
+                'type' => 'users',
+                'attributes' => [
+                    'avatar' => UploadedFile::fake()->image('image.jpg'),
+                ]
+            ]
         ])->assertOk()->assertJsonFragment([
             'avatar' => '/storage/newAvatar.jpg',
         ]);

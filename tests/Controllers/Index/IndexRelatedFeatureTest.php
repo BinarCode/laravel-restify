@@ -74,13 +74,13 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
                 ->where('data.0.type', 'companies')
                 ->has('data.0.relationships')
                 ->has('data.0.relationships.users')
-                ->where('data.0.relationships.users.0.type', 'users')
-                ->has('data.0.relationships.users.0.relationships.posts')
-                ->where('data.0.relationships.users.0.relationships.posts.0.type', 'posts')
-                ->where('data.0.relationships.users.0.relationships.roles.0.type', 'roles')
-                ->where('data.0.relationships.users.0.relationships.companies.0.type', 'companies')
-                ->where('data.0.relationships.extraData', ['country' => 'Romania'])
-                ->where('data.0.relationships.owner.email', 'owner@owner.com')
+                ->where('data.0.relationships.users.data.0.type', 'users')
+                ->has('included.1.relationships.posts')
+                ->where('included.1.relationships.posts.data.0.type', 'posts')
+                ->where('included.1.relationships.roles.data.0.type', 'roles')
+                ->where('included.1.relationships.companies.data.0.type', 'companies')
+                ->where('included.2', ['country' => 'Romania'])
+                ->where('included.0.email', 'owner@owner.com')
                 ->etc()
         );
     }
@@ -113,16 +113,16 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             fn (AssertableJson $json) => $json
                 ->where('data.2.attributes.comment', 'Root comment')
                 ->has('data.2.relationships.parent')
-                ->missing('data.2.relationships.parent.relationships.parent')
-                ->missing('data.2.relationships.parent.relationships.children')
-                ->has('data.2.relationships.children')
-                ->count('data.2.relationships.children', 2)
-                ->missing('data.2.relationships.children.0.relationships.parent')
-                ->missing('data.2.relationships.children.1.relationships.parent')
+                ->missing('data.2.relationships.parent.data.relationships.parent')
+                ->missing('data.2.relationships.parent.data.relationships.children')
+                ->has('data.2.relationships.children.data')
+                ->count('data.2.relationships.children.data', 2)
+                ->missing('included.2.relationships.parent')
+                ->missing('included.3.relationships.parent')
                 ->where('data.0.attributes.comment', 'Children comments')
-                ->has('data.0.relationships.parent')
-                ->has('data.0.relationships.children')
-                ->count('data.0.relationships.children', 0)
+                ->has('data.0.relationships.parent.data')
+                ->has('data.0.relationships.children.data')
+                ->count('data.0.relationships.children.data', 0)
                 ->etc()
         );
     }
@@ -151,11 +151,11 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
                 ->where('data.0.id', '2')
                 ->has('data.0.relationships.user')
                 ->has('data.0.relationships.post')
-                ->has('data.0.relationships.post.relationships.user')
+                ->where('included.2.type', 'users')
                 ->where('data.1.id', '1')
                 ->has('data.1.relationships.user')
                 ->has('data.1.relationships.post')
-                ->has('data.1.relationships.post.relationships.user')
+                ->where('included.3.type', 'users')
                 ->etc()
         );
 
@@ -192,7 +192,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             'related' => 'user',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-                ->where('data.0.relationships.user', 'foo')
+                ->where('included.0', 'foo')
                 ->etc()
         );
     }

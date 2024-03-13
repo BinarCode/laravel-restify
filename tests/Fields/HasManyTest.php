@@ -50,10 +50,22 @@ class HasManyTest extends IntegrationTestCase
             'data' => [
                 'relationships' => [
                     'posts' => [
-                        [
-                            'id',
-                            'attributes',
-                        ],
+                        'data' => [
+                            '*' => [
+                                'id',
+                                'type',
+                            ],
+                        ]
+                    ],
+                ],
+            ],
+            'included' => [
+                [
+                    'id',
+                    'type',
+                    'attributes' => [
+                        'title',
+                        'description',
                     ],
                 ],
             ],
@@ -72,8 +84,8 @@ class HasManyTest extends IntegrationTestCase
 
         $this->getJson(UserWithPosts::route($user, query: ['related' => 'posts[title]']))
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                    ->where('data.relationships.posts.0.attributes.title', 'Title')
+                fn(AssertableJson $json) => $json
+                    ->where('included.0.attributes.title', 'Title')
                     ->etc()
             );
 
@@ -81,9 +93,9 @@ class HasManyTest extends IntegrationTestCase
 
         $this->getJson(UserWithPosts::route($user, query: ['related' => 'posts[title|description]']))
             ->assertJson(
-                fn (AssertableJson $json) => $json
-                    ->where('data.relationships.posts.0.attributes.title', 'Title')
-                    ->where('data.relationships.posts.0.attributes.description', 'Description')
+                fn(AssertableJson $json) => $json
+                    ->where('included.0.attributes.title', 'Title')
+                    ->where('included.0.attributes.description', 'Description')
                     ->etc()
             );
     }
@@ -95,7 +107,8 @@ class HasManyTest extends IntegrationTestCase
         });
 
         $this->getJson(UserWithPosts::route($user, query: ['related' => 'posts', 'relatablePerPage' => 20]))
-            ->assertJsonCount(20, 'data.relationships.posts');
+            ->assertJsonCount(20, 'data.relationships.posts.data')
+            ->assertJsonCount(20, 'included');
     }
 
     public function test_has_many_filter_unauthorized_to_see_relationship_posts(): void
@@ -109,17 +122,21 @@ class HasManyTest extends IntegrationTestCase
 
         $this->getJson(UserWithPosts::route($user, query: ['related' => 'posts']))
             ->assertOk()
-            ->assertJson(fn (AssertableJson $json) => $json->count('data.relationships.posts', 0)->etc());
+            ->assertJson(fn(AssertableJson $json) => $json->count('data.relationships.posts.data', 15)->missing('included')->etc());
     }
 
     public function test_field_ignored_when_storing(): void
     {
         tap(User::factory()->create(), function ($user) {
             $this->postJson(UserWithPosts::route(), [
-                'name' => 'Eduard Lupacescu',
-                'email' => 'eduard.lupacescu@binarcode.com',
-                'password' => 'strong!',
-                'posts' => 'wew',
+                'data' => [
+                    'attributes' => [
+                        'name' => 'Eduard Lupacescu',
+                        'email' => 'eduard.lupacescu@binarcode.com',
+                        'password' => 'strong!',
+                        'posts' => 'wew',
+                    ]
+                ]
             ])->assertCreated();
         });
     }
@@ -219,7 +236,11 @@ class HasManyTest extends IntegrationTestCase
             ]);
 
         $this->postJson(UserWithPosts::route("$u->id/posts"), [
-            'title' => 'Test',
+            'data' => [
+                'attributes' => [
+                    'title' => 'Test',
+                ]
+            ]
         ])->assertCreated();
 
         $this->assertDatabaseCount('posts', 1);
@@ -278,7 +299,11 @@ class HasManyTest extends IntegrationTestCase
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
 
         $this->postJson(UserWithPosts::route("/{$userId}/posts/{$post->id}"), [
-            'title' => 'Test',
+            'data' => [
+                'attributes' => [
+                    'title' => 'Test',
+                ]
+            ]
         ])->assertOk();
 
         $this->assertSame('Test', $post->fresh()->title);

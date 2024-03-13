@@ -130,7 +130,7 @@ class File extends Field implements DeletableContract, StorableContract
     {
         $this->storageCallback = $storageCallback ?? function ($request, $model) {
             return $this->mergeExtraStorageColumns($request, [
-                $this->attribute => $this->storeFile($request, $this->attribute),
+                $this->attribute => $this->storeFile($request, "data.attributes.$this->attribute"),
             ]);
         };
     }
@@ -196,7 +196,7 @@ class File extends Field implements DeletableContract, StorableContract
      */
     protected function mergeExtraStorageColumns($request, array $attributes): array
     {
-        $file = $request->file($this->attribute);
+        $file = $request->file("data.attributes.$this->attribute");
 
         if ($this->originalNameColumn) {
             $attributes[$this->originalNameColumn] = $file->getClientOriginalName();
@@ -229,7 +229,7 @@ class File extends Field implements DeletableContract, StorableContract
 
     public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
-        if (is_null($file = $request->file($this->attribute)) || ! $file->isValid()) {
+        if (is_null($file = $request->file("data.attributes.$this->attribute")) || ! $file->isValid()) {
             return $this;
         }
 

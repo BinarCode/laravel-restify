@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
 
@@ -35,10 +36,15 @@ trait ValidatingTrait
             }
 
             return $messages;
-        })->toArray();
+        })
+            ->merge(
+                $on::collectRelated()
+                    ->flatMap(fn (Field $field) => $field->serializeMessages())
+            )
+            ->toArray();
 
         return Validator::make(
-            $plainPayload ?? $request->all(),
+            $plainPayload ?? Arr::get($request->all(), 'data.attributes', []),
             $on->getStoringRules($request),
             $messages
         )->after(function ($validator) use ($request) {
@@ -61,7 +67,7 @@ trait ValidatingTrait
         })->toArray();
 
         return Validator::make(
-            $plainPayload ?? $request->all(),
+            $plainPayload ?? Arr::pluck($request->all(), 'data.attributes'),
             $on->getStoringBulkRules($request),
             $messages
         )->after(function ($validator) use ($request) {
@@ -90,10 +96,15 @@ trait ValidatingTrait
             }
 
             return $messages;
-        })->toArray();
+        })
+            ->merge(
+                $on::collectRelated()
+                    ->flatMap(fn ($field) => $field instanceof Field ? $field->serializeMessages() : [])
+            )
+            ->toArray();
 
         return Validator::make(
-            $plainPayload ?? $request->all(),
+            $plainPayload ?? Arr::get($request->all(), 'data.attributes', []),
             $on->getUpdatingRules($request),
             $messages
         )->after(function ($validator) use ($request) {
@@ -119,7 +130,7 @@ trait ValidatingTrait
             })->toArray();
 
         return Validator::make(
-            $plainPayload ?? $request->all(),
+            $plainPayload ?? Arr::get($request->all(), 'data.attributes', []),
             collect($on->getUpdatingRules($request))->intersectByKeys($request->json())->all(),
             $messages
         )->after(function ($validator) use ($request) {
@@ -144,7 +155,7 @@ trait ValidatingTrait
 
         $rules = $pivotFields->mapWithKeys(function (Field $k) {
             return [
-                $k->attribute => $k->getStoringRules(),
+                $k->getAttribute() => $k->getStoringRules(),
             ];
         })->all();
 
@@ -171,7 +182,7 @@ trait ValidatingTrait
         })->toArray();
 
         return Validator::make(
-            $plainPayload ?? $request->all(),
+            $plainPayload ?? Arr::pluck($request->all(), 'data.attributes'),
             $on->getUpdatingBulkRules($request),
             $messages
         )->after(function ($validator) use ($request) {
@@ -214,7 +225,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                $k->attribute => $k->getStoringRules(),
+                $k->getAttribute() => $k->getStoringRules(),
             ];
         })->toArray();
     }
@@ -223,7 +234,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                "*.{$k->attribute}" => $k->getStoringBulkRules(),
+                "*.{$k->getAttribute()}" => $k->getStoringBulkRules(),
             ];
         })->toArray();
     }
@@ -232,7 +243,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                $k->attribute => $k->getUpdatingRules(),
+                $k->getAttribute() => $k->getUpdatingRules(),
             ];
         })->toArray();
     }
@@ -241,7 +252,7 @@ trait ValidatingTrait
     {
         return $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
-                "*.{$k->attribute}" => $k->getUpdatingBulkRules(),
+                "*.{$k->getAttribute()}" => $k->getUpdatingBulkRules(),
             ];
         })->toArray();
     }

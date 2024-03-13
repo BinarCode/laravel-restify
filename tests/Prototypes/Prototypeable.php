@@ -117,7 +117,7 @@ abstract class Prototypeable implements JsonSerializable
     {
         $this->ensureRepositoryClassDefined();
 
-        $id = $this->test->postJson(static::repositoryClass()::route(), $this->getAttributes())
+        $id = $this->test->postJson(static::repositoryClass()::route(), ['data' => ['attributes' => $this->getAttributes()]])
             ->tap($tap ?? fn () => '')
             ->json('data.id');
 
@@ -128,7 +128,7 @@ abstract class Prototypeable implements JsonSerializable
     {
         $key = $key ?? $this->model()->getKey();
 
-        $id = $this->test->postJson(static::repositoryClass()::route($key), $this->getAttributes())
+        $id = $this->test->postJson(static::repositoryClass()::route($key), ['data' => ['attributes' => $this->getAttributes()]])
             ->tap($tap ?? fn () => '')
             ->json('data.id');
 

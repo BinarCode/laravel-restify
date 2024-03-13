@@ -191,7 +191,11 @@ class FieldTest extends IntegrationTestCase
         });
 
         $request->merge([
-            'title' => 'title from request',
+            'data' => [
+                'attributes' => [
+                    'title' => 'title from request',
+                ],
+            ]
         ]);
 
         $model = new class() extends Model
@@ -249,7 +253,11 @@ class FieldTest extends IntegrationTestCase
         });
 
         $request->merge([
-            'title' => 'After store title',
+            'data' => [
+                'attributes' => [
+                    'title' => 'After store title',
+                ],
+            ]
         ]);
 
         $model = new class() extends Model
@@ -292,7 +300,11 @@ class FieldTest extends IntegrationTestCase
         });
 
         $request->merge([
-            'title' => 'After update title',
+            'data' => [
+                'attributes' => [
+                    'title' => 'After update title',
+                ],
+            ]
         ]);
 
         /** * @var Field $field */
@@ -332,7 +344,11 @@ class FieldTest extends IntegrationTestCase
         });
 
         $request->merge([
-            'custom_title' => 'title from request',
+            'data' => [
+                'attributes' => [
+                    'custom_title' => 'title from request',
+                ],
+            ]
         ]);
 
         $model = new class() extends Model

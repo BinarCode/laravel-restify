@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Fields\Concerns\HasAction;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryAttachRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -260,9 +261,13 @@ class Field extends OrganicField implements JsonSerializable
      */
     protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute, ?int $bulkRow = null)
     {
-        $attribute = is_null($bulkRow)
-            ? $attribute
-            : "{$bulkRow}.{$attribute}";
+        $attributeName = $attribute;
+        $attribute = $bulkRow === null
+            ? "data.attributes.$attribute"
+            : "$bulkRow.data.attributes.$attribute";
+        if ($request instanceof RepositoryAttachRequest) {
+            $attribute = $attributeName;
+        }
 
         if (! ($request->exists($attribute) || $request->input($attribute))) {
             return;

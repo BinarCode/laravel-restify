@@ -155,6 +155,10 @@ class RelatedCollection extends Collection
         return $this->forBelongsToRelations($request)
             ->filter(fn (BelongsTo $field) => $field->isSearchable());
     }
+    public function onlyMatchable(): self
+    {
+        return $this->filter(static fn (EagerField $field) => $field->isMatchable());
+    }
 
     public function forRequest(RestifyRequest $request, Repository $repository): self
     {

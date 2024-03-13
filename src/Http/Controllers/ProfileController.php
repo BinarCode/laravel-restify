@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends RepositoryController
@@ -14,7 +15,7 @@ class ProfileController extends RepositoryController
     public function __invoke(ProfileRequestRequest $request): JsonResponse
     {
         if ($repository = $this->guessRepository($request)) {
-            return data($repository->serializeForShow($request));
+            return response()->json(Arr::except($repository->serializeForShow($request), 'links'));
         }
 
         $user = $request->user();

@@ -27,6 +27,8 @@ class EagerField extends Field
     public string $repositoryClass;
 
     private RelatedQuery $relatedQuery;
+    /** @var array<string, string>|null  */
+    public ?array $matchableAttributes = null;
 
     public function __construct($attribute, ?string $parentRepository = null)
     {
@@ -137,6 +139,29 @@ class EagerField extends Field
 
     public function queryKeyThatRendered(): string
     {
-        return $this->relatedQuery->relation;
+        return $this->relatedQuery->relation ?? $this->relation;
+    }
+
+    /**
+     * Sets the attributes for the matchables.
+     *
+     * @param array<string, string> $attributes The attributes to be set for the matchables.
+     * @return self The updated object with the new matchable attributes set.
+     */
+    public function matchable(array $attributes): self
+    {
+        $this->matchableAttributes = $attributes;
+
+        return $this;
+    }
+
+    public function isMatchable(): bool
+    {
+        return $this->matchableAttributes !== null;
+    }
+
+    public function getMatchables(): array
+    {
+        return $this->matchableAttributes;
     }
 }

@@ -40,7 +40,7 @@ class ShowRelatedFeatureTest extends IntegrationTestCase
             fn (AssertableJson $json) => $json
                 ->has('data.relationships.user')
                 ->has('data.relationships.post')
-                ->has('data.relationships.post.relationships.user')
+                ->where('included.0.type', 'users')
                 ->etc()
         );
 
