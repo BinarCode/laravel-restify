@@ -22,7 +22,7 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * The resource associated with the field.
      *
-     * @var  Repository
+     * @var Repository
      */
     public $repository;
 

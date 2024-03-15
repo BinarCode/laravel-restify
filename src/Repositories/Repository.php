@@ -327,8 +327,8 @@ class Repository implements JsonSerializable, RestifySearchable
      * However all options could be customized by passing an $options argument
      *
      * @param  bool  $wrap  Choose the routes defined in the @routes method, should be wrapped in a group with attributes by default.
-     * If true then all routes will be grouped in a configuration attributes passed by restify, otherwise
-     * you should take care of that, by adding $router->group($attributes) in the @routes method
+     *                      If true then all routes will be grouped in a configuration attributes passed by restify, otherwise
+     *                      you should take care of that, by adding $router->group($attributes) in the @routes method
      */
     public static function routes(Router $router, array $attributes, $wrap = true)
     {

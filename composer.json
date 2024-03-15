@@ -18,25 +18,25 @@
         }
     ],
     "require": {
-        "php": "^8.1",
-        "illuminate/contracts": "^10.0",
+        "php": "^8.2",
+        "illuminate/contracts": "^11.0",
         "laravel/pint": "^1.0",
-        "spatie/laravel-data": "dev-main",
+        "spatie/laravel-data": "^4.4",
         "spatie/laravel-package-tools": "^1.12",
         "spatie/once": "^3.0"
     },
     "require-dev": {
         "brianium/paratest": "^7.0.6",
-        "doctrine/dbal": "^3.0",
-        "nunomaduro/collision": "^7.0",
-        "openai-php/laravel": "^0.3.1",
-        "orchestra/testbench": "^8.0",
+        "doctrine/dbal": "^3.0|^4.0",
+        "nunomaduro/collision": "^8.1",
+        "openai-php/laravel": "^0.8.1",
+        "orchestra/testbench": "^9.0",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0",
         "phpstan/phpstan-phpunit": "^1.0",
-        "phpunit/phpunit": "^10.0",
+        "phpunit/phpunit": "^10.0|^11.0",
         "spatie/laravel-ray": "^1.9",
-        "vimeo/psalm": "^5.6"
+        "vimeo/psalm": "^6.0@dev"
     },
     "autoload": {
         "files": [
@@ -75,5 +75,6 @@
             }
         }
     },
-    "minimum-stability": "dev"
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }
