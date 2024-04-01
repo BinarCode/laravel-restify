@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Concerns\WithRepositoriesDataProvider;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class RepositoryLoadedFromServiceProviderTest extends IntegrationTestCase
 {
@@ -22,7 +23,7 @@ class RepositoryLoadedFromServiceProviderTest extends IntegrationTestCase
         parent::tearDown();
     }
 
-    /** @dataProvider repositoryPathsFromFixtures */
+    #[DataProvider('repositoryPathsFromFixtures')]
     public function test_repositories_can_be_loaded_with_service_provider_register_method(
         string $directory,
         string $namespace,

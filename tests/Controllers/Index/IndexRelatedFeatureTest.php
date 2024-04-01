@@ -24,6 +24,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\Test;
 
 class IndexRelatedFeatureTest extends IntegrationTestCase
 {
@@ -197,7 +198,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         );
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_paginate_keeping_relationships(): void
     {
         PostRepository::$related = [
@@ -228,7 +229,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
             );
     }
 
-    /** * @test */
+    #[Test]
     public function it_will_call_fields_method_for_related(): void
     {
         UserRepository::partialMock()

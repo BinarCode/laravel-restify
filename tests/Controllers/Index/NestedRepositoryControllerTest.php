@@ -12,10 +12,11 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\Test;
 
 class NestedRepositoryControllerTest extends IntegrationTestCase
 {
-    /** * @test */
+    #[Test]
     public function it_can_list_nested(): void
     {
         UserRepository::$related = [
@@ -33,7 +34,7 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
         $this->getJson(UserRepository::route('1/posts'))->assertForbidden();
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_show_nested_using_identifier(): void
     {
         $post = PostFactory::one([
@@ -56,7 +57,7 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
         $this->getJson(UserRepository::route("$post->user_id/posts/$post->id"))->assertForbidden();
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_store_nested_related(): void
     {
         UserRepository::$related = [
@@ -83,9 +84,7 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
         ])->assertForbidden();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_can_update_nested_related(): void
     {
         UserRepository::$related = [
@@ -117,9 +116,7 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
         ])->assertForbidden();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_can_delete_nested_related(): void
     {
         UserRepository::$related = [
@@ -139,9 +136,7 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
         $this->deleteJson(UserRepository::route("$post->user_id/posts/$post->id"))->assertForbidden();
     }
 
-    /**
-     * @test
-     */
+    #[Test]
     public function it_will_apply_policies_when_nested_requested(): void
     {
         $_SERVER['restify.post.delete'] = false;

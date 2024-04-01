@@ -11,12 +11,13 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\Test;
 
 class RepositoryIndexControllerTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    /** * @test */
+    #[Test]
     public function it_can_paginate(): void
     {
         PostFactory::many(15);
@@ -65,7 +66,7 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
         );
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_search_using_query(): void
     {
         PostFactory::one([
@@ -91,7 +92,7 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
         ]))->assertJson(fn (AssertableJson $json) => $json->count('data', 2)->etc());
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_sort_using_query(): void
     {
         PostFactory::one([
@@ -125,7 +126,7 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
         );
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_return_related_entity(): void
     {
         PostRepository::$related = [

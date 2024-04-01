@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Concerns\WithRepositoriesDataProvider;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\DataProvider;
 
 class RepositoriesResolvedFromNamespaceTest extends IntegrationTestCase
 {
@@ -46,9 +47,7 @@ class RepositoriesResolvedFromNamespaceTest extends IntegrationTestCase
         );
     }
 
-    /**
-     * @dataProvider repositoryPathsFromFixtures
-     */
+    #[DataProvider('repositoryPathsFromFixtures')]
     public function test_repository_can_be_resolved_from_any_namespace(string $directory, string $namespace): void
     {
         Restify::repositoriesFrom(
