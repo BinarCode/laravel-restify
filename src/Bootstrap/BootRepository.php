@@ -9,8 +9,7 @@ class BootRepository
     /** * @var Repository */
     public function __construct(
         private string $repository
-    ) {
-    }
+    ) {}
 
     public function boot(): void
     {

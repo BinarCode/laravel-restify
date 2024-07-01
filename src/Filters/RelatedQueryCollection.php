@@ -10,6 +10,4 @@ use Illuminate\Support\Collection;
  *
  * @extends \Illuminate\Support\Collection<TKey, TValue>
  */
-class RelatedQueryCollection extends Collection
-{
-}
+class RelatedQueryCollection extends Collection {}

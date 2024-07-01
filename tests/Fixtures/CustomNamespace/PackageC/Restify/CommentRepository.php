@@ -2,6 +2,4 @@
 
 namespace CustomNamespace\PackageC\Restify;
 
-class CommentRepository extends \Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository
-{
-}
+class CommentRepository extends \Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository {}
