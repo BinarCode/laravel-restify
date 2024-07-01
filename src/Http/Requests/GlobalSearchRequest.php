@@ -2,6 +2,4 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-class GlobalSearchRequest extends RestifyRequest
-{
-}
+class GlobalSearchRequest extends RestifyRequest {}

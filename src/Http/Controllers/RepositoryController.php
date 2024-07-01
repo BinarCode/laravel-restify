@@ -2,6 +2,4 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
-class RepositoryController extends RestController
-{
-}
+class RepositoryController extends RestController {}

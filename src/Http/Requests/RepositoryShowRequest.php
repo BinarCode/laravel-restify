@@ -2,6 +2,4 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-class RepositoryShowRequest extends RestifyRequest
-{
-}
+class RepositoryShowRequest extends RestifyRequest {}

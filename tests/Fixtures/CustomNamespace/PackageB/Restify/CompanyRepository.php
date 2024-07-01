@@ -2,6 +2,4 @@
 
 namespace CustomNamespace\PackageB\Restify;
 
-class CompanyRepository extends \Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository
-{
-}
+class CompanyRepository extends \Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository {}

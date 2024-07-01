@@ -9,6 +9,4 @@ use Illuminate\Database\Eloquent\Model as EloquentModel;
  *
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-abstract class LaravelRestifyModel extends EloquentModel
-{
-}
+abstract class LaravelRestifyModel extends EloquentModel {}

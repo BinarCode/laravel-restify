@@ -13,8 +13,7 @@ class ForgotPasswordNotification extends Notification implements ShouldQueue
 
     public function __construct(
         public string $url,
-    ) {
-    }
+    ) {}
 
     public function via($notifiable): array
     {
