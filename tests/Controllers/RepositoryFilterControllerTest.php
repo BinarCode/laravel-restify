@@ -36,15 +36,15 @@ class RepositoryFilterControllerTest extends IntegrationTestCase
             ->assertJson(
                 fn (AssertableJson $json) => $json
                     ->where('data.0.rules.is_active', 'bool')
-                    ->where('data.4.type', 'text')
-                    ->where('data.4.column', 'title')
-                    ->where('data.5.type', 'value')
+                    ->where('data.5.type', 'text')
                     ->where('data.5.column', 'title')
                     ->where('data.6.type', 'value')
-                    ->where('data.6.column', 'id')
+                    ->where('data.6.column', 'title')
+                    ->where('data.7.type', 'value')
+                    ->where('data.7.column', 'id')
                     ->etc()
             )
-            ->assertJsonCount(8, 'data');
+            ->assertJsonCount(9, 'data');
     }
 
     public function test_available_filters_returns_only_matches_sortables_searches(): void

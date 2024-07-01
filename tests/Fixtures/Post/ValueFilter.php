@@ -10,6 +10,8 @@ use Illuminate\Http\Request;
 
 class ValueFilter extends AdvancedFilter
 {
+    public ?string $column = 'title';
+
     public function filter(RestifyRequest $request, Builder|Relation $query, $value)
     {
         $operator = $this->rest('operator');
