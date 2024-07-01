@@ -364,13 +364,67 @@ The response will look like this:
       "key": "created-after-date-filter",
       "type": "timestamp",
       "options": []
+    },
+    {
+      "key": "email",
+      "type": "value",
+      "description": "Email",
+      "label": "Email",
+      "meta": {
+        "operator": "like"
+      }
     }
   ]
+}
 ```
 
 Along with custom filters, you can also include in the response the primary filters (as matches), by using `?include` query param: 
 
 ```http request
 /api/restify/posts/filters?include=matches,searchables,sortables
+```
+
+## Handling Additional Payload Data in Advanced Filters
+
+In some scenarios, you might want to send additional data beyond the standard key and value in your filter payload. For instance, you may need to specify an operator or a column to apply more complex filtering logic. Laravel Restify Advanced Filters provide a way to handle these additional payload fields using the `$this->rest()` method.
+
+**Example Payload**
+
+Consider the following payload:
+```json
+const filters = btoa(JSON.stringify([
+    {
+        'key': ValueFilter::uriKey(),
+        'value': 'Valid%',
+        'operator' => 'like',
+        'column' => 'description',
+    }
+]));
+
+const response = await axios.get(`api/restify/posts?filters=${filters}`);
+```
+
+In this payload, besides the standard key and value, we are also sending operator and column. The operator specifies the type of SQL operation, and the column specifies the database column to filter.
+
+Using `$this->rest()` to Access Additional Data
+
+To handle these additional fields in your filter class, you need to ensure they are accessible via the `$this->rest()` method. Here is how you can achieve that:
+
+```php
+class ValueFilter extends AdvancedFilter
+{
+    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
+    {
+        $operator = $this->rest('operator');
+        $column = $this->rest('column');
+
+        $query->where($column, $operator, $value);
+    }
+
+    public function rules(Request $request): array
+    {
+        return [];
+    }
+}
 ```
 
