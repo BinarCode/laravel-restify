@@ -37,5 +37,10 @@ abstract class AdvancedFilter extends Filter
         return data_get($this->dataObject->value, $key, $default);
     }
 
+    protected function rest(?string $key = null, $default = null)
+    {
+        return data_get($this->dataObject->rest, $key, $default);
+    }
+
     abstract public function rules(Request $request): array;
 }

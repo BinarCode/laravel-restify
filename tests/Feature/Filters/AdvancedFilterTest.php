@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\InactiveFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\SelectCategoryFilter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\ValueFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
@@ -37,7 +38,7 @@ class AdvancedFilterTest extends IntegrationTestCase
         $this->getJson(PostRepository::route('filters', query: [
             'only' => 'matches,searchables,sortables',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
+            fn(AssertableJson $json) => $json
                 ->where('data.1.repository.key', 'users')
                 ->where('data.1.repository.label', 'Users')
                 ->where('data.1.repository.display_key', 'id')
@@ -72,7 +73,7 @@ class AdvancedFilterTest extends IntegrationTestCase
             'filters' => $filters,
         ]))
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->where('data.0.attributes.title', $expectedTitle)
                     ->etc()
             )
@@ -196,10 +197,49 @@ class AdvancedFilterTest extends IntegrationTestCase
         ]))
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->where('data.0.attributes.title', 'Valid post')
                     ->count('data', 1)
                     ->etc()
             );
+    }
+
+    public function test_filter_can_send_meta(): void
+    {
+        Post::factory()->create([
+            'title' => 'Valid post',
+            'description' => 'Zoo bar post',
+        ]);
+
+        Post::factory()->create([
+            'title' => 'Active post',
+            'description' => 'Foo bar post',
+        ]);
+
+        $filters = base64_encode(json_encode([
+            [
+                'key' => ValueFilter::uriKey(),
+                'value' => 'Valid%',
+                'operator' => 'like',
+                'column' => 'title',
+            ],
+        ], JSON_THROW_ON_ERROR));
+
+        $this->getJson(PostRepository::route(query: [
+            'filters' => $filters,
+        ]))->assertJsonCount(1, 'data');
+
+        $filters = base64_encode(json_encode([
+            [
+                'key' => ValueFilter::uriKey(),
+                'value' => 'Valid%',
+                'operator' => 'like',
+                'column' => 'description',
+            ],
+        ], JSON_THROW_ON_ERROR));
+
+        $this->getJson(PostRepository::route(query: [
+            'filters' => $filters,
+        ]))->assertJsonCount(0, 'data');
     }
 }

@@ -95,6 +95,7 @@ class PostRepository extends Repository
             SelectCategoryFilter::new(),
             CreatedAfterDateFilter::new(),
             InactiveFilter::new(),
+            ValueFilter::new(),
         ];
     }
 
