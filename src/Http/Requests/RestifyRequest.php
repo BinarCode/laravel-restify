@@ -75,6 +75,6 @@ class RestifyRequest extends FormRequest
     {
         return $this instanceof RepositoryApplyFiltersRequest
             ? $this->input('filters', [])
-            : json_decode(base64_decode($this->input('filters', [])), true);
+            : (json_decode(base64_decode($this->input('filters')), true) ?? []);
     }
 }
