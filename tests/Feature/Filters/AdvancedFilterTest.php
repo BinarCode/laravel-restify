@@ -38,7 +38,7 @@ class AdvancedFilterTest extends IntegrationTestCase
         $this->getJson(PostRepository::route('filters', query: [
             'only' => 'matches,searchables,sortables',
         ]))->assertJson(
-            fn (AssertableJson $json) => $json
+            fn(AssertableJson $json) => $json
                 ->where('data.1.repository.key', 'users')
                 ->where('data.1.repository.label', 'Users')
                 ->where('data.1.repository.display_key', 'id')
@@ -73,7 +73,7 @@ class AdvancedFilterTest extends IntegrationTestCase
             'filters' => $filters,
         ]))
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->where('data.0.attributes.title', $expectedTitle)
                     ->etc()
             )
@@ -197,7 +197,7 @@ class AdvancedFilterTest extends IntegrationTestCase
         ]))
             ->assertOk()
             ->assertJson(
-                fn (AssertableJson $json) => $json
+                fn(AssertableJson $json) => $json
                     ->where('data.0.attributes.title', 'Valid post')
                     ->count('data', 1)
                     ->etc()
@@ -241,5 +241,31 @@ class AdvancedFilterTest extends IntegrationTestCase
         $this->getJson(PostRepository::route(query: [
             'filters' => $filters,
         ]))->assertJsonCount(0, 'data');
+    }
+
+    public function test_filter_can_be_sent_in_post_requests(): void
+    {
+        Post::factory()->create([
+            'title' => 'Valid post',
+            'description' => 'Zoo bar post',
+        ]);
+
+        Post::factory()->create([
+            'title' => 'Active post',
+            'description' => 'Foo bar post',
+        ]);
+
+        $filters = [
+            [
+                'key' => ValueFilter::uriKey(),
+                'value' => 'Valid%',
+                'operator' => 'like',
+                'column' => 'title',
+            ],
+        ];
+
+        $this->post(PostRepository::route('apply-restify-advanced-filters'), [
+            'filters' => $filters,
+        ])->assertJsonCount(1, 'data');
     }
 }

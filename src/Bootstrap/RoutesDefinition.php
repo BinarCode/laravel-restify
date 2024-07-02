@@ -22,6 +22,11 @@ class RoutesDefinition
             \Binaryk\LaravelRestify\Http\Controllers\RepositoryFilterController::class
         )->name('filters.index');
 
+        Route::post(
+            $prefix.'/apply-restify-advanced-filters',
+            \Binaryk\LaravelRestify\Http\Controllers\RepositoryApplyFiltersController::class
+        )->name('filters.apply');
+
         // Actions
         Route::get(
             $prefix.'/actions',

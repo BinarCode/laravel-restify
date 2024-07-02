@@ -70,4 +70,11 @@ class RestifyRequest extends FormRequest
             return app(RelatedDto::class);
         }
     }
+
+    public function filters(): array
+    {
+        return $this instanceof RepositoryApplyFiltersRequest
+            ? $this->input('filters', [])
+            : json_decode(base64_decode($this->input('filters', [])), true);
+    }
 }

@@ -210,7 +210,7 @@ class RepositorySearchService
                 $repository,
                 AdvancedFiltersCollection::collectQueryFilters($request, $repository)
                     ->apply($request, $query),
-                $request->input('filters'),
+                $request->filters(),
             )
         );
 
