@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
-use Binaryk\LaravelRestify\Http\Requests\RepositoryApplyFiltersRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
@@ -17,12 +16,12 @@ class AdvancedFiltersCollection extends Collection
 {
     public function authorized(RestifyRequest $request): self
     {
-        return $this->filter(fn(Filter $filter) => $filter->authorizedToSee($request))->values();
+        return $this->filter(fn (Filter $filter) => $filter->authorizedToSee($request))->values();
     }
 
     public function apply(RestifyRequest $request, $query): self
     {
-        return $this->each(fn(AdvancedFilter $filter) => $filter->filter($request, $query, $filter->dataObject->value));
+        return $this->each(fn (AdvancedFilter $filter) => $filter->filter($request, $query, $filter->dataObject->value));
     }
 
     public static function collectQueryFilters(RestifyRequest $request, Repository $repository): self
@@ -36,7 +35,7 @@ class AdvancedFiltersCollection extends Collection
         return static::make($filters)
             ->map(function (array $queryFilter) use ($allowedFilters, $request) {
                 /** * @var AdvancedFilter $advancedFilter */
-                $advancedFilter = $allowedFilters->first(fn(
+                $advancedFilter = $allowedFilters->first(fn (
                     AdvancedFilter $filter
                 ) => $filter::uriKey() === data_get($queryFilter, 'key'));
 
