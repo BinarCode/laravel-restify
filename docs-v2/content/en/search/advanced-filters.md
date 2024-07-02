@@ -89,6 +89,22 @@ The frontend has to encode into base64 an array of filters. Each filter contains
 
 - `value` - this is optional, and represents the value the advanced filter will as a third argument in the `filter` method
 
+## Apply advanced filters via POST Request (Version 9.3.0+)
+
+Starting from version 9.3.0, Laravel Restify introduces the ability to apply advanced filters using a POST request. This enhancement simplifies the process of sending complex filter payloads without the need for base64 encoding. Now, you can send the filters directly as JSON in the request body:
+
+```javascript
+const filters = [
+    {
+        'key': 'ready-posts-filter',
+        'value': null,
+    }
+];
+
+const  response = await axios.post(`api/restify/posts/apply-restify-advanced-filters`, filters);
+```
+
+
 ### Custom uri key
 
 Since your class names could change along the way, you can define a `$uriKey` property to your filters, so the frontend will use always the same `key` when applying a filter:
@@ -102,6 +118,64 @@ class ReadyPostsFilter extends AdvancedFilter
 
 };
 ```
+
+### Custom title
+
+```php
+class ReadyPostsFilter extends AdvancedFilter 
+{
+    public static $title = 'Ready to publish posts';
+
+    //...
+
+};
+```
+
+### Custom description
+
+```php
+class ReadyPostsFilter extends AdvancedFilter 
+{
+    public static $description = 'Filter all posts that are ready to publish';
+
+    //...
+
+};
+```
+
+### Custom meta
+
+```php
+class ReadyPostsFilter extends AdvancedFilter 
+{
+   public function meta(): array
+   {
+      return [
+          'icon' => 'icon',
+          'color' => 'red',
+          'operators' => [
+              'like' => 'Like', 
+              'eq' => 'Equal', 
+          ]
+      ];
+   } 
+};
+```
+
+Meta will be rendered key/value in the frontend:
+
+```json
+{
+    ...
+    "icon": "icon",
+    "color": "red",
+    "operators": {
+        "like": "Like",
+        "eq": "Equal"
+    }
+}
+```
+
 ### Advanced filter value
 
 The third argument of the `filter` method is the raw value send by the frontend. Sometimes it might be an array, so you have to get the value using array access: 
@@ -392,16 +466,16 @@ In some scenarios, you might want to send additional data beyond the standard ke
 
 Consider the following payload:
 ```json
-const filters = btoa(JSON.stringify([
+const filters = [
     {
         'key': ValueFilter::uriKey(),
         'value': 'Valid%',
         'operator' => 'like',
         'column' => 'description',
     }
-]));
+];
 
-const response = await axios.get(`api/restify/posts?filters=${filters}`);
+const response = await axios.post(`api/restify/posts/apply-restify-advanced-filters`, filters);
 ```
 
 In this payload, besides the standard key and value, we are also sending operator and column. The operator specifies the type of SQL operation, and the column specifies the database column to filter.
