@@ -10,7 +10,8 @@ class Boot
     public function __construct(
         private Request $request,
         private RoutesBoot $routesBoot,
-    ) {}
+    ) {
+    }
 
     public function boot(): void
     {

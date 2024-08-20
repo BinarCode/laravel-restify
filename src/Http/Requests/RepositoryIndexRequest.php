@@ -2,4 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-class RepositoryIndexRequest extends RestifyRequest {}
+class RepositoryIndexRequest extends RestifyRequest
+{
+}

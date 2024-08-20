@@ -7,4 +7,6 @@ use Exception;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class UnauthenticateException extends Exception {}
+class UnauthenticateException extends Exception
+{
+}

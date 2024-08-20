@@ -2,4 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Exceptions\Eloquent;
 
-class EntityNotFoundException extends \Exception {}
+class EntityNotFoundException extends \Exception
+{
+}

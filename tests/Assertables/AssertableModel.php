@@ -27,7 +27,8 @@ abstract class AssertableModel
 
     public function __construct(
         protected Model $model,
-    ) {}
+    ) {
+    }
 
     public function first(?Closure $callback = null): Model
     {

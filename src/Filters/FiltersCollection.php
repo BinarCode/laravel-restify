@@ -10,4 +10,6 @@ use Illuminate\Support\Collection;
  *
  * @extends \Illuminate\Support\Collection<TKey, TValue>
  */
-class FiltersCollection extends Collection {}
+class FiltersCollection extends Collection
+{
+}

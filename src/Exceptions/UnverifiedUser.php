@@ -7,4 +7,6 @@ use Exception;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class UnverifiedUser extends Exception {}
+class UnverifiedUser extends Exception
+{
+}

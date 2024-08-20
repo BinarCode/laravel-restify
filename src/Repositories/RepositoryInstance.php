@@ -6,7 +6,8 @@ class RepositoryInstance
 {
     public function __construct(
         public Repository $repository,
-    ) {}
+    ) {
+    }
 
     public function current(): Repository
     {

@@ -2,4 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
-class HasField extends EagerField {}
+class HasField extends EagerField
+{
+}

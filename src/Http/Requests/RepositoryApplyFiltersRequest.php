@@ -2,4 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-class RepositoryApplyFiltersRequest extends RestifyRequest {}
+class RepositoryApplyFiltersRequest extends RestifyRequest
+{
+}

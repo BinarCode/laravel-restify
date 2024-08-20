@@ -2,4 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
-class MorphToMany extends BelongsToMany {}
+class MorphToMany extends BelongsToMany
+{
+}

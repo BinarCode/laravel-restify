@@ -2,4 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
-interface FilterPayload {}
+interface FilterPayload
+{
+}

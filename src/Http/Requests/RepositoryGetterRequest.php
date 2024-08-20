@@ -2,4 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-class RepositoryGetterRequest extends GetterRequest {}
+class RepositoryGetterRequest extends GetterRequest
+{
+}

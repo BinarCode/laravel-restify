@@ -7,4 +7,6 @@ use Exception;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class CredentialsDoesntMatch extends Exception {}
+class CredentialsDoesntMatch extends Exception
+{
+}

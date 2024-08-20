@@ -2,4 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-class IndexRepositoryActionRequest extends ActionRequest {}
+class IndexRepositoryActionRequest extends ActionRequest
+{
+}
