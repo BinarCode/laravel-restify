@@ -11,6 +11,5 @@ class AdvancedFiltersApplied
         public Repository $repository,
         public AdvancedFiltersCollection $advancedFiltersCollection,
         public array $rawFilters = [],
-    ) {
-    }
+    ) {}
 }

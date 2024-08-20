@@ -191,21 +191,13 @@ trait ValidatingTrait
         //
     }
 
-    protected static function afterStoringValidation(RestifyRequest $request, $validator)
-    {
-    }
+    protected static function afterStoringValidation(RestifyRequest $request, $validator) {}
 
-    protected static function afterStoringBulkValidation(RestifyRequest $request, $validator)
-    {
-    }
+    protected static function afterStoringBulkValidation(RestifyRequest $request, $validator) {}
 
-    protected static function afterUpdatingValidation(RestifyRequest $request, $validator)
-    {
-    }
+    protected static function afterUpdatingValidation(RestifyRequest $request, $validator) {}
 
-    protected static function afterUpdatingBulkValidation(RestifyRequest $request, $validator)
-    {
-    }
+    protected static function afterUpdatingBulkValidation(RestifyRequest $request, $validator) {}
 
     /**
      * @return array

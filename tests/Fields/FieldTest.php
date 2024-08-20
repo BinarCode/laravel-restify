@@ -183,8 +183,7 @@ class FieldTest extends IntegrationTestCase
         $request = new RepositoryStoreRequest([], []);
 
         $request->setRouteResolver(function () use ($request) {
-            return tap(new Route('POST', '/{repository}', function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });
@@ -212,8 +211,7 @@ class FieldTest extends IntegrationTestCase
         $request = new RepositoryStoreRequest([], []);
 
         $request->setRouteResolver(function () use ($request) {
-            return tap(new Route('POST', '/{repository}', function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });
@@ -241,8 +239,7 @@ class FieldTest extends IntegrationTestCase
         $request = new RepositoryStoreRequest([], []);
 
         $request->setRouteResolver(function () use ($request) {
-            return tap(new Route('POST', '/{repository}', function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });
@@ -284,8 +281,7 @@ class FieldTest extends IntegrationTestCase
         $request = new RepositoryUpdateRequest([], []);
 
         $request->setRouteResolver(function () use ($request, $model) {
-            return tap(new Route('PUT', "/{repository}/{$model->id}", function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('PUT', "/{repository}/{$model->id}", function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });
@@ -324,8 +320,7 @@ class FieldTest extends IntegrationTestCase
         $request = new RepositoryStoreRequest([], []);
 
         $request->setRouteResolver(function () use ($request) {
-            return tap(new Route('POST', '/{repository}', function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });

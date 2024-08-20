@@ -2,6 +2,4 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-class RepositoryActionRequest extends ActionRequest
-{
-}
+class RepositoryActionRequest extends ActionRequest {}

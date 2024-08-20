@@ -20,8 +20,7 @@ abstract class Prototypeable implements JsonSerializable
 
     public function __construct(
         public IntegrationTestCase $test,
-    ) {
-    }
+    ) {}
 
     protected array $attributes = [];
 

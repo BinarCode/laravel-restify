@@ -2,6 +2,4 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-class RepositoryDestroyBulkRequest extends RestifyRequest
-{
-}
+class RepositoryDestroyBulkRequest extends RestifyRequest {}

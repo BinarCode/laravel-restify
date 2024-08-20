@@ -7,6 +7,4 @@ use Exception;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class PasswordResetInvalidTokenException extends Exception
-{
-}
+class PasswordResetInvalidTokenException extends Exception {}

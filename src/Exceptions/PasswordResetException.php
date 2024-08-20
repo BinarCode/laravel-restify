@@ -7,6 +7,4 @@ use Exception;
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
  */
-class PasswordResetException extends Exception
-{
-}
+class PasswordResetException extends Exception {}
