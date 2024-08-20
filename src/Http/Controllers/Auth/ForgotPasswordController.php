@@ -29,7 +29,7 @@ class ForgotPasswordController extends Controller
             $request->input('url') ?? config('restify.auth.password_reset_url')
         );
 
-        (new AnonymousNotifiable())->route('mail', $user->email)->notify(new ForgotPasswordNotification($url));
+        (new AnonymousNotifiable)->route('mail', $user->email)->notify(new ForgotPasswordNotification($url));
 
         return ok(__('Reset password link sent to your email.'));
     }

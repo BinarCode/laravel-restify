@@ -14,7 +14,7 @@ class AdvancedFilterTest extends IntegrationTestCase
 {
     public function test_advanced_filters_can_serialize(): void
     {
-        $filter = new class() extends AdvancedFilter
+        $filter = new class extends AdvancedFilter
         {
             public static $uriKey = 'status-filter';
 

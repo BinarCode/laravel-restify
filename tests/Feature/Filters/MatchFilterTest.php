@@ -16,7 +16,7 @@ class MatchFilterTest extends IntegrationTestCase
 {
     public function test_matchable_filter_has_key(): void
     {
-        $filter = new class() extends MatchFilter
+        $filter = new class extends MatchFilter
         {
             public ?string $column = 'approved_at';
         };

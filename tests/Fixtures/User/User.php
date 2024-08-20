@@ -67,7 +67,7 @@ class User extends Authenticatable implements MustVerifyEmail, Sanctumable
 
     public function createToken($name, array $scopes = []): object
     {
-        return new class()
+        return new class
         {
             public $accessToken = 'token';
         };

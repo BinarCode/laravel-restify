@@ -113,7 +113,7 @@ trait InteractWithSearch
 
             return $type instanceof Filter
                 ? tap($type, fn ($filter) => $filter->column = $filter->column ?? $column)
-                : tap(new $base(), function (Filter $filter) use ($column, $type) {
+                : tap(new $base, function (Filter $filter) use ($column, $type) {
                     $filter->type = $type ? $type : 'value';
                     $filter->column = $column;
                 });

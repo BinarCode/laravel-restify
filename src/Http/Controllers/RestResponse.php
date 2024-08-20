@@ -252,8 +252,8 @@ class RestResponse extends JsonResponse implements Responsable
     public function respond($response = null): JsonResponse
     {
         if (! func_num_args()) {
-            $response = new \stdClass();
-            $response->data = new \stdClass();
+            $response = new \stdClass;
+            $response->data = new \stdClass;
 
             foreach (static::$RESPONSE_DEFAULT_ATTRIBUTES as $property) {
                 if (isset($this->{$property})) {
@@ -537,7 +537,7 @@ class RestResponse extends JsonResponse implements Responsable
 
     public static function created()
     {
-        return (new self())->code(201);
+        return (new self)->code(201);
     }
 
     public static function index(AbstractPaginator|Paginator $paginator, array $meta = []): JsonResponse

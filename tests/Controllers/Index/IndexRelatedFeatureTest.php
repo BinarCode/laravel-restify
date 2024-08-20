@@ -34,7 +34,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
+        $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto);
     }
 
     public function test_can_retrieve_nested_relationships(): void
@@ -45,7 +45,7 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
                 'owner',
                 'users' => HasMany::make('users', UserRepository::class),
                 'extraData' => fn () => ['country' => 'Romania'],
-                'extraMeta' => new InvokableExtraMeta(),
+                'extraMeta' => new InvokableExtraMeta,
             ]);
 
         UserRepository::partialMock()

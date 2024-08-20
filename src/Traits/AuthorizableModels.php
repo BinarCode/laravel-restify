@@ -145,7 +145,7 @@ trait AuthorizableModels
     public function authorizeToDetach(Request $request, $method, $model)
     {
         if (! static::authorizable()) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
 
         $authorized = method_exists(Gate::getPolicyFor($this->model()), $method)
@@ -153,7 +153,7 @@ trait AuthorizableModels
             : false;
 
         if ($authorized === false) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
     }
 
@@ -194,7 +194,7 @@ trait AuthorizableModels
     public function authorizeTo(Request $request, iterable|string $ability): void
     {
         if ($this->authorizedTo($request, $ability) === false) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
     }
 
@@ -213,6 +213,6 @@ trait AuthorizableModels
 
     public static function isRepositoryContext(): bool
     {
-        return new static() instanceof Repository;
+        return new static instanceof Repository;
     }
 }

@@ -186,7 +186,7 @@ class RepositoryAttachControllerTest extends IntegrationTestCase
 
                         return true;
                     })
-                    ->attachCallback(new AttachInvokable()),
+                    ->attachCallback(new AttachInvokable),
             ]);
 
         $this->postJson(CompanyRepository::route("$company->id/attach/users"), [

@@ -62,7 +62,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
 
         // Register the main class to use with the facade
         $this->app->singleton('laravel-restify', function () {
-            return new Restify();
+            return new Restify;
         });
     }
 

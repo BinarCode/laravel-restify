@@ -16,7 +16,7 @@ class FieldActionTest extends IntegrationTestCase
     #[Test]
     public function can_use_actionable_field(): void
     {
-        $action = new class() extends Action
+        $action = new class extends Action
         {
             public bool $showOnShow = true;
 
@@ -56,7 +56,7 @@ class FieldActionTest extends IntegrationTestCase
     #[Test]
     public function can_use_actionable_field_on_bulk_store(): void
     {
-        $action = new class() extends Action
+        $action = new class extends Action
         {
             public bool $showOnShow = true;
 
@@ -101,7 +101,7 @@ class FieldActionTest extends IntegrationTestCase
     #[Test]
     public function can_use_actionable_field_on_bulk_update(): void
     {
-        $action = new class() extends Action
+        $action = new class extends Action
         {
             public bool $showOnShow = true;
 

@@ -89,7 +89,7 @@ trait Attachable
             );
 
             if (! $this->authorizedToAttach($request, $pivot)) {
-                throw new AuthorizationException();
+                throw new AuthorizationException;
             }
         });
 
@@ -106,7 +106,7 @@ trait Attachable
             );
 
             if (! $this->authorizedToSync($request, $pivot)) {
-                throw new AuthorizationException();
+                throw new AuthorizationException;
             }
         });
 
@@ -123,7 +123,7 @@ trait Attachable
     public function authorizeToDetach(RestifyRequest $request, Pivot $pivot)
     {
         if (! $this->authorizedToDetach($request, $pivot)) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
 
         return $this;
@@ -156,8 +156,8 @@ trait Attachable
 
         if ($relationship->withTimestamps) {
             $pivot->forceFill([
-                $relationship->createdAt() => new DateTime(),
-                $relationship->updatedAt() => new DateTime(),
+                $relationship->createdAt() => new DateTime,
+                $relationship->updatedAt() => new DateTime,
             ]);
         }
 

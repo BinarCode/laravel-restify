@@ -19,7 +19,7 @@ trait InteractWithSQLight
 
     public static function bootSushi()
     {
-        $instance = (new static());
+        $instance = (new static);
         $cacheFileName = 'sushi-'.Str::kebab(str_replace('\\', '', static::class)).'.sqlite';
         $cacheDirectory = realpath(config('sushi.cache-path', storage_path('framework/cache')));
         $cachePath = $cacheDirectory.'/'.$cacheFileName;

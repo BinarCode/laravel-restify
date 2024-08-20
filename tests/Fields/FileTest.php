@@ -19,7 +19,7 @@ class FileTest extends IntegrationTestCase
         Storage::fake();
         Storage::fake('public');
 
-        $model = new User();
+        $model = new User;
         $field = AvatarFile::make('avatar');
         $field->storeAs(function () {
             return 'avatar.jpg';
