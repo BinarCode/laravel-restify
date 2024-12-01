@@ -229,13 +229,37 @@ class File extends Field implements DeletableContract, StorableContract
 
     public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
+        // Handle URL input first
+        if ($request->has($this->attribute) && is_string($request->input($this->attribute))) {
+            $url = $request->input($this->attribute);
+
+            if (filter_var($url, FILTER_VALIDATE_URL)) {
+                if ($this->isPrunable()) {
+                    call_user_func(
+                        $this->deleteCallback,
+                        $request,
+                        $model,
+                        $this->getStorageDisk(),
+                        $this->getStoragePath()
+                    );
+                }
+
+                $model->{$this->attribute} = $url;
+
+                if ($this->originalNameColumn) {
+                    $model->{$this->originalNameColumn} = basename($url);
+                }
+
+                return $this;
+            }
+        }
+
+        // Existing file upload logic
         if (is_null($file = $request->file($this->attribute)) || ! $file->isValid()) {
             return $this;
         }
 
         if ($this->isPrunable()) {
-            // Delete old file if exists.
-            //            return function () use ($model, $request) {
             call_user_func(
                 $this->deleteCallback,
                 $request,
@@ -243,7 +267,6 @@ class File extends Field implements DeletableContract, StorableContract
                 $this->getStorageDisk(),
                 $this->getStoragePath()
             );
-            //            };
         }
 
         $result = call_user_func(
@@ -276,6 +299,19 @@ class File extends Field implements DeletableContract, StorableContract
         return $this;
     }
 
+    public function getStoringRules(): array
+    {
+        $rules = parent::getStoringRules();
+
+        // Modify validation to accept URLs
+        foreach ($rules as &$rule) {
+            if (is_string($rule) && Str::startsWith($rule, 'file')) {
+                $rule = 'sometimes|'.$rule;
+            }
+        }
+
+        return $rules;
+    }
     /**
      * Get the full path that the field is stored at on disk.
      *
