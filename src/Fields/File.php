@@ -312,6 +312,7 @@ class File extends Field implements DeletableContract, StorableContract
 
         return $rules;
     }
+
     /**
      * Get the full path that the field is stored at on disk.
      *
