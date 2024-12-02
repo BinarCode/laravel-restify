@@ -305,7 +305,7 @@ class File extends Field implements DeletableContract, StorableContract
 
         // Modify validation to accept URLs
         foreach ($rules as &$rule) {
-            if (is_string($rule) && Str::startsWith($rule, 'file')) {
+            if (is_string($rule) && str($rule)->startsWith('file')) {
                 $rule = 'sometimes|'.$rule;
             }
         }
