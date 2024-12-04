@@ -214,7 +214,6 @@ class Field extends OrganicField implements JsonSerializable
      *
      * Imagine it's like `attributes` in the model.
      *
-     * @param  mixed  $callback
      * @return $this
      */
     public function defaultCallback(mixed $callback)
