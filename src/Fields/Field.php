@@ -579,7 +579,7 @@ class Field extends OrganicField implements JsonSerializable
     public function serializeToValue($request)
     {
         return [
-                $this->label ?? $this->attribute => $this->value ?? $this->resolveDefaultValue($request),
+            $this->label ?? $this->attribute => $this->value ?? $this->resolveDefaultValue($request),
         ];
     }
 
@@ -594,7 +594,6 @@ class Field extends OrganicField implements JsonSerializable
 
         return $this;
     }
-
 
     /**
      * Resolve the default value for the field.
