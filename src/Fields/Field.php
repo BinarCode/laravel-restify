@@ -115,6 +115,8 @@ class Field extends OrganicField implements JsonSerializable
      */
     protected $valueCallback;
 
+    protected $fillDefaultCallback;
+
     /**
      * Closure be used to be called after the field value stored.
      */
@@ -205,6 +207,13 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
+    public function defaultCallback(mixed $callback)
+    {
+        $this->defaultCallback = $callback;
+
+        return $this;
+    }
+
     /**
      * Fill attribute with value from the request or delegate this action to the user defined callback.
      *
@@ -244,6 +253,12 @@ class Field extends OrganicField implements JsonSerializable
             $model,
             $this->label ?? $this->attribute,
             $bulkRow
+        );
+
+        $this->fillAttributeFromDefault(
+            $request,
+            $model,
+            $this->label ?? $this->attribute
         );
 
         $this->fillAttributeFromValue(
@@ -306,6 +321,23 @@ class Field extends OrganicField implements JsonSerializable
         $model->{$attribute} = is_callable($this->valueCallback)
             ? call_user_func($this->valueCallback, $request, $model, $attribute)
             : $this->valueCallback;
+
+        return $this;
+    }
+
+    protected function fillAttributeFromDefault(RestifyRequest $request, $model, $attribute)
+    {
+        if ($model->{$attribute}) {
+            return $this;
+        }
+
+        if (! isset($this->fillDefaultCallback)) {
+            return $this;
+        }
+
+        $model->{$attribute} = is_callable($this->fillDefaultCallback)
+            ? call_user_func($this->fillDefaultCallback, $request, $model, $attribute)
+            : $this->fillDefaultCallback;
 
         return $this;
     }
@@ -547,7 +579,7 @@ class Field extends OrganicField implements JsonSerializable
     public function serializeToValue($request)
     {
         return [
-            $this->label ?? $this->attribute => $this->value ?? $this->resolveDefaultValue($request),
+                $this->label ?? $this->attribute => $this->value ?? $this->resolveDefaultValue($request),
         ];
     }
 
@@ -562,6 +594,7 @@ class Field extends OrganicField implements JsonSerializable
 
         return $this;
     }
+
 
     /**
      * Resolve the default value for the field.
