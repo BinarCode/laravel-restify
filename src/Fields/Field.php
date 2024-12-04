@@ -207,6 +207,16 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
+    /**
+     * This is called after the fill and store callbacks.
+     *
+     * You can pass a callable or a value, and it will be attached to the model if no value provided otherwise.
+     *
+     * Imagine it's like `attributes` in the model.
+     *
+     * @param  mixed  $callback
+     * @return $this
+     */
     public function defaultCallback(mixed $callback)
     {
         $this->defaultCallback = $callback;

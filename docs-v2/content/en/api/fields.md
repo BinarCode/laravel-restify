@@ -369,6 +369,18 @@ Now, for the fields that don't have a description into the database, it will ret
 The default value is ONLY used for the READ, not for WRITE requests.
 </alert>
 
+### Default Stored Value
+
+During any (update or store requests), this is called after the fill and store callbacks.
+
+You can pass a callable or a value, and it will be attached to the model if no value provided otherwise.
+
+Imagine it's like `attributes` in the model:
+
+```php
+field('currency')->defaultCallback('EUR'),
+```
+
 ## Customizations
 
 ### Field label
