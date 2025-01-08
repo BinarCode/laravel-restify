@@ -1126,7 +1126,7 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         return [
             'uriKey' => static::uriKey(),
-            'related' => static::collectFilters('matches'),
+            'related' => static::collectRelated(),
             'sort' => static::collectFilters('sortables'),
             'match' => static::collectFilters('matches'),
             'searchables' => static::collectFilters('searchables'),
