@@ -125,6 +125,51 @@ class RepositorySearchServiceTest extends IntegrationTestCase
             ->assertJsonCount(2, 'data');
     }
 
+    public function test_can_search_strings_with_quotes_and_double_quotes(): void
+    {
+        Post::factory()->create([
+            'title' => "A Guy Named O'Neal was Standing at 5 o'clock with a 10\" cookie.",
+        ]);
+
+        $this->getJson(PostRepository::route(query: ['search' => 'John']))
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => 'Guy']))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => "5 o'clock"]))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '10" present']))
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '10" cookie']))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '150TPL5 (1 1/2" PVC SCH40 THREADED PLUG']))
+            ->assertJsonCount(0, 'data');
+
+        config()->set('restify.search.case_sensitive', false);
+
+        $this->getJson(PostRepository::route(query: ['search' => 'John']))
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => 'Guy']))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => "5 o'clock"]))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '10" present']))
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '10" cookie']))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '150TPL5 (1 1/2" PVC SCH40 THREADED PLUG']))
+            ->assertJsonCount(0, 'data');
+    }
+
     public function test_can_match_closure(): void
     {
         User::factory(4)->create();

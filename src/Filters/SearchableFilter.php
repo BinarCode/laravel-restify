@@ -44,7 +44,7 @@ class SearchableFilter extends Filter
         if (! config('restify.search.case_sensitive')) {
             $upper = strtoupper($value);
 
-            return $query->orWhereRaw("UPPER({$this->column}) LIKE \"%{$upper}%\"");
+            return $query->orWhereRaw("UPPER({$this->column}) LIKE ?", ['%'.$upper.'%']);
         }
 
         return $query->orWhere($this->column, $likeOperator, "%{$value}%");
