@@ -59,8 +59,9 @@ class SetupCommand extends Command
         $providersPath = base_path('bootstrap/providers.php');
 
         // Check if the providers.php file exists
-        if (!file_exists($providersPath)) {
+        if (! file_exists($providersPath)) {
             $this->error('bootstrap/providers.php file not found. Make sure you are using Laravel 12.');
+
             return;
         }
 
@@ -69,6 +70,7 @@ class SetupCommand extends Command
         // Check if the provider is already registered
         if (str_contains($content, $providerClass)) {
             $this->line('RestifyServiceProvider already registered.');
+
             return;
         }
 
@@ -84,7 +86,7 @@ class SetupCommand extends Command
             $newProvidersArray = $providersArrayWithoutClosing;
 
             // If the array is not empty and doesn't end with a comma, add a comma
-            if (!empty($providersArrayWithoutClosing) && !str_ends_with(trim($providersArrayWithoutClosing), ',')) {
+            if (! empty($providersArrayWithoutClosing) && ! str_ends_with(trim($providersArrayWithoutClosing), ',')) {
                 $newProvidersArray .= ',';
             }
 
