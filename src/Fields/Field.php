@@ -218,7 +218,7 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function defaultCallback(mixed $callback)
     {
-        $this->defaultCallback = $callback;
+        $this->fillDefaultCallback = $callback;
 
         return $this;
     }
