@@ -17,7 +17,7 @@ This documentation is for the latest version of Laravel Restify. Please ensure y
 
 <alert type="info">
 
-🚀 **Ready-Made API Starter Kits Available!** - Looking to build production-ready APIs in minutes instead of weeks? Check out our complete API templates at [RestifyPackages.com](https://restifypackages.com). Get authentication, roles & permissions, team management, and more - all pre-built and ready to deploy. **Early adopters get free templates!**
+🚀 **Ready-Made API Starter Kits Available!** - Looking to build production-ready APIs in minutes instead of weeks? Check out our complete API templates at [RestifyPackages.com](https://restifytemplates.com). Get authentication, roles & permissions, team management, and more - all pre-built and ready to deploy. **Early adopters get free templates!**
 
 </alert>
 
@@ -51,7 +51,7 @@ Want to skip the boilerplate and launch faster? Our Restify Templates come with 
 ]">
 </list>
 
-[Get Started with Templates →](https://restifypackages.com)
+[Get Started with Templates →](https://restifytemplates.com)
 
 ## Playground
 
