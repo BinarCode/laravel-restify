@@ -38,45 +38,20 @@ This documentation is for the latest version of Laravel Restify. Please ensure y
 
 Want to skip the boilerplate and launch faster? Our Restify Templates come with everything you need:
 
-::card-group
-::card
----
-title: 🔐 Complete Authentication
-icon: i-heroicons-shield-check
----
-Registration, login, password reset, email verification - all ready to go
-::
-::card
----
-title: 👥 Teams & Permissions
-icon: i-heroicons-users
----
-Spatie's permissions package integrated with team management
-::
-::card
----
-title: ✉️ Invitations System
-icon: i-heroicons-envelope
----
-Complete invitation workflow with approval system for platform onboarding
-::
-::card
----
-title: ⚡ Deploy in Minutes
-icon: i-heroicons-bolt
----
-Production-tested code with zero configuration needed
-::
-::card
----
-title: 📦 Postman Collection
-icon: i-heroicons-rectangle-stack
----
-Test all endpoints instantly with our pre-configured collection
-::
-::
+<list :items="[
+'🔐 Complete Authentication - Registration, login, password reset, email verification - all ready to go',
+'👥 Teams & Permissions - Spatie\'s permissions package integrated with team management',
+'✉️ Invitations System - Complete invitation workflow with approval system for platform onboarding',
+'📸 Profile Photos - Full image upload with resizing, optimization and S3 integration',
+'🤖 AI Error Handling - Smart error tracking with OpenAI-powered solutions and debugging hints',
+'🚀 CI/CD Pipeline - Complete GitHub Actions workflow with automated testing and deployment',
+'🌱 Smart Seeders - Realistic data generation with interconnected profiles and demo content',
+'⚡ Deploy in Minutes - Production-tested code with zero configuration needed',
+'📦 Postman Collection - Test all endpoints instantly with our pre-configured collection'
+]">
+</list>
 
-:button-link[Get Started with Templates]{icon="i-heroicons-arrow-right" trailing to="https://restifypackages.com" target="_blank"}
+[Get Started with Templates →](https://restifypackages.com)
 
 ## Playground
 
