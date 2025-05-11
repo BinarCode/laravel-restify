@@ -10,10 +10,14 @@
 The first fully customizable Laravel [JSON:API](https://jsonapi.org) builder. "CRUD" and protect your resources with 0 (zero) extra line of code.
 
 <div>
-<a href="https://supportukrainenow.org">
-<img alt="Support Ukraine" src="https://github-ads.s3-eu-central-1.amazonaws.com/support-ukraine-spatie-be.svg">
+<a href="https://restifypackages.com">
+<img alt="Save weeks of API development" src="/docs-v2/static/starter-kit.png">
 </a>
 </div>
+
+## ⚡ Laravel Restify Templates - Save Weeks of Development
+
+Looking to 10x your API development speed? Check out our production-ready API templates at [RestifyPackages.com](https://restifypackages.com). Get complete authentication, roles & permissions, team management, and more - all built on Laravel Restify. Zero configuration needed. Deploy in minutes instead of weeks.
 
 ## Installation
 

@@ -1,10 +1,7 @@
 name: Psalm
 
 on:
-    push:
-        paths:
-            - '**.php'
-            - 'psalm.xml.dist'
+    workflow_dispatch:
 
 jobs:
     psalm:
