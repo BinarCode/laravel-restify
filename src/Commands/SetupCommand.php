@@ -30,6 +30,11 @@ class SetupCommand extends Command
             '--tag' => 'restify-migrations',
         ]);
 
+        $this->comment('Publishing Restify views...');
+        $this->call('vendor:publish', [
+            '--tag' => 'restify-views',
+        ]);
+
         $this->registerRestifyServiceProvider();
 
         $this->comment('Generating User Repository...');

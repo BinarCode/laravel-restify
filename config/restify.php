@@ -164,5 +164,15 @@ return [
     |
     | By default this feature is enabled, but you still have to extend the Exception handler with the Restify one and set the API key.
      */
-    'ai_solutions' => true,
+    'ai_solutions' => [
+        /*
+        | Specify the OpenAI model to use.
+        */
+        'model' => 'gpt-4.1-mini',
+
+        /*
+        | Specify the OpenAI temperature to use.
+        */
+        'max_tokens' => 1000,
+    ],
 ];
