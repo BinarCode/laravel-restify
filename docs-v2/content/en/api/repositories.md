@@ -791,7 +791,7 @@ Payload:
 ]
 ```
 
-### Bulk delete flow
+## Bulk delete flow
 
 The payload for a bulk delete should contain an array of primary keys for the models that you want to delete: 
 

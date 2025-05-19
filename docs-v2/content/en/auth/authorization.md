@@ -143,6 +143,11 @@ class PostPolicy
         //
     }
 
+    public function deleteBulk(User $user, Post $model): bool
+    {
+        //
+    }
+
     public function restore(User $user, Post $model): bool
     {
         //
@@ -354,6 +359,34 @@ public function delete(User $user, Post $model)
     //
 }
 ```
+
+
+### Allow deleteBulk
+
+Determine if the user can delete multiple entities at once. When performing bulk deletion, this method will be invoked for each entity you're trying to delete.
+
+The deleteBulk method corresponds to the following route:
+
+```http request
+DELETE: api/restify/posts/bulk/delete
+```
+
+Definition:
+
+```php
+/**
+ * Determine whether the user can delete multiple models at once.
+ *
+ * @param User $user
+ * @param Post $model
+ * @return mixed
+ */
+public function deleteBulk(User $user, Post $model)
+{
+    //
+}
+```
+
 
 ### Allow Attach
 
