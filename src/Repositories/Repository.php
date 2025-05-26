@@ -250,8 +250,8 @@ class Repository implements JsonSerializable, RestifySearchable
 
         $allFields = $this->filter($this->{$method}($request));
 
-        $regularFields = array_filter($allFields, function($field) {
-            return !($field instanceof EagerField);
+        $regularFields = array_filter($allFields, function ($field) {
+            return ! ($field instanceof EagerField);
         });
 
         return FieldCollection::make(

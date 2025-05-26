@@ -74,7 +74,6 @@ if (! function_exists('currentRepository')) {
     }
 }
 
-
 if (! function_exists('belongsTo')) {
     function belongsTo(string $attribute, string $repository): Binaryk\LaravelRestify\Fields\BelongsTo
     {

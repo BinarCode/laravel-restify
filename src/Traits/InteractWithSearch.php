@@ -50,13 +50,13 @@ trait InteractWithSearch
         $related = static::include();
 
         if (empty($related)) {
-            $instance = new static();
+            $instance = new static;
             $request = app(RestifyRequest::class);
             $fields = $instance->fields($request);
 
             $eagerFields = collect($fields)
-                ->filter(fn($field) => $field instanceof EagerField)
-                ->mapWithKeys(fn($field) => [$field->attribute => $field])
+                ->filter(fn ($field) => $field instanceof EagerField)
+                ->mapWithKeys(fn ($field) => [$field->attribute => $field])
                 ->toArray();
 
             $related = $eagerFields;
