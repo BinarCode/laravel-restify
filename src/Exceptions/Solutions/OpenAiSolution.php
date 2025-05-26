@@ -18,17 +18,16 @@ class OpenAiSolution
             now()->addHour(),
             fn () => OpenAI::chat()->create([
                 'model' => config('restify.ai_solutions.model', 'gpt-4.1-mini'),
-                'messages' =>
+                'messages' => [
                     [
-                        [
-                            'role' => 'user',
-                            'content' => $this->generatePrompt($this->throwable),
-                        ],
-                        [
-                            'role' => 'system',
-                            'content' => 'Provide a concise solution to the problem described, tailored for a Laravel application using the Restify framework. Avoid explanations, examples, or code snippets. Respond with only the direct answer.',
-                        ],
+                        'role' => 'user',
+                        'content' => $this->generatePrompt($this->throwable),
                     ],
+                    [
+                        'role' => 'system',
+                        'content' => 'Provide a concise solution to the problem described, tailored for a Laravel application using the Restify framework. Avoid explanations, examples, or code snippets. Respond with only the direct answer.',
+                    ],
+                ],
                 'max_tokens' => config('restify.ai_solutions.max_tokens', 1000),
                 'temperature' => 0,
             ])->choices[0]->message->content
