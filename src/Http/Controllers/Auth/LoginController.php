@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
@@ -26,6 +27,8 @@ class LoginController extends Controller
         if (! Hash::check($request->input('password'), $user->password)) {
             abort(401, 'Invalid credentials.');
         }
+
+        Auth::login($user);
 
         return rest($user)->indexMeta([
             'token' => $user->createToken('login')->plainTextToken,
