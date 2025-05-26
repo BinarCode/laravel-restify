@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Traits;
 
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
+use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
 use Binaryk\LaravelRestify\Filters\Filter;
 use Binaryk\LaravelRestify\Filters\MatchesCollection;
@@ -46,7 +47,22 @@ trait InteractWithSearch
 
     public static function collectRelated(): RelatedCollection
     {
-        return RelatedCollection::make(static::include());
+        $related = static::include();
+
+        if (empty($related)) {
+            $instance = new static();
+            $request = app(RestifyRequest::class);
+            $fields = $instance->fields($request);
+
+            $eagerFields = collect($fields)
+                ->filter(fn($field) => $field instanceof EagerField)
+                ->mapWithKeys(fn($field) => [$field->attribute => $field])
+                ->toArray();
+
+            $related = $eagerFields;
+        }
+
+        return RelatedCollection::make($related);
     }
 
     public static function matches(): array

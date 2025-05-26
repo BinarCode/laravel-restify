@@ -248,8 +248,14 @@ class Repository implements JsonSerializable, RestifySearchable
             $method = 'fieldsForUpdateBulk';
         }
 
+        $allFields = $this->filter($this->{$method}($request));
+
+        $regularFields = array_filter($allFields, function($field) {
+            return !($field instanceof EagerField);
+        });
+
         return FieldCollection::make(
-            array_values($this->filter($this->{$method}($request)))
+            array_values($regularFields)
         )->merge(
             $this->extraFields($request)
         )->setRepository($this);

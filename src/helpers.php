@@ -73,3 +73,53 @@ if (! function_exists('currentRepository')) {
         return app(RepositoryInstance::class)->current();
     }
 }
+
+
+if (! function_exists('belongsTo')) {
+    function belongsTo(string $attribute, string $repository): Binaryk\LaravelRestify\Fields\BelongsTo
+    {
+        return Binaryk\LaravelRestify\Fields\BelongsTo::make($attribute, $repository);
+    }
+}
+
+if (! function_exists('belongsToMany')) {
+    function belongsToMany(string $attribute, string $repository): Binaryk\LaravelRestify\Fields\BelongsToMany
+    {
+        return Binaryk\LaravelRestify\Fields\BelongsToMany::make($attribute, $repository);
+    }
+}
+
+if (! function_exists('hasOne')) {
+    function hasOne(string $attribute, string $repository): Binaryk\LaravelRestify\Fields\HasOne
+    {
+        return Binaryk\LaravelRestify\Fields\HasOne::make($attribute, $repository);
+    }
+}
+
+if (! function_exists('hasMany')) {
+    function hasMany(string $attribute, string $repository): Binaryk\LaravelRestify\Fields\HasMany
+    {
+        return Binaryk\LaravelRestify\Fields\HasMany::make($attribute, $repository);
+    }
+}
+
+if (! function_exists('morphOne')) {
+    function morphOne(string $attribute, string $repository): Binaryk\LaravelRestify\Fields\MorphOne
+    {
+        return Binaryk\LaravelRestify\Fields\MorphOne::make($attribute, $repository);
+    }
+}
+
+if (! function_exists('morphMany')) {
+    function morphMany(string $attribute, string $repository): Binaryk\LaravelRestify\Fields\MorphMany
+    {
+        return Binaryk\LaravelRestify\Fields\MorphMany::make($attribute, $repository);
+    }
+}
+
+if (! function_exists('morphToMany')) {
+    function morphToMany(string $attribute, string $repository): Binaryk\LaravelRestify\Fields\MorphToMany
+    {
+        return Binaryk\LaravelRestify\Fields\MorphToMany::make($attribute, $repository);
+    }
+}

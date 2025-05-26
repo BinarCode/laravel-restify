@@ -13,7 +13,46 @@ Restify handles all relationships and gives you an expressive way to list resour
 
 ## Definition
 
-The list of relationships should be defined into a repository method called `related`:
+### Option 1: Using the `fields` method (Recommended)
+
+You can define relationships directly within your `fields` method alongside regular fields. Restify will automatically detect eager fields and handle them as relationships:
+
+```php
+public function fields(RestifyRequest $request): array
+{
+    return [
+        field('id')->readonly(),
+        field('name')->storingRules('required'),
+        field('email')->storingRules('required', 'unique:users'),
+        
+        // Relationships - automatically detected and handled
+        belongsToMany('roles', RoleRepository::class),
+        hasMany('posts', PostRepository::class),
+        belongsTo('company', CompanyRepository::class),
+        
+        field('created_at')->readonly(),
+    ];
+}
+```
+
+Using the helper functions:
+
+```php
+belongsTo('relationship', RepositoryClass::class)
+belongsToMany('relationship', RepositoryClass::class)
+hasOne('relationship', RepositoryClass::class)
+hasMany('relationship', RepositoryClass::class)
+morphTo('relationship')
+morphOne('relationship', RepositoryClass::class)
+morphMany('relationship', RepositoryClass::class)
+morphToMany('relationship', RepositoryClass::class)
+morphedByMany('relationship', RepositoryClass::class)
+```
+
+
+### Option 2: Using the `related` method
+
+Alternatively, you can define relationships using the traditional `related` method:
 
 ```php
 public static function related(): array
