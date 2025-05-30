@@ -10,4 +10,12 @@ export default theme({
   docs: {
     primaryColor: '#787af6'
   },
+  head: {
+    script: [
+      {
+        src: '//code.tidio.co/pgx3d8jlrufene0cnyv274lgege4u5c1.js',
+        async: true,
+      }
+    ]
+  }
 });
