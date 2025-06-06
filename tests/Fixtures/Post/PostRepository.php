@@ -124,7 +124,7 @@ class PostRepository extends Repository
                 ->canSee(function (ActionRequest $request) {
                     return $_SERVER['actions.posts.invalidate'] ?? true;
                 }),
-            new PublishInvokablePostAction(),
+            new PublishInvokablePostAction,
         ];
     }
 
@@ -134,8 +134,8 @@ class PostRepository extends Repository
             PostsIndexGetter::make(),
             PostsShowGetter::make()->onlyOnShow(),
             UnauthenticatedActionGetter::make()->withoutMiddleware(AuthorizeRestify::class),
-            new PostsShowInvokableGetter(),
-            new PostsIndexInvokableGetter(),
+            new PostsShowInvokableGetter,
+            new PostsIndexInvokableGetter,
         ];
     }
 }
