@@ -46,7 +46,7 @@ class MatchFilter extends Filter
                     break;
                 case RestifySearchable::MATCH_BOOL:
                 case 'boolean':
-                    if ($value === 'false') {
+                    if ($value === 'false' || $value === '0') {
                         $query->where(function ($query) use ($field) {
                             if ($this->negation) {
                                 return $query->where($field, true);

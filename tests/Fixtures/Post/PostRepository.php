@@ -27,6 +27,7 @@ class PostRepository extends Repository
 
     public static array $match = [
         'title' => RestifySearchable::MATCH_TEXT,
+        'is_active' => RestifySearchable::MATCH_BOOL,
     ];
 
     public static array $middleware = [];
@@ -50,6 +51,8 @@ class PostRepository extends Repository
             field('description')->storingRules('required')->messages([
                 'required' => 'Description field is required',
             ]),
+
+            field('is_active'),
         ];
     }
 
@@ -121,7 +124,7 @@ class PostRepository extends Repository
                 ->canSee(function (ActionRequest $request) {
                     return $_SERVER['actions.posts.invalidate'] ?? true;
                 }),
-            new PublishInvokablePostAction,
+            new PublishInvokablePostAction(),
         ];
     }
 
@@ -131,8 +134,8 @@ class PostRepository extends Repository
             PostsIndexGetter::make(),
             PostsShowGetter::make()->onlyOnShow(),
             UnauthenticatedActionGetter::make()->withoutMiddleware(AuthorizeRestify::class),
-            new PostsShowInvokableGetter,
-            new PostsIndexInvokableGetter,
+            new PostsShowInvokableGetter(),
+            new PostsIndexInvokableGetter(),
         ];
     }
 }
