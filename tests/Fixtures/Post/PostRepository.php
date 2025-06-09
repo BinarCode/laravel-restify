@@ -27,6 +27,7 @@ class PostRepository extends Repository
 
     public static array $match = [
         'title' => RestifySearchable::MATCH_TEXT,
+        'is_active' => RestifySearchable::MATCH_BOOL,
     ];
 
     public static array $middleware = [];
@@ -50,6 +51,8 @@ class PostRepository extends Repository
             field('description')->storingRules('required')->messages([
                 'required' => 'Description field is required',
             ]),
+
+            field('is_active'),
         ];
     }
 
