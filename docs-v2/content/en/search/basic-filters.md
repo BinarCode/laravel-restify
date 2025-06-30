@@ -95,6 +95,19 @@ public function subtitle(): ?string
 }
 ```
 
+The `repositoryTitle` could be customized by overriding the `label` method or by defining the `$label` property. This will customize the displayed repository title in the global search response:
+
+```php
+// UserRepository.php
+public static string $label = 'Custom Repository Title';
+
+// Or using the label method for dynamic titles:
+public static function label(): string
+{
+    return 'Dynamic Title';
+}
+```
+
 ## Repository Search
 
 The repository search works in a similar way as [global search](#global-search), however in this case the endpoint refers to the repository and the search will be applied for a certain repository.
