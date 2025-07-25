@@ -160,18 +160,23 @@ return [
     ],
 
     /*
-    | Specify if restify can call OpenAI for solution generation.
+    | Specify if restify can call AI for solution generation using Prism.
     |
-    | By default this feature is enabled, but you still have to extend the Exception handler with the Restify one and set the API key.
+    | By default this feature is enabled, but you still have to extend the Exception handler with the Restify one and configure Prism.
      */
     'ai_solutions' => [
         /*
-        | Specify the OpenAI model to use.
+        | Specify the AI provider to use with Prism.
         */
-        'model' => 'gpt-4.1-mini',
+        'provider' => 'openai',
 
         /*
-        | Specify the OpenAI temperature to use.
+        | Specify the AI model to use with Prism.
+        */
+        'model' => 'gpt-4o-mini',
+
+        /*
+        | Specify the maximum tokens for the AI response.
         */
         'max_tokens' => 1000,
     ],

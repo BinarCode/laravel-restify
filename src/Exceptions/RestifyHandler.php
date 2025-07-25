@@ -20,7 +20,7 @@ class RestifyHandler extends Handler
             return $response;
         }
 
-        if (! config('openai.api_key')) {
+        if (! config('prism.prism.api_key')) {
             return $response;
         }
 

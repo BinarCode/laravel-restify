@@ -19,8 +19,10 @@
     ],
     "require": {
         "php": "^8.2",
-        "illuminate/contracts": "^11.0|^12.0",
+        "illuminate/contracts": "^12.0",
         "laravel/pint": "^1.0",
+        "prism-php/prism": "^0.81.0",
+        "spatie/backtrace": "^1.7",
         "spatie/laravel-data": "^4.4",
         "spatie/laravel-package-tools": "^1.12",
         "spatie/once": "^3.0"
@@ -29,8 +31,7 @@
         "brianium/paratest": "^7.0.6",
         "doctrine/dbal": "^3.0|^4.0",
         "nunomaduro/collision": "^8.1",
-        "openai-php/laravel": "^0.8.1|^0.11",
-        "orchestra/testbench": "^9.0|^10.0",
+        "orchestra/testbench": "^10.0",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0|^2.0",
         "phpstan/phpstan-phpunit": "^1.0|^2.0",
