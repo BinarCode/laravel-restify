@@ -24,7 +24,7 @@ class OpenAiSolution
 
         $this->solution = Cache::remember($cacheKey,
             now()->addHour(),
-            fn() => trim(Prism::text()
+            fn () => trim(Prism::text()
                 ->using(config('restify.ai_solutions.provider'), config('restify.ai_solutions.model'))
                 ->withSystemPrompt('You are an expert PHP/Laravel developer. Provide concise, actionable solutions in a single paragraph without line breaks, code blocks, or formatting. Your response should be suitable for JSON API responses.')
                 ->withPrompt($this->generatePrompt($this->throwable))
@@ -63,7 +63,7 @@ class OpenAiSolution
         $snippet = $applicationFrame->getSnippet(15);
 
         return (string) view('restify::prompts.prompt', [
-            'snippet' => collect($snippet)->map(fn($line, $number) => $number.' '.$line)->join(PHP_EOL),
+            'snippet' => collect($snippet)->map(fn ($line, $number) => $number.' '.$line)->join(PHP_EOL),
             'file' => $applicationFrame->file,
             'line' => $applicationFrame->lineNumber,
             'exception' => $throwable->getMessage(),
@@ -76,13 +76,13 @@ class OpenAiSolution
         $docs = [];
 
         // Get Field methods
-        $fieldMethods = $this->getMethodsFrom(__DIR__ . '/../../Fields/Field.php');
+        $fieldMethods = $this->getMethodsFrom(__DIR__.'/../../Fields/Field.php');
         if ($fieldMethods) {
             $docs[] = $fieldMethods;
         }
 
         // Get Repository methods
-        $repositoryMethods = $this->getMethodsFrom(__DIR__ . '/../../Repositories/Repository.php');
+        $repositoryMethods = $this->getMethodsFrom(__DIR__.'/../../Repositories/Repository.php');
         if ($repositoryMethods) {
             $docs[] = $repositoryMethods;
         }
@@ -94,7 +94,7 @@ class OpenAiSolution
     {
         $fileName = pathinfo($filePath, PATHINFO_FILENAME);
 
-        if (!file_exists($filePath)) {
+        if (! file_exists($filePath)) {
             return '';
         }
 
@@ -111,6 +111,6 @@ class OpenAiSolution
             $methods[] = $methodSignature;
         }
 
-        return empty($methods) ? '' : 'Available '.$fileName.' methods: ' . implode(', ', $methods);
+        return empty($methods) ? '' : 'Available '.$fileName.' methods: '.implode(', ', $methods);
     }
 }
