@@ -8,12 +8,10 @@ use Binaryk\LaravelRestify\Tests\Database\Factories\CommentFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
 class ShowRelatedFeatureTest extends IntegrationTestCase
 {
-    use RefreshDatabase;
 
     public function test_show_related_doesnt_load_for_nested_relationships_that_didnt_require_it(): void
     {

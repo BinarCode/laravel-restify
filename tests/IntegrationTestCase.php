@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\Concerns\Mockers;
 use Binaryk\LaravelRestify\Tests\Fixtures\Comment\Comment;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
@@ -39,6 +40,7 @@ abstract class IntegrationTestCase extends TestCase
 {
     use Mockers;
     use Prototypes;
+    use RefreshDatabase;
 
     protected Mockery\MockInterface|User|null $authenticatedAs = null;
 

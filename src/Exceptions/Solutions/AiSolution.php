@@ -2,35 +2,44 @@
 
 namespace Binaryk\LaravelRestify\Exceptions\Solutions;
 
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Prism\Prism\Prism;
 use Spatie\Backtrace\Backtrace;
 use Spatie\Backtrace\Frame;
 use Throwable;
 
-class OpenAiSolution
+class AiSolution
 {
     protected mixed $solution;
 
     public function __construct(protected Throwable $throwable)
     {
         $cacheKey = 'restify-solutions-'.sha1(
-            $this->throwable::class.
-            $this->throwable->getMessage().
-            $this->throwable->getFile().
-            $this->throwable->getLine().
-            $this->throwable->getTraceAsString()
-        );
+                $this->throwable::class.
+                $this->throwable->getMessage().
+                $this->throwable->getFile().
+                $this->throwable->getLine().
+                $this->throwable->getTraceAsString()
+            );
 
         $this->solution = Cache::remember($cacheKey,
             now()->addHour(),
-            fn () => trim(Prism::text()
+            fn() => trim(Prism::text()
                 ->using(config('restify.ai_solutions.provider'), config('restify.ai_solutions.model'))
                 ->withSystemPrompt('You are an expert PHP/Laravel developer. Provide concise, actionable solutions in a single paragraph without line breaks, code blocks, or formatting. Your response should be suitable for JSON API responses.')
                 ->withPrompt($this->generatePrompt($this->throwable))
                 ->asText()
                 ->text)
         );
+    }
+
+    public static function canUse(Request $request): bool
+    {
+        return $request->expectsJson() &&
+            config('restify.ai_solutions') &&
+            config('app.debug') &&
+            config('prism.providers.openai.api_key');
     }
 
     public function getSolutionTitle(): string
@@ -63,7 +72,7 @@ class OpenAiSolution
         $snippet = $applicationFrame->getSnippet(15);
 
         return (string) view('restify::prompts.prompt', [
-            'snippet' => collect($snippet)->map(fn ($line, $number) => $number.' '.$line)->join(PHP_EOL),
+            'snippet' => collect($snippet)->map(fn($line, $number) => $number.' '.$line)->join(PHP_EOL),
             'file' => $applicationFrame->file,
             'line' => $applicationFrame->lineNumber,
             'exception' => $throwable->getMessage(),
@@ -102,7 +111,8 @@ class OpenAiSolution
         $methods = [];
 
         // Extract public method signatures using regex
-        preg_match_all('/public\s+function\s+(\w+)\s*\([^)]*\)(?:\s*:\s*[^{]+)?\s*{/m', $content, $matches, PREG_OFFSET_CAPTURE);
+        preg_match_all('/public\s+function\s+(\w+)\s*\([^)]*\)(?:\s*:\s*[^{]+)?\s*{/m', $content, $matches,
+            PREG_OFFSET_CAPTURE);
 
         foreach ($matches[0] as $match) {
             $methodSignature = trim($match[0]);

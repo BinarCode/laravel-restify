@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Exceptions;
 
-use Binaryk\LaravelRestify\Exceptions\Solutions\OpenAiSolution;
+use Binaryk\LaravelRestify\Exceptions\Solutions\AiSolution;
 use Illuminate\Foundation\Exceptions\Handler;
 use Throwable;
 
@@ -24,7 +24,7 @@ class RestifyHandler extends Handler
             return $response;
         }
 
-        $solution = (new OpenAiSolution($e))->getSolutionDescription();
+        $solution = (new AiSolution($e))->getSolutionDescription();
 
         return array_merge([
             'restify-solution' => $solution,

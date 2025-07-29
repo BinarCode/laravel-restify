@@ -29,6 +29,7 @@ class RepositorySearchService
 
         if ($repository::usesScout()) {
             $scoutQuery = $this->initializeQueryUsingScout($request, $repository);
+
         }
 
         $query = $this->prepareMatchFields(

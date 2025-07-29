@@ -11,13 +11,11 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Carbon\Carbon;
 use Carbon\CarbonInterface;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 
 class AuthorizableModelsTest extends IntegrationTestCase
 {
-    use RefreshDatabase;
 
     protected function setUp(): void
     {
