@@ -17,5 +17,27 @@ export default theme({
         async: true,
       }
     ]
+  },
+  hooks: {
+    'content:file:beforeInsert': (document) => {
+      if (document.extension === '.md' && document.dir) {
+        const base = 'https://restify.binarcode.com';
+        const path = document.dir.replace('/content', '') + '/' + document.slug;
+        const canonicalUrl = base + path.replace(/\/+/g, '/') + '/';
+        
+        if (!document.head) {
+          document.head = {};
+        }
+        
+        if (!document.head.link) {
+          document.head.link = [];
+        }
+        
+        document.head.link.push({
+          rel: 'canonical',
+          href: canonicalUrl
+        });
+      }
+    }
   }
 });
