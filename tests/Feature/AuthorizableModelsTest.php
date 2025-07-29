@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Gate;
 
 class AuthorizableModelsTest extends IntegrationTestCase
 {
-
     protected function setUp(): void
     {
         parent::setUp();

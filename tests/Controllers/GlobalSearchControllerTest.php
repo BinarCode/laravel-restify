@@ -12,7 +12,6 @@ use Illuminate\Testing\Fluent\AssertableJson;
 
 class GlobalSearchControllerTest extends IntegrationTestCase
 {
-
     public function test_global_search_returns_matches(): void
     {
         Post::factory()->create(['title' => 'First post']);

@@ -14,7 +14,6 @@ use PHPUnit\Framework\Attributes\Test;
 
 class RepositoryIndexControllerTest extends IntegrationTestCase
 {
-
     #[Test]
     public function it_can_paginate(): void
     {

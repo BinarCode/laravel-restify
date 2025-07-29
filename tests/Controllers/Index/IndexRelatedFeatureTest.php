@@ -27,7 +27,6 @@ use PHPUnit\Framework\Attributes\Test;
 
 class IndexRelatedFeatureTest extends IntegrationTestCase
 {
-
     protected function setUp(): void
     {
         parent::setUp();

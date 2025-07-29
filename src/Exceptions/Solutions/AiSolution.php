@@ -16,16 +16,16 @@ class AiSolution
     public function __construct(protected Throwable $throwable)
     {
         $cacheKey = 'restify-solutions-'.sha1(
-                $this->throwable::class.
-                $this->throwable->getMessage().
-                $this->throwable->getFile().
-                $this->throwable->getLine().
-                $this->throwable->getTraceAsString()
-            );
+            $this->throwable::class.
+            $this->throwable->getMessage().
+            $this->throwable->getFile().
+            $this->throwable->getLine().
+            $this->throwable->getTraceAsString()
+        );
 
         $this->solution = Cache::remember($cacheKey,
             now()->addHour(),
-            fn() => trim(Prism::text()
+            fn () => trim(Prism::text()
                 ->using(config('restify.ai_solutions.provider'), config('restify.ai_solutions.model'))
                 ->withSystemPrompt('You are an expert PHP/Laravel developer. Provide concise, actionable solutions in a single paragraph without line breaks, code blocks, or formatting. Your response should be suitable for JSON API responses.')
                 ->withPrompt($this->generatePrompt($this->throwable))
@@ -72,7 +72,7 @@ class AiSolution
         $snippet = $applicationFrame->getSnippet(15);
 
         return (string) view('restify::prompts.prompt', [
-            'snippet' => collect($snippet)->map(fn($line, $number) => $number.' '.$line)->join(PHP_EOL),
+            'snippet' => collect($snippet)->map(fn ($line, $number) => $number.' '.$line)->join(PHP_EOL),
             'file' => $applicationFrame->file,
             'line' => $applicationFrame->lineNumber,
             'exception' => $throwable->getMessage(),
