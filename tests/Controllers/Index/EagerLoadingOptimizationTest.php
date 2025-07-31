@@ -4,9 +4,6 @@ namespace Binaryk\LaravelRestify\Tests\Controllers\Index;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\HasMany;
-use Binaryk\LaravelRestify\Tests\Database\Factories\CompanyFactory;
-use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
-use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
@@ -25,7 +22,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Reset repository configurations before each test
         UserRepository::$search = [];
         UserRepository::$related = [];
@@ -33,17 +30,17 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         PostRepository::$search = [];
         PostRepository::$related = [];
         PostRepository::$with = [];
-        
+
         // Reset config to default
         config(['restify.search.use_joins' => false]);
-        
+
         DB::enableQueryLog();
     }
 
     protected function tearDown(): void
     {
         DB::disableQueryLog();
-        
+
         // Clean up repository configurations after each test
         UserRepository::$search = [];
         UserRepository::$related = [];
@@ -51,10 +48,10 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         PostRepository::$search = [];
         PostRepository::$related = [];
         PostRepository::$with = [];
-        
+
         // Reset config to default
         config(['restify.search.use_joins' => false]);
-        
+
         parent::tearDown();
     }
 
@@ -77,12 +74,12 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         ]))->assertOk();
 
         $queries = DB::getQueryLog();
-        
+
         // Should have exactly 2 queries:
         // 1. Select users
         // 2. Select companies (eager loaded)
-        $this->assertCount(2, $queries, 'Expected 2 queries but got ' . count($queries));
-        
+        $this->assertCount(2, $queries, 'Expected 2 queries but got '.count($queries));
+
         // Verify the second query is an IN query for companies
         $this->assertStringContainsString('where "companies"."id" in', $queries[1]['query']);
     }
@@ -111,14 +108,13 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         ]))->assertOk();
 
         $queries = DB::getQueryLog();
-        
+
         // Should have exactly 3 queries:
         // 1. Select users
         // 2. Select companies (eager loaded)
         // 3. Select posts (eager loaded)
-        $this->assertCount(3, $queries, 'Expected 3 queries but got ' . count($queries));
+        $this->assertCount(3, $queries, 'Expected 3 queries but got '.count($queries));
     }
-
 
     #[Test]
     public function it_handles_nested_relationships_without_n_plus_one(): void
@@ -126,7 +122,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         PostRepository::$related = [
             'user' => BelongsTo::make('user', UserRepository::class),
         ];
-        
+
         UserRepository::$related = [
             'company' => BelongsTo::make('company', CompanyRepository::class),
         ];
@@ -147,12 +143,12 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         ]))->assertOk();
 
         $queries = DB::getQueryLog();
-        
+
         // Should have exactly 3 queries:
         // 1. Select posts
         // 2. Select users (eager loaded)
         // 3. Select companies (eager loaded)
-        $this->assertCount(3, $queries, 'Expected 3 queries but got ' . count($queries));
+        $this->assertCount(3, $queries, 'Expected 3 queries but got '.count($queries));
     }
 
     #[Test]
@@ -164,10 +160,10 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
 
         $company = Company::factory()->create(['name' => 'Preloaded Company']);
         $user = User::factory()->for($company)->create();
-        
+
         // Manually load the relation
         $user->load('company');
-        
+
         // Mock the repository to use our preloaded user
         UserRepository::partialMock()
             ->shouldReceive('indexQuery')
@@ -180,11 +176,11 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         ]))->assertOk();
 
         $queries = DB::getQueryLog();
-        
+
         // Should have only 1 query (to get the user)
         // The company should not be queried again since it's already loaded
-        $this->assertCount(1, $queries, 'Expected 1 query but got ' . count($queries));
-        
+        $this->assertCount(1, $queries, 'Expected 1 query but got '.count($queries));
+
         // Verify the response still includes the company data
         $response->assertJson([
             'data' => [
@@ -220,10 +216,10 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         ]))->assertOk();
 
         $queries = DB::getQueryLog();
-        
+
         // Should still attempt to eager load (1 query for users, potentially queries for relations)
         $this->assertGreaterThanOrEqual(1, count($queries));
-        
+
         // Verify response handles null relationships correctly
         $response->assertJson([
             'data' => [
@@ -250,7 +246,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
 
         // Test first page
         DB::flushQueryLog();
-        
+
         $this->getJson(UserRepository::route(query: [
             'related' => 'company',
             'perPage' => 20,
@@ -258,10 +254,10 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         ]))->assertOk();
 
         $firstPageQueries = count(DB::getQueryLog());
-        
+
         // Test second page
         DB::flushQueryLog();
-        
+
         $this->getJson(UserRepository::route(query: [
             'related' => 'company',
             'perPage' => 20,
@@ -269,7 +265,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
         ]))->assertOk();
 
         $secondPageQueries = count(DB::getQueryLog());
-        
+
         // Both pages should have the same number of queries (no N+1)
         $this->assertEquals($firstPageQueries, $secondPageQueries);
         $this->assertEquals(2, $secondPageQueries); // Users + Companies
@@ -280,7 +276,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
     {
         // Enable JOIN optimization
         config(['restify.search.use_joins' => true]);
-        
+
         UserRepository::$search = ['name'];
         UserRepository::$related = [
             'company' => BelongsTo::make('company', CompanyRepository::class)->searchable([
@@ -297,22 +293,22 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
             ->assertOk();
 
         $queries = DB::getQueryLog();
-        $searchQuery = collect($queries)->first(fn($query) => str_contains(strtolower($query['query']), 'techcorp'));
+        $searchQuery = collect($queries)->first(fn ($query) => str_contains(strtolower($query['query']), 'techcorp'));
 
         $this->assertNotNull($searchQuery, 'Search query should be executed');
-        
+
         // Debug: dump the actual query to see its structure
-        if (!$searchQuery) {
-            $this->fail('No search query found. Queries: ' . json_encode($queries));
+        if (! $searchQuery) {
+            $this->fail('No search query found. Queries: '.json_encode($queries));
         }
-        
+
         // Verify JOIN is used instead of subquery
         $sql = strtolower($searchQuery['query']);
-        $this->assertStringContainsString('left join', $sql, 'Query should use LEFT JOIN when optimization is enabled. SQL: ' . $sql);
-        $this->assertStringContainsString('companies_for_company', $sql, 'Query should use consistent alias. SQL: ' . $sql);
-        
+        $this->assertStringContainsString('left join', $sql, 'Query should use LEFT JOIN when optimization is enabled. SQL: '.$sql);
+        $this->assertStringContainsString('companies_for_company', $sql, 'Query should use consistent alias. SQL: '.$sql);
+
         // Verify no subquery is used - check for general subquery pattern
-        $this->assertStringNotContainsString('select "companies"', $sql, 'Query should not contain subquery when JOINs are enabled. SQL: ' . $sql);
+        $this->assertStringNotContainsString('select "companies"', $sql, 'Query should not contain subquery when JOINs are enabled. SQL: '.$sql);
     }
 
     #[Test]
@@ -320,7 +316,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
     {
         // Ensure JOIN optimization is disabled (default behavior)
         config(['restify.search.use_joins' => false]);
-        
+
         UserRepository::$search = ['name'];
         UserRepository::$related = [
             'company' => BelongsTo::make('company', CompanyRepository::class)->searchable([
@@ -337,15 +333,15 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
             ->assertOk();
 
         $queries = DB::getQueryLog();
-        $searchQuery = collect($queries)->first(fn($query) => str_contains(strtolower($query['query']), 'legacycorp'));
+        $searchQuery = collect($queries)->first(fn ($query) => str_contains(strtolower($query['query']), 'legacycorp'));
 
         $this->assertNotNull($searchQuery, 'Search query should be executed');
-        
+
         // Verify subquery is used (legacy behavior)
         $sql = strtolower($searchQuery['query']);
-        $this->assertStringNotContainsString('left join', $sql, 'Query should not use LEFT JOIN when optimization is disabled. SQL: ' . $sql);
-        $this->assertStringContainsString('select', $sql, 'Query should contain subquery when JOINs are disabled. SQL: ' . $sql);
-        $this->assertStringContainsString('from "companies"', $sql, 'Query should contain subquery from companies table. SQL: ' . $sql);
+        $this->assertStringNotContainsString('left join', $sql, 'Query should not use LEFT JOIN when optimization is disabled. SQL: '.$sql);
+        $this->assertStringContainsString('select', $sql, 'Query should contain subquery when JOINs are disabled. SQL: '.$sql);
+        $this->assertStringContainsString('from "companies"', $sql, 'Query should contain subquery from companies table. SQL: '.$sql);
     }
 
     #[Test]
@@ -353,7 +349,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
     {
         // Enable JOIN optimization
         config(['restify.search.use_joins' => true]);
-        
+
         UserRepository::$search = ['name', 'email']; // Direct fields only, no relationships
         UserRepository::$related = [];
 
@@ -365,14 +361,14 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
             ->assertOk();
 
         $queries = DB::getQueryLog();
-        $searchQuery = collect($queries)->first(fn($query) => str_contains(strtolower($query['query']), 'directsearch'));
+        $searchQuery = collect($queries)->first(fn ($query) => str_contains(strtolower($query['query']), 'directsearch'));
 
         $this->assertNotNull($searchQuery, 'Search query should be executed');
-        
+
         // Verify no JOINs are used for direct field searches
         $sql = strtolower($searchQuery['query']);
         $this->assertStringNotContainsString('left join', $sql, 'Direct field searches should not use JOINs');
-        $this->assertStringNotContainsString('select', $sql . ' from', 'Direct field searches should not contain subqueries');
+        $this->assertStringNotContainsString('select', $sql.' from', 'Direct field searches should not contain subqueries');
     }
 
     #[Test]
@@ -380,7 +376,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
     {
         // Enable JOIN optimization
         config(['restify.search.use_joins' => true]);
-        
+
         UserRepository::$search = ['name'];
         UserRepository::$related = [
             'company' => BelongsTo::make('company', CompanyRepository::class)->searchable([
@@ -396,14 +392,14 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
 
         $this->getJson(UserRepository::route(query: [
             'search' => 'JoinedCorp',
-            'related' => 'company'
+            'related' => 'company',
         ]))->assertOk();
 
         $queries = DB::getQueryLog();
-        
+
         // Should not have separate eager loading query for company since it's already joined
-        $companyEagerQueries = collect($queries)->filter(function($query) {
-            return str_contains($query['query'], 'select * from "companies"') && 
+        $companyEagerQueries = collect($queries)->filter(function ($query) {
+            return str_contains($query['query'], 'select * from "companies"') &&
                    str_contains($query['query'], 'where "companies"."id" in');
         });
 
@@ -415,7 +411,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
     {
         // Ensure JOIN optimization is disabled (default behavior)
         config(['restify.search.use_joins' => false]);
-        
+
         UserRepository::$search = ['name'];
         UserRepository::$related = [
             'company' => BelongsTo::make('company', CompanyRepository::class)->searchable([
@@ -431,14 +427,14 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
 
         $this->getJson(UserRepository::route(query: [
             'search' => 'EagerCorp',
-            'related' => 'company'
+            'related' => 'company',
         ]))->assertOk();
 
         $queries = DB::getQueryLog();
-        
+
         // Should have separate eager loading query for company since JOINs are disabled
-        $companyEagerQueries = collect($queries)->filter(function($query) {
-            return str_contains($query['query'], 'select * from "companies"') && 
+        $companyEagerQueries = collect($queries)->filter(function ($query) {
+            return str_contains($query['query'], 'select * from "companies"') &&
                    str_contains($query['query'], 'where "companies"."id" in');
         });
 
@@ -450,7 +446,7 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
     {
         // Enable JOIN optimization
         config(['restify.search.use_joins' => true]);
-        
+
         PostRepository::$search = ['title'];
         PostRepository::$related = [
             'user' => BelongsTo::make('user', UserRepository::class)->searchable([
@@ -468,16 +464,16 @@ class EagerLoadingOptimizationTest extends IntegrationTestCase
             ->assertOk();
 
         $queries = DB::getQueryLog();
-        $searchQuery = collect($queries)->first(fn($query) => str_contains(strtolower($query['query']), 'searchuser'));
+        $searchQuery = collect($queries)->first(fn ($query) => str_contains(strtolower($query['query']), 'searchuser'));
 
         $this->assertNotNull($searchQuery);
-        
+
         $sql = strtolower($searchQuery['query']);
-        
+
         // Should have single JOIN for the user relationship when optimization is enabled
         $joinCount = substr_count($sql, 'left join "users"');
         $this->assertEquals(1, $joinCount, 'Should have exactly one JOIN for user relationship when optimization is enabled');
-        
+
         // Should search on multiple fields from the joined table
         $this->assertStringContainsString('"users_for_user"."name"', $sql);
         $this->assertStringContainsString('"users_for_user"."email"', $sql);

@@ -22,7 +22,7 @@ class SearchableFilterTest extends IntegrationTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        
+
         // Reset config to default
         config(['restify.search.use_joins' => false]);
     }
@@ -31,7 +31,7 @@ class SearchableFilterTest extends IntegrationTestCase
     {
         // Reset config to default
         config(['restify.search.use_joins' => false]);
-        
+
         parent::tearDown();
     }
 
@@ -40,27 +40,27 @@ class SearchableFilterTest extends IntegrationTestCase
     {
         // Ensure JOIN optimization is disabled (default)
         $this->assertFalse(config('restify.search.use_joins'));
-        
+
         $company = Company::factory()->create(['name' => 'TestCompany']);
         $user = User::factory()->for($company)->create();
-        
+
         $repository = UserRepository::resolveWith($user);
         $belongsToField = BelongsTo::make('company', CompanyRepository::class)->searchable(['companies.name']);
-        
+
         $filter = SearchableFilter::make()->setRepository($repository)->usingBelongsTo($belongsToField);
-        
+
         $query = User::query();
         $request = Mockery::mock(RestifyRequest::class);
-        
+
         DB::enableQueryLog();
         $filter->filter($request, $query, 'TestCompany');
         $sql = $query->toSql();
         DB::disableQueryLog();
-        
+
         // Should contain subquery pattern
         $this->assertStringContainsString('select', strtolower($sql));
         $this->assertStringContainsString('where', strtolower($sql));
-        
+
         // Should NOT contain JOIN
         $this->assertStringNotContainsString('join', strtolower($sql));
     }
@@ -71,27 +71,27 @@ class SearchableFilterTest extends IntegrationTestCase
         // Enable JOIN optimization
         config(['restify.search.use_joins' => true]);
         $this->assertTrue(config('restify.search.use_joins'));
-        
+
         $company = Company::factory()->create(['name' => 'TestCompany']);
         $user = User::factory()->for($company)->create();
-        
+
         $repository = UserRepository::resolveWith($user);
         $belongsToField = BelongsTo::make('company', CompanyRepository::class)->searchable(['companies.name']);
-        
+
         $filter = SearchableFilter::make()->setRepository($repository)->usingBelongsTo($belongsToField);
-        
+
         $query = User::query();
         $request = Mockery::mock(RestifyRequest::class);
-        
+
         DB::enableQueryLog();
         $filter->filter($request, $query, 'TestCompany');
         $sql = $query->toSql();
         DB::disableQueryLog();
-        
+
         // Should contain JOIN pattern
         $this->assertStringContainsString('left join', strtolower($sql));
         $this->assertStringContainsString('companies_for_company', strtolower($sql));
-        
+
         // Should NOT contain subquery
         $this->assertStringNotContainsString('select "name" from "companies"', strtolower($sql));
     }
@@ -101,24 +101,24 @@ class SearchableFilterTest extends IntegrationTestCase
     {
         // Enable JOIN optimization
         config(['restify.search.use_joins' => true]);
-        
+
         $user = User::factory()->create(['name' => 'TestUser']);
         $repository = UserRepository::resolveWith($user);
-        
+
         // Create filter for direct field (no BelongsTo)
         $filter = SearchableFilter::make()->setRepository($repository)->setColumn('users.name');
-        
+
         $query = User::query();
         $request = Mockery::mock(RestifyRequest::class);
-        
+
         DB::enableQueryLog();
         $filter->filter($request, $query, 'TestUser');
         $sql = $query->toSql();
         DB::disableQueryLog();
-        
+
         // Should NOT contain JOIN for direct fields
         $this->assertStringNotContainsString('join', strtolower($sql));
-        
+
         // Should contain simple WHERE clause
         $this->assertStringContainsString('where', strtolower($sql));
         $this->assertStringContainsString('like', strtolower($sql));

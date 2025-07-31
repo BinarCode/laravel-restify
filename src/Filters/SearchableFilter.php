@@ -62,36 +62,36 @@ class SearchableFilter extends Filter
     {
         $relatedModel = $this->belongsToField->getRelatedModel($this->repository);
         $relatedTable = $relatedModel->getTable();
-        
+
         // Corrected: getRelatedKey is foreign key on parent, getQualifiedKey is primary key on related
         $foreignKey = $this->belongsToField->getRelatedKey($this->repository); // e.g., invoices.vendor_id
         $relatedKey = $this->belongsToField->getQualifiedKey($this->repository); // e.g., vendors.id
-        
+
         // Use a consistent alias based on the relationship name to reuse joins
         $relationshipName = $this->belongsToField->getAttribute();
         $joinAlias = "{$relatedTable}_for_{$relationshipName}";
-        
+
         // Check if this exact join already exists
         $existingJoins = collect($query->getQuery()->joins ?? []);
         $joinExists = $existingJoins->contains(function ($join) use ($joinAlias, $relatedTable) {
-            return $join->table === "{$relatedTable} as {$joinAlias}" || 
+            return $join->table === "{$relatedTable} as {$joinAlias}" ||
                    str_contains($join->table, $joinAlias);
         });
-        
-        if (!$joinExists) {
+
+        if (! $joinExists) {
             $query->leftJoin("{$relatedTable} as {$joinAlias}", function ($join) use ($foreignKey, $joinAlias, $relatedModel) {
                 // Join parent.foreign_key = related_alias.id
                 $join->on($foreignKey, '=', "{$joinAlias}.{$relatedModel->getKeyName()}");
             });
         }
-        
+
         // Apply search conditions for each searchable attribute
         collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value, $joinAlias) {
             // Extract column name from qualified attribute (e.g., vendors.name -> name)
             $columnName = str_contains($attribute, '.') ? explode('.', $attribute)[1] : $attribute;
             $qualifiedAttribute = "{$joinAlias}.{$columnName}";
-            
-            if (!config('restify.search.case_sensitive')) {
+
+            if (! config('restify.search.case_sensitive')) {
                 $upper = strtoupper($value);
                 $query->orWhereRaw("UPPER({$qualifiedAttribute}) LIKE ?", ['%'.$upper.'%']);
             } else {
@@ -106,7 +106,7 @@ class SearchableFilter extends Filter
         collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value) {
             // Extract column name from qualified attribute (e.g., vendors.name -> name)
             $columnName = str_contains($attribute, '.') ? explode('.', $attribute)[1] : $attribute;
-            
+
             $query->orWhere(
                 $this->belongsToField->getRelatedModel($this->repository)::select($columnName)
                     ->whereColumn(
@@ -119,5 +119,4 @@ class SearchableFilter extends Filter
             );
         });
     }
-
 }
