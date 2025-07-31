@@ -62,10 +62,10 @@ class SearchableFilter extends Filter
     {
         $relatedModel = $this->belongsToField->getRelatedModel($this->repository);
         $relatedTable = $relatedModel->getTable();
-        $parentTable = $this->repository->model()->getTable();
         
-        $localKey = $this->belongsToField->getQualifiedKey($this->repository);
-        $foreignKeyName = $relatedModel->getKeyName();
+        // Corrected: getRelatedKey is foreign key on parent, getQualifiedKey is primary key on related
+        $foreignKey = $this->belongsToField->getRelatedKey($this->repository); // e.g., invoices.vendor_id
+        $relatedKey = $this->belongsToField->getQualifiedKey($this->repository); // e.g., vendors.id
         
         // Use a consistent alias based on the relationship name to reuse joins
         $relationshipName = $this->belongsToField->getAttribute();
@@ -79,14 +79,17 @@ class SearchableFilter extends Filter
         });
         
         if (!$joinExists) {
-            $query->leftJoin("{$relatedTable} as {$joinAlias}", function ($join) use ($localKey, $joinAlias, $foreignKeyName) {
-                $join->on($localKey, '=', "{$joinAlias}.{$foreignKeyName}");
+            $query->leftJoin("{$relatedTable} as {$joinAlias}", function ($join) use ($foreignKey, $joinAlias, $relatedModel) {
+                // Join parent.foreign_key = related_alias.id
+                $join->on($foreignKey, '=', "{$joinAlias}.{$relatedModel->getKeyName()}");
             });
         }
         
         // Apply search conditions for each searchable attribute
         collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value, $joinAlias) {
-            $qualifiedAttribute = "{$joinAlias}.{$attribute}";
+            // Extract column name from qualified attribute (e.g., vendors.name -> name)
+            $columnName = str_contains($attribute, '.') ? explode('.', $attribute)[1] : $attribute;
+            $qualifiedAttribute = "{$joinAlias}.{$columnName}";
             
             if (!config('restify.search.case_sensitive')) {
                 $upper = strtoupper($value);
@@ -101,11 +104,14 @@ class SearchableFilter extends Filter
     {
         // Original implementation using subqueries for backward compatibility
         collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value) {
+            // Extract column name from qualified attribute (e.g., vendors.name -> name)
+            $columnName = str_contains($attribute, '.') ? explode('.', $attribute)[1] : $attribute;
+            
             $query->orWhere(
-                $this->belongsToField->getRelatedModel($this->repository)::select($attribute)
+                $this->belongsToField->getRelatedModel($this->repository)::select($columnName)
                     ->whereColumn(
-                        $this->belongsToField->getQualifiedKey($this->repository),
-                        $this->belongsToField->getRelatedKey($this->repository)
+                        $this->belongsToField->getQualifiedKey($this->repository), // related.id
+                        $this->belongsToField->getRelatedKey($this->repository)    // parent.foreign_key
                     )
                     ->take(1),
                 $likeOperator,
