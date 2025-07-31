@@ -132,6 +132,19 @@ return [
         | Specify either the search should be case-sensitive or not.
         */
         'case_sensitive' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Search Optimization
+        |--------------------------------------------------------------------------
+        |
+        | When enabled, search queries on related fields will use JOINs instead of
+        | subqueries for better performance. This only affects searchable BelongsTo
+        | relationships, not direct field searches on the main model.
+        |
+        | Set to false to use the legacy subquery approach for backward compatibility.
+        */
+        'use_joins' => env('RESTIFY_SEARCH_USE_JOINS', false),
     ],
 
     'repositories' => [

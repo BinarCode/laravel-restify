@@ -115,9 +115,15 @@ class RepositorySearchService
             }
         })->all();
 
-        return $query->with(
-            array_merge($filtered, ($this->repository)::withs())
-        );
+        $eagerRelations = array_merge($filtered, ($this->repository)::withs());
+        
+        // Only exclude joined relationships if JOIN optimization is enabled
+        if (config('restify.search.use_joins', false)) {
+            $joinedRelations = $this->getJoinedRelationships($query);
+            $eagerRelations = array_diff($eagerRelations, $joinedRelations);
+        }
+        
+        return $query->with($eagerRelations);
     }
 
     public function prepareSearchFields(RestifyRequest $request, $query)
@@ -142,6 +148,7 @@ class RepositorySearchService
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
             }
 
+            // Apply local field searches
             foreach ($this->repository::searchables() as $key => $column) {
                 $filter = $column instanceof Filter
                     ? $column
@@ -156,14 +163,15 @@ class RepositorySearchService
                     );
 
                 $filter->filter($request, $query, $search);
-
-                $this->repository::collectRelated()
-                    ->onlySearchable($request)
-                    ->map(function (BelongsTo $field) {
-                        return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
-                    })
-                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
             }
+
+            // Apply related field searches (moved outside the loop to avoid duplicate joins)
+            $this->repository::collectRelated()
+                ->onlySearchable($request)
+                ->map(function (BelongsTo $field) {
+                    return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
+                })
+                ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
         });
 
         return $query;
@@ -240,6 +248,22 @@ class RepositorySearchService
         }
 
         return $query;
+    }
+
+    protected function getJoinedRelationships($query): array
+    {
+        $joinedRelations = [];
+        $joins = collect($query->getQuery()->joins ?? []);
+        
+        // Extract relationship names from join aliases
+        $joins->each(function ($join) use (&$joinedRelations) {
+            if (str_contains($join->table, '_for_')) {
+                $relationName = str($join->table)->after('_for_')->toString();
+                $joinedRelations[] = $relationName;
+            }
+        });
+        
+        return $joinedRelations;
     }
 
     public static function make(): static
