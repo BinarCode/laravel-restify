@@ -63,32 +63,32 @@ class SearchableFilter extends Filter
         $relatedModel = $this->belongsToField->getRelatedModel($this->repository);
         $relatedTable = $relatedModel->getTable();
         $parentTable = $this->repository->model()->getTable();
-        
+
         $localKey = $this->belongsToField->getQualifiedKey($this->repository);
         $foreignKeyName = $relatedModel->getKeyName();
-        
+
         // Use a consistent alias based on the relationship name to reuse joins
         $relationshipName = $this->belongsToField->getAttribute();
         $joinAlias = "{$relatedTable}_for_{$relationshipName}";
-        
+
         // Check if this exact join already exists
         $existingJoins = collect($query->getQuery()->joins ?? []);
         $joinExists = $existingJoins->contains(function ($join) use ($joinAlias, $relatedTable) {
-            return $join->table === "{$relatedTable} as {$joinAlias}" || 
+            return $join->table === "{$relatedTable} as {$joinAlias}" ||
                    str_contains($join->table, $joinAlias);
         });
-        
-        if (!$joinExists) {
+
+        if (! $joinExists) {
             $query->leftJoin("{$relatedTable} as {$joinAlias}", function ($join) use ($localKey, $joinAlias, $foreignKeyName) {
                 $join->on($localKey, '=', "{$joinAlias}.{$foreignKeyName}");
             });
         }
-        
+
         // Apply search conditions for each searchable attribute
         collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value, $joinAlias) {
             $qualifiedAttribute = "{$joinAlias}.{$attribute}";
-            
-            if (!config('restify.search.case_sensitive')) {
+
+            if (! config('restify.search.case_sensitive')) {
                 $upper = strtoupper($value);
                 $query->orWhereRaw("UPPER({$qualifiedAttribute}) LIKE ?", ['%'.$upper.'%']);
             } else {
@@ -113,5 +113,4 @@ class SearchableFilter extends Filter
             );
         });
     }
-
 }
