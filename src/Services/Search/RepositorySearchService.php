@@ -116,13 +116,13 @@ class RepositorySearchService
         })->all();
 
         $eagerRelations = array_merge($filtered, ($this->repository)::withs());
-        
+
         // Only exclude joined relationships if JOIN optimization is enabled
         if (config('restify.search.use_joins', false)) {
             $joinedRelations = $this->getJoinedRelationships($query);
             $eagerRelations = array_diff($eagerRelations, $joinedRelations);
         }
-        
+
         return $query->with($eagerRelations);
     }
 
@@ -254,7 +254,7 @@ class RepositorySearchService
     {
         $joinedRelations = [];
         $joins = collect($query->getQuery()->joins ?? []);
-        
+
         // Extract relationship names from join aliases
         $joins->each(function ($join) use (&$joinedRelations) {
             if (str_contains($join->table, '_for_')) {
@@ -262,7 +262,7 @@ class RepositorySearchService
                 $joinedRelations[] = $relationName;
             }
         });
-        
+
         return $joinedRelations;
     }
 
