@@ -157,7 +157,7 @@ class RepositorySearchService
 
                 $filter->filter($request, $query, $search);
             }
-            
+
             // Process related searchable fields
             $this->repository::collectRelated()
                 ->onlySearchable($request)
