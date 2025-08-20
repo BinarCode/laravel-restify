@@ -532,7 +532,7 @@ class Repository implements JsonSerializable, RestifySearchable
         return $this->resolveRelationships($request);
     }
 
-    public function index(RestifyRequest $request)
+    public function index(RestifyRequest $request, bool $toArray = false)
     {
         // Check if the user has the policy allowRestify
 
@@ -558,7 +558,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
         $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
 
-        return response()->json($this->filter([
+        $result = $this->filter([
             'meta' => $this->when(
                 $meta = $this->resolveIndexMainMeta(
                     $request,
@@ -586,7 +586,13 @@ class Repository implements JsonSerializable, RestifySearchable
                 $links
             ),
             'data' => $data,
-        ]));
+        ]);
+
+        if ($toArray) {
+            return $result;
+        }
+
+        return response()->json($result);
     }
 
     public function indexCollection(RestifyRequest $request, Collection $items): Collection
