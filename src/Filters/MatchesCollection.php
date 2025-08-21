@@ -66,8 +66,8 @@ class MatchesCollection extends Collection
                 }
             }
 
-            return ! is_null($request->query("-{$filter->column()}"))
-                || ! is_null($request->query($filter->column()));
+            return ! is_null($request->input("-{$filter->column()}"))
+                || ! is_null($request->input($filter->column()));
         });
     }
 
