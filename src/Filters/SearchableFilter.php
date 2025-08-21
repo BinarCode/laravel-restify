@@ -43,8 +43,12 @@ class SearchableFilter extends Filter
 
         if (! config('restify.search.case_sensitive')) {
             $upper = strtoupper($value);
+            
+            $columnExpression = $connectionType === 'pgsql' 
+                ? "UPPER({$this->column}::text)" 
+                : "UPPER({$this->column})";
 
-            return $query->orWhereRaw("UPPER({$this->column}) LIKE ?", ['%'.$upper.'%']);
+            return $query->orWhereRaw("{$columnExpression} LIKE ?", ['%'.$upper.'%']);
         }
 
         return $query->orWhere($this->column, $likeOperator, "%{$value}%");
