@@ -532,7 +532,7 @@ class Repository implements JsonSerializable, RestifySearchable
         return $this->resolveRelationships($request);
     }
 
-    public function index(RestifyRequest $request, bool $toArray = false)
+    public function index(RestifyRequest $request)
     {
         // Check if the user has the policy allowRestify
 
@@ -587,10 +587,6 @@ class Repository implements JsonSerializable, RestifySearchable
             ),
             'data' => $data,
         ]);
-
-        if ($toArray) {
-            return $result;
-        }
 
         return response()->json($result);
     }
