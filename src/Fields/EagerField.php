@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\HasColumns;
@@ -82,10 +83,14 @@ class EagerField extends Field
              */
             $serializableRepository = $this->repositoryClass::resolveWith($relatedModel);
 
-            $serializableRepository->request = $repository->request;
+            // Only set the request for MCP requests to preserve MCP-specific behavior
+            // without interfering with regular column selection
+            if (isset($repository->request) && $repository->request instanceof McpRequest) {
+                $serializableRepository->request = $repository->request;
+            }
 
             $this->value = $serializableRepository
-                ->allowToShow(app(Request::class))
+                ->allowToShow($repository->request ?? app(Request::class))
                 ->columns()
                 ->eager($this);
         } catch (AuthorizationException) {

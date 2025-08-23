@@ -223,7 +223,7 @@ class BelongsToFieldTest extends IntegrationTestCase
         $this->withoutExceptionHandling();
 
         $this->getJson(PostRepository::route($post, query: [
-            'include' => 'user[name]',
+            'include' => 'user[name,email]',
         ]))
             ->assertJson(
                 fn (AssertableJson $json) => $json

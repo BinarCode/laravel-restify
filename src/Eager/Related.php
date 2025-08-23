@@ -71,10 +71,6 @@ class Related implements JsonSerializable
 
     public function resolve(RestifyRequest $request, Repository $repository): self
     {
-        ray($repository->request instanceof MCPRequest, $repository::uriKey())->green();
-
-        ray($repository->request instanceof McpRequest);
-
         $request->related()->resolved($this->uniqueIdentifierForRepository($repository));
 
         if (is_callable($this->resolverCallback)) {
