@@ -73,8 +73,8 @@ class FieldCollection extends Collection
         if ($request instanceof McpRequest && method_exists($repository, 'fieldsForMcpIndex')) {
             // Get the MCP-specific fields from the repository
             $mcpFields = $repository->fieldsForMcpIndex($request);
-            $mcpFieldAttributes = collect($mcpFields)->map(fn($field) => $field->attribute)->toArray();
-            
+            $mcpFieldAttributes = collect($mcpFields)->map(fn ($field) => $field->attribute)->toArray();
+
             // Filter the current collection to only include MCP fields
             return $this
                 ->filter(fn (Field $field) => ! $field instanceof EagerField)
@@ -83,7 +83,7 @@ class FieldCollection extends Collection
                     return $field->isShownOnMcp($request, $repository);
                 })->values();
         }
-        
+
         // Fallback to regular index filtering for non-MCP requests
         return $this->forIndex($request, $repository);
     }

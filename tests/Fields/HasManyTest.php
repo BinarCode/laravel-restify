@@ -147,7 +147,7 @@ class HasManyTest extends IntegrationTestCase
     public function test_can_apply_filters(): void
     {
         $this->markTestSkipped('Skipping filter test for PHP 8.2 + Laravel 11 prefer-lowest compatibility');
-        
+
         tap($u = $this->mockUsers()->first(), function ($user) {
             tap($this->mockPosts($user->getKey(), 20), static function (Collection $posts) {
                 $first = $posts->first();

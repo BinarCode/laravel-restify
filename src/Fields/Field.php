@@ -17,9 +17,9 @@ use ReturnTypeWillChange;
 
 class Field extends OrganicField implements JsonSerializable
 {
-    use Make;
-    use HasAction;
     use FieldMcpSchemaDetection;
+    use HasAction;
+    use Make;
 
     /**
      * The resource associated with the field.

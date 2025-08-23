@@ -25,7 +25,7 @@ class GlobalSearchTool extends Tool
     public function schema(ToolInputSchema $schema): ToolInputSchema
     {
         $searchableRepositories = collect(Restify::globallySearchableRepositories(app(McpRequest::class)));
-        $repositoryNames = $searchableRepositories->map(fn($repo) => $repo::uriKey())->implode(', ');
+        $repositoryNames = $searchableRepositories->map(fn ($repo) => $repo::uriKey())->implode(', ');
 
         $schema->string('search')
             ->description("Search query to find records across all repositories. Searches through searchable fields in: {$repositoryNames}")
@@ -58,7 +58,7 @@ class GlobalSearchTool extends Tool
         return ToolResult::json([
             'results' => $results,
             'total' => count($results),
-            'searched_repositories' => collect($globallySearchableRepositories)->map(fn($repo) => [
+            'searched_repositories' => collect($globallySearchableRepositories)->map(fn ($repo) => [
                 'name' => $repo::uriKey(),
                 'title' => $repo::label(),
             ])->values()->toArray(),

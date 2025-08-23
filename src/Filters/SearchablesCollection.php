@@ -40,7 +40,7 @@ class SearchablesCollection extends Collection
      */
     public function fieldNames(): array
     {
-        return $this->filter(fn($item) => is_string($item) && !empty($item))
+        return $this->filter(fn ($item) => is_string($item) && ! empty($item))
             ->unique()
             ->values()
             ->toArray();
@@ -52,7 +52,7 @@ class SearchablesCollection extends Collection
     public function formatForDocumentation(): string
     {
         $fields = $this->fieldNames();
-        
+
         if (empty($fields)) {
             return 'No searchable fields available';
         }
