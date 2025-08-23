@@ -33,7 +33,7 @@ trait McpToolHelpers
             // This will call fieldsForMcpIndex if available, providing accurate MCP field documentation
             $fields = $repository->collectFields($request)
                 ->forMcpIndex($request, $repository)
-                ->map(fn($field) => $field->attribute)
+                ->map(fn ($field) => $field->attribute)
                 ->unique()
                 ->sort()
                 ->values()
@@ -92,9 +92,9 @@ trait McpToolHelpers
             $firstFields = static::getRelationshipFields($firstRepositoryClass);
             $exampleFields = array_slice($firstFields, 0, 2);
 
-            if (!empty($exampleFields)) {
-                $documentation .= "- include={$firstRelationName}[" . implode(',', $exampleFields) . "] (selective fields with comma syntax)\n";
-                $documentation .= "- include={$firstRelationName}[" . implode('|', $exampleFields) . "] (selective fields with pipe syntax)\n";
+            if (! empty($exampleFields)) {
+                $documentation .= "- include={$firstRelationName}[".implode(',', $exampleFields)."] (selective fields with comma syntax)\n";
+                $documentation .= "- include={$firstRelationName}[".implode('|', $exampleFields)."] (selective fields with pipe syntax)\n";
             }
 
             // Add comprehensive nested relationship examples based on real test cases

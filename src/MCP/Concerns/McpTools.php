@@ -7,14 +7,14 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
  */
 trait McpTools
 {
+    use McpActionTool;
+    use McpDestroyTool;
+    use McpGetterTool;
     use McpIndexTool;
     use McpShowTool;
     use McpStoreTool;
-    use McpUpdateTool;
-    use McpDestroyTool;
-    use McpActionTool;
-    use McpGetterTool;
     use McpToolHelpers;
+    use McpUpdateTool;
 
     public function mcpAllowsIndex(): bool
     {

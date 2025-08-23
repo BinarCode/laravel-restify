@@ -26,10 +26,11 @@ class GlobalSearchTool extends Tool
     public function schema(ToolInputSchema $schema): ToolInputSchema
     {
         $searchableRepositories = collect(Restify::globallySearchableRepositories(app(McpRequest::class)));
-        
+
         // Build searchable fields documentation across all repositories
-        $searchableInfo = $searchableRepositories->map(function($repo) {
+        $searchableInfo = $searchableRepositories->map(function ($repo) {
             $searchableFields = (new SearchablesCollection($repo::searchables()))->formatForDocumentation();
+
             return "{$repo::uriKey()} ({$searchableFields})";
         })->implode(', ');
 
@@ -64,7 +65,7 @@ class GlobalSearchTool extends Tool
         return ToolResult::json([
             'results' => $results,
             'total' => count($results),
-            'searched_repositories' => collect($globallySearchableRepositories)->map(fn($repo) => [
+            'searched_repositories' => collect($globallySearchableRepositories)->map(fn ($repo) => [
                 'name' => $repo::uriKey(),
                 'title' => $repo::label(),
             ])->values()->toArray(),

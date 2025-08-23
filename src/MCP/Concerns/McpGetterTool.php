@@ -3,9 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Getters\Getter;
-use Binaryk\LaravelRestify\Http\Requests\GetterRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Illuminate\Http\JsonResponse;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 
@@ -21,7 +19,7 @@ trait McpGetterTool
         $this->sanitizeToolRequest($getterRequest, $arguments);
 
         if ($id = $getterRequest->input('id')) {
-            if (!$getter->authorizedToRun($getterRequest, $getterRequest->findModelOrFail($id))) {
+            if (! $getter->authorizedToRun($getterRequest, $getterRequest->findModelOrFail($id))) {
                 return [
                     'error' => 'Not authorized to run this getter',
                     'getter' => $getter->uriKey(),
@@ -84,7 +82,7 @@ trait McpGetterTool
         $shownOnShow = $getter->isShownOnShow($mcpRequest, app(static::class));
         $shownOnIndex = $getter->isShownOnIndex($mcpRequest, app(static::class));
 
-        if ($shownOnShow && !$shownOnIndex) {
+        if ($shownOnShow && ! $shownOnIndex) {
             // Show getter - requires single ID
             $schema->string('id')
                 ->description("The ID of the {$modelName} to execute the getter on")

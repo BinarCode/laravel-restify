@@ -3,9 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
 use Binaryk\LaravelRestify\Actions\Action;
-use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Generator;
 use Laravel\Mcp\Server\Tool;
