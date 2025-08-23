@@ -2,11 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fields;
 
-use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\Fields\File;
-use Binaryk\LaravelRestify\Fields\HasMany;
-use Binaryk\LaravelRestify\MCP\Concerns\FieldMcpSchemaDetection;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
@@ -23,7 +19,7 @@ class FieldMcpSchemaDetectionTest extends IntegrationTestCase
     public function test_resolve_tool_schema_with_default_implementation(): void
     {
         $schema = Mockery::mock(ToolInputSchema::class);
-        $repository = new PostRepository();
+        $repository = new PostRepository;
 
         $schema->shouldReceive('string')->with('title')->once()->andReturnSelf();
         $schema->shouldReceive('description')->with('Field: title (type: string). Examples: Sample Title, My Title')->once()->andReturnSelf();
@@ -37,7 +33,7 @@ class FieldMcpSchemaDetectionTest extends IntegrationTestCase
     public function test_resolve_tool_schema_with_required_field(): void
     {
         $schema = Mockery::mock(ToolInputSchema::class);
-        $repository = new PostRepository();
+        $repository = new PostRepository;
 
         $schema->shouldReceive('string')->with('title')->once()->andReturnSelf();
         $schema->shouldReceive('description')->once()->andReturnSelf();
@@ -52,7 +48,7 @@ class FieldMcpSchemaDetectionTest extends IntegrationTestCase
     public function test_resolve_tool_schema_with_custom_callback(): void
     {
         $schema = Mockery::mock(ToolInputSchema::class);
-        $repository = new PostRepository();
+        $repository = new PostRepository;
         $callbackCalled = false;
 
         $field = $this->createTestField('title');
