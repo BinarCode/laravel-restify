@@ -3,9 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
 use Binaryk\LaravelRestify\Getters\Getter;
-use Binaryk\LaravelRestify\Http\Requests\GetterRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Generator;
 use Laravel\Mcp\Server\Tool;
@@ -15,6 +13,7 @@ use Laravel\Mcp\Server\Tools\ToolResult;
 class GetterTool extends Tool
 {
     protected Repository $repository;
+
     protected Getter $getter;
 
     public function __construct(string $repositoryClass, Getter $getter)
@@ -43,7 +42,7 @@ class GetterTool extends Tool
         $shownOnShow = $this->getter->isShownOnShow($mcpRequest, $this->repository);
         $shownOnIndex = $this->getter->isShownOnIndex($mcpRequest, $this->repository);
 
-        if ($shownOnShow && !$shownOnIndex) {
+        if ($shownOnShow && ! $shownOnIndex) {
             return "Execute {$getterName} getter to retrieve data for a specific {$modelName} record in the {$repositoryUriKey} repository.";
         } else {
             return "Execute {$getterName} getter to retrieve data from the {$repositoryUriKey} repository.";

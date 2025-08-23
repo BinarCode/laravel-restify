@@ -3,9 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Actions\Action;
-use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 
 /**
@@ -20,7 +18,7 @@ trait McpActionTool
         $this->sanitizeToolRequest($actionRequest, $arguments);
 
         if ($id = $actionRequest->input('id')) {
-            if (!$action->authorizedToRun($actionRequest, $actionRequest->findModelOrFail($id))) {
+            if (! $action->authorizedToRun($actionRequest, $actionRequest->findModelOrFail($id))) {
                 return [
                     'error' => 'Not authorized to run this action',
                     'getter' => $action->uriKey(),
@@ -28,9 +26,8 @@ trait McpActionTool
             }
         }
 
-
         // Set up the action request context based on action type
-        if (!$action->isStandalone()) {
+        if (! $action->isStandalone()) {
             if (isset($arguments['id'])) {
                 // Single model action (show context)
                 $actionRequest->merge(['id' => $arguments['id']]);
@@ -41,7 +38,7 @@ trait McpActionTool
         }
 
         // Check authorization
-        if (!$action->authorizedToSee($actionRequest)) {
+        if (! $action->authorizedToSee($actionRequest)) {
             return [
                 'error' => 'Not authorized to see this action',
                 'action' => $action->uriKey(),
@@ -102,7 +99,7 @@ trait McpActionTool
             $shownOnShow = $action->isShownOnShow($mcpRequest, app(static::class));
             $shownOnIndex = $action->isShownOnIndex($mcpRequest, app(static::class));
 
-            if ($shownOnShow && !$shownOnIndex) {
+            if ($shownOnShow && ! $shownOnIndex) {
                 // Show action - requires single ID
                 $schema->string('id')
                     ->description("The ID of the {$modelName} to perform the action on")

@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
@@ -43,7 +42,7 @@ class SearchablesCollection extends Collection
      */
     public function fieldNames(): array
     {
-        return $this->filter(fn($item) => is_string($item) && !empty($item))
+        return $this->filter(fn ($item) => is_string($item) && ! empty($item))
             ->unique()
             ->values()
             ->toArray();
@@ -55,7 +54,7 @@ class SearchablesCollection extends Collection
     public function formatForDocumentation(): string
     {
         $fields = $this->fieldNames();
-        
+
         if (empty($fields)) {
             return 'No searchable fields available';
         }
@@ -76,7 +75,7 @@ class SearchablesCollection extends Collection
 
             // Create SearchableFilter for string fields
             $columnName = is_numeric($key) ? $searchable : $key;
-            
+
             return SearchableFilter::make()
                 ->setColumn($model->qualifyColumn($columnName))
                 ->setRepository($repository);
