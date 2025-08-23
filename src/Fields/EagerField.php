@@ -82,6 +82,8 @@ class EagerField extends Field
              */
             $serializableRepository = $this->repositoryClass::resolveWith($relatedModel);
 
+            $serializableRepository->request = $repository->request;
+
             $this->value = $serializableRepository
                 ->allowToShow(app(Request::class))
                 ->columns()

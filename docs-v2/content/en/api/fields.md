@@ -407,6 +407,49 @@ However, you can populate the field value when the entity is stored by using `va
 Field::new('token')->value(Str::random(32))->hidden();
 ```
 
+### MCP Visibility Control
+
+When using Laravel Restify with Model Context Protocol (MCP), you can control field visibility specifically for MCP requests using dedicated methods:
+
+```php
+// Hide field from MCP requests completely
+Field::new('secret_key')->hideFromMcp()
+
+// Show field only in MCP requests (hide from regular API)
+Field::new('mcp_metadata')->showOnIndex(false)->showOnShow(false)->showOnMcp(true)
+
+// Conditionally hide based on user permissions
+Field::new('admin_notes')->hideFromMcp(function($request, $repository) {
+    return !$request->user()->isAdmin();
+})
+
+// Show field in MCP based on user role
+Field::new('sensitive_data')->showOnMcp(function($request, $repository) {
+    return $request->user()->can('view-sensitive', $repository);
+})
+```
+
+#### MCP Visibility Methods
+
+- **`showOnMcp($callback = true)`** - Control whether the field should be visible in MCP requests
+- **`hideFromMcp($callback = true)`** - Hide the field from MCP requests (inverse of showOnMcp)
+
+Both methods accept either a boolean value or a callback function that receives the request and repository as parameters.
+
+<alert type="info">
+MCP visibility rules take precedence over regular `showOnIndex`/`showOnShow` rules when processing MCP requests. Fields are visible in MCP by default unless explicitly hidden.
+</alert>
+
+#### How It Works
+
+The MCP visibility system automatically detects when a request is coming from an MCP tool and applies the appropriate visibility rules:
+
+1. **Regular API requests** use `showOnIndex()` and `showOnShow()` rules
+2. **MCP requests** use `showOnMcp()` and `hideFromMcp()` rules
+3. **Default behavior** - fields are visible in MCP unless explicitly hidden
+
+This allows you to have different field visibility for your regular API consumers versus AI agents accessing your data through MCP tools.
+
 ## Hooks
 
 ### After store
