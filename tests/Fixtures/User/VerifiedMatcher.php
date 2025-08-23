@@ -15,4 +15,9 @@ class VerifiedMatcher extends MatchFilter
             $query->whereNull('email_verified_at');
         }
     }
+
+    public function description(): string
+    {
+        return 'Filter users by email verification status';
+    }
 }

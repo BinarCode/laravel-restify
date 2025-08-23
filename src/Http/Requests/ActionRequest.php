@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -64,6 +65,10 @@ class ActionRequest extends RestifyRequest
 
     public function isForRepositoryRequest(): bool
     {
+        if ($this instanceof McpActionRequest) {
+            return $this->input('id') != null;
+        }
+
         return $this instanceof RepositoryActionRequest;
     }
 }

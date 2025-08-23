@@ -4,13 +4,20 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\MCP;
 
+use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\MCP\Concerns\McpTools;
+use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\MCP\Resources\ApplicationInfo;
+use Binaryk\LaravelRestify\MCP\Tools\Operations\ActionTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\DeleteTool;
+use Binaryk\LaravelRestify\MCP\Tools\Operations\GetterTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\IndexTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\ShowTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\StoreTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\UpdateTool;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Laravel\Mcp\Server;
 
@@ -94,7 +101,45 @@ class RestifyServer extends Server
                 if (method_exists($repositoryInstance, 'mcpAllowsDelete') && $repositoryInstance->mcpAllowsDelete()) {
                     $this->addTool(new DeleteTool($repository));
                 }
+
+                if (method_exists($repositoryInstance, 'mcpAllowsActions') && $repositoryInstance->mcpAllowsActions()) {
+                    $this->discoverActionsForRepository($repository, $repositoryInstance);
+                }
+
+                if (method_exists($repositoryInstance, 'mcpAllowsGetters') && $repositoryInstance->mcpAllowsGetters()) {
+                    $this->discoverGettersForRepository($repository, $repositoryInstance);
+                }
             });
+    }
+
+    protected function discoverActionsForRepository(string $repositoryClass, Repository $repositoryInstance): void
+    {
+        $actionRequest = app(McpActionRequest::class);
+        $actionRequest->merge([
+            'mcp_repository_key' => $repositoryInstance::uriKey(),
+        ]);
+
+        $repositoryInstance->resolveActions($actionRequest)
+            ->filter(fn ($action) => $action instanceof Action)
+            ->filter(fn (Action $action) => $action->isShownOnMcp($actionRequest, $repositoryInstance))
+            ->filter(fn (Action $action) => $action->authorizedToSee($actionRequest))
+            ->unique(fn (Action $action) => $action->uriKey()) // Avoid duplicates
+            ->each(fn (Action $action) => $this->addTool(new ActionTool($repositoryClass, $action)));
+    }
+
+    protected function discoverGettersForRepository(string $repositoryClass, Repository $repositoryInstance): void
+    {
+        $getterRequest = app(McpGetterRequest::class);
+        $getterRequest->merge([
+            'mcp_repository_key' => $repositoryInstance::uriKey(),
+        ]);
+
+        $repositoryInstance->resolveGetters($getterRequest)
+            ->filter(fn ($getter) => $getter instanceof Getter)
+            ->filter(fn (Getter $getter) => $getter->isShownOnMcp($getterRequest, $repositoryInstance))
+            ->filter(fn (Getter $getter) => $getter->authorizedToSee($getterRequest))
+            ->unique(fn (Getter $getter) => $getter->uriKey()) // Avoid duplicates
+            ->each(fn (Getter $getter) => $this->addTool(new GetterTool($repositoryClass, $getter)));
     }
 
     /**

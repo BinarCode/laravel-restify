@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\MCP\Tools;
 
+use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\GlobalSearch;
@@ -25,10 +26,15 @@ class GlobalSearchTool extends Tool
     public function schema(ToolInputSchema $schema): ToolInputSchema
     {
         $searchableRepositories = collect(Restify::globallySearchableRepositories(app(McpRequest::class)));
-        $repositoryNames = $searchableRepositories->map(fn($repo) => $repo::uriKey())->implode(', ');
+        
+        // Build searchable fields documentation across all repositories
+        $searchableInfo = $searchableRepositories->map(function($repo) {
+            $searchableFields = (new SearchablesCollection($repo::searchables()))->formatForDocumentation();
+            return "{$repo::uriKey()} ({$searchableFields})";
+        })->implode(', ');
 
         $schema->string('search')
-            ->description("Search query to find records across all repositories. Searches through searchable fields in: {$repositoryNames}")
+            ->description("Search query to find records across all repositories. Searchable fields by repository: {$searchableInfo}")
             ->required();
 
         $schema->integer('limit')

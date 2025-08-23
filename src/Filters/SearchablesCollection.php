@@ -2,6 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 /**
@@ -58,5 +61,25 @@ class SearchablesCollection extends Collection
         }
 
         return implode(', ', $fields);
+    }
+
+    /**
+     * Process searchables for search functionality, creating SearchableFilter instances.
+     */
+    public function forSearch(Model $model, Repository $repository): Collection
+    {
+        return $this->map(function ($searchable, $key) use ($model, $repository) {
+            // If it's already a Filter instance, set repository and return
+            if ($searchable instanceof Filter) {
+                return $searchable->setRepository($repository);
+            }
+
+            // Create SearchableFilter for string fields
+            $columnName = is_numeric($key) ? $searchable : $key;
+            
+            return SearchableFilter::make()
+                ->setColumn($model->qualifyColumn($columnName))
+                ->setRepository($repository);
+        });
     }
 }
