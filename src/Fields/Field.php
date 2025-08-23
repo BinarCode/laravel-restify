@@ -131,6 +131,7 @@ class Field extends OrganicField implements JsonSerializable
     public $label;
 
     public $toolInputSchemaCallback = null;
+
     /**
      * Create a new field.
      *
@@ -753,8 +754,6 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Guess the field type based on validation rules, field class, and attribute patterns.
-     *
-     * @return string
      */
     public function guessFieldType(): string
     {
@@ -787,7 +786,7 @@ class Field extends OrganicField implements JsonSerializable
     {
         $className = class_basename(static::class);
 
-        return match($className) {
+        return match ($className) {
             'Boolean', 'BooleanField' => 'boolean',
             'Number', 'Integer', 'Decimal', 'Float' => 'number',
             'Email' => 'string',
@@ -817,6 +816,7 @@ class Field extends OrganicField implements JsonSerializable
             if (is_object($rule)) {
                 return get_class($rule);
             }
+
             return (string) $rule;
         })->toArray();
 
@@ -855,7 +855,7 @@ class Field extends OrganicField implements JsonSerializable
     {
         $attribute = $this->attribute;
 
-        if (!is_string($attribute)) {
+        if (! is_string($attribute)) {
             return null;
         }
 
@@ -917,7 +917,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Set a custom callback for defining the tool schema.
      *
-     * @param callable|Closure $callback
      * @return $this
      */
     public function toolSchema(callable|Closure $callback): self
@@ -935,6 +934,7 @@ class Field extends OrganicField implements JsonSerializable
         // Check if there's a custom callback defined
         if (is_callable($this->toolInputSchemaCallback)) {
             call_user_func($this->toolInputSchemaCallback, $schema, $repository, $this);
+
             return $this;
         }
 
@@ -947,7 +947,7 @@ class Field extends OrganicField implements JsonSerializable
         $fieldType = $this->guessFieldType();
 
         // Add the field to schema based on its type
-        $schemaField = match($fieldType) {
+        $schemaField = match ($fieldType) {
             'boolean' => $schema->boolean($attribute),
             'number' => $schema->number($attribute),
             'array' => $schema->string($attribute), // Arrays are typically sent as JSON strings
@@ -978,27 +978,27 @@ class Field extends OrganicField implements JsonSerializable
 
         // Add validation rules information
         $rules = $this->getStoringRules();
-        if (!empty($rules)) {
+        if (! empty($rules)) {
             $ruleDescriptions = $this->formatValidationRules($rules);
-            if (!empty($ruleDescriptions)) {
-                $description .= ". Validation: " . implode(', ', $ruleDescriptions);
+            if (! empty($ruleDescriptions)) {
+                $description .= '. Validation: '.implode(', ', $ruleDescriptions);
             }
         }
 
         // Add relationship information for relationship fields
         if ($this->isRelationshipField()) {
-            $description .= ". This is a relationship field";
+            $description .= '. This is a relationship field';
         }
 
         // Add file information for file fields
         if ($this instanceof File) {
-            $description .= ". Upload a file";
+            $description .= '. Upload a file';
         }
 
         // Add examples based on field type and name
         $examples = $this->generateFieldExamples();
-        if (!empty($examples)) {
-            $description .= ". Examples: " . implode(', ', $examples);
+        if (! empty($examples)) {
+            $description .= '. Examples: '.implode(', ', $examples);
         }
 
         return $description;
@@ -1010,8 +1010,9 @@ class Field extends OrganicField implements JsonSerializable
     protected function isRequired(): bool
     {
         $rules = $this->getStoringRules();
+
         return in_array('required', $rules) ||
-               collect($rules)->contains(function($rule) {
+               collect($rules)->contains(function ($rule) {
                    return is_string($rule) && str_starts_with($rule, 'required');
                });
     }
@@ -1036,18 +1037,18 @@ class Field extends OrganicField implements JsonSerializable
 
         foreach ($rules as $rule) {
             if (is_string($rule)) {
-                $formatted[] = match(true) {
+                $formatted[] = match (true) {
                     $rule === 'required' => 'required',
-                    str_starts_with($rule, 'min:') => 'minimum ' . substr($rule, 4) . ' characters',
-                    str_starts_with($rule, 'max:') => 'maximum ' . substr($rule, 4) . ' characters',
-                    str_starts_with($rule, 'between:') => 'between ' . str_replace(',', ' and ', substr($rule, 8)),
+                    str_starts_with($rule, 'min:') => 'minimum '.substr($rule, 4).' characters',
+                    str_starts_with($rule, 'max:') => 'maximum '.substr($rule, 4).' characters',
+                    str_starts_with($rule, 'between:') => 'between '.str_replace(',', ' and ', substr($rule, 8)),
                     $rule === 'email' => 'valid email format',
                     $rule === 'url' => 'valid URL format',
                     $rule === 'numeric' => 'numeric value',
                     $rule === 'integer' => 'integer value',
                     $rule === 'boolean' => 'boolean value (true/false)',
                     $rule === 'array' => 'array format',
-                    str_starts_with($rule, 'in:') => 'allowed values: ' . str_replace(',', ', ', substr($rule, 3)),
+                    str_starts_with($rule, 'in:') => 'allowed values: '.str_replace(',', ', ', substr($rule, 3)),
                     default => $rule
                 };
             }
@@ -1064,7 +1065,7 @@ class Field extends OrganicField implements JsonSerializable
         $attribute = strtolower($this->attribute);
         $fieldType = $this->guessFieldType();
 
-        return match($fieldType) {
+        return match ($fieldType) {
             'boolean' => ['true', 'false'],
             'number' => $this->getNumberExamples($attribute),
             'array' => ['["item1", "item2"]', '{"key": "value"}'],

@@ -16,7 +16,7 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->repository = new PostRepository();
+        $this->repository = new PostRepository;
     }
 
     public function test_field_collection_filters_mcp_hidden_fields_for_index(): void
@@ -25,26 +25,26 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
             Field::make('title'), // Visible in both
             Field::make('secret_token')->hideFromMcp(), // Hidden in MCP
             Field::make('mcp_only')->showOnIndex(false)->showOnMcp(true), // Only in MCP
-            Field::make('admin_notes')->hideFromMcp(function($request) {
-                return !$request->get('is_admin', false);
+            Field::make('admin_notes')->hideFromMcp(function ($request) {
+                return ! $request->get('is_admin', false);
             }), // Conditional MCP visibility
         ]);
 
         // Regular request
-        $regularRequest = new RestifyRequest();
+        $regularRequest = new RestifyRequest;
         $regularIndexFields = $fields->forIndex($regularRequest, $this->repository);
-        
-        $regularFieldNames = $regularIndexFields->map(fn($field) => $field->getAttribute())->toArray();
+
+        $regularFieldNames = $regularIndexFields->map(fn ($field) => $field->getAttribute())->toArray();
         $this->assertContains('title', $regularFieldNames);
         $this->assertContains('secret_token', $regularFieldNames);
         $this->assertNotContains('mcp_only', $regularFieldNames); // Hidden from regular index
         $this->assertContains('admin_notes', $regularFieldNames);
 
         // MCP request without admin
-        $mcpRequest = new McpRequest();
+        $mcpRequest = new McpRequest;
         $mcpIndexFields = $fields->forIndex($mcpRequest, $this->repository);
-        
-        $mcpFieldNames = $mcpIndexFields->map(fn($field) => $field->getAttribute())->toArray();
+
+        $mcpFieldNames = $mcpIndexFields->map(fn ($field) => $field->getAttribute())->toArray();
         $this->assertContains('title', $mcpFieldNames);
         $this->assertNotContains('secret_token', $mcpFieldNames); // Hidden from MCP
         $this->assertContains('mcp_only', $mcpFieldNames); // Visible in MCP
@@ -60,19 +60,19 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
         ]);
 
         // Regular show request
-        $regularRequest = new RestifyRequest();
+        $regularRequest = new RestifyRequest;
         $regularShowFields = $fields->forShow($regularRequest, $this->repository);
-        
-        $regularFieldNames = $regularShowFields->map(fn($field) => $field->getAttribute())->toArray();
+
+        $regularFieldNames = $regularShowFields->map(fn ($field) => $field->getAttribute())->toArray();
         $this->assertContains('title', $regularFieldNames);
         $this->assertContains('secret_key', $regularFieldNames);
         $this->assertNotContains('internal_id', $regularFieldNames);
 
         // MCP show request
-        $mcpRequest = new McpRequest();
+        $mcpRequest = new McpRequest;
         $mcpShowFields = $fields->forShow($mcpRequest, $this->repository);
-        
-        $mcpFieldNames = $mcpShowFields->map(fn($field) => $field->getAttribute())->toArray();
+
+        $mcpFieldNames = $mcpShowFields->map(fn ($field) => $field->getAttribute())->toArray();
         $this->assertContains('title', $mcpFieldNames);
         $this->assertNotContains('secret_key', $mcpFieldNames); // Hidden from MCP
         $this->assertContains('internal_id', $mcpFieldNames); // Visible in MCP
@@ -82,30 +82,30 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
     {
         $fields = new FieldCollection([
             Field::make('public_data'),
-            Field::make('admin_data')->hideFromMcp(function($request) {
-                return !$request->get('is_admin', false);
+            Field::make('admin_data')->hideFromMcp(function ($request) {
+                return ! $request->get('is_admin', false);
             }),
-            Field::make('user_data')->showOnMcp(function($request) {
+            Field::make('user_data')->showOnMcp(function ($request) {
                 return $request->get('can_view_data', false);
             }),
         ]);
 
         // MCP request with admin permissions
         $mcpRequestWithAdmin = new McpRequest(['is_admin' => true, 'can_view_data' => true]);
-        
+
         $adminFields = $fields->forIndex($mcpRequestWithAdmin, $this->repository);
-        $adminFieldNames = $adminFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $adminFieldNames = $adminFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         $this->assertContains('public_data', $adminFieldNames);
         $this->assertContains('admin_data', $adminFieldNames); // Visible to admin
         $this->assertContains('user_data', $adminFieldNames); // Visible with permission
 
         // MCP request with regular user permissions
         $mcpRequestWithUser = new McpRequest(['is_admin' => false, 'can_view_data' => false]);
-        
+
         $userFields = $fields->forIndex($mcpRequestWithUser, $this->repository);
-        $userFieldNames = $userFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $userFieldNames = $userFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         $this->assertContains('public_data', $userFieldNames);
         $this->assertNotContains('admin_data', $userFieldNames); // Hidden from non-admin
         $this->assertNotContains('user_data', $userFieldNames); // Hidden without permission
@@ -120,9 +120,9 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
             Field::make('both_hidden')->hidden(true)->hideFromMcp(),
         ]);
 
-        $mcpRequest = new McpRequest();
+        $mcpRequest = new McpRequest;
         $mcpFields = $fields->forIndex($mcpRequest, $this->repository);
-        $mcpFieldNames = $mcpFields->map(fn($field) => $field->getAttribute())->toArray();
+        $mcpFieldNames = $mcpFields->map(fn ($field) => $field->getAttribute())->toArray();
 
         $this->assertContains('visible_field', $mcpFieldNames);
         $this->assertNotContains('generally_hidden', $mcpFieldNames); // Hidden by general rule
@@ -141,12 +141,12 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
         ]);
 
         // Regular request should show all except those explicitly hidden from index
-        $regularRequest = new RestifyRequest();
+        $regularRequest = new RestifyRequest;
         $regularFields = $fields->forIndex($regularRequest, $this->repository);
         $this->assertCount(5, $regularFields); // All visible in regular request
 
         // MCP request should filter out hideFromMcp fields
-        $mcpRequest = new McpRequest();
+        $mcpRequest = new McpRequest;
         $mcpFields = $fields->forIndex($mcpRequest, $this->repository);
         $this->assertCount(3, $mcpFields); // field1, field3, field5 visible in MCP
     }
@@ -160,12 +160,12 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
             new \Binaryk\LaravelRestify\Fields\EagerField('eager_field', 'relation'),
         ]);
 
-        $mcpRequest = new McpRequest();
-        
+        $mcpRequest = new McpRequest;
+
         // forIndex should exclude EagerFields and apply MCP visibility
         $indexFields = $fields->forIndex($mcpRequest, $this->repository);
-        $indexFieldNames = $indexFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $indexFieldNames = $indexFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         $this->assertContains('normal_field', $indexFieldNames);
         $this->assertContains('readonly_field', $indexFieldNames);
         $this->assertNotContains('mcp_hidden', $indexFieldNames);

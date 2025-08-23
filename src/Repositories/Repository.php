@@ -12,7 +12,6 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
-use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
@@ -584,7 +583,7 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         // Preserve the request instance for the entire flow
         $this->request = $request;
-        
+
         // Check if the model was set under the repository
         throw_if(
             $this->model() instanceof NullModel,
@@ -603,6 +602,7 @@ class Repository implements JsonSerializable, RestifySearchable
             $repository = static::resolveWith($value);
             // Ensure each resolved repository maintains the original request
             $repository->request = $request;
+
             return $repository;
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
@@ -1090,7 +1090,7 @@ class Repository implements JsonSerializable, RestifySearchable
     public function serializeForIndex(RestifyRequest $request): array
     {
         $this->request = $request;
-        
+
         $data = $this->filter([
             'id' => $this->when($id = $this->getId($request), $id),
             'type' => $this->when($type = $this->getType($request), $type),

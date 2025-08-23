@@ -6,11 +6,11 @@ namespace Binaryk\LaravelRestify\MCP;
 
 use Binaryk\LaravelRestify\MCP\Concerns\McpTools;
 use Binaryk\LaravelRestify\MCP\Resources\ApplicationInfo;
+use Binaryk\LaravelRestify\MCP\Tools\Operations\DeleteTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\IndexTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\ShowTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\StoreTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\UpdateTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\DeleteTool;
 use Binaryk\LaravelRestify\Restify;
 use Laravel\Mcp\Server;
 

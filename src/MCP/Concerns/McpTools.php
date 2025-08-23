@@ -53,7 +53,6 @@ trait McpTools
         $request->merge($arguments);
         $this->sanitizeToolRequest($request, $arguments);
 
-
         // Build the query following the same pattern as RepositoryShowController
         $query = static::query($request);
 

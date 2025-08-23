@@ -24,7 +24,7 @@ trait DetermineRequestType
         if ($this instanceof McpRequest) {
             return $this->isIndexRequest();
         }
-        
+
         return $this instanceof RepositoryIndexRequest;
     }
 
@@ -38,7 +38,7 @@ trait DetermineRequestType
         if ($this instanceof McpRequest) {
             return $this->isShowRequest();
         }
-        
+
         return $this instanceof RepositoryShowRequest;
     }
 
@@ -47,7 +47,7 @@ trait DetermineRequestType
         if ($this instanceof McpRequest) {
             return $this->isUpdateRequest();
         }
-        
+
         return $this instanceof RepositoryUpdateRequest;
     }
 
@@ -56,7 +56,7 @@ trait DetermineRequestType
         if ($this instanceof McpRequest) {
             return $this->isStoreRequest();
         }
-        
+
         return $this instanceof RepositoryStoreRequest;
     }
 
@@ -65,7 +65,7 @@ trait DetermineRequestType
         if ($this instanceof McpRequest) {
             return $this->isDestroyRequest();
         }
-        
+
         return $this instanceof RepositoryDestroyRequest;
     }
 
@@ -74,7 +74,7 @@ trait DetermineRequestType
         if ($this instanceof McpRequest) {
             return $this->isStoreBulkRequest();
         }
-        
+
         return $this instanceof RepositoryStoreBulkRequest;
     }
 
@@ -83,7 +83,7 @@ trait DetermineRequestType
         if ($this instanceof McpRequest) {
             return $this->isUpdateBulkRequest();
         }
-        
+
         return $this instanceof RepositoryUpdateBulkRequest;
     }
 
@@ -92,7 +92,7 @@ trait DetermineRequestType
         if ($this instanceof McpRequest) {
             return $this->isActionRequest();
         }
-        
+
         return $this instanceof ActionRequest;
     }
 
@@ -101,7 +101,7 @@ trait DetermineRequestType
         if ($this instanceof McpRequest) {
             return $this->isGetterRequest();
         }
-        
+
         return $this instanceof GetterRequest;
     }
 }

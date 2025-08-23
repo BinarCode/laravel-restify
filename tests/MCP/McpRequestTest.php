@@ -11,8 +11,8 @@ class McpRequestTest extends IntegrationTestCase
     {
         $request = new McpRequest([
             'params' => [
-                'name' => 'users-index-tool'
-            ]
+                'name' => 'users-index-tool',
+            ],
         ]);
 
         $this->assertTrue($request->isIndexRequest());
@@ -24,8 +24,8 @@ class McpRequestTest extends IntegrationTestCase
     {
         $request = new McpRequest([
             'params' => [
-                'name' => 'posts-show-tool'
-            ]
+                'name' => 'posts-show-tool',
+            ],
         ]);
 
         $this->assertTrue($request->isShowRequest());
@@ -37,8 +37,8 @@ class McpRequestTest extends IntegrationTestCase
     {
         $request = new McpRequest([
             'params' => [
-                'name' => 'orders-store-tool'
-            ]
+                'name' => 'orders-store-tool',
+            ],
         ]);
 
         $this->assertTrue($request->isStoreRequest());
@@ -50,8 +50,8 @@ class McpRequestTest extends IntegrationTestCase
     {
         $request = new McpRequest([
             'params' => [
-                'name' => 'comments-update-tool'
-            ]
+                'name' => 'comments-update-tool',
+            ],
         ]);
 
         $this->assertTrue($request->isUpdateRequest());
@@ -63,14 +63,14 @@ class McpRequestTest extends IntegrationTestCase
     {
         $deleteRequest = new McpRequest([
             'params' => [
-                'name' => 'comments-delete-tool'
-            ]
+                'name' => 'comments-delete-tool',
+            ],
         ]);
 
         $destroyRequest = new McpRequest([
             'params' => [
-                'name' => 'users-destroy-tool'
-            ]
+                'name' => 'users-destroy-tool',
+            ],
         ]);
 
         $this->assertTrue($deleteRequest->isDestroyRequest());
@@ -82,14 +82,14 @@ class McpRequestTest extends IntegrationTestCase
     {
         $storeBulkRequest = new McpRequest([
             'params' => [
-                'name' => 'users-store-bulk-tool'
-            ]
+                'name' => 'users-store-bulk-tool',
+            ],
         ]);
 
         $updateBulkRequest = new McpRequest([
             'params' => [
-                'name' => 'posts-update-bulk-tool'
-            ]
+                'name' => 'posts-update-bulk-tool',
+            ],
         ]);
 
         $this->assertTrue($storeBulkRequest->isStoreBulkRequest());
@@ -101,8 +101,8 @@ class McpRequestTest extends IntegrationTestCase
     {
         $request = new McpRequest([
             'params' => [
-                'name' => 'analytics-getter-tool'
-            ]
+                'name' => 'analytics-getter-tool',
+            ],
         ]);
 
         $this->assertTrue($request->isGetterRequest());
@@ -114,8 +114,8 @@ class McpRequestTest extends IntegrationTestCase
     {
         $request = new McpRequest([
             'params' => [
-                'name' => 'users-action-tool'
-            ]
+                'name' => 'users-action-tool',
+            ],
         ]);
 
         $this->assertTrue($request->isActionRequest());
@@ -127,8 +127,8 @@ class McpRequestTest extends IntegrationTestCase
     {
         $request = new McpRequest([
             'params' => [
-                'name' => 'global-search-tool'
-            ]
+                'name' => 'global-search-tool',
+            ],
         ]);
 
         $this->assertFalse($request->isGlobalRequest());

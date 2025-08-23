@@ -2,10 +2,8 @@
 
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Generator;
-use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 use Laravel\Mcp\Server\Tools\ToolResult;
@@ -22,7 +20,7 @@ class StoreTool extends Tool
     public function name(): string
     {
         $uriKey = $this->repository->uriKey();
-        
+
         return "{$uriKey}-store-tool";
     }
 
@@ -30,7 +28,7 @@ class StoreTool extends Tool
     {
         $uriKey = $this->repository->uriKey();
         $modelName = class_basename($this->repository::$model);
-        
+
         return "Create a new {$modelName} record in the {$uriKey} repository with the provided data.";
     }
 
@@ -38,14 +36,14 @@ class StoreTool extends Tool
     {
         $repositoryClass = get_class($this->repository);
         $repositoryClass::storeToolSchema($schema);
-        
+
         return $schema;
     }
 
     public function handle(array $arguments): ToolResult|Generator
     {
         $result = $this->repository->storeTool($arguments);
-        
+
         return ToolResult::json($result);
     }
 }

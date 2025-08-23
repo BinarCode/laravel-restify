@@ -2,10 +2,8 @@
 
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Generator;
-use Illuminate\Support\Str;
 use Laravel\Mcp\Server\Tool;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 use Laravel\Mcp\Server\Tools\ToolResult;
@@ -22,7 +20,7 @@ class UpdateTool extends Tool
     public function name(): string
     {
         $uriKey = $this->repository->uriKey();
-        
+
         return "{$uriKey}-update-tool";
     }
 
@@ -30,7 +28,7 @@ class UpdateTool extends Tool
     {
         $uriKey = $this->repository->uriKey();
         $modelName = class_basename($this->repository::$model);
-        
+
         return "Update an existing {$modelName} record by ID in the {$uriKey} repository with the provided data.";
     }
 
@@ -38,14 +36,14 @@ class UpdateTool extends Tool
     {
         $repositoryClass = get_class($this->repository);
         $repositoryClass::updateToolSchema($schema);
-        
+
         return $schema;
     }
 
     public function handle(array $arguments): ToolResult|Generator
     {
         $result = $this->repository->updateTool($arguments);
-        
+
         return ToolResult::json($result);
     }
 }

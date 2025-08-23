@@ -37,6 +37,7 @@ class McpRequest extends RestifyRequest
     public function isDestroyRequest(): bool
     {
         $toolName = $this->getToolName();
+
         return str_contains($toolName, '-delete-tool') || str_contains($toolName, '-destroy-tool');
     }
 

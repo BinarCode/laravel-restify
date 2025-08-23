@@ -13,10 +13,11 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 {
     public function test_repository_uses_mcp_specific_field_methods(): void
     {
-        $repository = new class extends Repository {
+        $repository = new class extends Repository
+        {
             public static $model = Post::class;
-            
-            public function fields(RestifyRequest $request): array 
+
+            public function fields(RestifyRequest $request): array
             {
                 return [
                     Field::make('title'),
@@ -24,7 +25,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
                 ];
             }
 
-            public function fieldsForMcpIndex(RestifyRequest $request): array 
+            public function fieldsForMcpIndex(RestifyRequest $request): array
             {
                 return [
                     Field::make('title'),
@@ -34,7 +35,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
                 ];
             }
 
-            public function fieldsForMcpShow(RestifyRequest $request): array 
+            public function fieldsForMcpShow(RestifyRequest $request): array
             {
                 return [
                     Field::make('title'),
@@ -47,10 +48,10 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         };
 
         // Regular request should use fields() method
-        $regularRequest = new RestifyRequest();
+        $regularRequest = new RestifyRequest;
         $regularFields = $repository->collectFields($regularRequest);
-        $regularFieldNames = $regularFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $regularFieldNames = $regularFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         $this->assertCount(2, $regularFields);
         $this->assertContains('title', $regularFieldNames);
         $this->assertContains('description', $regularFieldNames);
@@ -60,8 +61,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // MCP index request should use fieldsForMcpIndex() method
         $mcpIndexRequest = new McpRequest(['params' => ['name' => 'posts-index-tool']]);
         $mcpIndexFields = $repository->collectFields($mcpIndexRequest);
-        $mcpIndexFieldNames = $mcpIndexFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $mcpIndexFieldNames = $mcpIndexFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         $this->assertCount(4, $mcpIndexFields);
         $this->assertContains('title', $mcpIndexFieldNames);
         $this->assertContains('description', $mcpIndexFieldNames);
@@ -72,8 +73,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // MCP show request should use fieldsForMcpShow() method
         $mcpShowRequest = new McpRequest(['params' => ['name' => 'posts-show-tool']]);
         $mcpShowFields = $repository->collectFields($mcpShowRequest);
-        $mcpShowFieldNames = $mcpShowFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $mcpShowFieldNames = $mcpShowFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         $this->assertCount(5, $mcpShowFields);
         $this->assertContains('title', $mcpShowFieldNames);
         $this->assertContains('description', $mcpShowFieldNames);
@@ -85,10 +86,11 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
     public function test_mcp_request_falls_back_to_regular_methods_when_mcp_methods_missing(): void
     {
-        $repository = new class extends Repository {
+        $repository = new class extends Repository
+        {
             public static $model = Post::class;
-            
-            public function fields(RestifyRequest $request): array 
+
+            public function fields(RestifyRequest $request): array
             {
                 return [
                     Field::make('title'),
@@ -96,7 +98,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
                 ];
             }
 
-            public function fieldsForIndex(RestifyRequest $request): array 
+            public function fieldsForIndex(RestifyRequest $request): array
             {
                 return [
                     Field::make('title'),
@@ -108,8 +110,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // MCP request without fieldsForMcpIndex should fall back to fieldsForIndex
         $mcpIndexRequest = new McpRequest(['params' => ['name' => 'posts-index-tool']]);
         $mcpIndexFields = $repository->collectFields($mcpIndexRequest);
-        $mcpIndexFieldNames = $mcpIndexFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $mcpIndexFieldNames = $mcpIndexFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         $this->assertCount(2, $mcpIndexFields);
         $this->assertContains('title', $mcpIndexFieldNames);
         $this->assertContains('category', $mcpIndexFieldNames);
@@ -118,8 +120,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // MCP request without fieldsForMcpShow should fall back to fields()
         $mcpShowRequest = new McpRequest(['params' => ['name' => 'posts-show-tool']]);
         $mcpShowFields = $repository->collectFields($mcpShowRequest);
-        $mcpShowFieldNames = $mcpShowFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $mcpShowFieldNames = $mcpShowFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         $this->assertCount(2, $mcpShowFields);
         $this->assertContains('title', $mcpShowFieldNames);
         $this->assertContains('description', $mcpShowFieldNames);
@@ -128,17 +130,18 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
     public function test_mcp_getter_request_uses_fields_for_mcp_getter(): void
     {
-        $repository = new class extends Repository {
+        $repository = new class extends Repository
+        {
             public static $model = Post::class;
-            
-            public function fields(RestifyRequest $request): array 
+
+            public function fields(RestifyRequest $request): array
             {
                 return [
                     Field::make('title'),
                 ];
             }
 
-            public function fieldsForMcpGetter(RestifyRequest $request): array 
+            public function fieldsForMcpGetter(RestifyRequest $request): array
             {
                 return [
                     Field::make('title'),
@@ -150,8 +153,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         $mcpGetterRequest = new McpRequest(['params' => ['name' => 'analytics-getter-tool']]);
         $mcpGetterFields = $repository->collectFields($mcpGetterRequest);
-        $mcpGetterFieldNames = $mcpGetterFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $mcpGetterFieldNames = $mcpGetterFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         $this->assertCount(3, $mcpGetterFields);
         $this->assertContains('title', $mcpGetterFieldNames);
         $this->assertContains('analytics_data', $mcpGetterFieldNames);
