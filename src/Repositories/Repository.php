@@ -1125,7 +1125,7 @@ class Repository implements JsonSerializable, RestifySearchable
     public function jsonSerialize()
     {
         return $this->serializeForShow(
-            $this->request
+            $this->request ?? app(RestifyRequest::class)
         );
     }
 
