@@ -1201,6 +1201,311 @@ class ProductRepository extends Repository
 }
 ```
 
+## Actions and Getters Integration
+
+Laravel Restify's MCP integration automatically discovers and exposes repository **Actions** and **Getters** as MCP tools, providing AI agents with access to custom business logic and data operations.
+
+### Auto-Discovery System
+
+The MCP server automatically discovers actions and getters attached to your repositories during the boot process:
+
+```php
+protected function discoverRepositoryTools(): void
+{
+    collect(Restify::$repositories)
+        ->filter(function (string $repository) {
+            return in_array(McpTools::class, class_uses_recursive($repository));
+        })
+        ->each(function (string $repository) {
+            $repositoryInstance = app($repository);
+            
+            // Discover and register action tools
+            $repositoryInstance->resolveActions(app(McpRequest::class))
+                ->each(function (Action $action) use ($repository) {
+                    $this->addTool(new ActionTool($repository, $action));
+                });
+            
+            // Discover and register getter tools  
+            $repositoryInstance->resolveGetters(app(McpRequest::class))
+                ->each(function (Getter $getter) use ($repository) {
+                    $this->addTool(new GetterTool($repository, $getter));
+                });
+        });
+}
+```
+
+### Enabling Actions and Getters
+
+To enable actions and getters for MCP, simply add them to your repository as usual:
+
+```php
+use Binaryk\LaravelRestify\MCP\Concerns\McpTools;
+
+class PostRepository extends Repository
+{
+    use McpTools;
+
+    public function actions(RestifyRequest $request): array
+    {
+        return [
+            PublishPostAction::make(),
+            ArchivePostAction::make(), 
+            BulkUpdateStatusAction::make(),
+        ];
+    }
+
+    public function getters(RestifyRequest $request): array  
+    {
+        return [
+            PostAnalyticsGetter::make(),
+            PopularPostsGetter::make(),
+            RecentCommentsGetter::make(),
+        ];
+    }
+}
+```
+
+These will be automatically discovered and exposed as MCP tools:
+- `posts-publish-post-action-tool`
+- `posts-archive-post-action-tool` 
+- `posts-bulk-update-status-action-tool`
+- `posts-post-analytics-getter-tool`
+- `posts-popular-posts-getter-tool`
+- `posts-recent-comments-getter-tool`
+
+### Validation Rules for Actions and Getters
+
+**IMPORTANT**: For the MCP system to properly identify and validate parameters, your actions and getters should define validation rules using the `rules()` method:
+
+#### Action Rules Example
+
+```php
+<?php
+
+use Binaryk\LaravelRestify\Actions\Action;
+
+class PublishPostAction extends Action
+{
+    public function rules(): array
+    {
+        return [
+            'publish_date' => ['required', 'date', 'after:now'],
+            'notify_subscribers' => ['boolean'],
+            'featured' => ['boolean'],  
+            'category_id' => ['integer', 'exists:categories,id'],
+            'tags' => ['array'],
+            'tags.*' => ['string', 'max:50'],
+        ];
+    }
+
+    public function handle(RestifyRequest $request, $models): mixed
+    {
+        foreach ($models as $post) {
+            $post->update([
+                'status' => 'published',
+                'published_at' => $request->input('publish_date'),
+                'featured' => $request->boolean('featured'),
+                'category_id' => $request->input('category_id'),
+            ]);
+
+            if ($request->boolean('notify_subscribers')) {
+                dispatch(new NotifySubscribersJob($post));
+            }
+        }
+
+        return response()->json(['message' => 'Posts published successfully']);
+    }
+}
+```
+
+#### Getter Rules Example
+
+```php
+<?php
+
+use Binaryk\LaravelRestify\Getters\Getter;
+
+class PostAnalyticsGetter extends Getter  
+{
+    public function rules(): array
+    {
+        return [
+            'date_from' => ['required', 'date'],
+            'date_to' => ['required', 'date', 'after:date_from'], 
+            'group_by' => ['string', 'in:day,week,month'],
+            'include_drafts' => ['boolean'],
+            'categories' => ['array'],
+            'categories.*' => ['integer', 'exists:categories,id'],
+        ];
+    }
+
+    public function handle(RestifyRequest $request): mixed
+    {
+        $query = Post::whereBetween('created_at', [
+            $request->input('date_from'),
+            $request->input('date_to')
+        ]);
+
+        if (!$request->boolean('include_drafts')) {
+            $query->where('status', 'published');
+        }
+
+        if ($request->filled('categories')) {
+            $query->whereIn('category_id', $request->input('categories'));
+        }
+
+        return $query->selectRaw('
+            DATE(created_at) as date,
+            COUNT(*) as post_count,
+            AVG(view_count) as avg_views,
+            SUM(like_count) as total_likes
+        ')
+        ->groupBy('date')
+        ->orderBy('date')
+        ->get();
+    }
+}
+```
+
+### Schema Generation from Rules
+
+The MCP system uses the `rules()` method to automatically generate proper tool schemas with appropriate field types and validation:
+
+```php
+// Action with rules
+public function rules(): array  
+{
+    return [
+        'title' => ['required', 'string', 'max:255'],
+        'priority' => ['integer', 'min:1', 'max:5'],
+        'due_date' => ['date', 'after:today'],
+        'notify_assignees' => ['boolean'],
+        'attachments' => ['array'],
+    ];
+}
+
+// Results in MCP tool schema:
+// - title: required string field
+// - priority: number field (integer) 
+// - due_date: string field (date format)
+// - notify_assignees: boolean field
+// - attachments: array field
+```
+
+### Rules Method Requirements
+
+#### For Actions
+- **REQUIRED**: Actions must implement `rules()` method for proper MCP schema generation
+- **Field Types**: The system maps Laravel validation rules to appropriate MCP field types
+- **Validation**: Rules are enforced when AI agents call the action tools
+
+#### For Getters  
+- **OPTIONAL**: Getters can implement `rules()` method for parameter validation
+- **Flexibility**: If no `rules()` method exists, basic schema is generated
+- **Best Practice**: Define rules for getters that accept parameters
+
+### Rule-to-Schema Mapping
+
+| Laravel Rule | MCP Field Type | Description |
+|--------------|----------------|-------------|
+| `boolean` | `boolean` | True/false values |
+| `integer`, `numeric` | `number` | Numeric values |
+| `array` | `array` | Array of values |
+| `required` | Required field | Field marked as required |
+| All others | `string` | Default string field |
+
+### Advanced Rule Examples
+
+#### Complex Action Rules
+
+```php  
+class BulkProcessPostsAction extends Action
+{
+    public function rules(): array
+    {
+        return [
+            'action_type' => ['required', 'string', 'in:publish,draft,archive,delete'],
+            'post_ids' => ['required', 'array', 'min:1'],
+            'post_ids.*' => ['integer', 'exists:posts,id'],
+            'scheduled_at' => ['nullable', 'date', 'after:now'],
+            'reason' => ['required_if:action_type,archive,delete', 'string', 'max:500'],
+            'send_notification' => ['boolean'],
+            'backup_before_delete' => ['required_if:action_type,delete', 'boolean'],
+        ];
+    }
+}
+```
+
+#### Parameterized Getter Rules
+
+```php
+class CustomReportGetter extends Getter
+{
+    public function rules(): array
+    {
+        return [
+            'report_type' => ['required', 'string', 'in:sales,traffic,engagement'],
+            'date_range' => ['required', 'string', 'in:today,week,month,quarter,year,custom'],
+            'start_date' => ['required_if:date_range,custom', 'date'],
+            'end_date' => ['required_if:date_range,custom', 'date', 'after:start_date'],
+            'format' => ['string', 'in:json,csv,pdf'],
+            'include_metadata' => ['boolean'],
+            'filters' => ['array'],
+            'filters.*.field' => ['required', 'string'],
+            'filters.*.operator' => ['required', 'string', 'in:equals,contains,greater_than,less_than'],
+            'filters.*.value' => ['required'],
+        ];
+    }
+}
+```
+
+### Best Practices for Rules
+
+#### 1. Always Define Rules for Actions
+```php
+// ✅ Good: Clear validation rules
+public function rules(): array
+{
+    return [
+        'email' => ['required', 'email'],
+        'role' => ['required', 'in:admin,user,moderator'],
+        'active' => ['boolean'],
+    ];
+}
+
+// ❌ Bad: No rules defined
+public function rules(): array
+{
+    return []; // MCP can't generate proper schema
+}
+```
+
+#### 2. Use Descriptive Rule Combinations
+```php
+public function rules(): array
+{
+    return [
+        'priority' => ['required', 'integer', 'min:1', 'max:10'],
+        'tags' => ['array', 'max:5'],
+        'tags.*' => ['string', 'max:50', 'alpha_dash'],
+        'deadline' => ['nullable', 'date', 'after:today'],
+    ];
+}
+```
+
+#### 3. Handle Conditional Requirements
+```php  
+public function rules(): array
+{
+    return [
+        'notification_type' => ['required', 'in:email,sms,push'],
+        'email' => ['required_if:notification_type,email', 'email'],
+        'phone' => ['required_if:notification_type,sms', 'regex:/^\+?[1-9]\d{1,14}$/'],
+        'device_token' => ['required_if:notification_type,push', 'string'],
+    ];
+}
+```
+
 ### Integration with Field Visibility Controls
 
 MCP field methods work seamlessly with Laravel Restify's existing field visibility system:
