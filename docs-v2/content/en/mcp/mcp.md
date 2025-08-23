@@ -362,11 +362,11 @@ You can control tool discovery through configuration:
 The `McpTools` trait provides repositories with MCP capabilities. Add this trait to your repository to enable MCP tool generation:
 
 ```php
-use Binaryk\LaravelRestify\MCP\Concerns\McpTools;
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 
 class UserRepository extends Repository
 {
-    use McpTools;
+    use HasMcpTools;
     
     // Repository implementation...
 }
@@ -623,6 +623,426 @@ Examples:
 - `orders-update-tool` - Updates an order
 - `products-delete-tool` - Deletes a product
 
+## Authorization and Security Architecture
+
+**IMPORTANT**: The MCP server **always relies on the existing Laravel Restify authorization architecture**. This means all your existing policies, gates, and authorization mechanisms continue to work seamlessly with MCP tools, providing consistent security across both your regular API and MCP endpoints.
+
+### How Authorization Works in MCP
+
+The MCP integration respects and enforces all existing authorization layers:
+
+#### 1. Repository-Level Authorization
+```php
+class PostRepository extends Repository
+{
+    use HasMcpTools;
+    
+    // These authorization methods apply to BOTH regular API and MCP requests
+    public static function authorizedToViewAny(RestifyRequest $request): bool
+    {
+        return $request->user()?->can('viewAny', static::$model);
+    }
+    
+    public function authorizedToShow(RestifyRequest $request): bool
+    {
+        return $request->user()?->can('view', $this->resource);
+    }
+    
+    public function authorizedToStore(RestifyRequest $request): bool
+    {
+        return $request->user()?->can('create', static::$model);
+    }
+    
+    public function authorizedToUpdate(RestifyRequest $request): bool
+    {
+        return $request->user()?->can('update', $this->resource);
+    }
+    
+    public function authorizedToDelete(RestifyRequest $request): bool
+    {
+        return $request->user()?->can('delete', $this->resource);
+    }
+}
+```
+
+#### 2. Action Authorization
+```php
+class PublishPostAction extends Action
+{
+    // These authorization methods apply to BOTH regular API and MCP requests
+    public function authorizedToSee(RestifyRequest $request): bool
+    {
+        return $request->user()?->can('publish', Post::class);
+    }
+    
+    public function authorizedToRun(RestifyRequest $request, $model): bool
+    {
+        return $request->user()?->can('publish', $model);
+    }
+}
+```
+
+#### 3. Getter Authorization
+```php
+class PostAnalyticsGetter extends Getter
+{
+    // These authorization methods apply to BOTH regular API and MCP requests
+    public function authorizedToSee(RestifyRequest $request): bool
+    {
+        return $request->user()?->can('viewAnalytics', Post::class);
+    }
+    
+    public function authorizedToRun(RestifyRequest $request, $model): bool
+    {
+        return $request->user()?->can('viewAnalytics', $model);
+    }
+}
+```
+
+### Authorization Enforcement in MCP Tools
+
+The MCP system automatically enforces authorization at multiple levels:
+
+#### CRUD Operations Authorization
+```php
+// In McpTools trait - these checks happen automatically
+public function indexTool(array $arguments, McpRequest $request): array
+{
+    // 1. Check if user can view any records of this type
+    if (!static::authorizedToViewAny($request)) {
+        return [
+            'error' => 'Not authorized to view resources',
+            'message' => 'You do not have permission to list this resource type',
+        ];
+    }
+    
+    // 2. Apply any additional filtering based on user permissions
+    return $this->indexAsArray($request);
+}
+
+public function showTool(array $arguments, McpRequest $request): array
+{
+    $model = static::query($request)->findOrFail($arguments['id']);
+    
+    // Check if user can view this specific record
+    if (!$this->authorizedToShow($request)) {
+        return [
+            'error' => 'Not authorized to view this resource',
+            'message' => 'You do not have permission to view this specific record',
+        ];
+    }
+    
+    return static::resolveWith($model)->showData($request);
+}
+```
+
+#### Action Authorization in MCP
+```php
+// In McpActionTool trait - authorization is enforced automatically
+public function actionTool(Action $action, array $arguments, McpActionRequest $actionRequest): array
+{
+    // 1. Check if user can see this action
+    if (!$action->authorizedToSee($actionRequest)) {
+        return [
+            'error' => 'Not authorized to see this action',
+            'action' => $action->uriKey(),
+        ];
+    }
+    
+    // 2. For actions that target specific models, check run authorization
+    if ($id = $actionRequest->input('id')) {
+        $model = $actionRequest->findModelOrFail($id);
+        if (!$action->authorizedToRun($actionRequest, $model)) {
+            return [
+                'error' => 'Not authorized to run this action',
+                'action' => $action->uriKey(),
+            ];
+        }
+    }
+    
+    return $action->handleRequest($actionRequest);
+}
+```
+
+#### Getter Authorization in MCP
+```php
+// In McpGetterTool trait - authorization is enforced automatically  
+public function getterTool(Getter $getter, array $arguments, McpGetterRequest $getterRequest): array
+{
+    // 1. Check if user can see this getter
+    if (!$getter->authorizedToSee($getterRequest)) {
+        return [
+            'error' => 'Not authorized to see this getter',
+            'getter' => $getter->uriKey(),
+        ];
+    }
+    
+    // 2. For getters that target specific models, check run authorization
+    if ($id = $getterRequest->input('id')) {
+        $model = $getterRequest->findModelOrFail($id);
+        if (!$getter->authorizedToRun($getterRequest, $model)) {
+            return [
+                'error' => 'Not authorized to run this getter',
+                'getter' => $getter->uriKey(),
+            ];
+        }
+    }
+    
+    return $getter->handleRequest($getterRequest);
+}
+```
+
+### Laravel Policy Integration
+
+Your existing Laravel policies work seamlessly with MCP:
+
+```php
+class PostPolicy
+{
+    public function viewAny(User $user): bool
+    {
+        return true; // All authenticated users can list posts
+    }
+    
+    public function view(User $user, Post $post): bool
+    {
+        // Users can view published posts or their own drafts
+        return $post->isPublished() || $user->id === $post->author_id;
+    }
+    
+    public function create(User $user): bool
+    {
+        return $user->hasRole(['author', 'editor', 'admin']);
+    }
+    
+    public function update(User $user, Post $post): bool
+    {
+        // Users can update their own posts, or editors can update any post
+        return $user->id === $post->author_id || $user->hasRole(['editor', 'admin']);
+    }
+    
+    public function publish(User $user, Post $post): bool
+    {
+        // Only editors and admins can publish posts
+        return $user->hasRole(['editor', 'admin']);
+    }
+    
+    public function viewAnalytics(User $user, Post $post): bool
+    {
+        // Authors can view their own analytics, editors/admins can view all
+        return $user->id === $post->author_id || $user->hasRole(['editor', 'admin']);
+    }
+}
+```
+
+When an AI agent calls MCP tools, the **exact same policy methods** are invoked, ensuring consistent authorization.
+
+### Field-Level Authorization
+
+Field visibility controls also work with MCP requests:
+
+```php
+public function fields(RestifyRequest $request): array
+{
+    return [
+        Field::make('title'),
+        Field::make('content'),
+        
+        // Hide sensitive fields from non-owners (applies to MCP too)
+        Field::make('draft_notes')->canSee(function ($request) {
+            return $request->user()?->id === $this->resource->author_id;
+        }),
+        
+        // Admin-only fields (applies to MCP too)
+        Field::make('internal_review_score')->canSee(function ($request) {
+            return $request->user()?->hasRole('admin');
+        }),
+        
+        // MCP-specific hiding (if needed)
+        Field::make('api_keys')->hideFromMcp(),
+    ];
+}
+```
+
+### Multi-Tenant Authorization
+
+For multi-tenant applications, the same tenant scoping applies:
+
+```php
+class PostRepository extends Repository
+{
+    use HasMcpTools;
+    
+    public static function query(RestifyRequest $request): Builder
+    {
+        // This tenant scoping applies to BOTH regular API and MCP requests
+        return parent::query($request)->where('tenant_id', $request->user()->tenant_id);
+    }
+    
+    public function authorizedToShow(RestifyRequest $request): bool
+    {
+        // Ensure user can only access posts from their tenant
+        return $this->resource->tenant_id === $request->user()->tenant_id
+            && $request->user()->can('view', $this->resource);
+    }
+}
+```
+
+### Role-Based Access Control
+
+Your existing role-based access control works with MCP:
+
+```php
+class UserRepository extends Repository
+{
+    use HasMcpTools;
+    
+    public function mcpAllowsIndex(): bool
+    {
+        // Only allow listing users if user has appropriate role
+        return auth()->user()?->hasAnyRole(['admin', 'hr', 'manager']);
+    }
+    
+    public function mcpAllowsStore(): bool
+    {
+        // Only admins and HR can create users via MCP
+        return auth()->user()?->hasAnyRole(['admin', 'hr']);
+    }
+    
+    public function mcpAllowsDelete(): bool
+    {
+        // Only admins can delete users via MCP
+        return auth()->user()?->hasRole('admin');
+    }
+}
+```
+
+### Advanced Authorization Patterns
+
+#### Time-Based Access Control
+```php
+class FinancialReportGetter extends Getter
+{
+    public function authorizedToRun(RestifyRequest $request, $model): bool
+    {
+        // Only allow access during business hours
+        $now = now();
+        $businessStart = $now->copy()->setHour(9)->setMinute(0);
+        $businessEnd = $now->copy()->setHour(17)->setMinute(0);
+        
+        if (!$now->between($businessStart, $businessEnd)) {
+            return false;
+        }
+        
+        return $request->user()->can('viewFinancialReports', $model);
+    }
+}
+```
+
+#### Resource-Specific Permissions
+```php
+class PostRepository extends Repository
+{
+    use HasMcpTools;
+    
+    public function authorizedToShow(RestifyRequest $request): bool
+    {
+        // Different authorization logic based on post status
+        switch ($this->resource->status) {
+            case 'published':
+                return true; // Anyone can view published posts
+            case 'draft':
+                return $request->user()->id === $this->resource->author_id;
+            case 'review':
+                return $request->user()->hasAnyRole(['editor', 'admin']);
+            case 'archived':
+                return $request->user()->hasRole('admin');
+            default:
+                return false;
+        }
+    }
+}
+```
+
+### Security Best Practices
+
+#### 1. Always Use Middleware Authentication
+```php
+Mcp::web('restify', RestifyServer::class)->middleware([
+    'auth:sanctum', // Require authentication
+    'verified',     // Require email verification
+    'throttle:60,1', // Rate limiting
+])->name('mcp.restify');
+```
+
+#### 2. Layer Authorization Checks
+```php
+class SensitiveActionTool extends Action
+{
+    public function authorizedToSee(RestifyRequest $request): bool
+    {
+        // Multiple authorization layers
+        return $request->user()?->hasRole('admin')
+            && $request->user()?->hasPermission('sensitive_operations')
+            && $request->ip() === config('app.admin_ip')
+            && $this->isWithinAllowedTimeWindow();
+    }
+}
+```
+
+#### 3. Audit MCP Operations
+```php
+class AuditedRestifyServer extends RestifyServer
+{
+    public function boot(): void
+    {
+        parent::boot();
+        
+        // Log all MCP tool calls
+        $this->beforeToolCall(function ($toolName, $arguments, $request) {
+            AuditLog::create([
+                'user_id' => $request->user()->id,
+                'tool_name' => $toolName,
+                'arguments' => $arguments,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'timestamp' => now(),
+            ]);
+        });
+    }
+}
+```
+
+### Authorization Error Handling
+
+The MCP system provides consistent error responses for authorization failures:
+
+```php
+// When authorization fails, AI agents receive structured error responses:
+{
+    "error": "Not authorized to view this resource",
+    "message": "You do not have permission to view this specific record",
+    "resource": "posts",
+    "resource_id": 123
+}
+```
+
+### Summary: Authorization Guarantees
+
+✅ **Same policies apply**: Your Laravel policies work identically for MCP and regular API requests
+
+✅ **Consistent enforcement**: All authorization methods (`authorizedToShow`, `authorizedToRun`, etc.) are respected
+
+✅ **Field-level security**: Field visibility controls (`canSee`, `hideFromMcp`) are enforced
+
+✅ **Multi-tenant safe**: Tenant scoping and isolation work as expected
+
+✅ **Role-based access**: Your role and permission systems work unchanged
+
+✅ **Audit trail**: All authorization decisions can be logged and audited
+
+The MCP integration **never bypasses** your existing security architecture—it enhances it by providing AI agents with the same secure, controlled access that your regular API users have.
+
 ## Security Considerations
 
 ### Operation-Level Control
@@ -792,11 +1212,11 @@ This response contains **~150 tokens**. For an AI agent listing 50 blog posts, t
 Laravel Restify allows you to define **operation-specific field sets** for MCP requests, dramatically reducing token usage:
 
 ```php
-use Binaryk\LaravelRestify\MCP\Concerns\McpTools;
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 
 class PostRepository extends Repository
 {
-    use McpTools;
+    use HasMcpTools;
     
     // Regular API gets complete field set
     public function fields(RestifyRequest $request): array
@@ -1239,11 +1659,11 @@ protected function discoverRepositoryTools(): void
 To enable actions and getters for MCP, simply add them to your repository as usual:
 
 ```php
-use Binaryk\LaravelRestify\MCP\Concerns\McpTools;
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 
 class PostRepository extends Repository
 {
-    use McpTools;
+    use HasMcpTools;
 
     public function actions(RestifyRequest $request): array
     {

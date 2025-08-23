@@ -5,7 +5,7 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 /**
  * @mixin \Binaryk\LaravelRestify\Repositories\Repository
  */
-trait McpTools
+trait HasMcpTools
 {
     use McpActionTool;
     use McpDestroyTool;
@@ -18,7 +18,7 @@ trait McpTools
 
     public function mcpAllowsIndex(): bool
     {
-        return false;
+        return true;
     }
 
     public function mcpAllowsShow(): bool
@@ -43,7 +43,7 @@ trait McpTools
 
     public function mcpAllowsActions(): bool
     {
-        return true;
+        return false;
     }
 
     public function mcpAllowsGetters(): bool

@@ -6,7 +6,7 @@ namespace Binaryk\LaravelRestify\MCP;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Getters\Getter;
-use Binaryk\LaravelRestify\MCP\Concerns\McpTools;
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\MCP\Resources\ApplicationInfo;
@@ -77,7 +77,7 @@ class RestifyServer extends Server
     {
         collect(Restify::$repositories)
             ->filter(function (string $repository) {
-                return in_array(McpTools::class, class_uses_recursive($repository));
+                return in_array(HasMcpTools::class, class_uses_recursive($repository));
             })
             ->each(function (string $repository) {
                 $repositoryInstance = app($repository);
