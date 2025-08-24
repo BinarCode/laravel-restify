@@ -38,8 +38,11 @@ Configure your AI agent (Claude Desktop, Cursor, etc.) to use the MCP server:
 {
   "mcpServers": {
     "laravel-restify": {
-      "command": "laravel-restify-boost",
-      "args": []
+      "command": "php",
+      "args": [
+        "artisan",
+        "restify-boost:start"
+      ]
     }
   }
 }
