@@ -42,7 +42,7 @@ class ProfileTool extends Tool
             ->toArray();
 
         $schema->string('include')
-            ->description('Comma-separated list of relationships to include in the response. Available options: ' . implode(', ', $relatedOptions) . ' (e.g., include=employee,roles.permissions)');
+            ->description('Comma-separated list of relationships to include in the response. Available options: '.implode(', ', $relatedOptions).' (e.g., include=employee,roles.permissions)');
 
         return $schema;
     }
