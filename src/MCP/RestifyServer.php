@@ -63,6 +63,20 @@ class RestifyServer extends Server
             }
         }
 
+        // Auto-discover tools from app/Restify/Mcp/Tools
+        $appToolsPath = app_path('Restify/Mcp/Tools');
+        if (is_dir($appToolsPath)) {
+            $appToolDir = new \DirectoryIterator($appToolsPath);
+            foreach ($appToolDir as $toolFile) {
+                if ($toolFile->isFile() && $toolFile->getExtension() === 'php') {
+                    $fqdn = 'App\\Restify\\Mcp\\Tools\\'.$toolFile->getBasename('.php');
+                    if (class_exists($fqdn) && ! in_array($fqdn, $excludedTools, true)) {
+                        $this->addTool($fqdn);
+                    }
+                }
+            }
+        }
+
         $extraTools = config('restify.mcp.tools.include', []);
         foreach ($extraTools as $toolClass) {
             if (class_exists($toolClass)) {
@@ -154,6 +168,20 @@ class RestifyServer extends Server
                 $fqdn = 'Binaryk\\LaravelRestify\\MCP\\Resources\\'.$resourceFile->getBasename('.php');
                 if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources, true)) {
                     $this->addResource($fqdn);
+                }
+            }
+        }
+
+        // Auto-discover resources from app/Restify/Mcp/Resources
+        $appResourcesPath = app_path('Restify/Mcp/Resources');
+        if (is_dir($appResourcesPath)) {
+            $appResourceDir = new \DirectoryIterator($appResourcesPath);
+            foreach ($appResourceDir as $resourceFile) {
+                if ($resourceFile->isFile() && $resourceFile->getExtension() === 'php') {
+                    $fqdn = 'App\\Restify\\Mcp\\Resources\\'.$resourceFile->getBasename('.php');
+                    if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources, true)) {
+                        $this->addResource($fqdn);
+                    }
                 }
             }
         }

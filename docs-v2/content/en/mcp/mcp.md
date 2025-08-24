@@ -325,9 +325,25 @@ protected function discoverTools(): array
         }
     }
     
+    // Auto-discover tools from app/Restify/Mcp/Tools
+    $appToolsPath = app_path('Restify/Mcp/Tools');
+    if (is_dir($appToolsPath)) {
+        $appToolDir = new \DirectoryIterator($appToolsPath);
+        foreach ($appToolDir as $toolFile) {
+            if ($toolFile->isFile() && $toolFile->getExtension() === 'php') {
+                $fqdn = 'App\\Restify\\Mcp\\Tools\\'.$toolFile->getBasename('.php');
+                if (class_exists($fqdn) && ! in_array($fqdn, $excludedTools, true)) {
+                    $this->addTool($fqdn);
+                }
+            }
+        }
+    }
+    
     return $this->registeredTools;
 }
 ```
+
+**Auto-Discovery from Application Directory**: The MCP server automatically discovers and registers tools from your application's `app/Restify/Mcp/Tools` directory. Any tool class placed in this directory will be automatically registered without requiring manual configuration.
 
 ### Configuration Options
 
