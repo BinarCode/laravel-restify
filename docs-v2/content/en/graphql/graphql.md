@@ -2,7 +2,7 @@
 title: GraphQL Integration
 menuTitle: GraphQL
 category: GraphQL
-position: 1
+position: 16
 ---
 
 # GraphQL Integration

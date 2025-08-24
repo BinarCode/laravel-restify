@@ -2,7 +2,7 @@
 title: GraphQL Schema Generation
 menuTitle: Schema Generation
 category: GraphQL
-position: 2
+position: 17
 ---
 
 # GraphQL Schema Generation

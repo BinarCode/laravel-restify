@@ -2,7 +2,7 @@
 title: Model Context Protocol (MCP)
 menuTitle: Restify Boost
 category: Boost
-position: 1
+position: 20
 ---
 
 ## MCP Server for Laravel Restify Developers
