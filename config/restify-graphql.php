@@ -52,22 +52,22 @@ return [
         'Email' => 'String',
         'Password' => 'String',
         'Url' => 'String',
-        
+
         // Numeric types
         'Number' => 'Int',
         'Integer' => 'Int',
         'Float' => 'Float',
         'Decimal' => 'Float',
-        
+
         // Boolean
         'Boolean' => 'Boolean',
         'Toggle' => 'Boolean',
-        
+
         // Date/Time
         'Date' => 'String', // Consider using custom Date scalar
         'DateTime' => 'String', // Consider using custom DateTime scalar
         'Time' => 'String',
-        
+
         // Relationships
         'BelongsTo' => 'ID', // For input types, reference for output types
         'HasMany' => '[ID!]', // For input types, array for output types
@@ -75,11 +75,11 @@ return [
         'MorphTo' => 'ID',
         'MorphOne' => 'ID',
         'MorphMany' => '[ID!]',
-        
+
         // File handling
         'File' => 'String', // File path/URL
         'Image' => 'String', // Image path/URL
-        
+
         // Special types
         'Json' => 'JSON', // Requires custom JSON scalar
         'Select' => 'String',

@@ -26,8 +26,8 @@ class RepositoryCommand extends GeneratorCommand
         // Inform user about detected path pattern
         $existingRepositoryPath = $this->findExistingRepositoryPath();
         if ($existingRepositoryPath) {
-            $this->info('Detected repository pattern: ' . $existingRepositoryPath['pattern']);
-            $this->info('Repository will be created in: ' . $existingRepositoryPath['namespace']);
+            $this->info('Detected repository pattern: '.$existingRepositoryPath['pattern']);
+            $this->info('Repository will be created in: '.$existingRepositoryPath['namespace']);
         }
 
         // Check if file already exists and ask for confirmation
@@ -35,10 +35,11 @@ class RepositoryCommand extends GeneratorCommand
         $path = $this->getPath($name);
 
         if ($this->files->exists($path) && ! $this->option('force')) {
-            $this->error('Repository already exists at: ' . $path);
+            $this->error('Repository already exists at: '.$path);
 
             if (! $this->confirm('Do you want to override it?')) {
                 $this->info('Repository creation cancelled.');
+
                 return false;
             }
         }
@@ -92,19 +93,19 @@ class RepositoryCommand extends GeneratorCommand
 
         // Ensure we have a valid model before building
         $modelClass = $this->guessQualifiedModelName();
-        if (!$modelClass) {
+        if (! $modelClass) {
             throw new \RuntimeException('Could not determine the model class.');
         }
 
         $stub = parent::buildClass($name);
-        
+
         // Replace DummyRootNamespace placeholder
         $stub = str_replace('DummyRootNamespace', $this->rootNamespace(), $stub);
-        
+
         $stub = $this->replaceModel($stub, $this->guessBaseModelClass());
 
         // Generate fields if not disabled
-        if (!$this->option('no-fields')) {
+        if (! $this->option('no-fields')) {
             $stub = $this->replaceFields($stub);
             $stub = $this->replaceRelationships($stub);
         } else {
@@ -125,7 +126,7 @@ class RepositoryCommand extends GeneratorCommand
         // Ensure we use the correct namespace separator
         $qualifiedModel = str_replace('\\\\', '\\', $qualifiedModel);
 
-        return str_replace(['DummyClass', '{{ model }}', '{{model}}'], $qualifiedModel . ';', $model);
+        return str_replace(['DummyClass', '{{ model }}', '{{model}}'], $qualifiedModel.';', $model);
     }
 
     protected function guessBaseModelClass()
@@ -156,19 +157,21 @@ class RepositoryCommand extends GeneratorCommand
             $foundModel = $foundModels[0];
             if ($this->confirm("Found model: {$foundModel}. Do you want to use this model?")) {
                 $this->confirmedModelClass = $foundModel;
+
                 return $foundModel;
             }
         } elseif (count($foundModels) > 1) {
             // Found multiple models
-            $this->info('Found multiple models matching "' . $model . '":');
+            $this->info('Found multiple models matching "'.$model.'":');
             foreach ($foundModels as $index => $foundModel) {
-                $this->line(($index + 1) . '. ' . $foundModel);
+                $this->line(($index + 1).'. '.$foundModel);
             }
 
             $choice = $this->ask('Which model would you like to use? (Enter number or 0 to specify manually)');
 
             if ($choice > 0 && $choice <= count($foundModels)) {
                 $this->confirmedModelClass = $foundModels[$choice - 1];
+
                 return $this->confirmedModelClass;
             }
         }
@@ -176,6 +179,7 @@ class RepositoryCommand extends GeneratorCommand
         // No model found or user chose to specify manually
         $result = $this->promptForModel();
         $this->confirmedModelClass = $result;
+
         return $result;
     }
 
@@ -247,12 +251,12 @@ class RepositoryCommand extends GeneratorCommand
         if ($existingRepositoryPath && $existingRepositoryPath['pattern']) {
             // Apply the discovered pattern
             $modelBaseName = Str::before(class_basename($name), 'Repository');
-            $namespacedName = $existingRepositoryPath['namespace'] . '\\' . $this->applyPathPattern(
+            $namespacedName = $existingRepositoryPath['namespace'].'\\'.$this->applyPathPattern(
                 $modelBaseName,
                 $existingRepositoryPath['pattern']
-            ) . '\\' . $name;
+            ).'\\'.$name;
 
-            return $this->laravel['path'] . '/' . str_replace('\\', '/', str_replace($this->rootNamespace() . '\\', '', $namespacedName)) . '.php';
+            return $this->laravel['path'].'/'.str_replace('\\', '/', str_replace($this->rootNamespace().'\\', '', $namespacedName)).'.php';
         }
 
         return parent::getPath($name);
@@ -319,7 +323,7 @@ class RepositoryCommand extends GeneratorCommand
         $modelClass = $this->guessQualifiedModelName();
 
         // Check if model class exists
-        if (!$modelClass || !class_exists($modelClass)) {
+        if (! $modelClass || ! class_exists($modelClass)) {
             return [];
         }
 
@@ -327,7 +331,7 @@ class RepositoryCommand extends GeneratorCommand
             $model = new $modelClass;
             $table = $model->getTable();
 
-            if (!Schema::hasTable($table)) {
+            if (! Schema::hasTable($table)) {
                 return [];
             }
 
@@ -420,15 +424,15 @@ class RepositoryCommand extends GeneratorCommand
             // Use raw PDO to check nullable status
             $connection = Schema::getConnection();
             $dbName = $connection->getDatabaseName();
-            $results = $connection->select("
+            $results = $connection->select('
                 SELECT IS_NULLABLE
                 FROM INFORMATION_SCHEMA.COLUMNS
                 WHERE TABLE_SCHEMA = ?
                 AND TABLE_NAME = ?
                 AND COLUMN_NAME = ?
-            ", [$dbName, $table, $column]);
+            ', [$dbName, $table, $column]);
 
-            if (!empty($results) && $results[0]->IS_NULLABLE === 'YES') {
+            if (! empty($results) && $results[0]->IS_NULLABLE === 'YES') {
                 $field .= '->nullable()';
             }
         } catch (\Exception $e) {
@@ -441,9 +445,9 @@ class RepositoryCommand extends GeneratorCommand
         }
 
         // Add required validation for non-nullable fields (except special cases)
-        if (!Str::contains($field, 'nullable()') &&
-            !in_array($column, ['created_at', 'updated_at', 'deleted_at', 'remember_token']) &&
-            !Str::contains($field, 'readonly()')) {
+        if (! Str::contains($field, 'nullable()') &&
+            ! in_array($column, ['created_at', 'updated_at', 'deleted_at', 'remember_token']) &&
+            ! Str::contains($field, 'readonly()')) {
             $field .= '->required()';
         }
 
@@ -457,7 +461,7 @@ class RepositoryCommand extends GeneratorCommand
         $models = [];
 
         try {
-            $finder = new Finder();
+            $finder = new Finder;
             $finder->files()
                 ->in(app_path())
                 ->name('*.php')
@@ -467,9 +471,9 @@ class RepositoryCommand extends GeneratorCommand
                 ->notPath('Providers');
 
             foreach ($finder as $file) {
-                $relativePath = str_replace(app_path() . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+                $relativePath = str_replace(app_path().DIRECTORY_SEPARATOR, '', $file->getRealPath());
                 $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
-                $className = 'App\\' . str_replace(['/', '.php'], ['\\', ''], $relativePath);
+                $className = 'App\\'.str_replace(['/', '.php'], ['\\', ''], $relativePath);
 
                 // Check if it's a valid model class
                 if (class_exists($className) && $this->isModel($className)) {
@@ -495,7 +499,7 @@ class RepositoryCommand extends GeneratorCommand
             $reflection = new \ReflectionClass($className);
 
             // Check if it's an instantiable class
-            if (!$reflection->isInstantiable()) {
+            if (! $reflection->isInstantiable()) {
                 return false;
             }
 
@@ -513,8 +517,9 @@ class RepositoryCommand extends GeneratorCommand
         while (true) {
             $modelName = $this->ask('Please enter the model name (without namespace, e.g., User, Employee)');
 
-            if (!$modelName) {
+            if (! $modelName) {
                 $this->error('Model name is required.');
+
                 continue;
             }
 
@@ -527,22 +532,24 @@ class RepositoryCommand extends GeneratorCommand
 
             if (count($foundModels) === 0) {
                 $this->error("No model found with name '{$modelName}'.");
-                if (!$this->confirm('Would you like to try again?')) {
+                if (! $this->confirm('Would you like to try again?')) {
                     exit(1);
                 }
+
                 continue;
             }
 
             if (count($foundModels) === 1) {
                 $this->confirmedModelClass = $foundModels[0];
                 $this->info("Using model: {$foundModels[0]}");
+
                 return $foundModels[0];
             }
 
             // Multiple models found
             $this->info('Found multiple models:');
             foreach ($foundModels as $index => $model) {
-                $this->line(($index + 1) . '. ' . $model);
+                $this->line(($index + 1).'. '.$model);
             }
 
             $choice = $this->ask('Which model would you like to use? (Enter number)');
@@ -550,6 +557,7 @@ class RepositoryCommand extends GeneratorCommand
             if ($choice > 0 && $choice <= count($foundModels)) {
                 $this->confirmedModelClass = $foundModels[$choice - 1];
                 $this->info("Using model: {$foundModels[$choice - 1]}");
+
                 return $foundModels[$choice - 1];
             }
 
@@ -563,10 +571,10 @@ class RepositoryCommand extends GeneratorCommand
 
         // First, check common locations
         $commonLocations = [
-            $this->rootNamespace() . '\\Models\\' . $modelName,
-            $this->rootNamespace() . '\\' . $modelName,
-            'App\\Models\\' . $modelName,
-            'App\\' . $modelName,
+            $this->rootNamespace().'\\Models\\'.$modelName,
+            $this->rootNamespace().'\\'.$modelName,
+            'App\\Models\\'.$modelName,
+            'App\\'.$modelName,
         ];
 
         foreach ($commonLocations as $location) {
@@ -587,7 +595,7 @@ class RepositoryCommand extends GeneratorCommand
     {
         $modelClass = $this->guessQualifiedModelName();
 
-        if (!$modelClass || !class_exists($modelClass)) {
+        if (! $modelClass || ! class_exists($modelClass)) {
             return ['relations' => [], 'imports' => []];
         }
 
@@ -595,7 +603,7 @@ class RepositoryCommand extends GeneratorCommand
             $model = new $modelClass;
             $table = $model->getTable();
 
-            if (!Schema::hasTable($table)) {
+            if (! Schema::hasTable($table)) {
                 return ['relations' => [], 'imports' => []];
             }
 
@@ -609,7 +617,7 @@ class RepositoryCommand extends GeneratorCommand
                     $relationshipData = $this->generateBelongsToRelationship($column);
                     if ($relationshipData) {
                         $relations[] = $relationshipData['relation'];
-                        if (!empty($relationshipData['imports'])) {
+                        if (! empty($relationshipData['imports'])) {
                             $imports = array_merge($imports, $relationshipData['imports']);
                         }
                     }
@@ -620,7 +628,7 @@ class RepositoryCommand extends GeneratorCommand
             $hasManyRelationships = $this->detectHasManyRelationships($modelClass, $table);
             foreach ($hasManyRelationships as $relationshipData) {
                 $relations[] = $relationshipData['relation'];
-                if (!empty($relationshipData['imports'])) {
+                if (! empty($relationshipData['imports'])) {
                     $imports = array_merge($imports, $relationshipData['imports']);
                 }
             }
@@ -642,11 +650,11 @@ class RepositoryCommand extends GeneratorCommand
 
         // Try to find the related model
         $relatedModel = $this->findRelatedModel($modelName);
-        if (!$relatedModel) {
+        if (! $relatedModel) {
             // If we can't find the model, still generate the relationship
             return [
                 'relation' => "            BelongsTo::make('$relationName'),",
-                'imports' => []
+                'imports' => [],
             ];
         }
 
@@ -656,12 +664,12 @@ class RepositoryCommand extends GeneratorCommand
         if ($repositoryClass) {
             return [
                 'relation' => "            BelongsTo::make('$relationName', $repositoryClass::class),",
-                'imports' => [$repositoryClass]
+                'imports' => [$repositoryClass],
             ];
         } else {
             return [
                 'relation' => "            BelongsTo::make('$relationName'),",
-                'imports' => []
+                'imports' => [],
             ];
         }
     }
@@ -670,7 +678,7 @@ class RepositoryCommand extends GeneratorCommand
     {
         $relationships = [];
         $modelBaseName = class_basename($modelClass);
-        $expectedForeignKey = Str::snake($modelBaseName) . '_id';
+        $expectedForeignKey = Str::snake($modelBaseName).'_id';
         $pluralName = Str::plural(Str::snake($modelBaseName));
 
         // Get all tables in the database
@@ -689,7 +697,7 @@ class RepositoryCommand extends GeneratorCommand
             try {
                 if (Schema::hasColumn($otherTable, $expectedForeignKey)) {
                     // Found a table with a foreign key to this model
-                    $relationName = Str::camel(Str::plural(Str::beforeLast($otherTable, '_' . $pluralName)));
+                    $relationName = Str::camel(Str::plural(Str::beforeLast($otherTable, '_'.$pluralName)));
                     if ($relationName === 'plural') {
                         $relationName = Str::camel($otherTable);
                     }
@@ -704,12 +712,12 @@ class RepositoryCommand extends GeneratorCommand
                         if ($repositoryClass) {
                             $relationships[] = [
                                 'relation' => "            HasMany::make('$relationName', $repositoryClass::class),",
-                                'imports' => [$repositoryClass]
+                                'imports' => [$repositoryClass],
                             ];
                         } else {
                             $relationships[] = [
                                 'relation' => "            HasMany::make('$relationName'),",
-                                'imports' => []
+                                'imports' => [],
                             ];
                         }
                     }
@@ -727,10 +735,10 @@ class RepositoryCommand extends GeneratorCommand
     {
         // Common locations to check
         $possibleClasses = [
-            $this->rootNamespace() . '\\Models\\' . $modelName,
-            $this->rootNamespace() . '\\' . $modelName,
-            'App\\Models\\' . $modelName,
-            'App\\' . $modelName,
+            $this->rootNamespace().'\\Models\\'.$modelName,
+            $this->rootNamespace().'\\'.$modelName,
+            'App\\Models\\'.$modelName,
+            'App\\'.$modelName,
         ];
 
         foreach ($possibleClasses as $class) {
@@ -741,7 +749,7 @@ class RepositoryCommand extends GeneratorCommand
 
         // If not found in common locations, search the app folder
         $foundModels = $this->findModelInApp($modelName);
-        if (!empty($foundModels)) {
+        if (! empty($foundModels)) {
             return $foundModels[0];
         }
 
@@ -751,7 +759,7 @@ class RepositoryCommand extends GeneratorCommand
     protected function findRepositoryForModel($modelClass)
     {
         $modelBaseName = class_basename($modelClass);
-        $repositoryName = $modelBaseName . 'Repository';
+        $repositoryName = $modelBaseName.'Repository';
 
         // First, check if we have a discovered pattern
         $existingRepositoryPath = $this->findExistingRepositoryPath();
@@ -765,18 +773,18 @@ class RepositoryCommand extends GeneratorCommand
 
             switch ($pattern) {
                 case 'grouped-by-model':
-                    $possibleRepositories[] = $namespace . '\\' . Str::plural($modelBaseName) . '\\' . $repositoryName;
-                    $possibleRepositories[] = $namespace . '\\' . $modelBaseName . '\\' . $repositoryName;
+                    $possibleRepositories[] = $namespace.'\\'.Str::plural($modelBaseName).'\\'.$repositoryName;
+                    $possibleRepositories[] = $namespace.'\\'.$modelBaseName.'\\'.$repositoryName;
                     break;
 
                 case 'domain-driven':
-                    $possibleRepositories[] = $namespace . '\\Domains\\' . $modelBaseName . '\\' . $repositoryName;
-                    $possibleRepositories[] = $namespace . '\\Domain\\' . $modelBaseName . '\\' . $repositoryName;
+                    $possibleRepositories[] = $namespace.'\\Domains\\'.$modelBaseName.'\\'.$repositoryName;
+                    $possibleRepositories[] = $namespace.'\\Domain\\'.$modelBaseName.'\\'.$repositoryName;
                     break;
 
                 case 'flat':
                 default:
-                    $possibleRepositories[] = $namespace . '\\' . $repositoryName;
+                    $possibleRepositories[] = $namespace.'\\'.$repositoryName;
                     break;
             }
 
@@ -789,10 +797,10 @@ class RepositoryCommand extends GeneratorCommand
 
         // Fallback to common repository locations
         $commonRepositories = [
-            $this->rootNamespace() . '\\Restify\\' . $repositoryName,
-            'App\\Restify\\' . $repositoryName,
-            $this->rootNamespace() . '\\Http\\Restify\\' . $repositoryName,
-            'App\\Http\\Restify\\' . $repositoryName,
+            $this->rootNamespace().'\\Restify\\'.$repositoryName,
+            'App\\Restify\\'.$repositoryName,
+            $this->rootNamespace().'\\Http\\Restify\\'.$repositoryName,
+            'App\\Http\\Restify\\'.$repositoryName,
         ];
 
         foreach ($commonRepositories as $repositoryClass) {
@@ -803,17 +811,17 @@ class RepositoryCommand extends GeneratorCommand
 
         // Try to find repository anywhere in the app
         try {
-            $finder = new Finder();
+            $finder = new Finder;
             $finder->files()
                 ->in(app_path())
-                ->name($repositoryName . '.php');
+                ->name($repositoryName.'.php');
 
             foreach ($finder as $file) {
-                $relativePath = str_replace(app_path() . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+                $relativePath = str_replace(app_path().DIRECTORY_SEPARATOR, '', $file->getRealPath());
                 $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
                 $relativePath = str_replace('.php', '', $relativePath);
 
-                $possibleClass = $this->rootNamespace() . '\\' . str_replace('/', '\\', $relativePath);
+                $possibleClass = $this->rootNamespace().'\\'.str_replace('/', '\\', $relativePath);
                 if (class_exists($possibleClass)) {
                     return $possibleClass;
                 }
@@ -832,25 +840,25 @@ class RepositoryCommand extends GeneratorCommand
             $restifyPath = app_path('Restify');
             if (is_dir($restifyPath)) {
                 $restifyRepositoryPaths = $this->findRepositoriesInPath($restifyPath, 'Restify');
-                if (!empty($restifyRepositoryPaths)) {
+                if (! empty($restifyRepositoryPaths)) {
                     // Prefer repositories with more specific paths (deeper nesting)
                     usort($restifyRepositoryPaths, function ($a, $b) {
                         return $b['depth'] <=> $a['depth'];
                     });
-                    
+
                     return $restifyRepositoryPaths[0];
                 }
             }
-            
+
             // If not found in Restify, search the entire app folder
             $allRepositoryPaths = $this->findRepositoriesInPath(app_path());
-            
-            if (!empty($allRepositoryPaths)) {
+
+            if (! empty($allRepositoryPaths)) {
                 // Prefer repositories with more specific paths (deeper nesting)
                 usort($allRepositoryPaths, function ($a, $b) {
                     return $b['depth'] <=> $a['depth'];
                 });
-                
+
                 return $allRepositoryPaths[0];
             }
         } catch (\Exception $e) {
@@ -859,13 +867,13 @@ class RepositoryCommand extends GeneratorCommand
 
         return null;
     }
-    
+
     protected function findRepositoriesInPath($searchPath, $baseFolder = '')
     {
         $repositoryPaths = [];
-        
+
         try {
-            $finder = new Finder();
+            $finder = new Finder;
             $finder->files()
                 ->in($searchPath)
                 ->name('*Repository.php')
@@ -873,9 +881,9 @@ class RepositoryCommand extends GeneratorCommand
                 ->notPath('tests');
 
             foreach ($finder as $file) {
-                $fullPath = str_replace(app_path() . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+                $fullPath = str_replace(app_path().DIRECTORY_SEPARATOR, '', $file->getRealPath());
                 $fullPath = str_replace(DIRECTORY_SEPARATOR, '/', $fullPath);
-                
+
                 // Skip if it's a base repository class at root level
                 if (basename($fullPath) === 'Repository.php' && substr_count($fullPath, '/') === 0) {
                     continue;
@@ -891,20 +899,20 @@ class RepositoryCommand extends GeneratorCommand
                 $pattern = $this->analyzeRepositoryPath($pathParts, $modelName);
 
                 if ($pattern) {
-                    $namespace = $this->rootNamespace() . '\\' . str_replace('/', '\\', implode('/', $pathParts));
+                    $namespace = $this->rootNamespace().'\\'.str_replace('/', '\\', implode('/', $pathParts));
                     $repositoryPaths[] = [
                         'path' => $fullPath,
                         'namespace' => $namespace,
                         'pattern' => $pattern,
                         'depth' => count($pathParts),
-                        'isInRestify' => $baseFolder === 'Restify' || str_starts_with($fullPath, 'Restify/')
+                        'isInRestify' => $baseFolder === 'Restify' || str_starts_with($fullPath, 'Restify/'),
                     ];
                 }
             }
         } catch (\Exception $e) {
             // If finder fails, return empty array
         }
-        
+
         return $repositoryPaths;
     }
 
@@ -923,7 +931,7 @@ class RepositoryCommand extends GeneratorCommand
         }
 
         // Pattern 2: App/Restify/Domains/User/UserRepository
-        if (Str::contains($pathString, 'Domains/' . $modelName) || Str::contains($pathString, 'Domain/' . $modelName)) {
+        if (Str::contains($pathString, 'Domains/'.$modelName) || Str::contains($pathString, 'Domain/'.$modelName)) {
             return 'domain-driven';
         }
 
@@ -955,9 +963,9 @@ class RepositoryCommand extends GeneratorCommand
 
             case 'domain-driven':
                 // Use Domains/ModelName structure
-                return 'Domains\\' . $modelName;
+                return 'Domains\\'.$modelName;
 
-            case "module-based":
+            case 'module-based':
                 // Try to detect which module based on the model name
                 // This is a simple heuristic, could be improved
                 return '';

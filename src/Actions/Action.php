@@ -65,8 +65,6 @@ abstract class Action implements JsonSerializable
 
     /**
      * Get the URI key for the action.
-     *
-     * @return string
      */
     public function uriKey(): string
     {

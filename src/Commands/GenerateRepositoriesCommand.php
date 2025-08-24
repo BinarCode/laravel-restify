@@ -25,6 +25,7 @@ class GenerateRepositoriesCommand extends Command
     protected $description = 'Generate repositories for all models in the application';
 
     protected Filesystem $files;
+
     protected string $chosenStructure;
 
     public function __construct(Filesystem $files)
@@ -46,6 +47,7 @@ class GenerateRepositoriesCommand extends Command
 
         if ($models->isEmpty()) {
             $this->warn('No models found in the application.');
+
             return self::FAILURE;
         }
 
@@ -54,6 +56,7 @@ class GenerateRepositoriesCommand extends Command
 
         if ($models->isEmpty()) {
             $this->warn('No models to generate repositories for after filtering.');
+
             return self::FAILURE;
         }
 
@@ -66,6 +69,7 @@ class GenerateRepositoriesCommand extends Command
 
             if (! $this->confirm('Do you want to proceed with generating these repositories?')) {
                 $this->comment('Operation cancelled.');
+
                 return self::SUCCESS;
             }
         }
@@ -80,7 +84,7 @@ class GenerateRepositoriesCommand extends Command
         foreach ($models as $modelData) {
             try {
                 $result = $this->generateRepositoryForModel($modelData);
-                
+
                 if ($result === 'generated') {
                     $generatedCount++;
                     $this->line("✅ Generated repository for {$modelData['name']}");
@@ -93,7 +97,7 @@ class GenerateRepositoriesCommand extends Command
                 }
             } catch (\Exception $e) {
                 $errorCount++;
-                $this->error("❌ Error generating repository for {$modelData['name']}: " . $e->getMessage());
+                $this->error("❌ Error generating repository for {$modelData['name']}: ".$e->getMessage());
             }
         }
 
@@ -122,7 +126,7 @@ class GenerateRepositoriesCommand extends Command
         $models = collect();
 
         try {
-            $finder = new Finder();
+            $finder = new Finder;
             $finder->files()
                 ->in(app_path())
                 ->name('*.php')
@@ -133,9 +137,9 @@ class GenerateRepositoriesCommand extends Command
                 ->notPath('Restify');
 
             foreach ($finder as $file) {
-                $relativePath = str_replace(app_path() . DIRECTORY_SEPARATOR, '', $file->getRealPath());
+                $relativePath = str_replace(app_path().DIRECTORY_SEPARATOR, '', $file->getRealPath());
                 $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
-                $className = 'App\\' . str_replace(['/', '.php'], ['\\', ''], $relativePath);
+                $className = 'App\\'.str_replace(['/', '.php'], ['\\', ''], $relativePath);
 
                 // Check if it's a valid model class
                 if (class_exists($className) && $this->isModel($className)) {
@@ -150,7 +154,7 @@ class GenerateRepositoriesCommand extends Command
                 }
             }
         } catch (\Exception $e) {
-            $this->error("Error discovering models: " . $e->getMessage());
+            $this->error('Error discovering models: '.$e->getMessage());
         }
 
         return $models->sortBy('name');
@@ -162,12 +166,12 @@ class GenerateRepositoriesCommand extends Command
             $reflection = new \ReflectionClass($className);
 
             // Check if it's an instantiable class
-            if (!$reflection->isInstantiable()) {
+            if (! $reflection->isInstantiable()) {
                 return false;
             }
 
             // Check if it extends Eloquent Model
-            if (!$reflection->isSubclassOf('Illuminate\\Database\\Eloquent\\Model')) {
+            if (! $reflection->isSubclassOf('Illuminate\\Database\\Eloquent\\Model')) {
                 return false;
             }
 
@@ -193,6 +197,7 @@ class GenerateRepositoriesCommand extends Command
     {
         $parts = explode('\\', $className);
         array_pop(); // Remove class name
+
         return implode('\\', $parts);
     }
 
@@ -201,11 +206,13 @@ class GenerateRepositoriesCommand extends Command
         try {
             if (class_exists($className)) {
                 $model = new $className;
+
                 return $model->getTable();
             }
         } catch (\Exception $e) {
             // If we can't instantiate the model, guess the table name
             $modelName = class_basename($className);
+
             return Str::snake(Str::plural($modelName));
         }
 
@@ -217,22 +224,22 @@ class GenerateRepositoriesCommand extends Command
         $fields = [];
 
         try {
-            if (!class_exists($className)) {
+            if (! class_exists($className)) {
                 return $fields;
             }
 
             $model = new $className;
             $tableName = $model->getTable();
 
-            if (!Schema::hasTable($tableName)) {
+            if (! Schema::hasTable($tableName)) {
                 return $fields;
             }
 
             $columns = Schema::getColumnListing($tableName);
-            
+
             foreach ($columns as $column) {
                 $columnType = Schema::getColumnType($tableName, $column);
-                
+
                 $fields[] = [
                     'name' => $column,
                     'type' => $columnType,
@@ -345,6 +352,7 @@ class GenerateRepositoriesCommand extends Command
             if (in_array($structure, ['flat', 'domains'])) {
                 $this->chosenStructure = $structure;
                 $this->info("Using {$structure} repository structure");
+
                 return;
             } else {
                 $this->warn("Invalid structure option: {$structure}. Valid options are: flat, domains");
@@ -384,8 +392,8 @@ class GenerateRepositoriesCommand extends Command
         // Show structure configuration
         $this->info('📂 Repository configuration:');
         $this->line("   Structure: {$this->chosenStructure}");
-        $this->line("   Base namespace: App\\Restify" . ($this->chosenStructure === 'domains' ? '\\Domains' : ''));
-        $this->line("   Force overwrite: " . ($this->option('force') ? 'Yes' : 'No'));
+        $this->line('   Base namespace: App\\Restify'.($this->chosenStructure === 'domains' ? '\\Domains' : ''));
+        $this->line('   Force overwrite: '.($this->option('force') ? 'Yes' : 'No'));
 
         $this->newLine();
 
@@ -393,7 +401,7 @@ class GenerateRepositoriesCommand extends Command
         $this->info('📄 Repositories that will be generated:');
         $models->each(function ($model, $index) {
             $path = $this->getRepositoryPath($model);
-            $this->line("   " . ($index + 1) . ". {$path}");
+            $this->line('   '.($index + 1).". {$path}");
         });
 
         $this->newLine();
@@ -404,12 +412,12 @@ class GenerateRepositoriesCommand extends Command
             $this->info('📝 Sample repository preview:');
             $this->line('   ┌─────────────────────────────────────────────────────┐');
             $this->line("   │ class {$firstModel['name']}Repository extends Repository");
-            $this->line("   │ {");
+            $this->line('   │ {');
             $this->line("   │     public static string \$model = {$firstModel['class']}::class;");
-            $this->line("   │");
-            $this->line("   │     public function fields(RestifyRequest \$request): array");
-            $this->line("   │     {");
-            $this->line("   │         return [");
+            $this->line('   │');
+            $this->line('   │     public function fields(RestifyRequest $request): array');
+            $this->line('   │     {');
+            $this->line('   │         return [');
 
             // Show first few fields
             $sampleFields = collect($firstModel['fields'])->take(4);
@@ -419,18 +427,18 @@ class GenerateRepositoriesCommand extends Command
                 }
             }
 
-            $totalFields = count(array_filter($firstModel['fields'], fn($f) => $f['restify_field']));
+            $totalFields = count(array_filter($firstModel['fields'], fn ($f) => $f['restify_field']));
             if ($totalFields > 4) {
-                $this->line("   │             # ... " . ($totalFields - 4) . " more fields");
+                $this->line('   │             # ... '.($totalFields - 4).' more fields');
             }
 
-            $this->line("   │         ];");
-            $this->line("   │     }");
-            $this->line("   │ }");
+            $this->line('   │         ];');
+            $this->line('   │     }');
+            $this->line('   │ }');
 
             if ($models->count() > 1) {
-                $this->line("   │");
-                $this->line("   │ # ... plus " . ($models->count() - 1) . " more repositories");
+                $this->line('   │');
+                $this->line('   │ # ... plus '.($models->count() - 1).' more repositories');
             }
 
             $this->line('   └─────────────────────────────────────────────────────┘');
@@ -438,10 +446,10 @@ class GenerateRepositoriesCommand extends Command
 
         // Show existing files warning
         $existingRepositories = $this->checkExistingRepositories($models);
-        if ($existingRepositories->isNotEmpty() && !$this->option('force')) {
+        if ($existingRepositories->isNotEmpty() && ! $this->option('force')) {
             $this->newLine();
             $this->warn('⚠️  The following repositories already exist and will be skipped:');
-            $existingRepositories->each(fn($repo) => $this->line("   • {$repo}"));
+            $existingRepositories->each(fn ($repo) => $this->line("   • {$repo}"));
             $this->line('   Use --force to overwrite existing repositories.');
         }
 
@@ -453,30 +461,31 @@ class GenerateRepositoriesCommand extends Command
     {
         return $models->filter(function ($model) {
             $path = $this->getRepositoryFilePath($model);
+
             return $this->files->exists($path);
         })->map(function ($model) {
-            return $model['name'] . 'Repository';
+            return $model['name'].'Repository';
         });
     }
 
     protected function generateRepositoryForModel(array $modelData): string
     {
         $repositoryPath = $this->getRepositoryFilePath($modelData);
-        
+
         // Check if file exists and we're not forcing
-        if ($this->files->exists($repositoryPath) && !$this->option('force')) {
+        if ($this->files->exists($repositoryPath) && ! $this->option('force')) {
             return 'skipped';
         }
 
         // Ensure directory exists
         $directory = dirname($repositoryPath);
-        if (!$this->files->isDirectory($directory)) {
+        if (! $this->files->isDirectory($directory)) {
             $this->files->makeDirectory($directory, 0755, true);
         }
 
         // Generate repository content
         $content = $this->generateRepositoryContent($modelData);
-        
+
         // Write the file
         $this->files->put($repositoryPath, $content);
 
@@ -485,7 +494,7 @@ class GenerateRepositoriesCommand extends Command
 
     protected function generateRepositoryContent(array $modelData): string
     {
-        $className = $modelData['name'] . 'Repository';
+        $className = $modelData['name'].'Repository';
         $modelClass = $modelData['class'];
         $namespace = $this->getRepositoryNamespace($modelData);
 
@@ -518,14 +527,14 @@ PHP;
     protected function generateFields(array $modelData): string
     {
         $fieldsCode = [];
-        
+
         // Always add ID field first
         $fieldsCode[] = '            id(),';
 
         // Add other fields
         foreach ($modelData['fields'] as $field) {
             if ($field['restify_field'] && $field['restify_field'] !== 'id()' && $field['name'] !== 'id') {
-                $fieldsCode[] = '            ' . $field['restify_field'] . ',';
+                $fieldsCode[] = '            '.$field['restify_field'].',';
             }
         }
 
@@ -540,9 +549,9 @@ PHP;
     protected function getRepositoryNamespace(array $modelData): string
     {
         $baseNamespace = 'App\\Restify';
-        
+
         if ($this->chosenStructure === 'domains') {
-            return $baseNamespace . '\\Domains\\' . $modelData['name'];
+            return $baseNamespace.'\\Domains\\'.$modelData['name'];
         }
 
         return $baseNamespace;
@@ -551,9 +560,9 @@ PHP;
     protected function getRepositoryPath(array $modelData): string
     {
         $namespace = $this->getRepositoryNamespace($modelData);
-        $className = $modelData['name'] . 'Repository';
-        
-        return str_replace('App\\', 'app/', str_replace('\\', '/', $namespace)) . '/' . $className . '.php';
+        $className = $modelData['name'].'Repository';
+
+        return str_replace('App\\', 'app/', str_replace('\\', '/', $namespace)).'/'.$className.'.php';
     }
 
     protected function getRepositoryFilePath(array $modelData): string

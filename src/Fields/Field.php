@@ -421,7 +421,7 @@ class Field extends OrganicField implements JsonSerializable
     public function rules($rules)
     {
         $newRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
-        
+
         if (! is_array($newRules)) {
             $newRules = [$newRules];
         }
@@ -743,7 +743,6 @@ class Field extends OrganicField implements JsonSerializable
 
         return $this->storeCallback;
     }
-
 
     public function file(): File
     {

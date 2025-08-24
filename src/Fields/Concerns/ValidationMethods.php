@@ -283,7 +283,7 @@ trait ValidationMethods
      */
     public function password($min = 8): self
     {
-        $this->rules("string", "min:$min");
+        $this->rules('string', "min:$min");
 
         return $this;
     }
@@ -503,7 +503,6 @@ trait ValidationMethods
     /**
      * Field must be one of the given values.
      *
-     * @param  array  $values
      * @return $this
      */
     public function in(array $values): self
@@ -516,7 +515,6 @@ trait ValidationMethods
     /**
      * Field must not be one of the given values.
      *
-     * @param  array  $values
      * @return $this
      */
     public function notIn(array $values): self

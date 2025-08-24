@@ -8,7 +8,6 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
-use Symfony\Component\Console\Input\InputOption;
 
 class GraphqlGenerateCommand extends Command
 {
@@ -46,6 +45,7 @@ class GraphqlGenerateCommand extends Command
 
         if ($repositories->isEmpty()) {
             $this->warn('No repositories found. Make sure you have repositories in your app/Restify directory.');
+
             return self::FAILURE;
         }
 
@@ -58,6 +58,7 @@ class GraphqlGenerateCommand extends Command
 
             if (! $this->confirm('Do you want to proceed with generating these files?')) {
                 $this->comment('Operation cancelled.');
+
                 return self::SUCCESS;
             }
         }
@@ -93,8 +94,8 @@ class GraphqlGenerateCommand extends Command
         Restify::ensureRepositoriesLoaded();
 
         return collect(Restify::$repositories)
-            ->filter(fn($repo) => class_exists($repo))
-            ->map(fn($repo) => class_basename($repo));
+            ->filter(fn ($repo) => class_exists($repo))
+            ->map(fn ($repo) => class_basename($repo));
     }
 
     protected function showPreview(Collection $repositories, string $outputPath, string $schemaFile): void
@@ -105,7 +106,7 @@ class GraphqlGenerateCommand extends Command
 
         // Show repositories found
         $this->info("🔍 Found {$repositories->count()} repositories:");
-        $repositories->each(fn($repo) => $this->line("   • {$repo}"));
+        $repositories->each(fn ($repo) => $this->line("   • {$repo}"));
 
         $this->newLine();
 
@@ -113,8 +114,8 @@ class GraphqlGenerateCommand extends Command
         $this->info('📂 Output configuration:');
         $this->line("   Output directory: {$outputPath}");
         $this->line("   Schema file: {$schemaFile}");
-        $this->line("   Generate resolvers: ".($this->option('resolvers') ? 'Yes' : 'No'));
-        $this->line("   Force overwrite: ".($this->option('force') ? 'Yes' : 'No'));
+        $this->line('   Generate resolvers: '.($this->option('resolvers') ? 'Yes' : 'No'));
+        $this->line('   Force overwrite: '.($this->option('force') ? 'Yes' : 'No'));
 
         $this->newLine();
 
@@ -125,7 +126,7 @@ class GraphqlGenerateCommand extends Command
         if ($this->option('resolvers')) {
             $this->line("   2. Resolvers directory: {$outputPath}/Resolvers/");
             $repositories->each(function ($repo, $index) use ($outputPath) {
-                $this->line("      ".($index + 3).". {$outputPath}/Resolvers/{$repo}Resolver.php");
+                $this->line('      '.($index + 3).". {$outputPath}/Resolvers/{$repo}Resolver.php");
             });
         }
 
@@ -143,7 +144,7 @@ class GraphqlGenerateCommand extends Command
             $uriKey = $this->getRepositoryUriKey($repositoryClass);
 
             $this->line("   │ type {$typeName} {");
-            $this->line("   │   id: ID!");
+            $this->line('   │   id: ID!');
 
             // Try to show a few fields from the first repository
             try {
@@ -167,29 +168,29 @@ class GraphqlGenerateCommand extends Command
 
                     $totalFields = count($fieldCollection);
                     if ($totalFields > 4) {
-                        $this->line("   │   # ... ".($totalFields - 4)." more fields");
+                        $this->line('   │   # ... '.($totalFields - 4).' more fields');
                     }
                 }
             } catch (\Exception $e) {
-                $this->line("   │   # Fields will be auto-detected from repository");
+                $this->line('   │   # Fields will be auto-detected from repository');
             }
 
-            $this->line("   │ }");
-            $this->line("   │");
-            $this->line("   │ type Query {");
+            $this->line('   │ }');
+            $this->line('   │');
+            $this->line('   │ type Query {');
             $this->line("   │   {$uriKey}(id: ID!): {$typeName}");
             $this->line("   │   {$uriKey}List(first: Int, page: Int): [{$typeName}!]!");
-            $this->line("   │ }");
-            $this->line("   │");
-            $this->line("   │ type Mutation {");
+            $this->line('   │ }');
+            $this->line('   │');
+            $this->line('   │ type Mutation {');
             $this->line("   │   create{$typeName}(input: {$typeName}Input!): {$typeName}!");
             $this->line("   │   update{$typeName}(id: ID!, input: {$typeName}Input!): {$typeName}!");
             $this->line("   │   delete{$typeName}(id: ID!): Boolean!");
-            $this->line("   │ }");
+            $this->line('   │ }');
 
             if ($repositories->count() > 1) {
-                $this->line("   │");
-                $this->line("   │ # ... plus ".($repositories->count() - 1)." more types");
+                $this->line('   │');
+                $this->line('   │ # ... plus '.($repositories->count() - 1).' more types');
             }
         }
 
@@ -200,7 +201,7 @@ class GraphqlGenerateCommand extends Command
         if ($existingFiles->isNotEmpty() && ! $this->option('force')) {
             $this->newLine();
             $this->warn('⚠️  The following files already exist and will be overwritten:');
-            $existingFiles->each(fn($file) => $this->line("   • {$file}"));
+            $existingFiles->each(fn ($file) => $this->line("   • {$file}"));
         }
 
         $this->line('═══════════════════════════════════════════════════════');
@@ -321,11 +322,11 @@ class GraphqlGenerateCommand extends Command
                 $fields[] = "    {$fieldName}: {$graphqlType}";
             }
         } catch (\Exception $e) {
-            $fields[] = "    # Could not resolve fields automatically: ".$e->getMessage();
+            $fields[] = '    # Could not resolve fields automatically: '.$e->getMessage();
         }
 
         if (empty($fields)) {
-            $fields[] = "    # Add input fields here";
+            $fields[] = '    # Add input fields here';
         }
 
         $fieldsString = implode("\n", $fields);
@@ -546,7 +547,7 @@ GRAPHQL;
     protected function getRepositoryClass(string $repositoryName): string
     {
         return collect(Restify::$repositories)
-            ->first(fn($repo) => class_basename($repo) === $repositoryName);
+            ->first(fn ($repo) => class_basename($repo) === $repositoryName);
     }
 
     protected function getGraphQLTypeName(string $repositoryName): string
@@ -599,7 +600,8 @@ GRAPHQL;
     protected function setupAuthenticationMocking(): void
     {
         // Create a mock user that always returns true for permissions
-        $mockUser = new class {
+        $mockUser = new class
+        {
             public function can($permission): bool
             {
                 return true;
@@ -631,6 +633,7 @@ GRAPHQL;
                 if (str_contains(strtolower($method), 'can') || str_contains(strtolower($method), 'able')) {
                     return true;
                 }
+
                 return null;
             }
         };
@@ -649,18 +652,17 @@ GRAPHQL;
             return $mockUser;
         });
 
-
         // Mock request user method
         app()->singleton('auth.user.mock', function () use ($mockUser) {
             return $mockUser;
         });
 
         // Extend RestifyRequest to return our mock user
-        $originalMakeMethod = \Binaryk\LaravelRestify\Http\Requests\RestifyRequest::class . '::createFrom';
+        $originalMakeMethod = \Binaryk\LaravelRestify\Http\Requests\RestifyRequest::class.'::createFrom';
 
         // Create a custom request instance that returns our mock user
         app()->bind(\Binaryk\LaravelRestify\Http\Requests\RestifyRequest::class, function ($app) use ($mockUser) {
-            $request = new \Binaryk\LaravelRestify\Http\Requests\RestifyRequest();
+            $request = new \Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
             // Override the user method to return our mock
             $reflection = new \ReflectionClass($request);
