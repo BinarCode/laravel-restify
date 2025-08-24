@@ -103,7 +103,7 @@ Mcp::web('restify', RestifyServer::class)->middleware(['auth:sanctum']);
 
 **That's it!** Your API is now AI-agent ready with automatic tool generation for CRUD operations, actions, and getters.
 
-## MCP Server for Developers
+## Restify Boost
 
 Laravel Restify provides an MCP (Model Context Protocol) server designed for developers working with Laravel Restify APIs. This server enables AI agents to access documentation, create repositories, actions, and getters through structured tools.
 
@@ -120,7 +120,8 @@ Laravel Restify provides an MCP (Model Context Protocol) server designed for dev
 ### Installation
 
 ```bash
-npm install -g @binarcode/laravel-restify-mcp
+composer require --dev binarcode/laravel-restify-boost
+php artisan restify-boost:install
 ```
 
 ### Usage with AI Agents

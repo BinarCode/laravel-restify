@@ -1,17 +1,15 @@
 ---
 title: Model Context Protocol (MCP)
-menuTitle: MCP Docs CLI
-category: MCP
+menuTitle: Restify Boost
+category: Boost
 position: 1
 ---
 
-Laravel Restify provides seamless integration with the Model Context Protocol (MCP), allowing AI agents to interact with your REST API resources through structured tool interfaces. This enables powerful AI-driven data access and manipulation while maintaining security and control.
-
 ## MCP Server for Laravel Restify Developers
 
-In addition to MCP integration within your Laravel Restify applications, we provide a dedicated **MCP server for developers** that enhances the development experience when working with Laravel Restify APIs.
+Restify Boost provides a dedicated **MCP server for developers** that enhances the development experience when working with Laravel Restify APIs.
 
-**Repository**: [https://github.com/BinarCode/laravel-restify-mcp](https://github.com/BinarCode/laravel-restify-mcp)
+**Repository**: [https://github.com/BinarCode/laravel-restify-boost](https://github.com/BinarCode/laravel-restify-boost)
 
 ### Developer MCP Server Features
 
@@ -29,7 +27,7 @@ The Laravel Restify MCP server provides AI agents with powerful development tool
 #### Install the MCP Server
 
 ```bash
-composer require --dev binarcode/laravel-restify-mcp
+composer require --dev binarcode/laravel-restify-boost
 ```
 
 #### Configure AI Agents
@@ -40,7 +38,7 @@ Configure your AI agent (Claude Desktop, Cursor, etc.) to use the MCP server:
 {
   "mcpServers": {
     "laravel-restify": {
-      "command": "laravel-restify-mcp",
+      "command": "laravel-restify-boost",
       "args": []
     }
   }
