@@ -58,7 +58,7 @@ public static function related(): array
         
         'extraData' => fn() => ['location' => 'Romania'],
         
-        'extraMeta' => new Invokable()
+        'extraMeta' => new Invokable(),
         
         'country',
     ];
@@ -156,7 +156,7 @@ Let's assume you have the `CompanyRepository`:
 public static function related(): array
 {
     return [
-        HasMany::make('users),
+        HasMany::make('users'),
     ];
 }
 ```
@@ -256,7 +256,7 @@ Starting with Restify 7+, meta information for related (in index requests) will 
 
 The `BelongsTo` and `MorphOne` eager fields work in a similar way, so let's take the `BelongsTo` as an example.
 
-Let's assume each `Post` [belongsTo](https://laravel.com/docs/eloquent-relationships#one-to-many-inverse) a `User`. To return the post's owner, we will have it defined just like this:
+Let's assume each `Post` [belongsTo](https://laravel.com/docs/eloquent-relationships#one-to-many-inverse) a `User`. To return the post's owner, we will define it like this:
 
 ```php
 // PostRepository
@@ -279,7 +279,7 @@ public function user()
 }
 ```
 
-Now the frontend can list post or posts including the following relationship: 
+Now the frontend can list a post or posts including the following relationship: 
 
 ```http request
 GET: api/restify/posts/1?include=owner
@@ -325,15 +325,23 @@ GET: api/restify/posts/1?include=owner
 The `BelongsTo` field allows you to use the search endpoint to [search over a column](/search/basic-filters#repository-search) from the `belongsTo` relationship by simply using the `searchables` call: 
 
 ```php
-BelongsTo::make('user')->searchable('name')
+BelongsTo::make('user')->searchable('name', 'email')
 ```
 
-The `searchable` method accepts a list of database attributes from the related entity (`users` in our case).
+The `searchable` method accepts multiple database attributes from the related entity (`users` in our case).
 
-Therefore, if we get the following search request, it'll also search into the related user's name: 
+Therefore, if we get the following search request, it'll also search into the related user's name and email: 
 
 ```http request
 GET: api/restify/companies?related=user&search="John"
+```
+
+You can check if a relation is searchable using:
+
+```php
+$field = BelongsTo::make('user')->searchable('name');
+$isSearchable = $field->isSearchable(); // true
+$attributes = $field->getSearchables(); // ['name']
 ```
 
 ## HasOne
@@ -350,6 +358,20 @@ public static function related(): array
       \Binaryk\LaravelRestify\Fields\HasOne::make('phone', PhoneRepository::class),
   ];
 }
+```
+
+### Sortable HasOne Relations
+
+`HasOne` relations can be made sortable:
+
+```php
+HasOne::make('phone')->sortable('number')
+```
+
+This allows sorting by the related model's attributes:
+
+```http request
+GET: api/restify/users?sort=phone.number
 ```
 
 The json response structure will be the same as previously:
@@ -459,7 +481,7 @@ When using `relatablePerPage` query param, it will paginate all the relatable en
 ## BelongsToMany & MorphToMany
 
 The `BelongsToMany` and `MorphToMany` field corresponds to a `belongsToMany` or `morphToMany` Eloquent relationship. For example, let's assume a `User`
-model `belongsToMany` Role models. We may add the relationship to our UserRepository in such wise:
+model `belongsToMany` Role models. We may add the relationship to our UserRepository like this:
 
 ```php
 // CompanyRepository
@@ -488,7 +510,7 @@ BelongsToMany::make('users', RoleRepository::class)->withPivot(
 ),
 ```
 
-You'll might as well have to define this in the `User` model:
+You might also need to define this in the `User` model:
 
 ```php
 public function users()
@@ -727,4 +749,208 @@ class DetachCompanyUsers
         $company->users()->detach($request->input('users'));
     }
 }
+
+## Validation for Attach Operations
+
+You can add custom validation for attach operations:
+
+```php
+BelongsToMany::make('users', UserRepository::class)
+    ->validationCallback(function ($request, $pivot) {
+        return [
+            'users.*' => 'exists:users,id',
+            'is_admin' => 'boolean'
+        ];
+    })
+    ->unique() // Prevents duplicate attachments
+```
+
+The `validationCallback` receives the request and pivot data, and should return validation rules. The `unique()` method prevents duplicate attachments automatically.
+
+## Column Selection in Relations
+
+You can specify which columns to load for relations using Laravel's column selection syntax:
+
+### Basic Column Selection
+
+```http request
+GET: /api/restify/users?include=posts[id,title,created_at]
+```
+
+### Nested Column Selection
+
+```http request
+GET: /api/restify/companies?include=users[id,name].posts[title].comments[comment]
+```
+
+### Mixed Column Selection
+
+```php
+// In your repository
+HasMany::make('posts')->columns(['id', 'title', 'published_at'])
+```
+
+## Advanced Sorting
+
+### Sorting by Related Fields
+
+Both `BelongsTo` and `HasOne` relations support sorting:
+
+```php
+// BelongsTo sorting
+BelongsTo::make('user')->sortable('name')
+
+// HasOne sorting  
+HasOne::make('profile')->sortable('bio')
+```
+
+### JSON Attribute Sorting
+
+Relations can sort by JSON attributes:
+
+```php
+BelongsTo::make('user')->sortable('preferences->theme')
+```
+
+### Custom Sort Logic
+
+You can define custom sorting logic:
+
+```php
+use Binaryk\\LaravelRestify\\Filters\\SortableFilter;
+
+SortableFilter::make()
+    ->usingClosure(function ($query, $direction) {
+        return $query->orderBy('custom_logic', $direction);
+    })
+```
+
+## Morph Relations
+
+Laravel Restify supports all morph relationship types:
+
+### MorphOne
+
+```php
+// CommentRepository
+public static function related(): array
+{
+    return [
+        MorphOne::make('commentable', PostRepository::class),
+    ];
+}
+```
+
+### MorphMany
+
+```php
+// PostRepository  
+public static function related(): array
+{
+    return [
+        MorphMany::make('comments', CommentRepository::class),
+    ];
+}
+```
+
+### MorphToMany
+
+```php
+// PostRepository
+public static function related(): array
+{
+    return [
+        MorphToMany::make('tags', TagRepository::class)->withPivot('created_at'),
+    ];
+}
+```
+
+## Relationship Authorization
+
+### Repository-Level Authorization
+
+Relations inherit authorization from their target repositories. You can customize this:
+
+```php
+HasMany::make('posts')->canEnableRelationship(function ($request) {
+    return $request->user()->can('view-posts');
+})
+```
+
+### Policy-Based Authorization
+
+Define policy methods for relation operations:
+
+```php
+// In your Policy class
+public function viewPosts(User $user, Company $company): bool
+{
+    return $user->can('view', $company);
+}
+
+public function attachUsers(User $user, Company $company, User $userToAttach): bool  
+{
+    return $user->isAdmin();
+}
+
+public function detachUsers(User $user, Company $company, User $userToDetach): bool
+{
+    return $user->isAdmin(); 
+}
+
+public function syncPermissions(User $user, Role $role, Collection $permissionIds): bool
+{
+    return $user->can('manage-permissions');
+}
+```
+
+## Performance Optimizations
+
+### Eager Loading Prevention
+
+Relations automatically prevent circular references and deep nesting to avoid performance issues.
+
+### Pagination Control
+
+Control relation pagination globally:
+
+```php
+// In your Repository
+public static int $defaultRelatablePerPage = 50;
+```
+
+Or per request:
+
+```http request
+GET: /api/restify/users?include=posts&relatablePerPage=25
+```
+
+### Selective Column Loading
+
+Always specify only needed columns:
+
+```http request
+GET: /api/restify/users?include=posts[id,title]&fields[users]=id,name
+```
+
+## Debugging Relations
+
+### Relation State
+
+Check relation loading state:
+
+```php
+$related = Related::make('posts', $field);
+$isEager = $related->isEager(); // boolean
+$relation = $related->getRelation(); // string
+```
+
+### Query Analysis
+
+Relations support query state tracking:
+
+```php
+$relatedQuery = RelatedQuery::fromToken('posts[id,title]');
+$columns = $relatedQuery->columns(); // ['id', 'title']  
+$isSerialized = $relatedQuery->isSerialized(); // boolean
 ```

@@ -144,6 +144,88 @@ If you want to generate the `Policy`, `Model`, and `migration` as well, then you
 php artisan restify:repository PostRepository --all
 ```
 
+## Generate repositories for all models
+
+For new projects or when you want to quickly generate repositories for all existing models in your application, you can use the bulk generation command:
+
+```shell script
+php artisan restify:generate:repositories
+```
+
+This command will:
+
+1. **Discover all models** in your application
+2. **Analyze model fields** from database schema 
+3. **Show a detailed preview** of what will be generated
+4. **Ask for confirmation** before creating files
+5. **Generate repositories** with appropriate field definitions
+
+### Command Options
+
+| Option | Description |
+|--------|-------------|
+| `--force` | Overwrite existing repositories without prompting |
+| `--skip-preview` | Skip preview and generate files immediately |
+| `--structure=flat\|domains` | Choose repository structure |
+| `--only=Model1,Model2` | Only generate repositories for specific models |
+| `--except=Model1,Model2` | Exclude specific models from generation |
+
+### Repository Structure Options
+
+The command allows you to choose between two organizational structures:
+
+**Flat Structure** (default):
+```
+app/Restify/
+├── UserRepository.php
+├── PostRepository.php  
+└── CompanyRepository.php
+```
+
+**Domains Structure**:
+```
+app/Restify/Domains/
+├── User/
+│   └── UserRepository.php
+├── Post/
+│   └── PostRepository.php
+└── Company/
+    └── CompanyRepository.php
+```
+
+### Examples
+
+```shell script
+# Generate with preview and structure selection
+php artisan restify:generate:repositories
+
+# Generate only for specific models
+php artisan restify:generate:repositories --only=User,Post
+
+# Generate with domains structure, skip preview
+php artisan restify:generate:repositories --structure=domains --skip-preview
+
+# Force overwrite existing repositories
+php artisan restify:generate:repositories --force
+```
+
+### Field Detection
+
+The command automatically detects and maps database columns to appropriate Restify field types:
+
+- `string`/`varchar` → `field()` (or `email()` for email columns)
+- `text` → `textarea()`
+- `integer`/`bigint` → `number()`
+- `boolean` → `boolean()`
+- `date` → `date()`
+- `datetime`/`timestamp` → `datetime()`
+- `json` → `json()`
+
+Special handling for:
+- Password fields → `password()->storable()`
+- Timestamp fields → `readonly()`
+- Foreign key fields → Excluded (handled as relationships)
+
 ## Generate policy
 
 Since the authorization is based on using the Laravel Policies, a good way of generating a complete policy for an entity is by

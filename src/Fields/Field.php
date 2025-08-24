@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Fields\Concerns\HasAction;
+use Binaryk\LaravelRestify\Fields\Concerns\ValidationMethods;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Concerns\FieldMcpSchemaDetection;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -20,6 +21,7 @@ class Field extends OrganicField implements JsonSerializable
     use FieldMcpSchemaDetection;
     use HasAction;
     use Make;
+    use ValidationMethods;
 
     /**
      * The resource associated with the field.
@@ -418,7 +420,13 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function rules($rules)
     {
-        $this->rules += ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
+        $newRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
+        
+        if (! is_array($newRules)) {
+            $newRules = [$newRules];
+        }
+
+        $this->rules = array_merge($this->rules, $newRules);
 
         return $this;
     }
@@ -736,12 +744,6 @@ class Field extends OrganicField implements JsonSerializable
         return $this->storeCallback;
     }
 
-    public function required(): self
-    {
-        $this->rules += ['required'];
-
-        return $this;
-    }
 
     public function file(): File
     {

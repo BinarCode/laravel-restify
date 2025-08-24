@@ -38,13 +38,6 @@ abstract class Getter implements JsonSerializable
     use Visibility;
 
     /**
-     * Default uri key for the getter.
-     *
-     * @var string
-     */
-    public static $uriKey;
-
-    /**
      * The route action array.
      *
      * @var array
@@ -63,7 +56,11 @@ abstract class Getter implements JsonSerializable
 
     public function uriKey(): string
     {
-        return static::$uriKey ?? Str::slug($this->name(), '-', null);
+        if (property_exists(static::class, 'uriKey') && is_string(static::$uriKey)) {
+            return static::$uriKey;
+        }
+
+        return Str::slug($this->name(), '-', null);
     }
 
     public static function guessUriKey(mixed $target): string

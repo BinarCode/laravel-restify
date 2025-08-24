@@ -43,7 +43,7 @@ class PostRepository extends Repository
 ```
 
 <alert type="info">
-If if you don't specify the $model property, Restify will try to guess the model automatically.
+If you don't specify the $model property, Restify will try to guess the model automatically.
 </alert>
 
 
@@ -93,8 +93,8 @@ for full model update, and respectively partial update.
 ## Model name
 
 As we already noticed, each repository basically works as a wrapper over a specific resource. The fancy
-naming `resource` is nothing more than a database entity (posts, users etc.). Well, to make the repository aware of the
-entity it should take care of, we have to define the model's property associated to this resource:
+naming `resource` is nothing more than a database entity (posts, users etc.). To make the repository aware of the
+entity it should handle, we need to define the model property associated with this resource:
 
 ```php
 public static string $model = 'App\\Models\\Post'; 
@@ -102,7 +102,7 @@ public static string $model = 'App\\Models\\Post';
 
 ## Public repository
 
-Sometimes, you can find yourself in front of the danger of exposing a public information (so unauthenticated users could access it).
+Sometimes, you might find yourself facing the risk of exposing public information (allowing unauthenticated users to access it).
 
 <alert type="warning">
 
@@ -746,7 +746,7 @@ public function storeBulk(User $user)
 
 ### Bulk after store
 
-After storing an entity, the repository will call the static `bulkStored` method from the repository, so you can
+After storing an entity, the repository will call the static `storedBulk` method from the repository, which you can
 override:
 
 ```php
@@ -758,8 +758,7 @@ public static function storedBulk(Collection $repositories, $request)
 
 ## Update bulk flow
 
-As for the store bulk, the update bulk uses DB transaction to perform the action. You can make sure that even out of all
-entries, none has been updated.
+Like store bulk, update bulk uses a DB transaction to perform the action. This ensures that if any entry fails, none will be updated.
 
 ### Bulk update field validations
 
@@ -801,12 +800,12 @@ The payload for a bulk delete should contain an array of primary keys for the mo
 ]
 ```
 
-These models will be resolved from the database and checked for the `deleteBulk` policy permission. In case any of the models aren't allowed to be deleted, therefore no entry will be deleted.
+These models will be resolved from the database and checked for the `deleteBulk` policy permission. If any of the models are not allowed to be deleted, no entries will be deleted.
 
 ## Force eager loading
 
-However, Laravel Restify [provides eager](/search/) loading based on the query `related` property, you may want to force
-eager load a relationship in terms of using it in fields:
+Although Laravel Restify [provides eager](/search/) loading based on the query `related` property, you may want to force
+eager load a relationship when using it in fields:
 
 ```php
 // UserRepository.php
@@ -830,3 +829,535 @@ class PostRepository extends Repository
     public static array $groupBy = ['user_id'];
 }
 ```
+
+
+## Repository Collections and Transforms
+
+### Index Collection Transform
+
+You can transform the collection of models before they are serialized for the index response:
+
+```php
+public function indexCollection(RestifyRequest $request, Collection $items): Collection
+{
+    // Transform the entire collection
+    return $items->filter(function ($post) {
+        return $post->published_at <= now();
+    });
+}
+```
+
+This method is called after the query is executed but before authorization and serialization.
+
+## Repository Labels and Identifiers
+
+### Custom Repository Label
+
+You can customize how the repository appears in API documentation and admin interfaces:
+
+```php
+class PostRepository extends Repository
+{
+    public static string $label = 'Blog Articles';
+    
+    // Or dynamically
+    public static function label(): string
+    {
+        return __('repository.posts');
+    }
+}
+```
+
+### Title Field
+
+Specify which field should be used as the display title for the resource:
+
+```php
+class PostRepository extends Repository
+{
+    public static string $title = 'title'; // Default is 'id'
+    
+    public function title(): string
+    {
+        return $this->title ?: $this->id;
+    }
+    
+    public function subtitle(): ?string
+    {
+        return "By {$this->author->name}";
+    }
+}
+```
+
+## Scout Integration
+
+### Scout Configuration
+
+When your model uses Laravel Scout, configure search behavior:
+
+```php
+class PostRepository extends Repository
+{
+    // Number of results for global search
+    public static int $globalSearchResults = 5;
+    
+    // Number of results for Scout search
+    public static int $scoutSearchResults = 200;
+    
+    // Whether this repository should appear in global search
+    public static bool $globallySearchable = true;
+    
+    public static function usesScout(): bool
+    {
+        return true; // Detected automatically
+    }
+}
+```
+
+## Serialization Control
+
+### Custom Serialization
+
+Override serialization methods for complete control:
+
+```php
+public function serializeForIndex(RestifyRequest $request): array
+{
+    return [
+        'id' => $this->id,
+        'title' => $this->title,
+        'excerpt' => Str::limit($this->content, 100),
+        'meta' => [
+            'word_count' => str_word_count(strip_tags($this->content))
+        ]
+    ];
+}
+
+public function serializeForShow(RestifyRequest $request): array
+{
+    $data = parent::serializeForShow($request);
+    
+    // Add custom data
+    $data['computed'] = [
+        'reading_time' => ceil(str_word_count($this->content) / 200),
+        'related_posts' => $this->getRelatedPosts(3)
+    ];
+    
+    return $data;
+}
+```
+
+### RestifyJS Integration
+
+Configure how the repository appears in RestifyJS:
+
+```php
+public function restifyjsSerialize(RestifyRequest $request): array
+{
+    return [
+        'uriKey' => static::uriKey(),
+        'related' => static::collectRelated(),
+        'sort' => static::collectFilters('sortables'),
+        'match' => static::collectFilters('matches'), 
+        'searchables' => static::collectFilters('searchables'),
+        'actions' => $this->resolveActions($request)->values(),
+        'getters' => $this->resolveGetters($request)->values(),
+    ];
+}
+```
+
+## Repository URI and Routing
+
+### Custom URI Key
+
+Override the default URI generation:
+
+```php
+class PostRepository extends Repository
+{
+    public static string $uriKey = 'articles'; // Instead of 'posts'
+    
+    // Or dynamically
+    public static function uriKey(): string
+    {
+        return config('app.locale') === 'es' ? 'articulos' : 'articles';
+    }
+}
+```
+
+### Custom Routes
+
+Define custom routes within the repository context:
+
+```php
+public static function routes(Router $router, array $attributes, $wrap = true)
+{
+    $router->group($attributes, function () use ($router) {
+        $router->get('trending', TrendingPostsController::class);
+        $router->post('{post}/publish', [PostController::class, 'publish']);
+        $router->get('stats', [PostStatsController::class, 'index']);
+    });
+}
+```
+
+These routes will be available at:
+- `GET /api/restify/posts/trending`  
+- `POST /api/restify/posts/{post}/publish`
+- `GET /api/restify/posts/stats`
+
+## Middleware and Security
+
+### Repository Middleware
+
+Apply middleware to all repository routes:
+
+```php
+class PostRepository extends Repository
+{
+    public static array $middleware = [
+        'throttle:60,1',
+        'verified',
+        CustomMiddleware::class,
+    ];
+    
+    public static function collectMiddlewares(RestifyRequest $request): Collection
+    {
+        $middleware = collect(static::$middleware);
+        
+        // Add conditional middleware
+        if ($request->user()?->isGuest()) {
+            $middleware->push('guest');
+        }
+        
+        return $middleware;
+    }
+}
+```
+
+## MCP Integration
+
+Laravel Restify provides first-class support for Model Context Protocol (MCP), allowing AI agents to efficiently interact with your APIs. You can define MCP-specific field methods to optimize token usage and provide tailored data for AI consumption.
+
+### MCP Field Methods
+
+MCP field methods follow the same pattern as regular field methods but are prefixed with `fieldsForMcp`:
+
+```php
+class PostRepository extends Repository
+{
+    // Regular fields for human consumption
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('content'),
+            field('excerpt'),
+            field('meta_description'),
+            field('tags'),
+            field('author_id'),
+            field('published_at'),
+            field('created_at'),
+            field('updated_at'),
+        ];
+    }
+    
+    // Optimized fields for AI index requests (saves 60-70% tokens)
+    public function fieldsForMcpIndex(RestifyRequest $request): array
+    {
+        return [
+            field('id'),
+            field('title'),
+            field('excerpt'),
+            field('published_at'),
+        ];
+    }
+    
+    // Focused fields for AI detail views (saves 40-50% tokens)
+    public function fieldsForMcpShow(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('content'),
+            field('author', fn() => $this->author->name),
+            field('tags'),
+            field('published_at'),
+        ];
+    }
+    
+    // Fields AI agents can use for creation
+    public function fieldsForMcpStore(RestifyRequest $request): array
+    {
+        return [
+            field('title')->required(),
+            field('content')->required(),
+            field('excerpt'),
+            field('tags'),
+        ];
+    }
+    
+    // Fields AI agents can modify
+    public function fieldsForMcpUpdate(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('content'),
+            field('excerpt'),
+            field('tags'),
+        ];
+    }
+}
+```
+
+### MCP Bulk Operations
+
+```php
+// Efficient AI bulk creation
+public function fieldsForMcpStoreBulk(RestifyRequest $request): array
+{
+    return [
+        field('title')->required(),
+        field('content')->required(),
+        field('status')->value('draft'),
+    ];
+}
+
+// Efficient AI bulk updates
+public function fieldsForMcpUpdateBulk(RestifyRequest $request): array
+{
+    return [
+        field('title'),
+        field('status'),
+        field('published_at'),
+    ];
+}
+```
+
+### MCP Getters
+
+Provide analytical and computed fields specifically for AI consumption:
+
+```php
+public function fieldsForMcpGetter(RestifyRequest $request): array
+{
+    return [
+        field('word_count', fn() => str_word_count(strip_tags($this->content))),
+        field('reading_time', fn() => ceil(str_word_count(strip_tags($this->content)) / 200)),
+        field('sentiment_score', fn() => $this->calculateSentiment()),
+        field('related_topics', fn() => $this->extractTopics()),
+    ];
+}
+```
+
+### Field Priority for MCP
+
+When an MCP request is made, Restify follows this priority order:
+
+1. **MCP-specific methods** (`fieldsForMcpIndex`, `fieldsForMcpShow`, etc.)
+2. **Request-specific methods** (`fieldsForIndex`, `fieldsForShow`, etc.) 
+3. **Default fields method** (`fields`)
+
+This allows you to provide optimized field sets for AI agents while maintaining full functionality for human users.
+
+## Repository Lifecycle Events
+
+Laravel Restify provides several lifecycle hooks that allow you to perform actions at specific points during the repository's operations.
+
+### Single Resource Events
+
+```php
+class PostRepository extends Repository
+{
+    // Called after a single resource is successfully stored
+    public static function stored($model, $request)
+    {
+        // Log the creation
+        Log::info("Post created: {$model->title}");
+        
+        // Send notifications
+        NotificationService::notifyNewPost($model);
+        
+        // Update caches
+        cache()->forget('recent_posts');
+    }
+    
+    // Called after a single resource is successfully updated
+    public static function updated($model, $request)
+    {
+        // Log the update
+        Log::info("Post updated: {$model->title}");
+        
+        // Clear related caches
+        cache()->forget("post_{$model->id}");
+        
+        // Index for search
+        $model->searchable();
+    }
+    
+    // Called after a single resource is successfully deleted
+    public static function deleted($status, $request)
+    {
+        // Log deletion
+        Log::info("Post deleted, status: {$status}");
+        
+        // Clean up related data
+        if ($status) {
+            cache()->flush();
+        }
+    }
+}
+```
+
+### Bulk Operation Events
+
+```php
+class PostRepository extends Repository
+{
+    // Called after bulk store operation completes
+    public static function storedBulk(Collection $models, $request)
+    {
+        Log::info("Bulk created {$models->count()} posts");
+        
+        // Bulk index for search
+        $models->searchable();
+        
+        // Send bulk notifications
+        NotificationService::notifyBulkCreation($models);
+    }
+    
+    // Called after bulk update operation completes  
+    public static function updatedBulk(Collection $models, $request)
+    {
+        Log::info("Bulk updated {$models->count()} posts");
+        
+        // Clear caches
+        cache()->tags(['posts'])->flush();
+    }
+    
+    // Called after bulk save operation (both store and update bulk)
+    public static function savedBulk(Collection $models, $request)
+    {
+        // Common logic for all bulk save operations
+        SearchIndexService::updateBatch($models);
+    }
+    
+    // Called after bulk delete operation completes
+    public static function deletedBulk(Collection $models, $request)
+    {
+        Log::info("Bulk deleted {$models->count()} posts");
+    }
+}
+```
+
+### Authorization Methods
+
+Override authorization logic for fine-grained control:
+
+```php
+class PostRepository extends Repository
+{
+    // Control if user can view the resource
+    public function allowToShow($request): self
+    {
+        if (!$this->model()->isPublished() && !$request->user()->isAdmin()) {
+            throw new AuthorizationException('Cannot view unpublished post');
+        }
+        
+        return $this;
+    }
+    
+    // Control if user can create resources
+    public function allowToStore(RestifyRequest $request, $payload = null): self
+    {
+        if ($request->user()->posts()->today()->count() >= 10) {
+            throw new AuthorizationException('Daily post limit reached');
+        }
+        
+        return $this;
+    }
+    
+    // Control if user can update this resource
+    public function allowToUpdate(RestifyRequest $request, $payload = null): self
+    {
+        if ($this->model()->isPublished() && !$request->user()->isEditor()) {
+            throw new AuthorizationException('Cannot edit published posts');
+        }
+        
+        return $this;
+    }
+    
+    // Control if user can delete this resource
+    public function allowToDestroy(RestifyRequest $request): self
+    {
+        if ($this->model()->comments()->exists()) {
+            throw new AuthorizationException('Cannot delete post with comments');
+        }
+        
+        return $this;
+    }
+    
+    // Control bulk operations
+    public function allowToBulkStore(RestifyRequest $request, $payload = null, $row = null): self
+    {
+        if (count($payload) > 100) {
+            throw new AuthorizationException('Cannot create more than 100 posts at once');
+        }
+        
+        return $this;
+    }
+    
+    public function allowToUpdateBulk(RestifyRequest $request, $payload = null): self
+    {
+        // Custom bulk update authorization
+        return $this;
+    }
+    
+    public function allowToDestroyBulk(RestifyRequest $request, $payload = null): self
+    {
+        // Custom bulk delete authorization  
+        return $this;
+    }
+}
+```
+
+### Relationship Authorization
+
+```php
+class PostRepository extends Repository
+{
+    public function allowToAttach(RestifyRequest $request, Collection $attachers): self
+    {
+        // Validate attaching related models
+        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
+        
+        $attachers->each(function ($model) use ($request, $methodGuesser) {
+            $this->authorizeToAttach($request, $methodGuesser, $model);
+        });
+        
+        return $this;
+    }
+    
+    public function allowToSync(RestifyRequest $request, Collection $attachers): self
+    {
+        // Validate syncing relationships
+        return $this;
+    }
+    
+    public function allowToDetach(RestifyRequest $request, Collection $attachers): self
+    {
+        // Validate detaching related models
+        return $this;
+    }
+}
+```
+
+### Event Usage Examples
+
+These lifecycle methods are perfect for:
+
+- **Logging and Auditing**: Track all changes to your resources
+- **Cache Management**: Clear or update caches when data changes  
+- **Search Indexing**: Update search indexes after modifications
+- **Notifications**: Send emails, push notifications, or webhooks
+- **Data Validation**: Perform complex business rule validation
+- **External API Integration**: Sync changes with third-party services
+- **File Cleanup**: Remove associated files when records are deleted

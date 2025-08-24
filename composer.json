@@ -39,6 +39,10 @@
         "spatie/laravel-ray": "^1.9",
         "vimeo/psalm": "^6.0@dev"
     },
+    "suggest": {
+        "nuwave/lighthouse": "For GraphQL schema generation and resolvers (^6.0)",
+        "pusher/pusher-php-server": "For real-time broadcasting features (^7.0)"
+    },
     "autoload": {
         "files": [
             "src/helpers.php"

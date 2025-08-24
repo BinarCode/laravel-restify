@@ -4,15 +4,17 @@ namespace DummyNamespace;
 
 use {{model}}
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use DummyRootNamespaceRestify\Repository;
+{{ relationshipImports }}
 
 class DummyClass extends Repository
 {
     public static string $model = {{ modelBase }};
-
+{{ relationships }}
     public function fields(RestifyRequest $request): array
     {
         return [
-            id(),
+{{ fields }}
         ];
     }
 }

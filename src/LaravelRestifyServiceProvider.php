@@ -6,7 +6,9 @@ use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
 use Binaryk\LaravelRestify\Commands\FilterCommand;
+use Binaryk\LaravelRestify\Commands\GenerateRepositoriesCommand;
 use Binaryk\LaravelRestify\Commands\GetterCommand;
+use Binaryk\LaravelRestify\Commands\GraphqlGenerateCommand;
 use Binaryk\LaravelRestify\Commands\McpResourceCommand;
 use Binaryk\LaravelRestify\Commands\PolicyCommand;
 use Binaryk\LaravelRestify\Commands\PrepareSanctumCommand;
@@ -34,6 +36,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
             ->runsMigrations()
             ->hasCommands([
                 RepositoryCommand::class,
+                GenerateRepositoriesCommand::class,
                 ActionCommand::class,
                 GetterCommand::class,
                 StoreCommand::class,
@@ -50,6 +53,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
                 SetupAuthCommand::class,
                 ToolCommand::class,
                 McpResourceCommand::class,
+                GraphqlGenerateCommand::class,
             ]);
     }
 

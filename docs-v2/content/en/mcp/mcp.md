@@ -7,6 +7,79 @@ position: 1
 
 Laravel Restify provides seamless integration with the Model Context Protocol (MCP), allowing AI agents to interact with your REST API resources through structured tool interfaces. This enables powerful AI-driven data access and manipulation while maintaining security and control.
 
+## MCP Server for Laravel Restify Developers
+
+In addition to MCP integration within your Laravel Restify applications, we provide a dedicated **MCP server for developers** that enhances the development experience when working with Laravel Restify APIs.
+
+**Repository**: [https://github.com/BinarCode/laravel-restify-mcp](https://github.com/BinarCode/laravel-restify-mcp)
+
+### Developer MCP Server Features
+
+The Laravel Restify MCP server provides AI agents with powerful development tools:
+
+- **📚 Documentation Access**: Query Laravel Restify documentation directly from your AI agent
+- **🏗️ Repository Generation**: Create new repositories with proper structure and conventions
+- **⚡ Action Creation**: Generate custom actions for your API resources with validation and best practices
+- **🔍 Getter Development**: Build custom getters for specialized data retrieval operations
+- **💡 Code Examples**: Get contextual code examples and implementation guidance
+- **🎯 Best Practices**: Receive Laravel Restify best practices and architectural guidance
+
+### Installation & Setup
+
+#### Install the MCP Server
+
+```bash
+npm install -g @binarcode/laravel-restify-mcp
+```
+
+#### Configure AI Agents
+
+Configure your AI agent (Claude Desktop, Cursor, etc.) to use the MCP server:
+
+```json
+{
+  "mcpServers": {
+    "laravel-restify": {
+      "command": "laravel-restify-mcp",
+      "args": []
+    }
+  }
+}
+```
+
+#### Usage Examples
+
+Once configured, your AI agent can help with:
+
+**Creating Repositories:**
+```
+AI: Create a PostRepository with title, content, and author fields
+```
+
+**Generating Actions:**
+```
+AI: Create a PublishPostAction that validates publish dates and notifies subscribers
+```
+
+**Building Getters:**
+```
+AI: Generate a PostAnalyticsGetter that returns engagement metrics for date ranges
+```
+
+**Documentation Queries:**
+```
+AI: How do I implement field validation in Laravel Restify?
+AI: Show me examples of custom repository authorization
+```
+
+### Developer Benefits
+
+- **🚀 Faster Development**: Generate boilerplate code following Laravel Restify conventions
+- **📖 Contextual Help**: Access documentation without leaving your development environment
+- **✅ Best Practices**: Ensure generated code follows established patterns and conventions
+- **🤖 AI-Enhanced**: Leverage AI to understand complex requirements and generate appropriate code
+- **🔧 Customizable**: Adapt generated code to your specific project needs
+
 ## Overview
 
 The MCP integration in Laravel Restify automatically exposes your repositories as MCP tools, providing AI agents with:
@@ -144,6 +217,149 @@ Mcp::web('restify', RestifyServer::class)->middleware([
     'permission:access-mcp', // Require specific permission
 ])->name('mcp.restify');
 ```
+
+### Terminal/STDIN Access (Local MCP)
+
+For terminal-based AI agents (like Claude Desktop, cursor, or other CLI tools that support MCP), you can expose your Restify API through STDIN/STDOUT using the `local` syntax. This allows direct integration without HTTP overhead.
+
+#### Registering a Local MCP Server
+
+Register your local MCP server in the `routes/ai.php` file:
+
+```php
+use Laravel\Mcp\Facades\Mcp;
+use App\Mcp\Servers\GroweeStdServer;
+
+// Register for terminal/STDIN access
+Mcp::local('growee', GroweeStdServer::class);
+```
+
+#### Creating a Terminal-Accessible Server with Authentication
+
+When using terminal access, authentication must be handled within the server's `boot()` method since there's no HTTP middleware pipeline. Here's a complete example that extends RestifyServer and implements Sanctum authentication:
+
+```php
+<?php
+
+namespace App\Mcp\Servers;
+
+use Binaryk\LaravelRestify\MCP\RestifyServer;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Mcp\Server\Exceptions\McpException;
+use Laravel\Sanctum\PersonalAccessToken;
+
+class GroweeStdServer extends RestifyServer
+{
+    public function boot(): void
+    {
+        $request = request();
+
+        // Get the API token from Authorization header
+        $bearerToken = $request->bearerToken();
+
+        // Fail if no API key is provided
+        if (! $bearerToken) {
+            throw new McpException('API key is required. Please provide a Bearer token in the Authorization header.');
+        }
+
+        // Try to authenticate using Sanctum
+        $token = PersonalAccessToken::findToken($bearerToken);
+
+        if (! $token) {
+            throw new McpException('Invalid API key provided. Please check your Bearer token.');
+        }
+
+        // Verify the token is active
+        if (! $token->tokenable) {
+            throw new McpException('API token is not associated with a valid user.');
+        }
+
+        // Set the authenticated user on both sanctum and default guard
+        Auth::guard('sanctum')->setUser($token->tokenable);
+        Auth::setUser($token->tokenable);
+
+        // Set the user resolver for the request
+        $request->setUserResolver(function () use ($token) {
+            return $token->tokenable;
+        });
+        
+        // Call parent boot to discover tools, resources, and prompts
+        parent::boot();
+    }
+}
+```
+
+#### Key Differences from Web Access
+
+1. **No Middleware Pipeline**: Unlike `Mcp::web()`, the `local` syntax doesn't support middleware. All authentication and authorization must be implemented in the `boot()` method.
+
+2. **Direct API Token**: Terminal clients provide Bearer tokens directly through the Authorization header.
+
+3. **Request Context**: Access to the request is available via the `request()` helper function.
+
+4. **Error Handling**: Use `McpException` for authentication failures to provide clear error messages to the terminal client.
+
+5. **Registration Location**: Local MCP servers are typically registered in `routes/ai.php` instead of web routes.
+
+#### Client Configuration
+
+Terminal-based AI clients (like Claude Desktop) can connect to your local MCP server by configuring the connection with your API token. The exact configuration depends on your client, but typically involves:
+
+1. Setting the Authorization header with your Sanctum token
+2. Specifying the server name (e.g., 'growee')
+3. Pointing to your Laravel application's MCP endpoint
+
+#### Security Considerations
+
+- **Token Security**: API tokens are passed via the Authorization header and should be kept secure
+- **Token Scopes**: Consider implementing token abilities/scopes to limit access
+- **Rate Limiting**: Implement rate limiting at the application level since middleware isn't available
+- **Audit Logging**: Log authentication attempts and API usage for security monitoring
+- **Token Rotation**: Implement token expiration and rotation policies
+
+#### Advanced Authentication Patterns
+
+You can extend the authentication logic to support different authentication methods:
+
+```php
+public function boot(): void
+{
+    // Support multiple authentication methods
+    $token = $this->authenticateRequest();
+    
+    if (!$token) {
+        throw new McpException('Authentication failed. Please provide valid credentials.');
+    }
+    
+    // Set up authentication context
+    $this->setupAuthContext($token);
+    
+    // Apply additional security checks
+    $this->validateAccess($token);
+    
+    parent::boot();
+}
+
+private function authenticateRequest()
+{
+    $request = request();
+    
+    // Try Bearer token first
+    if ($bearerToken = $request->bearerToken()) {
+        return PersonalAccessToken::findToken($bearerToken);
+    }
+    
+    // Try API key header
+    if ($apiKey = $request->header('X-API-Key')) {
+        return $this->authenticateApiKey($apiKey);
+    }
+    
+    return null;
+}
+```
+
+This approach provides secure, authenticated access to your Restify API through terminal-based MCP clients while maintaining all the security features of your application.
 
 ### Server Customization Examples
 
@@ -345,6 +561,43 @@ protected function discoverTools(): array
 
 **Auto-Discovery from Application Directory**: The MCP server automatically discovers and registers tools from your application's `app/Restify/Mcp/Tools` directory. Any tool class placed in this directory will be automatically registered without requiring manual configuration.
 
+#### Resource Discovery
+
+```php
+protected function discoverResources(): array
+{
+    $excludedResources = config('restify.mcp.resources.exclude', []);
+    $resourceDir = new \DirectoryIterator(__DIR__.DIRECTORY_SEPARATOR.'Resources');
+    
+    foreach ($resourceDir as $resourceFile) {
+        if ($resourceFile->isFile() && $resourceFile->getExtension() === 'php') {
+            $fqdn = 'Binaryk\\LaravelRestify\\MCP\\Resources\\'.$resourceFile->getBasename('.php');
+            if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources, true)) {
+                $this->addResource($fqdn);
+            }
+        }
+    }
+    
+    // Auto-discover resources from app/Restify/Mcp/Resources
+    $appResourcesPath = app_path('Restify/Mcp/Resources');
+    if (is_dir($appResourcesPath)) {
+        $appResourceDir = new \DirectoryIterator($appResourcesPath);
+        foreach ($appResourceDir as $resourceFile) {
+            if ($resourceFile->isFile() && $resourceFile->getExtension() === 'php') {
+                $fqdn = 'App\\Restify\\Mcp\\Resources\\'.$resourceFile->getBasename('.php');
+                if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources, true)) {
+                    $this->addResource($fqdn);
+                }
+            }
+        }
+    }
+    
+    return $this->registeredResources;
+}
+```
+
+**Auto-Discovery from Application Directory**: Similar to tools, the MCP server automatically discovers and registers resources from your application's `app/Restify/Mcp/Resources` directory. Any resource class placed in this directory will be automatically registered.
+
 ### Configuration Options
 
 You can control tool discovery through configuration:
@@ -371,6 +624,127 @@ You can control tool discovery through configuration:
         'include' => [/* additional prompts */],
     ],
 ],
+```
+
+### Artisan Commands for MCP
+
+Laravel Restify provides convenient Artisan commands to generate MCP tools and resources:
+
+#### Creating MCP Tools
+
+Generate a new MCP tool using the `restify:mcp-tool` command:
+
+```bash
+php artisan restify:mcp-tool AnalyticsProcessor
+```
+
+This command will:
+- Create a new tool class at `app/Restify/Mcp/Tools/AnalyticsProcessorTool.php`
+- Automatically append "Tool" suffix if not provided
+- Generate a tool name in kebab-case format (e.g., `analytics-processor`)
+- The tool will be automatically discovered by the MCP server
+
+The generated tool includes:
+- Required methods: `name()`, `description()`, `schema()`, and `handle()`
+- Example implementation with proper type hints
+- Comments guiding implementation
+
+Example generated tool:
+
+```php
+<?php
+
+namespace App\Restify\Mcp\Tools;
+
+use Generator;
+use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\ToolInputSchema;
+use Laravel\Mcp\Server\Tools\ToolResult;
+
+class AnalyticsProcessorTool extends Tool
+{
+    public function name(): string
+    {
+        return 'analytics-processor';
+    }
+
+    public function description(): string
+    {
+        return 'Description of what this tool does';
+    }
+
+    public function schema(ToolInputSchema $schema): ToolInputSchema
+    {
+        // Define your tool's input parameters here
+        // Example:
+        // $schema->string('input')
+        //     ->description('The input parameter')
+        //     ->required();
+
+        return $schema;
+    }
+
+    public function handle(array $arguments): ToolResult|Generator
+    {
+        // Implement your tool's logic here
+        // Access input parameters via $arguments array
+        
+        return ToolResult::json([
+            'success' => true,
+            'message' => 'Tool executed successfully',
+        ]);
+    }
+}
+```
+
+#### Creating MCP Resources
+
+Generate a new MCP resource using the `restify:mcp-resource` command:
+
+```bash
+php artisan restify:mcp-resource SystemStatus
+```
+
+This command will:
+- Create a new resource class at `app/Restify/Mcp/Resources/SystemStatusResource.php`
+- Automatically append "Resource" suffix if not provided
+- The resource will be automatically discovered by the MCP server
+
+The generated resource includes:
+- Required methods: `description()` and `read()`
+- Example implementation returning JSON data
+- Support for both string and Content object returns
+
+Example generated resource:
+
+```php
+<?php
+
+namespace App\Restify\Mcp\Resources;
+
+use Laravel\Mcp\Server\Contracts\Resources\Content;
+use Laravel\Mcp\Server\Resource;
+
+class SystemStatusResource extends Resource
+{
+    public function description(): string
+    {
+        return 'Description of what this resource provides';
+    }
+
+    public function read(): string|Content
+    {
+        // Return the resource content as a string or Content object
+        // This can be JSON, text, or any other format
+        
+        $data = [
+            'example' => 'This is example data',
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        return json_encode($data, JSON_PRETTY_PRINT);
+    }
+}
 ```
 
 ## McpTools Trait
