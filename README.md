@@ -107,7 +107,7 @@ Mcp::web('restify', RestifyServer::class)->middleware(['auth:sanctum']);
 
 Laravel Restify provides an MCP (Model Context Protocol) server designed for developers working with Laravel Restify APIs. This server enables AI agents to access documentation, create repositories, actions, and getters through structured tools.
 
-**Repository**: [https://github.com/BinarCode/laravel-restify-mcp](https://github.com/BinarCode/laravel-restify-mcp)
+**Repository**: [https://github.com/BinarCode/laravel-restify-boost](https://github.com/BinarCode/laravel-restify-boost)
 
 ### Features
 
