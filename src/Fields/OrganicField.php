@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Closure;
 use Illuminate\Http\Request;
@@ -41,6 +42,10 @@ abstract class OrganicField extends BaseField
 
     public $showOnShow = true;
 
+    public $showOnMcp = true;
+
+    public $hideFromMcpCallback;
+
     public function showOnShow($callback = true)
     {
         $this->showOnShow = $callback;
@@ -75,10 +80,29 @@ abstract class OrganicField extends BaseField
         return $this;
     }
 
+    public function showOnMcp($callback = true)
+    {
+        $this->showOnMcp = $callback;
+
+        return $this;
+    }
+
+    public function hideFromMcp($callback = true)
+    {
+        $this->hideFromMcpCallback = $callback;
+
+        return $this;
+    }
+
     public function isShownOnShow(RestifyRequest $request, $repository): bool
     {
         if ($this->isHidden($request)) {
             return false;
+        }
+
+        // Check MCP-specific visibility for MCP requests
+        if ($request instanceof McpRequest) {
+            return $this->isShownOnMcp($request, $repository);
         }
 
         if (is_callable($this->showOnShow)) {
@@ -99,6 +123,11 @@ abstract class OrganicField extends BaseField
             return false;
         }
 
+        // Check MCP-specific visibility for MCP requests
+        if ($request instanceof McpRequest) {
+            return $this->isShownOnMcp($request, $repository);
+        }
+
         return $this->isHiddenOnIndex($request, $repository) === false;
     }
 
@@ -109,6 +138,34 @@ abstract class OrganicField extends BaseField
         }
 
         return ! $this->showOnIndex;
+    }
+
+    public function isShownOnMcp(RestifyRequest $request, $repository): bool
+    {
+        if ($this->isHidden($request)) {
+            return false;
+        }
+
+        if ($this->isHiddenFromMcp($request, $repository)) {
+            return false;
+        }
+
+        if (is_callable($this->showOnMcp)) {
+            return call_user_func($this->showOnMcp, $request, $repository);
+        }
+
+        return $this->showOnMcp;
+    }
+
+    public function isHiddenFromMcp(RestifyRequest $request, $repository): bool
+    {
+        return with($this->hideFromMcpCallback, function ($callback) use ($request, $repository) {
+            if ($callback === true || (is_callable($callback) && call_user_func($callback, $request, $repository))) {
+                return true;
+            }
+
+            return false;
+        });
     }
 
     public function authorize(Request $request)

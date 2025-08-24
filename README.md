@@ -7,7 +7,7 @@
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/license.svg" alt="License"></a>
 </p>
 
-The first fully customizable Laravel [JSON:API](https://jsonapi.org) builder. "CRUD" and protect your resources with 0 (zero) extra line of code.
+The first fully customizable Laravel [JSON:API](https://jsonapi.org) builder with MCP and GraphQL support. "CRUD" and protect your resources with 0 (zero) extra line of code.
 
 <div>
 <a href="https://restifytemplates.com">
@@ -74,6 +74,42 @@ PUT: http://laravel.test/api/restify/dreams/1
 ```bash
 DELETE: http://laravel.test/api/restify/dreams/1
 ```
+
+## 🤖 AI-Powered Development with MCP
+
+Laravel Restify now includes **Model Context Protocol (MCP)** integration, enabling seamless AI agent interactions with your API resources. This powerful feature allows AI agents to understand, query, and manipulate your data through structured tool interfaces.
+
+> **🔥 New!** MCP support enables AI agents to work directly with your Laravel Restify APIs, providing intelligent data access, automated operations, and enhanced development workflows.
+
+**Key MCP Features:**
+- **AI Agent Integration**: Connect Claude, GPT, and other AI agents directly to your APIs
+- **Structured Tool Interfaces**: Automatically generated tools for CRUD operations  
+- **Security & Authorization**: Full Laravel authorization integration maintained
+- **Developer MCP Server**: Dedicated server for enhanced Laravel Restify development
+
+## MCP Server for Developers
+
+Laravel Restify provides an MCP (Model Context Protocol) server designed for developers working with Laravel Restify APIs. This server enables AI agents to access documentation, create repositories, actions, and getters through structured tools.
+
+**Repository**: [https://github.com/BinarCode/laravel-restify-mcp](https://github.com/BinarCode/laravel-restify-mcp)
+
+### Features
+
+- **Documentation Access**: Query Laravel Restify documentation directly
+- **Repository Generation**: Create new repositories with proper structure
+- **Action Creation**: Generate custom actions for your API resources  
+- **Getter Development**: Build custom getters for data retrieval
+- **Code Examples**: Get contextual code examples and best practices
+
+### Installation
+
+```bash
+npm install -g @binarcode/laravel-restify-mcp
+```
+
+### Usage with AI Agents
+
+Configure your AI agent (Claude Desktop, etc.) to use the MCP server for enhanced Laravel Restify development assistance.
 
 ## Usage
 

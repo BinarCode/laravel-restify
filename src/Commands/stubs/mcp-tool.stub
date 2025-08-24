@@ -1,0 +1,43 @@
+<?php
+
+namespace DummyNamespace;
+
+use Generator;
+use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\ToolInputSchema;
+use Laravel\Mcp\Server\Tools\ToolResult;
+
+class DummyClass extends Tool
+{
+    public function name(): string
+    {
+        return 'DummyToolName';
+    }
+
+    public function description(): string
+    {
+        return 'Description of what this tool does';
+    }
+
+    public function schema(ToolInputSchema $schema): ToolInputSchema
+    {
+        // Define your tool's input parameters here
+        // Example:
+        // $schema->string('input')
+        //     ->description('The input parameter')
+        //     ->required();
+
+        return $schema;
+    }
+
+    public function handle(array $arguments): ToolResult|Generator
+    {
+        // Implement your tool's logic here
+        // Access input parameters via $arguments array
+        
+        return ToolResult::json([
+            'success' => true,
+            'message' => 'Tool executed successfully',
+        ]);
+    }
+}

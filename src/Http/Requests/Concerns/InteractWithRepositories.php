@@ -24,7 +24,7 @@ trait InteractWithRepositories
     public function repository($key = null): Repository
     {
         try {
-            $key = $key ?? $this->route('repository');
+            $key = $key ?? $this->route('repository') ?? $this->input('mcp_repository_key');
 
             /**
              * @var Repository|null $class

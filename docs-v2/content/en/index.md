@@ -29,10 +29,30 @@ This documentation is for the latest version of Laravel Restify. Please ensure y
 'Handy Response maker',
 'Powerful Search',
 'JSON:API consistency',
+'GraphQL Schema Generation',
+'MCP (Model Context Protocol) Integration',
 'Customizable',
 'Laravel Compatible Authorization'
 ]">
 </list>
+
+## 🤖 AI-Powered Development with MCP
+
+Laravel Restify now includes **Model Context Protocol (MCP)** integration, enabling seamless AI agent interactions with your API resources. This powerful feature allows AI agents to understand, query, and manipulate your data through structured tool interfaces.
+
+<alert type="success">
+
+**🔥 New!** MCP support enables AI agents to work directly with your Laravel Restify APIs, providing intelligent data access, automated operations, and enhanced development workflows.
+
+</alert>
+
+**Key MCP Features:**
+- **AI Agent Integration**: Connect Claude, GPT, and other AI agents directly to your APIs
+- **Structured Tool Interfaces**: Automatically generated tools for CRUD operations  
+- **Security & Authorization**: Full Laravel authorization integration maintained
+- **Developer MCP Server**: Dedicated server for enhanced Laravel Restify development
+
+[Learn more about MCP Integration →](/mcp)
 
 ## Accelerate Your Development
 

@@ -3,7 +3,9 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Fields\Concerns\HasAction;
+use Binaryk\LaravelRestify\Fields\Concerns\ValidationMethods;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Concerns\FieldMcpSchemaDetection;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
@@ -16,8 +18,10 @@ use ReturnTypeWillChange;
 
 class Field extends OrganicField implements JsonSerializable
 {
+    use FieldMcpSchemaDetection;
     use HasAction;
     use Make;
+    use ValidationMethods;
 
     /**
      * The resource associated with the field.
@@ -128,6 +132,8 @@ class Field extends OrganicField implements JsonSerializable
     public $afterUpdateCallback;
 
     public $label;
+
+    public $toolInputSchemaCallback = null;
 
     /**
      * Create a new field.
@@ -414,7 +420,13 @@ class Field extends OrganicField implements JsonSerializable
      */
     public function rules($rules)
     {
-        $this->rules += ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
+        $newRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
+
+        if (! is_array($newRules)) {
+            $newRules = [$newRules];
+        }
+
+        $this->rules = array_merge($this->rules, $newRules);
 
         return $this;
     }
@@ -732,13 +744,6 @@ class Field extends OrganicField implements JsonSerializable
         return $this->storeCallback;
     }
 
-    public function required(): self
-    {
-        $this->rules += ['required'];
-
-        return $this;
-    }
-
     public function file(): File
     {
         return File::make($this->attribute);
@@ -747,5 +752,179 @@ class Field extends OrganicField implements JsonSerializable
     public function image(): Image
     {
         return Image::make($this->attribute);
+    }
+
+    /**
+     * Guess the field type based on validation rules, field class, and attribute patterns.
+     */
+    public function guessFieldType(): string
+    {
+        // Check field class type first
+        $fieldType = $this->guessTypeFromFieldClass();
+        if ($fieldType) {
+            return $fieldType;
+        }
+
+        // Check validation rules
+        $ruleType = $this->guessTypeFromValidationRules();
+        if ($ruleType) {
+            return $ruleType;
+        }
+
+        // Check attribute name patterns
+        $attributeType = $this->guessTypeFromAttributeName();
+        if ($attributeType) {
+            return $attributeType;
+        }
+
+        // Default to string
+        return 'string';
+    }
+
+    /**
+     * Guess type from field class name.
+     */
+    protected function guessTypeFromFieldClass(): ?string
+    {
+        $className = class_basename(static::class);
+
+        return match ($className) {
+            'Boolean', 'BooleanField' => 'boolean',
+            'Number', 'Integer', 'Decimal', 'Float' => 'number',
+            'Email' => 'string',
+            'Password' => 'string',
+            'Textarea' => 'string',
+            'Text', 'TextField' => 'string',
+            'Date', 'DateTime' => 'string',
+            'File', 'Image' => 'string',
+            'Select', 'MultiSelect' => 'array',
+            'BelongsTo', 'HasOne', 'HasMany', 'BelongsToMany' => 'object',
+            default => null
+        };
+    }
+
+    /**
+     * Guess type from validation rules.
+     */
+    protected function guessTypeFromValidationRules(): ?string
+    {
+        $allRules = array_merge($this->rules, $this->storingRules, $this->updatingRules);
+
+        // Convert rule objects to strings for checking
+        $ruleStrings = collect($allRules)->map(function ($rule) {
+            if (is_string($rule)) {
+                return $rule;
+            }
+            if (is_object($rule)) {
+                return get_class($rule);
+            }
+
+            return (string) $rule;
+        })->toArray();
+
+        // Check for specific types
+        if ($this->hasAnyRule($ruleStrings, ['boolean', 'bool'])) {
+            return 'boolean';
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['integer', 'int', 'numeric', 'min:', 'max:', 'between:'])) {
+            return 'number';
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['array'])) {
+            return 'array';
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['email', 'url', 'ip', 'uuid'])) {
+            return 'string';
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['date', 'date_format:', 'before:', 'after:', 'before_or_equal:', 'after_or_equal:'])) {
+            return 'string'; // Dates are typically handled as strings in schemas
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['file', 'image', 'mimes:', 'mimetypes:'])) {
+            return 'string'; // Files are typically handled as strings (paths/URLs)
+        }
+
+        return null;
+    }
+
+    /**
+     * Guess type from attribute name patterns.
+     */
+    protected function guessTypeFromAttributeName(): ?string
+    {
+        $attribute = $this->attribute;
+
+        if (! is_string($attribute)) {
+            return null;
+        }
+
+        $attribute = strtolower($attribute);
+
+        // Boolean patterns
+        if (preg_match('/^(is_|has_|can_|should_|will_|was_|were_)/', $attribute) ||
+            in_array($attribute, ['active', 'enabled', 'disabled', 'verified', 'published', 'featured', 'public', 'private'])) {
+            return 'boolean';
+        }
+
+        // Number patterns
+        if (preg_match('/_(id|count|number|amount|price|cost|total|sum|quantity|qty)$/', $attribute) ||
+            in_array($attribute, ['id', 'age', 'year', 'month', 'day', 'hour', 'minute', 'second', 'weight', 'height', 'size'])) {
+            return 'number';
+        }
+
+        // Date patterns
+        if (preg_match('/_(at|date|time)$/', $attribute) ||
+            in_array($attribute, ['created_at', 'updated_at', 'deleted_at', 'published_at', 'birthday', 'date_of_birth'])) {
+            return 'string';
+        }
+
+        // Email pattern
+        if (str_contains($attribute, 'email')) {
+            return 'string';
+        }
+
+        // Password pattern
+        if (str_contains($attribute, 'password')) {
+            return 'string';
+        }
+
+        // Array patterns (JSON fields)
+        if (preg_match('/_(json|data|metadata|config|settings|options)$/', $attribute) ||
+            str_contains($attribute, 'tags')) {
+            return 'array';
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if any of the given rules exist in the rule strings.
+     */
+    protected function hasAnyRule(array $ruleStrings, array $rulesToCheck): bool
+    {
+        foreach ($ruleStrings as $rule) {
+            foreach ($rulesToCheck as $check) {
+                if ($rule === $check || str_starts_with($rule, $check)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Set a custom callback for defining the tool schema.
+     *
+     * @return $this
+     */
+    public function toolSchema(callable|Closure $callback): self
+    {
+        $this->toolInputSchemaCallback = $callback;
+
+        return $this;
     }
 }

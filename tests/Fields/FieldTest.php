@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Model;
@@ -400,6 +401,134 @@ class FieldTest extends IntegrationTestCase
         $model->save();
 
         $this->assertEquals($model->title, 'Append title');
+    }
+
+    public function test_field_can_be_hidden_from_mcp(): void
+    {
+        $field = Field::make('secret_token')->hideFromMcp();
+        $repository = new PostRepository;
+
+        // Regular request - field should be visible
+        $regularRequest = new RestifyRequest;
+        $this->assertTrue($field->isShownOnIndex($regularRequest, $repository));
+        $this->assertTrue($field->isShownOnShow($regularRequest, $repository));
+
+        // MCP request - field should be hidden
+        $mcpRequest = new McpRequest;
+        $this->assertFalse($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($mcpRequest, $repository));
+    }
+
+    public function test_field_can_be_conditionally_hidden_from_mcp(): void
+    {
+        $field = Field::make('admin_notes')->hideFromMcp(function ($request, $repository) {
+            return ! $request->get('is_admin', false);
+        });
+        $repository = new PostRepository;
+
+        // MCP request without admin - should be hidden
+        $mcpRequest = new McpRequest(['is_admin' => false]);
+        $this->assertFalse($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($mcpRequest, $repository));
+
+        // MCP request with admin - should be visible
+        $mcpRequestAsAdmin = new McpRequest(['is_admin' => true]);
+        $this->assertTrue($field->isShownOnIndex($mcpRequestAsAdmin, $repository));
+        $this->assertTrue($field->isShownOnShow($mcpRequestAsAdmin, $repository));
+    }
+
+    public function test_field_can_be_shown_only_in_mcp(): void
+    {
+        $field = Field::make('mcp_metadata')
+            ->showOnIndex(false)
+            ->showOnShow(false)
+            ->showOnMcp(true);
+        $repository = new PostRepository;
+
+        // Regular request - field should be hidden
+        $regularRequest = new RestifyRequest;
+        $this->assertFalse($field->isShownOnIndex($regularRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($regularRequest, $repository));
+
+        // MCP request - field should be visible
+        $mcpRequest = new McpRequest;
+        $this->assertTrue($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertTrue($field->isShownOnShow($mcpRequest, $repository));
+    }
+
+    public function test_field_mcp_visibility_with_callback(): void
+    {
+        $field = Field::make('sensitive_data')->showOnMcp(function ($request, $repository) {
+            // For testing, we'll check a custom property instead of user()
+            return $request->get('has_permission', false);
+        });
+        $repository = new PostRepository;
+
+        // MCP request without permission - should be hidden
+        $mcpRequest = new McpRequest(['has_permission' => false]);
+        $this->assertFalse($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($mcpRequest, $repository));
+
+        // MCP request with permission - should be visible
+        $mcpRequestWithPermission = new McpRequest(['has_permission' => true]);
+        $this->assertTrue($field->isShownOnIndex($mcpRequestWithPermission, $repository));
+        $this->assertTrue($field->isShownOnShow($mcpRequestWithPermission, $repository));
+    }
+
+    public function test_field_respects_general_hidden_status_in_mcp(): void
+    {
+        $field = Field::make('general_hidden')->hidden(true);
+        $repository = new PostRepository;
+
+        // Both regular and MCP requests should respect general hidden status
+        $regularRequest = new RestifyRequest;
+        $mcpRequest = new McpRequest;
+
+        $this->assertFalse($field->isShownOnIndex($regularRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($regularRequest, $repository));
+        $this->assertFalse($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($mcpRequest, $repository));
+    }
+
+    public function test_field_mcp_methods_return_field_instance(): void
+    {
+        $field = Field::make('test');
+
+        // Test method chaining
+        $result = $field->showOnMcp(true)->hideFromMcp(false);
+        $this->assertInstanceOf(Field::class, $result);
+        $this->assertSame($field, $result);
+    }
+
+    public function test_field_mcp_visibility_defaults(): void
+    {
+        $field = Field::make('default_field');
+        $repository = new PostRepository;
+        $mcpRequest = new McpRequest;
+
+        // By default, fields should be visible in MCP
+        $this->assertTrue($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertTrue($field->isShownOnShow($mcpRequest, $repository));
+        $this->assertFalse($field->isHiddenFromMcp($mcpRequest, $repository));
+    }
+
+    public function test_field_is_hidden_from_mcp_method(): void
+    {
+        $repository = new PostRepository;
+        $mcpRequest = new McpRequest;
+
+        // Test hideFromMcp with boolean
+        $hiddenField = Field::make('hidden')->hideFromMcp(true);
+        $this->assertTrue($hiddenField->isHiddenFromMcp($mcpRequest, $repository));
+
+        $visibleField = Field::make('visible')->hideFromMcp(false);
+        $this->assertFalse($visibleField->isHiddenFromMcp($mcpRequest, $repository));
+
+        // Test hideFromMcp with callback
+        $callbackField = Field::make('callback')->hideFromMcp(function () {
+            return true;
+        });
+        $this->assertTrue($callbackField->isHiddenFromMcp($mcpRequest, $repository));
     }
 }
 

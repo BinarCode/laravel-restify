@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -66,8 +67,19 @@ class MatchesCollection extends Collection
                 }
             }
 
-            return ! is_null($request->query("-{$filter->column()}"))
-                || ! is_null($request->query($filter->column()));
+            $value = $request->query($filter->column());
+            $negatedValue = $request->query("-{$filter->column()}");
+
+            if ($request instanceof McpRequest) {
+                $negatedValue = $request->input("-{$filter->column()}");
+            }
+
+            if ($request instanceof McpRequest) {
+                $value = $request->input($filter->column());
+            }
+
+            return ! is_null($negatedValue)
+                || ! is_null($value);
         });
     }
 

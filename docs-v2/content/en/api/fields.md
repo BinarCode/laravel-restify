@@ -121,12 +121,139 @@ public function fields(RestifyRequest $request)
 {
     return [
         field('role_id')->canUpdate(fn($request) => $request->user()->isAdmin())
+    ];
 }
+```
+
+### Can patch
+
+You can authorize PATCH operations specifically:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('status')->canPatch(fn($request) => $request->user()->can('patch-status'))
+    ];
+}
+```
+
+### Can update bulk
+
+For bulk update operations, you can control authorization:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('priority')->canUpdateBulk(fn($request) => $request->user()->isAdmin())
+    ];
+}
+```
+
+## Bulk Operations
+
+Laravel Restify provides specialized methods for handling bulk operations (creating or updating multiple records at once). Fields have specific callbacks and validation rules for these scenarios.
+
+### Bulk Visibility Control
+
+You can control whether fields are visible during bulk operations:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('title')->showOnStoreBulk(true)->showOnUpdateBulk(false),
+        field('slug')->hideFromStoreBulk(), // Not editable during bulk creation
+    ];
+}
+```
+
+The available visibility methods for bulk operations are:
+- `isShownOnStore()` - Check if field is shown during single store
+- `isShownOnStoreBulk()` - Check if field is shown during bulk store  
+- `isShownOnUpdate()` - Check if field is shown during single update
+- `isShownOnUpdateBulk()` - Check if field is shown during bulk update
+
+### Bulk Authorization
+
+Use specialized authorization methods for bulk operations:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('status')
+            ->canStore(fn($request) => $request->user()->isAdmin())
+            ->canUpdateBulk(fn($request) => $request->user()->isSuperAdmin()),
+    ];
+}
+```
+
+## Field Type Detection
+
+Restify includes an intelligent field type detection system that automatically infers the appropriate data type for fields based on various factors. This is particularly useful for API schema generation and MCP integration.
+
+### Automatic Type Detection
+
+The `guessFieldType()` method analyzes fields using multiple strategies:
+
+```php
+$field = field('email')->rules('required', 'email');
+$type = $field->guessFieldType(); // Returns: 'string'
+
+$field = field('is_active')->rules('boolean'); 
+$type = $field->guessFieldType(); // Returns: 'boolean'
+
+$field = field('age')->rules('integer', 'min:0');
+$type = $field->guessFieldType(); // Returns: 'number'
+```
+
+### Detection Strategies
+
+The system uses three detection strategies in order of priority:
+
+1. **Field Class Detection** - Analyzes the field class name (File, Image, Boolean, etc.)
+2. **Validation Rules Detection** - Examines validation rules (email, boolean, integer, etc.)  
+3. **Attribute Name Patterns** - Looks for common naming patterns
+
+#### Field Class Patterns
+
+```php
+File::make('avatar')->guessFieldType(); // 'string'
+Image::make('photo')->guessFieldType(); // 'string'  
+BooleanField::make('active')->guessFieldType(); // 'boolean'
+```
+
+#### Validation Rule Patterns
+
+```php
+field('email')->rules('email')->guessFieldType(); // 'string'
+field('count')->rules('integer')->guessFieldType(); // 'number'
+field('tags')->rules('array')->guessFieldType(); // 'array' 
+```
+
+#### Attribute Name Patterns
+
+```php
+field('is_featured')->guessFieldType(); // 'boolean' (is_ prefix)
+field('user_id')->guessFieldType(); // 'number' (_id suffix)
+field('created_at')->guessFieldType(); // 'string' (_at suffix)
+field('settings_json')->guessFieldType(); // 'array' (_json suffix)
+```
+
+### Computed Field Detection
+
+You can check if a field is computed (virtual/calculated):
+
+```php
+$field = field('full_name', fn() => "$this->first_name $this->last_name");
+$isComputed = $field->computed(); // Returns: true
 ```
 
 ## Validation
 
-There is a gold rule that's saying - catch the exception as soon as possible on its request way.
+There is a golden rule that says - catch the exception as soon as possible on its request way.
 
 Validations are the first bridge of your request information, so it would be a good start to validate your input. In this manner, you
 don't have to worry about the payload anymore.
@@ -190,11 +317,43 @@ $request->validate([
 
 ### Updating Rules
 
-On this wise, if you would like to define rules that only apply when a resource is being updated, you may use
+Similarly, if you would like to define rules that only apply when a resource is being updated, you may use
 the `updatingRules` method.
 
 ```php
 Field::new('email')->updatingRules('required', 'email');
+```
+
+### Bulk Rules
+
+For bulk operations, you can specify validation rules that apply only during bulk store or bulk update operations:
+
+#### Store Bulk Rules
+
+Rules that apply only during bulk store operations:
+
+```php
+Field::new('email')
+    ->rules('required', 'email')
+    ->storeBulkRules('unique:users,email');
+```
+
+#### Update Bulk Rules
+
+Rules that apply only during bulk update operations:
+
+```php
+Field::new('email')
+    ->rules('email')
+    ->updateBulkRules('required');
+```
+
+### Store Rules Alias
+
+You can also use `storeRules()` as an alias for `storingRules()`:
+
+```php
+Field::new('email')->storeRules('unique:users,email');
 ```
 
 ## Interceptors
@@ -209,7 +368,7 @@ During the `store` and `update` requests, there are two steps before the value f
 
 First, it is retrieved from the application request and passed to the `fillCallback`. Then, the value is passed through the `storeCallback` or `updateCallback`:
 
-You may intercept each of those with closures.
+You may intercept each of these with closures.
 
 Let's start with the `fillCallback`. It accepts a `callable` (an invokable class) or a Closure. The callable will receive the Request, the repository model (an empty one for storing and filled one for updating) and the attribute name:
 
@@ -242,7 +401,7 @@ The `updateCallback` works in the same manner. Let's use an invokable this time:
 Field::new('password')->updateCallback(new PasswordUpdateInvokable);
 ```
 
-Where the `PasswordUpdateInvokable` could be an invokable method: 
+Where the `PasswordUpdateInvokable` could be an invokable class: 
 
 ```php
 class PasswordUpdateInvokable 
@@ -252,6 +411,16 @@ class PasswordUpdateInvokable
         return Hash::make($request->input('password'));
     }
 }
+```
+
+### Store bulk callback
+
+For bulk store operations, you can use the `storeBulkCallback` to modify values during bulk creation:
+
+```php
+Field::new('slug')->storeBulkCallback(function (RestifyRequest $request) {
+    return Str::slug($request->input('title'));
+});
 ```
 
 ### Index Callback
@@ -407,6 +576,81 @@ However, you can populate the field value when the entity is stored by using `va
 Field::new('token')->value(Str::random(32))->hidden();
 ```
 
+### MCP Visibility Control
+
+When using Laravel Restify with Model Context Protocol (MCP), you can control field visibility specifically for MCP requests using dedicated methods:
+
+```php
+// Hide field from MCP requests completely
+Field::new('secret_key')->hideFromMcp()
+
+// Show field only in MCP requests (hide from regular API)
+Field::new('mcp_metadata')->showOnIndex(false)->showOnShow(false)->showOnMcp(true)
+
+// Conditionally hide based on user permissions
+Field::new('admin_notes')->hideFromMcp(function($request, $repository) {
+    return !$request->user()->isAdmin();
+})
+
+// Show field in MCP based on user role
+Field::new('sensitive_data')->showOnMcp(function($request, $repository) {
+    return $request->user()->can('view-sensitive', $repository);
+})
+```
+
+#### MCP Visibility Methods
+
+- **`showOnMcp($callback = true)`** - Control whether the field should be visible in MCP requests
+- **`hideFromMcp($callback = true)`** - Hide the field from MCP requests (inverse of showOnMcp)
+
+Both methods accept either a boolean value or a callback function that receives the request and repository as parameters.
+
+<alert type="info">
+MCP visibility rules take precedence over regular `showOnIndex`/`showOnShow` rules when processing MCP requests. Fields are visible in MCP by default unless explicitly hidden.
+</alert>
+
+#### How It Works
+
+The MCP visibility system automatically detects when a request is coming from an MCP tool and applies the appropriate visibility rules:
+
+1. **Regular API requests** use `showOnIndex()` and `showOnShow()` rules
+2. **MCP requests** use `showOnMcp()` and `hideFromMcp()` rules
+3. **Default behavior** - fields are visible in MCP unless explicitly hidden
+
+This allows you to have different field visibility for your regular API consumers versus AI agents accessing your data through MCP tools.
+
+### Custom Tool Schema
+
+When using MCP, you can define custom schema definitions for individual fields using the `toolSchema()` method:
+
+```php
+Field::new('status')->toolSchema(function ($field, $request, $repository) {
+    return [
+        'type' => 'string',
+        'enum' => ['draft', 'published', 'archived'],
+        'description' => 'The publication status of the content'
+    ];
+});
+
+Field::new('settings')->toolSchema(function ($field, $request, $repository) {
+    return [
+        'type' => 'object',
+        'properties' => [
+            'theme' => ['type' => 'string'],
+            'notifications' => ['type' => 'boolean']
+        ],
+        'description' => 'User configuration settings'
+    ];
+});
+```
+
+The `toolSchema()` callback receives:
+- `$field` - The field instance
+- `$request` - The current request
+- `$repository` - The parent repository
+
+This allows you to provide detailed schema information that helps MCP tools understand the structure and constraints of your data fields.
+
 ## Hooks
 
 ### After store
@@ -433,8 +677,8 @@ Field::new('title')->afterUpdate(function($value, $oldValue) {
 
 To illustrate the behavior of Restify file upload fields, let's assume our application's users can upload "avatar
 photos" to their account. Our users' database table will have an `avatar` column. This column will contain the path
-to the profile on disk, or, when using a cloud storage provider such as Amazon S3, the profile photo's path within its "
-bucket".
+to the profile on disk, or, when using a cloud storage provider such as Amazon S3, the profile photo's path within its
+bucket.
 
 ### Defining the field
 
@@ -465,6 +709,30 @@ When a file is uploaded by using this field, Restify will use
 Laravel's [Filesystem integration](https://laravel.com/docs/filesystem) to store the file from the disk of your choice
 with a randomly generated filename. Once the file is stored, Restify will store the relative path to the file in the
 file field's underlying database column.
+
+### URL Input Support
+
+File fields also accept URL strings as input, providing flexibility when working with remote files or existing URLs:
+
+```php
+// You can send either a file upload or a URL string
+POST /api/restify/users
+{
+    "name": "John Doe",
+    "avatar": "https://example.com/images/avatar.jpg"
+}
+
+// Or upload a file traditionally
+POST /api/restify/users
+Content-Type: multipart/form-data
+name: John Doe
+avatar: [binary file data]
+```
+
+When a valid URL is provided:
+- The URL is stored directly in the database column
+- If `storeOriginalName()` is configured, the filename from the URL is extracted and stored
+- Validation rules are automatically adjusted to accept both files and URLs
 
 To illustrate the default behavior of the `File` field, let's take a look at an equivalent route that would store the
 file in the same way:
@@ -632,7 +900,7 @@ that reason, Restify allows you to pass an "Storable" class to the `store` metho
 File::make('avatar')->store(AvatarStore::class),
 ```
 
-The storable class should be a simple PHP class, because it extends the `Binaryk\LaravelRestify\Repositories\Storable` contract:
+The storable class should be a simple PHP class that implements the `Binaryk\LaravelRestify\Repositories\Storable` contract:
 
 ```php
 <?php
@@ -658,4 +926,36 @@ class AvatarStore implements Storable
 
 <alert>
 You can use the <code>php artisan restify:store AvatarStore</code> command to generate a store file.
+</alert>
+
+## Utility Methods
+
+### Repository Management
+
+Fields can be assigned to repositories programmatically:
+
+```php
+$field = Field::new('title');
+$field->setRepository($repository);
+$field->setParentRepository($parentRepository);
+```
+
+These methods are primarily used internally by Restify but can be useful when building custom field logic.
+
+### Legacy Methods
+
+#### Deprecated append() Method
+
+<alert type="warning">
+
+The `append()` method has been deprecated in favor of `value()`. Use `value()` instead:
+
+```php
+// Deprecated
+field('user_id')->append(Auth::id());
+
+// Recommended  
+field('user_id')->value(Auth::id());
+```
+
 </alert>

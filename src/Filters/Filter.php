@@ -261,7 +261,7 @@ abstract class Filter implements JsonSerializable
 
     protected function booted() {}
 
-    protected function getType(): string
+    public function getType(): string
     {
         return $this->type;
     }

@@ -48,13 +48,6 @@ abstract class Action implements JsonSerializable
      */
     public bool $skipFieldFill = true;
 
-    /**
-     * Default uri key for the action.
-     *
-     * @var string
-     */
-    public static $uriKey;
-
     public static function indexQuery(RestifyRequest $request, $query)
     {
         //
@@ -72,12 +65,14 @@ abstract class Action implements JsonSerializable
 
     /**
      * Get the URI key for the action.
-     *
-     * @return string
      */
-    public function uriKey()
+    public function uriKey(): string
     {
-        return static::$uriKey ?? Str::slug($this->name(), '-', null);
+        if (property_exists(static::class, 'uriKey') && is_string(static::$uriKey)) {
+            return static::$uriKey;
+        }
+
+        return Str::slug($this->name(), '-', null);
     }
 
     public static function guessUriKey(mixed $target): string

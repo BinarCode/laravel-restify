@@ -90,7 +90,7 @@ class RepositoryFilterControllerTest extends IntegrationTestCase
             ->assertJson(function (AssertableJson $json) {
                 $json
                     ->where('data.0.placeholder', '-title')
-                    ->where('data.0.description', 'Sort by title')
+                    ->where('data.0.description', 'This is a exact match for title (e.g., title=some_value). It accepts negation by prefixing the column with a hyphen (e.g., -title=some_value). The filter type is string.')
                     ->where('data.0.type', 'string')
                     ->where('data.0.column', 'title')
                     ->etc();

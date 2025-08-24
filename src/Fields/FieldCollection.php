@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -64,6 +65,27 @@ class FieldCollection extends Collection
             ->filter(function (Field $field) use ($repository, $request) {
                 return $field->isShownOnIndex($request, $repository);
             })->values();
+    }
+
+    public function forMcpIndex(RestifyRequest $request, $repository): self
+    {
+        // If this is an MCP request and repository has fieldsForMcpIndex method
+        if ($request instanceof McpRequest && method_exists($repository, 'fieldsForMcpIndex')) {
+            // Get the MCP-specific fields from the repository
+            $mcpFields = $repository->fieldsForMcpIndex($request);
+            $mcpFieldAttributes = collect($mcpFields)->map(fn ($field) => $field->attribute)->toArray();
+
+            // Filter the current collection to only include MCP fields
+            return $this
+                ->filter(fn (Field $field) => ! $field instanceof EagerField)
+                ->filter(fn (Field $field) => in_array($field->attribute, $mcpFieldAttributes))
+                ->filter(function (Field $field) use ($repository, $request) {
+                    return $field->isShownOnMcp($request, $repository);
+                })->values();
+        }
+
+        // Fallback to regular index filtering for non-MCP requests
+        return $this->forIndex($request, $repository);
     }
 
     public function forShow(RestifyRequest $request, $repository): self

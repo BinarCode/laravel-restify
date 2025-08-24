@@ -14,6 +14,7 @@ use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
@@ -40,6 +41,21 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @property string $type
+ *
+ * @method array fieldsForIndex(RestifyRequest $request) Define fields for index operations. Override to customize field visibility on listing.
+ * @method array fieldsForShow(RestifyRequest $request) Define fields for show operations. Override to customize field visibility on detail view.
+ * @method array fieldsForStore(RestifyRequest $request) Define fields for store operations. Override to customize field availability on creation.
+ * @method array fieldsForUpdate(RestifyRequest $request) Define fields for update operations. Override to customize field availability on updates.
+ * @method array fieldsForStoreBulk(RestifyRequest $request) Define fields for bulk store operations. Override for bulk creation handling.
+ * @method array fieldsForUpdateBulk(RestifyRequest $request) Define fields for bulk update operations. Override for bulk update handling.
+ * @method array fieldsForGetter(RestifyRequest $request) Define fields for getter operations. Override to customize getter responses.
+ * @method array fieldsForMcpIndex(RestifyRequest $request) Define fields for MCP index operations. Override to optimize token usage for AI listing (saves 60-70% tokens).
+ * @method array fieldsForMcpShow(RestifyRequest $request) Define fields for MCP show operations. Override to provide focused fields for AI detail views (saves 40-50% tokens).
+ * @method array fieldsForMcpStore(RestifyRequest $request) Define fields for MCP store operations. Override to specify fields AI agents can use for creation.
+ * @method array fieldsForMcpUpdate(RestifyRequest $request) Define fields for MCP update operations. Override to limit fields AI agents can modify.
+ * @method array fieldsForMcpStoreBulk(RestifyRequest $request) Define fields for MCP bulk store operations. Override for efficient AI bulk creation.
+ * @method array fieldsForMcpUpdateBulk(RestifyRequest $request) Define fields for MCP bulk update operations. Override for efficient AI bulk updates.
+ * @method array fieldsForMcpGetter(RestifyRequest $request) Define fields for MCP getter operations. Override to provide analytical/computed fields for AI.
  */
 class Repository implements JsonSerializable, RestifySearchable
 {
@@ -63,6 +79,8 @@ class Repository implements JsonSerializable, RestifySearchable
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
      */
     public Model $resource;
+
+    public RestifyRequest $request;
 
     /**
      * The list of relations available for the show or index.
@@ -163,6 +181,8 @@ class Repository implements JsonSerializable, RestifySearchable
     public function __construct()
     {
         $this->bootIfNotBooted();
+        $this->ensureResourceExists();
+        $this->request = app(RestifyRequest::class);
     }
 
     /**
@@ -224,28 +244,55 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $method = 'fields';
 
-        if ($request->isIndexRequest() && method_exists($this, 'fieldsForIndex')) {
-            $method = 'fieldsForIndex';
+        // MCP-specific field methods (highest priority)
+        if ($request instanceof McpRequest) {
+            if ($request->isIndexRequest() && method_exists($this, 'fieldsForMcpIndex')) {
+                $method = 'fieldsForMcpIndex';
+            } elseif ($request->isShowRequest() && method_exists($this, 'fieldsForMcpShow')) {
+                $method = 'fieldsForMcpShow';
+            } elseif ($request->isUpdateRequest() && method_exists($this, 'fieldsForMcpUpdate')) {
+                $method = 'fieldsForMcpUpdate';
+            } elseif ($request->isStoreRequest() && method_exists($this, 'fieldsForMcpStore')) {
+                $method = 'fieldsForMcpStore';
+            } elseif ($request->isStoreBulkRequest() && method_exists($this, 'fieldsForMcpStoreBulk')) {
+                $method = 'fieldsForMcpStoreBulk';
+            } elseif ($request->isUpdateBulkRequest() && method_exists($this, 'fieldsForMcpUpdateBulk')) {
+                $method = 'fieldsForMcpUpdateBulk';
+            } elseif ($request->isGetterRequest() && method_exists($this, 'fieldsForMcpGetter')) {
+                $method = 'fieldsForMcpGetter';
+            }
         }
 
-        if ($request->isShowRequest() && method_exists($this, 'fieldsForShow')) {
-            $method = 'fieldsForShow';
-        }
+        // If no MCP method found, fall back to regular request-specific methods
+        if ($method === 'fields') {
+            if ($request->isIndexRequest() && method_exists($this, 'fieldsForIndex')) {
+                $method = 'fieldsForIndex';
+            }
 
-        if ($request->isUpdateRequest() && method_exists($this, 'fieldsForUpdate')) {
-            $method = 'fieldsForUpdate';
-        }
+            if ($request->isShowRequest() && method_exists($this, 'fieldsForShow')) {
+                $method = 'fieldsForShow';
+            }
 
-        if ($request->isStoreRequest() && method_exists($this, 'fieldsForStore')) {
-            $method = 'fieldsForStore';
-        }
+            if ($request->isUpdateRequest() && method_exists($this, 'fieldsForUpdate')) {
+                $method = 'fieldsForUpdate';
+            }
 
-        if ($request->isStoreBulkRequest() && method_exists($this, 'fieldsForStoreBulk')) {
-            $method = 'fieldsForStoreBulk';
-        }
+            if ($request->isStoreRequest() && method_exists($this, 'fieldsForStore')) {
+                $method = 'fieldsForStore';
+            }
 
-        if ($request->isUpdateBulkRequest() && method_exists($this, 'fieldsForUpdateBulk')) {
-            $method = 'fieldsForUpdateBulk';
+            if ($request->isStoreBulkRequest() && method_exists($this, 'fieldsForStoreBulk')) {
+                $method = 'fieldsForStoreBulk';
+            }
+
+            if ($request->isUpdateBulkRequest() && method_exists($this, 'fieldsForUpdateBulk')) {
+                $method = 'fieldsForUpdateBulk';
+            }
+
+            // Add missing getter support for regular requests too
+            if ($request->isGetterRequest() && method_exists($this, 'fieldsForGetter')) {
+                $method = 'fieldsForGetter';
+            }
         }
 
         return FieldCollection::make(
@@ -532,9 +579,10 @@ class Repository implements JsonSerializable, RestifySearchable
         return $this->resolveRelationships($request);
     }
 
-    public function index(RestifyRequest $request)
+    public function indexAsArray(RestifyRequest $request): array
     {
-        // Check if the user has the policy allowRestify
+        // Preserve the request instance for the entire flow
+        $this->request = $request;
 
         // Check if the model was set under the repository
         throw_if(
@@ -550,15 +598,19 @@ class Repository implements JsonSerializable, RestifySearchable
         $paginator = RepositorySearchService::make()->search($request, $this)
             ->paginate($request->pagination()->perPage ?? static::$defaultPerPage, page: $request->pagination()->page);
 
-        $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
-            return static::resolveWith($value);
+        $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) use ($request) {
+            $repository = static::resolveWith($value);
+            // Ensure each resolved repository maintains the original request
+            $repository->request = $request;
+
+            return $repository;
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
         })->values();
 
         $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
 
-        $result = $this->filter([
+        return $this->filter([
             'meta' => $this->when(
                 $meta = $this->resolveIndexMainMeta(
                     $request,
@@ -587,8 +639,13 @@ class Repository implements JsonSerializable, RestifySearchable
             ),
             'data' => $data,
         ]);
+    }
 
-        return response()->json($result);
+    public function index(RestifyRequest $request)
+    {
+        return response()->json(
+            $this->indexAsArray($request)
+        );
     }
 
     public function indexCollection(RestifyRequest $request, Collection $items): Collection
@@ -606,9 +663,16 @@ class Repository implements JsonSerializable, RestifySearchable
         return $links;
     }
 
+    public function showAsArray(RestifyRequest $request, $repositoryId): array
+    {
+        return $this->serializeForShow($request);
+    }
+
     public function show(RestifyRequest $request, $repositoryId)
     {
-        return data($this->serializeForShow($request));
+        return data(
+            $this->showAsArray($request, $repositoryId)
+        );
     }
 
     public function store(RestifyRequest $request)
@@ -1008,6 +1072,8 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function serializeForShow(RestifyRequest $request): array
     {
+        $this->request = $request;
+
         return $this->filter([
             'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
             'type' => $this->when($type = $this->getType($request), $type),
@@ -1023,6 +1089,8 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function serializeForIndex(RestifyRequest $request): array
     {
+        $this->request = $request;
+
         $data = $this->filter([
             'id' => $this->when($id = $this->getId($request), $id),
             'type' => $this->when($type = $this->getType($request), $type),
@@ -1056,7 +1124,9 @@ class Repository implements JsonSerializable, RestifySearchable
     #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
-        return $this->serializeForShow(app(RestifyRequest::class));
+        return $this->serializeForShow(
+            $this->request ?? app(RestifyRequest::class)
+        );
     }
 
     private function modelAttributes(?Request $request = null): Collection
@@ -1177,5 +1247,14 @@ class Repository implements JsonSerializable, RestifySearchable
     public function parentRepository(): ?Repository
     {
         return $this->parentRepository;
+    }
+
+    protected function ensureResourceExists(): self
+    {
+        if (! isset($this->resource)) {
+            $this->resource = static::newModel();
+        }
+
+        return $this;
     }
 }

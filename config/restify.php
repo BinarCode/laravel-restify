@@ -175,4 +175,42 @@ return [
         */
         'max_tokens' => 1000,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Model Context Protocol (MCP)
+    |--------------------------------------------------------------------------
+    |
+    | These settings control the MCP integration that allows AI agents to
+    | interact with your Restify repositories through structured tool interfaces.
+    |
+    */
+    'mcp' => [
+        'tools' => [
+            'exclude' => [
+                // Tool classes to exclude from discovery
+                // 'App\MCP\Tools\SensitiveTool',
+            ],
+            'include' => [
+                // Additional tool classes to include
+                // 'App\MCP\Tools\CustomTool',
+            ],
+        ],
+        'resources' => [
+            'exclude' => [
+                // Resource classes to exclude from discovery
+            ],
+            'include' => [
+                // Additional resource classes to include
+            ],
+        ],
+        'prompts' => [
+            'exclude' => [
+                // Prompt classes to exclude from discovery
+            ],
+            'include' => [
+                // Additional prompt classes to include
+            ],
+        ],
+    ],
 ];
