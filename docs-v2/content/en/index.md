@@ -38,19 +38,35 @@ This documentation is for the latest version of Laravel Restify. Please ensure y
 
 ## 🤖 AI-Powered Development with MCP
 
-Laravel Restify now includes **Model Context Protocol (MCP)** integration, enabling seamless AI agent interactions with your API resources. This powerful feature allows AI agents to understand, query, and manipulate your data through structured tool interfaces.
+Transform your existing Laravel Restify API into an **MCP-enabled powerhouse in minutes**! Laravel Restify's Model Context Protocol integration allows AI agents to interact directly with your API resources through structured tool interfaces.
 
 <alert type="success">
 
-**🔥 New!** MCP support enables AI agents to work directly with your Laravel Restify APIs, providing intelligent data access, automated operations, and enhanced development workflows.
+**🔥 Transform Your API in Minutes!** Add one trait to your Repository class and register one route - that's it! Your entire API becomes AI-agent accessible with full security and authorization intact.
 
 </alert>
 
-**Key MCP Features:**
-- **AI Agent Integration**: Connect Claude, GPT, and other AI agents directly to your APIs
-- **Structured Tool Interfaces**: Automatically generated tools for CRUD operations  
-- **Security & Authorization**: Full Laravel authorization integration maintained
-- **Developer MCP Server**: Dedicated server for enhanced Laravel Restify development
+**Quick Setup (2 steps):**
+
+1. **Add the trait to your Repository:**
+```php
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+
+class PostRepository extends Repository
+{
+    use HasMcpTools; // ✨ This enables MCP for this resource
+}
+```
+
+2. **Register the MCP server in `routes/ai.php`:**
+```php
+use Laravel\Mcp\Facades\Mcp;
+use Binaryk\LaravelRestify\MCP\RestifyServer;
+
+Mcp::web('restify', RestifyServer::class)->middleware(['auth:sanctum']);
+```
+
+**That's it!** Your API is now AI-agent ready with automatic tool generation for CRUD operations, actions, and getters.
 
 [Learn more about MCP Integration →](/mcp)
 
