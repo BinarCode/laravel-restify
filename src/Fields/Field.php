@@ -20,11 +20,11 @@ use ReturnTypeWillChange;
 
 class Field extends OrganicField implements JsonSerializable, Sortable
 {
+    use CanSort;
     use FieldMcpSchemaDetection;
     use HasAction;
     use Make;
     use ValidationMethods;
-    use CanSort;
 
     /**
      * The resource associated with the field.
