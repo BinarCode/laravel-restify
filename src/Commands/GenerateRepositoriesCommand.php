@@ -253,7 +253,7 @@ class GenerateRepositoriesCommand extends Command
         return $fields;
     }
 
-    protected function mapColumnToRestifyField(string $column, string $columnType): string
+    protected function mapColumnToRestifyField(string $column, string $columnType): ?string
     {
         // Skip ID field as it's handled automatically
         if ($column === 'id') {
@@ -288,6 +288,7 @@ class GenerateRepositoriesCommand extends Command
 
             case 'integer':
             case 'bigint':
+            case 'double':
             case 'smallint':
                 $field .= '->number()';
                 break;
@@ -308,7 +309,6 @@ class GenerateRepositoriesCommand extends Command
 
             case 'decimal':
             case 'float':
-            case 'double':
                 $field .= '->number()';
                 break;
 

@@ -59,16 +59,16 @@ class RelatedCollection extends Collection
         })->filter(fn (EagerField $field) => $field->authorize($request));
     }
 
-    public function mapIntoSortable(): self
+    public function mapIntoSortable(RestifyRequest $request): self
     {
         return $this
             ->filter(fn ($key) => $key instanceof Sortable)
-            ->filter(fn (Sortable $field) => $field->isSortable())
-            ->map(function (Sortable $field) {
+            ->filter(fn (Sortable $field) => $field->isSortable($request))
+            ->map(function (Sortable $field) use ($request) {
                 $filter = SortableFilter::make();
 
                 if ($field instanceof BelongsTo || $field instanceof HasOne) {
-                    return $filter->usingRelation($field)->setColumn($field->qualifySortable());
+                    return $filter->usingRelation($field)->setColumn($field->qualifySortable($request));
                 }
 
                 return null;

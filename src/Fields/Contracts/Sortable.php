@@ -2,11 +2,13 @@
 
 namespace Binaryk\LaravelRestify\Fields\Contracts;
 
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+
 interface Sortable
 {
-    public function sortable(string $column): self;
+    public function sortable(mixed $column = null): self;
 
-    public function isSortable(): bool;
+    public function isSortable(RestifyRequest $request): bool;
 
-    public function qualifySortable(): ?string;
+    public function qualifySortable(RestifyRequest $request): ?string;
 }

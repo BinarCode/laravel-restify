@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Traits;
 
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
 use Binaryk\LaravelRestify\Filters\Filter;
 use Binaryk\LaravelRestify\Filters\MatchesCollection;
@@ -63,14 +64,41 @@ trait InteractWithSearch
             : static::$sort;
     }
 
+    public static function collectSortables(RestifyRequest $request, Repository $repository): SortCollection
+    {
+        return static::collectSorts($request, $repository);
+    }
+
+    /**
+     * @param  RestifyRequest  $request
+     * @param  Repository  $repository
+     * @deprecated use collectSortables instead
+     * @return SortCollection
+     */
     public static function collectSorts(RestifyRequest $request, Repository $repository): SortCollection
     {
-        return (new SortCollection(explode(',', $request->input('sort', ''))))
+        $fieldSorts = static::collectFieldSorts($request, $repository);
+
+        $requestSorts = (new SortCollection(explode(',', $request->input('sort', ''))))
             ->normalize()
-            ->hydrateDefinition($repository)
+            ->hydrateDefinition($repository, $request)
             ->authorized($request)
             ->inRepository($request, $repository)
             ->hydrateRepository($repository);
+
+        // Merge field sorts with request sorts and ensure it stays a SortCollection
+        return new SortCollection($requestSorts->merge($fieldSorts));
+    }
+
+    public static function collectFieldSorts(RestifyRequest $request, Repository $repository): Collection
+    {
+        return $repository->collectFields($request)
+            ->filter(fn (Field $field) => $field->isSortable($request))
+            ->map(function (Field $field) {
+                $sortableFilter = new SortableFilter();
+                $sortableFilter->setColumn($field->getAttribute());
+                return $sortableFilter;
+            });
     }
 
     public static function collectMatches(RestifyRequest $request, Repository $repository): MatchesCollection

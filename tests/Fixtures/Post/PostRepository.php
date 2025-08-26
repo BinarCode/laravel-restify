@@ -32,6 +32,11 @@ class PostRepository extends Repository
 
     public static array $middleware = [];
 
+    public static array $sort = [
+        'title',
+        'is_active',
+    ];
+
     public static function indexQuery(RestifyRequest $request, $query)
     {
         if (isset($_SERVER['restify.post.indexQueryCallback']) && is_callable($_SERVER['restify.post.indexQueryCallback'])) {

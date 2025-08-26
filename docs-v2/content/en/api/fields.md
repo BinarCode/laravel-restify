@@ -251,6 +251,60 @@ $field = field('full_name', fn() => "$this->first_name $this->last_name");
 $isComputed = $field->computed(); // Returns: true
 ```
 
+## Sorting
+
+Fields can be made sortable, allowing API consumers to order results by field values.
+
+### Making Fields Sortable
+
+To make a field sortable, chain the `sortable()` method:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('name')->sortable(),
+        field('email')->sortable(),
+        field('created_at')->sortable(),
+        field('is_active')->sortable(),
+    ];
+}
+```
+
+### Sortable Column Configuration
+
+By default, the field's attribute name is used as the sortable column. You can specify a different column:
+
+```php
+field('full_name')->sortable('name'), // Use 'name' column for 'full_name' field
+```
+
+### Disabling Sorting
+
+You can disable sorting for a field that was previously made sortable:
+
+```php
+field('sensitive_data')->sortable(false),
+```
+
+### Conditional Sorting
+
+Make fields conditionally sortable based on request context:
+
+```php
+field('internal_score')->sortable(fn($request) => $request->user()->isAdmin()),
+```
+
+### Using Sortable Fields
+
+Once fields are marked as sortable, API consumers can use them in sort requests:
+
+```http
+GET /api/restify/users?sort=name
+GET /api/restify/users?sort=-created_at  # Descending
+GET /api/restify/users?sort=name,-created_at  # Multiple fields
+```
+
 ## Validation
 
 There is a golden rule that says - catch the exception as soon as possible on its request way.

@@ -2,7 +2,7 @@
 
 namespace DummyNamespace;
 
-use App\Models\User;
+use {{ userQualified }};
 use Illuminate\Auth\Access\HandlesAuthorization;
 use {{ modelQualified }};
 

@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class EagerField extends Field
 {
@@ -145,5 +147,24 @@ class EagerField extends Field
     public function queryKeyThatRendered(): string
     {
         return $this->relatedQuery->relation;
+    }
+
+    public function qualifySortable(RestifyRequest $request): ?string
+    {
+        if (! $this->isSortable($request)) {
+            return null;
+        }
+
+        if (Str::contains($this->sortableColumn, '.attributes')) {
+            return $this->sortableColumn;
+        }
+
+        $table = $this->repositoryClass::newModel()->getTable();
+
+        if (Str::contains($this->sortableColumn, '.') && Str::startsWith($this->sortableColumn, $table)) {
+            return $table.'.attributes.'.Str::after($this->sortableColumn, "$table.");
+        }
+
+        return $table.'.attributes.'.$this->sortableColumn;
     }
 }

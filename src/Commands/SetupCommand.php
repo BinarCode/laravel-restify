@@ -38,12 +38,11 @@ class SetupCommand extends Command
         $this->registerRestifyServiceProvider();
 
         $this->comment('Generating User Repository...');
-        $this->callSilent('restify:repository', ['name' => 'User']);
-        copy(__DIR__.'/stubs/user-repository.stub', app_path('Restify/UserRepository.php'));
+        $this->call(RepositoryCommand::class, ['name' => 'UserRepository']);
 
         if (! file_exists(app_path('Policies/UserPolicy.php'))) {
             app(Filesystem::class)->ensureDirectoryExists(app_path('Policies'));
-            copy(__DIR__.'/stubs/user-policy.stub', app_path('Policies/UserPolicy.php'));
+            $this->call(PolicyCommand::class, ['name' => 'UserPolicy']);
         }
 
         $this->setAppNamespace();

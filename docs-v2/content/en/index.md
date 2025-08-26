@@ -30,45 +30,11 @@ This documentation is for the latest version of Laravel Restify. Please ensure y
 'Powerful Search',
 'JSON:API consistency',
 'GraphQL Schema Generation',
-'MCP (Model Context Protocol) Integration',
+'MCP (Model Context Protocol) Server Generation',
 'Customizable',
 'Laravel Compatible Authorization'
 ]">
 </list>
-
-## 🤖 AI-Powered Development with MCP
-
-Transform your existing Laravel Restify API into an **MCP-enabled powerhouse in minutes**! Laravel Restify's Model Context Protocol integration allows AI agents to interact directly with your API resources through structured tool interfaces.
-
-<alert type="success">
-
-**🔥 Transform Your API in Minutes!** Add one trait to your Repository class and register one route - that's it! Your entire API becomes AI-agent accessible with full security and authorization intact.
-
-</alert>
-
-**Quick Setup (2 steps):**
-
-1. **Add the trait to your Repository:**
-```php
-use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
-
-class PostRepository extends Repository
-{
-    use HasMcpTools; // ✨ This enables MCP for this resource
-}
-```
-
-2. **Register the MCP server in `routes/ai.php`:**
-```php
-use Laravel\Mcp\Facades\Mcp;
-use Binaryk\LaravelRestify\MCP\RestifyServer;
-
-Mcp::web('restify', RestifyServer::class)->middleware(['auth:sanctum']);
-```
-
-**That's it!** Your API is now AI-agent ready with automatic tool generation for CRUD operations, actions, and getters.
-
-[Learn more about MCP Integration →](/mcp)
 
 ## Accelerate Your Development
 

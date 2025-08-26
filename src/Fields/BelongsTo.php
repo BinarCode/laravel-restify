@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
-use Binaryk\LaravelRestify\Fields\Concerns\CanSort;
 use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Model;
@@ -12,7 +11,6 @@ use Illuminate\Support\Str;
 class BelongsTo extends EagerField implements Sortable
 {
     use Attachable;
-    use CanSort;
 
     public ?array $searchablesAttributes = null;
 
