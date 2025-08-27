@@ -42,7 +42,7 @@ class RepositoryCommand extends GeneratorCommand
 
                 return false;
             }
-            
+
             // Set force option to true since user confirmed override
             $this->input->setOption('force', true);
         }
@@ -259,20 +259,20 @@ class RepositoryCommand extends GeneratorCommand
             // Apply the discovered pattern
             $modelBaseName = Str::before(class_basename($name), 'Repository');
             $patternPath = $this->applyPathPattern($modelBaseName, $existingRepositoryPath['pattern']);
-            
+
             // Build the namespace path, avoiding duplication
             $namespaceParts = [];
             $baseNamespace = str_replace($this->rootNamespace().'\\', '', $existingRepositoryPath['namespace']);
             if ($baseNamespace) {
                 $namespaceParts[] = $baseNamespace;
             }
-            
-            if ($patternPath && !empty($patternPath)) {
+
+            if ($patternPath && ! empty($patternPath)) {
                 $namespaceParts[] = str_replace('\\', '/', $patternPath);
             }
-            
+
             $namespaceParts[] = class_basename($name);
-            
+
             return $this->laravel['path'].'/'.implode('/', $namespaceParts).'.php';
         }
 
@@ -286,21 +286,21 @@ class RepositoryCommand extends GeneratorCommand
 
         if ($existingRepositoryPath) {
             $namespace = $existingRepositoryPath['namespace'];
-            
+
             // Apply pattern for the current model if needed
             if ($existingRepositoryPath['pattern'] && $existingRepositoryPath['pattern'] !== 'flat') {
                 $modelBaseName = Str::before(class_basename($this->getNameInput()), 'Repository');
                 $patternPath = $this->applyPathPattern($modelBaseName, $existingRepositoryPath['pattern']);
-                
-                if ($patternPath && !empty($patternPath)) {
+
+                if ($patternPath && ! empty($patternPath)) {
                     // Only add pattern path if it doesn't already exist in namespace
                     $patternPathNormalized = str_replace('/', '\\', $patternPath);
-                    if (!Str::endsWith($namespace, $patternPathNormalized)) {
-                        $namespace .= '\\' . $patternPathNormalized;
+                    if (! Str::endsWith($namespace, $patternPathNormalized)) {
+                        $namespace .= '\\'.$patternPathNormalized;
                     }
                 }
             }
-            
+
             return $namespace;
         }
 

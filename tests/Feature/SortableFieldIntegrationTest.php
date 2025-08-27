@@ -21,7 +21,7 @@ class SortableFieldIntegrationTest extends IntegrationTestCase
         $fieldSorts = TestSortableFieldRepository::collectFieldSorts($request, $repository);
 
         // Debug: Let's see what we got
-        $sortableColumns = $fieldSorts->map(fn($sort) => $sort->column)->toArray();
+        $sortableColumns = $fieldSorts->map(fn ($sort) => $sort->column)->toArray();
 
         $this->assertCount(2, $fieldSorts); // Adjusted to match actual count
 
@@ -42,13 +42,13 @@ class SortableFieldIntegrationTest extends IntegrationTestCase
 
         // Test that field sorts can be collected
         $fieldSorts = TestSortableFieldRepository::collectFieldSorts($request, $repository);
-        $fieldColumns = $fieldSorts->map(fn($sort) => $sort->column)->toArray();
+        $fieldColumns = $fieldSorts->map(fn ($sort) => $sort->column)->toArray();
 
         $this->assertContains('name', $fieldColumns);
         $this->assertContains('created_at', $fieldColumns);
 
         // Test that field sorts have proper attributes
-        $nameSort = $fieldSorts->firstWhere(fn($sort) => $sort->column === 'name');
+        $nameSort = $fieldSorts->firstWhere(fn ($sort) => $sort->column === 'name');
         $this->assertNotNull($nameSort);
         $this->assertInstanceOf(\Binaryk\LaravelRestify\Filters\SortableFilter::class, $nameSort);
     }
@@ -61,7 +61,7 @@ class SortableFieldIntegrationTest extends IntegrationTestCase
         $fieldSorts = TestSortableFieldRepositoryWithConflict::collectFieldSorts($request, $repository);
 
         // Field should define 'name' as sortable
-        $fieldSortColumns = $fieldSorts->map(fn($sort) => $sort->column)->toArray();
+        $fieldSortColumns = $fieldSorts->map(fn ($sort) => $sort->column)->toArray();
         $this->assertContains('name', $fieldSortColumns);
 
         // But repository static sorts should take precedence in final collection
@@ -210,7 +210,7 @@ class TestSortableModel extends Model
         'description',
         'created_at',
         'internal_score',
-        'email'
+        'email',
     ];
 
     public function getQualifiedKeyName()

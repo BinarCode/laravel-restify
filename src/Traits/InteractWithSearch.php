@@ -71,10 +71,7 @@ trait InteractWithSearch
     }
 
     /**
-     * @param  RestifyRequest  $request
-     * @param  Repository  $repository
      * @deprecated use collectSortables instead
-     * @return SortCollection
      */
     public static function collectSorts(RestifyRequest $request, Repository $repository): SortCollection
     {
@@ -96,8 +93,9 @@ trait InteractWithSearch
         return $repository->collectFields($request)
             ->filter(fn (Field $field) => $field->isSortable($request))
             ->map(function (Field $field) {
-                $sortableFilter = new SortableFilter();
+                $sortableFilter = new SortableFilter;
                 $sortableFilter->setColumn($field->getAttribute());
+
                 return $sortableFilter;
             });
     }

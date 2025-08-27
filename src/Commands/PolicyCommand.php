@@ -56,6 +56,7 @@ class PolicyCommand extends GeneratorCommand
         if ($qualifiedModel === $userQualified) {
             // Remove the entire user import line since it would be duplicate
             $stub = preg_replace('/use\s+\{\{\s*userQualified\s*\}\};\s*\n/', '', $stub);
+
             return $stub;
         }
 
