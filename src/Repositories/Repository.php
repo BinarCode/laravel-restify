@@ -621,7 +621,7 @@ class Repository implements JsonSerializable, RestifySearchable
         $paginator = RepositorySearchService::make()->search($request, $this)
             ->paginate($request->pagination()->perPage ?? static::$defaultPerPage, page: $request->pagination()->page);
 
-        $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) use ($request) {
+        $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
             return static::resolveWith($value);
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);

@@ -2,9 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Tests\MCP;
 
+use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\MCP\RestifyServer;
@@ -28,6 +28,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             McpServiceProvider::class,
         ]);
     }
+
     public function test_repository_uses_mcp_specific_field_methods(): void
     {
         $repository = new class extends Repository
@@ -240,9 +241,9 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // Find our expected tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
-        $indexToolName = collect($availableTools)->filter(fn($name) => str_contains($name, 'test-posts') && str_contains($name, 'index'))->first();
+        $indexToolName = collect($availableTools)->filter(fn ($name) => str_contains($name, 'test-posts') && str_contains($name, 'index'))->first();
 
-        $this->assertNotNull($indexToolName, 'Expected test-posts index tool not found. Available tools: ' . implode(', ', $availableTools));
+        $this->assertNotNull($indexToolName, 'Expected test-posts index tool not found. Available tools: '.implode(', ', $availableTools));
 
         // Create MCP JSON-RPC 2.0 request payload for calling the index tool
         $mcpPayload = [
@@ -268,7 +269,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // First check if this is an error response
         if (isset($responseData['error'])) {
-            $this->fail('MCP Error: ' . $responseData['error']['message']);
+            $this->fail('MCP Error: '.$responseData['error']['message']);
         }
 
         // Assert JSON-RPC response structure
@@ -310,6 +311,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             use HasMcpTools;
 
             public static $model = User::class;
+
             public static string $uriKey = 'users';  // Use the standard users key
 
             public function fields(RestifyRequest $request): array
@@ -337,13 +339,15 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             }
         };
 
-        // Create simple MCP-enabled Post repository 
+        // Create simple MCP-enabled Post repository
         $mcpPostRepository = new class extends Repository
         {
             use HasMcpTools;
 
             public static $model = Post::class;
+
             public static string $uriKey = 'test-posts-with-user';
+
             public static array $related = ['user'];
 
             public function fields(RestifyRequest $request): array
@@ -379,7 +383,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             $mcpPostRepository::class,
         ]);
 
-        // Register MCP server route  
+        // Register MCP server route
         Mcp::web('test-restify-relations', RestifyServer::class);
 
         // Create test data with relationships
@@ -404,16 +408,16 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         $toolsResponse = $this->postJson('/test-restify-relations', $toolsListPayload);
         $toolsResponse->assertOk();
-        
+
         $toolsData = $toolsResponse->json();
-        
+
         // Find the post index tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
         $postIndexToolName = collect($availableTools)->filter(
-            fn($name) => str_contains($name, 'test-posts-with-user') && str_contains($name, 'index')
+            fn ($name) => str_contains($name, 'test-posts-with-user') && str_contains($name, 'index')
         )->first();
-        
-        $this->assertNotNull($postIndexToolName, 'Expected test-posts-with-user index tool not found. Available tools: ' . implode(', ', $availableTools));
+
+        $this->assertNotNull($postIndexToolName, 'Expected test-posts-with-user index tool not found. Available tools: '.implode(', ', $availableTools));
 
         // Create MCP request with relationship inclusion
         $mcpPayload = [
@@ -437,12 +441,12 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // Check for errors
         if (isset($responseData['error'])) {
-            $this->fail('MCP Error: ' . $responseData['error']['message']);
+            $this->fail('MCP Error: '.$responseData['error']['message']);
         }
 
         // Assert JSON-RPC response structure
         $this->assertArrayHasKey('result', $responseData);
-        
+
         // Parse the result content
         $resultContent = json_decode($responseData['result']['content'][0]['text'], true);
 
@@ -471,7 +475,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // Check what fields are currently available in the relationship
         $availableUserFields = array_keys($userRelationship);
-        
+
         // Basic user fields should be present
         $this->assertArrayHasKey('name', $userRelationship);
         $this->assertArrayHasKey('email', $userRelationship);
@@ -479,24 +483,24 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         $this->assertEquals('john@example.com', $userRelationship['email']);
 
         // Test status: Check if MCP fields are now present with your fix
-        $hasMcpFields = isset($userRelationship['user_mcp_data']) && 
-                       isset($userRelationship['internal_user_tracking']) && 
+        $hasMcpFields = isset($userRelationship['user_mcp_data']) &&
+                       isset($userRelationship['internal_user_tracking']) &&
                        isset($userRelationship['admin_notes']);
-        
+
         if ($hasMcpFields) {
             // Your fix works! MCP fields are present in relationships
             $this->assertEquals('user-mcp-specific-data', $userRelationship['user_mcp_data']);
-            $this->assertEquals('user-internal-123', $userRelationship['internal_user_tracking']);  
+            $this->assertEquals('user-internal-123', $userRelationship['internal_user_tracking']);
             $this->assertEquals('admin-access-only', $userRelationship['admin_notes']);
             echo "\n✅ SUCCESS: MCP fields are now working in relationships!\n";
         } else {
             // The relationship is getting all model attributes instead of using repository fields
             // This suggests the relationship resolution is bypassing the repository's collectFields method
             echo "\n🔍 ANALYSIS: Relationship shows all model attributes instead of repository fields\n";
-            echo "Available fields: " . implode(', ', $availableUserFields) . "\n";
+            echo 'Available fields: '.implode(', ', $availableUserFields)."\n";
             echo "Expected MCP fields: user_mcp_data, internal_user_tracking, admin_notes\n";
             echo "Issue: EagerField might be using model attributes directly instead of repository field resolution\n";
-            
+
             // For now, just verify basic fields work to keep test passing
             $this->assertTrue(true, 'Basic relationship fields are working, MCP field resolution needs investigation');
         }
