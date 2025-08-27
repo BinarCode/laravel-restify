@@ -26,6 +26,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             McpServiceProvider::class,
         ]);
     }
+
     public function test_repository_uses_mcp_specific_field_methods(): void
     {
         $repository = new class extends Repository
@@ -238,9 +239,9 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // Find our expected tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
-        $indexToolName = collect($availableTools)->filter(fn($name) => str_contains($name, 'test-posts') && str_contains($name, 'index'))->first();
+        $indexToolName = collect($availableTools)->filter(fn ($name) => str_contains($name, 'test-posts') && str_contains($name, 'index'))->first();
 
-        $this->assertNotNull($indexToolName, 'Expected test-posts index tool not found. Available tools: ' . implode(', ', $availableTools));
+        $this->assertNotNull($indexToolName, 'Expected test-posts index tool not found. Available tools: '.implode(', ', $availableTools));
 
         // Create MCP JSON-RPC 2.0 request payload for calling the index tool
         $mcpPayload = [
@@ -266,7 +267,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // First check if this is an error response
         if (isset($responseData['error'])) {
-            $this->fail('MCP Error: ' . $responseData['error']['message']);
+            $this->fail('MCP Error: '.$responseData['error']['message']);
         }
 
         // Assert JSON-RPC response structure
