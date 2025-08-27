@@ -142,28 +142,6 @@ class RepositorySearchService
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
             }
 
-            foreach ($this->repository::searchables() as $key => $column) {
-                $filter = $column instanceof Filter
-                    ? $column
-                    : SearchableFilter::make()->setColumn(
-                        $model->qualifyColumn(is_numeric($key) ? $column : $key)
-                    );
-
-                $filter
-                    ->setRepository($this->repository)
-                    ->setColumn(
-                        $filter->column ?? $model->qualifyColumn(is_numeric($key) ? $column : $key)
-                    );
-
-                $filter->filter($request, $query, $search);
-
-                $this->repository::collectRelated()
-                    ->onlySearchable($request)
-                    ->map(function (BelongsTo $field) {
-                        return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
-                    })
-                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
-            }
         });
 
         return $query;
