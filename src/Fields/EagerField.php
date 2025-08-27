@@ -85,12 +85,6 @@ class EagerField extends Field
              */
             $serializableRepository = $this->repositoryClass::resolveWith($relatedModel);
 
-            // Only set the request for MCP requests to preserve MCP-specific behavior
-            // without interfering with regular column selection
-            if (isset($repository->request) && $repository->request instanceof McpRequest) {
-                $serializableRepository->request = $repository->request;
-            }
-
             $this->value = $serializableRepository
                 ->allowToShow($repository->request ?? app(Request::class))
                 ->columns()
