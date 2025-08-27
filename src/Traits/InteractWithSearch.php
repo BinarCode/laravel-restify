@@ -13,7 +13,6 @@ use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Filters\SortCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Closure;
 use Illuminate\Support\Collection;
 
 trait InteractWithSearch
@@ -118,19 +117,21 @@ trait InteractWithSearch
             ->filter(fn (Field $field) => $field->isMatchable($request))
             ->map(callback: function (Field $field) use ($request) {
                 $matchColumn = $field->getMatchColumn($request);
-                if ($matchColumn instanceof  MatchFilter) {
+                if ($matchColumn instanceof MatchFilter) {
                     return $matchColumn;
                 }
 
-                $matchFilter = new MatchFilter();
+                $matchFilter = new MatchFilter;
 
                 if (is_callable($matchColumn)) {
                     $matchFilter->setColumn($field->getAttribute());
+
                     return $matchFilter->usingClosure($matchColumn);
                 }
 
                 $matchFilter->setColumn($field->getMatchColumn($request));
                 $matchFilter->setType($field->getMatchType($request));
+
                 return $matchFilter;
             });
     }
