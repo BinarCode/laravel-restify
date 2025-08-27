@@ -13,8 +13,15 @@ class SearchableFilter extends Filter
 
     private BelongsTo $belongsToField;
 
+    protected $customClosure = null;
+
     public function filter(RestifyRequest $request, $query, $value)
     {
+        // Use custom closure if available
+        if ($this->customClosure) {
+            return call_user_func($this->customClosure, $request, $query, $value);
+        }
+
         $connectionType = $this->repository->model()->getConnection()->getDriverName();
 
         $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
@@ -66,5 +73,17 @@ class SearchableFilter extends Filter
         $this->computedColumns = collect($columns)->flatten()->all();
 
         return $this;
+    }
+
+    public function usingClosure(callable $closure): self
+    {
+        $this->customClosure = $closure;
+
+        return $this;
+    }
+
+    public function hasCustomClosure(): bool
+    {
+        return !is_null($this->customClosure);
     }
 }

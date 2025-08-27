@@ -42,20 +42,67 @@ class BelongsTo extends EagerField implements Sortable
         );
     }
 
+    /**
+     * Override the parent searchable method to handle BelongsTo-specific multiple attributes
+     */
     public function searchable(...$attributes): self
     {
-        $this->searchablesAttributes = collect($attributes)->flatten()->all();
+        // Handle case where a single array is passed (legacy behavior)
+        if (count($attributes) === 1 && is_array($attributes[0])) {
+            $this->searchablesAttributes = collect($attributes[0])->flatten()->all();
+            // Also call parent with the first attribute for consistency
+            if (!empty($this->searchablesAttributes)) {
+                parent::searchable($this->searchablesAttributes[0]);
+            }
+            return $this;
+        }
+
+        // If it's relationship-specific multiple attributes (all strings), use BelongsTo behavior
+        if (count($attributes) > 1 && collect($attributes)->every(fn($attr) => is_string($attr))) {
+            $this->searchablesAttributes = collect($attributes)->flatten()->all();
+            // Also call parent to maintain consistency with CanSearch trait
+            parent::searchable($attributes[0]);
+            return $this;
+        }
+
+        // For single attribute or complex cases (closures, filters), use parent behavior
+        parent::searchable(...$attributes);
+
+        // If parent set a simple string column, also set it in searchablesAttributes for consistency
+        if (count($attributes) === 1 && is_string($attributes[0])) {
+            $this->searchablesAttributes = [$attributes[0]];
+        }
 
         return $this;
     }
 
-    public function isSearchable(): bool
+    /**
+     * Check if this BelongsTo field is searchable (either via attributes or parent CanSearch)
+     */
+    public function isSearchable(?RestifyRequest $request = null): bool
     {
-        return ! is_null($this->searchablesAttributes);
+        return ! is_null($this->searchablesAttributes) || parent::isSearchable($request);
     }
 
+    /**
+     * Get the searchable attributes specific to BelongsTo relationships
+     */
     public function getSearchables(): array
     {
-        return $this->searchablesAttributes;
+        return $this->searchablesAttributes ?? [];
+    }
+
+    /**
+     * Override parent getSearchColumn to provide BelongsTo-specific behavior
+     */
+    public function getSearchColumn(?RestifyRequest $request = null): mixed
+    {
+        // If we have BelongsTo-specific attributes, return the first one for compatibility
+        if (!empty($this->searchablesAttributes)) {
+            return $this->searchablesAttributes[0];
+        }
+
+        // Otherwise, use parent behavior
+        return parent::getSearchColumn($request);
     }
 }

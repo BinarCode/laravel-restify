@@ -507,6 +507,196 @@ field('author')->matchable(function ($request, $query, $value) {
 }),
 ```
 
+## Searchable
+
+Fields can be made searchable, enabling them to respond to global search queries. This provides field-level control over search behavior while maintaining the simplicity of the global search API.
+
+### Making Fields Searchable
+
+To make a field searchable, chain the `searchable()` method:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('title')->searchable(),
+        field('description')->searchable(),
+        field('email')->searchable(),
+    ];
+}
+```
+
+The `searchable()` method uses a unified flexible signature that accepts multiple arguments and works consistently across all field types:
+
+```php
+// Basic usage
+field('title')->searchable(),
+
+// Custom column
+field('name')->searchable('users.full_name'),
+
+// With optional type
+field('price')->searchable('products.price', 'numeric'),
+
+// Multiple attributes (especially useful for relationship fields like BelongsTo)
+BelongsTo::make('author')->searchable('name', 'email', 'username'),
+
+// Array of attributes (legacy support)
+BelongsTo::make('editor')->searchable(['users.name', 'users.email']),
+
+// Closure/callback
+field('content')->searchable(function ($request, $query, $value) {
+    // Custom search logic
+}),
+
+// Custom filter instance
+field('complex_search')->searchable(new CustomSearchFilter()),
+
+// Invokable class
+field('tags')->searchable(new TagSearchHandler()),
+```
+
+### Unified Method Signatures
+
+All searchable-related methods now use consistent signatures across regular fields and relationship fields:
+
+```php
+// All field types use the same signatures:
+searchable(...$attributes)                    // Flexible variadic signature
+isSearchable(?RestifyRequest $request = null) // Optional request parameter
+getSearchColumn(?RestifyRequest $request = null) // Optional request parameter
+
+// BelongsTo also provides relationship-specific method:
+getSearchables(): array                       // Returns multiple searchable attributes
+```
+
+### Using Searchable Fields
+
+Searchable fields respond to the standard `search` query parameter:
+
+```http
+GET /api/restify/posts?search=laravel
+```
+
+This will search across all searchable fields for the term "laravel".
+
+### Advanced Searchable Configuration
+
+#### Basic Usage (No Arguments)
+
+When called without arguments, `searchable()` applies standard search behavior using the field's attribute:
+
+```php
+field('title')->searchable(), // Searches the 'title' column with LIKE operator
+```
+
+#### Custom Column
+
+Specify a different database column for searching:
+
+```php
+field('author_name')->searchable('users.name'), // Search in users.name column
+```
+
+You can also specify multiple attributes for relationship fields (like BelongsTo):
+
+```php
+BelongsTo::make('author', UserRepository::class)->searchable('name', 'email'),
+```
+
+#### Closure-based Searching
+
+For custom search logic, pass a closure that receives the request, query builder, and search value:
+
+```php
+field('content')->searchable(function ($request, $query, $value) {
+    $query->where('title', 'LIKE', "%{$value}%")
+          ->orWhere('description', 'LIKE', "%{$value}%");
+}),
+```
+
+#### Custom SearchableFilter Classes
+
+Create dedicated filter classes for complex search logic:
+
+```php
+field('complex_search')->searchable(new CustomContentSearchFilter),
+```
+
+Where `CustomContentSearchFilter` extends `SearchableFilter`:
+
+```php
+use Binaryk\LaravelRestify\Filters\SearchableFilter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+
+class CustomContentSearchFilter extends SearchableFilter
+{
+    public function filter(RestifyRequest $request, $query, $value)
+    {
+        return $query->where(function ($q) use ($value) {
+            $q->where('title', 'LIKE', "%{$value}%")
+              ->orWhere('description', 'LIKE', "%{$value}%")
+              ->orWhere('tags', 'LIKE', "%{$value}%");
+        });
+    }
+}
+```
+
+#### Invokable Classes
+
+For reusable search logic, use invokable classes:
+
+```php
+field('tags')->searchable(new TagSearchFilter),
+```
+
+```php
+class TagSearchFilter
+{
+    public function __invoke($request, $query, $value)
+    {
+        $tags = explode(',', $value);
+        $query->whereHas('tags', function ($q) use ($tags) {
+            $q->whereIn('name', $tags);
+        });
+    }
+}
+```
+
+#### Practical Examples
+
+**Full-text Search:**
+```php
+field('content')->searchable(function ($request, $query, $value) {
+    $query->whereFullText(['title', 'description'], $value);
+}),
+```
+
+**Multi-field Search:**
+```php
+field('user_search')->searchable(function ($request, $query, $value) {
+    $query->where('name', 'LIKE', "%{$value}%")
+          ->orWhere('email', 'LIKE', "%{$value}%")
+          ->orWhere('phone', 'LIKE', "%{$value}%");
+}),
+```
+
+**Relationship Search:**
+```php
+field('author')->searchable(function ($request, $query, $value) {
+    $query->whereHas('author', function ($q) use ($value) {
+        $q->where('name', 'like', "%{$value}%");
+    });
+}),
+```
+
+**JSON Search:**
+```php
+field('metadata')->searchable(function ($request, $query, $value) {
+    $query->whereJsonContains('metadata->tags', $value);
+}),
+```
+
 ## Validation
 
 There is a golden rule that says - catch the exception as soon as possible on its request way.

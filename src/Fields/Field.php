@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Fields\Concerns\CanMatch;
+use Binaryk\LaravelRestify\Fields\Concerns\CanSearch;
 use Binaryk\LaravelRestify\Fields\Concerns\CanSort;
 use Binaryk\LaravelRestify\Fields\Concerns\HasAction;
 use Binaryk\LaravelRestify\Fields\Concerns\ValidationMethods;
@@ -28,6 +29,7 @@ class Field extends OrganicField implements JsonSerializable, Sortable, Matchabl
     use ValidationMethods;
     use CanSort;
     use CanMatch;
+    use CanSearch;
 
     /**
      * The resource associated with the field.

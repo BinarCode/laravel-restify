@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Filters\Filter;
 use Binaryk\LaravelRestify\Filters\MatchesCollection;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
+use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Filters\SortCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -97,6 +98,45 @@ trait InteractWithSearch
                 $sortableFilter->setColumn($field->getAttribute());
 
                 return $sortableFilter;
+            });
+    }
+
+    public static function collectSearchables(RestifyRequest $request, Repository $repository): SearchablesCollection
+    {
+        return (new SearchablesCollection($repository::searchables()));
+    }
+
+    public static function collectFieldSearchables(RestifyRequest $request, Repository $repository): Collection
+    {
+        return $repository->collectFields($request)
+            ->filter(fn (Field $field) => $field->isSearchable($request))
+            ->map(function (Field $field) use ($request, $repository) {
+                $searchColumn = $field->getSearchColumn($request);
+                
+                if ($searchColumn instanceof SearchableFilter) {
+                    $searchColumn->setRepository($repository);
+                    // Ensure the SearchableFilter has a column set
+                    if (!$searchColumn->column()) {
+                        $searchColumn->setColumn($field->getAttribute());
+                    }
+                    return $searchColumn;
+                }
+
+                $searchFilter = new SearchableFilter();
+                $searchFilter->setRepository($repository);
+
+                if (is_callable($searchColumn)) {
+                    $searchFilter->setColumn($field->getAttribute());
+                    return $searchFilter->usingClosure($searchColumn);
+                }
+
+                if (is_object($searchColumn) && method_exists($searchColumn, '__invoke')) {
+                    $searchFilter->setColumn($field->getAttribute());
+                    return $searchFilter->usingClosure($searchColumn);
+                }
+
+                $searchFilter->setColumn($field->getSearchColumn($request));
+                return $searchFilter;
             });
     }
 
