@@ -3,12 +3,8 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Events\AdvancedFiltersApplied;
-use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
-use Binaryk\LaravelRestify\Filters\Filter;
-use Binaryk\LaravelRestify\Filters\SearchableFilter;
-use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
@@ -134,10 +130,12 @@ class RepositorySearchService
         $query->where(function ($query) use ($search, $model, $request) {
             $connectionType = $model->getConnection()->getDriverName();
 
-            $searchableFields = $this->repository::searchables();
-            $fieldSearchables = $this->repository::collectFieldSearchables($request, $this->repository);
-            $hasSearchableFields = !empty($searchableFields) || $fieldSearchables->isNotEmpty();
-            
+            // Collect all searchables using the unified approach
+            $searchablesCollection = $this->repository::collectSearchables($request, $this->repository);
+
+            $hasSearchableFields = $searchablesCollection->isNotEmpty();
+
+            // Handle primary key search if conditions are met
             $canSearchPrimaryKey = is_numeric($search) &&
                 in_array($query->getModel()->getKeyType(), ['int', 'integer']) &&
                 ($connectionType != 'pgsql' || $search <= PHP_INT_MAX) &&
@@ -148,33 +146,8 @@ class RepositorySearchService
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
             }
 
-            foreach ($searchableFields as $key => $column) {
-                $filter = $column instanceof Filter
-                    ? $column
-                    : SearchableFilter::make()->setColumn(
-                        $model->qualifyColumn(is_numeric($key) ? $column : $key)
-                    );
-
-                $filter
-                    ->setRepository($this->repository)
-                    ->setColumn(
-                        $filter->column ?? $model->qualifyColumn(is_numeric($key) ? $column : $key)
-                    );
-
-                $filter->filter($request, $query, $search);
-
-                $this->repository::collectRelated()
-                    ->onlySearchable($request)
-                    ->map(function (BelongsTo $field) {
-                        return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
-                    })
-                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
-            }
-
-            // Apply field-level searchables
-            $fieldSearchables->each(function ($searchable) use ($request, $query, $search) {
-                $searchable->filter($request, $query, $search);
-            });
+            // Apply all searchables using the unified collection
+            $searchablesCollection->apply($request, $query, $search);
         });
 
         return $query;

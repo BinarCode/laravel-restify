@@ -94,7 +94,7 @@ class SortableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson('/api/restify/posts?sort=title')
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.attributes.title', 'Alpha Post')
                     ->where('data.1.attributes.title', 'Beta Post')
                     ->where('data.2.attributes.title', 'Zeta Post')
@@ -105,7 +105,7 @@ class SortableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson('/api/restify/posts?sort=-title')
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.attributes.title', 'Zeta Post')
                     ->where('data.1.attributes.title', 'Beta Post')
                     ->where('data.2.attributes.title', 'Alpha Post')
@@ -116,7 +116,7 @@ class SortableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson('/api/restify/posts?sort=is_active')
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.attributes.is_active', false) // false comes first (0 < 1)
                     ->where('data.1.attributes.is_active', true)
                     ->where('data.2.attributes.is_active', true)
@@ -127,7 +127,7 @@ class SortableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson('/api/restify/posts?sort=-is_active')
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->where('data.0.attributes.is_active', true) // true comes first when descending
                     ->where('data.1.attributes.is_active', true)
                     ->where('data.2.attributes.is_active', false)
@@ -138,7 +138,7 @@ class SortableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson('/api/restify/posts?sort=-is_active,title')
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     // First: is_active = true, ordered by title ASC
                     ->where('data.0.attributes.is_active', true)
                     ->where('data.0.attributes.title', 'Alpha Post') // Alpha comes before Beta

@@ -2,8 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 
 /**
@@ -18,23 +21,33 @@ class SearchablesCollection extends Collection
     {
         $unified = [];
 
-        foreach ($items as $column => $searchable) {
+        foreach ($items as $key => $searchable) {
             if ($searchable instanceof SearchableFilter) {
-                // Extract column name from Filter object
-                $unified[] = $searchable->column();
+                // Already a SearchableFilter instance - keep it
+                $unified[] = $searchable;
+            } elseif ($searchable instanceof Filter) {
+                // Other Filter instance - keep it
+                $unified[] = $searchable;
+            } elseif (is_callable($searchable)) {
+                // Closure or invokable - create SearchableFilter with closure
+                $filter = new SearchableFilter;
+                $filter->usingClosure($searchable);
+                $filter->setColumn(is_string($key) && ! is_numeric($key) ? $key : 'unknown');
+                $unified[] = $filter;
             } elseif (is_string($searchable)) {
-                // Direct string field name
-                $unified[] = $searchable;
-            } elseif (is_string($column) && is_numeric($column) === false) {
+                // String column name
+                $filter = new SearchableFilter;
+                $filter->setColumn($searchable);
+                $unified[] = $filter;
+            } elseif (is_string($key) && ! is_numeric($key)) {
                 // Array key is the field name
-                $unified[] = $column;
-            } elseif (is_numeric($column) && is_string($searchable)) {
-                // Numeric key with string value (e.g., ['name', 'email'])
-                $unified[] = $searchable;
+                $filter = new SearchableFilter;
+                $filter->setColumn($key);
+                $unified[] = $filter;
             }
         }
 
-        parent::__construct(array_unique($unified));
+        parent::__construct($unified);
     }
 
     /**
@@ -42,7 +55,7 @@ class SearchablesCollection extends Collection
      */
     public function fieldNames(): array
     {
-        return $this->filter(fn($item) => is_string($item) && ! empty($item))
+        return $this->filter(fn ($item) => is_string($item) && ! empty($item))
             ->unique()
             ->values()
             ->toArray();
@@ -79,6 +92,46 @@ class SearchablesCollection extends Collection
             return SearchableFilter::make()
                 ->setColumn($model->qualifyColumn($columnName))
                 ->setRepository($repository);
+        });
+    }
+
+    /**
+     * Apply all searchable filters to the query with the given search value.
+     *
+     * @param  Builder|Relation  $query
+     * @return $this
+     */
+    public function apply(RestifyRequest $request, $query, string $searchValue): self
+    {
+        return $this->each(function (SearchableFilter $filter) use ($request, $query, $searchValue) {
+            $filter->filter($request, $query, $searchValue);
+        });
+    }
+
+    /**
+     * Set repository for all filters in the collection.
+     */
+    public function setRepository(Repository $repository): self
+    {
+        return $this->each(function ($filter) use ($repository) {
+            if ($filter instanceof Filter) {
+                $filter->setRepository($repository);
+            }
+        });
+    }
+
+    /**
+     * Qualify all column names with the model table.
+     */
+    public function qualifyColumns(Model $model): self
+    {
+        return $this->each(function ($filter) use ($model) {
+            if ($filter instanceof SearchableFilter && $filter->column()) {
+                // Only qualify if not already qualified
+                if (! str_contains($filter->column(), '.')) {
+                    $filter->setColumn($model->qualifyColumn($filter->column()));
+                }
+            }
         });
     }
 }

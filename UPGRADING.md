@@ -1,5 +1,173 @@
 # Upgrading
 
+## From 9.x to 10.x
+
+### New Features
+
+#### Modern Model Definition with PHP Attributes
+
+Laravel Restify v10 introduces a modern way to define models using PHP 8+ attributes. While your existing static property approach will continue to work, we recommend migrating to the new attribute-based syntax for better developer experience.
+
+**Before (v9 and earlier):**
+```php
+class UserRepository extends Repository
+{
+    public static string $model = User::class;
+    
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('name'),
+            field('email'),
+        ];
+    }
+}
+```
+
+**After (v10 - Recommended):**
+```php
+use Binaryk\LaravelRestify\Attributes\Model;
+
+#[Model(User::class)]
+class UserRepository extends Repository
+{
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('name'),
+            field('email'),
+        ];
+    }
+}
+```
+
+**Benefits of migrating to attributes:**
+- 🎯 **Modern, declarative approach** - More intuitive and cleaner code
+- 🔍 **Better IDE support** - Enhanced autocompletion and static analysis
+- 📦 **Type-safe** - Use `::class` syntax for better refactoring support
+- 🔧 **More discoverable** - Attributes are easier to find with reflection tools
+- 🚀 **Future-proof** - Follows modern PHP practices
+
+**Migration Strategy:**
+
+1. **No immediate action required** - All existing repositories continue to work as-is
+2. **Gradual migration** - Update repositories one at a time when convenient
+3. **Mixed approach** - You can use both attributes and static properties in the same codebase
+
+**Priority order for model resolution:**
+1. `#[Model]` attribute (highest priority)
+2. `public static string $model` property
+3. Auto-guessing from repository class name (lowest priority)
+
+This change is **100% backward compatible** - no existing code will break.
+
+#### Improved Field-Level Search and Sorting
+
+Laravel Restify v10 introduces a more intuitive way to define searchable and sortable fields directly on the field definitions. While the static array approach continues to work, the new field-level methods provide better organization and discoverability.
+
+**Before (v9 and earlier):**
+```php
+class UserRepository extends Repository
+{
+    public static array $search = ['name', 'email'];
+    public static array $sort = ['name', 'email', 'created_at'];
+    
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('name'),
+            field('email'),
+            field('created_at'),
+        ];
+    }
+}
+```
+
+**After (v10 - Recommended):**
+```php
+#[Model(User::class)]
+class UserRepository extends Repository
+{
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('name')->searchable()->sortable(),
+            field('email')->searchable()->sortable(),
+            field('created_at')->sortable(),
+        ];
+    }
+}
+```
+
+**Benefits of field-level configuration:**
+- 📍 **Co-located configuration** - Search/sort behavior defined alongside the field
+- 🔍 **Better discoverability** - Easy to see which fields are searchable/sortable at a glance  
+- 🎛️ **More granular control** - Configure search and sort behavior per field
+- 🧹 **Cleaner repositories** - Reduces static array properties
+- 💡 **IDE-friendly** - Better autocompletion and method chaining
+
+**Migration Strategy:**
+
+1. **Static arrays still work** - No need to change existing repositories immediately
+2. **Field-level takes precedence** - If both are defined, field-level configuration wins
+3. **Gradual migration** - Update fields one at a time or per repository
+4. **Mixed approach** - You can use both approaches in the same codebase during transition
+
+**Priority order for search/sort resolution:**
+1. Field-level `->searchable()`/`->sortable()` methods (highest priority)
+2. Static `$search`/`$sort` arrays (fallback)
+
+This change is also **100% backward compatible** - existing static arrays continue to work perfectly.
+
+### Configuration File Updates
+
+When upgrading to v10, it's important to ensure your local `config/restify.php` file includes all the new configuration options that have been added.
+
+**Recommended Steps:**
+
+1. **Compare configuration files** - Check your local `config/restify.php` against the latest version
+2. **Review new sections** - Look for new configuration options that may have been added
+3. **Merge changes** - Add any missing configuration sections to your local file
+
+**New configuration sections in v10 may include:**
+
+```php
+// Example new sections (check the actual config file for current options)
+'mcp' => [
+    'tools' => [
+        'exclude' => [],
+        'include' => [],
+    ],
+    'resources' => [
+        'exclude' => [],
+        'include' => [],
+    ],
+    'prompts' => [
+        'exclude' => [],
+        'include' => [],
+    ],
+],
+
+'ai_solutions' => [
+    'model' => 'gpt-4.1-mini',
+    'max_tokens' => 1000,
+],
+```
+
+**How to update your config:**
+
+1. **Backup your current config** - Copy your existing `config/restify.php`
+2. **Republish the config** (optional):
+   ```bash
+   php artisan vendor:publish --provider="Binaryk\LaravelRestify\LaravelRestifyServiceProvider" --tag="config" --force
+   ```
+3. **Merge your custom settings** - Copy your custom values back into the new config file
+4. **Test your application** - Ensure all functionality works as expected
+
+<alert type="warning">
+Always backup your existing configuration before making changes, especially if you have custom settings.
+</alert>
+
 ## From 7.3.1 to 7.4.0
 
 ## Breaking

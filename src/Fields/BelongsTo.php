@@ -51,17 +51,19 @@ class BelongsTo extends EagerField implements Sortable
         if (count($attributes) === 1 && is_array($attributes[0])) {
             $this->searchablesAttributes = collect($attributes[0])->flatten()->all();
             // Also call parent with the first attribute for consistency
-            if (!empty($this->searchablesAttributes)) {
+            if (! empty($this->searchablesAttributes)) {
                 parent::searchable($this->searchablesAttributes[0]);
             }
+
             return $this;
         }
 
         // If it's relationship-specific multiple attributes (all strings), use BelongsTo behavior
-        if (count($attributes) > 1 && collect($attributes)->every(fn($attr) => is_string($attr))) {
+        if (count($attributes) > 1 && collect($attributes)->every(fn ($attr) => is_string($attr))) {
             $this->searchablesAttributes = collect($attributes)->flatten()->all();
             // Also call parent to maintain consistency with CanSearch trait
             parent::searchable($attributes[0]);
+
             return $this;
         }
 
@@ -98,7 +100,7 @@ class BelongsTo extends EagerField implements Sortable
     public function getSearchColumn(?RestifyRequest $request = null): mixed
     {
         // If we have BelongsTo-specific attributes, return the first one for compatibility
-        if (!empty($this->searchablesAttributes)) {
+        if (! empty($this->searchablesAttributes)) {
             return $this->searchablesAttributes[0];
         }
 

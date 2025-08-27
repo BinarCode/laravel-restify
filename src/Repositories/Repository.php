@@ -40,6 +40,33 @@ use ReturnTypeWillChange;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
+ * Repository base class for Laravel Restify.
+ *
+ * You can define the associated Eloquent model using either:
+ *
+ * 1. Modern approach with PHP attributes (recommended):
+ * ```php
+ * use Binaryk\LaravelRestify\Attributes\Model;
+ *
+ * #[Model(User::class)]
+ * class UserRepository extends Repository
+ * {
+ *     // No need for static $model property
+ * }
+ * ```
+ *
+ * 2. Traditional approach with static property:
+ * ```php
+ * class UserRepository extends Repository
+ * {
+ *     public static string $model = User::class;
+ * }
+ * ```
+ *
+ * 3. Auto-guessing (fallback):
+ * If no attribute or static property is defined, the model will be auto-guessed
+ * from the repository class name (e.g., UserRepository → User model).
+ *
  * @property string $type
  *
  * @method array fieldsForIndex(RestifyRequest $request) Define fields for index operations. Override to customize field visibility on listing.

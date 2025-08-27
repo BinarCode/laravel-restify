@@ -18,8 +18,8 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
 {
     public function test_field_matchable_functionality_works(): void
     {
-        $repository = new PostRepository();
-        $request = new RestifyRequest();
+        $repository = new PostRepository;
+        $request = new RestifyRequest;
 
         // Test that field matches are collected
         $fieldMatches = PostRepository::collectFieldMatches($request, $repository);
@@ -28,12 +28,12 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
         // Test field instances have matchable functionality
         $fields = $repository->fields($request);
 
-        $titleField = collect($fields)->first(fn($field) => $field->getAttribute() === 'title');
+        $titleField = collect($fields)->first(fn ($field) => $field->getAttribute() === 'title');
         $this->assertTrue($titleField->isMatchable(), 'Title field should be matchable');
         $this->assertEquals('title', $titleField->getMatchColumn());
         $this->assertEquals('text', $titleField->getMatchType());
 
-        $isActiveField = collect($fields)->first(fn($field) => $field->getAttribute() === 'is_active');
+        $isActiveField = collect($fields)->first(fn ($field) => $field->getAttribute() === 'is_active');
         $this->assertTrue($isActiveField->isMatchable(), 'Is active field should be matchable');
         $this->assertEquals('is_active', $isActiveField->getMatchColumn());
         $this->assertEquals('bool', $isActiveField->getMatchType());
@@ -43,7 +43,7 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
     {
         // Clear any existing posts to start fresh
         Post::query()->delete();
-        
+
         // Register the test repository
         Restify::repositories([
             TestMatchableRepository::class,
@@ -69,7 +69,7 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson(TestMatchableRepository::route())
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->has('data', 3) // Should have 3 posts total
                     ->etc()
             );
@@ -79,20 +79,20 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson(TestMatchableRepository::route(query: ['title' => 'Framework']))
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->has('data', 2) // Should return exactly 2 posts matching "Framework"
                     ->has('data.0.attributes.title')
                     ->has('data.1.attributes.title')
-                    ->where('data.0.attributes.title', fn($title) => in_array($title, [$post1->title, $post3->title]))
-                    ->where('data.1.attributes.title', fn($title) => in_array($title, [$post1->title, $post3->title]))
+                    ->where('data.0.attributes.title', fn ($title) => in_array($title, [$post1->title, $post3->title]))
+                    ->where('data.1.attributes.title', fn ($title) => in_array($title, [$post1->title, $post3->title]))
                     ->etc()
             );
 
-        // Test case insensitive search - search for 'laravel' should match post1  
+        // Test case insensitive search - search for 'laravel' should match post1
         $this->getJson(TestMatchableRepository::route(query: ['title' => 'laravel']))
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->has('data', 1) // Should return exactly 1 post matching "laravel"
                     ->where('data.0.attributes.title', $post1->title) // Laravel Framework Guide
                     ->etc()
@@ -102,7 +102,7 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson(TestMatchableRepository::route(query: ['title' => 'NonExistent']))
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->has('data', 0) // Should have 0 results for non-existent search
                     ->etc()
             );
@@ -112,7 +112,7 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
     {
         // Clear any existing posts to start fresh
         Post::query()->delete();
-        
+
         // Register the test repository
         Restify::repositories([
             TestMatchFilterRepository::class,
@@ -138,7 +138,7 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson(TestMatchFilterRepository::route())
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->has('data', 3) // Should have 3 posts total
                     ->etc()
             );
@@ -149,7 +149,7 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson(TestMatchFilterRepository::route(query: ['title' => 'Laravel']))
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->has('data', 1) // Should return exactly 1 post starting with "Laravel"
                     ->where('data.0.attributes.title', $post1->title) // Laravel Framework Guide
                     ->etc()
@@ -160,7 +160,7 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson(TestMatchFilterRepository::route(query: ['title' => 'Framework']))
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->has('data', 1) // Should return exactly 1 post starting with "Framework"
                     ->where('data.0.attributes.title', $post3->title) // Framework Comparison
                     ->etc()
@@ -170,17 +170,17 @@ class MatchableFieldIntegrationTest extends IntegrationTestCase
         $this->getJson(TestMatchFilterRepository::route(query: ['title' => 'Vue']))
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->has('data', 1) // Should return exactly 1 post starting with "Vue"
                     ->where('data.0.attributes.title', $post2->title) // Vue.js Tutorial
                     ->etc()
             );
-        
+
         // Test no matches - search for something that doesn't exist
         $this->getJson(TestMatchFilterRepository::route(query: ['title' => 'NonExistent']))
             ->assertStatus(200)
             ->assertJson(
-                fn(AssertableJson $json) => $json
+                fn (AssertableJson $json) => $json
                     ->has('data', 0) // Should have 0 results for non-existent search
                     ->etc()
             );
@@ -250,7 +250,7 @@ class CustomTitleMatchFilter extends MatchFilter
     {
         // Custom filtering logic: search for titles that start with the given value
         $query->where('title', 'like', "{$value}%");
-        
+
         return $query;
     }
 }
@@ -262,7 +262,7 @@ class TestMatchFilterRepository extends Repository
     public function fields(RestifyRequest $request): array
     {
         return [
-            Field::make('title')->matchable(new CustomTitleMatchFilter()),
+            Field::make('title')->matchable(new CustomTitleMatchFilter),
             Field::make('description'),
         ];
     }

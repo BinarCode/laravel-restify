@@ -59,8 +59,8 @@ trait CanSearch
         if (is_string($firstAttribute)) {
             $this->searchableColumn = $firstAttribute;
             // Check if second parameter is a type
-            $this->searchableType = (count($attributes) > 1 && is_string($attributes[1])) 
-                ? $attributes[1] 
+            $this->searchableType = (count($attributes) > 1 && is_string($attributes[1]))
+                ? $attributes[1]
                 : 'text';
 
             return $this;

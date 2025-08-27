@@ -21,15 +21,15 @@ use Illuminate\Validation\Rules\Unique;
 use JsonSerializable;
 use ReturnTypeWillChange;
 
-class Field extends OrganicField implements JsonSerializable, Sortable, Matchable
+class Field extends OrganicField implements JsonSerializable, Matchable, Sortable
 {
+    use CanMatch;
+    use CanSearch;
+    use CanSort;
     use FieldMcpSchemaDetection;
     use HasAction;
     use Make;
     use ValidationMethods;
-    use CanSort;
-    use CanMatch;
-    use CanSearch;
 
     /**
      * The resource associated with the field.

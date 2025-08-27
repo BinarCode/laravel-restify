@@ -105,6 +105,7 @@ class TestSearchableRepository extends Repository
 class TestCustomSearchFilterRepository extends Repository
 {
     public static $model = Post::class;
+
     public static array $search = [];
 
     public function fields(RestifyRequest $request): array
@@ -131,6 +132,7 @@ class CustomTitleSearchFilter extends SearchableFilter
 class TestInvokableSearchRepository extends Repository
 {
     public static $model = Post::class;
+
     public static array $search = [];
 
     public function fields(RestifyRequest $request): array
@@ -157,6 +159,7 @@ class InvokableSearchFilter
 class TestBasicSearchRepository extends Repository
 {
     public static $model = Post::class;
+
     public static array $search = [];
 
     public function fields(RestifyRequest $request): array

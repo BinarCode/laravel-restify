@@ -31,7 +31,8 @@ class SearchableFilter extends Filter
                 return $query;
             }
 
-            // This approach could be rewritten using join.
+            // TODO: This approach could be optimized using JOIN instead of subquery for better performance
+            // Current implementation uses subqueries which work correctly but may be slower for large datasets
             collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value) {
                 $query->orWhere(
                     $this->belongsToField->getRelatedModel($this->repository)::select($attribute)
@@ -84,6 +85,6 @@ class SearchableFilter extends Filter
 
     public function hasCustomClosure(): bool
     {
-        return !is_null($this->customClosure);
+        return ! is_null($this->customClosure);
     }
 }

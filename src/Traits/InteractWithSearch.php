@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Traits;
 
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
+use Binaryk\LaravelRestify\Fields;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
 use Binaryk\LaravelRestify\Filters\Filter;
@@ -14,7 +15,6 @@ use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Filters\SortCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Closure;
 use Illuminate\Support\Collection;
 
 trait InteractWithSearch
@@ -103,7 +103,29 @@ trait InteractWithSearch
 
     public static function collectSearchables(RestifyRequest $request, Repository $repository): SearchablesCollection
     {
-        return (new SearchablesCollection($repository::searchables()));
+        // Start with repository-level searchables
+        $repositorySearchables = $repository::searchables();
+
+        // Collect field-level searchables
+        $fieldSearchables = static::collectFieldSearchables($request, $repository);
+
+        // Collect BelongsTo searchable relations
+        $belongsToSearchables = $repository::collectRelated()
+            ->onlySearchable($request)
+            ->map(function (Fields\BelongsTo $field) use ($repository) {
+                return SearchableFilter::make()
+                    ->setRepository($repository)
+                    ->usingBelongsTo($field);
+            });
+
+        // Merge all searchables into a unified collection
+        $allSearchables = collect($repositorySearchables)
+            ->merge($fieldSearchables)
+            ->merge($belongsToSearchables);
+
+        return (new SearchablesCollection($allSearchables->all()))
+            ->setRepository($repository)
+            ->qualifyColumns($repository->model());
     }
 
     public static function collectFieldSearchables(RestifyRequest $request, Repository $repository): Collection
@@ -112,30 +134,33 @@ trait InteractWithSearch
             ->filter(fn (Field $field) => $field->isSearchable($request))
             ->map(function (Field $field) use ($request, $repository) {
                 $searchColumn = $field->getSearchColumn($request);
-                
                 if ($searchColumn instanceof SearchableFilter) {
                     $searchColumn->setRepository($repository);
                     // Ensure the SearchableFilter has a column set
-                    if (!$searchColumn->column()) {
+                    if (! $searchColumn->column()) {
                         $searchColumn->setColumn($field->getAttribute());
                     }
+
                     return $searchColumn;
                 }
 
-                $searchFilter = new SearchableFilter();
+                $searchFilter = new SearchableFilter;
                 $searchFilter->setRepository($repository);
 
                 if (is_callable($searchColumn)) {
                     $searchFilter->setColumn($field->getAttribute());
+
                     return $searchFilter->usingClosure($searchColumn);
                 }
 
                 if (is_object($searchColumn) && method_exists($searchColumn, '__invoke')) {
                     $searchFilter->setColumn($field->getAttribute());
+
                     return $searchFilter->usingClosure($searchColumn);
                 }
 
                 $searchFilter->setColumn($field->getSearchColumn($request));
+
                 return $searchFilter;
             });
     }
@@ -158,19 +183,21 @@ trait InteractWithSearch
             ->filter(fn (Field $field) => $field->isMatchable($request))
             ->map(callback: function (Field $field) use ($request) {
                 $matchColumn = $field->getMatchColumn($request);
-                if ($matchColumn instanceof  MatchFilter) {
+                if ($matchColumn instanceof MatchFilter) {
                     return $matchColumn;
                 }
 
-                $matchFilter = new MatchFilter();
+                $matchFilter = new MatchFilter;
 
                 if (is_callable($matchColumn)) {
                     $matchFilter->setColumn($field->getAttribute());
+
                     return $matchFilter->usingClosure($matchColumn);
                 }
 
                 $matchFilter->setColumn($field->getMatchColumn($request));
                 $matchFilter->setType($field->getMatchType($request));
+
                 return $matchFilter;
             });
     }
