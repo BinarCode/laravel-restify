@@ -51,13 +51,13 @@ class PostRepository extends Repository
 
             field('title')->storingRules('required')->messages([
                 'required' => 'This field is required',
-            ]),
+            ])->matchableText(),
 
             field('description')->storingRules('required')->messages([
                 'required' => 'Description field is required',
             ]),
 
-            field('is_active'),
+            field('is_active')->matchableBool(),
         ];
     }
 

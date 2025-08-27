@@ -305,6 +305,208 @@ GET /api/restify/users?sort=-created_at  # Descending
 GET /api/restify/users?sort=name,-created_at  # Multiple fields
 ```
 
+## Matching
+
+Fields can be made matchable, allowing API consumers to filter results using query parameters.
+
+### Making Fields Matchable
+
+Use the `matchable()` method or convenient aliases:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('name')->matchableText(),              // Text matching with LIKE
+        field('email')->matchable('users.email'),   // Custom column - users table email
+        field('status')->matchableText(),            // Text matching
+        field('is_active')->matchableBool(),         // Boolean matching
+        field('age')->matchableInteger(),            // Integer matching
+        field('created_at')->matchableDatetime(),    // Date matching
+        field('price')->matchableBetween(),          // Range matching
+        field('tags')->matchableArray(),             // Array/IN matching
+    ];
+}
+```
+
+### Using Matchable Fields
+
+Once fields are marked as matchable, API consumers can filter using query parameters:
+
+```http
+GET /api/restify/posts?title=Laravel         # Text matching
+GET /api/restify/posts?is_active=true        # Boolean matching
+GET /api/restify/posts?user_id=5             # Integer matching
+GET /api/restify/posts?created_at=2023-12-01 # Date matching
+GET /api/restify/posts?price=100,500         # Range matching
+GET /api/restify/posts?tags=php,laravel      # Array matching
+
+# Negation (prefix with -)
+GET /api/restify/posts?-status=draft         # Exclude drafts
+GET /api/restify/posts?-is_active=true       # Inactive posts
+
+# Null checks
+GET /api/restify/posts?description=null      # Posts with no description
+```
+
+### Match Types Reference
+
+| Alias | Type | Example Usage | Query Behavior |
+|-------|------|---------------|----------------|
+| `matchableText()` | text | `?name=john` | `WHERE name LIKE '%john%'` |
+| `matchableBool()` | boolean | `?is_active=true` | `WHERE is_active = 1` |
+| `matchableInteger()` | integer | `?user_id=5` | `WHERE user_id = 5` |
+| `matchableDatetime()` | datetime | `?created_at=2023-12-01` | `WHERE DATE(created_at) = '2023-12-01'` |
+| `matchableBetween()` | between | `?price=100,500` | `WHERE price BETWEEN 100 AND 500` |
+| `matchableArray()` | array | `?tags=php,laravel` | `WHERE tags IN ('php', 'laravel')` |
+
+### Advanced Matchable Configuration
+
+The `matchable()` method is flexible and accepts multiple types of arguments for advanced filtering scenarios:
+
+#### Basic Usage (No Arguments)
+
+When called without arguments, `matchable()` enables text-based matching using the field's attribute name:
+
+```php
+field('title')->matchable(), // Enables text matching on 'title' column
+```
+
+#### Custom Column
+
+Specify a different database column for matching:
+
+```php
+field('display_name')->matchable('users.name'), // Match against 'users.name' column
+```
+
+#### Custom Match Type
+
+Specify both column and match type:
+
+```php
+field('status')->matchable('posts.status', 'text'), // Custom column with text matching
+field('priority')->matchable('priority', 'integer'), // Integer matching
+```
+
+#### Closure-based Matching
+
+For complex filtering logic, pass a closure that receives the request, query builder, and value:
+
+```php
+field('title')->matchable(function ($request, $query, $value) {
+    // Custom search logic - case insensitive partial matching
+    $query->where('title', 'like', "%{$value}%");
+}),
+
+field('content')->matchable(function ($request, $query, $value) {
+    // Full-text search across multiple columns
+    $query->whereRaw("MATCH(title, content) AGAINST(? IN BOOLEAN MODE)", [$value]);
+}),
+
+field('location')->matchable(function ($request, $query, $value) {
+    // Complex geographical search
+    [$lat, $lng, $radius] = explode(',', $value);
+    $query->whereRaw(
+        'ST_Distance_Sphere(POINT(longitude, latitude), POINT(?, ?)) <= ?',
+        [$lng, $lat, $radius * 1000]
+    );
+}),
+```
+
+#### Custom MatchFilter Classes
+
+For reusable complex filtering logic, create custom MatchFilter classes:
+
+```php
+use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+
+class CustomTitleFilter extends MatchFilter
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->setColumn('title'); // Set the column to filter on
+    }
+
+    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
+    {
+        // Custom filtering logic: search for titles that start with the given value
+        $query->where('title', 'like', "{$value}%");
+        
+        return $query;
+    }
+}
+```
+
+Then use the custom filter in your field definition:
+
+```php
+field('title')->matchable(new CustomTitleFilter()),
+```
+
+#### Invokable Classes
+
+You can also use invokable classes for cleaner code organization:
+
+```php
+class SearchTitleFilter
+{
+    public function __invoke($request, $query, $value)
+    {
+        $query->where('title', 'like', "%{$value}%")
+              ->orWhere('description', 'like', "%{$value}%");
+    }
+}
+
+// Usage
+field('search')->matchable(new SearchTitleFilter()),
+```
+
+#### Practical Examples
+
+**E-commerce Product Search:**
+```php
+field('search')->matchable(function ($request, $query, $value) {
+    $query->where(function ($q) use ($value) {
+        $q->where('name', 'like', "%{$value}%")
+          ->orWhere('description', 'like', "%{$value}%")
+          ->orWhere('sku', 'like', "%{$value}%");
+    });
+}),
+```
+
+**Date Range Filtering:**
+```php
+field('date_range')->matchable(function ($request, $query, $value) {
+    [$start, $end] = explode(',', $value);
+    $query->whereBetween('created_at', [$start, $end]);
+}),
+```
+
+**Tag-based Filtering:**
+```php
+field('tags')->matchable(function ($request, $query, $value) {
+    $tags = explode(',', $value);
+    $query->whereHas('tags', function ($q) use ($tags) {
+        $q->whereIn('slug', $tags);
+    });
+}),
+```
+
+**Relationship Filtering:**
+```php
+field('author')->matchable(function ($request, $query, $value) {
+    $query->whereHas('author', function ($q) use ($value) {
+        $q->where('name', 'like', "%{$value}%")
+          ->orWhere('email', 'like', "%{$value}%");
+    });
+}),
+```
+
 ## Validation
 
 There is a golden rule that says - catch the exception as soon as possible on its request way.
