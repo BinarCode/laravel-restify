@@ -30,6 +30,7 @@ class SearchableFilter extends Filter
             ray('Searching through BelongsTo relation');
             if (! $this->belongsToField->authorize($request)) {
                 ray('BelongsTo field not authorized for this request, skipping search.');
+
                 return $query;
             }
 
