@@ -119,6 +119,92 @@ class UserRepository extends Repository
 
 This change is also **100% backward compatible** - existing static arrays continue to work perfectly.
 
+#### Enhanced BelongsTo Search Performance with Configurable JOINs
+
+Laravel Restify v10 introduces a significant performance optimization for BelongsTo relationship searches by replacing slow subqueries with efficient JOINs. This feature is configurable and enabled by default for better performance.
+
+**Performance Impact:**
+
+**Before (v9 and earlier - Subquery approach):**
+```sql
+-- Slow subquery-based search
+SELECT * FROM users WHERE (
+  (SELECT name FROM organizations WHERE organizations.id = users.organization_id LIMIT 1) LIKE '%Tech%'
+  OR
+  (SELECT phone FROM organizations WHERE organizations.id = users.organization_id LIMIT 1) LIKE '%Tech%'
+)
+```
+
+**After (v10 - Optimized JOIN approach):**
+```sql
+-- Fast JOIN-based search with proper column selection
+SELECT users.* FROM users 
+LEFT JOIN organizations ON users.organization_id = organizations.id
+WHERE (organizations.name LIKE '%Tech%' OR organizations.phone LIKE '%Tech%')
+```
+
+**Configuration Options:**
+
+The JOIN optimization can be controlled via configuration:
+
+```php
+// config/restify.php
+'search' => [
+    'case_sensitive' => true,
+    
+    /*
+    | Use JOINs for BelongsTo Relationships
+    | When enabled, BelongsTo relationship searches will use JOINs instead of
+    | subqueries for better performance. This is generally recommended for
+    | better query performance, but can be disabled if compatibility issues arise.
+    | Default: true (recommended for better performance)
+    */
+    'use_joins_for_belongs_to' => env('RESTIFY_USE_JOINS_FOR_BELONGS_TO', true),
+],
+```
+
+**Environment Variable Control:**
+```bash
+# .env file
+RESTIFY_USE_JOINS_FOR_BELONGS_TO=true   # Enable JOINs (default, recommended)
+RESTIFY_USE_JOINS_FOR_BELONGS_TO=false  # Disable JOINs (legacy subqueries)
+```
+
+**Benefits of JOIN optimization:**
+- 🚀 **Better Performance** - JOINs are significantly faster than subqueries for relationship searches
+- 📊 **Improved Scalability** - Better performance with large datasets
+- 🔧 **Automatic Column Qualification** - Prevents column name conflicts in complex queries
+- ⚡ **Pagination Optimization** - Both main and count queries benefit from JOINs
+
+**When to disable JOINs:**
+- 🔄 **During migration** - Test both approaches during deployment
+- 🐛 **Compatibility issues** - If you encounter any edge cases with complex queries
+- 📊 **Specific database setups** - Some database configurations may prefer subqueries
+- 🧪 **Testing phases** - Compare performance in your specific environment
+
+**Migration Strategy:**
+
+1. **Default behavior** - JOINs are enabled by default for better performance
+2. **No code changes needed** - Existing BelongsTo searches automatically benefit
+3. **Easy rollback** - Set `RESTIFY_USE_JOINS_FOR_BELONGS_TO=false` to revert to v9 behavior
+4. **Gradual testing** - Test in development/staging before production deployment
+
+**Example Usage:**
+```php
+// This automatically benefits from JOIN optimization in v10
+class PostRepository extends Repository
+{
+    public static array $related = [
+        'user' => BelongsTo::make('user', UserRepository::class)
+            ->searchable(['name', 'email']),
+        'organization' => BelongsTo::make('organization', OrganizationRepository::class)
+            ->searchable(['name', 'phone']),
+    ];
+}
+```
+
+This change is **100% backward compatible** with an option to disable if needed. The optimization is transparent to your application code while providing significant performance improvements.
+
 ## Breaking Changes
 
 ### Default Search Behavior Change
@@ -179,6 +265,13 @@ When upgrading to v10, it's important to ensure your local `config/restify.php` 
 
 ```php
 // Example new sections (check the actual config file for current options)
+'search' => [
+    'case_sensitive' => true,
+    
+    // New: JOIN optimization for BelongsTo searches (v10+)
+    'use_joins_for_belongs_to' => env('RESTIFY_USE_JOINS_FOR_BELONGS_TO', true),
+],
+
 'mcp' => [
     'tools' => [
         'exclude' => [],

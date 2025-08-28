@@ -17,6 +17,9 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
 
+/**
+ * @mixin Repository
+ */
 trait InteractWithSearch
 {
     use AuthorizableModels;
@@ -33,6 +36,22 @@ trait InteractWithSearch
     public static function withs(): array
     {
         return static::$with ?? [];
+    }
+
+    public static function collectWiths(RestifyRequest $request, Repository $repository): Collection
+    {
+        return collect(array_unique(array_merge(
+            $repository::withs(),
+            static::lazyLoadedFieldsRelationship($request, $repository),
+        )));
+    }
+
+    public static function lazyLoadedFieldsRelationship(RestifyRequest $request, Repository $repository): array
+    {
+        return $repository->collectFields($request)
+            ->filter(fn (Field $field) => $field->isLazy($request))
+            ->map(fn (Field $field) => $field->getLazyRelationshipName())
+            ->all();
     }
 
     public static function related(): array

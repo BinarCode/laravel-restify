@@ -78,7 +78,7 @@ trait McpToolHelpers
 
         $documentation .= "\nField Selection:\n";
         $documentation .= "You can specify which fields to include for each relationship using square brackets.\n";
-        $documentation .= "Syntax: relationship[field1,field2] or relationship[field1|field2] (both work)\n\n";
+        $documentation .= "Syntax: relationship[field1|field2]\n\n";
 
         $documentation .= "Nested Relationships:\n";
         $documentation .= "You can include deeply nested relationships using dot notation with field selection at each level.\n";
