@@ -54,7 +54,7 @@ class SearchableFilter extends Filter
                     // Check if the attribute is already qualified (contains a dot)
                     $qualifiedColumn = str_contains($attribute, '.')
                         ? $attribute
-                        : $relatedTable . '.' . $attribute;
+                        : $relatedTable.'.'.$attribute;
 
                     if (! config('restify.search.case_sensitive')) {
                         $upper = strtoupper($value);
