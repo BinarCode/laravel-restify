@@ -31,7 +31,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
     public function test_repository_uses_mcp_specific_field_methods(): void
     {
-        $repository = new class extends Repository {
+        $repository = new class extends Repository
+        {
             public static $model = Post::class;
 
             public function fields(RestifyRequest $request): array
@@ -67,7 +68,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // Regular request should use fields() method
         $regularRequest = new RestifyRequest;
         $regularFields = $repository->collectFields($regularRequest);
-        $regularFieldNames = $regularFields->map(fn($field) => $field->getAttribute())->toArray();
+        $regularFieldNames = $regularFields->map(fn ($field) => $field->getAttribute())->toArray();
 
         $this->assertCount(2, $regularFields);
         $this->assertContains('title', $regularFieldNames);
@@ -78,7 +79,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // MCP index request should use fieldsForMcpIndex() method
         $mcpIndexRequest = new McpRequest(['params' => ['name' => 'posts-index-tool']]);
         $mcpIndexFields = $repository->collectFields($mcpIndexRequest);
-        $mcpIndexFieldNames = $mcpIndexFields->map(fn($field) => $field->getAttribute())->toArray();
+        $mcpIndexFieldNames = $mcpIndexFields->map(fn ($field) => $field->getAttribute())->toArray();
 
         $this->assertCount(4, $mcpIndexFields);
         $this->assertContains('title', $mcpIndexFieldNames);
@@ -90,7 +91,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // MCP show request should use fieldsForMcpShow() method
         $mcpShowRequest = new McpRequest(['params' => ['name' => 'posts-show-tool']]);
         $mcpShowFields = $repository->collectFields($mcpShowRequest);
-        $mcpShowFieldNames = $mcpShowFields->map(fn($field) => $field->getAttribute())->toArray();
+        $mcpShowFieldNames = $mcpShowFields->map(fn ($field) => $field->getAttribute())->toArray();
 
         $this->assertCount(5, $mcpShowFields);
         $this->assertContains('title', $mcpShowFieldNames);
@@ -103,7 +104,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
     public function test_mcp_request_falls_back_to_regular_methods_when_mcp_methods_missing(): void
     {
-        $repository = new class extends Repository {
+        $repository = new class extends Repository
+        {
             public static $model = Post::class;
 
             public function fields(RestifyRequest $request): array
@@ -126,7 +128,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // MCP request without fieldsForMcpIndex should fall back to fieldsForIndex
         $mcpIndexRequest = new McpRequest(['params' => ['name' => 'posts-index-tool']]);
         $mcpIndexFields = $repository->collectFields($mcpIndexRequest);
-        $mcpIndexFieldNames = $mcpIndexFields->map(fn($field) => $field->getAttribute())->toArray();
+        $mcpIndexFieldNames = $mcpIndexFields->map(fn ($field) => $field->getAttribute())->toArray();
 
         $this->assertCount(2, $mcpIndexFields);
         $this->assertContains('title', $mcpIndexFieldNames);
@@ -136,7 +138,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // MCP request without fieldsForMcpShow should fall back to fields()
         $mcpShowRequest = new McpRequest(['params' => ['name' => 'posts-show-tool']]);
         $mcpShowFields = $repository->collectFields($mcpShowRequest);
-        $mcpShowFieldNames = $mcpShowFields->map(fn($field) => $field->getAttribute())->toArray();
+        $mcpShowFieldNames = $mcpShowFields->map(fn ($field) => $field->getAttribute())->toArray();
 
         $this->assertCount(2, $mcpShowFields);
         $this->assertContains('title', $mcpShowFieldNames);
@@ -146,7 +148,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
     public function test_mcp_getter_request_uses_fields_for_mcp_getter(): void
     {
-        $repository = new class extends Repository {
+        $repository = new class extends Repository
+        {
             public static $model = Post::class;
 
             public function fields(RestifyRequest $request): array
@@ -168,7 +171,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         $mcpGetterRequest = new McpRequest(['params' => ['name' => 'analytics-getter-tool']]);
         $mcpGetterFields = $repository->collectFields($mcpGetterRequest);
-        $mcpGetterFieldNames = $mcpGetterFields->map(fn($field) => $field->getAttribute())->toArray();
+        $mcpGetterFieldNames = $mcpGetterFields->map(fn ($field) => $field->getAttribute())->toArray();
 
         $this->assertCount(3, $mcpGetterFields);
         $this->assertContains('title', $mcpGetterFieldNames);
@@ -179,7 +182,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
     public function test_mcp_http_integration_uses_mcp_specific_fields(): void
     {
         // Create test repository with MCP tools enabled
-        $mcpRepository = new class extends Repository {
+        $mcpRepository = new class extends Repository
+        {
             use HasMcpTools;
 
             public static $model = Post::class;
@@ -200,8 +204,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
                     Field::make('title'),
                     Field::make('description'),
                     Field::make('user_id'),
-                    Field::make('mcp_metadata')->resolveCallback(fn() => 'mcp-specific-data'),
-                    Field::make('internal_tracking')->resolveCallback(fn() => 'internal-123'),
+                    Field::make('mcp_metadata')->resolveCallback(fn () => 'mcp-specific-data'),
+                    Field::make('internal_tracking')->resolveCallback(fn () => 'internal-123'),
                 ];
             }
 
@@ -237,8 +241,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // Find our expected tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
-        $indexToolName = collect($availableTools)->filter(fn($name) => str_contains($name,
-                'test-posts') && str_contains($name, 'index'))->first();
+        $indexToolName = collect($availableTools)->filter(fn ($name) => str_contains($name,
+            'test-posts') && str_contains($name, 'index'))->first();
 
         $this->assertNotNull($indexToolName,
             'Expected test-posts index tool not found. Available tools: '.implode(', ', $availableTools));
@@ -304,7 +308,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
     public function test_mcp_http_integration_with_relationships_uses_mcp_specific_fields(): void
     {
         // Create simple MCP-enabled Post repository
-        $mcpPostRepository = new class extends Repository {
+        $mcpPostRepository = new class extends Repository
+        {
             use HasMcpTools;
 
             public static $model = Post::class;
@@ -335,8 +340,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
                     Field::make('title'),
                     Field::make('description'),
                     Field::make('user_id'),
-                    Field::make('mcp_post_metadata')->resolveCallback(fn() => 'post-mcp-specific-data'),
-                    Field::make('post_analytics')->resolveCallback(fn() => 'post-analytics-data'),
+                    Field::make('mcp_post_metadata')->resolveCallback(fn () => 'post-mcp-specific-data'),
+                    Field::make('post_analytics')->resolveCallback(fn () => 'post-analytics-data'),
                     BelongsTo::make('user'),  // Will use the MCP-enabled UserRepository
                 ];
             }
@@ -381,11 +386,10 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         $toolsData = $toolsResponse->json();
 
-
         // Find the post index tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
         $postIndexToolName = collect($availableTools)->filter(
-            fn($name) => str_contains($name, 'test-posts-with-user') && str_contains($name, 'index')
+            fn ($name) => str_contains($name, 'test-posts-with-user') && str_contains($name, 'index')
         )->first();
 
         $this->assertNotNull($postIndexToolName,
@@ -462,7 +466,8 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
     public function test_mcp_relationship_respects_has_mcp_tools_trait(): void
     {
         // Create MCP-enabled Post repository that references the regular user
-        $mcpPostRepository = new class extends Repository {
+        $mcpPostRepository = new class extends Repository
+        {
             use HasMcpTools;
 
             public static $model = Post::class;
@@ -472,7 +477,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             public static function include(): array
             {
                 return [
-                    BelongsTo::make('user', UserWithoutMcpToolsFields::class)
+                    BelongsTo::make('user', UserWithoutMcpToolsFields::class),
                 ];
             }
 
@@ -522,7 +527,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         $toolsData = $toolsResponse->json();
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
         $postIndexToolName = collect($availableTools)->filter(
-            fn($name) => str_contains($name, 'test-posts-regular-user') && str_contains($name, 'index')
+            fn ($name) => str_contains($name, 'test-posts-regular-user') && str_contains($name, 'index')
         )->first();
 
         $this->assertNotNull($postIndexToolName);
@@ -559,7 +564,6 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
     }
 }
 
-
 class UserWithMcpIndexFields extends Repository
 {
     use HasMcpTools;
@@ -581,9 +585,9 @@ class UserWithMcpIndexFields extends Repository
         return [
             Field::make('name'),
             Field::make('email'),
-            Field::make('user_mcp_data')->resolveCallback(fn() => 'user-mcp-specific-data'),
-            Field::make('internal_user_tracking')->resolveCallback(fn() => 'user-internal-123'),
-            Field::make('admin_notes')->resolveCallback(fn() => 'admin-access-only'),
+            Field::make('user_mcp_data')->resolveCallback(fn () => 'user-mcp-specific-data'),
+            Field::make('internal_user_tracking')->resolveCallback(fn () => 'user-internal-123'),
+            Field::make('admin_notes')->resolveCallback(fn () => 'admin-access-only'),
         ];
     }
 
