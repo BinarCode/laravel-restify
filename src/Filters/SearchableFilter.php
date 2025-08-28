@@ -31,6 +31,18 @@ class SearchableFilter extends Filter
                 return $query;
             }
 
+            // Check if there's a custom searchable callback
+            if (is_callable($this->belongsToField->searchableCallback)) {
+                return call_user_func(
+                    $this->belongsToField->searchableCallback,
+                    $query,
+                    $request,
+                    $value,
+                    $this->belongsToField,
+                    $this->repository
+                );
+            }
+
             // Check if JOINs are enabled in config
             if (config('restify.search.use_joins_for_belongs_to', false)) {
                 // JOINs are applied at the service level, so we just need to apply search conditions
@@ -38,27 +50,56 @@ class SearchableFilter extends Filter
                 $relatedTable = $relatedModel->getTable();
 
                 // Apply search conditions using qualified column names from the joined table
-                collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value, $relatedTable) {
+                collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value, $relatedTable, $connectionType) {
                     // Check if the attribute is already qualified (contains a dot)
                     $qualifiedColumn = str_contains($attribute, '.')
                         ? $attribute
                         : $relatedTable . '.' . $attribute;
 
-                    $query->orWhere($qualifiedColumn, $likeOperator, "%{$value}%");
+                    if (! config('restify.search.case_sensitive')) {
+                        $upper = strtoupper($value);
+
+                        $columnExpression = $connectionType === 'pgsql'
+                            ? "UPPER({$qualifiedColumn}::text)"
+                            : "UPPER({$qualifiedColumn})";
+
+                        $query->orWhereRaw("{$columnExpression} LIKE ?", ['%'.$upper.'%']);
+                    } else {
+                        $query->orWhere($qualifiedColumn, $likeOperator, "%{$value}%");
+                    }
                 });
             } else {
                 // Use the original subquery approach when JOINs are disabled
-                collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value) {
-                    $query->orWhere(
-                        $this->belongsToField->getRelatedModel($this->repository)::select($attribute)
-                            ->whereColumn(
-                                $this->belongsToField->getQualifiedKey($this->repository),
-                                $this->belongsToField->getRelatedKey($this->repository)
-                            )
-                            ->take(1),
-                        $likeOperator,
-                        "%{$value}%"
-                    );
+                collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value, $connectionType) {
+                    if (! config('restify.search.case_sensitive')) {
+                        $upper = strtoupper($value);
+
+                        $columnExpression = $connectionType === 'pgsql'
+                            ? "UPPER({$attribute}::text)"
+                            : "UPPER({$attribute})";
+
+                        $query->orWhere(
+                            $this->belongsToField->getRelatedModel($this->repository)::selectRaw($columnExpression)
+                                ->whereColumn(
+                                    $this->belongsToField->getQualifiedKey($this->repository),
+                                    $this->belongsToField->getRelatedKey($this->repository)
+                                )
+                                ->take(1),
+                            'like',
+                            "%{$upper}%"
+                        );
+                    } else {
+                        $query->orWhere(
+                            $this->belongsToField->getRelatedModel($this->repository)::select($attribute)
+                                ->whereColumn(
+                                    $this->belongsToField->getQualifiedKey($this->repository),
+                                    $this->belongsToField->getRelatedKey($this->repository)
+                                )
+                                ->take(1),
+                            $likeOperator,
+                            "%{$value}%"
+                        );
+                    }
                 });
             }
 

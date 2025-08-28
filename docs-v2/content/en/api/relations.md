@@ -344,6 +344,29 @@ $isSearchable = $field->isSearchable(); // true
 $attributes = $field->getSearchables(); // ['name']
 ```
 
+#### Custom Search Callbacks
+
+For advanced search scenarios, you can provide a custom callback to completely control the search behavior:
+
+```php
+BelongsTo::make('user')->searchable(function ($query, $request, $value, $field, $repository) {
+    return $query->whereHas('user', function ($q) use ($value) {
+        $q->where('name', 'ilike', "%{$value}%")
+          ->orWhere('email', 'ilike', "%{$value}%")
+          ->orWhere('phone', 'like', "%{$value}%");
+    });
+})
+```
+
+The callback receives the following parameters:
+- `$query` - The main query builder instance
+- `$request` - The current RestifyRequest instance
+- `$value` - The search value from the request
+- `$field` - The BelongsTo field instance
+- `$repository` - The current repository instance
+
+This approach provides maximum flexibility for complex search requirements while maintaining the same API interface.
+
 ## HasOne
 
 The `HasOne` field corresponds to a `hasOne` Eloquent relationship. 

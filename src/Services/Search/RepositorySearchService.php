@@ -272,6 +272,7 @@ class RepositorySearchService
         SearchablesCollection $searchablesCollection,
         RestifyRequest $request
     ): void {
+        ray('Applying BelongsTo JOINs for searchables')->blue();
         $searchablesCollection
             ->onlyBelongsTo()
             ->each(function (SearchableFilter $searchable) use ($query, $request) {

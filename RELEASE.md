@@ -56,6 +56,21 @@ New and improved field methods with flexible signatures:
 - **`matchable()`** - Various match types and advanced filtering scenarios
 - **`sortable()`** - Custom columns and conditional sorting
 
+#### Custom Search Callbacks for BelongsTo Relations
+
+BelongsTo fields now support custom search callbacks for complete control over search behavior:
+
+```php
+BelongsTo::make('user')->searchable(function ($query, $request, $value, $field, $repository) {
+    return $query->whereHas('user', function ($q) use ($value) {
+        $q->where('name', 'ilike', "%{$value}%")
+          ->orWhere('email', 'ilike', "%{$value}%");
+    });
+})
+```
+
+The callback receives all necessary parameters with the query as the first parameter for maximum flexibility.
+
 📖 **[Field Methods Documentation →](docs-v2/content/en/api/fields.md)**
 
 ### ⚠️ Breaking Changes

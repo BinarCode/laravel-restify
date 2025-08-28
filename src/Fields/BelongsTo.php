@@ -14,6 +14,8 @@ class BelongsTo extends EagerField implements Sortable
 
     public ?array $searchablesAttributes = null;
 
+    public ?\Closure $searchableCallback = null;
+
     public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
         /** * @var Model $relatedModel */
@@ -58,6 +60,12 @@ class BelongsTo extends EagerField implements Sortable
             return $this;
         }
 
+        if (count($attributes) === 1 && is_callable($attributes[0])) {
+            $this->searchableCallback = $attributes[0];
+
+            return $this;
+        }
+
         // If it's relationship-specific multiple attributes (all strings), use BelongsTo behavior
         if (count($attributes) > 1 && collect($attributes)->every(fn ($attr) => is_string($attr))) {
             $this->searchablesAttributes = collect($attributes)->flatten()->all();
@@ -83,6 +91,10 @@ class BelongsTo extends EagerField implements Sortable
      */
     public function isSearchable(?RestifyRequest $request = null): bool
     {
+        if (is_callable($this->searchableCallback)) {
+            return true;
+        }
+
         return ! is_null($this->searchablesAttributes) || parent::isSearchable($request);
     }
 
