@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Eager;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -106,7 +105,6 @@ class Related implements JsonSerializable
 
             return $this;
         }
-
 
         switch ($paginator) {
             case $paginator instanceof Collection:
