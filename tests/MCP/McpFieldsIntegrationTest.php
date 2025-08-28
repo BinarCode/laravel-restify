@@ -382,7 +382,6 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         $toolsData = $toolsResponse->json();
 
 
-        ray($toolsData);
         // Find the post index tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
         $postIndexToolName = collect($availableTools)->filter(
