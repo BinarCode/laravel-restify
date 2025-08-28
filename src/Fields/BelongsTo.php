@@ -60,6 +60,15 @@ class BelongsTo extends EagerField implements Sortable
             return $this;
         }
 
+        // If parent set a simple string column, also set it in searchablesAttributes for consistency
+        if (count($attributes) === 1 && is_string($attributes[0])) {
+            $this->searchablesAttributes = [$attributes[0]];
+
+            parent::searchable($attributes[0]);
+
+            return $this;
+        }
+
         if (count($attributes) === 1 && is_callable($attributes[0])) {
             $this->searchableCallback = $attributes[0];
 
@@ -77,11 +86,6 @@ class BelongsTo extends EagerField implements Sortable
 
         // For single attribute or complex cases (closures, filters), use parent behavior
         parent::searchable(...$attributes);
-
-        // If parent set a simple string column, also set it in searchablesAttributes for consistency
-        if (count($attributes) === 1 && is_string($attributes[0])) {
-            $this->searchablesAttributes = [$attributes[0]];
-        }
 
         return $this;
     }
