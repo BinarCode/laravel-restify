@@ -11,7 +11,7 @@ class SearchableFilter extends Filter
 
     public array $computedColumns = [];
 
-    private BelongsTo $belongsToField;
+    public BelongsTo $belongsToField;
 
     protected $customClosure = null;
 
@@ -27,26 +27,47 @@ class SearchableFilter extends Filter
         $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
         if (isset($this->belongsToField)) {
-            ray('Searching through BelongsTo relation');
             if (! $this->belongsToField->authorize($request)) {
-                ray('BelongsTo field not authorized for this request, skipping search.');
                 return $query;
             }
 
-            // TODO: This approach could be optimized using JOIN instead of subquery for better performance
-            // Current implementation uses subqueries which work correctly but may be slower for large datasets
-            collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value) {
-                $query->orWhere(
-                    $this->belongsToField->getRelatedModel($this->repository)::select($attribute)
-                        ->whereColumn(
-                            $this->belongsToField->getQualifiedKey($this->repository),
-                            $this->belongsToField->getRelatedKey($this->repository)
-                        )
-                        ->take(1),
-                    $likeOperator,
-                    "%{$value}%"
-                );
-            });
+            // Check if JOINs are enabled in config
+            if (config('restify.search.use_joins_for_belongs_to', false)) {
+                // JOINs are applied at the service level, so we just need to apply search conditions
+                $relatedModel = $this->belongsToField->getRelatedModel($this->repository);
+                $relatedTable = $relatedModel->getTable();
+
+                // Apply search conditions using qualified column names from the joined table
+                collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value, $relatedTable) {
+                    // Check if the attribute is already qualified (contains a dot)
+                    $qualifiedColumn = str_contains($attribute, '.')
+                        ? $attribute
+                        : $relatedTable . '.' . $attribute;
+
+                    $query->orWhere($qualifiedColumn, $likeOperator, "%{$value}%");
+                });
+            } else {
+                // Use the original subquery approach when JOINs are disabled
+                collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value) {
+                    $query->orWhere(function ($subQuery) use ($attribute, $likeOperator, $value) {
+                        $relation = $this->belongsToField->getRelation($this->repository);
+                        $relatedModel = $this->belongsToField->getRelatedModel($this->repository);
+                        $relatedTable = $relatedModel->getTable();
+                        $foreignKey = $relation->getForeignKeyName();
+                        $ownerKey = $relation->getOwnerKeyName();
+
+                        // Build the subquery: (SELECT column FROM related_table WHERE related_table.key = main_table.foreign_key LIMIT 1)
+                        $qualifiedColumn = str_contains($attribute, '.') ? $attribute : $relatedTable . '.' . $attribute;
+                        $localTableForeignKey = $this->repository->model()->getTable() . '.' . $foreignKey;
+                        $relatedTableOwnerKey = $relatedTable . '.' . $ownerKey;
+
+                        $subQuery->whereRaw(
+                            "(SELECT {$qualifiedColumn} FROM {$relatedTable} WHERE {$relatedTableOwnerKey} = {$localTableForeignKey} LIMIT 1) {$likeOperator} ?",
+                            ["%{$value}%"]
+                        );
+                    });
+                });
+            }
 
             return $query;
         }
@@ -88,5 +109,10 @@ class SearchableFilter extends Filter
     public function hasCustomClosure(): bool
     {
         return ! is_null($this->customClosure);
+    }
+
+    public function hasBelongsTo(): bool
+    {
+        return isset($this->belongsToField);
     }
 }

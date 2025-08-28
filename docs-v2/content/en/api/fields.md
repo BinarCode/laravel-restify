@@ -1374,6 +1374,79 @@ class AvatarStore implements Storable
 You can use the <code>php artisan restify:store AvatarStore</code> command to generate a store file.
 </alert>
 
+## Lazy Loading
+
+Fields can be configured to lazy load relationships, which is particularly useful for computed attributes that depend on related models. This helps avoid N+1 queries by ensuring relationships are loaded only when needed.
+
+### Making Fields Lazy
+
+Use the `lazy()` method to mark a field for lazy loading:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        // Lazy load the 'tags' relationship when displaying profileTagNames
+        field('profileTagNames', fn() => $this->model()->profileTagNames)
+            ->lazy('tags'),
+            
+        // Lazy load using the field's attribute name (if it matches the relationship)
+        field('tags', fn() => $this->model()->tags->pluck('name'))
+            ->lazy(),
+            
+        // Another example with user relationship
+        field('authorName', fn() => $this->model()->user->name ?? 'Unknown')
+            ->lazy('user'),
+    ];
+}
+```
+
+### How It Works
+
+When you have a model attribute like this:
+
+```php
+class Post extends Model
+{
+    public function getProfileTagNamesAttribute(): array
+    {
+        return $this->tags()->pluck('name')->toArray();
+    }
+    
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+}
+```
+
+You can create a field that efficiently loads this data:
+
+```php
+field('profileTagNames', fn() => $this->model()->profileTagNames)
+    ->lazy('tags')
+```
+
+This ensures that:
+1. The `tags` relationship is loaded before the field value is computed
+2. Multiple fields using the same relationship won't cause additional queries
+3. The computed value can safely access the relationship data
+
+### Lazy Loading Methods
+
+The `CanLoadLazyRelationship` trait provides the following methods:
+
+- `lazy(?string $relationshipName = null)` - Mark the field as lazy and optionally specify the relationship name
+- `isLazy(RestifyRequest $request)` - Check if the field is configured for lazy loading
+- `getLazyRelationshipName()` - Get the name of the relationship to lazy load
+
+### Benefits
+
+- **Performance**: Prevents N+1 queries when dealing with computed attributes
+- **Efficiency**: Relationships are loaded only once, even if multiple fields depend on them  
+- **Flexibility**: Works with any relationship type (BelongsTo, HasMany, ManyToMany, etc.)
+- **Clean Code**: Keeps your field definitions simple while ensuring optimal database usage
+
 ## Utility Methods
 
 ### Repository Management

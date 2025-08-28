@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Fields\Concerns\CanLoadLazyRelationship;
 use Binaryk\LaravelRestify\Fields\Concerns\CanMatch;
 use Binaryk\LaravelRestify\Fields\Concerns\CanSearch;
 use Binaryk\LaravelRestify\Fields\Concerns\CanSort;
@@ -26,6 +27,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     use CanMatch;
     use CanSearch;
     use CanSort;
+    use CanLoadLazyRelationship;
     use FieldMcpSchemaDetection;
     use HasAction;
     use Make;

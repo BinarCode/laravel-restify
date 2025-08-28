@@ -17,6 +17,9 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
 
+/**
+ * @mixin Repository
+ */
 trait InteractWithSearch
 {
     use AuthorizableModels;
@@ -33,6 +36,22 @@ trait InteractWithSearch
     public static function withs(): array
     {
         return static::$with ?? [];
+    }
+
+    public static function collectWiths(RestifyRequest $request, Repository $repository): Collection
+    {
+        return collect(array_unique(array_merge(
+            $repository::withs(),
+            static::lazyLoadedFieldsRelationship($request, $repository),
+        )));
+    }
+
+    public static function lazyLoadedFieldsRelationship(RestifyRequest $request, Repository $repository): array
+    {
+        return $repository->collectFields($request)
+            ->filter(fn(Field $field) => $field->isLazy($request))
+            ->map(fn(Field $field) => $field->getLazyRelationshipName())
+            ->all();
     }
 
     public static function related(): array
@@ -90,7 +109,7 @@ trait InteractWithSearch
     public static function collectFieldSorts(RestifyRequest $request, Repository $repository): Collection
     {
         return $repository->collectFields($request)
-            ->filter(fn (Field $field) => $field->isSortable($request))
+            ->filter(fn(Field $field) => $field->isSortable($request))
             ->map(function (Field $field) {
                 $sortableFilter = new SortableFilter;
                 $sortableFilter->setColumn($field->getAttribute());
@@ -129,7 +148,7 @@ trait InteractWithSearch
     public static function collectFieldSearchables(RestifyRequest $request, Repository $repository): Collection
     {
         return $repository->collectFields($request)
-            ->filter(fn (Field $field) => $field->isSearchable($request))
+            ->filter(fn(Field $field) => $field->isSearchable($request))
             ->map(function (Field $field) use ($request, $repository) {
                 $searchColumn = $field->getSearchColumn($request);
                 if ($searchColumn instanceof SearchableFilter) {
@@ -178,7 +197,7 @@ trait InteractWithSearch
     public static function collectFieldMatches(RestifyRequest $request, Repository $repository): Collection
     {
         return $repository->collectFields($request)
-            ->filter(fn (Field $field) => $field->isMatchable($request))
+            ->filter(fn(Field $field) => $field->isMatchable($request))
             ->map(callback: function (Field $field) use ($request) {
                 $matchColumn = $field->getMatchColumn($request);
                 if ($matchColumn instanceof MatchFilter) {
@@ -230,7 +249,7 @@ trait InteractWithSearch
             }
 
             return $type instanceof Filter
-                ? tap($type, fn ($filter) => $filter->column = $filter->column ?? $column)
+                ? tap($type, fn($filter) => $filter->column = $filter->column ?? $column)
                 : tap(new $base, function (Filter $filter) use ($column, $type) {
                     $filter->type = $type ? $type : 'value';
                     $filter->column = $column;

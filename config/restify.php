@@ -132,6 +132,20 @@ return [
         | Specify either the search should be case-sensitive or not.
         */
         'case_sensitive' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Use JOINs for BelongsTo Relationships
+        |--------------------------------------------------------------------------
+        |
+        | When enabled, BelongsTo relationship searches will use JOINs instead of
+        | subqueries for better performance. This is generally recommended for
+        | better query performance, but can be disabled if compatibility issues arise.
+        |
+        | Default: true (recommended for better performance)
+        |
+        */
+        'use_joins_for_belongs_to' => env('RESTIFY_USE_JOINS_FOR_BELONGS_TO', false),
     ],
 
     'repositories' => [

@@ -134,4 +134,11 @@ class SearchablesCollection extends Collection
             }
         });
     }
+
+    public function onlyBelongsTo(): self
+    {
+        return $this->filter(
+            fn(SearchableFilter $filter) => $filter->hasBelongsTo()
+        );
+    }
 }

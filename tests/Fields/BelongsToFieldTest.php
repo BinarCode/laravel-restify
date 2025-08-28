@@ -220,15 +220,14 @@ class BelongsToFieldTest extends IntegrationTestCase
                 'user' => BelongsTo::make('user', UserRepository::class),
             ]);
 
-        $this->withoutExceptionHandling();
-
         $this->getJson(PostRepository::route($post, query: [
-            'include' => 'user[name,email]',
+            'include' => 'user[name|email]',
         ]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
                     ->has('data.relationships.user.attributes.name')
-                    ->missing('data.relationships.user.attributes.email')
+                    ->has('data.relationships.user.attributes.email')
+                    ->missing('data.relationships.user.attributes.password')
                     ->etc()
             );
     }

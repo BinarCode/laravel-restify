@@ -563,6 +563,23 @@ class FieldTest extends IntegrationTestCase
         $this->assertTrue($field->isSortable());
         $this->assertEquals('Custom Label', $field->label);
     }
+
+    public function test_field_can_be_marked_as_lazy(): void
+    {
+        $field = Field::make('tags');
+        $request = new RestifyRequest;
+
+        // Initially not lazy
+        $this->assertFalse($field->isLazy($request));
+        $this->assertNull($field->getLazyRelationshipName());
+
+        // Mark as lazy with specific relationship name
+        $result = $field->lazy('tags');
+        $this->assertTrue($field->isLazy($request));
+        $this->assertEquals('tags', $field->getLazyRelationshipName());
+        $this->assertInstanceOf(Field::class, $result);
+        $this->assertSame($field, $result);
+    }
 }
 
 class InvokableFill

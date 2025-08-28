@@ -45,7 +45,7 @@ class EagerField extends Field
 
         if (is_null($parentRepository)) {
             $this->repositoryClass = tap(Restify::repositoryClassForKey(str($attribute)->pluralStudly()->kebab()->toString()),
-                fn ($repository) => abort_unless($repository, 400, "Repository not found for the key [$attribute]."));
+                fn($repository) => abort_unless($repository, 400, "Repository not found for the key [$attribute]."));
         }
 
         if (! isset($this->repositoryClass)) {
@@ -61,9 +61,9 @@ class EagerField extends Field
     public function authorize(Request $request)
     {
         return call_user_func(
-            [$this->repositoryClass, 'authorizedToUseRepository'],
-            $request
-        ) && parent::authorize($request);
+                [$this->repositoryClass, 'authorizedToUseRepository'],
+                $request
+            ) && parent::authorize($request);
     }
 
     public function resolve($repository, $attribute = null)
