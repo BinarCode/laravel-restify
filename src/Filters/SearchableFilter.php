@@ -49,23 +49,16 @@ class SearchableFilter extends Filter
             } else {
                 // Use the original subquery approach when JOINs are disabled
                 collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value) {
-                    $query->orWhere(function ($subQuery) use ($attribute, $likeOperator, $value) {
-                        $relation = $this->belongsToField->getRelation($this->repository);
-                        $relatedModel = $this->belongsToField->getRelatedModel($this->repository);
-                        $relatedTable = $relatedModel->getTable();
-                        $foreignKey = $relation->getForeignKeyName();
-                        $ownerKey = $relation->getOwnerKeyName();
-
-                        // Build the subquery: (SELECT column FROM related_table WHERE related_table.key = main_table.foreign_key LIMIT 1)
-                        $qualifiedColumn = str_contains($attribute, '.') ? $attribute : $relatedTable . '.' . $attribute;
-                        $localTableForeignKey = $this->repository->model()->getTable() . '.' . $foreignKey;
-                        $relatedTableOwnerKey = $relatedTable . '.' . $ownerKey;
-
-                        $subQuery->whereRaw(
-                            "(SELECT {$qualifiedColumn} FROM {$relatedTable} WHERE {$relatedTableOwnerKey} = {$localTableForeignKey} LIMIT 1) {$likeOperator} ?",
-                            ["%{$value}%"]
-                        );
-                    });
+                    $query->orWhere(
+                        $this->belongsToField->getRelatedModel($this->repository)::select($attribute)
+                            ->whereColumn(
+                                $this->belongsToField->getQualifiedKey($this->repository),
+                                $this->belongsToField->getRelatedKey($this->repository)
+                            )
+                            ->take(1),
+                        $likeOperator,
+                        "%{$value}%"
+                    );
                 });
             }
 
