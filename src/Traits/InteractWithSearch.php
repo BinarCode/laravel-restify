@@ -27,9 +27,7 @@ trait InteractWithSearch
 
     public static function searchables(): array
     {
-        return empty(static::$search)
-            ? [static::newModel()->getKeyName()]
-            : static::$search;
+        return static::$search;
     }
 
     public static function withs(): array

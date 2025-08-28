@@ -125,7 +125,7 @@ class Repository implements JsonSerializable, RestifySearchable
     /**
      * The list of searchable fields.
      */
-    public static array $search;
+    public static array $search = [];
 
     /**
      * The list of matchable fields.

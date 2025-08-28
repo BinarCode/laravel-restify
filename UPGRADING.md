@@ -119,6 +119,52 @@ class UserRepository extends Repository
 
 This change is also **100% backward compatible** - existing static arrays continue to work perfectly.
 
+## Breaking Changes
+
+### Default Search Behavior Change
+
+🚨 **Breaking Change**: In version 10, repositories no longer search by the model's primary key (ID) by default when no searchable fields are defined.
+
+**Before (v9 and earlier):**
+```php
+class UserRepository extends Repository
+{
+    // No $search property defined
+    // Automatically searched by 'id' field by default
+}
+```
+
+**After (v10):**
+```php
+class UserRepository extends Repository
+{
+    // No $search property defined
+    // No searchable fields available - search returns empty results
+}
+```
+
+**To maintain the previous behavior**, add this method to your Repository parent class or individual repositories:
+
+```php
+public static function searchables(): array
+{
+    return empty(static::$search)
+        ? [static::newModel()->getKeyName()]
+        : static::$search;
+}
+```
+
+**Why this change was made:**
+- **Security**: Prevents unintended ID-based searches on sensitive repositories
+- **Explicit configuration**: Forces developers to explicitly define searchable fields
+- **Performance**: Avoids unnecessary database queries when search isn't intended
+- **Consistency**: Aligns with the principle of explicit over implicit behavior
+
+**Migration strategy:**
+1. **Immediate fix**: Add the `searchables()` method to your base Repository class to restore v9 behavior globally
+2. **Recommended approach**: Review each repository and explicitly define `$search` arrays with appropriate fields
+3. **Security review**: Consider which repositories should actually be searchable and by which fields
+
 ### Configuration File Updates
 
 When upgrading to v10, it's important to ensure your local `config/restify.php` file includes all the new configuration options that have been added.

@@ -27,7 +27,9 @@ class SearchableFilter extends Filter
         $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
 
         if (isset($this->belongsToField)) {
+            ray('Searching through BelongsTo relation');
             if (! $this->belongsToField->authorize($request)) {
+                ray('BelongsTo field not authorized for this request, skipping search.');
                 return $query;
             }
 

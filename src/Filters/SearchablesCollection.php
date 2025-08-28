@@ -28,14 +28,8 @@ class SearchablesCollection extends Collection
             } elseif ($searchable instanceof Filter) {
                 // Other Filter instance - keep it
                 $unified[] = $searchable;
-            } elseif (is_callable($searchable)) {
-                // Closure or invokable - create SearchableFilter with closure
-                $filter = new SearchableFilter;
-                $filter->usingClosure($searchable);
-                $filter->setColumn(is_string($key) && ! is_numeric($key) ? $key : 'unknown');
-                $unified[] = $filter;
             } elseif (is_string($searchable)) {
-                // String column name
+                // String column name (including string callables like "MyClass::method")
                 $filter = new SearchableFilter;
                 $filter->setColumn($searchable);
                 $unified[] = $filter;
@@ -43,6 +37,12 @@ class SearchablesCollection extends Collection
                 // Array key is the field name
                 $filter = new SearchableFilter;
                 $filter->setColumn($key);
+                $unified[] = $filter;
+            } elseif (is_callable($searchable)) {
+                // Non-string callables (closures, arrays, invokables)
+                $filter = new SearchableFilter;
+                $filter->usingClosure($searchable);
+                $filter->setColumn(is_string($key) && ! is_numeric($key) ? $key : 'unknown');
                 $unified[] = $filter;
             }
         }
