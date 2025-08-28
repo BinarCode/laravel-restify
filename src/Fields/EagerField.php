@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\HasColumns;
