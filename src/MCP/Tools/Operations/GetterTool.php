@@ -34,7 +34,7 @@ class GetterTool extends Tool
     {
         $repositoryUriKey = $this->repository->uriKey();
         $getterName = $this->getter->name();
-        $modelName = class_basename($this->repository::$model);
+        $modelName = class_basename($this->repository::guessModelClassName());
 
         // Check if it's primarily a show getter or index getter
         $mcpRequest = app(McpGetterRequest::class);

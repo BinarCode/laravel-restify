@@ -29,7 +29,7 @@ class ProfileTool extends Tool
 
     public function description(): string
     {
-        $modelName = class_basename($this->repository::$model);
+        $modelName = class_basename($this->repository::guessModelClassName());
 
         return "Get the current authenticated user profile including {$modelName} and relationship information.";
     }

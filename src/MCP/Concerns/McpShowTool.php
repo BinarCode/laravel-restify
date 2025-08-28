@@ -36,7 +36,7 @@ trait McpShowTool
 
     public static function showToolSchema(ToolInputSchema $schema): void
     {
-        $modelName = class_basename(static::$model);
+        $modelName = class_basename(static::guessModelClassName());
 
         $schema->string('id')
             ->description("The ID of the $modelName to retrieve")

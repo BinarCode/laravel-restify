@@ -28,7 +28,7 @@ class ShowTool extends Tool
     public function description(): string
     {
         $uriKey = $this->repository->uriKey();
-        $modelName = class_basename($this->repository::$model);
+        $modelName = class_basename($this->repository::guessModelClassName());
 
         return "Retrieve a single {$modelName} record by ID from the {$uriKey} repository with optional relationship loading.";
     }

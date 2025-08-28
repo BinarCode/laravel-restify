@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Fields\HasOne;
 use Binaryk\LaravelRestify\Fields\MorphToMany;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
 
@@ -97,6 +98,21 @@ class RelatedCollection extends Collection
         });
     }
 
+    public function forMcp(RestifyRequest $request, Repository $repository): self
+    {
+        return $this->filter(function (Related $related) {
+            // If there's an EagerField, check its repository class
+            if ($related->field && $related->field->repositoryClass) {
+                return in_array(HasMcpTools::class, class_uses_recursive($related->field->repositoryClass), true);
+            }
+
+            // For string relationships (without EagerField), we need to find the repository
+            // This happens when relationships are defined as static::$related = ['user']
+            // We'll allow these through and let the serialization handle the filtering
+            return true;
+        });
+    }
+
     public function inRequest(RestifyRequest $request, Repository $repository): self
     {
         return $this->filter(function (mixed $repositoryRelatedField, $repositoryRelatedKey) use (
@@ -167,7 +183,8 @@ class RelatedCollection extends Collection
             ->authorized($request)
             ->inRequest($request, $repository)
             ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))
-            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository));
+            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository))
+            ->when($repository->isForMcp(), fn (self $collection) => $collection->forIndex($request, $repository));
     }
 
     public function unserialized(RestifyRequest $request, Repository $repository)

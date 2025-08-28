@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
+use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -107,7 +108,7 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public Model $resource;
 
-    //    public RestifyRequest $request;
+    public bool $forMcp = false;
 
     /**
      * The list of relations available for the show or index.
@@ -558,6 +559,8 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function resolveRelationships($request): array
     {
+        $this->forMcp($request instanceof McpRequest);
+
         if (! $request->related()->hasRelated()) {
             return [];
         }
@@ -566,6 +569,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->forRequest($request, $this)
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
+            ->when($this->isForMcp(), fn (RelatedCollection $collection) => $collection->forMcp($request, $this))
             ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
             ->map(function (mixed $items) {
                 if ($items instanceof Collection) {
@@ -608,7 +612,6 @@ class Repository implements JsonSerializable, RestifySearchable
     public function indexAsArray(RestifyRequest $request): array
     {
         // Preserve the request instance for the entire flow
-        //        $this->request = $request;
 
         // Check if the model was set under the repository
         throw_if(
@@ -627,7 +630,6 @@ class Repository implements JsonSerializable, RestifySearchable
         $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
             $repository = static::resolveWith($value);
             // Ensure each resolved repository maintains the original request
-            //            $repository->request = $request;
 
             return $repository;
         })->filter(function (self $repository) use ($request) {
@@ -1151,7 +1153,9 @@ class Repository implements JsonSerializable, RestifySearchable
     public function jsonSerialize()
     {
         return $this->serializeForShow(
-            $this->request ?? app(RestifyRequest::class)
+            $this->isForMcp()
+                ? app(McpRequest::class)
+                : app(RestifyRequest::class)
         );
     }
 
@@ -1209,6 +1213,7 @@ class Repository implements JsonSerializable, RestifySearchable
             return $this;
         }
 
+        $this->forMcp($field->isForMcp());
         $this->eagerState = $field->queryKeyThatRendered();
         $this->columns($field->getColumns());
 
@@ -1282,5 +1287,17 @@ class Repository implements JsonSerializable, RestifySearchable
         }
 
         return $this;
+    }
+
+    public function forMcp($forMcp = true): self
+    {
+        $this->forMcp = $forMcp;
+
+        return $this;
+    }
+
+    public function isForMcp(): bool
+    {
+        return $this->forMcp;
     }
 }

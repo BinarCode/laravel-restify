@@ -23,14 +23,15 @@ class RepositorySearchService
         $this->repository = $repository;
 
         $scoutQuery = null;
+        $shouldUseScout = $this->isScoutAvailable($repository);
 
-        if ($repository::usesScout()) {
+        if ($shouldUseScout) {
             $scoutQuery = $this->initializeQueryUsingScout($request, $repository);
         }
 
         $query = $this->prepareMatchFields(
             $request,
-            $repository::usesScout()
+            $shouldUseScout
                 ? $this->prepareRelations($request, $scoutQuery ?? $repository::query($request))
                 : $this->prepareSearchFields(
                     $request,
@@ -101,11 +102,6 @@ class RepositorySearchService
             true,
         ))->filter(function ($relation) use ($query) {
             try {
-                if ($relation === 'target') {
-                    ray($query->getRelation($relation));
-                    ray($query->getRelation($relation) instanceof Relation);
-                }
-
                 return $query->getRelation($relation) instanceof Relation;
             } catch (Throwable) {
                 return false;
@@ -168,20 +164,25 @@ class RepositorySearchService
 
     public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
     {
-        /**
-         * @var Collection $keys
-         */
-        $keys = tap(
-            is_null($request->input('search')) ? $repository::newModel() : $repository::newModel()->search($request->input('search')),
-            function ($scoutBuilder) use ($repository, $request) {
-                return $repository::scoutQuery($request, $scoutBuilder);
-            }
-        )->take($repository::$scoutSearchResults)->get()->map->getKey();
+        try {
+            /**
+             * @var Collection $keys
+             */
+            $keys = tap(
+                is_null($request->input('search')) ? $repository::newModel() : $repository::newModel()->search($request->input('search')),
+                function ($scoutBuilder) use ($repository, $request) {
+                    return $repository::scoutQuery($request, $scoutBuilder);
+                }
+            )->take($repository::$scoutSearchResults)->get()->map->getKey();
 
-        return $repository::newModel()->newQuery()->whereIn(
-            $repository::newModel()->getQualifiedKeyName(),
-            $keys->all()
-        );
+            return $repository::newModel()->newQuery()->whereIn(
+                $repository::newModel()->getQualifiedKeyName(),
+                $keys->all()
+            );
+        } catch (\Exception $e) {
+            // Scout operation failed, fall back to database search
+            return $repository::query($request);
+        }
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository): callable
@@ -224,6 +225,35 @@ class RepositorySearchService
         }
 
         return $query;
+    }
+
+    /**
+     * Check if Scout is available and properly configured for the given repository.
+     */
+    protected function isScoutAvailable(Repository $repository): bool
+    {
+        // First check if the model uses Scout at all
+        if (! $repository::usesScout()) {
+            return false;
+        }
+
+        try {
+            // Check if Scout service is bound in the container
+            if (! app()->bound('Laravel\Scout\EngineManager')) {
+                return false;
+            }
+
+            // Try to get the Scout engine - this will fail if driver is not properly configured
+            $engine = app('Laravel\Scout\EngineManager')->engine();
+
+            // Basic connectivity test - try to create a search builder (this is lightweight)
+            $repository::newModel()->search('');
+
+            return true;
+        } catch (\Exception $e) {
+            // Scout is not available or misconfigured
+            return false;
+        }
     }
 
     public static function make(): static

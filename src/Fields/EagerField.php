@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\HasColumns;
@@ -29,6 +30,8 @@ class EagerField extends Field
     public string $repositoryClass;
 
     private RelatedQuery $relatedQuery;
+
+    public bool $forMcp = false;
 
     public function __construct($attribute, ?string $parentRepository = null)
     {
@@ -85,7 +88,7 @@ class EagerField extends Field
             $serializableRepository = $this->repositoryClass::resolveWith($relatedModel);
 
             $this->value = $serializableRepository
-                ->allowToShow($repository->request ?? app(Request::class))
+                ->allowToShow($this->isForMcp() ? app(McpRequest::class) : app(RestifyRequest::class))
                 ->columns()
                 ->eager($this);
         } catch (AuthorizationException) {
@@ -159,5 +162,23 @@ class EagerField extends Field
         }
 
         return $table.'.attributes.'.$this->sortableColumn;
+    }
+
+    public function forMcp(bool|callable $forMcp = false): self
+    {
+        if (is_callable($forMcp)) {
+            $this->forMcp = $forMcp();
+
+            return $this;
+        }
+
+        $this->forMcp = $forMcp;
+
+        return $this;
+    }
+
+    public function isForMcp(): bool
+    {
+        return $this->forMcp;
     }
 }

@@ -27,7 +27,7 @@ class StoreTool extends Tool
     public function description(): string
     {
         $uriKey = $this->repository->uriKey();
-        $modelName = class_basename($this->repository::$model);
+        $modelName = class_basename($this->repository::guessModelClassName());
 
         return "Create a new {$modelName} record in the {$uriKey} repository with the provided data.";
     }
