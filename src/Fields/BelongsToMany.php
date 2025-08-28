@@ -10,7 +10,6 @@ use Binaryk\LaravelRestify\Repositories\PivotsCollection;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Http\Request;
 
 class BelongsToMany extends EagerField
 {
@@ -63,8 +62,8 @@ class BelongsToMany extends EagerField
                     )
                     ->withPivots(
                         PivotsCollection::make($this->pivotFields)
-                            ->map(fn(Field $field) => clone $field)
-                            ->filter(fn(Field $field) => ! $field->isHidden(app(RestifyRequest::class)))
+                            ->map(fn (Field $field) => clone $field)
+                            ->filter(fn (Field $field) => ! $field->isHidden(app(RestifyRequest::class)))
                             ->resolveFromPivot($item->pivot)
                     )
                     ->eager($this);
