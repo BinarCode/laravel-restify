@@ -11,7 +11,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
 /**
  * Test cases for the configurable JOIN optimization feature for BelongsTo relationship searches.
- * 
+ *
  * This test ensures that both JOIN-based (optimized) and subquery-based (legacy) approaches
  * work correctly based on the configuration setting.
  */
@@ -21,7 +21,7 @@ class BelongsToJoinConfigTest extends IntegrationTestCase
     {
         // Disable JOINs
         config(['restify.search.use_joins_for_belongs_to' => false]);
-        
+
         $john = User::factory()->create([
             'name' => 'John Doe',
         ]);
@@ -47,12 +47,12 @@ class BelongsToJoinConfigTest extends IntegrationTestCase
         $this->getJson(PostRepository::route(query: ['search' => 'John']))
             ->assertJsonCount(2, 'data');
     }
-    
+
     public function test_belongs_to_search_works_with_joins_enabled(): void
     {
         // Enable JOINs (default)
         config(['restify.search.use_joins_for_belongs_to' => true]);
-        
+
         $john = User::factory()->create([
             'name' => 'John Doe',
         ]);
@@ -78,12 +78,12 @@ class BelongsToJoinConfigTest extends IntegrationTestCase
         $this->getJson(PostRepository::route(query: ['search' => 'John']))
             ->assertJsonCount(2, 'data');
     }
-    
+
     protected function tearDown(): void
     {
         // Reset to default
         config(['restify.search.use_joins_for_belongs_to' => true]);
-        
+
         parent::tearDown();
     }
 }

@@ -16,7 +16,7 @@ class LazyRelationshipTest extends IntegrationTestCase
         // Test basic lazy functionality
         $this->assertTrue($field->isLazy($request));
         $this->assertEquals('posts', $field->getLazyRelationshipName());
-        
+
         // Test fluent API
         $this->assertInstanceOf(Field::class, $field);
     }
@@ -46,7 +46,7 @@ class LazyRelationshipTest extends IntegrationTestCase
             ->label('Profile Tags');
 
         $request = new RestifyRequest;
-        
+
         $this->assertTrue($field->isLazy($request));
         $this->assertEquals('tags', $field->getLazyRelationshipName());
         $this->assertEquals('Profile Tags', $field->label);

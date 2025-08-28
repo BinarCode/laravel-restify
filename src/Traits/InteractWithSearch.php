@@ -49,8 +49,8 @@ trait InteractWithSearch
     public static function lazyLoadedFieldsRelationship(RestifyRequest $request, Repository $repository): array
     {
         return $repository->collectFields($request)
-            ->filter(fn(Field $field) => $field->isLazy($request))
-            ->map(fn(Field $field) => $field->getLazyRelationshipName())
+            ->filter(fn (Field $field) => $field->isLazy($request))
+            ->map(fn (Field $field) => $field->getLazyRelationshipName())
             ->all();
     }
 
@@ -109,7 +109,7 @@ trait InteractWithSearch
     public static function collectFieldSorts(RestifyRequest $request, Repository $repository): Collection
     {
         return $repository->collectFields($request)
-            ->filter(fn(Field $field) => $field->isSortable($request))
+            ->filter(fn (Field $field) => $field->isSortable($request))
             ->map(function (Field $field) {
                 $sortableFilter = new SortableFilter;
                 $sortableFilter->setColumn($field->getAttribute());
@@ -148,7 +148,7 @@ trait InteractWithSearch
     public static function collectFieldSearchables(RestifyRequest $request, Repository $repository): Collection
     {
         return $repository->collectFields($request)
-            ->filter(fn(Field $field) => $field->isSearchable($request))
+            ->filter(fn (Field $field) => $field->isSearchable($request))
             ->map(function (Field $field) use ($request, $repository) {
                 $searchColumn = $field->getSearchColumn($request);
                 if ($searchColumn instanceof SearchableFilter) {
@@ -197,7 +197,7 @@ trait InteractWithSearch
     public static function collectFieldMatches(RestifyRequest $request, Repository $repository): Collection
     {
         return $repository->collectFields($request)
-            ->filter(fn(Field $field) => $field->isMatchable($request))
+            ->filter(fn (Field $field) => $field->isMatchable($request))
             ->map(callback: function (Field $field) use ($request) {
                 $matchColumn = $field->getMatchColumn($request);
                 if ($matchColumn instanceof MatchFilter) {
@@ -249,7 +249,7 @@ trait InteractWithSearch
             }
 
             return $type instanceof Filter
-                ? tap($type, fn($filter) => $filter->column = $filter->column ?? $column)
+                ? tap($type, fn ($filter) => $filter->column = $filter->column ?? $column)
                 : tap(new $base, function (Filter $filter) use ($column, $type) {
                     $filter->type = $type ? $type : 'value';
                     $filter->column = $column;
