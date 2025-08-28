@@ -24,10 +24,10 @@ use ReturnTypeWillChange;
 
 class Field extends OrganicField implements JsonSerializable, Matchable, Sortable
 {
+    use CanLoadLazyRelationship;
     use CanMatch;
     use CanSearch;
     use CanSort;
-    use CanLoadLazyRelationship;
     use FieldMcpSchemaDetection;
     use HasAction;
     use Make;

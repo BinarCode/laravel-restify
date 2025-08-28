@@ -42,7 +42,7 @@ class SearchableFilter extends Filter
                     // Check if the attribute is already qualified (contains a dot)
                     $qualifiedColumn = str_contains($attribute, '.')
                         ? $attribute
-                        : $relatedTable . '.' . $attribute;
+                        : $relatedTable.'.'.$attribute;
 
                     $query->orWhere($qualifiedColumn, $likeOperator, "%{$value}%");
                 });
@@ -57,9 +57,9 @@ class SearchableFilter extends Filter
                         $ownerKey = $relation->getOwnerKeyName();
 
                         // Build the subquery: (SELECT column FROM related_table WHERE related_table.key = main_table.foreign_key LIMIT 1)
-                        $qualifiedColumn = str_contains($attribute, '.') ? $attribute : $relatedTable . '.' . $attribute;
-                        $localTableForeignKey = $this->repository->model()->getTable() . '.' . $foreignKey;
-                        $relatedTableOwnerKey = $relatedTable . '.' . $ownerKey;
+                        $qualifiedColumn = str_contains($attribute, '.') ? $attribute : $relatedTable.'.'.$attribute;
+                        $localTableForeignKey = $this->repository->model()->getTable().'.'.$foreignKey;
+                        $relatedTableOwnerKey = $relatedTable.'.'.$ownerKey;
 
                         $subQuery->whereRaw(
                             "(SELECT {$qualifiedColumn} FROM {$relatedTable} WHERE {$relatedTableOwnerKey} = {$localTableForeignKey} LIMIT 1) {$likeOperator} ?",

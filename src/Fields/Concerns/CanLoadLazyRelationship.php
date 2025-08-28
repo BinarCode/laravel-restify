@@ -21,7 +21,7 @@ trait CanLoadLazyRelationship
 
     public function isLazy(RestifyRequest $request): bool
     {
-        return !is_null($this->lazyRelationshipName);
+        return ! is_null($this->lazyRelationshipName);
     }
 
     public function getLazyRelationshipName(): ?string
