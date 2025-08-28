@@ -89,6 +89,34 @@ New and improved field methods with flexible signatures:
 - **`matchable()`** - Various match types and advanced filtering scenarios
 - **`sortable()`** - Custom columns and conditional sorting
 
+#### Comprehensive Field Validation Methods
+
+Fields now include 60+ validation methods for streamlined form validation without manually writing Laravel validation rules:
+
+```php
+// Basic validations
+field('email')->required()->email(),
+field('age')->integer()->min(18)->max(100),
+field('password')->string()->min(8)->confirmed(),
+
+// Advanced validations  
+field('username')->alphaDash()->uniqueRule('users'),
+field('website')->url()->nullable(),
+field('birthday')->date()->before('today'),
+field('role')->in(['admin', 'user', 'moderator']),
+field('ip_address')->ip(),
+field('uuid')->uuid(),
+field('json_data')->json(),
+
+// Conditional validations
+field('phone')->requiredIf('contact_method', 'phone'),
+field('company')->requiredWith(['is_business']),
+field('start_date')->after('created_at'),
+field('end_date')->afterOrEqual('start_date'),
+```
+
+**Available Methods:** `required()`, `nullable()`, `email()`, `numeric()`, `integer()`, `boolean()`, `string()`, `array()`, `url()`, `uuid()`, `ip()`, `ipv4()`, `ipv6()`, `min()`, `max()`, `between()`, `uniqueRule()`, `exists()`, `confirmed()`, `password()`, `regex()`, `size()`, `accepted()`, `json()`, `alpha()`, `alphaNum()`, `alphaDash()`, `date()`, `datetime()`, `dateFormat()`, `after()`, `afterOrEqual()`, `before()`, `beforeOrEqual()`, `different()`, `same()`, `filled()`, `present()`, `isFile()`, `isImage()`, `in()`, `notIn()`, `requiredIf()`, `requiredUnless()`, `requiredWith()`, `requiredWithAll()`, `requiredWithout()`, `requiredWithoutAll()`, `multipleOf()`, `timezone()`, `currentPassword()`, `macAddress()`, `endsWith()`, `startsWith()`
+
 #### Custom Search Callbacks for BelongsTo Relations
 
 BelongsTo fields now support custom search callbacks for complete control over search behavior:
@@ -134,7 +162,3 @@ public static function searchables(): array {
 - **[Migration Guide](UPGRADING.md)** - Step-by-step upgrade instructions
 - **[MCP Integration](docs-v2/content/en/mcp/mcp.md)** - AI agent setup and configuration
 - **[Field Reference](docs-v2/content/en/api/fields.md)** - All field methods and options
-
-## 🧪 Testing
-
-All new features include comprehensive test coverage to ensure reliability and maintainability.
