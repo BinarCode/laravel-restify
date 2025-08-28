@@ -221,7 +221,7 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         // Boot all traits that have a bootTrait method
         foreach (class_uses_recursive(static::class) as $trait) {
-            $method = 'boot' . class_basename($trait);
+            $method = 'boot'.class_basename($trait);
             if (method_exists(static::class, $method)) {
                 static::$method();
             }

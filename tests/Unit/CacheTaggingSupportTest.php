@@ -12,8 +12,8 @@ class CacheTaggingSupportTest extends IntegrationTestCase
 {
     public function test_array_store_supports_tagging()
     {
-        $store = new ArrayStore();
-        
+        $store = new ArrayStore;
+
         $this->assertTrue(PostRepository::cacheStoreSupportsTagging($store));
     }
 
@@ -23,7 +23,7 @@ class CacheTaggingSupportTest extends IntegrationTestCase
         $store = Mockery::mock();
         $store->shouldReceive('tags')->andThrow(new \BadMethodCallException('This cache store does not support tagging.'));
         $store->shouldReceive('getStore')->andReturnSelf();
-        
+
         $this->assertFalse(PostRepository::cacheStoreSupportsTagging($store));
     }
 
@@ -32,7 +32,7 @@ class CacheTaggingSupportTest extends IntegrationTestCase
         // Mock a store that doesn't have the tags method
         $store = Mockery::mock();
         // Don't set up tags method, so method_exists will return false
-        
+
         $this->assertFalse(PostRepository::cacheStoreSupportsTagging($store));
     }
 
@@ -42,10 +42,10 @@ class CacheTaggingSupportTest extends IntegrationTestCase
         $mockStore = Mockery::mock();
         $mockStore->shouldReceive('tags')->andThrow(new \BadMethodCallException('This cache store does not support tagging.'));
         $mockStore->shouldReceive('getStore')->andReturnSelf();
-        
+
         // This should not throw an exception
         $supportsTagging = PostRepository::cacheStoreSupportsTagging($mockStore);
-        
+
         $this->assertFalse($supportsTagging);
     }
 
@@ -53,7 +53,7 @@ class CacheTaggingSupportTest extends IntegrationTestCase
     {
         // Reset repository cache tags
         PostRepository::$cacheTags = [];
-        
+
         parent::tearDown();
     }
 }

@@ -203,7 +203,7 @@ return [
             /*
             | Default cache tags for all repositories. Individual repositories
             | can add their own tags in addition to these.
-            | 
+            |
             | Note: Cache tags are only used if the cache store supports them.
             | Database and file cache stores do not support tagging.
             | Redis and Memcached stores support tagging.
