@@ -25,7 +25,7 @@ trait McpDestroyTool
     public static function destroyToolSchema(ToolInputSchema $schema): void
     {
         $key = static::uriKey();
-        $modelName = class_basename(static::$model);
+        $modelName = class_basename(static::guessModelClassName());
 
         $schema->string('id')
             ->description("The ID of the $modelName to delete")

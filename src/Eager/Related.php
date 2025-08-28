@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\Make;
 use Illuminate\Contracts\Database\Eloquent\Builder;
@@ -66,6 +65,7 @@ class Related implements JsonSerializable
     {
         return $this
             ->field
+            ->forMcp($repository->isForMcp())
             ->columns($this->getColumns())
             ->resolve($repository);
     }
@@ -107,22 +107,22 @@ class Related implements JsonSerializable
             return $this;
         }
 
+
         switch ($paginator) {
             case $paginator instanceof Collection:
-                $this->value = $this->serializeRelationshipData($request, $paginator);
+                $this->value = $paginator;
 
                 break;
             case $paginator instanceof BelongsTo:
-                $relatedModel = $paginator->first();
-                $this->value = $relatedModel ? $this->serializeRelationshipData($request, $relatedModel) : null;
+                $this->value = $paginator->first();
 
                 break;
             case $paginator instanceof Builder:
-                $this->value = $this->serializeRelationshipData($request, $paginator->get());
+                $this->value = $paginator->get();
 
                 break;
             default:
-                $this->value = $this->serializeRelationshipData($request, $paginator);
+                $this->value = $paginator;
         }
 
         return $this;
@@ -133,74 +133,6 @@ class Related implements JsonSerializable
         $this->resolverCallback = $resolver;
 
         return $this;
-    }
-
-    /**
-     * Serialize relationship data using repository field collections for MCP requests.
-     */
-    protected function serializeRelationshipData(RestifyRequest $request, $data)
-    {
-        // For non-MCP requests, return data as-is to maintain backward compatibility
-        if (! $request instanceof McpRequest) {
-            return $data;
-        }
-
-        // Handle null data
-        if (is_null($data)) {
-            return null;
-        }
-
-        // Handle single models
-        if ($data instanceof \Illuminate\Database\Eloquent\Model) {
-            return $this->serializeSingleModel($request, $data);
-        }
-
-        // Handle collections
-        if ($data instanceof Collection) {
-            return $data->map(function ($model) use ($request) {
-                return $model instanceof \Illuminate\Database\Eloquent\Model
-                    ? $this->serializeSingleModel($request, $model)
-                    : $model;
-            });
-        }
-
-        return $data;
-    }
-
-    /**
-     * Serialize a single model using its repository's field collection for MCP requests.
-     */
-    protected function serializeSingleModel(RestifyRequest $request, \Illuminate\Database\Eloquent\Model $model): array
-    {
-        // Try to find the repository for this model
-        $repositoryClass = Restify::repositoryForModel($model);
-
-        if (! $repositoryClass) {
-            // Fallback to model attributes if no repository found
-            return $model->toArray();
-        }
-
-        try {
-            // Create repository instance with the model
-            $repository = $repositoryClass::resolveWith($model);
-            $repository->request = $request;
-
-            // Get the appropriate field collection for MCP index
-            $fields = $repository->collectFields($request);
-
-            // Serialize using repository fields
-            $result = [];
-            foreach ($fields as $field) {
-                $field->resolveForIndex($repository);
-                $serialized = $field->serializeToValue($request);
-                $result = array_merge($result, $serialized);
-            }
-
-            return $result;
-        } catch (\Exception $e) {
-            // Fallback to model attributes if serialization fails
-            return $model->toArray();
-        }
     }
 
     public function withRelatedQuery(RelatedQuery $relatedQuery): self

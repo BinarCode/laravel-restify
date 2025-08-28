@@ -31,6 +31,8 @@ class EagerField extends Field
 
     private RelatedQuery $relatedQuery;
 
+    public bool $forMcp = false;
+
     public function __construct($attribute, ?string $parentRepository = null)
     {
         parent::__construct(attribute: $attribute);
@@ -86,7 +88,7 @@ class EagerField extends Field
             $serializableRepository = $this->repositoryClass::resolveWith($relatedModel);
 
             $this->value = $serializableRepository
-                ->allowToShow($repository->request ?? app(Request::class))
+                ->allowToShow($this->isForMcp() ? app(McpRequest::class) : app(RestifyRequest::class))
                 ->columns()
                 ->eager($this);
         } catch (AuthorizationException) {
@@ -160,5 +162,23 @@ class EagerField extends Field
         }
 
         return $table.'.attributes.'.$this->sortableColumn;
+    }
+
+    public function forMcp(bool|callable $forMcp = false): self
+    {
+        if (is_callable($forMcp)) {
+            $this->forMcp = $forMcp();
+
+            return $this;
+        }
+
+        $this->forMcp = $forMcp;
+
+        return $this;
+    }
+
+    public function isForMcp(): bool
+    {
+        return $this->forMcp;
     }
 }
