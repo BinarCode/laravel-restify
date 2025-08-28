@@ -183,4 +183,63 @@ abstract class IntegrationTestCase extends TestCase
 
         return $this;
     }
+
+    /**
+     * Enable repository caching for the current test.
+     */
+    protected function enableRepositoryCache(bool $enabled = true): self
+    {
+        config(['restify.repositories.cache.enabled' => $enabled]);
+        config(['restify.repositories.cache.enable_in_tests' => $enabled]);
+
+        return $this;
+    }
+
+    /**
+     * Disable repository caching for the current test.
+     */
+    protected function disableRepositoryCache(): self
+    {
+        return $this->enableRepositoryCache(false);
+    }
+
+    /**
+     * Set the repository cache TTL.
+     */
+    protected function setRepositoryCacheTtl(int $seconds): self
+    {
+        config(['restify.repositories.cache.ttl' => $seconds]);
+
+        return $this;
+    }
+
+    /**
+     * Clear all repository cache.
+     */
+    protected function clearRepositoryCache(): self
+    {
+        \Illuminate\Support\Facades\Cache::flush();
+
+        return $this;
+    }
+
+    /**
+     * Assert that repository cache is enabled.
+     */
+    protected function assertRepositoryCacheEnabled(): void
+    {
+        $this->assertTrue(config('restify.repositories.cache.enabled', false));
+        $this->assertTrue(config('restify.repositories.cache.enable_in_tests', false));
+    }
+
+    /**
+     * Assert that repository cache is disabled.
+     */
+    protected function assertRepositoryCacheDisabled(): void
+    {
+        $this->assertFalse(
+            config('restify.repositories.cache.enabled', false) &&
+            config('restify.repositories.cache.enable_in_tests', false)
+        );
+    }
 }

@@ -19,6 +19,7 @@ use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
+use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithCache;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithModel;
 use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
 use Binaryk\LaravelRestify\Repositories\Concerns\Testing;
@@ -91,6 +92,7 @@ class Repository implements JsonSerializable, RestifySearchable
     use DelegatesToResource;
     use HasColumns;
     use InteractsWithAttachers;
+    use InteractsWithCache;
     use InteractsWithModel;
     use InteractWithFields;
     use InteractWithSearch;
@@ -210,6 +212,20 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $this->bootIfNotBooted();
         $this->ensureResourceExists();
+    }
+
+    /**
+     * Boot all traits for the repository.
+     */
+    protected static function boot(): void
+    {
+        // Boot all traits that have a bootTrait method
+        foreach (class_uses_recursive(static::class) as $trait) {
+            $method = 'boot'.class_basename($trait);
+            if (method_exists(static::class, $method)) {
+                static::$method();
+            }
+        }
     }
 
     /**
@@ -610,6 +626,16 @@ class Repository implements JsonSerializable, RestifySearchable
     }
 
     public function indexAsArray(RestifyRequest $request): array
+    {
+        return $this->cacheIndex($request, function () use ($request) {
+            return $this->performIndexAsArray($request);
+        });
+    }
+
+    /**
+     * Perform the actual index array generation logic.
+     */
+    protected function performIndexAsArray(RestifyRequest $request): array
     {
         // Preserve the request instance for the entire flow
 
