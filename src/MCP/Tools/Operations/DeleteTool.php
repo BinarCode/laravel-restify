@@ -27,7 +27,7 @@ class DeleteTool extends Tool
     public function description(): string
     {
         $uriKey = $this->repository->uriKey();
-        $modelName = class_basename($this->repository::$model);
+        $modelName = class_basename($this->repository::guessModelClassName());
 
         return "Delete an existing {$modelName} record by ID from the {$uriKey} repository.";
     }

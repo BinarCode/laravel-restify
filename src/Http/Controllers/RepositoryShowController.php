@@ -13,8 +13,8 @@ class RepositoryShowController extends RepositoryController
 
         return $request->repositoryWith(tap($request->modelQuery(), fn ($query) => $repository::showQuery(
             $request,
-            $repository::mainQuery($request, $query->with($repository::withs()))
-        ))->with($repository::withs())->firstOrFail())
+            $repository::mainQuery($request, $query->with($repository::collectWiths($request, $repository)->all()))
+        ))->with($repository::collectWiths($request, $repository)->all())->firstOrFail())
             ->allowToShow($request)
             ->show($request, request('repositoryId'));
     }

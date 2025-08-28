@@ -530,6 +530,56 @@ class FieldTest extends IntegrationTestCase
         });
         $this->assertTrue($callbackField->isHiddenFromMcp($mcpRequest, $repository));
     }
+
+    public function test_field_can_be_marked_as_sortable(): void
+    {
+        $field = Field::make('name');
+
+        // Initially not sortable
+        $this->assertFalse($field->isSortable());
+
+        // Mark as sortable
+        $result = $field->sortable();
+        $this->assertTrue($field->isSortable());
+        $this->assertInstanceOf(Field::class, $result);
+        $this->assertSame($field, $result);
+
+        // Can be explicitly set to false
+        $field->sortable(false);
+        $this->assertFalse($field->isSortable());
+
+        // Can be explicitly set to true
+        $field->sortable(true);
+        $this->assertTrue($field->isSortable());
+    }
+
+    public function test_field_sortable_method_is_fluent(): void
+    {
+        $field = Field::make('name')
+            ->sortable()
+            ->label('Custom Label')
+            ->default('Default Value');
+
+        $this->assertTrue($field->isSortable());
+        $this->assertEquals('Custom Label', $field->label);
+    }
+
+    public function test_field_can_be_marked_as_lazy(): void
+    {
+        $field = Field::make('tags');
+        $request = new RestifyRequest;
+
+        // Initially not lazy
+        $this->assertFalse($field->isLazy($request));
+        $this->assertNull($field->getLazyRelationshipName());
+
+        // Mark as lazy with specific relationship name
+        $result = $field->lazy('tags');
+        $this->assertTrue($field->isLazy($request));
+        $this->assertEquals('tags', $field->getLazyRelationshipName());
+        $this->assertInstanceOf(Field::class, $result);
+        $this->assertSame($field, $result);
+    }
 }
 
 class InvokableFill

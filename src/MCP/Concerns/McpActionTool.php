@@ -63,7 +63,7 @@ trait McpActionTool
 
     public static function actionToolSchema(Action $action, ToolInputSchema $schema, McpActionRequest $mcpRequest): void
     {
-        $modelName = class_basename(static::$model);
+        $modelName = class_basename(static::guessModelClassName());
 
         // Add action-specific validation rules
         $actionRules = $action->rules();

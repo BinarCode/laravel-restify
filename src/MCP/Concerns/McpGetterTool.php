@@ -50,7 +50,7 @@ trait McpGetterTool
 
     public static function getterToolSchema(Getter $getter, ToolInputSchema $schema, McpGetterRequest $mcpRequest): void
     {
-        $modelName = class_basename(static::$model);
+        $modelName = class_basename(static::guessModelClassName());
 
         // Add getter-specific validation rules if the getter has a rules method
         if (method_exists($getter, 'rules')) {

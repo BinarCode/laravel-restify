@@ -42,6 +42,9 @@ class RepositoryCommand extends GeneratorCommand
 
                 return false;
             }
+
+            // Set force option to true since user confirmed override
+            $this->input->setOption('force', true);
         }
 
         if (parent::handle() === false && ! $this->option('force')) {
@@ -100,7 +103,8 @@ class RepositoryCommand extends GeneratorCommand
         $stub = parent::buildClass($name);
 
         // Replace DummyRootNamespace placeholder
-        $stub = str_replace('DummyRootNamespace', $this->rootNamespace(), $stub);
+        $rootNamespace = rtrim($this->rootNamespace(), '\\');
+        $stub = str_replace('DummyRootNamespace', $rootNamespace, $stub);
 
         $stub = $this->replaceModel($stub, $this->guessBaseModelClass());
 
@@ -114,6 +118,9 @@ class RepositoryCommand extends GeneratorCommand
             $stub = str_replace('{{ relationships }}', '', $stub);
             $stub = str_replace('{{ relationshipImports }}', '', $stub);
         }
+
+        // Clean up any double backslashes in the final stub
+        $stub = str_replace('\\\\', '\\', $stub);
 
         return $stub;
     }
@@ -142,7 +149,7 @@ class RepositoryCommand extends GeneratorCommand
         }
 
         $model = Str::singular(class_basename(Str::before($this->getNameInput(), 'Repository')));
-        $defaultModelClass = str_replace('/', '\\', $this->rootNamespace().'/Models//'.$model);
+        $defaultModelClass = str_replace('/', '\\', $this->rootNamespace().'/Models/'.$model);
 
         // If default model exists, use it
         if (class_exists($defaultModelClass)) {
@@ -251,12 +258,22 @@ class RepositoryCommand extends GeneratorCommand
         if ($existingRepositoryPath && $existingRepositoryPath['pattern']) {
             // Apply the discovered pattern
             $modelBaseName = Str::before(class_basename($name), 'Repository');
-            $namespacedName = $existingRepositoryPath['namespace'].'\\'.$this->applyPathPattern(
-                $modelBaseName,
-                $existingRepositoryPath['pattern']
-            ).'\\'.$name;
+            $patternPath = $this->applyPathPattern($modelBaseName, $existingRepositoryPath['pattern']);
 
-            return $this->laravel['path'].'/'.str_replace('\\', '/', str_replace($this->rootNamespace().'\\', '', $namespacedName)).'.php';
+            // Build the namespace path, avoiding duplication
+            $namespaceParts = [];
+            $baseNamespace = str_replace($this->rootNamespace().'\\', '', $existingRepositoryPath['namespace']);
+            if ($baseNamespace) {
+                $namespaceParts[] = $baseNamespace;
+            }
+
+            if ($patternPath && ! empty($patternPath)) {
+                $namespaceParts[] = str_replace('\\', '/', $patternPath);
+            }
+
+            $namespaceParts[] = class_basename($name);
+
+            return $this->laravel['path'].'/'.implode('/', $namespaceParts).'.php';
         }
 
         return parent::getPath($name);
@@ -268,11 +285,27 @@ class RepositoryCommand extends GeneratorCommand
         $existingRepositoryPath = $this->findExistingRepositoryPath();
 
         if ($existingRepositoryPath) {
-            return $existingRepositoryPath['namespace'];
+            $namespace = $existingRepositoryPath['namespace'];
+
+            // Apply pattern for the current model if needed
+            if ($existingRepositoryPath['pattern'] && $existingRepositoryPath['pattern'] !== 'flat') {
+                $modelBaseName = Str::before(class_basename($this->getNameInput()), 'Repository');
+                $patternPath = $this->applyPathPattern($modelBaseName, $existingRepositoryPath['pattern']);
+
+                if ($patternPath && ! empty($patternPath)) {
+                    // Only add pattern path if it doesn't already exist in namespace
+                    $patternPathNormalized = str_replace('/', '\\', $patternPath);
+                    if (! Str::endsWith($namespace, $patternPathNormalized)) {
+                        $namespace .= '\\'.$patternPathNormalized;
+                    }
+                }
+            }
+
+            return $namespace;
         }
 
         // Fallback to default
-        return $rootNamespace.'\Restify';
+        return rtrim($rootNamespace, '\\').'\\Restify';
     }
 
     protected function replaceFields($stub)

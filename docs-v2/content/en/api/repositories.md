@@ -23,7 +23,26 @@ instruct Restify to generate the migrations, policy, and model (in `app/Models`)
 
 ## Defining Repositories
 
-The basic repository form looks like this:
+The basic repository form looks like this using the modern attribute approach:
+
+```php
+namespace App\Restify;
+
+use App\Models\Post;
+use App\Restify\Repository;
+use Binaryk\LaravelRestify\Attributes\Model;
+
+#[Model(Post::class)]
+class PostRepository extends Repository
+{
+    public function fields(RestifyRequest $request): array
+    {
+        return [];
+    }
+}
+```
+
+Or using the traditional static property approach:
 
 ```php
 namespace App\Restify;
@@ -35,7 +54,7 @@ class PostRepository extends Repository
 {
     public static string $model = Post::class;
     
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [];
     }
@@ -43,7 +62,7 @@ class PostRepository extends Repository
 ```
 
 <alert type="info">
-If you don't specify the $model property, Restify will try to guess the model automatically.
+If you don't specify the model using an attribute or the $model property, Restify will try to guess the model automatically based on the repository class name.
 </alert>
 
 
@@ -54,8 +73,12 @@ The `fields` method returns the default set of attributes definitions that shoul
 Restify will discover recursively all classes from the `app\Restify\*` directory that extend
 the `Binaryk\LaravelRestify\Repositories\Repository` class.
 
-If the `$model` property is not defined, Restify will guess the model class by using the prefix of the Repository name.
-For example, `UserPostRepository` class has the model `UserPost`.
+For model resolution, Restify follows this priority order:
+1. **`#[Model]` attribute** (highest priority)
+2. **`$model` static property**  
+3. **Auto-guessing** from repository class name (lowest priority)
+
+When auto-guessing, Restify uses the prefix of the Repository name. For example, `UserPostRepository` class will try to find the `UserPost` model.
 
 ### Actions handled by the Repository
 
@@ -90,15 +113,76 @@ for full model update, and respectively partial update.
 
 </alert>
 
-## Model name
+## Model Definition
 
 As we already noticed, each repository basically works as a wrapper over a specific resource. The fancy
 naming `resource` is nothing more than a database entity (posts, users etc.). To make the repository aware of the
-entity it should handle, we need to define the model property associated with this resource:
+entity it should handle, we need to define the model associated with this resource.
+
+Laravel Restify provides three ways to define the model, with the following priority order:
+
+### 1. Modern Approach: PHP Attributes (Recommended)
+
+The most modern and clean approach uses PHP 8+ attributes:
 
 ```php
-public static string $model = 'App\\Models\\Post'; 
+use Binaryk\LaravelRestify\Attributes\Model;
+
+#[Model(Post::class)]
+class PostRepository extends Repository
+{
+    // Clean - no static property needed
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('content'),
+        ];
+    }
+}
 ```
+
+You can also use string class names:
+
+```php
+#[Model('App\Models\Post')]
+class PostRepository extends Repository
+{
+    // Fields...
+}
+```
+
+**Benefits of using attributes:**
+- Modern, declarative approach
+- Better IDE support and static analysis
+- Cleaner code (no need for static properties)
+- More discoverable with reflection tools
+- Type-safe when using `::class` syntax
+
+### 2. Traditional Approach: Static Property
+
+The classic approach using static properties (still fully supported):
+
+```php
+class PostRepository extends Repository
+{
+    public static string $model = Post::class;
+    
+    // Or with string
+    public static string $model = 'App\\Models\\Post';
+}
+```
+
+### 3. Auto-Guessing (Fallback)
+
+If neither attribute nor static property is defined, Restify will automatically guess the model from the repository class name:
+
+- `UserRepository` → tries `App\Models\User`
+- `BlogPostRepository` → tries `App\Models\BlogPost`
+
+<alert type="info">
+The attribute approach takes the highest priority, followed by the static property, and finally auto-guessing as a fallback.
+</alert>
 
 ## Public repository
 

@@ -251,6 +251,452 @@ $field = field('full_name', fn() => "$this->first_name $this->last_name");
 $isComputed = $field->computed(); // Returns: true
 ```
 
+## Sorting
+
+Fields can be made sortable, allowing API consumers to order results by field values.
+
+### Making Fields Sortable
+
+To make a field sortable, chain the `sortable()` method:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('name')->sortable(),
+        field('email')->sortable(),
+        field('created_at')->sortable(),
+        field('is_active')->sortable(),
+    ];
+}
+```
+
+### Sortable Column Configuration
+
+By default, the field's attribute name is used as the sortable column. You can specify a different column:
+
+```php
+field('full_name')->sortable('name'), // Use 'name' column for 'full_name' field
+```
+
+### Disabling Sorting
+
+You can disable sorting for a field that was previously made sortable:
+
+```php
+field('sensitive_data')->sortable(false),
+```
+
+### Conditional Sorting
+
+Make fields conditionally sortable based on request context:
+
+```php
+field('internal_score')->sortable(fn($request) => $request->user()->isAdmin()),
+```
+
+### Using Sortable Fields
+
+Once fields are marked as sortable, API consumers can use them in sort requests:
+
+```http
+GET /api/restify/users?sort=name
+GET /api/restify/users?sort=-created_at  # Descending
+GET /api/restify/users?sort=name,-created_at  # Multiple fields
+```
+
+## Matching
+
+Fields can be made matchable, allowing API consumers to filter results using query parameters.
+
+### Making Fields Matchable
+
+Use the `matchable()` method or convenient aliases:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('name')->matchableText(),              // Text matching with LIKE
+        field('email')->matchable('users.email'),   // Custom column - users table email
+        field('status')->matchableText(),            // Text matching
+        field('is_active')->matchableBool(),         // Boolean matching
+        field('age')->matchableInteger(),            // Integer matching
+        field('created_at')->matchableDatetime(),    // Date matching
+        field('price')->matchableBetween(),          // Range matching
+        field('tags')->matchableArray(),             // Array/IN matching
+    ];
+}
+```
+
+### Using Matchable Fields
+
+Once fields are marked as matchable, API consumers can filter using query parameters:
+
+```http
+GET /api/restify/posts?title=Laravel         # Text matching
+GET /api/restify/posts?is_active=true        # Boolean matching
+GET /api/restify/posts?user_id=5             # Integer matching
+GET /api/restify/posts?created_at=2023-12-01 # Date matching
+GET /api/restify/posts?price=100,500         # Range matching
+GET /api/restify/posts?tags=php,laravel      # Array matching
+
+# Negation (prefix with -)
+GET /api/restify/posts?-status=draft         # Exclude drafts
+GET /api/restify/posts?-is_active=true       # Inactive posts
+
+# Null checks
+GET /api/restify/posts?description=null      # Posts with no description
+```
+
+### Match Types Reference
+
+| Alias | Type | Example Usage | Query Behavior |
+|-------|------|---------------|----------------|
+| `matchableText()` | text | `?name=john` | `WHERE name LIKE '%john%'` |
+| `matchableBool()` | boolean | `?is_active=true` | `WHERE is_active = 1` |
+| `matchableInteger()` | integer | `?user_id=5` | `WHERE user_id = 5` |
+| `matchableDatetime()` | datetime | `?created_at=2023-12-01` | `WHERE DATE(created_at) = '2023-12-01'` |
+| `matchableBetween()` | between | `?price=100,500` | `WHERE price BETWEEN 100 AND 500` |
+| `matchableArray()` | array | `?tags=php,laravel` | `WHERE tags IN ('php', 'laravel')` |
+
+### Advanced Matchable Configuration
+
+The `matchable()` method is flexible and accepts multiple types of arguments for advanced filtering scenarios:
+
+#### Basic Usage (No Arguments)
+
+When called without arguments, `matchable()` enables text-based matching using the field's attribute name:
+
+```php
+field('title')->matchable(), // Enables text matching on 'title' column
+```
+
+#### Custom Column
+
+Specify a different database column for matching:
+
+```php
+field('display_name')->matchable('users.name'), // Match against 'users.name' column
+```
+
+#### Custom Match Type
+
+Specify both column and match type:
+
+```php
+field('status')->matchable('posts.status', 'text'), // Custom column with text matching
+field('priority')->matchable('priority', 'integer'), // Integer matching
+```
+
+#### Closure-based Matching
+
+For complex filtering logic, pass a closure that receives the request, query builder, and value:
+
+```php
+field('title')->matchable(function ($request, $query, $value) {
+    // Custom search logic - case insensitive partial matching
+    $query->where('title', 'like', "%{$value}%");
+}),
+
+field('content')->matchable(function ($request, $query, $value) {
+    // Full-text search across multiple columns
+    $query->whereRaw("MATCH(title, content) AGAINST(? IN BOOLEAN MODE)", [$value]);
+}),
+
+field('location')->matchable(function ($request, $query, $value) {
+    // Complex geographical search
+    [$lat, $lng, $radius] = explode(',', $value);
+    $query->whereRaw(
+        'ST_Distance_Sphere(POINT(longitude, latitude), POINT(?, ?)) <= ?',
+        [$lng, $lat, $radius * 1000]
+    );
+}),
+```
+
+#### Custom MatchFilter Classes
+
+For reusable complex filtering logic, create custom MatchFilter classes:
+
+```php
+use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\Relation;
+
+class CustomTitleFilter extends MatchFilter
+{
+    public function __construct()
+    {
+        parent::__construct();
+        $this->setColumn('title'); // Set the column to filter on
+    }
+
+    public function filter(RestifyRequest $request, Builder|Relation $query, $value)
+    {
+        // Custom filtering logic: search for titles that start with the given value
+        $query->where('title', 'like', "{$value}%");
+        
+        return $query;
+    }
+}
+```
+
+Then use the custom filter in your field definition:
+
+```php
+field('title')->matchable(new CustomTitleFilter()),
+```
+
+#### Invokable Classes
+
+You can also use invokable classes for cleaner code organization:
+
+```php
+class SearchTitleFilter
+{
+    public function __invoke($request, $query, $value)
+    {
+        $query->where('title', 'like', "%{$value}%")
+              ->orWhere('description', 'like', "%{$value}%");
+    }
+}
+
+// Usage
+field('search')->matchable(new SearchTitleFilter()),
+```
+
+#### Practical Examples
+
+**E-commerce Product Search:**
+```php
+field('search')->matchable(function ($request, $query, $value) {
+    $query->where(function ($q) use ($value) {
+        $q->where('name', 'like', "%{$value}%")
+          ->orWhere('description', 'like', "%{$value}%")
+          ->orWhere('sku', 'like', "%{$value}%");
+    });
+}),
+```
+
+**Date Range Filtering:**
+```php
+field('date_range')->matchable(function ($request, $query, $value) {
+    [$start, $end] = explode(',', $value);
+    $query->whereBetween('created_at', [$start, $end]);
+}),
+```
+
+**Tag-based Filtering:**
+```php
+field('tags')->matchable(function ($request, $query, $value) {
+    $tags = explode(',', $value);
+    $query->whereHas('tags', function ($q) use ($tags) {
+        $q->whereIn('slug', $tags);
+    });
+}),
+```
+
+**Relationship Filtering:**
+```php
+field('author')->matchable(function ($request, $query, $value) {
+    $query->whereHas('author', function ($q) use ($value) {
+        $q->where('name', 'like', "%{$value}%")
+          ->orWhere('email', 'like', "%{$value}%");
+    });
+}),
+```
+
+## Searchable
+
+Fields can be made searchable, enabling them to respond to global search queries. This provides field-level control over search behavior while maintaining the simplicity of the global search API.
+
+### Making Fields Searchable
+
+To make a field searchable, chain the `searchable()` method:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('title')->searchable(),
+        field('description')->searchable(),
+        field('email')->searchable(),
+    ];
+}
+```
+
+The `searchable()` method uses a unified flexible signature that accepts multiple arguments and works consistently across all field types:
+
+```php
+// Basic usage
+field('title')->searchable(),
+
+// Custom column
+field('name')->searchable('users.full_name'),
+
+// With optional type
+field('price')->searchable('products.price', 'numeric'),
+
+// Multiple attributes (especially useful for relationship fields like BelongsTo)
+BelongsTo::make('author')->searchable('name', 'email', 'username'),
+
+// Array of attributes (legacy support)
+BelongsTo::make('editor')->searchable(['users.name', 'users.email']),
+
+// Closure/callback
+field('content')->searchable(function ($request, $query, $value) {
+    // Custom search logic
+}),
+
+// Custom filter instance
+field('complex_search')->searchable(new CustomSearchFilter()),
+
+// Invokable class
+field('tags')->searchable(new TagSearchHandler()),
+```
+
+### Unified Method Signatures
+
+All searchable-related methods now use consistent signatures across regular fields and relationship fields:
+
+```php
+// All field types use the same signatures:
+searchable(...$attributes)                    // Flexible variadic signature
+isSearchable(?RestifyRequest $request = null) // Optional request parameter
+getSearchColumn(?RestifyRequest $request = null) // Optional request parameter
+
+// BelongsTo also provides relationship-specific method:
+getSearchables(): array                       // Returns multiple searchable attributes
+```
+
+### Using Searchable Fields
+
+Searchable fields respond to the standard `search` query parameter:
+
+```http
+GET /api/restify/posts?search=laravel
+```
+
+This will search across all searchable fields for the term "laravel".
+
+### Advanced Searchable Configuration
+
+#### Basic Usage (No Arguments)
+
+When called without arguments, `searchable()` applies standard search behavior using the field's attribute:
+
+```php
+field('title')->searchable(), // Searches the 'title' column with LIKE operator
+```
+
+#### Custom Column
+
+Specify a different database column for searching:
+
+```php
+field('author_name')->searchable('users.name'), // Search in users.name column
+```
+
+You can also specify multiple attributes for relationship fields (like BelongsTo):
+
+```php
+BelongsTo::make('author', UserRepository::class)->searchable('name', 'email'),
+```
+
+#### Closure-based Searching
+
+For custom search logic, pass a closure that receives the request, query builder, and search value:
+
+```php
+field('content')->searchable(function ($request, $query, $value) {
+    $query->where('title', 'LIKE', "%{$value}%")
+          ->orWhere('description', 'LIKE', "%{$value}%");
+}),
+```
+
+#### Custom SearchableFilter Classes
+
+Create dedicated filter classes for complex search logic:
+
+```php
+field('complex_search')->searchable(new CustomContentSearchFilter),
+```
+
+Where `CustomContentSearchFilter` extends `SearchableFilter`:
+
+```php
+use Binaryk\LaravelRestify\Filters\SearchableFilter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+
+class CustomContentSearchFilter extends SearchableFilter
+{
+    public function filter(RestifyRequest $request, $query, $value)
+    {
+        return $query->where(function ($q) use ($value) {
+            $q->where('title', 'LIKE', "%{$value}%")
+              ->orWhere('description', 'LIKE', "%{$value}%")
+              ->orWhere('tags', 'LIKE', "%{$value}%");
+        });
+    }
+}
+```
+
+#### Invokable Classes
+
+For reusable search logic, use invokable classes:
+
+```php
+field('tags')->searchable(new TagSearchFilter),
+```
+
+```php
+class TagSearchFilter
+{
+    public function __invoke($request, $query, $value)
+    {
+        $tags = explode(',', $value);
+        $query->whereHas('tags', function ($q) use ($tags) {
+            $q->whereIn('name', $tags);
+        });
+    }
+}
+```
+
+#### Practical Examples
+
+**Full-text Search:**
+```php
+field('content')->searchable(function ($request, $query, $value) {
+    $query->whereFullText(['title', 'description'], $value);
+}),
+```
+
+**Multi-field Search:**
+```php
+field('user_search')->searchable(function ($request, $query, $value) {
+    $query->where('name', 'LIKE', "%{$value}%")
+          ->orWhere('email', 'LIKE', "%{$value}%")
+          ->orWhere('phone', 'LIKE', "%{$value}%");
+}),
+```
+
+**Relationship Search:**
+```php
+field('author')->searchable(function ($request, $query, $value) {
+    $query->whereHas('author', function ($q) use ($value) {
+        $q->where('name', 'like', "%{$value}%");
+    });
+}),
+```
+
+**JSON Search:**
+```php
+field('metadata')->searchable(function ($request, $query, $value) {
+    $query->whereJsonContains('metadata->tags', $value);
+}),
+```
+
 ## Validation
 
 There is a golden rule that says - catch the exception as soon as possible on its request way.
@@ -927,6 +1373,79 @@ class AvatarStore implements Storable
 <alert>
 You can use the <code>php artisan restify:store AvatarStore</code> command to generate a store file.
 </alert>
+
+## Lazy Loading
+
+Fields can be configured to lazy load relationships, which is particularly useful for computed attributes that depend on related models. This helps avoid N+1 queries by ensuring relationships are loaded only when needed.
+
+### Making Fields Lazy
+
+Use the `lazy()` method to mark a field for lazy loading:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        // Lazy load the 'tags' relationship when displaying profileTagNames
+        field('profileTagNames', fn() => $this->model()->profileTagNames)
+            ->lazy('tags'),
+            
+        // Lazy load using the field's attribute name (if it matches the relationship)
+        field('tags', fn() => $this->model()->tags->pluck('name'))
+            ->lazy(),
+            
+        // Another example with user relationship
+        field('authorName', fn() => $this->model()->user->name ?? 'Unknown')
+            ->lazy('user'),
+    ];
+}
+```
+
+### How It Works
+
+When you have a model attribute like this:
+
+```php
+class Post extends Model
+{
+    public function getProfileTagNamesAttribute(): array
+    {
+        return $this->tags()->pluck('name')->toArray();
+    }
+    
+    public function tags()
+    {
+        return $this->belongsToMany(Tag::class);
+    }
+}
+```
+
+You can create a field that efficiently loads this data:
+
+```php
+field('profileTagNames', fn() => $this->model()->profileTagNames)
+    ->lazy('tags')
+```
+
+This ensures that:
+1. The `tags` relationship is loaded before the field value is computed
+2. Multiple fields using the same relationship won't cause additional queries
+3. The computed value can safely access the relationship data
+
+### Lazy Loading Methods
+
+The `CanLoadLazyRelationship` trait provides the following methods:
+
+- `lazy(?string $relationshipName = null)` - Mark the field as lazy and optionally specify the relationship name
+- `isLazy(RestifyRequest $request)` - Check if the field is configured for lazy loading
+- `getLazyRelationshipName()` - Get the name of the relationship to lazy load
+
+### Benefits
+
+- **Performance**: Prevents N+1 queries when dealing with computed attributes
+- **Efficiency**: Relationships are loaded only once, even if multiple fields depend on them  
+- **Flexibility**: Works with any relationship type (BelongsTo, HasMany, ManyToMany, etc.)
+- **Clean Code**: Keeps your field definitions simple while ensuring optimal database usage
 
 ## Utility Methods
 

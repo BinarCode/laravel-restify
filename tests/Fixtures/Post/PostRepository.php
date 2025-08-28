@@ -32,6 +32,11 @@ class PostRepository extends Repository
 
     public static array $middleware = [];
 
+    public static array $sort = [
+        'title',
+        'is_active',
+    ];
+
     public static function indexQuery(RestifyRequest $request, $query)
     {
         if (isset($_SERVER['restify.post.indexQueryCallback']) && is_callable($_SERVER['restify.post.indexQueryCallback'])) {
@@ -46,13 +51,13 @@ class PostRepository extends Repository
 
             field('title')->storingRules('required')->messages([
                 'required' => 'This field is required',
-            ]),
+            ])->matchableText(),
 
             field('description')->storingRules('required')->messages([
                 'required' => 'Description field is required',
             ]),
 
-            field('is_active'),
+            field('is_active')->matchableBool(),
         ];
     }
 

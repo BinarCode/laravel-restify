@@ -2,8 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Fields\Concerns\CanLoadLazyRelationship;
+use Binaryk\LaravelRestify\Fields\Concerns\CanMatch;
+use Binaryk\LaravelRestify\Fields\Concerns\CanSearch;
+use Binaryk\LaravelRestify\Fields\Concerns\CanSort;
 use Binaryk\LaravelRestify\Fields\Concerns\HasAction;
 use Binaryk\LaravelRestify\Fields\Concerns\ValidationMethods;
+use Binaryk\LaravelRestify\Fields\Contracts\Matchable;
+use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Concerns\FieldMcpSchemaDetection;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -16,8 +22,12 @@ use Illuminate\Validation\Rules\Unique;
 use JsonSerializable;
 use ReturnTypeWillChange;
 
-class Field extends OrganicField implements JsonSerializable
+class Field extends OrganicField implements JsonSerializable, Matchable, Sortable
 {
+    use CanLoadLazyRelationship;
+    use CanMatch;
+    use CanSearch;
+    use CanSort;
     use FieldMcpSchemaDetection;
     use HasAction;
     use Make;

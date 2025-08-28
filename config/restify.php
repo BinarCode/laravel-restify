@@ -132,6 +132,20 @@ return [
         | Specify either the search should be case-sensitive or not.
         */
         'case_sensitive' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Use JOINs for BelongsTo Relationships
+        |--------------------------------------------------------------------------
+        |
+        | When enabled, BelongsTo relationship searches will use JOINs instead of
+        | subqueries for better performance. This is generally recommended for
+        | better query performance, but can be disabled if compatibility issues arise.
+        |
+        | Default: true (recommended for better performance)
+        |
+        */
+        'use_joins_for_belongs_to' => env('RESTIFY_USE_JOINS_FOR_BELONGS_TO', false),
     ],
 
     'repositories' => [
@@ -145,6 +159,57 @@ return [
         | Specify either to serialize show meta (policy) information or not.
         */
         'serialize_show_meta' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Repository Index Caching
+        |--------------------------------------------------------------------------
+        |
+        | These settings control caching for repository index requests. Caching
+        | can significantly improve performance for expensive queries with filters,
+        | searches, and sorts. Cache is automatically disabled in test environment.
+        |
+        */
+        'cache' => [
+            /*
+            | Enable or disable repository index caching globally.
+            | Individual repositories can override this setting.
+            */
+            'enabled' => env('RESTIFY_REPOSITORY_CACHE_ENABLED', false),
+
+            /*
+            | Default cache TTL in seconds for repository index requests.
+            | Individual repositories can override this setting.
+            */
+            'ttl' => env('RESTIFY_REPOSITORY_CACHE_TTL', 300), // 5 minutes
+
+            /*
+            | Cache store to use. If null, uses the default cache store.
+            */
+            'store' => env('RESTIFY_REPOSITORY_CACHE_STORE'),
+
+            /*
+            | Skip caching for authenticated requests. Useful if you have
+            | user-specific authorization that makes caching less effective.
+            */
+            'skip_authenticated' => env('RESTIFY_REPOSITORY_CACHE_SKIP_AUTHENTICATED', false),
+
+            /*
+            | Enable caching in test environment. By default, caching is
+            | automatically disabled during testing to avoid test isolation issues.
+            */
+            'enable_in_tests' => env('RESTIFY_REPOSITORY_CACHE_ENABLE_IN_TESTS', false),
+
+            /*
+            | Default cache tags for all repositories. Individual repositories
+            | can add their own tags in addition to these.
+            |
+            | Note: Cache tags are only used if the cache store supports them.
+            | Database and file cache stores do not support tagging.
+            | Redis and Memcached stores support tagging.
+            */
+            'tags' => ['restify', 'repositories'],
+        ],
     ],
 
     'cache' => [

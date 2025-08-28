@@ -34,7 +34,7 @@ class ActionTool extends Tool
     {
         $repositoryUriKey = $this->repository->uriKey();
         $actionName = $this->action->name();
-        $modelName = class_basename($this->repository::$model);
+        $modelName = class_basename($this->repository::guessModelClassName());
 
         if ($this->action->isStandalone()) {
             return "Execute {$actionName} action (standalone - no models required) in the {$repositoryUriKey} repository.";

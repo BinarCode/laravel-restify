@@ -21,7 +21,7 @@ trait McpStoreTool
 
     public static function storeToolSchema(ToolInputSchema $schema): void
     {
-        $repository = static::resolveWith(app(static::$model));
+        $repository = static::resolveWith(static::newModel());
 
         $repository->collectFields($request = app(McpRequest::class))
             ->forStore($request, $repository)

@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class EagerField extends Field
 {
@@ -28,6 +30,8 @@ class EagerField extends Field
     public string $repositoryClass;
 
     private RelatedQuery $relatedQuery;
+
+    public bool $forMcp = false;
 
     public function __construct($attribute, ?string $parentRepository = null)
     {
@@ -83,14 +87,8 @@ class EagerField extends Field
              */
             $serializableRepository = $this->repositoryClass::resolveWith($relatedModel);
 
-            // Only set the request for MCP requests to preserve MCP-specific behavior
-            // without interfering with regular column selection
-            if (isset($repository->request) && $repository->request instanceof McpRequest) {
-                $serializableRepository->request = $repository->request;
-            }
-
             $this->value = $serializableRepository
-                ->allowToShow($repository->request ?? app(Request::class))
+                ->allowToShow($this->isForMcp() ? app(McpRequest::class) : app(RestifyRequest::class))
                 ->columns()
                 ->eager($this);
         } catch (AuthorizationException) {
@@ -145,5 +143,42 @@ class EagerField extends Field
     public function queryKeyThatRendered(): string
     {
         return $this->relatedQuery->relation;
+    }
+
+    public function qualifySortable(RestifyRequest $request): ?string
+    {
+        if (! $this->isSortable($request)) {
+            return null;
+        }
+
+        if (Str::contains($this->sortableColumn, '.attributes')) {
+            return $this->sortableColumn;
+        }
+
+        $table = $this->repositoryClass::newModel()->getTable();
+
+        if (Str::contains($this->sortableColumn, '.') && Str::startsWith($this->sortableColumn, $table)) {
+            return $table.'.attributes.'.Str::after($this->sortableColumn, "$table.");
+        }
+
+        return $table.'.attributes.'.$this->sortableColumn;
+    }
+
+    public function forMcp(bool|callable $forMcp = false): self
+    {
+        if (is_callable($forMcp)) {
+            $this->forMcp = $forMcp();
+
+            return $this;
+        }
+
+        $this->forMcp = $forMcp;
+
+        return $this;
+    }
+
+    public function isForMcp(): bool
+    {
+        return $this->forMcp;
     }
 }

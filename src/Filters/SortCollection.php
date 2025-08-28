@@ -51,7 +51,7 @@ class SortCollection extends Collection
     public function inRepository(RestifyRequest $request, Repository $repository): self
     {
         $collection = static::make($repository::sorts())->merge(
-            $repository::collectRelated()->mapIntoSortable()
+            $repository::collectRelated()->mapIntoSortable($request)
         );
 
         return $this->filter(fn (SortableFilter $filter) => $collection->contains('column', '=', $filter->column));
@@ -62,9 +62,9 @@ class SortCollection extends Collection
         return $this->filter(fn (SortableFilter $filter) => $filter->authorizedToSee($request));
     }
 
-    public function hydrateDefinition(Repository $repository): SortCollection
+    public function hydrateDefinition(Repository $repository, RestifyRequest $request): SortCollection
     {
-        $relatedSortables = $repository::collectRelated()->mapIntoSortable();
+        $relatedSortables = $repository::collectRelated()->mapIntoSortable($request);
 
         return $this->map(function (SortableFilter $filter) use ($repository, $relatedSortables) {
             /** * @var SortableFilter $relatedSortableFilter */
