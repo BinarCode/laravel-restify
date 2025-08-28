@@ -210,7 +210,6 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $this->bootIfNotBooted();
         $this->ensureResourceExists();
-        $this->request = app(RestifyRequest::class);
     }
 
     /**
@@ -613,7 +612,6 @@ class Repository implements JsonSerializable, RestifySearchable
     public function indexAsArray(RestifyRequest $request): array
     {
         // Preserve the request instance for the entire flow
-        $this->request = $request;
 
         // Check if the model was set under the repository
         throw_if(
@@ -632,7 +630,6 @@ class Repository implements JsonSerializable, RestifySearchable
         $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) use ($request) {
             $repository = static::resolveWith($value);
             // Ensure each resolved repository maintains the original request
-            $repository->request = $request;
 
             return $repository;
         })->filter(function (self $repository) use ($request) {
