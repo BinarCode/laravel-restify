@@ -162,3 +162,7 @@ public static function searchables(): array {
 - **[Migration Guide](UPGRADING.md)** - Step-by-step upgrade instructions
 - **[MCP Integration](docs-v2/content/en/mcp/mcp.md)** - AI agent setup and configuration
 - **[Field Reference](docs-v2/content/en/api/fields.md)** - All field methods and options
+
+## 🧪 Testing
+
+All new features include comprehensive test coverage to ensure reliability and maintainability.
