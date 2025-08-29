@@ -191,7 +191,7 @@ abstract class IntegrationTestCase extends TestCase
     {
         config(['restify.repositories.cache.enabled' => $enabled]);
         config(['restify.repositories.cache.enable_in_tests' => $enabled]);
-        
+
         return $this;
     }
 
@@ -209,7 +209,7 @@ abstract class IntegrationTestCase extends TestCase
     protected function setRepositoryCacheTtl(int $seconds): self
     {
         config(['restify.repositories.cache.ttl' => $seconds]);
-        
+
         return $this;
     }
 
@@ -219,7 +219,7 @@ abstract class IntegrationTestCase extends TestCase
     protected function clearRepositoryCache(): self
     {
         \Illuminate\Support\Facades\Cache::flush();
-        
+
         return $this;
     }
 

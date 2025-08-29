@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Repositories\Concerns;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Str;
 
 trait InteractsWithCache
 {
@@ -74,7 +73,7 @@ trait InteractsWithCache
 
         // Add user context for authorization-sensitive data
         if ($user = $request->user()) {
-            $keyParts[] = 'user_' . $user->getAuthIdentifier();
+            $keyParts[] = 'user_'.$user->getAuthIdentifier();
         } else {
             $keyParts[] = 'guest';
         }
@@ -84,11 +83,11 @@ trait InteractsWithCache
             try {
                 $latest = $this->model()::latest($this->model()->getUpdatedAtColumn())->first();
                 if ($latest) {
-                    $keyParts[] = 'v_' . $latest->{$this->model()->getUpdatedAtColumn()}->timestamp;
+                    $keyParts[] = 'v_'.$latest->{$this->model()->getUpdatedAtColumn()}->timestamp;
                 }
             } catch (\Exception $e) {
                 // Fallback to current timestamp if query fails
-                $keyParts[] = 'v_' . now()->timestamp;
+                $keyParts[] = 'v_'.now()->timestamp;
             }
         }
 
@@ -169,6 +168,7 @@ trait InteractsWithCache
         // If cache tags are used and supported, flush by tags
         if (! empty(static::$cacheTags) && static::cacheStoreSupportsTagging($store)) {
             $store->tags(static::$cacheTags)->flush();
+
             return;
         }
 
@@ -192,18 +192,20 @@ trait InteractsWithCache
             }
 
             $storage->setValue($store, $storageArray);
+
             return;
         }
 
         // For Redis and other drivers that support pattern deletion
         if (method_exists($store->getStore(), 'getRedis')) {
             try {
-                $pattern = 'restify:repository:' . static::uriKey() . ':*';
+                $pattern = 'restify:repository:'.static::uriKey().':*';
                 $store->getStore()->getRedis()->eval(
                     "return redis.call('del', unpack(redis.call('keys', ARGV[1])))",
                     0,
                     $pattern
                 );
+
                 return;
             } catch (\Exception $e) {
                 // Continue to fallback
@@ -271,6 +273,7 @@ trait InteractsWithCache
         try {
             // Create a test tagged cache entry (without storing anything)
             $store->tags(['test'])->getStore();
+
             return true;
         } catch (\Exception $e) {
             // If it throws an exception about tagging not being supported, return false
