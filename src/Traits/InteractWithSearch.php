@@ -93,8 +93,6 @@ trait InteractWithSearch
      */
     public static function collectSorts(RestifyRequest $request, Repository $repository): SortCollection
     {
-        $fieldSorts = static::collectFieldSorts($request, $repository);
-
         $requestSorts = (new SortCollection(explode(',', $request->input('sort', ''))))
             ->normalize()
             ->hydrateDefinition($repository, $request)
@@ -103,7 +101,7 @@ trait InteractWithSearch
             ->hydrateRepository($repository);
 
         // Merge field sorts with request sorts and ensure it stays a SortCollection
-        return new SortCollection($requestSorts->merge($fieldSorts));
+        return new SortCollection($requestSorts);
     }
 
     public static function collectFieldSorts(RestifyRequest $request, Repository $repository): Collection

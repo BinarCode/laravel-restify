@@ -52,7 +52,7 @@ class SortCollection extends Collection
     {
         $collection = static::make($repository::sorts())->merge(
             $repository::collectRelated()->mapIntoSortable($request)
-        );
+        )->merge($repository::collectFieldSorts($request, $repository));
 
         return $this->filter(fn (SortableFilter $filter) => $collection->contains('column', '=', $filter->column));
     }
