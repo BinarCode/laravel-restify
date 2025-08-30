@@ -1,0 +1,55 @@
+{
+	"name": "on-change",
+	"version": "5.0.1",
+	"description": "Watch an object or array for changes",
+	"license": "MIT",
+	"repository": "sindresorhus/on-change",
+	"funding": "https://github.com/sindresorhus/on-change?sponsor=1",
+	"author": {
+		"name": "Sindre Sorhus",
+		"email": "sindresorhus@gmail.com",
+		"url": "https://sindresorhus.com"
+	},
+	"type": "module",
+	"exports": {
+		"types": "./index.d.ts",
+		"default": "./index.js"
+	},
+	"sideEffects": false,
+	"engines": {
+		"node": ">=18"
+	},
+	"scripts": {
+		"test": "xo && ava && tsd",
+		"bench": "karma start karma.bench.conf.cjs"
+	},
+	"files": [
+		"index.js",
+		"index.d.ts",
+		"lib"
+	],
+	"keywords": [
+		"on",
+		"change",
+		"watch",
+		"object",
+		"array",
+		"changes",
+		"observe",
+		"watcher",
+		"observer",
+		"proxy",
+		"proxies",
+		"es2015",
+		"event",
+		"listener"
+	],
+	"devDependencies": {
+		"ava": "^6.0.1",
+		"display-value": "^2.2.0",
+		"karma-webpack-bundle": "^1.3.3",
+		"powerset": "0.0.1",
+		"tsd": "^0.29.0",
+		"xo": "^0.56.0"
+	}
+}

@@ -1,0 +1,663 @@
+{
+  "srcDir": "/<srcDir>",
+  "workspaceDir": "/<workspaceDir>",
+  "rootDir": "/<rootDir>",
+  "vite": {
+    "base": "/",
+    "root": "/<srcDir>",
+    "mode": "production",
+    "define": {
+      "__VUE_PROD_HYDRATION_MISMATCH_DETAILS__": false,
+      "process.dev": false,
+      "import.meta.dev": false,
+      "process.test": false,
+      "import.meta.test": false
+    },
+    "resolve": {
+      "extensions": [
+        ".mjs",
+        ".js",
+        ".ts",
+        ".jsx",
+        ".tsx",
+        ".json",
+        ".vue"
+      ]
+    },
+    "publicDir": {},
+    "vue": {
+      "isProduction": true,
+      "template": {
+        "compilerOptions": {},
+        "transformAssetUrls": {
+          "video": [
+            "src",
+            "poster"
+          ],
+          "source": [
+            "src"
+          ],
+          "img": [
+            "src"
+          ],
+          "image": [
+            "xlink:href",
+            "href"
+          ],
+          "use": [
+            "xlink:href",
+            "href"
+          ]
+        }
+      },
+      "script": {
+        "hoistStatic": {}
+      },
+      "features": {
+        "propsDestructure": true
+      }
+    },
+    "vueJsx": {
+      "isCustomElement": {
+        "$schema": {
+          "title": "",
+          "description": "",
+          "tags": []
+        }
+      }
+    },
+    "optimizeDeps": {
+      "esbuildOptions": {
+        "target": "esnext",
+        "jsxFactory": "h",
+        "jsxFragment": "Fragment",
+        "tsconfigRaw": {}
+      },
+      "exclude": [
+        "vue-demi"
+      ]
+    },
+    "esbuild": {
+      "target": "esnext",
+      "jsxFactory": "h",
+      "jsxFragment": "Fragment",
+      "tsconfigRaw": {}
+    },
+    "clearScreen": true,
+    "build": {
+      "assetsDir": "_nuxt/",
+      "emptyOutDir": false
+    },
+    "server": {
+      "fs": {
+        "allow": [
+          "/<rootDir>/.nuxt",
+          "/<srcDir>",
+          "/<rootDir>",
+          "/<workspaceDir>"
+        ]
+      }
+    },
+    "cacheDir": "/<rootDir>/node_modules/.cache/vite"
+  },
+  "components": {
+    "dirs": [
+      {
+        "path": "~/components/global",
+        "global": true
+      },
+      "~/components"
+    ]
+  },
+  "imports": {
+    "global": false,
+    "scan": true,
+    "dirs": []
+  },
+  "pages": {},
+  "telemetry": {},
+  "devtools": {},
+  "vue": {
+    "transformAssetUrls": {
+      "video": [
+        "src",
+        "poster"
+      ],
+      "source": [
+        "src"
+      ],
+      "img": [
+        "src"
+      ],
+      "image": [
+        "xlink:href",
+        "href"
+      ],
+      "use": [
+        "xlink:href",
+        "href"
+      ]
+    },
+    "compilerOptions": {},
+    "runtimeCompiler": false,
+    "propsDestructure": true,
+    "config": {}
+  },
+  "experimental": {
+    "decorators": false,
+    "asyncEntry": false,
+    "externalVue": true,
+    "treeshakeClientOnly": true,
+    "emitRouteChunkError": "automatic",
+    "templateRouteInjection": true,
+    "restoreState": false,
+    "renderJsonPayloads": true,
+    "noVueServer": false,
+    "payloadExtraction": true,
+    "clientFallback": false,
+    "crossOriginPrefetch": false,
+    "viewTransition": false,
+    "writeEarlyHints": false,
+    "componentIslands": "auto",
+    "configSchema": true,
+    "polyfillVueUseHead": false,
+    "respectNoSSRHeader": false,
+    "localLayerAliases": true,
+    "typedPages": false,
+    "appManifest": true,
+    "checkOutdatedBuildInterval": 3600000,
+    "watcher": "chokidar",
+    "asyncContext": false,
+    "headNext": true,
+    "inlineRouteRules": false,
+    "scanPageMeta": true,
+    "extraPageMetaExtractionKeys": [],
+    "sharedPrerenderData": false,
+    "cookieStore": true,
+    "defaults": {
+      "nuxtLink": {
+        "componentName": "NuxtLink",
+        "prefetch": true,
+        "prefetchOn": {
+          "visibility": true
+        }
+      },
+      "useAsyncData": {
+        "value": "null",
+        "errorValue": "null",
+        "deep": true
+      },
+      "useFetch": {}
+    },
+    "clientNodeCompat": false,
+    "compileTemplate": true,
+    "templateUtils": true,
+    "relativeWatchPaths": true,
+    "resetAsyncDataToUndefined": true,
+    "navigationRepaint": true,
+    "buildCache": false,
+    "normalizeComponentNames": false,
+    "spaLoadingTemplateLocation": "within",
+    "browserDevtoolsTiming": false,
+    "debugModuleMutation": false,
+    "lazyHydration": true,
+    "templateImportResolution": true,
+    "purgeCachedData": true,
+    "granularCachedData": false,
+    "alwaysRunFetchOnKeyChange": true,
+    "parseErrorData": false,
+    "enforceModuleCompatibility": false,
+    "pendingWhenIdle": true
+  },
+  "app": {
+    "baseURL": "/",
+    "buildAssetsDir": "/_nuxt/",
+    "cdnURL": "",
+    "head": {
+      "meta": [
+        {
+          "name": "viewport",
+          "content": "width=device-width, initial-scale=1"
+        },
+        {
+          "charset": "utf-8"
+        }
+      ],
+      "link": [],
+      "style": [],
+      "script": [],
+      "noscript": []
+    },
+    "layoutTransition": false,
+    "pageTransition": false,
+    "viewTransition": false,
+    "keepalive": false,
+    "rootId": "__nuxt",
+    "rootTag": "div",
+    "rootAttrs": {
+      "id": "__nuxt"
+    },
+    "teleportTag": "div",
+    "teleportId": "teleports",
+    "teleportAttrs": {
+      "id": "teleports"
+    },
+    "spaLoaderTag": "div",
+    "spaLoaderAttrs": {
+      "id": "__nuxt-loader"
+    }
+  },
+  "dev": false,
+  "future": {
+    "compatibilityVersion": 3,
+    "multiApp": false,
+    "typescriptBundlerResolution": true
+  },
+  "typescript": {
+    "tsConfig": {},
+    "strict": true,
+    "builder": null,
+    "hoist": [
+      "nitropack/types",
+      "nitropack/runtime",
+      "nitropack",
+      "defu",
+      "h3",
+      "consola",
+      "ofetch",
+      "@unhead/vue",
+      "@nuxt/devtools",
+      "vue",
+      "@vue/runtime-core",
+      "@vue/compiler-sfc",
+      "vue-router",
+      "vue-router/auto-routes",
+      "unplugin-vue-router/client",
+      "@nuxt/schema",
+      "nuxt"
+    ],
+    "includeWorkspace": false,
+    "typeCheck": false,
+    "shim": false
+  },
+  "debug": false,
+  "spaLoadingTemplate": null,
+  "plugins": [],
+  "css": [],
+  "unhead": {
+    "legacy": false,
+    "renderSSRHeadOptions": {
+      "omitLineBreaks": false
+    }
+  },
+  "esbuild": {
+    "options": {
+      "target": "esnext",
+      "jsxFactory": "h",
+      "jsxFragment": "Fragment",
+      "tsconfigRaw": {}
+    }
+  },
+  "build": {
+    "transpile": [],
+    "templates": [],
+    "analyze": {
+      "template": "treemap",
+      "projectRoot": "/<rootDir>",
+      "filename": "/<rootDir>/.nuxt/analyze/{name}.html"
+    }
+  },
+  "buildDir": "/<rootDir>/.nuxt",
+  "builder": "@nuxt/vite-builder",
+  "sourcemap": {
+    "server": true,
+    "client": false
+  },
+  "logLevel": "info",
+  "analyzeDir": "/<rootDir>/.nuxt/analyze",
+  "optimization": {
+    "keyedComposables": [
+      {
+        "name": "callOnce",
+        "argumentLength": 3
+      },
+      {
+        "name": "defineNuxtComponent",
+        "argumentLength": 2
+      },
+      {
+        "name": "useState",
+        "argumentLength": 2
+      },
+      {
+        "name": "useFetch",
+        "argumentLength": 3
+      },
+      {
+        "name": "useAsyncData",
+        "argumentLength": 3
+      },
+      {
+        "name": "useLazyAsyncData",
+        "argumentLength": 3
+      },
+      {
+        "name": "useLazyFetch",
+        "argumentLength": 3
+      }
+    ],
+    "treeShake": {
+      "composables": {
+        "server": {
+          "vue": [
+            "onMounted",
+            "onUpdated",
+            "onUnmounted",
+            "onBeforeMount",
+            "onBeforeUpdate",
+            "onBeforeUnmount",
+            "onRenderTracked",
+            "onRenderTriggered",
+            "onActivated",
+            "onDeactivated"
+          ],
+          "#app": [
+            "definePayloadReviver",
+            "definePageMeta"
+          ]
+        },
+        "client": {
+          "vue": [
+            "onRenderTracked",
+            "onRenderTriggered",
+            "onServerPrefetch"
+          ],
+          "#app": [
+            "definePayloadReducer",
+            "definePageMeta",
+            "onPrehydrate"
+          ]
+        }
+      }
+    },
+    "asyncTransforms": {
+      "asyncFunctions": [
+        "defineNuxtPlugin",
+        "defineNuxtRouteMiddleware"
+      ],
+      "objectDefinitions": {
+        "defineNuxtComponent": [
+          "asyncData",
+          "setup"
+        ],
+        "defineNuxtPlugin": [
+          "setup"
+        ],
+        "definePageMeta": [
+          "middleware",
+          "validate"
+        ]
+      }
+    }
+  },
+  "extends": {},
+  "compatibilityDate": {},
+  "serverDir": "/<srcDir>/server",
+  "appId": "nuxt-app",
+  "test": false,
+  "buildId": "f2edd0e7-2595-424c-bd97-c91196e3f2d2",
+  "modulesDir": [
+    "/<rootDir>/node_modules"
+  ],
+  "ssr": true,
+  "modules": [],
+  "dir": {
+    "app": "app",
+    "assets": "assets",
+    "layouts": "layouts",
+    "middleware": "middleware",
+    "modules": "modules",
+    "pages": "pages",
+    "plugins": "plugins",
+    "shared": "shared",
+    "static": "public",
+    "public": "public"
+  },
+  "extensions": [
+    ".js",
+    ".jsx",
+    ".mjs",
+    ".ts",
+    ".tsx",
+    ".vue"
+  ],
+  "alias": {
+    "~": "/<srcDir>",
+    "@": "/<srcDir>",
+    "~~": "/<rootDir>",
+    "@@": "/<rootDir>",
+    "#shared": "/<rootDir>/shared",
+    "assets": "/<srcDir>/assets",
+    "public": "/<srcDir>/public",
+    "#build": "/<rootDir>/.nuxt",
+    "#internal/nuxt/paths": "/<rootDir>/.nuxt/paths.mjs"
+  },
+  "ignoreOptions": {},
+  "ignorePrefix": "-",
+  "ignore": [
+    "**/*.stories.{js,cts,mts,ts,jsx,tsx}",
+    "**/*.{spec,test}.{js,cts,mts,ts,jsx,tsx}",
+    "**/*.d.{cts,mts,ts}",
+    "**/.{pnpm-store,vercel,netlify,output,git,cache,data}",
+    "**/*.sock",
+    ".nuxt/analyze",
+    ".nuxt",
+    "**/-*.*"
+  ],
+  "watch": [],
+  "watchers": {
+    "rewatchOnRawEvents": {},
+    "webpack": {
+      "aggregateTimeout": 1000
+    },
+    "chokidar": {
+      "ignoreInitial": true,
+      "ignorePermissionErrors": true
+    }
+  },
+  "hooks": {},
+  "runtimeConfig": {
+    "public": {},
+    "app": {
+      "buildId": "f2edd0e7-2595-424c-bd97-c91196e3f2d2",
+      "baseURL": "/",
+      "buildAssetsDir": "/_nuxt/",
+      "cdnURL": ""
+    }
+  },
+  "appConfig": {
+    "nuxt": {}
+  },
+  "devServer": {
+    "https": false,
+    "port": 3000,
+    "host": {},
+    "url": "http://localhost:3000",
+    "cors": {
+      "origin": [
+        {}
+      ]
+    }
+  },
+  "features": {
+    "inlineStyles": true,
+    "devLogs": false,
+    "noScripts": false
+  },
+  "generate": {
+    "routes": [],
+    "exclude": []
+  },
+  "_majorVersion": 3,
+  "_legacyGenerate": false,
+  "_start": false,
+  "_build": false,
+  "_generate": false,
+  "_prepare": false,
+  "_cli": false,
+  "_requiredModules": {},
+  "_loadOptions": {},
+  "_nuxtConfigFile": {},
+  "_nuxtConfigFiles": [],
+  "appDir": "",
+  "_installedModules": [],
+  "_modules": [],
+  "nitro": {
+    "runtimeConfig": {
+      "public": {},
+      "app": {
+        "buildId": "f2edd0e7-2595-424c-bd97-c91196e3f2d2",
+        "baseURL": "/",
+        "buildAssetsDir": "/_nuxt/",
+        "cdnURL": ""
+      },
+      "nitro": {
+        "envPrefix": "NUXT_"
+      }
+    },
+    "routeRules": {}
+  },
+  "routeRules": {},
+  "serverHandlers": [],
+  "devServerHandlers": [],
+  "postcss": {
+    "plugins": {
+      "autoprefixer": {},
+      "cssnano": {}
+    }
+  },
+  "router": {
+    "options": {
+      "hashMode": false,
+      "scrollBehaviorType": "auto"
+    }
+  },
+  "webpack": {
+    "analyze": {
+      "template": "treemap",
+      "projectRoot": "/<rootDir>",
+      "filename": "/<rootDir>/.nuxt/analyze/{name}.html"
+    },
+    "profile": false,
+    "extractCSS": true,
+    "cssSourceMap": false,
+    "serverURLPolyfill": "url",
+    "filenames": {},
+    "loaders": {
+      "esbuild": {
+        "target": "esnext",
+        "jsxFactory": "h",
+        "jsxFragment": "Fragment",
+        "tsconfigRaw": {}
+      },
+      "file": {
+        "esModule": false,
+        "limit": 1000
+      },
+      "fontUrl": {
+        "esModule": false,
+        "limit": 1000
+      },
+      "imgUrl": {
+        "esModule": false,
+        "limit": 1000
+      },
+      "pugPlain": {},
+      "vue": {
+        "transformAssetUrls": {
+          "video": [
+            "src",
+            "poster"
+          ],
+          "source": [
+            "src"
+          ],
+          "img": [
+            "src"
+          ],
+          "image": [
+            "xlink:href",
+            "href"
+          ],
+          "use": [
+            "xlink:href",
+            "href"
+          ]
+        },
+        "compilerOptions": {},
+        "propsDestructure": true
+      },
+      "css": {
+        "importLoaders": 0,
+        "url": {},
+        "esModule": false,
+        "sourceMap": false
+      },
+      "cssModules": {
+        "importLoaders": 0,
+        "url": {},
+        "esModule": false,
+        "modules": {
+          "localIdentName": "[local]_[hash:base64:5]"
+        },
+        "sourceMap": false
+      },
+      "less": {
+        "sourceMap": false
+      },
+      "sass": {
+        "sassOptions": {
+          "indentedSyntax": true
+        },
+        "sourceMap": false
+      },
+      "scss": {
+        "sourceMap": false
+      },
+      "stylus": {
+        "sourceMap": false
+      },
+      "vueStyle": {
+        "sourceMap": false
+      }
+    },
+    "plugins": [],
+    "aggressiveCodeRemoval": false,
+    "optimizeCSS": false,
+    "optimization": {
+      "runtimeChunk": "single",
+      "minimize": true,
+      "minimizer": {},
+      "splitChunks": {
+        "chunks": "all",
+        "automaticNameDelimiter": "/",
+        "cacheGroups": {}
+      }
+    },
+    "postcss": {
+      "postcssOptions": {
+        "plugins": {
+          "autoprefixer": {},
+          "cssnano": {}
+        }
+      }
+    },
+    "devMiddleware": {
+      "stats": "none"
+    },
+    "hotMiddleware": {},
+    "friendlyErrors": true,
+    "warningIgnoreFilters": [],
+    "experiments": {}
+  }
+}

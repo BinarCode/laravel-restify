@@ -1,0 +1,1 @@
+export declare const ssrRenderSlot: (slots: Record<string, any>, name: string, props: any, fallbackRenderFn: (() => void) | null, push: any, parentComponent: any, slotScopeId?: string | undefined) => void;

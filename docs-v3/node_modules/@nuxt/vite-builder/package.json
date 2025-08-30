@@ -1,0 +1,73 @@
+{
+  "name": "@nuxt/vite-builder",
+  "version": "3.17.5",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nuxt/nuxt.git",
+    "directory": "packages/vite"
+  },
+  "description": "Vite bundler for Nuxt",
+  "homepage": "https://nuxt.com",
+  "license": "MIT",
+  "type": "module",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "rollup": "4.41.1",
+    "unbuild": "3.5.0",
+    "vue": "3.5.16",
+    "@nuxt/schema": "3.17.5"
+  },
+  "dependencies": {
+    "@rollup/plugin-replace": "^6.0.2",
+    "@vitejs/plugin-vue": "^5.2.4",
+    "@vitejs/plugin-vue-jsx": "^4.2.0",
+    "autoprefixer": "^10.4.21",
+    "consola": "^3.4.2",
+    "cssnano": "^7.0.7",
+    "defu": "^6.1.4",
+    "esbuild": "^0.25.5",
+    "escape-string-regexp": "^5.0.0",
+    "exsolve": "^1.0.5",
+    "externality": "^1.0.2",
+    "get-port-please": "^3.1.2",
+    "h3": "^1.15.3",
+    "jiti": "^2.4.2",
+    "knitwork": "^1.2.0",
+    "magic-string": "^0.30.17",
+    "mlly": "^1.7.4",
+    "mocked-exports": "^0.1.1",
+    "ohash": "^2.0.11",
+    "pathe": "^2.0.3",
+    "perfect-debounce": "^1.0.0",
+    "pkg-types": "^2.1.0",
+    "postcss": "^8.5.4",
+    "rollup-plugin-visualizer": "^6.0.1",
+    "std-env": "^3.9.0",
+    "ufo": "^1.6.1",
+    "unenv": "^2.0.0-rc.17",
+    "unplugin": "^2.3.5",
+    "vite": "^6.3.5",
+    "vite-node": "^3.2.0",
+    "vite-plugin-checker": "^0.9.3",
+    "vue-bundle-renderer": "^2.1.1",
+    "@nuxt/kit": "3.17.5"
+  },
+  "peerDependencies": {
+    "vue": "^3.3.4"
+  },
+  "engines": {
+    "node": "^18.12.0 || ^20.9.0 || >=22.0.0"
+  },
+  "scripts": {
+    "test:attw": "attw --pack"
+  }
+}

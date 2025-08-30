@@ -1,0 +1,15 @@
+/** @type {Record<string, Array<string> | string | null>} */
+export const schema = {
+  accept: 'input',
+  className: null,
+  dropzone: null,
+  htmlFor: 'output',
+  headers: ['td', 'th'],
+  itemProp: null,
+  itemRef: null,
+  itemType: null,
+  ping: ['a', 'area'],
+  rel: ['a', 'area', 'link'],
+  sandbox: 'iframe',
+  sizes: 'link'
+}

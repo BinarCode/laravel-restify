@@ -1,0 +1,9 @@
+{
+  "name": "@nuxt/telemetry",
+  "configKey": "telemetry",
+  "version": "2.6.6",
+  "builder": {
+    "@nuxt/module-builder": "1.0.0-alpha.1",
+    "unbuild": "3.5.0"
+  }
+}

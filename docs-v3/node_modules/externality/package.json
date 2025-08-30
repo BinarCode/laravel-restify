@@ -1,0 +1,55 @@
+{
+  "name": "externality",
+  "version": "1.0.2",
+  "repository": "unjs/externality",
+  "license": "MIT",
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "require": "./dist/index.cjs",
+      "import": "./dist/index.mjs",
+      "types": "./dist/index.d.ts"
+    },
+    "./*": "./*"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "enhanced-resolve": "^5.14.1",
+    "mlly": "^1.3.0",
+    "pathe": "^1.1.1",
+    "ufo": "^1.1.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.2.5",
+    "@vitest/coverage-c8": "^0.31.1",
+    "allowlist": "^0.1.1",
+    "c8": "^7.14.0",
+    "eslint": "^8.41.0",
+    "eslint-config-unjs": "^0.1.0",
+    "rollup": "^3.23.0",
+    "standard-version": "^9.3.2",
+    "typescript": "^5.1.3",
+    "unbuild": "^1.2.1",
+    "vite": "^4.3.9",
+    "vitest": "^0.31.4",
+    "webpack": "^5.85.0"
+  },
+  "build": {
+    "externals": [
+      "rollup"
+    ]
+  },
+  "packageManager": "pnpm@8.6.1",
+  "scripts": {
+    "build": "unbuild",
+    "dev": "vitest",
+    "lint": "eslint --ext .ts .",
+    "release": "pnpm test && standard-version && git push --follow-tags && pnpm publish",
+    "test": "pnpm lint && vitest run"
+  }
+}

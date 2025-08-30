@@ -1,0 +1,11 @@
+export { applyPlugin, applyPlugins, callWithNuxt, createNuxtApp, defineAppConfig, defineNuxtPlugin, definePayloadPlugin, isNuxtPlugin, registerPluginHooks, tryUseNuxtApp, useNuxtApp, useRuntimeConfig } from './nuxt.js';
+export type { CreateOptions, NuxtApp, NuxtPayload, NuxtPluginIndicator, NuxtSSRContext, ObjectPlugin, Plugin, PluginEnvContext, PluginMeta, ResolvedPluginMeta, RuntimeNuxtHooks } from './nuxt.js';
+export { defineNuxtComponent, useAsyncData, useLazyAsyncData, useNuxtData, refreshNuxtData, clearNuxtData, useHydration, callOnce, useState, clearNuxtState, clearError, createError, isNuxtError, showError, useError, useFetch, useLazyFetch, useCookie, refreshCookie, onPrehydrate, prerenderRoutes, useRequestHeaders, useRequestEvent, useRequestFetch, setResponseStatus, useResponseHeader, onNuxtReady, abortNavigation, addRouteMiddleware, defineNuxtRouteMiddleware, onBeforeRouteLeave, onBeforeRouteUpdate, setPageLayout, navigateTo, useRoute, useRouter, preloadComponents, prefetchComponents, preloadRouteComponents, isPrerendered, loadPayload, preloadPayload, definePayloadReducer, definePayloadReviver, getAppManifest, getRouteRules, reloadNuxtApp, useRequestURL, usePreviewMode, useId, useRouteAnnouncer, useHead, useHeadSafe, useServerSeoMeta, useServerHeadSafe, useServerHead, useSeoMeta, injectHead, useRuntimeHook } from './composables/index.js';
+export type { AddRouteMiddlewareOptions, AsyncData, AsyncDataOptions, AsyncDataRequestStatus, CookieOptions, CookieRef, FetchResult, NuxtAppManifest, NuxtAppManifestMeta, NuxtError, Politeness, ReloadNuxtAppOptions, RouteMiddleware, UseFetchOptions } from './composables/index.js';
+export { defineNuxtLink } from './components/index.js';
+export type { NuxtLinkOptions, NuxtLinkProps } from './components/index.js';
+export { _getAppConfig, updateAppConfig, useAppConfig } from './config.js';
+export { cancelIdleCallback, requestIdleCallback } from './compat/idle-callback.js';
+export type { NuxtAppLiterals, NuxtIslandContext, NuxtIslandResponse, NuxtRenderHTMLContext, PageMeta, NuxtPageProps } from './types.js';
+export declare const isVue2 = false;
+export declare const isVue3 = true;
