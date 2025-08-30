@@ -65,7 +65,7 @@ trait McpGetterTool
                 } elseif (in_array('integer', $rulesArray) || in_array('numeric', $rulesArray)) {
                     $fieldSchema = $schema->number($field);
                 } elseif (in_array('array', $rulesArray)) {
-                    $fieldSchema = $schema->array($field);
+                    $fieldSchema = $schema->string($field);
                 } else {
                     $fieldSchema = $schema->string($field);
                 }
