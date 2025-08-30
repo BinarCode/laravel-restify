@@ -2,6 +2,4 @@
 
 namespace Binaryk\LaravelRestify\MCP\Requests;
 
-class McpShowRequest extends McpRequest
-{
-}
+class McpShowRequest extends McpRequest {}

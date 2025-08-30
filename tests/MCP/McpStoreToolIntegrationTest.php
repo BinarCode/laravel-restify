@@ -29,7 +29,8 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
     public function test_mcp_http_store_tool_uses_mcp_specific_fields(): void
     {
         // Create test repository with MCP tools enabled
-        $mcpRepository = new class extends Repository {
+        $mcpRepository = new class extends Repository
+        {
             use HasMcpTools;
 
             public static $model = Post::class;
@@ -86,8 +87,8 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
 
         // Find our expected store tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
-        $storeToolName = collect($availableTools)->filter(fn($name) => str_contains($name,
-                'test-posts') && str_contains($name, 'store'))->first();
+        $storeToolName = collect($availableTools)->filter(fn ($name) => str_contains($name,
+            'test-posts') && str_contains($name, 'store'))->first();
 
         $this->assertNotNull($storeToolName,
             'Expected test-posts store tool not found. Available tools: '.implode(', ', $availableTools));
@@ -169,7 +170,8 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
     public function test_mcp_http_store_tool_validated_payload(): void
     {
         // Create test repository with validation rules in MCP store fields
-        $mcpRepository = new class extends Repository {
+        $mcpRepository = new class extends Repository
+        {
             use HasMcpTools;
 
             public static $model = Post::class;
@@ -189,8 +191,8 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
                     Field::make('title')->required(),
                     Field::make('description')->required()->rules(['min:10']),
                     Field::make('user_id')->required(),
-                    Field::make('mcp_metadata')->resolveCallback(fn() => 'mcp-specific-data'),
-                    Field::make('internal_tracking')->resolveCallback(fn() => 'internal-123'),
+                    Field::make('mcp_metadata')->resolveCallback(fn () => 'mcp-specific-data'),
+                    Field::make('internal_tracking')->resolveCallback(fn () => 'internal-123'),
                 ];
             }
 
@@ -223,8 +225,8 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
 
         // Find our expected store tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
-        $storeToolName = collect($availableTools)->filter(fn($name) => str_contains($name,
-                'test-validation-posts') && str_contains($name, 'store'))->first();
+        $storeToolName = collect($availableTools)->filter(fn ($name) => str_contains($name,
+            'test-validation-posts') && str_contains($name, 'store'))->first();
 
         $this->assertNotNull($storeToolName,
             'Expected test-validation-posts store tool not found. Available tools: '.implode(', ', $availableTools));
@@ -278,5 +280,4 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
         $this->assertContains('description', $requiredFields);
         $this->assertContains('user_id', $requiredFields);
     }
-
 }

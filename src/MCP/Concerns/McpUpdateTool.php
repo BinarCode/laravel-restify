@@ -3,8 +3,6 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Illuminate\Validation\ValidationException;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;

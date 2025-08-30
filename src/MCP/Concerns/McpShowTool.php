@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 

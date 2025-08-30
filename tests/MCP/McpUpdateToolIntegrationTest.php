@@ -29,7 +29,8 @@ class McpUpdateToolIntegrationTest extends IntegrationTestCase
     public function test_mcp_http_update_tool_uses_mcp_specific_fields(): void
     {
         // Create test repository with MCP tools enabled
-        $mcpRepository = new class extends Repository {
+        $mcpRepository = new class extends Repository
+        {
             use HasMcpTools;
 
             public static $model = Post::class;
@@ -50,8 +51,8 @@ class McpUpdateToolIntegrationTest extends IntegrationTestCase
                     Field::make('title'),
                     Field::make('description'),
                     Field::make('user_id'),
-                    Field::make('mcp_metadata')->resolveCallback(fn() => 'mcp-update-data'),
-                    Field::make('internal_tracking')->resolveCallback(fn() => 'update-tracking-123'),
+                    Field::make('mcp_metadata')->resolveCallback(fn () => 'mcp-update-data'),
+                    Field::make('internal_tracking')->resolveCallback(fn () => 'update-tracking-123'),
                 ];
             }
 
@@ -91,8 +92,8 @@ class McpUpdateToolIntegrationTest extends IntegrationTestCase
 
         // Find our expected update tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
-        $updateToolName = collect($availableTools)->filter(fn($name) => str_contains($name,
-                'test-update-posts-update') && str_contains($name, 'update'))->first();
+        $updateToolName = collect($availableTools)->filter(fn ($name) => str_contains($name,
+            'test-update-posts-update') && str_contains($name, 'update'))->first();
 
         $this->assertNotNull($updateToolName,
             'Expected test-update-posts update tool not found. Available tools: '.implode(', ', $availableTools));
@@ -130,7 +131,6 @@ class McpUpdateToolIntegrationTest extends IntegrationTestCase
         // Parse the result content (should be JSON string)
         $resultContent = json_decode($responseData['result']['content'][0]['text'], true);
 
-
         // Assert that the update response contains the updated record
         $this->assertArrayHasKey('data', $resultContent);
 
@@ -151,7 +151,7 @@ class McpUpdateToolIntegrationTest extends IntegrationTestCase
         // Assert the basic fields are present
         $this->assertArrayHasKey('title', $attributes);
         $this->assertArrayHasKey('description', $attributes);
-//        $this->assertArrayHasKey('user_id', $attributes);
+        //        $this->assertArrayHasKey('user_id', $attributes);
 
         // Note: We're focusing on MCP-specific field presence first,
         // separate from the actual update operation issues
@@ -164,7 +164,8 @@ class McpUpdateToolIntegrationTest extends IntegrationTestCase
     public function test_mcp_http_update_tool_validated_payload(): void
     {
         // Create test repository with validation rules in MCP update fields
-        $mcpRepository = new class extends Repository {
+        $mcpRepository = new class extends Repository
+        {
             use HasMcpTools;
 
             public static $model = Post::class;
@@ -185,8 +186,8 @@ class McpUpdateToolIntegrationTest extends IntegrationTestCase
                     Field::make('title')->required(),
                     Field::make('description')->required()->rules(['min:10']),
                     Field::make('user_id')->required(),
-                    Field::make('mcp_metadata')->resolveCallback(fn() => 'mcp-update-data'),
-                    Field::make('internal_tracking')->resolveCallback(fn() => 'update-tracking-123'),
+                    Field::make('mcp_metadata')->resolveCallback(fn () => 'mcp-update-data'),
+                    Field::make('internal_tracking')->resolveCallback(fn () => 'update-tracking-123'),
                 ];
             }
 

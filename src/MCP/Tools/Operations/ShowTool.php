@@ -13,7 +13,7 @@ use Laravel\Mcp\Server\Tools\ToolResult;
 class ShowTool extends Tool
 {
     /**
-     * @var Repository|HasMcpTools $repository
+     * @var Repository|HasMcpTools
      */
     protected Repository $repository;
 

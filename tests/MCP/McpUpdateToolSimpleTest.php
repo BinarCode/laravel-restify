@@ -17,26 +17,26 @@ class McpUpdateToolSimpleTest extends IntegrationTestCase
 
     public function test_mcp_update_request_calls_fields_for_mcp_update(): void
     {
-        $repository = new TestUpdateRepository();
-        
+        $repository = new TestUpdateRepository;
+
         // Test with regular request - should use fields()
-        $regularRequest = new RestifyRequest();
+        $regularRequest = new RestifyRequest;
         $regularFields = $repository->collectFields($regularRequest);
-        $regularFieldNames = $regularFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $regularFieldNames = $regularFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         // Should return only regular fields
         $this->assertCount(2, $regularFields);
         $this->assertContains('title', $regularFieldNames);
         $this->assertContains('description', $regularFieldNames);
         $this->assertNotContains('mcp_update_field', $regularFieldNames);
-        
+
         // Test with McpUpdateRequest - should use fieldsForMcpUpdate()
-        $mcpUpdateRequest = new McpUpdateRequest();
+        $mcpUpdateRequest = new McpUpdateRequest;
         $this->assertTrue($mcpUpdateRequest->isUpdateRequest());
-        
+
         $mcpFields = $repository->collectFields($mcpUpdateRequest);
-        $mcpFieldNames = $mcpFields->map(fn($field) => $field->getAttribute())->toArray();
-        
+        $mcpFieldNames = $mcpFields->map(fn ($field) => $field->getAttribute())->toArray();
+
         // Should return MCP-specific fields
         $this->assertCount(4, $mcpFields);
         $this->assertContains('title', $mcpFieldNames);

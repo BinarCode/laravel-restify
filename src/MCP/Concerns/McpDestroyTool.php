@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\MCP\Requests\McpDestroyRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 
 /**
