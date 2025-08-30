@@ -1065,6 +1065,44 @@ The MCP visibility system automatically detects when a request is coming from an
 
 This allows you to have different field visibility for your regular API consumers versus AI agents accessing your data through MCP tools.
 
+### Field Descriptions
+
+Fields can have custom descriptions that are used when generating schema documentation, particularly useful for MCP tools and API documentation:
+
+```php
+public function fields(RestifyRequest $request)
+{
+    return [
+        field('status')
+            ->description('The current status of the item')
+            ->rules(['required', 'string']),
+            
+        field('feedbackable_id')
+            ->description('This is the id of the employee.')
+            ->rules(['required', 'string', 'max:26']),
+            
+        field('priority')
+            ->description(function($generatedDescription, $field, $repository) {
+                return $generatedDescription . ' - Values range from 1 (low) to 5 (high)';
+            }),
+    ];
+}
+```
+
+The `description()` method accepts either:
+- **String**: A static description text
+- **Closure**: A callback that receives the auto-generated description, field instance, and repository for dynamic modifications
+
+When using a closure, you can:
+- Modify the automatically generated description
+- Add context-specific information
+- Access field and repository data for dynamic descriptions
+
+The description callback receives three parameters:
+- `$generatedDescription` - The automatically generated description based on field type and validation rules
+- `$field` - The field instance
+- `$repository` - The repository context
+
 ### Custom Tool Schema
 
 When using MCP, you can define custom schema definitions for individual fields using the `toolSchema()` method:

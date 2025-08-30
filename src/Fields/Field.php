@@ -146,6 +146,11 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     public $toolInputSchemaCallback = null;
 
     /**
+     * Closure to modify the generated field description.
+     */
+    public $descriptionCallback = null;
+
+    /**
      * Create a new field.
      *
      * @param  string|callable|null  $attribute
@@ -934,6 +939,24 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     public function toolSchema(callable|Closure $callback): self
     {
         $this->toolInputSchemaCallback = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Set a callback to modify the generated field description.
+     *
+     * @return $this
+     */
+    public function description(string|callable|Closure $callback): self
+    {
+        if (is_string($callback)) {
+            $this->descriptionCallback = fn () => $callback;
+
+            return $this;
+        }
+
+        $this->descriptionCallback = $callback;
 
         return $this;
     }

@@ -83,6 +83,11 @@ trait FieldMcpSchemaDetection
             $description .= '. Examples: '.implode(', ', $examples);
         }
 
+        // Apply custom description callback if provided
+        if (is_callable($this->descriptionCallback)) {
+            $description = call_user_func($this->descriptionCallback, $description, $this, $repository);
+        }
+
         return $description;
     }
 

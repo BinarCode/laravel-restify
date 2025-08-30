@@ -65,6 +65,40 @@ class FieldMcpSchemaDetectionTest extends IntegrationTestCase
         $this->assertSame($field, $result);
     }
 
+    public function test_resolve_tool_schema_with_string_description(): void
+    {
+        $schema = Mockery::mock(ToolInputSchema::class);
+        $repository = new PostRepository;
+
+        $schema->shouldReceive('string')->with('title')->once()->andReturnSelf();
+        $schema->shouldReceive('description')->with('Custom description for the title field')->once()->andReturnSelf();
+
+        $field = $this->createTestField('title');
+        $field->description('Custom description for the title field');
+        
+        $result = $field->resolveToolSchema($schema, $repository);
+
+        $this->assertSame($field, $result);
+    }
+
+    public function test_resolve_tool_schema_with_closure_description(): void
+    {
+        $schema = Mockery::mock(ToolInputSchema::class);
+        $repository = new PostRepository;
+
+        $schema->shouldReceive('string')->with('title')->once()->andReturnSelf();
+        $schema->shouldReceive('description')->with('Field: title (type: string). Examples: Sample Title, My Title - Custom addition')->once()->andReturnSelf();
+
+        $field = $this->createTestField('title');
+        $field->description(function($generatedDescription, $field, $repository) {
+            return $generatedDescription . ' - Custom addition';
+        });
+        
+        $result = $field->resolveToolSchema($schema, $repository);
+
+        $this->assertSame($field, $result);
+    }
+
     public function test_get_string_examples_for_different_contexts(): void
     {
         $field = $this->createTestField('email');
@@ -107,6 +141,10 @@ class FieldMcpSchemaDetectionTest extends IntegrationTestCase
         $field->shouldReceive('generateFieldExamples')->passthru();
         $field->shouldReceive('getNumberExamples')->passthru();
         $field->shouldReceive('getStringExamples')->passthru();
+        $field->shouldReceive('description')->passthru();
+
+        // Initialize the descriptionCallback property
+        $field->descriptionCallback = null;
 
         return $field;
     }
