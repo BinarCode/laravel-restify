@@ -842,10 +842,6 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
             return 'boolean';
         }
 
-        if ($this->hasAnyRule($ruleStrings, ['integer', 'int', 'numeric', 'min:', 'max:', 'between:'])) {
-            return 'number';
-        }
-
         if ($this->hasAnyRule($ruleStrings, ['email', 'url', 'ip', 'uuid', 'string', 'regex', 'in', 'array'])) {
             return 'string';
         }
@@ -856,6 +852,10 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
 
         if ($this->hasAnyRule($ruleStrings, ['file', 'image', 'mimes:', 'mimetypes:'])) {
             return 'string'; // Files are typically handled as strings (paths/URLs)
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['integer', 'int', 'numeric', 'between:'])) {
+            return 'number';
         }
 
         return null;
