@@ -144,6 +144,31 @@ Terminal-based AI clients (like Claude Desktop) can connect to your local MCP se
 - Audit MCP field access patterns
 - Implement rate limiting for token-heavy operations
 
+## Common Issues
+
+### Schema Validation Error
+
+**Error**: `[ERROR: Received tool input did not match expected schema]`
+
+**Cause**: This occurs when the field type is not identified correctly by the MCP server, leading to schema mismatches between what the AI agent sends and what Laravel Restify expects.
+
+**Solution**: You need to explicitly override the field type for the MCP schema using the `toolSchema()` method:
+
+```php
+field('project_id')
+    ->toolSchema(function(\Laravel\Mcp\Server\Tools\ToolInputSchema $schema) {
+        $schema->string('project_id')
+            ->description('The ID of the project associated with the timesheet entry.')
+            ->required();
+    }),
+```
+
+This approach allows you to:
+- Explicitly define the expected data type (string, integer, boolean, etc.)
+- Add detailed descriptions for AI agents
+- Set validation rules (required, optional)
+- Override automatic type inference when it's incorrect
+
 ## Configuration
 
 The MCP integration respects your existing Restify configuration and adds MCP-specific options:

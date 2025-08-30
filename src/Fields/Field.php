@@ -846,11 +846,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
             return 'number';
         }
 
-        if ($this->hasAnyRule($ruleStrings, ['array'])) {
-            return 'array';
-        }
-
-        if ($this->hasAnyRule($ruleStrings, ['email', 'url', 'ip', 'uuid'])) {
+        if ($this->hasAnyRule($ruleStrings, ['email', 'url', 'ip', 'uuid', 'string', 'regex', 'in', 'array'])) {
             return 'string';
         }
 
