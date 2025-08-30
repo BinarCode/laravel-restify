@@ -857,6 +857,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         if ($this->hasAnyRule($ruleStrings, ['integer', 'int', 'numeric', 'between:'])) {
             return 'number';
         }
+
         return null;
     }
 
