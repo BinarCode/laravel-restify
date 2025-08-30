@@ -58,7 +58,7 @@ class BelongsToMany extends EagerField
 
                 return $repositoryFromClass
                     ->allowToShow(
-                        $this->isForMcp() ? app(McpRequest::class) : app(RestifyRequest::class)
+                        $this->detectMcpRequest() ? app(McpRequest::class) : app(RestifyRequest::class)
                     )
                     ->withPivots(
                         PivotsCollection::make($this->pivotFields)

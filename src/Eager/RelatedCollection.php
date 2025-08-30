@@ -184,7 +184,7 @@ class RelatedCollection extends Collection
             ->inRequest($request, $repository)
             ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))
             ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository))
-            ->when($repository->isForMcp(), fn (self $collection) => $collection->forIndex($request, $repository));
+            ->when($repository->detectMcpRequest(), fn (self $collection) => $collection->forIndex($request, $repository));
     }
 
     public function unserialized(RestifyRequest $request, Repository $repository)

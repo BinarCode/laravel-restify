@@ -2,7 +2,8 @@
 
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Generator;
 use Laravel\Mcp\Server\Tool;
@@ -11,6 +12,9 @@ use Laravel\Mcp\Server\Tools\ToolResult;
 
 class ShowTool extends Tool
 {
+    /**
+     * @var Repository|HasMcpTools $repository
+     */
     protected Repository $repository;
 
     public function __construct(string $repositoryClass)
@@ -43,7 +47,7 @@ class ShowTool extends Tool
 
     public function handle(array $arguments): ToolResult|Generator
     {
-        $result = $this->repository->showTool($arguments, app(McpRequest::class));
+        $result = $this->repository->showTool($arguments, app(McpShowRequest::class));
 
         return ToolResult::json($result);
     }

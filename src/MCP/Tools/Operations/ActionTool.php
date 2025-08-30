@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Generator;
@@ -12,6 +13,9 @@ use Laravel\Mcp\Server\Tools\ToolResult;
 
 class ActionTool extends Tool
 {
+    /**
+     * @var Repository|HasMcpTools $repository
+     */
     protected Repository $repository;
 
     protected Action $action;
@@ -63,8 +67,6 @@ class ActionTool extends Tool
 
     public function handle(array $arguments): ToolResult|Generator
     {
-        $this->repository->request = app(McpActionRequest::class);
-
         $result = $this->repository->actionTool($this->action, $arguments, app(McpActionRequest::class));
 
         return ToolResult::json($result);

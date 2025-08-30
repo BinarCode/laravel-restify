@@ -64,7 +64,7 @@ class Related implements JsonSerializable
     {
         return $this
             ->field
-            ->forMcp($repository->isForMcp())
+            ->forMcp($repository->detectMcpRequest())
             ->columns($this->getColumns())
             ->resolve($repository);
     }

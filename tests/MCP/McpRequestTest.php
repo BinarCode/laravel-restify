@@ -2,14 +2,23 @@
 
 namespace Binaryk\LaravelRestify\Tests\MCP;
 
+use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpDestroyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
 class McpRequestTest extends IntegrationTestCase
 {
     public function test_mcp_request_detects_index_tool(): void
     {
-        $request = new McpRequest([
+        $request = new McpIndexRequest([
             'params' => [
                 'name' => 'users-index-tool',
             ],
@@ -22,7 +31,7 @@ class McpRequestTest extends IntegrationTestCase
 
     public function test_mcp_request_detects_show_tool(): void
     {
-        $request = new McpRequest([
+        $request = new McpShowRequest([
             'params' => [
                 'name' => 'posts-show-tool',
             ],
@@ -35,7 +44,7 @@ class McpRequestTest extends IntegrationTestCase
 
     public function test_mcp_request_detects_store_tool(): void
     {
-        $request = new McpRequest([
+        $request = new McpStoreRequest([
             'params' => [
                 'name' => 'orders-store-tool',
             ],
@@ -48,7 +57,7 @@ class McpRequestTest extends IntegrationTestCase
 
     public function test_mcp_request_detects_update_tool(): void
     {
-        $request = new McpRequest([
+        $request = new McpUpdateRequest([
             'params' => [
                 'name' => 'comments-update-tool',
             ],
@@ -61,13 +70,13 @@ class McpRequestTest extends IntegrationTestCase
 
     public function test_mcp_request_detects_destroy_tools(): void
     {
-        $deleteRequest = new McpRequest([
+        $deleteRequest = new McpDestroyRequest([
             'params' => [
                 'name' => 'comments-delete-tool',
             ],
         ]);
 
-        $destroyRequest = new McpRequest([
+        $destroyRequest = new McpDestroyRequest([
             'params' => [
                 'name' => 'users-destroy-tool',
             ],
@@ -80,13 +89,13 @@ class McpRequestTest extends IntegrationTestCase
 
     public function test_mcp_request_detects_bulk_tools(): void
     {
-        $storeBulkRequest = new McpRequest([
+        $storeBulkRequest = new McpStoreBulkRequest([
             'params' => [
                 'name' => 'users-store-bulk-tool',
             ],
         ]);
 
-        $updateBulkRequest = new McpRequest([
+        $updateBulkRequest = new McpUpdateBulkRequest([
             'params' => [
                 'name' => 'posts-update-bulk-tool',
             ],
@@ -99,7 +108,7 @@ class McpRequestTest extends IntegrationTestCase
 
     public function test_mcp_request_detects_getter_tool(): void
     {
-        $request = new McpRequest([
+        $request = new McpGetterRequest([
             'params' => [
                 'name' => 'analytics-getter-tool',
             ],
@@ -112,7 +121,7 @@ class McpRequestTest extends IntegrationTestCase
 
     public function test_mcp_request_detects_action_tool(): void
     {
-        $request = new McpRequest([
+        $request = new McpActionRequest([
             'params' => [
                 'name' => 'users-action-tool',
             ],

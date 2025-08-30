@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 
 /**
@@ -10,7 +11,7 @@ use Laravel\Mcp\Server\Tools\ToolInputSchema;
  */
 trait McpShowTool
 {
-    public function showTool(array $arguments, McpRequest $request): array
+    public function showTool(array $arguments, McpShowRequest $request): array
     {
         $id = $arguments['id'] ?? null;
         unset($arguments['id']);
