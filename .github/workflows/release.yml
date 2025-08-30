@@ -1,123 +1,94 @@
 name: Create Release
 
 on:
-  push:
-    branches:
-      - 10.x
+    push:
+        branches:
+            - 10.x
 
 jobs:
-  release:
-    runs-on: ubuntu-latest
-    if: github.event_name == 'push' && github.ref == 'refs/heads/10.x'
+    release:
+        runs-on: ubuntu-latest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/10.x'
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
 
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: 8.3
-          extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
-          coverage: none
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: 8.3
+                  extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+                  coverage: none
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-interaction --optimize-autoloader
+            - name: Install dependencies
+              run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
-      - name: Run tests
-        run: |
-          composer require "laravel/framework:^11.0" "orchestra/testbench:^9.0" --no-interaction --no-update
-          composer update --prefer-stable --prefer-dist --no-interaction
-          vendor/bin/pest --ci
+            - name: Run tests
+              run: |
+                  composer require "laravel/framework:^11.0" "orchestra/testbench:^9.0" --no-interaction --no-update
+                  composer update --prefer-stable --prefer-dist --no-interaction
+                  vendor/bin/pest --ci
 
-      - name: Get next version
-        id: get_version
-        run: |
-          # Get the latest tag (handle both v-prefixed and non-prefixed)
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
-          echo "Latest tag: $LATEST_TAG"
+            - name: Get next version
+              id: get_version
+              run: |
+                  # Get the latest tag
+                  LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+                  echo "Latest tag: $LATEST_TAG"
 
-          # Extract version numbers (remove 'v' prefix if present)
-          VERSION_NUM=${LATEST_TAG#v}
+                  # Extract version numbers (remove 'v' prefix)
+                  VERSION_NUM=${LATEST_TAG#v}
 
-          # Split version into parts
-          IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NUM"
+                  # Split version into parts
+                  IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NUM"
 
-          # Default to 0 if parts are empty
-          MAJOR=${MAJOR:-0}
-          MINOR=${MINOR:-0}
-          PATCH=${PATCH:-0}
+                  # Default to 0 if parts are empty
+                  MAJOR=${MAJOR:-0}
+                  MINOR=${MINOR:-0}
+                  PATCH=${PATCH:-0}
 
-          # Get the previous tag for commit analysis
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          
-          # Analyze commits since last tag to determine version bump
-          if [ -z "$PREVIOUS_TAG" ]; then
-            # If no previous tags, analyze all commits
-            COMMITS=$(git log --pretty=format:"%s" --no-merges)
-          else
-            # Get commits since last tag
-            COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"%s" --no-merges)
-          fi
+                  # Increment patch version for every merge
+                  PATCH=$((PATCH + 1))
 
-          echo "Analyzing commits:"
-          echo "$COMMITS"
+                  # Create new version
+                  NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 
-          # Check for breaking changes (MAJOR version bump)
-          if echo "$COMMITS" | grep -E "^(BREAKING|BREAKING CHANGE|feat!|fix!):" > /dev/null; then
-            echo "Found breaking changes, incrementing MAJOR version"
-            MAJOR=$((MAJOR + 1))
-            MINOR=0
-            PATCH=0
-          # Check for features (MINOR version bump)
-          elif echo "$COMMITS" | grep -E "^feat(\(.+\))?:" > /dev/null; then
-            echo "Found features, incrementing MINOR version"
-            MINOR=$((MINOR + 1))
-            PATCH=0
-          # Default to patch version bump
-          else
-            echo "No features or breaking changes found, incrementing PATCH version"
-            PATCH=$((PATCH + 1))
-          fi
+                  echo "New version: $NEW_VERSION"
+                  echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+                  echo "tag_name=$NEW_VERSION" >> $GITHUB_OUTPUT
 
-          # Create new version (no v prefix)
-          NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+            - name: Generate changelog
+              id: changelog
+              run: |
+                  # Get the previous tag for changelog
+                  PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
 
-          echo "New version: $NEW_VERSION"
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "tag_name=$NEW_VERSION" >> $GITHUB_OUTPUT
+                  if [ -z "$PREVIOUS_TAG" ]; then
+                    # If no previous tags, get all commits
+                    COMMITS=$(git log --pretty=format:"* %s (%an)" --no-merges)
+                  else
+                    # Get commits since last tag
+                    COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"* %s (%an)" --no-merges)
+                  fi
 
-      - name: Generate changelog
-        id: changelog
-        run: |
-          # Get the previous tag for changelog
-          PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+                  # Create changelog
+                  CHANGELOG="## What's Changed\n\n$COMMITS"
 
-          if [ -z "$PREVIOUS_TAG" ]; then
-            # If no previous tags, get all commits
-            COMMITS=$(git log --pretty=format:"* %s (%an)" --no-merges)
-          else
-            # Get commits since last tag
-            COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"* %s (%an)" --no-merges)
-          fi
+                  # Handle multiline output for GitHub Actions
+                  echo "changelog<<EOF" >> $GITHUB_OUTPUT
+                  echo -e "$CHANGELOG" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
 
-          # Create changelog
-          CHANGELOG="## What's Changed\n\n$COMMITS"
-
-          # Handle multiline output for GitHub Actions
-          echo "changelog<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$CHANGELOG" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
-
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ steps.get_version.outputs.tag_name }}
-          name: Release ${{ steps.get_version.outputs.tag_name }}
-          body: ${{ steps.changelog.outputs.changelog }}
-          draft: false
-          prerelease: false
+            - name: Create Release
+              uses: softprops/action-gh-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: ${{ steps.get_version.outputs.tag_name }}
+                  name: Release ${{ steps.get_version.outputs.tag_name }}
+                  body: ${{ steps.changelog.outputs.changelog }}
+                  draft: false
+                  prerelease: false
