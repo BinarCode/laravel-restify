@@ -38,8 +38,7 @@ class SearchablesCollection extends Collection
                 $filter = new SearchableFilter;
                 $filter->setColumn($searchable);
                 $unified[] = $filter;
-            }
-            elseif (is_callable($searchable)) {
+            } elseif (is_callable($searchable)) {
                 // Non-string callables (closures, arrays, invokables)
                 $filter = new SearchableFilter;
                 $filter->usingClosure($searchable);
