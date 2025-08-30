@@ -75,7 +75,7 @@ class FieldMcpSchemaDetectionTest extends IntegrationTestCase
 
         $field = $this->createTestField('title');
         $field->description('Custom description for the title field');
-        
+
         $result = $field->resolveToolSchema($schema, $repository);
 
         $this->assertSame($field, $result);
@@ -90,10 +90,10 @@ class FieldMcpSchemaDetectionTest extends IntegrationTestCase
         $schema->shouldReceive('description')->with('Field: title (type: string). Examples: Sample Title, My Title - Custom addition')->once()->andReturnSelf();
 
         $field = $this->createTestField('title');
-        $field->description(function($generatedDescription, $field, $repository) {
-            return $generatedDescription . ' - Custom addition';
+        $field->description(function ($generatedDescription, $field, $repository) {
+            return $generatedDescription.' - Custom addition';
         });
-        
+
         $result = $field->resolveToolSchema($schema, $repository);
 
         $this->assertSame($field, $result);
