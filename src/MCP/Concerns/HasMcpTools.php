@@ -48,6 +48,6 @@ trait HasMcpTools
 
     public function mcpAllowsGetters(): bool
     {
-        return true;
+        return false;
     }
 }

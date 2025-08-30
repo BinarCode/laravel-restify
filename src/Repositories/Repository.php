@@ -110,7 +110,7 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public Model $resource;
 
-    public bool $forMcp = false;
+    public ?string $forMcp = null;
 
     /**
      * The list of relations available for the show or index.
@@ -575,7 +575,9 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function resolveRelationships($request): array
     {
-        $this->forMcp($request instanceof McpRequest);
+        if ($request instanceof McpRequest) {
+            $this->forMcp(get_class($request));
+        }
 
         if (! $request->related()->hasRelated()) {
             return [];
@@ -585,7 +587,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->forRequest($request, $this)
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
-            ->when($this->isForMcp(), fn (RelatedCollection $collection) => $collection->forMcp($request, $this))
+            ->when($this->detectMcpRequest(), fn (RelatedCollection $collection) => $collection->forMcp($request, $this))
             ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
             ->map(function (mixed $items) {
                 if ($items instanceof Collection) {
@@ -1126,8 +1128,6 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function serializeForShow(RestifyRequest $request): array
     {
-        $this->request = $request;
-
         return $this->filter([
             'id' => $this->when(optional($this->resource)?->getKey(), fn () => $this->getId($request)),
             'type' => $this->when($type = $this->getType($request), $type),
@@ -1179,8 +1179,8 @@ class Repository implements JsonSerializable, RestifySearchable
     public function jsonSerialize()
     {
         return $this->serializeForShow(
-            $this->isForMcp()
-                ? app(McpRequest::class)
+            $this->detectMcpRequest()
+                ? app($this->detectMcpRequest())
                 : app(RestifyRequest::class)
         );
     }
@@ -1239,7 +1239,7 @@ class Repository implements JsonSerializable, RestifySearchable
             return $this;
         }
 
-        $this->forMcp($field->isForMcp());
+        $this->forMcp($field->detectMcpRequest());
         $this->eagerState = $field->queryKeyThatRendered();
         $this->columns($field->getColumns());
 
@@ -1315,14 +1315,14 @@ class Repository implements JsonSerializable, RestifySearchable
         return $this;
     }
 
-    public function forMcp($forMcp = true): self
+    public function forMcp($forMcp): self
     {
         $this->forMcp = $forMcp;
 
         return $this;
     }
 
-    public function isForMcp(): bool
+    public function detectMcpRequest(): ?string
     {
         return $this->forMcp;
     }

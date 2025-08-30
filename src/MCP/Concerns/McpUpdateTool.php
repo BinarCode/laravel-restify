@@ -2,7 +2,9 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
+use Illuminate\Validation\ValidationException;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 
 /**
@@ -10,32 +12,46 @@ use Laravel\Mcp\Server\Tools\ToolInputSchema;
  */
 trait McpUpdateTool
 {
-    public function updateTool(array $arguments, McpRequest $request): array
+    public function updateTool(array $arguments, McpUpdateRequest $request): array
     {
-        $id = $arguments['id'] ?? null;
-        unset($arguments['id']);
+        // if missing id throw an Validation Exception
+        throw_unless(isset($arguments['id']), ValidationException::withMessages([
+            'id' => ['The id field is required.'],
+        ]));
+
         $request->merge($arguments);
+        $request->merge([
+            'mcp_repository_key' => static::uriKey(),
+        ]);
+
         $this->sanitizeToolRequest($request, $arguments);
 
-        $model = static::query($request)->findOrFail($id);
+        $model = $request->modelQuery(
+            $id = data_get($arguments, 'id'),
+        )->lockForUpdate()->firstOrFail();
 
-        return static::resolveWith($model)->update($request, $id);
+        $this->withResource($model);
+
+        return $this->allowToUpdate($request)
+            ->update($request, $id)
+            ->getData(true);
     }
 
     public static function updateToolSchema(ToolInputSchema $schema): void
     {
-        $key = static::uriKey();
+        $repository = static::resolveWith(static::newModel());
+
         $modelName = class_basename(static::guessModelClassName());
 
         $schema->string('id')
             ->description("The ID of the $modelName to update")
             ->required();
 
-        // Add field schemas for update operation
-        collect(static::newModel()->getFillable())
-            ->each(function ($attribute) use ($schema) {
-                $schema->string($attribute)
-                    ->description("Update the $attribute field");
+        $repository->collectFields($request = app(McpUpdateRequest::class))
+            ->forUpdate($request, $repository)
+            ->withoutActions($request, $repository)
+            ->each(function (Field $field) use ($schema, $repository) {
+                $field->resolveToolSchema($schema, $repository);
             });
     }
 }

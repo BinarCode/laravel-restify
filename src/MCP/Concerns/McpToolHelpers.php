@@ -20,14 +20,13 @@ trait McpToolHelpers
         }
     }
 
-    protected static function getRelationshipFields(string $repositoryClass): array
+    protected static function getRelationshipFields(string $repositoryClass, McpRequest $request): array
     {
         try {
             /**
              * @var Repository $repository
              */
             $repository = app($repositoryClass);
-            $request = app(McpRequest::class);
 
             // Get fields for the related repository using MCP-aware field collection
             // This will call fieldsForMcpIndex if available, providing accurate MCP field documentation
@@ -46,7 +45,7 @@ trait McpToolHelpers
         }
     }
 
-    protected static function formatRelationshipDocumentation(): string
+    protected static function formatRelationshipDocumentation(McpRequest $request): string
     {
         $related = static::collectRelated()->intoAssoc();
 
@@ -61,7 +60,7 @@ trait McpToolHelpers
             $repositoryClass = static::extractRepositoryClass($relationConfig);
 
             if ($repositoryClass) {
-                $fields = static::getRelationshipFields($repositoryClass);
+                $fields = static::getRelationshipFields($repositoryClass, $request);
                 $fieldsList = implode(', ', $fields);
                 $documentation .= "- {$relationName} (fields: {$fieldsList})\n";
                 $relationshipClasses[$relationName] = $repositoryClass;
@@ -89,7 +88,7 @@ trait McpToolHelpers
         $documentation .= "- include={$relationNames} (include all fields)\n";
 
         if ($firstRelationName && $firstRepositoryClass) {
-            $firstFields = static::getRelationshipFields($firstRepositoryClass);
+            $firstFields = static::getRelationshipFields($firstRepositoryClass, $request);
             $exampleFields = array_slice($firstFields, 0, 2);
 
             if (! empty($exampleFields)) {

@@ -2,7 +2,8 @@
 
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Generator;
 use Laravel\Mcp\Server\Tool;
@@ -11,6 +12,9 @@ use Laravel\Mcp\Server\Tools\ToolResult;
 
 class IndexTool extends Tool
 {
+    /**
+     * @var Repository|HasMcpTools
+     */
     protected Repository $repository;
 
     public function __construct(string $repositoryClass)
@@ -35,7 +39,7 @@ class IndexTool extends Tool
 
     public function schema(ToolInputSchema $schema): ToolInputSchema
     {
-        $repositoryClass = $this->repository;
+        $repositoryClass = get_class($this->repository);
         $repositoryClass::indexToolSchema($schema);
 
         return $schema;
@@ -43,9 +47,7 @@ class IndexTool extends Tool
 
     public function handle(array $arguments): ToolResult|Generator
     {
-        $this->repository->request = app(McpRequest::class);
-
-        $result = $this->repository->indexTool($arguments, app(McpRequest::class));
+        $result = $this->repository->indexTool($arguments, app(McpIndexRequest::class));
 
         return ToolResult::json($result);
     }

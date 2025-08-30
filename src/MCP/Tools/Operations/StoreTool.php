@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Generator;
 use Laravel\Mcp\Server\Tool;
@@ -10,6 +12,9 @@ use Laravel\Mcp\Server\Tools\ToolResult;
 
 class StoreTool extends Tool
 {
+    /**
+     * @var Repository|HasMcpTools
+     */
     protected Repository $repository;
 
     public function __construct(string $repositoryClass)
@@ -42,7 +47,7 @@ class StoreTool extends Tool
 
     public function handle(array $arguments): ToolResult|Generator
     {
-        $result = $this->repository->storeTool($arguments);
+        $result = $this->repository->storeTool($arguments, app(McpStoreRequest::class));
 
         return ToolResult::json($result);
     }

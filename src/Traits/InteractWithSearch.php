@@ -72,7 +72,7 @@ trait InteractWithSearch
     public static function matches(): array
     {
         return empty(static::$match)
-            ? [static::newModel()->getKeyName()]
+            ? [static::newModel()->getKeyName() => 'string']
             : static::$match;
     }
 

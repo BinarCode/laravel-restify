@@ -16,49 +16,47 @@ class McpRequest extends RestifyRequest
 
     public function isIndexRequest(): bool
     {
-        return str_contains($this->getToolName(), '-index-tool');
+        return $this instanceof McpIndexRequest;
     }
 
     public function isShowRequest(): bool
     {
-        return str_contains($this->getToolName(), '-show-tool');
+        return $this instanceof McpShowRequest;
     }
 
     public function isStoreRequest(): bool
     {
-        return str_contains($this->getToolName(), '-store-tool');
+        return $this instanceof McpStoreRequest;
     }
 
     public function isUpdateRequest(): bool
     {
-        return str_contains($this->getToolName(), '-update-tool');
+        return $this instanceof McpUpdateRequest;
     }
 
     public function isDestroyRequest(): bool
     {
-        $toolName = $this->getToolName();
-
-        return str_contains($toolName, '-delete-tool') || str_contains($toolName, '-destroy-tool');
+        return $this instanceof McpDestroyRequest;
     }
 
     public function isStoreBulkRequest(): bool
     {
-        return str_contains($this->getToolName(), '-store-bulk-tool');
+        return $this instanceof McpStoreBulkRequest;
     }
 
     public function isUpdateBulkRequest(): bool
     {
-        return str_contains($this->getToolName(), '-update-bulk-tool');
+        return $this instanceof McpUpdateBulkRequest;
     }
 
     public function isActionRequest(): bool
     {
-        return str_contains($this->getToolName(), '-action-tool');
+        return $this instanceof McpActionRequest;
     }
 
     public function isGetterRequest(): bool
     {
-        return str_contains($this->getToolName(), '-getter-tool');
+        return $this instanceof McpGetterRequest;
     }
 
     public function isGlobalRequest(): bool

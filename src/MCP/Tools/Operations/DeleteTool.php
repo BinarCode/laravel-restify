@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+use Binaryk\LaravelRestify\MCP\Requests\McpDestroyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Generator;
 use Laravel\Mcp\Server\Tool;
@@ -10,6 +12,9 @@ use Laravel\Mcp\Server\Tools\ToolResult;
 
 class DeleteTool extends Tool
 {
+    /**
+     * @var Repository|HasMcpTools
+     */
     protected Repository $repository;
 
     public function __construct(string $repositoryClass)
@@ -42,7 +47,7 @@ class DeleteTool extends Tool
 
     public function handle(array $arguments): ToolResult|Generator
     {
-        $result = $this->repository->deleteTool($arguments);
+        $result = $this->repository->deleteTool($arguments, app(McpDestroyRequest::class));
 
         return ToolResult::json($result);
     }

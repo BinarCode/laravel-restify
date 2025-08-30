@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpDestroyRequest;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 
 /**
@@ -10,7 +10,7 @@ use Laravel\Mcp\Server\Tools\ToolInputSchema;
  */
 trait McpDestroyTool
 {
-    public function deleteTool(array $arguments, McpRequest $request): array
+    public function deleteTool(array $arguments, McpDestroyRequest $request): array
     {
         $id = $arguments['id'] ?? null;
         unset($arguments['id']);

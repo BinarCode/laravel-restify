@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filters\MatchesCollection;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchablesCollection;
+use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Laravel\Mcp\Server\Tools\ToolInputSchema;
 
@@ -14,7 +15,7 @@ use Laravel\Mcp\Server\Tools\ToolInputSchema;
  */
 trait McpIndexTool
 {
-    public function indexTool(array $arguments, McpRequest $request): array
+    public function indexTool(array $arguments, McpIndexRequest $request): array
     {
         $request->merge($arguments);
         $this->sanitizeToolRequest($request, $arguments);
@@ -33,7 +34,7 @@ trait McpIndexTool
             ->description("Number of $key per page");
 
         $schema->string('include')
-            ->description(static::formatRelationshipDocumentation());
+            ->description(static::formatRelationshipDocumentation(app(McpIndexRequest::class)));
 
         $searchableFields = (new SearchablesCollection(static::searchables()))->formatForDocumentation();
 
@@ -66,11 +67,11 @@ trait McpIndexTool
 
                 return match ($matchFilter->getType()) {
                     RestifySearchable::MATCH_INTEGER, 'integer' => $schema->integer($filterKey)
-                        ->description("Filter $key resource. Filter scription: ".$matchFilter->description()),
+                        ->description("Filter $key resource. Description: ".$matchFilter->description()),
                     RestifySearchable::MATCH_BOOL, 'boolean' => $schema->boolean($filterKey)
-                        ->description("Filter $key resource. Filter scription: ".$matchFilter->description()),
+                        ->description("Filter $key resource. Description: ".$matchFilter->description()),
                     default => $schema->string($filterKey)
-                        ->description("Filter $key resource. Filter scription: ".$matchFilter->description())
+                        ->description("Filter $key resource. Description: ".$matchFilter->description())
                 };
             });
     }

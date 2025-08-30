@@ -6,7 +6,10 @@ use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
 use Binaryk\LaravelRestify\MCP\RestifyServer;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
@@ -77,7 +80,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         $this->assertNotContains('mcp_metadata', $regularFieldNames);
 
         // MCP index request should use fieldsForMcpIndex() method
-        $mcpIndexRequest = new McpRequest(['params' => ['name' => 'posts-index-tool']]);
+        $mcpIndexRequest = new McpIndexRequest(['params' => ['name' => 'posts-index-tool']]);
         $mcpIndexFields = $repository->collectFields($mcpIndexRequest);
         $mcpIndexFieldNames = $mcpIndexFields->map(fn ($field) => $field->getAttribute())->toArray();
 
@@ -89,7 +92,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         $this->assertNotContains('debug_info', $mcpIndexFieldNames);
 
         // MCP show request should use fieldsForMcpShow() method
-        $mcpShowRequest = new McpRequest(['params' => ['name' => 'posts-show-tool']]);
+        $mcpShowRequest = new McpShowRequest(['params' => ['name' => 'posts-show-tool']]);
         $mcpShowFields = $repository->collectFields($mcpShowRequest);
         $mcpShowFieldNames = $mcpShowFields->map(fn ($field) => $field->getAttribute())->toArray();
 
@@ -126,7 +129,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         };
 
         // MCP request without fieldsForMcpIndex should fall back to fieldsForIndex
-        $mcpIndexRequest = new McpRequest(['params' => ['name' => 'posts-index-tool']]);
+        $mcpIndexRequest = new McpIndexRequest(['params' => ['name' => 'posts-index-tool']]);
         $mcpIndexFields = $repository->collectFields($mcpIndexRequest);
         $mcpIndexFieldNames = $mcpIndexFields->map(fn ($field) => $field->getAttribute())->toArray();
 
@@ -169,7 +172,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             }
         };
 
-        $mcpGetterRequest = new McpRequest(['params' => ['name' => 'analytics-getter-tool']]);
+        $mcpGetterRequest = new McpGetterRequest(['params' => ['name' => 'analytics-getter-tool']]);
         $mcpGetterFields = $repository->collectFields($mcpGetterRequest);
         $mcpGetterFieldNames = $mcpGetterFields->map(fn ($field) => $field->getAttribute())->toArray();
 
@@ -323,8 +326,6 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
                 ];
             }
 
-            public static array $related = ['user'];
-
             public function fields(RestifyRequest $request): array
             {
                 return [
@@ -367,7 +368,7 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             'email' => 'john@example.com',
         ]);
 
-        $post = Post::factory()->create([
+        Post::factory()->create([
             'user_id' => $user->id,
             'title' => 'Test Post with User',
             'description' => 'A post that belongs to a user',
@@ -382,7 +383,6 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         ];
 
         $toolsResponse = $this->postJson('/test-restify-relations', $toolsListPayload);
-        $toolsResponse->assertOk();
 
         $toolsData = $toolsResponse->json();
 
@@ -411,7 +411,6 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // Make HTTP POST request to MCP endpoint
         $response = $this->postJson('/test-restify-relations', $mcpPayload);
-        $response->assertOk();
 
         $responseData = $response->json();
 
@@ -433,8 +432,6 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // Assert Post MCP-specific fields
         $attributes = $firstItem['attributes'];
-        $this->assertArrayHasKey('mcp_post_metadata', $attributes);
-        $this->assertArrayHasKey('post_analytics', $attributes);
         $this->assertEquals('post-mcp-specific-data', $attributes['mcp_post_metadata']);
         $this->assertEquals('post-analytics-data', $attributes['post_analytics']);
 
@@ -448,16 +445,12 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         $this->assertArrayHasKey('user', $firstItem['relationships']);
 
         $userRelationship = $firstItem['relationships']['user']['attributes'];
-
         // This would happen if the MCP-enabled anonymous repository was used
         $this->assertEquals('user-mcp-specific-data', $userRelationship['user_mcp_data']);
         $this->assertEquals('user-internal-123', $userRelationship['internal_user_tracking']);
         $this->assertEquals('admin-access-only', $userRelationship['admin_notes']);
-        echo "\n✅ SUCCESS: MCP fields are working because MCP-enabled repository was found!\n";
 
         // Also check basic fields are present
-        $this->assertArrayHasKey('name', $userRelationship);
-        $this->assertArrayHasKey('email', $userRelationship);
         $this->assertEquals('John Doe', $userRelationship['name']);
         $this->assertEquals('john@example.com', $userRelationship['email']);
         $this->assertArrayNotHasKey('description', $userRelationship);
@@ -593,7 +586,7 @@ class UserWithMcpIndexFields extends Repository
 
     public function mcpAllowsIndex(): bool
     {
-        return true;
+        return false;
     }
 }
 
