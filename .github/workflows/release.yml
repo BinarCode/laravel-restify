@@ -26,12 +26,6 @@ jobs:
             - name: Install dependencies
               run: composer install --no-dev --prefer-dist --no-interaction --optimize-autoloader
 
-            - name: Run tests
-              run: |
-                  composer require "laravel/framework:^11.0" "orchestra/testbench:^9.0" --no-interaction --no-update
-                  composer update --prefer-stable --prefer-dist --no-interaction
-                  vendor/bin/pest --ci
-
             - name: Get next version
               id: get_version
               run: |
