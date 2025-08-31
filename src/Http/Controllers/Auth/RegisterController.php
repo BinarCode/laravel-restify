@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
+use Binaryk\LaravelRestify\Notifications\VerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
@@ -24,8 +26,22 @@ class RegisterController extends Controller
             'password' => Hash::make($request->input('password')),
         ]);
 
-        return rest($user)->indexMeta([
-            'token' => $user->createToken('login')->plainTextToken,
-        ]);
+        $tokenTtl = config('restify.auth.token_ttl');
+        $expiresAt = $tokenTtl ? now()->addMinutes($tokenTtl) : null;
+        
+        $token = $user->createToken('login', ['*'], $expiresAt);
+        
+        $meta = [
+            'token' => $token->plainTextToken,
+            'expires_in' => $tokenTtl ? $tokenTtl * 60 : null,
+        ];
+        
+        if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
+            $user->notify(new VerifyEmail);
+            $meta['email_verification_sent'] = true;
+            $meta['message'] = 'Registration successful. Please check your email to verify your account.';
+        }
+
+        return rest($user)->indexMeta($meta);
     }
 }

@@ -76,7 +76,7 @@ class PublishAuthCommand extends Command
                     return true;
                 }
 
-                $actionName = Str::before($file->getFilename(), 'Controller');
+                $actionName = Str::before($file->getFilename(), 'Controller.stub');
 
                 return in_array($actionName, $actions, true) || in_array(Str::lower($actionName), $actions, true);
             })
@@ -141,7 +141,7 @@ class PublishAuthCommand extends Command
         $routeStubs = '';
 
         foreach ($routes as $action => $routeStub) {
-            if (! $actions || in_array($action, $actions, true)) {
+            if (! $actions || in_array($action, $actions, true) || in_array(Str::lower($action), $actions, true)) {
                 $routeStubs .= file_get_contents($stubDirectory.$routeStub);
             }
         }

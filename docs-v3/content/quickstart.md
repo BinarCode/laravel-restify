@@ -36,6 +36,7 @@ This command will:
 - **Create** a new `app/Restify` directory for your repositories
 - **Generate** an abstract `app/Restify/Repository.php` base class
 - **Scaffold** a `app/Restify/UserRepository` for immediate use
+- **Create** the `routes/ai.php` file (if it doesn't exist) with commented MCP server configuration
 
 ### Run Migrations
 
@@ -120,7 +121,9 @@ For production use, enable authentication by uncommenting the Sanctum middleware
 
 ## MCP Server Setup
 
-Laravel Restify can automatically generate MCP (Model Context Protocol) servers for AI agents. Add this to your `config/ai.php` file:
+Laravel Restify can automatically generate MCP (Model Context Protocol) servers for AI agents. 
+
+**1. Add the MCP server to your `config/ai.php` file:**
 
 ```php
 use Binaryk\LaravelRestify\MCP\RestifyServer;
@@ -132,7 +135,29 @@ Mcp::web('restify', RestifyServer::class)
     ->name('mcp.restify');
 ```
 
-This creates an MCP endpoint at `/mcp/restify` that AI agents can use to interact with your API automatically.
+**2. Enable MCP tools in your repositories:**
+
+Add the `HasMcpTools` trait to any repository you want to expose to AI agents:
+
+```php
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+
+#[Model(Post::class)]
+class PostRepository extends Repository
+{
+    use HasMcpTools; // Enables MCP tools for AI agents
+    
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title')->required()->matchable(),
+            field('content'),
+        ];
+    }
+}
+```
+
+This creates an MCP endpoint at `/mcp/restify` that AI agents can use to discover and interact with your enabled repositories automatically.
 
 <alert>
 
