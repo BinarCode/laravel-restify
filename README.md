@@ -7,150 +7,236 @@
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/license.svg" alt="License"></a>
 </p>
 
-The first Laravel API library for Ai Agents and Humans with the same codebase. 
+# Unified Laravel API Layer for Humans and AI
 
-Restify is a customizable Laravel [JSON:API](https://jsonapi.org) and MCP Server library.
+**One Codebase. REST for Humans, MCP for AI Agents.**
 
-<div>
-<a href="https://restifytemplates.com">
-<img alt="Save weeks of API development" src="/docs-v2/static/starter-kit.png">
-</a>
-</div>
+Laravel Restify turns your Eloquent models into both JSON:API endpoints and MCP servers -- automatically. Build once, and instantly serve APIs that work seamlessly for developers, apps, and AI agents.
 
-## ⚡ Laravel Restify Templates - Save Weeks of Development
+## 🚀 The Power of One Codebase
 
-Looking to 10x your API development speed? Check out our production-ready API templates at [RestifyTemplates.com](https://restifytemplates.com). Get complete authentication, roles & permissions, team management, and more - all built on Laravel Restify. Zero configuration needed. Deploy in minutes instead of weeks.
+Traditional API development requires separate implementations for different consumers. Laravel Restify changes that:
+
+- **👥 Humans** get full-featured JSON:API endpoints
+- **🤖 AI Agents** get structured MCP (Model Context Protocol) servers
+- **🔒 Same Rules** - All authentication, authorization, and policies apply to both
+- **📝 One Definition** - Write your repository once, serve everywhere
+
+## Key Features
+
+- **JSON:API Endpoints** - Full [JSON:API](https://jsonapi.org) specification compliance
+- **MCP Server Generation** - Automatic AI agent interfaces with tool definitions
+- **Unified Authorization** - Laravel policies protect both human and AI access
+- **Search & Filtering** - Powerful query capabilities for all consumers
+- **Authentication** - Laravel Sanctum integration for secure access
+- **GraphQL Support** - Auto-generated GraphQL schemas
+- **Field Validation** - Consistent validation rules across all interfaces
 
 ## Installation
-
-You can install the package via composer:
 
 ```bash
 composer require binaryk/laravel-restify
 ```
 
-## Playground
+## Quick Start
 
-You can find a playground in the [Restify Demo GitHub repository](https://github.com/BinarCode/restify-demo).
-
-## Videos
-
-If you are a visual learner, checkout [our video course](https://www.binarcode.com/learn/restify) for the Laravel Restify.
-
-## Quick start
-
-Setup package:
-
+**1. Setup the package:**
 ```bash
 php artisan restify:setup
 ```
 
-Generate repository:
-
+**2. Create your first repository:**
 ```bash
-php artisan restify:repository Dream --all
+php artisan restify:repository PostRepository --all
 ```
 
-Now you have the REST CRUD over dreams and this beautiful repository:
+**3. Enable MCP for AI agents (optional):**
 
-<p align="center"><img src="/docs-v2/static/tile.png"></p>
-
-Now you can go into Postman and check it out: 
-
-```bash
-GET: http://laravel.test/api/restify/dreams
-```
-
-```bash
-POST: http://laravel.test/api/restify/dreams
-```
-
-```bash
-GET: http://laravel.test/api/restify/dreams/1
-```
-
-```bash
-PUT: http://laravel.test/api/restify/dreams/1
-```
-
-```bash
-DELETE: http://laravel.test/api/restify/dreams/1
-```
-
-## 🤖 AI-Powered Development with MCP
-
-Transform your existing Laravel Restify API into an **MCP-enabled powerhouse in minutes**! Laravel Restify's Model Context Protocol integration allows AI agents to interact directly with your API resources through structured tool interfaces.
-
-> **🔥 Transform Your API in Minutes!** Add one trait to your Repository class and register one route - that's it! Your entire API becomes AI-agent accessible with full security and authorization intact.
-
-**Quick Setup (2 steps):**
-
-1. **Add the trait to your Repository:**
+Add to your `config/ai.php`:
 ```php
-use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+use Binaryk\LaravelRestify\MCP\RestifyServer;
+use Laravel\Mcp\Facades\Mcp;
 
+Mcp::web('restify', RestifyServer::class)
+    ->middleware(['auth:sanctum'])
+    ->name('mcp.restify');
+```
+
+**That's it!** Your API now serves both:
+
+**For Humans (JSON:API):**
+```bash
+GET /api/restify/posts
+POST /api/restify/posts
+PUT /api/restify/posts/1
+DELETE /api/restify/posts/1
+```
+
+**For AI Agents (MCP):**
+```bash
+GET /mcp/restify  # Tool definitions and capabilities
+```
+
+## Example Repository
+
+```php
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Attributes\Model;
+
+#[Model(Post::class)]
 class PostRepository extends Repository
 {
-    use HasMcpTools; // ✨ This enables MCP for this resource
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title')->rules('required', 'string', 'max:255'),
+            textarea('content')->rules('required'),
+            field('author')->readonly(),
+            datetime('published_at')->nullable(),
+        ];
+    }
 }
 ```
 
-2. **Register the MCP server in `routes/ai.php`:**
-```php
-use Laravel\Mcp\Facades\Mcp;
-use Binaryk\LaravelRestify\MCP\RestifyServer;
+This single definition automatically provides:
+- ✅ JSON:API CRUD endpoints with validation
+- ✅ MCP tools for AI agents with the same validation
+- ✅ Authorization policies applied to both interfaces
+- ✅ Search and filtering capabilities for all consumers
 
-Mcp::web('restify', RestifyServer::class)->middleware(['auth:sanctum']);
+## One Codebase, Two Outputs
+
+Here's what you get from one repository definition:
+
+### For Humans (JSON:API Response)
+```bash
+GET /api/restify/posts
 ```
 
-**That's it!** Your API is now AI-agent ready with automatic tool generation for CRUD operations, actions, and getters.
+```json
+{
+  "data": [
+    {
+      "id": "1",
+      "type": "posts",
+      "attributes": {
+        "title": "Laravel Restify Guide",
+        "content": "Build APIs fast...",
+        "published_at": "2024-01-15"
+      }
+    }
+  ],
+  "links": {
+    "self": "/api/restify/posts",
+    "next": "/api/restify/posts?page=2"
+  }
+}
+```
+
+### For AI Agents (MCP Tool Definition)
+```bash
+GET /mcp/restify  # Tool definitions for AI agents
+```
+
+```json
+{
+  "tools": [
+    {
+      "name": "posts-index-tool",
+      "description": "Retrieve a paginated list of Post records from the posts repository with filtering, sorting, and search capabilities.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "page": {
+            "type": "number",
+            "description": "Page number for pagination"
+          },
+          "perPage": {
+            "type": "number", 
+            "description": "Number of posts per page"
+          },
+          "search": {
+            "type": "string",
+            "description": "Search term to filter posts by title or content"
+          },
+          "sort": {
+            "type": "string",
+            "description": "Sorting criteria (e.g., sort=title or sort=-published_at for descending)"
+          },
+          "title": {
+            "type": "string",
+            "description": "Filter by exact match for title (e.g., title=Laravel). Accepts negation with -title=value"
+          },
+          "published_at": {
+            "type": "string",
+            "description": "Filter by publication date (e.g., published_at=2024-01-15)"
+          }
+        }
+      }
+    }
+  ]
+}
+```
+
+**All generated from this simple repository:**
+```php
+#[Model(Post::class)]
+class PostRepository extends Repository
+{
+    use HasMcpTools;
+    
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title')->required()->matchable(),
+            field('content'),
+            field('published_at')->rules('date')->matchable(),
+        ];
+    }
+}
+```
 
 ## Restify Boost
 
-Laravel Restify provides an MCP (Model Context Protocol) server designed for developers working with Laravel Restify APIs. This server enables AI agents to access documentation, create repositories, actions, and getters through structured tools.
+**Laravel Restify Boost** is a development companion that provides MCP server capabilities to help you build Restify APIs faster with AI assistance.
 
-**Repository**: [https://github.com/BinarCode/laravel-restify-boost](https://github.com/BinarCode/laravel-restify-boost)
+**Repository:** [laravel-restify-boost](https://github.com/BinarCode/laravel-restify-boost)
 
-### Features
+**Features:**
+- Documentation access for AI agents
+- Repository and action generation assistance
+- Code examples and best practices
+- Integration with Claude Desktop and other AI tools
 
-- **Documentation Access**: Query Laravel Restify documentation directly
-- **Repository Generation**: Create new repositories with proper structure
-- **Action Creation**: Generate custom actions for your API resources  
-- **Getter Development**: Build custom getters for data retrieval
-- **Code Examples**: Get contextual code examples and best practices
-
-### Installation
-
+**Installation:**
 ```bash
 composer require --dev binarcode/laravel-restify-boost
-php artisan restify-boost:install
 ```
 
-### Usage with AI Agents
+## Templates
 
-Configure your AI agent (Claude Desktop, etc.) to use the MCP server for enhanced Laravel Restify development assistance.
+Need a production-ready starting point? Check out [Restify Templates](https://restifytemplates.com) for complete API starter kits with authentication, permissions, and team management.
 
-## Usage
+## Resources
 
-See the [official documentation](https://restify.binarcode.com).
+- **[Documentation](https://restify.binarcode.com)** - Complete guides and API reference
+- **[Demo Repository](https://github.com/BinarCode/restify-demo)** - Working example
+- **[Video Course](https://www.binarcode.com/learn/restify)** - Visual learning resource
 
-### Testing
+## Testing
 
-``` bash
+```bash
 composer test
 ```
-
-### Changelog
-
-Please see [CHANGELOG](CHANGELOG.md) for more information what has changed recently.
 
 ## Contributing
 
 Please see [CONTRIBUTING](CONTRIBUTING.md) for details.
 
-### Security
+## Security
 
-If you discover any security related issues, please email eduard.lupacescu@binarcode.com or [message me on twitter](https://twitter.com/LupacescuEuard) instead of using the issue tracker.
+If you discover any security related issues, please email eduard.lupacescu@binarcode.com instead of using the issue tracker.
 
 ## Credits
 
@@ -161,4 +247,3 @@ If you discover any security related issues, please email eduard.lupacescu@binar
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.
-
