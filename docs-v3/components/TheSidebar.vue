@@ -144,8 +144,16 @@ watch(isMobileMenuOpen, (isOpen) => {
   }
 })
 
-// Collapsible sections state
+// Collapsible sections state - start with all sections collapsed
 const collapsedSections = ref<Set<string>>(new Set())
+
+// Initialize all sections as collapsed when navigation sections are available
+onMounted(() => {
+  if (navigationSections.value) {
+    const allSectionTitles = navigationSections.value.map(section => section.title)
+    collapsedSections.value = new Set(allSectionTitles)
+  }
+})
 
 // Toggle section visibility
 const toggleSection = (sectionTitle: string) => {

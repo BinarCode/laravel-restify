@@ -45,9 +45,41 @@ return [
 
         'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
 
+        /*
+        |--------------------------------------------------------------------------
+        | User Email Verification URL
+        |--------------------------------------------------------------------------
+        |
+        | This URL is used to redirect users after they click the email verification
+        | link. The API will validate the verification and redirect to this frontend
+        | URL with success/failure query parameters.
+        |
+        | Available placeholders:
+        | {id} - User ID
+        | {emailHash} - SHA1 hash of user's email
+        |
+        | Query parameters added by API:
+        | ?success=true&message=Email verified successfully.
+        | ?success=false&message=Invalid or expired verification link.
+        |
+        */
         'user_verify_url' => env('FRONTEND_APP_URL').'/verify/{id}/{emailHash}',
 
         'user_model' => "\App\Models\User",
+
+        /*
+        |--------------------------------------------------------------------------
+        | Token TTL (Time To Live)
+        |--------------------------------------------------------------------------
+        |
+        | This value determines the number of minutes that authentication tokens
+        | will be considered valid. After this time expires, users will need to
+        | re-authenticate. Set to null for tokens that never expire.
+        |
+        | Default: null (never expires)
+        |
+        */
+        'token_ttl' => env('RESTIFY_TOKEN_TTL', null),
     ],
 
     /*

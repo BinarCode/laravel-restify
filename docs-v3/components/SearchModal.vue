@@ -38,9 +38,14 @@
               placeholder="Search documentation..."
               class="flex-1 bg-transparent text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 border-0 focus:ring-0 focus:outline-none text-lg"
               @input="performSearch"
+              @keyup="performSearch"
               @keydown.down.prevent="navigateResults('down')"
               @keydown.up.prevent="navigateResults('up')"
               @keydown.enter.prevent="selectResult"
+              autocomplete="off"
+              autocorrect="off"
+              autocapitalize="off"
+              spellcheck="false"
             />
             
             <div class="hidden sm:flex items-center space-x-2 text-xs text-gray-400 dark:text-gray-500">
@@ -225,7 +230,10 @@ const debounce = (fn: Function, delay: number) => {
 
 // Search functionality
 const performSearch = debounce(async () => {
-  if (!searchQuery.value.trim()) {
+  const query = searchQuery.value?.trim()
+  console.log('🔍 Search triggered with query:', query)
+  
+  if (!query) {
     searchResults.value = []
     return
   }
@@ -234,7 +242,10 @@ const performSearch = debounce(async () => {
   selectedIndex.value = 0
 
   try {
-    searchResults.value = await searchContent(searchQuery.value)
+    console.log('🔍 Performing search for:', query)
+    const results = await searchContent(query)
+    console.log('🔍 Search results:', results.length, 'items')
+    searchResults.value = results
   } catch (error) {
     console.error('Search error:', error)
     searchResults.value = []
@@ -242,6 +253,25 @@ const performSearch = debounce(async () => {
     isSearching.value = false
   }
 }, 300)
+
+// Also create immediate search for iOS
+const performImmediateSearch = async () => {
+  const query = searchQuery.value?.trim()
+  if (!query) return
+  
+  console.log('🔍 Immediate search for iOS:', query)
+  isSearching.value = true
+  
+  try {
+    const results = await searchContent(query)
+    searchResults.value = results
+  } catch (error) {
+    console.error('Immediate search error:', error)
+    searchResults.value = []
+  } finally {
+    isSearching.value = false
+  }
+}
 
 // Lifecycle
 onMounted(() => {
@@ -264,6 +294,14 @@ watch(isOpen, (newIsOpen) => {
     })
   }
 })
+
+// Watch searchQuery changes for iOS devices where input events might not fire
+watch(searchQuery, (newQuery) => {
+  console.log('🔍 Search query changed to:', newQuery)
+  if (newQuery !== undefined) {
+    performSearch()
+  }
+}, { immediate: false })
 
 // No need to expose methods since we're using global state
 </script>

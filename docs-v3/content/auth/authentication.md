@@ -5,15 +5,13 @@ category: Auth
 position: 1
 ---
 
-Laravel Restify supports easy authentication with [Laravel Sanctum](https://laravel.com/docs/sanctum#api-token-authentication).
-
-Now you can finally enjoy the auth setup (`register`, `login`, `forgot`, and `reset password`).
+Laravel Restify provides comprehensive authentication with [Laravel Sanctum](https://laravel.com/docs/sanctum#api-token-authentication), including register, login, logout, forgot password, reset password, and email verification.
 
 ## Quick start
 
-tl;dr: 
+**This is everything you need to have authentication in place:**
 
-If you run on Laravel 10 or higher, you can use this command that will do all the setup for you:
+If you run on Laravel 11 or higher, use this single command for complete authentication setup:
 
 ```shell script
 php artisan restify:setup-auth
@@ -22,19 +20,22 @@ php artisan restify:setup-auth
 This command will:
 
 - **Ensures** that `Sanctum` is installed and configured as the authentication provider in the `config/restify.php` file
+- **Identifies** the User model and updates the `auth.user_model` configuration automatically
 - **Appends** the `Route::restifyAuth();` line to the `routes/api.php` file to add the authentication routes
 
-## Prerequisites
+**That's it!** Your authentication system is ready to use with register, login, logout, password reset, and email verification.
 
-Migrate the `users`, `password_resets` table (they already exist into a fresh Laravel app).
+---
+
+**Prefer manual setup?** You can configure everything step-by-step as described below, starting with the [Install sanctum](#install-sanctum) section.
+
+## Install sanctum
 
 <alert type="success">
 
-Laravel 10 automatically ships with Sanctum, so you don't have to install it.
+Laravel 11 automatically ships with Sanctum, so you don't have to install it.
 
 </alert>
-
-### Install sanctum
 
 See the documentation [here](https://laravel.com/docs/sanctum#installation). You don't need to add `\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,` to your `'api'` middleware group. 
 
@@ -64,7 +65,7 @@ The `User` model should extend the `Illuminate\Foundation\Auth\User` class or im
 <alert type="info">
 
 Make sure you have the `\Laravel\Sanctum\HasApiTokens` trait to your `User` model. 
-Laravel 10 will automatically add this trait to your `User` model.
+Laravel 11 will automatically add this trait to your `User` model.
 
 </alert>
 
@@ -96,6 +97,7 @@ These are the default routes provided by restify:
 | :------------- |:-----------------------------------------|:---------------|
 | **POST**           | `/api/register`                          | register       |
 | **POST**           | `/api/login`                             | login          |
+| **POST**           | `/api/logout`                            | logout         |
 | **POST**           | `/api/restify/forgotPassword`            | forgotPassword |
 | **POST**           | `/api/restify/resetPassword`             | resetPassword  |
 | **POST**           | `/api/restify/verify/{id}/{emailHash}`   | verifyEmail    |
@@ -216,6 +218,50 @@ curl -X GET "http://restify-app.test/api/restify/profile" \
 
 Replace `http://restify-app.test` with your actual domain and use the authentication token you received after logging in.
 
+## Token Management
+
+Laravel Restify uses Sanctum tokens for API authentication with the following characteristics:
+
+### Token Expiration
+
+By default, tokens **never expire**. You can configure token expiration in your `config/restify.php` file:
+
+```php
+// config/restify.php
+'auth' => [
+    'token_ttl' => null, // Default: tokens never expire
+    // Set to minutes for token expiration
+    // 'token_ttl' => 60, // Tokens expire after 60 minutes (1 hour)
+]
+```
+
+### Logout
+
+To revoke an authentication token before it expires, use the logout endpoint:
+
+```bash
+curl -X POST "http://restify-app.test/api/logout" \
+     -H "Accept: application/json" \
+     -H "Authorization: Bearer 1|f7D1qkALtM9GKDkjREKpwMRKTZg2ZnFqDZTSe53k"
+```
+
+Successful logout returns:
+
+```json
+{
+    "message": "Successfully logged out"
+}
+```
+
+### Multiple Devices
+
+Laravel Sanctum automatically handles multiple device authentication:
+
+- Each login creates a **new token**
+- Users can be logged in on multiple devices simultaneously
+- Each device has its own token
+- Logout only revokes the specific token used
+
 ## Register
 
 Let's see how to register a new user in the application. You can test the registration using cURL or Postman.
@@ -270,6 +316,164 @@ You should see the response like this:
     }
 }
 ```
+
+## Email Verification
+
+Email verification is only available when your User model implements the `MustVerifyEmail` interface.
+
+### Enable Email Verification
+
+Update your User model to implement email verification:
+
+```php
+// app/Models/User.php
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Laravel\Sanctum\HasApiTokens;
+
+class User extends Authenticatable implements MustVerifyEmail
+{
+    use HasApiTokens;
+    
+    // ... rest of your User model
+}
+```
+
+When a user registers, their `email_verified_at` field is set to `NULL`, and Restify automatically sends a verification email using the `VerifyEmail` notification.
+
+### How It Works
+
+When the `MustVerifyEmail` interface is implemented, during registration Restify will:
+
+1. **Send verification email** using `Binaryk\LaravelRestify\Notifications\VerifyEmail`
+2. **Generate signed verification URL** pointing directly to the Restify API endpoint
+3. **Include parameters** in the signed URL:
+   - `id` → User's ID
+   - `hash` → SHA1 hash of the user's email address
+
+The email contains a CTA (Call-To-Action) button that links directly to the API verification endpoint.
+
+### Verification Flow
+
+1. **Registration**: User registers → `email_verified_at` is `NULL`
+2. **Email Sent**: User receives verification email with CTA link
+3. **Direct API Call**: Email CTA redirects directly to `/api/restify/verify/{id}/{hash}` 
+4. **Email Verification**: API validates the signed URL and sets `email_verified_at` to current timestamp
+5. **Frontend Redirect**: 
+   - **Success**: If validation succeeds, API redirects user to frontend URL from `config('restify.auth.user_verify_url')`
+   - **Failure**: If hash is invalid, API redirects to frontend with `?success=false&message=Invalid hash`
+
+### Frontend Integration
+
+With the updated flow, users click the CTA in the email and are redirected directly to the API for verification. After verification (successful or failed), they land on your frontend application.
+
+Your frontend should handle the verification result by checking URL parameters:
+
+**Success case**: User lands on your configured URL (no additional parameters)
+```
+https://your-frontend-app.com/email/verify?id=1&hash=abc123
+```
+
+**Failure case**: User lands on your configured URL with error parameters
+```
+https://your-frontend-app.com/email/verify?id=1&hash=abc123&success=false&message=Invalid hash
+```
+
+**Frontend JavaScript example**:
+```javascript
+// Check for verification result
+const urlParams = new URLSearchParams(window.location.search);
+const success = urlParams.get('success');
+const message = urlParams.get('message');
+
+if (success === 'false') {
+    // Handle verification failure
+    console.error('Verification failed:', message);
+    // Show error message to user
+    showErrorMessage(message || 'Email verification failed');
+} else {
+    // Handle verification success (success param is absent for successful verifications)
+    console.log('Email verified successfully');
+    // Show success message and redirect or update UI
+    showSuccessMessage('Your email has been verified successfully!');
+}
+```
+
+### cURL Example
+
+For testing purposes, you can directly call the verification endpoint:
+
+```bash
+curl -X GET "http://restify-app.test/api/restify/verify/1/abc123hash?signature=xyz&expires=123456" \
+     -H "Accept: application/json"
+```
+
+**Note**: The actual verification URL includes a signed signature and expires parameter for security.
+
+### Success Response
+
+On successful verification, the API redirects to your configured frontend URL. For direct API calls (like cURL), you might receive a success response or redirect.
+
+### Configuration
+
+Configure your frontend URL in `config/restify.php`:
+
+```php
+'auth' => [
+    'user_verify_url' => env('FRONTEND_APP_URL').'/email/verify?id={id}&hash={emailHash}',
+]
+```
+
+## AI Agent Authentication
+
+Laravel Restify's MCP server uses the same Sanctum authentication system. AI agents authenticate using the same tokens that humans use.
+
+### Token Generation for AI Agents
+
+Users can generate API tokens for AI agents through your application interface, or programmatically:
+
+```php
+// Generate a token for an AI agent
+$user = auth()->user();
+$token = $user->createToken('AI Agent Token')->plainTextToken;
+
+// Token can be used by AI agents for MCP server access
+```
+
+### MCP Server Authentication
+
+When configuring the MCP server, tokens are passed in the Authorization header:
+
+```php
+// config/ai.php - MCP server with authentication
+Mcp::web('restify', RestifyServer::class)
+    ->middleware(['auth:sanctum'])  // Same authentication as REST API
+    ->name('mcp.restify');
+```
+
+### AI Agent Usage
+
+AI agents use the same Bearer token authentication:
+
+```bash
+# AI agent making MCP request
+curl -X GET "http://restify-app.test/mcp/restify" \
+     -H "Accept: application/json" \
+     -H "Authorization: Bearer 1|f7D1qkALtM9GKDkjREKpwMRKTZg2ZnFqDZTSe53k"
+```
+
+### Benefits
+
+- **Unified Authentication**: Same auth system for humans and AI agents
+- **Consistent Permissions**: Same authorization policies apply
+- **Token Management**: Same logout/expiration rules
+- **Security**: Same security model across all interfaces
+
+<alert>
+
+**Learn More**: Check the [MCP Server Guide](/mcp/mcp) for detailed AI agent configuration.
+
+</alert>
 
 ## Forgot Password
 
@@ -361,6 +565,59 @@ If the password reset is successful, you should receive a response similar to th
 
 Now the user's password has been successfully reset, and they can log in with their new password.
 
+## Authentication Configuration
+
+Laravel Restify provides several configuration options in `config/restify.php` under the `auth` key:
+
+### Available Options
+
+```php
+// config/restify.php
+'auth' => [
+    // User model for authentication
+    'user_model' => \App\Models\User::class,
+    
+    // Token expiration time in minutes (default: null - never expire)
+    'token_ttl' => null,
+    
+    // Password reset URL (for frontend)
+    'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
+    
+    // Email verification URL (for frontend)
+    'user_verify_url' => env('FRONTEND_APP_URL').'/email/verify?id={id}&hash={emailHash}',
+],
+```
+
+### Environment Variables
+
+Add these to your `.env` file:
+
+```bash
+# Frontend application URL for auth redirects
+FRONTEND_APP_URL=https://your-frontend-app.com
+
+# Mail configuration for password reset and verification emails
+MAIL_MAILER=smtp
+MAIL_HOST=your-smtp-host
+MAIL_PORT=587
+MAIL_USERNAME=your-username
+MAIL_PASSWORD=your-password
+MAIL_ENCRYPTION=tls
+```
+
+### Token Configuration
+
+- **Default TTL**: `null` (never expire)
+- **Custom TTL**: Set any value in minutes
+- **Never Expire**: Set `token_ttl` to `null`
+
+```php
+// Examples
+'token_ttl' => null,  // Never expire (default)
+'token_ttl' => 30,    // 30 minutes
+'token_ttl' => 60,    // 1 hour
+'token_ttl' => 1440,  // 24 hours
+```
 
 ## Customizing Authentication Controllers
 

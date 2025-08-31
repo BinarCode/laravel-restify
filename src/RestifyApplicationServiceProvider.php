@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\LoginController;
+use Binaryk\LaravelRestify\Http\Controllers\Auth\LogoutController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
@@ -78,7 +79,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
     protected function authRoutes(): void
     {
-        Route::macro('restifyAuth', function ($prefix = '/', array $actions = ['register', 'login', 'verifyEmail', 'forgotPassword', 'resetPassword']) {
+        Route::macro('restifyAuth', function ($prefix = '/', array $actions = ['register', 'login', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword']) {
             Route::group([
                 'prefix' => $prefix,
                 'middleware' => ['api'],
@@ -92,6 +93,12 @@ class RestifyApplicationServiceProvider extends ServiceProvider
                     Route::post('login', LoginController::class)
                         ->middleware('throttle:6,1')
                         ->name('restify.login');
+                }
+
+                if (in_array('logout', $actions, true)) {
+                    Route::post('logout', LogoutController::class)
+                        ->middleware('auth:sanctum')
+                        ->name('restify.logout');
                 }
 
                 if (in_array('verifyEmail', $actions, true)) {
