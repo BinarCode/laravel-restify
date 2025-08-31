@@ -4,6 +4,11 @@ on:
     push:
         branches:
             - 10.x
+        paths-ignore:
+            - 'docs-v3/**'
+            - 'docs-v2/**'
+            - '*.md'
+            - '.gitignore'
 
 jobs:
     release:

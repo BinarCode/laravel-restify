@@ -68,11 +68,14 @@ export default defineNuxtConfig({
     typeCheck: false
   },
 
-  // Nitro configuration for static generation
+  // Static site generation
+  ssr: true,
   nitro: {
+    preset: 'static',
     prerender: {
       failOnError: false,
       crawlLinks: true,
+      routes: ['/'],
       ignore: [
         '/api/_content/cache.**',
         '/api/_content/query/**'
