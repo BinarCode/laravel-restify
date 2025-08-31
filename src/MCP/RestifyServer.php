@@ -14,6 +14,7 @@ use Binaryk\LaravelRestify\MCP\Tools\Operations\ActionTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\DeleteTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\GetterTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\IndexTool;
+use Binaryk\LaravelRestify\MCP\Tools\Operations\ProfileTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\ShowTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\StoreTool;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\UpdateTool;
@@ -95,6 +96,11 @@ class RestifyServer extends Server
             })
             ->each(function (string $repository) {
                 $repositoryInstance = app($repository);
+
+                // if it's for User repository, add the ProfileTool
+                if ($repositoryInstance::uriKey() === 'users') {
+                    $this->addTool(new ProfileTool($repository));
+                }
 
                 if (method_exists($repositoryInstance, 'mcpAllowsIndex') && $repositoryInstance->mcpAllowsIndex()) {
                     $this->addTool(new IndexTool($repository));

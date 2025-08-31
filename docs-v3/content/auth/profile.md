@@ -5,24 +5,24 @@ category: Auth
 position: 1
 ---
 
+Laravel Restify provides a convenient profile endpoint that allows authenticated users to retrieve and update their profile information using the same repository system that powers the rest of your API.
+
 ## Prerequisites  
 
-Make sure you followed the [Authentication](/auth/authentication) guide first, as one common mistake is not adding this middleware:
+Make sure you followed the [Authentication](/auth/authentication) guide first, as you need the authentication middleware configured:
 
 ```php
 // config/restify.php
 'middleware' => [
-// ...
+    // ...
     'auth:sanctum',
-// ...
+    // ...
 ]
 ```
 
 ## Get profile
 
-Before retrieving the user's profile, you need to log in and obtain an authentication token. You can refer to the [login documentation](/auth/authentication#login) for details on how to authenticate a user. Make sure to include `Bearer {$token}` in the `Authorization` header for subsequent API requests, either using Postman or cURL.
-
-When retrieving the user's profile, it is serialized by using the `UserRepository`.
+The profile endpoint uses your `UserRepository` to serialize the authenticated user's data, giving you full control over what fields are exposed and how relationships are handled.
 
 ```http request
 GET: /api/restify/profile
@@ -72,28 +72,27 @@ public function fields(RestifyRequest $request): array
 }
 ```
 
-Since the profile is managed using the UserRepository, you can now benefit from the power of related entities. For example, if you want to return user roles:
+Since the profile uses the UserRepository, you can include related entities using Restify's relationship system. For example, to include user roles:
 
 ```php
-//UserRepository
+// UserRepository
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
 
-public static array $related = [
-    'roles',
-];
+public static function related(): array
+{
+    return [
+        'roles' => BelongsToMany::make('roles', RoleRepository::class),
+    ];
+}
 ```
 
-Also, make sure the `User` model has this method that returns a relationship from another table, or you can simply return an array:
+Make sure your `User` model defines the proper Eloquent relationship:
 
 ```php
-//User.php
-
-public function roles(): array
+// User.php
+public function roles(): BelongsToMany
 {
-    // In a real project, here you will get this information from the database.
-    return [
-        'owner',
-        'admin'
-    ];
+    return $this->belongsToMany(Role::class);
 }
 ```
 
@@ -115,8 +114,20 @@ The result will look like this:
     },
     "relationships": {
         "roles": [
-            "owner",
-            "admin"
+            {
+                "id": "1",
+                "type": "roles",
+                "attributes": {
+                    "name": "owner"
+                }
+            },
+            {
+                "id": "2", 
+                "type": "roles",
+                "attributes": {
+                    "name": "admin"
+                }
+            }
         ]
     },
     "meta": {
@@ -128,89 +139,34 @@ The result will look like this:
 }
 ```
 
-### Without repository
+### Repository Control
 
-In some cases, you might choose not to use the repository for profile serialization. To do this, you should add the `Binaryk\LaravelRestify\Repositories\UserProfile` trait to your `UserRepository`:
-
-```php
-// UserProfile
-
-use Binaryk\LaravelRestify\Repositories\UserProfile;
-
-class UserRepository extends Repository
-{
-    use UserProfile;
-
-    public static $model = 'App\\Models\\User';
-    
-    //...
-}
-```
-
-The profile will return the model directly:
-
-### Relations
-<alert type="warning">
-Note that when you're not using the repository, the `?include` parameter will not work.
-</alert>
-
-```http request
-/api/restify/profile
-```
-
-You will get:
-
-```json
-{
-    "data": {
-        "id": 7,
-        "name": "Eduard",
-        "email": "interstelar@me.com",
-        "email_verified_at": null,
-        "created_at": "2020-12-24T08:49:30.000000Z",
-        "updated_at": "2020-12-24T08:52:37.000000Z"
-    }
-}
-```
-
-### Conditionally use repository
-
-In rare cases, you may want to use the repository only for non-admin users. Make sure to serialize specific fields for users:
+You can control whether the repository is used for profile serialization by implementing the `canUseForProfile` method:
 
 ```php
-use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\UserProfile;
 use Illuminate\Http\Request;
 
 class UserRepository extends Repository
 {
-    use UserProfile;
-
-    public static $model = 'App\\Models\\User';
-
-    public static function canUseForProfile(Request $request)
+    public static function canUseForProfile(Request $request): bool
     {
-        return $request->user()->isAdmin();
+        return true; // Always use repository for profile serialization
     }
     
-    public function fields(RestifyRequest $request)
+    public function fields(RestifyRequest $request): array
     {
         return [
             field('name')->rules('required'),
-
-            field('email')->rules('required')
-                ->storingRules('unique:users')->messages([
-                    'required' => 'This field is required.',
-                ]),
+            field('email')->rules('required')->storingRules('unique:users'),
         ];
     }
 }
 ```
 
-This instructs Restify to use the repository only for users who are admins of your application.
+This method determines whether the repository should be used for profile serialization. Returning `true` enables full repository functionality including field control, validation, and relationships.
 
-## Update profile using repository
+## Update profile
 
 By default, Restify will validate and fill only the fields defined in your `UserRepository` when updating the user's profile. Let's use the following repository fields as an example:
 
@@ -279,36 +235,9 @@ Since the payload is valid now, Restify will update the user's profile (a name, 
 }
 ```
 
-### Update without repository
+### File uploads
 
-If you [don't use the repository](#without-repository) for the user's profile, Restify will only update the `fillable` user attributes that are present in the request payload: `$request->only($user->getFillable())`.
-
-```http request
-PUT: /api/restify/profile
-```
-
-Payload:
-
-````json
-{
-    "name": "Eduard Lupacescu"
-}
-````
-
-The response will be the updated user:
-
-```json
-{
-    "data": {
-        "id": 7,
-        "name": "Eduard",
-        "email": "interstelar@me.com",
-        "email_verified_at": null,
-        "created_at": "2020-12-24T08:49:30.000000Z",
-        "updated_at": "2020-12-24T09:34:48.000000Z"
-    }
-}
-```
+For file uploads (like user avatars), you must use a POST request instead of PUT or PATCH:
 
 ## User avatar
 
@@ -341,17 +270,17 @@ public function fields(RestifyRequest $request)
 
 You can use the Restify's profile update and give the avatar as an image.
 
-### Post request
+### Upload request
 
 <alert type="warning">
-You cannot upload a file using PUT or PATCH verbs, so you should use a POST request instead.
+You cannot upload a file using PUT or PATCH verbs, so you must use a POST request instead.
 </alert>
 
 ```http request
 POST: /api/restify/profile
 ```
 
-The payload should be a form-data, with an image under the `avatar` key:
+The payload should be form-data, with an image under the `avatar` key:
 
 ```json
 {
@@ -359,4 +288,66 @@ The payload should be a form-data, with an image under the `avatar` key:
 }
 ```
 
+The response will be the updated profile with the new avatar URL:
+
+```json
+{
+    "id": "7",
+    "type": "users", 
+    "attributes": {
+        "name": "Eduard",
+        "email": "interstelar@me.com",
+        "avatar": "/storage/avatars/avatar.jpg"
+    },
+    "meta": {
+        "authorizedToShow": true,
+        "authorizedToStore": true,
+        "authorizedToUpdate": true,
+        "authorizedToDelete": true
+    }
+}
+```
+
 If you need to customize the path or disk for the storage file, check the [image field](/api/fields#file-fields) documentation.
+
+## MCP Integration
+
+AI agents can access the user profile using the MCP server's profile tool. When you include the `HasMcpTools` trait in your `UserRepository`, it automatically exposes a `users-profile-tool` that AI agents can use to retrieve the current authenticated user's profile including relationships.
+
+```php
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+
+#[Model(User::class)]
+class UserRepository extends Repository
+{
+    use HasMcpTools;
+    
+    public static function canUseForProfile(Request $request): bool
+    {
+        return true;
+    }
+    
+    public static function related(): array
+    {
+        return [
+            'roles' => BelongsToMany::make('roles', RoleRepository::class),
+        ];
+    }
+}
+```
+
+The AI agent can then use this tool to access profile information:
+
+```json
+{
+  "method": "tools/call",
+  "params": {
+    "name": "users-profile-tool",
+    "arguments": {
+      "include": "roles"
+    }
+  }
+}
+```
+
+This provides AI agents with the same authentication and authorization controls as regular API access, ensuring secure profile data access.

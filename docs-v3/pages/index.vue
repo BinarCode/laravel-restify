@@ -171,8 +171,11 @@
         </section>
 
         <!-- Architecture Flow Diagram -->
-        <section class="py-20 bg-gray-50/50 dark:bg-gray-800/20 relative">
-          <div class="mx-auto px-4">
+        <section class="py-20 relative overflow-hidden">
+          <!-- Animated neon border -->
+          <div class="absolute inset-4 rounded-3xl neon-border-animated"></div>
+          
+          <div class="mx-auto px-4 relative z-10">
             <h2 class="text-4xl font-bold text-center text-gray-900 dark:text-white mb-20">
               How It Works
             </h2>
@@ -518,5 +521,52 @@ useHead({
 
 .animate-scroll:hover {
   animation-play-state: paused;
+}
+
+@keyframes neonBorder {
+  0% {
+    background: conic-gradient(from 0deg, transparent, transparent, #3b82f6, #60a5fa, #3b82f6, transparent, transparent);
+  }
+  25% {
+    background: conic-gradient(from 90deg, transparent, transparent, #3b82f6, #60a5fa, #3b82f6, transparent, transparent);
+  }
+  50% {
+    background: conic-gradient(from 180deg, transparent, transparent, #3b82f6, #60a5fa, #3b82f6, transparent, transparent);
+  }
+  75% {
+    background: conic-gradient(from 270deg, transparent, transparent, #3b82f6, #60a5fa, #3b82f6, transparent, transparent);
+  }
+  100% {
+    background: conic-gradient(from 360deg, transparent, transparent, #3b82f6, #60a5fa, #3b82f6, transparent, transparent);
+  }
+}
+
+.neon-border-animated {
+  background: conic-gradient(from 0deg, transparent, transparent, #3b82f6, #60a5fa, #3b82f6, transparent, transparent);
+  animation: neonBorder 8s linear infinite;
+  padding: 3px;
+}
+
+.neon-border-animated::before {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  background: rgba(249, 250, 251, 0.8);
+}
+
+.dark .neon-border-animated::before {
+  background: rgba(17, 24, 39, 0.8);
+}
+
+.neon-border-animated::after {
+  content: '';
+  position: absolute;
+  inset: 3px;
+  border-radius: inherit;
+  background: inherit;
+  filter: blur(8px);
+  opacity: 0.5;
+  z-index: -1;
 }
 </style>

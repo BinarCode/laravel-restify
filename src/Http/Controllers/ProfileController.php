@@ -17,13 +17,7 @@ class ProfileController extends RepositoryController
             return data($repository->serializeForShow($request));
         }
 
-        $user = $request->user();
-
-        if ($related = $request->input('related')) {
-            $user->load(explode(',', $related));
-        }
-
-        return data($user);
+        return data($request->user());
     }
 
     public function guessRepository(RestifyRequest $request): ?Repository
