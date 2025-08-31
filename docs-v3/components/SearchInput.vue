@@ -35,6 +35,8 @@ const isMac = computed(() => {
 })
 
 const openSearchModal = () => {
+  console.log('🔍 Search input button clicked')
   openModal()
+  console.log('📞 openModal() called from SearchInput')
 }
 </script>

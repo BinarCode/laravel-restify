@@ -28,5 +28,14 @@
 </template>
 
 <script setup lang="ts">
-// Layout configuration
+// Mobile menu state management
+const isMobileMenuOpen = ref(false)
+
+const toggleMobileMenu = () => {
+  isMobileMenuOpen.value = !isMobileMenuOpen.value
+}
+
+// Provide mobile menu state to all child components
+provide('isMobileMenuOpen', isMobileMenuOpen)
+provide('toggleMobileMenu', toggleMobileMenu)
 </script>

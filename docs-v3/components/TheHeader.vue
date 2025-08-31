@@ -7,7 +7,7 @@
           <!-- Mobile menu button -->
           <button
             @click="toggleMobileMenu"
-            class="md:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
+            class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
             aria-label="Toggle menu"
           >
             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -27,7 +27,7 @@
         <!-- Navigation and actions -->
         <div class="flex items-center space-x-4">
           <!-- Search (desktop) -->
-          <div class="hidden md:block">
+          <div class="hidden lg:block">
             <SearchInput />
           </div>
           
@@ -64,20 +64,13 @@
     </div>
     
     <!-- Mobile search -->
-    <div class="md:hidden px-4 pb-4">
+    <div class="lg:hidden px-4 pb-4">
       <SearchInput />
     </div>
   </header>
 </template>
 
 <script setup lang="ts">
-const isMobileMenuOpen = ref(false)
-
-const toggleMobileMenu = () => {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value
-}
-
-// Provide mobile menu state to child components
-provide('isMobileMenuOpen', readonly(isMobileMenuOpen))
-provide('toggleMobileMenu', toggleMobileMenu)
+// Inject mobile menu state from layout
+const toggleMobileMenu = inject('toggleMobileMenu', () => {})
 </script>

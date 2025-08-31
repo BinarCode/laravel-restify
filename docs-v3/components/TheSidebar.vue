@@ -1,5 +1,5 @@
 <template>
-  <aside class="hidden md:flex md:w-64 md:flex-col">
+  <aside class="hidden lg:flex lg:w-64 lg:flex-col">
     <div class="flex flex-col h-screen sticky top-0 bg-gray-50 dark:bg-gray-800/50 border-r border-gray-200 dark:border-gray-700">
       <nav class="flex-1 px-4 py-6 overflow-y-auto">
         <div class="space-y-6">
@@ -34,7 +34,7 @@
   <Teleport to="body">
     <div
       v-if="isMobileMenuOpen"
-      class="fixed inset-0 z-50 md:hidden"
+      class="fixed inset-0 z-50 lg:hidden"
       @click="toggleMobileMenu"
     >
       <div class="absolute inset-0 bg-gray-600 opacity-75"></div>
@@ -43,7 +43,7 @@
         <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-700">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Navigation</h2>
           <button
-            @click="toggleMobileMenu"
+            @click.stop="toggleMobileMenu"
             class="p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
           >
             <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">

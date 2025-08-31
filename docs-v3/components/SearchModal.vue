@@ -16,7 +16,8 @@
         <div
           data-modal-content
           tabindex="-1"
-          class="relative w-full max-w-2xl transform rounded-xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 ring-1 ring-black/5 dark:ring-white/10 transition-all"
+          class="relative w-full max-w-2xl transform rounded-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl shadow-2xl border-2 border-primary-400/40 dark:border-primary-500/50 ring-4 ring-primary-500/30 dark:ring-primary-400/40 transition-all"
+          style="box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 2px rgba(139, 92, 246, 0.3), 0 0 30px rgba(139, 92, 246, 0.2), 0 0 60px rgba(139, 92, 246, 0.1);"
           @click.stop
         >
           <!-- Search input -->
@@ -176,7 +177,9 @@ const handleModalKeydown = (event: KeyboardEvent) => {
 const { openModal: openModalFromComposable } = useSearchModal()
 
 const openModal = () => {
+  console.log('📂 SearchModal openModal called')
   openModalFromComposable()
+  console.log('🎯 Modal should be open now, isOpen:', isOpen.value)
   nextTick(() => {
     searchInput.value?.focus()
   })
