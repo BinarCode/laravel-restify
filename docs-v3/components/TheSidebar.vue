@@ -51,11 +51,16 @@
       v-if="isMobileMenuOpen"
       class="fixed inset-0 z-50 lg:hidden"
       @click="toggleMobileMenu"
+      @touchmove.prevent
     >
       <div class="absolute inset-0 bg-gray-600 opacity-75"></div>
       
-      <nav class="relative max-w-xs w-full bg-white dark:bg-gray-900 h-full shadow-xl">
-        <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+      <nav 
+        class="relative max-w-xs w-full bg-white dark:bg-gray-900 h-full shadow-xl flex flex-col"
+        @click.stop
+        @touchmove.stop
+      >
+        <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Navigation</h2>
           <button
             @click.stop="toggleMobileMenu"
@@ -67,7 +72,7 @@
           </button>
         </div>
         
-        <div class="px-4 py-6 overflow-y-auto">
+        <div class="flex-1 overflow-y-auto px-4 py-6" style="-webkit-overflow-scrolling: touch;">
           <div class="space-y-6">
             <div 
               v-for="section in navigationSections" 
@@ -121,6 +126,23 @@ const { navigationSections } = useNavigation()
 // Inject mobile menu state
 const isMobileMenuOpen = inject('isMobileMenuOpen', ref(false))
 const toggleMobileMenu = inject('toggleMobileMenu', () => {})
+
+// Handle body scroll locking for mobile menu
+watch(isMobileMenuOpen, (isOpen) => {
+  if (process.client) {
+    if (isOpen) {
+      // Lock body scroll when mobile menu is open
+      document.body.style.overflow = 'hidden'
+      document.body.style.position = 'fixed'
+      document.body.style.width = '100%'
+    } else {
+      // Restore body scroll when mobile menu is closed
+      document.body.style.overflow = ''
+      document.body.style.position = ''
+      document.body.style.width = ''
+    }
+  }
+})
 
 // Collapsible sections state
 const collapsedSections = ref<Set<string>>(new Set())

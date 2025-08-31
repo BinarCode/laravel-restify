@@ -29,7 +29,4 @@ You can find a playground in the [Restify Demo GitHub repository](https://github
 
 ## Videos
 
-You can find the [full course here](https://www.binarcode.com/learn/restify) with many useful features and insights on how Laravel Restify works.
-
-<iframe src="https://player.vimeo.com/video/501764861" width="640" height="480">
-</iframe>
+You can find the [full course here](https://www.binarcode.com/learn/restify) with many useful features and insights on how Laravel Restify works. Note that the videos are from a previous version of Restify and may not reflect the latest features.

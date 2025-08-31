@@ -2,7 +2,9 @@
   <div class="relative w-full lg:max-w-md">
     <button
       @click="openSearchModal"
-      class="flex items-center w-full px-3 py-2 text-left border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors group"
+      @touchstart="handleTouchStart"
+      class="flex items-center w-full px-3 py-2 text-left border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors group cursor-pointer"
+      style="-webkit-tap-highlight-color: transparent;"
     >
       <svg class="h-5 w-5 text-gray-400 group-hover:text-gray-500 dark:group-hover:text-gray-300 mr-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -36,5 +38,12 @@ const isMac = computed(() => {
 
 const openSearchModal = () => {
   openModal()
+}
+
+// Handle touch start for iOS devices
+const handleTouchStart = (event: TouchEvent) => {
+  // Prevent default behavior and ensure the click event fires
+  event.preventDefault()
+  openSearchModal()
 }
 </script>
