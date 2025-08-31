@@ -7,7 +7,9 @@
     <a href="https://packagist.org/packages/binaryk/laravel-restify"><img src="https://poser.pugx.org/binaryk/laravel-restify/license.svg" alt="License"></a>
 </p>
 
-The first fully customizable Laravel [JSON:API](https://jsonapi.org) builder with MCP and GraphQL support. "CRUD" and protect your resources with 0 (zero) extra line of code.
+The first Laravel API library for Ai Agents and Humans with the same codebase. 
+
+Restify is a customizable Laravel [JSON:API](https://jsonapi.org) and MCP Server library.
 
 <div>
 <a href="https://restifytemplates.com">
