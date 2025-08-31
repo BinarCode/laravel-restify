@@ -71,7 +71,12 @@ export default defineNuxtConfig({
   // Nitro configuration for static generation
   nitro: {
     prerender: {
-      routes: ['/sitemap.xml']
+      failOnError: false,
+      crawlLinks: true,
+      ignore: [
+        '/api/_content/cache.**',
+        '/api/_content/query/**'
+      ]
     }
   }
 })
