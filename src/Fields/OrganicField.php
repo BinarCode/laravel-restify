@@ -266,7 +266,7 @@ abstract class OrganicField extends BaseField
         return ! $this->isReadonly($request);
     }
 
-    public function isShownOnStoreBulk(RestifyRequest $request, $repository): bool Agents
+    public function isShownOnStoreBulk(RestifyRequest $request, $repository): bool
     {
         return ! $this->isReadonly($request);
     }
