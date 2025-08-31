@@ -9,11 +9,6 @@ category: Getting Started
 
 Laravel Restify turns your Eloquent models into both JSON:API endpoints and MCP servers -- automatically. Build once, and instantly serve APIs that work seamlessly for developers, apps, and AI agents.
 
-<alert type="info">
-
-🚀 **Ready-Made API Starter Kits Available!** - Looking to build production-ready APIs in minutes instead of weeks? Check out our complete API templates at [RestifyPackages.com](https://restifytemplates.com). Get authentication, roles & permissions, team management, and more - all pre-built and ready to deploy. **Early adopters get free templates!**
-
-</alert>
 
 ## Key Features
 
@@ -24,22 +19,9 @@ Laravel Restify turns your Eloquent models into both JSON:API endpoints and MCP 
 - **GraphQL** schema generation
 - **Authorization** using Laravel policies
 
-## Accelerate Your Development
+## Templates
 
-Want to skip the boilerplate and launch faster? Our Restify Templates come with everything you need:
-
-- 🔐 Complete Authentication - Registration, login, password reset, email verification - all ready to go
-- 👥 Teams & Permissions - Spatie's permissions package integrated with team management
-- ✉️ Invitations System - Complete invitation workflow with approval system for platform onboarding
-- 📸 Profile Photos - Full image upload with resizing, optimization and S3 integration
-- 🤖 AI Error Handling - Smart error tracking with OpenAI-powered solutions and debugging hints
-- 💬 MCP Client for Smart Chat - Pre-built chat interface that connects directly to your API via MCP protocol
-- 🚀 CI/CD Pipeline - Complete GitHub Actions workflow with automated testing and deployment
-- 🌱 Smart Seeders - Realistic data generation with interconnected profiles and demo content
-- ⚡ Deploy in Minutes - Production-tested code with zero configuration needed
-- 📦 Postman Collection - Test all endpoints instantly with our pre-configured collection
-
-[Get Started with Templates →](https://restifytemplates.com)
+Need a head start? Check out our [Restify Templates](https://restifytemplates.com) for ready-made API starter kits.
 
 ## Playground
 
