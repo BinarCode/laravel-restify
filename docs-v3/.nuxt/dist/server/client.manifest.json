@@ -1,0 +1,18 @@
+{
+  "@vite/client": {
+    "prefetch": true,
+    "isEntry": true,
+    "file": "@vite/client",
+    "css": [],
+    "module": true,
+    "resourceType": "script"
+  },
+  "/Users/eduardlupacescu/Sites/binarcode/laravel-restify/docs-v3/node_modules/nuxt/dist/app/entry.js": {
+    "resourceType": "script",
+    "module": true,
+    "prefetch": true,
+    "preload": true,
+    "isEntry": true,
+    "file": "/Users/eduardlupacescu/Sites/binarcode/laravel-restify/docs-v3/node_modules/nuxt/dist/app/entry.js"
+  }
+}

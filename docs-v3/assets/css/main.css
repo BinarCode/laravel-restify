@@ -1,0 +1,129 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+/* Custom fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+/* Base styles */
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply font-sans antialiased;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  @apply w-2;
+}
+
+::-webkit-scrollbar-track {
+  @apply bg-gray-100 dark:bg-gray-800;
+}
+
+::-webkit-scrollbar-thumb {
+  @apply bg-gray-300 dark:bg-gray-600 rounded-full;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  @apply bg-gray-400 dark:bg-gray-500;
+}
+
+/* Code block styling */
+pre {
+  @apply overflow-x-auto p-4 rounded-lg;
+}
+
+/* Custom components */
+.prose-docs {
+  @apply prose prose-gray max-w-none dark:prose-dark;
+}
+
+/* Code blocks with blue gradient in light theme */
+.prose-docs pre {
+  @apply bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-800 dark:to-gray-900 border border-blue-200 dark:border-gray-700 relative;
+}
+
+.prose-docs pre code {
+  @apply text-gray-900 dark:text-gray-100;
+}
+
+/* Code block copy button styling */
+.prose-docs .group:hover .copy-button {
+  @apply opacity-100;
+}
+
+.prose-docs code {
+  @apply text-sm font-mono bg-blue-100 dark:bg-gray-800 text-blue-900 dark:text-blue-400 px-1 py-0.5 rounded;
+}
+
+/* Inline code styling */
+.prose-docs :not(pre) > code {
+  @apply bg-blue-100 dark:bg-gray-800 text-blue-900 dark:text-blue-400 px-1 py-0.5 rounded font-medium;
+}
+
+/* Navigation active states */
+.nav-link-active {
+  @apply text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/20;
+}
+
+/* Content transitions */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* Focus styles */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800;
+}
+
+/* Mobile menu animation */
+.mobile-menu-enter-active,
+.mobile-menu-leave-active {
+  transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.mobile-menu-enter-from {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+.mobile-menu-leave-to {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+
+/* Dark mode toggle animation */
+.dark-mode-toggle {
+  transition: transform 0.2s ease;
+}
+
+.dark-mode-toggle:hover {
+  transform: scale(1.05);
+}
+
+/* Search highlight styles */
+mark {
+  @apply bg-yellow-200 dark:bg-yellow-800 px-1 rounded text-gray-900 dark:text-white;
+}
+
+/* Search modal animation */
+.search-modal-enter-active,
+.search-modal-leave-active {
+  transition: all 0.2s ease;
+}
+
+.search-modal-enter-from,
+.search-modal-leave-to {
+  opacity: 0;
+  transform: scale(0.95);
+}

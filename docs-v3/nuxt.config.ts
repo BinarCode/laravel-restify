@@ -1,0 +1,77 @@
+export default defineNuxtConfig({
+  devtools: { enabled: true },
+  modules: [
+    '@nuxt/content',
+    '@nuxtjs/tailwindcss',
+    '@nuxtjs/color-mode',
+    '@vueuse/nuxt'
+  ],
+  
+  // Content configuration
+  content: {
+    documentDriven: true,
+    navigation: {
+      fields: ['title', 'description', 'icon', 'category']
+    },
+    highlight: {
+      theme: {
+        default: 'github-light',
+        dark: 'github-dark'
+      },
+      preload: ['php', 'bash', 'javascript', 'typescript', 'vue', 'json']
+    },
+    markdown: {
+      anchorLinks: false,
+      remarkPlugins: [],
+      rehypePlugins: []
+    }
+  },
+
+  // CSS configuration
+  css: ['~/assets/css/main.css'],
+
+
+  // App configuration
+  app: {
+    head: {
+      title: 'Laravel Restify',
+      meta: [
+        { charset: 'utf-8' },
+        { name: 'viewport', content: 'width=device-width, initial-scale=1' },
+        { hid: 'description', name: 'description', content: 'Laravel Restify Documentation - Build amazing REST APIs with Laravel' }
+      ],
+      link: [
+        { rel: 'icon', type: 'image/png', href: '/icon.png' }
+      ],
+      script: [
+        {
+          src: '//code.tidio.co/pgx3d8jlrufene0cnyv274lgege4u5c1.js',
+          async: true
+        }
+      ]
+    }
+  },
+
+  // Color mode configuration
+  colorMode: {
+    classSuffix: ''
+  },
+
+  // Tailwind configuration
+  tailwindcss: {
+    cssPath: '~/assets/css/main.css',
+    configPath: 'tailwind.config.js'
+  },
+
+  // TypeScript configuration
+  typescript: {
+    typeCheck: false
+  },
+
+  // Nitro configuration for static generation
+  nitro: {
+    prerender: {
+      routes: ['/sitemap.xml']
+    }
+  }
+})

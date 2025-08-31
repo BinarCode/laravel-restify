@@ -1,0 +1,11 @@
+{
+  "title": "Laravel Restify",
+  "url": "https://restify.binarcode.com",
+  "logo": {
+    "light": "/icon.png",
+    "dark": "/icon.png"
+  },
+  "github": "binarcode/laravel-restify",
+  "twitter": "LupacescuEuard",
+  "defaultBranch": "8.x"
+}
