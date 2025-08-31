@@ -1,6 +1,6 @@
 <template>
-  <header class="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-700">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <header class="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-700 w-full">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       <div class="flex items-center justify-between h-16">
         <!-- Logo and brand -->
         <div class="flex items-center">
@@ -64,8 +64,8 @@
     </div>
     
     <!-- Mobile search -->
-    <div class="lg:hidden px-4 pb-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-      <div class="pt-4">
+    <div class="lg:hidden px-4 pb-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 w-full">
+      <div class="pt-4 w-full">
         <SearchInput />
       </div>
     </div>

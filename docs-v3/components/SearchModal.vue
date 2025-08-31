@@ -12,16 +12,16 @@
       ></div>
       
       <!-- Modal -->
-      <div class="flex min-h-full items-start justify-center p-4 pt-16 sm:pt-24">
+      <div class="flex min-h-full items-start justify-center p-2 sm:p-4 pt-8 sm:pt-16 md:pt-24">
         <div
           data-modal-content
           tabindex="-1"
-          class="relative w-full max-w-2xl transform rounded-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl shadow-2xl border-2 border-primary-400/40 dark:border-primary-500/50 ring-4 ring-primary-500/30 dark:ring-primary-400/40 transition-all"
-          style="box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 2px rgba(139, 92, 246, 0.3), 0 0 30px rgba(139, 92, 246, 0.2), 0 0 60px rgba(139, 92, 246, 0.1);"
+          class="relative w-full max-w-full sm:max-w-2xl transform rounded-xl bg-white/90 dark:bg-gray-800/90 backdrop-blur-2xl shadow-2xl border-2 border-primary-400/40 dark:border-primary-500/50 ring-4 ring-primary-500/30 dark:ring-primary-400/40 transition-all"
+          style="box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25), 0 0 0 2px rgba(59, 130, 246, 0.3), 0 0 30px rgba(59, 130, 246, 0.2), 0 0 60px rgba(59, 130, 246, 0.1);"
           @click.stop
         >
           <!-- Search input -->
-          <div class="flex items-center px-4 py-4 border-b border-gray-200 dark:border-gray-700">
+          <div class="flex items-center px-3 sm:px-4 py-4 border-b border-gray-200 dark:border-gray-700">
             <svg
               class="h-5 w-5 text-gray-400 dark:text-gray-500 mr-3"
               fill="none"
@@ -56,7 +56,7 @@
           <!-- Results -->
           <div class="max-h-96 overflow-y-auto">
             <!-- No query state -->
-            <div v-if="!searchQuery" class="px-6 py-14 text-center">
+            <div v-if="!searchQuery" class="px-3 sm:px-6 py-14 text-center">
               <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
@@ -65,13 +65,13 @@
             </div>
             
             <!-- Loading state -->
-            <div v-else-if="isSearching" class="px-6 py-14 text-center">
+            <div v-else-if="isSearching" class="px-3 sm:px-6 py-14 text-center">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto"></div>
               <p class="mt-4 text-gray-500 dark:text-gray-400">Searching...</p>
             </div>
             
             <!-- No results -->
-            <div v-else-if="searchQuery && searchResults.length === 0" class="px-6 py-14 text-center">
+            <div v-else-if="searchQuery && searchResults.length === 0" class="px-3 sm:px-6 py-14 text-center">
               <svg class="mx-auto h-12 w-12 text-gray-400 dark:text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 12h6m-6-4h6m2 5.291A7.962 7.962 0 0112 15c-2.205 0-4.219-.896-5.671-2.343M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
@@ -85,7 +85,7 @@
                 v-for="(result, index) in searchResults"
                 :key="result.path"
                 :class="[
-                  'px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors',
+                  'px-3 sm:px-4 py-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors',
                   selectedIndex === index ? 'bg-primary-50 dark:bg-primary-900/20' : ''
                 ]"
                 @click="goToResult(result)"
@@ -118,7 +118,7 @@
           </div>
           
           <!-- Footer -->
-          <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+          <div class="flex items-center justify-between px-3 sm:px-4 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
             <p class="text-xs text-gray-500 dark:text-gray-400">
               {{ searchResults.length > 0 ? `${searchResults.length} result${searchResults.length === 1 ? '' : 's'}` : '' }}
             </p>

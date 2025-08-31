@@ -1,5 +1,5 @@
 <template>
-  <div class="relative w-full max-w-md lg:max-w-md">
+  <div class="relative w-full lg:max-w-md">
     <button
       @click="openSearchModal"
       class="flex items-center w-full px-3 py-2 text-left border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 transition-colors group"
