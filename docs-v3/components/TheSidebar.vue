@@ -8,10 +8,25 @@
             :key="section.title"
             class="space-y-2"
           >
-            <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+            <button
+              @click="toggleSection(section.title)"
+              class="flex items-center justify-between w-full text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+            >
               {{ section.title }}
-            </h3>
-            <ul class="space-y-1">
+              <svg 
+                class="h-4 w-4 transition-transform duration-200"
+                :class="{ 'rotate-180': isSectionCollapsed(section.title) }"
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+            <ul 
+              v-show="!isSectionCollapsed(section.title)"
+              class="space-y-1 transition-all duration-200"
+            >
               <li v-for="item in section.items" :key="item.path">
                 <NuxtLink
                   :to="item.path"
@@ -59,10 +74,25 @@
               :key="section.title"
               class="space-y-2"
             >
-              <h3 class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+              <button
+                @click="toggleSection(section.title)"
+                class="flex items-center justify-between w-full text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+              >
                 {{ section.title }}
-              </h3>
-              <ul class="space-y-1">
+                <svg 
+                  class="h-4 w-4 transition-transform duration-200"
+                  :class="{ 'rotate-180': isSectionCollapsed(section.title) }"
+                  fill="none" 
+                  viewBox="0 0 24 24" 
+                  stroke="currentColor"
+                >
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+              <ul 
+                v-show="!isSectionCollapsed(section.title)"
+                class="space-y-1 transition-all duration-200"
+              >
                 <li v-for="item in section.items" :key="item.path">
                   <NuxtLink
                     :to="item.path"
@@ -91,6 +121,23 @@ const { navigationSections } = useNavigation()
 // Inject mobile menu state
 const isMobileMenuOpen = inject('isMobileMenuOpen', ref(false))
 const toggleMobileMenu = inject('toggleMobileMenu', () => {})
+
+// Collapsible sections state
+const collapsedSections = ref<Set<string>>(new Set())
+
+// Toggle section visibility
+const toggleSection = (sectionTitle: string) => {
+  if (collapsedSections.value.has(sectionTitle)) {
+    collapsedSections.value.delete(sectionTitle)
+  } else {
+    collapsedSections.value.add(sectionTitle)
+  }
+}
+
+// Check if section is collapsed
+const isSectionCollapsed = (sectionTitle: string) => {
+  return collapsedSections.value.has(sectionTitle)
+}
 
 // Check if current route is active
 const isActive = (path: string) => {

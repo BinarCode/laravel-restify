@@ -73,3 +73,73 @@ if (! function_exists('currentRepository')) {
         return app(RepositoryInstance::class)->current();
     }
 }
+
+if (! function_exists('datetime')) {
+    function datetime(string $attribute = 'created_at'): Field
+    {
+        return field($attribute)->rules('date');
+    }
+}
+
+if (! function_exists('textarea')) {
+    function textarea(string $attribute = 'description'): Field
+    {
+        return field($attribute)->rules('string', 'max:65535');
+    }
+}
+
+if (! function_exists('text')) {
+    function text(string $attribute = 'name'): Field
+    {
+        return field($attribute)->rules('string', 'max:255');
+    }
+}
+
+if (! function_exists('email')) {
+    function email(string $attribute = 'email'): Field
+    {
+        return field($attribute)->rules('email', 'max:255');
+    }
+}
+
+if (! function_exists('password')) {
+    function password(string $attribute = 'password'): Field
+    {
+        return field($attribute)->rules('string', 'min:8');
+    }
+}
+
+if (! function_exists('boolean')) {
+    function boolean(string $attribute = 'is_active'): Field
+    {
+        return field($attribute)->rules('boolean');
+    }
+}
+
+if (! function_exists('integer')) {
+    function integer(string $attribute = 'count'): Field
+    {
+        return field($attribute)->rules('integer');
+    }
+}
+
+if (! function_exists('decimal')) {
+    function decimal(string $attribute = 'price'): Field
+    {
+        return field($attribute)->rules('numeric');
+    }
+}
+
+if (! function_exists('timestamp')) {
+    function timestamp(string $attribute = 'created_at'): Field
+    {
+        return field($attribute)->rules('date')->readonly();
+    }
+}
+
+if (! function_exists('json')) {
+    function json(string $attribute = 'data'): Field
+    {
+        return field($attribute)->rules('json');
+    }
+}

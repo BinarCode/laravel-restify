@@ -5,7 +5,7 @@ category: Auth
 position: 1
 ---
 
-Laravel Restify has the support for a facile authentication with [Laravel Sanctum](https://laravel.com/docs/sanctum#api-token-authentication).
+Laravel Restify supports easy authentication with [Laravel Sanctum](https://laravel.com/docs/sanctum#api-token-authentication).
 
 Now you can finally enjoy the auth setup (`register`, `login`, `forgot`, and `reset password`).
 
@@ -21,8 +21,8 @@ php artisan restify:setup-auth
 
 This command will:
 
-- **ensures** that `Sanctum` is installed and configured as the authentication provider in the `config/restify.php` file
-- **appends** the `Route::restifyAuth();` line to the `routes/api.php` file to add the authentication routes
+- **Ensures** that `Sanctum` is installed and configured as the authentication provider in the `config/restify.php` file
+- **Appends** the `Route::restifyAuth();` line to the `routes/api.php` file to add the authentication routes
 
 ## Prerequisites
 
@@ -36,7 +36,7 @@ Laravel 10 automatically ships with Sanctum, so you don't have to install it.
 
 ### Install sanctum
 
-See the docs [here](https://laravel.com/docs/sanctum#installation). You don't need to add `\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,` in your `'api'` middleware group. 
+See the documentation [here](https://laravel.com/docs/sanctum#installation). You don't need to add `\Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,` to your `'api'` middleware group. 
 
 You only have to run these 3 commands: 
 
@@ -88,7 +88,7 @@ Restify provides you a simple way to add all of your auth routes prepared. Simpl
 Route::restifyAuth();
 ```
 
-And voilà, now you have auth routes ready to be used.
+And that's it! You now have authentication routes ready to use.
 
 These are the default routes provided by restify: 
 
@@ -113,7 +113,7 @@ You can also pass an `actions` argument, which is an array of actions you want t
 Route::restifyAuth(actions: ['login', 'register']);
 ```
 
-By using the `actions` argument, only the specified routes will be registered. If no `actions` argument is passed, Restify will register all the routes by default.
+When using the `actions` argument, only the specified routes will be registered. If no `actions` argument is provided, Restify will register all routes by default.
 
 
 ## Sanctum Middleware
@@ -160,7 +160,7 @@ curl -X POST "http://restify-app.test/api/login" \
          }'
 ```
 
-So you should see the response like this: 
+You should see a response like this: 
 
 ```json
 {
@@ -182,11 +182,11 @@ So you should see the response like this:
 
 ### Authorization
 
-We will discuss the authorization in more details here [Authorization](/auth/authorization). But for now let's see a simple example. 
+We will discuss authorization in more detail in the [Authorization](/auth/authorization) section. For now, let's see a simple example. 
 
 After a successful login, you will receive an authentication token. You should include this token as a `Bearer` token in the Authorization header for your subsequent API requests using [Postman](https://learning.postman.com/docs/sending-requests/authorization/#bearer-token), axios library, or cURL.
 
-Here's an axios example for retrieving the user's profile with the generated token:
+Here's an Axios example for retrieving the user's profile with the generated token:
 
 ```js
 import axios from 'axios';
@@ -218,7 +218,7 @@ Replace `http://restify-app.test` with your actual domain and use the authentica
 
 ## Register
 
-Let's see how to register a new user in the application. You can test the registration using Curl or Postman.
+Let's see how to register a new user in the application. You can test the registration using cURL or Postman.
 
 Use the following endpoint for registration:
 
@@ -237,7 +237,7 @@ And send this payload:
 
 Note: Email and password fields are required.
 
-Now, you can send a POST request with Curl:
+Now, you can send a POST request with cURL:
 
 ```shell
 curl -X POST "http://restify-app.test/api/register" \
@@ -299,7 +299,7 @@ MAIL_MAILER=log
 
 This will log the email content to the `laravel.log` file, allowing you to see the password reset email without actually sending it.
 
-Now, you can send a POST request with Curl:
+Now, you can send a POST request with cURL:
 
 ```shell
 curl -X POST "http://restify-app.test/api/forgotPassword" \
@@ -337,7 +337,7 @@ The payload should include the token and email received from the password reset 
     "password_confirmation": "new_password"
 }
 ```
-Now, you can send a POST request with Curl:
+Now, you can send a POST request with cURL:
 
 ```shell
 curl -X POST "http://restify-app.test/api/resetPassword" \
@@ -392,7 +392,7 @@ After running the command, the register controller will be published to your app
 
 <alert type="warning">
 
-Important Note: If you want to publish other actions in the future, you'll need to manually update the `routes/api.php` file before running the restify:auth command again. Remove any previously published Restify routes, and keep the `Route::restifyAuth();` line so that the new routes can be correctly published.
+**Important Note:** If you want to publish other actions in the future, you'll need to manually update the `routes/api.php` file before running the `restify:auth` command again. Remove any previously published Restify routes, and keep the `Route::restifyAuth();` line so that the new routes can be correctly published.
 
 </alert>
 

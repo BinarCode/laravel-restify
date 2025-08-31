@@ -7,7 +7,7 @@ position: 1
 
 ## Prerequisites  
 
-Make sure you followed the [Authentication](/docs/auth/authentication) guide before, because one common mistake is that people do not add this middleware:
+Make sure you followed the [Authentication](/auth/authentication) guide first, as one common mistake is not adding this middleware:
 
 ```php
 // config/restify.php
@@ -20,7 +20,7 @@ Make sure you followed the [Authentication](/docs/auth/authentication) guide bef
 
 ## Get profile
 
-Before retrieving the user's profile, you need to log in and obtain an authentication token. You can refer to the [login documentation](/auth/authentication#login) for details on how to authenticate a user. Make sure to include the `Bearer {$token}` in the `Authorization` header for the subsequent API requests, either using Postman or cURL.
+Before retrieving the user's profile, you need to log in and obtain an authentication token. You can refer to the [login documentation](/auth/authentication#login) for details on how to authenticate a user. Make sure to include `Bearer {$token}` in the `Authorization` header for subsequent API requests, either using Postman or cURL.
 
 When retrieving the user's profile, it is serialized by using the `UserRepository`.
 
@@ -38,7 +38,7 @@ curl -X GET "http://your-domain.com/api/restify/profile" \
 
 Replace `http://your-domain.com` with your actual domain and `eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...` with the authentication token you obtained after logging in.
 
-This is what we have for a basic profile:
+Here's what a basic profile response looks like:
 
 ```json
 {
@@ -72,8 +72,7 @@ public function fields(RestifyRequest $request): array
 }
 ```
 
-Since the profile is nicely set on by using the UserRepository, you can now benefit from the power of the related entities. For example,
-if you want to return user roles:
+Since the profile is managed using the UserRepository, you can now benefit from the power of related entities. For example, if you want to return user roles:
 
 ```php
 //UserRepository
@@ -83,8 +82,7 @@ public static array $related = [
 ];
 ```
 
-Also, make sure that the `User` model has this method that returns a relationship from another table. You can do that or you can simply
-return an array:
+Also, make sure the `User` model has this method that returns a relationship from another table, or you can simply return an array:
 
 ```php
 //User.php
@@ -132,8 +130,7 @@ The result will look like this:
 
 ### Without repository
 
-In some cases, you might choose not to use the repository for the profile serialization. Afterwards, you should add the
-trait `Binaryk\LaravelRestify\Repositories\UserProfile` into your `UserRepository`:
+In some cases, you might choose not to use the repository for profile serialization. To do this, you should add the `Binaryk\LaravelRestify\Repositories\UserProfile` trait to your `UserRepository`:
 
 ```php
 // UserProfile
@@ -153,10 +150,8 @@ class UserRepository extends Repository
 The profile will return the model directly:
 
 ### Relations
-<alert type="warning"> 
-
-Note that when you're not using the repository, the `?include` will not work anymore.
-
+<alert type="warning">
+Note that when you're not using the repository, the `?include` parameter will not work.
 </alert>
 
 ```http request
@@ -180,8 +175,7 @@ You will get:
 
 ### Conditionally use repository
 
-In rare cases you may want to utilize the repository only for non admin users. Make sure to serialize
-specific fields for the users:
+In rare cases, you may want to use the repository only for non-admin users. Make sure to serialize specific fields for users:
 
 ```php
 use Binaryk\LaravelRestify\Fields\Field;
@@ -214,12 +208,11 @@ class UserRepository extends Repository
 }
 ```
 
-Thus, you instruct Restify to only use the repository for users who are admins of your application.
+This instructs Restify to use the repository only for users who are admins of your application.
 
-## Update Profile using repository
+## Update profile using repository
 
-By default, Restify will validate and fill only the fields presented in your `UserRepository` for updating the user's
-profile. Let's get as an example the following repository fields:
+By default, Restify will validate and fill only the fields defined in your `UserRepository` when updating the user's profile. Let's use the following repository fields as an example:
 
 ```php
 // UserRepository
@@ -236,19 +229,16 @@ public function fields(RestifyRequest $request)
 }
 ```
 
-If we will try to call the `PUT` method to update the profile without data:
+If we try to call the `PUT` method to update the profile without data:
 
 ```json
 {}
 ```
 
-We will get back a `4xx` validation:
+We will get back a `4xx` validation error:
 
-<alert type="warning"> 
-
-Accept header if you test it via Postman (or other HTTP client) and make sure you always pass the `Accept`
-header `application/json`. This will instruct Laravel to return you back the json formatted data:
-
+<alert type="warning">
+When testing via Postman (or other HTTP client), make sure you always pass the `Accept` header `application/json`. This will instruct Laravel to return JSON-formatted data.
 </alert>
 
 ```json
@@ -262,7 +252,7 @@ header `application/json`. This will instruct Laravel to return you back the jso
 }
 ```
 
-Let's say we have to populate the user `name` in the payload:
+Let's say we need to include the user `name` in the payload:
 
 ```json
 {
@@ -291,8 +281,7 @@ Since the payload is valid now, Restify will update the user's profile (a name, 
 
 ### Update without repository
 
-If you [don't use the repository](./#get-profile-using-repository) for the user's profile, Restify will only
-update the `fillable` user attributes that are present in the request payload: `$request->only($user->getFillable())`.
+If you [don't use the repository](#without-repository) for the user's profile, Restify will only update the `fillable` user attributes that are present in the request payload: `$request->only($user->getFillable())`.
 
 ```http request
 PUT: /api/restify/profile
@@ -355,9 +344,7 @@ You can use the Restify's profile update and give the avatar as an image.
 ### Post request
 
 <alert type="warning">
-
-You cannot upload a file by using PUT or PATCH verbs, so we should use a POST request instead.
-
+You cannot upload a file using PUT or PATCH verbs, so you should use a POST request instead.
 </alert>
 
 ```http request
@@ -372,4 +359,4 @@ The payload should be a form-data, with an image under the `avatar` key:
 }
 ```
 
-If you have to customize the path or disk of the storage file, check the [image field](../repository-pattern/field.html#file-fields)
+If you need to customize the path or disk for the storage file, check the [image field](/api/fields#file-fields) documentation.

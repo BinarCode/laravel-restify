@@ -8,6 +8,14 @@ export const useNavigation = () => {
       ]
     },
     {
+      title: 'Authentication',
+      items: [
+        { title: 'Authentication', path: '/auth/authentication' },
+        { title: 'Authorization', path: '/auth/authorization' },
+        { title: 'Profile', path: '/auth/profile' }
+      ]
+    },
+    {
       title: 'API',
       items: [
         { title: 'Repositories', path: '/api/repositories' },
@@ -20,14 +28,6 @@ export const useNavigation = () => {
         { title: 'REST Methods', path: '/api/rest-methods' },
         { title: 'Serializer', path: '/api/serializer' },
         { title: 'Validation Methods', path: '/api/validation-methods' }
-      ]
-    },
-    {
-      title: 'Authentication',
-      items: [
-        { title: 'Authentication', path: '/auth/authentication' },
-        { title: 'Authorization', path: '/auth/authorization' },
-        { title: 'Profile', path: '/auth/profile' }
       ]
     },
     {

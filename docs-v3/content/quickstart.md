@@ -5,17 +5,11 @@ category: Getting Started
 
 ## Requirements
 
+Laravel Restify has a few minimum requirements you should be aware of before installing:
 
-Laravel Restify has a few requirements that you should be mindful of before installing:
-
-- PHP ^8.0
-- Laravel Framework ^8.0 for Restify <= 6.x
-- Laravel Framework ^9.0 for Restify ^7.x
-
-Or for newer versions:
-
-- PHP >= 8.1
-- Laravel Framework ^10.0 for Restify ^8.x
+- Composer ^2.0
+- PHP ^8.2
+- Laravel Framework 11.x or 12.x
 
 ## Installation
 
@@ -23,210 +17,254 @@ Or for newer versions:
 composer require binaryk/laravel-restify
 ```
 
-### Package Stability
+### Older Laravel Versions
 
-<alert>
-
-If you are not able to install Restify into your application because of your `minimum-stability` setting, consider
-setting your `minimum-stability` option to `dev` and your `prefer-stable` option to `true`. This will allow you to
-install Laravel Restify while still preferring stable package releases for your application.
-
-</alert>
+For older versions of Laravel, check the appropriate branch and documentation in the [GitHub repository](https://github.com/BinarCode/laravel-restify).
 
 ## Setup
 
-After the installation, the package requires a setup process:
+After installation, run the setup command to scaffold your API:
 
 ```shell script
 php artisan restify:setup
 ```
 
-The command above:
+This command will:
 
-- **publishes** the `config/restify.php` configuration file and `action_logs` table migration
-- **creates** the `providers/RestifyServiceProvider` and will add it in the `config/app.php`
-- **creates** a new `app/Restify` directory
-- **creates** an abstract `app/Restify/Repository.php`
-- **scaffolds** a `app/Restify/UserRepository` repository for users CRUD
+- **Publish** the `config/restify.php` configuration file and `action_logs` migration
+- **Create** the `providers/RestifyServiceProvider` and register it automatically
+- **Create** a new `app/Restify` directory for your repositories
+- **Generate** an abstract `app/Restify/Repository.php` base class
+- **Scaffold** a `app/Restify/UserRepository` for immediate use
 
-### Migrations
+### Run Migrations
 
-After the setup, you should run the migrations:
+Complete the setup by running migrations:
 
 ```shell script
 php artisan migrate
 ```
 
-## Generating Mock Data
+## First API Request
 
-To generate mock data for your database, you need to install the `doctrine/dbal` package as a development dependency:
-
-```bash
-composer require doctrine/dbal --dev
-```
-After installing the package, you can use the restify:stub command to generate mock data for a specific table:
+With setup complete, you can immediately test your API. Laravel Restify automatically creates endpoints for your User model:
 
 ```bash
-php artisan restify:stub table_name --count=10
+# Standard pagination
+GET /api/restify/users?perPage=10&page=1
+
+# JSON:API format
+GET /api/restify/users?page[size]=10&page[number]=1
 ```
 
-Replace table_name with the name of the table you want to generate mock data for and use the --count option to specify the number of records you want to create.
+### Example Response
 
-For example, to generate 10 users:
-
-```shell
-php artisan restify:stub users --count=10
+```json
+{
+  "data": [
+    {
+      "type": "users",
+      "id": "1",
+      "attributes": {
+        "name": "John Doe",
+        "email": "john@example.com",
+        "created_at": "2023-01-01T00:00:00.000000Z"
+      }
+    }
+  ],
+  "links": {
+    "first": "/api/restify/users?page=1",
+    "last": "/api/restify/users?page=1",
+    "prev": null,
+    "next": null
+  },
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "total": 1
+  }
+}
 ```
 
-## Quick start
+All responses follow the [JSON:API](https://jsonapi.org/format/) specification.
 
-Having the package setup and users table migrated and seeded, you should be good to perform the first API request:
+## Basic Configuration
 
-```http request
-GET: /api/restify/users?perPage=10&page=1
-```
+### API Prefix
 
-or use the [json api](https://jsonapi.org/profiles/ethanresnick/cursor-pagination/#auto-id-pagesize) format:
-
-```http request
-GET: /api/restify/users?page[size]=10&page[number]=1
-```
-
-This should return the users list paginated and formatted according to [JSON:API](https://jsonapi.org/format/) standard.
-
-## Configurations
-
-### Prefix
-
-As you can see, the default prefix for the restify api is `/api/restify`. This can be changed from the `app/restify.php`
-file:
+By default, all endpoints are prefixed with `/api/restify`. You can customize this in `config/restify.php`:
 
 ```php
-'base' => '/api/restify',
+'base' => '/api/v1', // Custom prefix
 ```
 
-### Middleware
+### Authentication Setup
 
-One important configuration is the restify's default middleware:
+For production use, enable authentication by uncommenting the Sanctum middleware:
 
 ```php
 // config/restify.php
-
 'middleware' => [
     'api',
-    // 'auth:sanctum',
+    'auth:sanctum', // Uncomment this line
     Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent::class,
     Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify::class,
 ]
 ```
 
-#### Sanctum authentication
+<alert>
 
-Normally, you would want to authenticate your api (allow access only to authenticated users). For this purpose, you can simply add another middleware. For the `sanctum`, you can add the `auth:sanctum`. Make sure you put this right after `api` middleware.
+**Need Authentication?** Check our [Authentication Guide](/auth/authentication) for detailed setup instructions including login endpoints and token management.
 
-We will cover this more in the [Authentication](/auth/authentication) section.
+</alert>
 
-## Generate repository
+## MCP Server Setup
 
-Creating a new repository can be done via restify command:
+Laravel Restify can automatically generate MCP (Model Context Protocol) servers for AI agents. Add this to your `config/ai.php` file:
 
-```shell script
-php artisan restify:repository PostRepository
+```php
+use Binaryk\LaravelRestify\MCP\RestifyServer;
+use Laravel\Mcp\Facades\Mcp;
+
+// Web-based MCP server with authentication
+Mcp::web('restify', RestifyServer::class)
+    ->middleware(['auth:sanctum'])
+    ->name('mcp.restify');
 ```
 
-If you want to generate the `Policy`, `Model`, and `migration` as well, then you can use the `--all` option:
+This creates an MCP endpoint at `/mcp/restify` that AI agents can use to interact with your API automatically.
+
+<alert>
+
+**Learn More:** Check the [MCP Server Guide](/mcp/mcp) for advanced configuration and usage with AI tools like Claude Desktop.
+
+</alert>
+
+## Creating Your First Repository
+
+Let's create a `Post` repository to manage blog posts:
 
 ```shell script
+# Generate repository only
+php artisan restify:repository PostRepository
+
+# Generate everything: repository, model, migration, and policy
 php artisan restify:repository PostRepository --all
 ```
 
-## Generate repositories for all models
+The `--all` flag creates:
+- `app/Restify/PostRepository.php` - API repository
+- `app/Models/Post.php` - Eloquent model
+- `database/migrations/xxx_create_posts_table.php` - Database migration  
+- `app/Policies/PostPolicy.php` - Authorization policy
 
-For new projects or when you want to quickly generate repositories for all existing models in your application, you can use the bulk generation command:
+### Example Repository
+
+```php
+// app/Restify/PostRepository.php
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Attributes\Model;
+
+#[Model(Post::class)]
+class PostRepository extends Repository
+{
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title')->rules('required', 'string', 'max:255'),
+            textarea('content')->rules('required'),
+            field('author')->readonly(),
+            datetime('published_at')->nullable(),
+        ];
+    }
+}
+```
+
+After creating the migration and running `php artisan migrate`, your Post API is ready at `/api/restify/posts`.
+
+## Bulk Repository Generation
+
+For existing Laravel projects, generate repositories for all models at once:
 
 ```shell script
 php artisan restify:generate:repositories
 ```
 
-This command will:
+This intelligent command:
 
-1. **Discover all models** in your application
-2. **Analyze model fields** from database schema 
-3. **Show a detailed preview** of what will be generated
-4. **Ask for confirmation** before creating files
-5. **Generate repositories** with appropriate field definitions
+1. **Discovers all models** in your application
+2. **Analyzes database schema** to map field types  
+3. **Shows a preview** of generated repositories
+4. **Asks for confirmation** before creating files
+5. **Generates repositories** with proper field definitions
 
-### Command Options
-
-| Option | Description |
-|--------|-------------|
-| `--force` | Overwrite existing repositories without prompting |
-| `--skip-preview` | Skip preview and generate files immediately |
-| `--structure=flat\|domains` | Choose repository structure |
-| `--only=Model1,Model2` | Only generate repositories for specific models |
-| `--except=Model1,Model2` | Exclude specific models from generation |
-
-### Repository Structure Options
-
-The command allows you to choose between two organizational structures:
-
-**Flat Structure** (default):
-```
-app/Restify/
-├── UserRepository.php
-├── PostRepository.php  
-└── CompanyRepository.php
-```
-
-**Domains Structure**:
-```
-app/Restify/Domains/
-├── User/
-│   └── UserRepository.php
-├── Post/
-│   └── PostRepository.php
-└── Company/
-    └── CompanyRepository.php
-```
-
-### Examples
+### Useful Options
 
 ```shell script
-# Generate with preview and structure selection
-php artisan restify:generate:repositories
-
-# Generate only for specific models
+# Generate for specific models only
 php artisan restify:generate:repositories --only=User,Post
 
-# Generate with domains structure, skip preview
-php artisan restify:generate:repositories --structure=domains --skip-preview
+# Skip preview and generate immediately  
+php artisan restify:generate:repositories --skip-preview
 
-# Force overwrite existing repositories
-php artisan restify:generate:repositories --force
+# Use domain-based structure
+php artisan restify:generate:repositories --structure=domains
 ```
 
-### Field Detection
+### Smart Field Mapping
 
-The command automatically detects and maps database columns to appropriate Restify field types:
+The generator automatically maps database columns to Restify fields:
 
-- `string`/`varchar` → `field()` (or `email()` for email columns)
-- `text` → `textarea()`
-- `integer`/`bigint` → `number()`
-- `boolean` → `boolean()`
-- `date` → `date()`
-- `datetime`/`timestamp` → `datetime()`
-- `json` → `json()`
+| Database Type | Restify Field                        |
+|---------------|--------------------------------------|
+| `any`         | `field()` (generic base field)       |
+| `string`      | `text()` (wrapper for `field()` )    |
+| `text`        | `textarea()` (wrapper for `field()`) |
+| `integer`     | `number()` (wrapper for `field()`)   |
+| `boolean`     | `boolean()` (wrapper for `field()`)  |
+| `datetime`    | `datetime()` (wrapper for `field()`) |
+| `json`        | `json()` (wrapper for `field()`)     |
 
-Special handling for:
-- Password fields → `password()->storable()`
-- Timestamp fields → `readonly()`
-- Foreign key fields → Excluded (handled as relationships)
+**Special Cases:**
+- Email columns → `email()` (wrapper for `field()`)
+- Password fields → `password()` (wrapper for `field()`)
 
-## Generate policy
+## Next Steps
 
-Since the authorization is based on using the Laravel Policies, a good way of generating a complete policy for an entity is by
-using the restify command:
+Now that you have Restify running, explore these key features:
+
+- **[Authentication](/auth/authentication)** - Secure your API with Sanctum
+- **[Repositories](/api/repositories)** - Learn about fields, validation, and relationships  
+- **[Search & Filtering](/search/basic-filters)** - Add powerful query capabilities
+- **[Authorization](/auth/authorization)** - Control access with Laravel policies
+- **[MCP Server](/mcp/mcp)** - Enable AI agents to interact with your API
+
+### Generate Authorization Policies
+
+Create policies for fine-grained access control:
 
 ```shell script
 php artisan restify:policy PostPolicy
+```
+
+### Test Your API
+
+Use these endpoints to test your setup:
+
+```bash
+# List all users
+GET /api/restify/users
+
+# Get specific user
+GET /api/restify/users/1
+
+# Create new user (if authentication disabled)
+POST /api/restify/users
+
+# Update user
+PATCH /api/restify/users/1
+
+# Delete user  
+DELETE /api/restify/users/1
 ```
