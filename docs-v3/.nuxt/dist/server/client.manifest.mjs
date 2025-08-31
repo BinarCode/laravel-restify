@@ -1,1 +1,0 @@
-export { default } from "file:///Users/eduardlupacescu/Sites/binarcode/laravel-restify/docs-v3/node_modules/@nuxt/vite-builder/dist/runtime/client.manifest.mjs"
