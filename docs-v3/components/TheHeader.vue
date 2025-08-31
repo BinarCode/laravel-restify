@@ -64,8 +64,10 @@
     </div>
     
     <!-- Mobile search -->
-    <div class="lg:hidden px-4 pb-4">
-      <SearchInput />
+    <div class="lg:hidden px-4 pb-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <div class="pt-4">
+        <SearchInput />
+      </div>
     </div>
   </header>
 </template>
