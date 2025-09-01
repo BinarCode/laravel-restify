@@ -14,7 +14,7 @@ class VerifyController extends Controller
     public function __invoke(Request $request, int $id, string $hash)
     {
         $frontendUrl = config('restify.auth.user_verify_url');
-        
+
         if (! $request->hasValidSignature()) {
             if ($frontendUrl) {
                 $redirectUrl = str_replace(
@@ -22,10 +22,10 @@ class VerifyController extends Controller
                     [$id, $hash],
                     $frontendUrl
                 );
-                
-                return redirect($redirectUrl . '?success=false&message=' . urlencode('Invalid or expired verification link.'));
+
+                return redirect($redirectUrl.'?success=false&message='.urlencode('Invalid or expired verification link.'));
             }
-            
+
             throw new AuthorizationException('Invalid or expired verification link.');
         }
 
@@ -41,10 +41,10 @@ class VerifyController extends Controller
                     [$user->getKey(), $hash],
                     $frontendUrl
                 );
-                
-                return redirect($redirectUrl . '?success=false&message=' . urlencode('Invalid hash'));
+
+                return redirect($redirectUrl.'?success=false&message='.urlencode('Invalid hash'));
             }
-            
+
             throw new AuthorizationException('Invalid hash');
         }
 
@@ -59,7 +59,7 @@ class VerifyController extends Controller
                 $frontendUrl
             );
 
-            return redirect($redirectUrl . '?success=true&message=' . urlencode('Email verified successfully.'));
+            return redirect($redirectUrl.'?success=true&message='.urlencode('Email verified successfully.'));
         }
 
         return rest($user)->indexMeta([
