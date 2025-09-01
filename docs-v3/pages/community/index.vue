@@ -12,22 +12,361 @@
       </div>
 
       <!-- Community Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-16">
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-8 mb-16">
         <div class="text-center">
-          <div class="text-3xl font-bold text-red-500 mb-2">1.2K+</div>
-          <div class="text-gray-600 dark:text-gray-400">GitHub Stars</div>
-        </div>
-        <div class="text-center">
-          <div class="text-3xl font-bold text-blue-500 mb-2">150+</div>
-          <div class="text-gray-600 dark:text-gray-400">Contributors</div>
-        </div>
-        <div class="text-center">
-          <div class="text-3xl font-bold text-green-500 mb-2">50K+</div>
+          <div class="text-3xl font-bold text-green-500 mb-2">368K+</div>
           <div class="text-gray-600 dark:text-gray-400">Downloads</div>
         </div>
         <div class="text-center">
-          <div class="text-3xl font-bold text-purple-500 mb-2">500+</div>
-          <div class="text-gray-600 dark:text-gray-400">Community Members</div>
+          <div class="text-3xl font-bold text-red-500 mb-2">626</div>
+          <div class="text-gray-600 dark:text-gray-400">GitHub Stars</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-purple-500 mb-2">57</div>
+          <div class="text-gray-600 dark:text-gray-400">Forks</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-blue-500 mb-2">20+</div>
+          <div class="text-gray-600 dark:text-gray-400">Contributors</div>
+        </div>
+        <div class="text-center">
+          <div class="text-3xl font-bold text-orange-500 mb-2">100+</div>
+          <div class="text-gray-600 dark:text-gray-400">Projects Built</div>
+        </div>
+      </div>
+
+      <!-- Contributors Section -->
+      <div class="mb-16">
+        <div class="text-center mb-8">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+            Built by Amazing Contributors
+          </h2>
+          <p class="text-lg text-gray-600 dark:text-gray-400">
+            Laravel Restify is made possible by our incredible community of contributors
+          </p>
+        </div>
+        
+        <!-- Scrolling Contributors -->
+        <div class="relative overflow-hidden">
+          <div class="flex animate-scroll-left space-x-4">
+            <!-- First set of contributors -->
+            <div class="flex space-x-4 shrink-0">
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/6833714?v=4" 
+                  alt="binaryk" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  binaryk (940)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/1099791?v=4" 
+                  alt="arthurkirkosa" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  arthurkirkosa (26)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/32643188?v=4" 
+                  alt="CaReS0107" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  CaReS0107 (9)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/87819215?v=4" 
+                  alt="dsindrilaru" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  dsindrilaru (6)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/29707399?v=4" 
+                  alt="daniel-banciulea" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  daniel-banciulea (4)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/15955045?v=4" 
+                  alt="cristijora" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  cristijora (2)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/9463142?v=4" 
+                  alt="maicol07" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  maicol07 (2)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/12232155?v=4" 
+                  alt="ttungbmt" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  ttungbmt (2)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/33344024?v=4" 
+                  alt="gabrielpetrescu" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  gabrielpetrescu (2)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/53559175?v=4" 
+                  alt="adam-code-labx" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  adam-code-labx (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/6935309?v=4" 
+                  alt="alexstewartja" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  alexstewartja (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/105732838?v=4" 
+                  alt="Nonines" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Nonines (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/2734125?v=4" 
+                  alt="Eighke" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Eighke (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/2556185?v=4" 
+                  alt="ManukMinasyan" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  ManukMinasyan (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/57497646?v=4" 
+                  alt="msucevan" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  msucevan (1)
+                </div>
+              </div>
+            </div>
+            <!-- Duplicate for seamless loop -->
+            <div class="flex space-x-4 shrink-0">
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/6833714?v=4" 
+                  alt="binaryk" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  binaryk (940)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/1099791?v=4" 
+                  alt="arthurkirkosa" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  arthurkirkosa (26)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/32643188?v=4" 
+                  alt="CaReS0107" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  CaReS0107 (9)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/87819215?v=4" 
+                  alt="dsindrilaru" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  dsindrilaru (6)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/29707399?v=4" 
+                  alt="daniel-banciulea" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  daniel-banciulea (4)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/15955045?v=4" 
+                  alt="cristijora" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  cristijora (2)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/9463142?v=4" 
+                  alt="maicol07" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  maicol07 (2)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/12232155?v=4" 
+                  alt="ttungbmt" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  ttungbmt (2)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/33344024?v=4" 
+                  alt="gabrielpetrescu" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  gabrielpetrescu (2)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/53559175?v=4" 
+                  alt="adam-code-labx" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  adam-code-labx (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/6935309?v=4" 
+                  alt="alexstewartja" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  alexstewartja (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/105732838?v=4" 
+                  alt="Nonines" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Nonines (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/2734125?v=4" 
+                  alt="Eighke" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  Eighke (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/2556185?v=4" 
+                  alt="ManukMinasyan" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  ManukMinasyan (1)
+                </div>
+              </div>
+              <div class="group relative">
+                <img 
+                  src="https://avatars.githubusercontent.com/u/57497646?v=4" 
+                  alt="msucevan" 
+                  class="w-16 h-16 rounded-full border-2 border-gray-200 dark:border-gray-700 group-hover:border-red-500 transition-colors"
+                />
+                <div class="absolute -top-8 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                  msucevan (1)
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="text-center mt-8">
+          <a
+            href="https://github.com/BinarCode/laravel-restify/graphs/contributors"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="text-red-500 hover:text-red-600 font-medium"
+          >
+            View All Contributors →
+          </a>
         </div>
       </div>
 
@@ -291,3 +630,22 @@ useHead({
   ]
 })
 </script>
+
+<style scoped>
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-scroll-left {
+  animation: scroll-left 30s linear infinite;
+}
+
+.animate-scroll-left:hover {
+  animation-play-state: paused;
+}
+</style>

@@ -13,7 +13,7 @@
       </div>
 
       <!-- Template Categories -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
         <!-- Starter Kit Template -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
           <div class="h-48 bg-gradient-to-br from-green-500 to-emerald-600 relative">
@@ -107,8 +107,8 @@
           <div class="h-48 bg-gradient-to-br from-purple-500 to-violet-600 relative">
             <div class="absolute inset-0 bg-black bg-opacity-20"></div>
             <div class="absolute bottom-4 left-4 right-4">
-              <h3 class="text-xl font-bold text-white mb-2">Multi-tenant SaaS</h3>
-              <p class="text-purple-100 text-sm">Tenant isolation & subscription billing</p>
+              <h3 class="text-xl font-bold text-white mb-2">Pro Package</h3>
+              <p class="text-purple-100 text-sm">For real projects with payments & scaling</p>
             </div>
             <div class="absolute top-4 right-4">
               <span class="px-2 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">
