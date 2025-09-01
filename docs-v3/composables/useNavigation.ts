@@ -1,5 +1,5 @@
 export const useNavigation = () => {
-  const navigationSections = [
+  const navigationSections = ref([
     {
       title: 'Getting Started',
       items: [
@@ -31,6 +31,14 @@ export const useNavigation = () => {
       ]
     },
     {
+      title: 'AI Agents',
+      items: [
+        { title: 'MCP Server', path: '/mcp/mcp' },
+        { title: 'MCP Repositories', path: '/mcp/repositories' },
+        { title: 'MCP Fields', path: '/mcp/fields' }
+      ]
+    },
+    {
       title: 'Search',
       items: [
         { title: 'Basic Filters', path: '/search/basic-filters' },
@@ -50,12 +58,11 @@ export const useNavigation = () => {
       items: [
         { title: 'GraphQL', path: '/graphql/graphql' },
         { title: 'GraphQL Generation', path: '/graphql/graphql-generation' },
-        { title: 'MCP Server', path: '/mcp/mcp' },
         { title: 'Boost', path: '/boost/boost' },
         { title: 'Testing', path: '/testing/testing' }
       ]
     }
-  ]
+  ])
 
   return {
     navigationSections

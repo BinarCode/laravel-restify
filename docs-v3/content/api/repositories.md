@@ -1,11 +1,26 @@
 ---
-title: Repositories 
-menuTitle: Repositories 
+title: Repository Overview
+menuTitle: Overview
 category: API 
-position: 6
+position: 5
 ---
 
-The Repository is the core of the Laravel Restify.
+The Repository is the core of Laravel Restify, providing a unified API layer that serves both human users via REST endpoints and AI agents via MCP tools.
+
+## Documentation Structure
+
+**New to Laravel Restify?** Start with the basics:
+- **[Basic Repositories](/api/repositories-basic)** - Essential concepts and getting started guide
+
+**Ready for advanced features?**
+- **[Advanced Repositories](/api/repositories-advanced)** - Query customization, lifecycle events, custom serialization
+- **[MCP Integration](/mcp/repositories)** - AI agent integration and Model Context Protocol
+
+---
+
+*This page contains the original comprehensive documentation. For a better learning experience, we recommend starting with the [Basic Repositories](/api/repositories-basic) guide.*
+
+---
 
 ## Quick start
 
@@ -29,7 +44,8 @@ The basic repository form looks like this using the modern attribute approach:
 namespace App\Restify;
 
 use App\Models\Post;
-use App\Restify\Repository;
+use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Attributes\Model;
 
 #[Model(Post::class)]
@@ -37,30 +53,14 @@ class PostRepository extends Repository
 {
     public function fields(RestifyRequest $request): array
     {
-        return [];
+        return [
+            field('title')->required(),
+            field('content')->string(),
+            field('published_at')->nullable(),
+        ];
     }
 }
 ```
-
-Or using the traditional static property approach:
-
-```php
-namespace App\Restify;
-
-use App\Models\Post;
-use App\Restify\Repository;
-
-class PostRepository extends Repository
-{
-    public static string $model = Post::class;
-    
-    public function fields(RestifyRequest $request): array
-    {
-        return [];
-    }
-}
-```
-
 <alert type="info">
 If you don't specify the model using an attribute or the $model property, Restify will try to guess the model automatically based on the repository class name.
 </alert>
@@ -151,13 +151,6 @@ class PostRepository extends Repository
     // Fields...
 }
 ```
-
-**Benefits of using attributes:**
-- Modern, declarative approach
-- Better IDE support and static analysis
-- Cleaner code (no need for static properties)
-- More discoverable with reflection tools
-- Type-safe when using `::class` syntax
 
 ### 2. Traditional Approach: Static Property
 
@@ -297,21 +290,49 @@ your API will be as private as possible.
 To some extent, `fields` are similar to the `toArray` method from
 the [laravel resource](https://laravel.com/docs/eloquent-resources#concept-overview) concept.
 
-Let's define some fields for our Post model:
+Let's define some comprehensive fields for our Post model:
 
 ```php
-use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
 class PostRepository extends Repository
 {
-    public function fields(RestifyRequest $request) 
+    public function fields(RestifyRequest $request): array
     {
         return [
-            field('title'),
+            field('title')
+                ->rules('required', 'max:255')
+                ->sortable()
+                ->matchable(),
             
-            field('description'),
+            field('slug')
+                ->rules('required', 'unique:posts,slug')
+                ->hideFromIndex(),
+            
+            field('content')
+                ->textarea()
+                ->rules('required', 'min:100')
+                ->searchable(),
+            
+            field('excerpt')
+                ->nullable()
+                ->hideFromIndex(),
+            
+            field('status')
+                ->select(['draft', 'published', 'archived'])
+                ->default('draft')
+                ->sortable()
+                ->matchable(),
+            
+            field('published_at')
+                ->nullable()
+                ->sortable(),
+            
+            field('featured')
+                ->boolean()
+                ->default(false)
+                ->matchable(),
         ];
     }
 }
@@ -583,6 +604,8 @@ public function fieldsForIndex(RestifyRequest $request): array
 
 Specific fields per request type could be defined for other requests. For example: `fieldsForIndex`, `fieldsForShow`, `fieldsForStore`
 and `fieldsForUpdate`.
+
+For AI agents, you can also define MCP-specific field methods like `fieldsForMcpIndex`, `fieldsForMcpShow`, etc. See the [MCP Repositories](/mcp/repositories) documentation for details on optimizing repositories for AI agent consumption.
 
 </alert>
 
@@ -1118,129 +1141,6 @@ class PostRepository extends Repository
 }
 ```
 
-## MCP Integration
-
-Laravel Restify provides first-class support for Model Context Protocol (MCP), allowing AI agents to efficiently interact with your APIs. You can define MCP-specific field methods to optimize token usage and provide tailored data for AI consumption.
-
-### MCP Field Methods
-
-MCP field methods follow the same pattern as regular field methods but are prefixed with `fieldsForMcp`:
-
-```php
-class PostRepository extends Repository
-{
-    // Regular fields for human consumption
-    public function fields(RestifyRequest $request): array
-    {
-        return [
-            field('title'),
-            field('content'),
-            field('excerpt'),
-            field('meta_description'),
-            field('tags'),
-            field('author_id'),
-            field('published_at'),
-            field('created_at'),
-            field('updated_at'),
-        ];
-    }
-    
-    // Optimized fields for AI index requests (saves 60-70% tokens)
-    public function fieldsForMcpIndex(RestifyRequest $request): array
-    {
-        return [
-            field('id'),
-            field('title'),
-            field('excerpt'),
-            field('published_at'),
-        ];
-    }
-    
-    // Focused fields for AI detail views (saves 40-50% tokens)
-    public function fieldsForMcpShow(RestifyRequest $request): array
-    {
-        return [
-            field('title'),
-            field('content'),
-            field('author', fn() => $this->author->name),
-            field('tags'),
-            field('published_at'),
-        ];
-    }
-    
-    // Fields AI agents can use for creation
-    public function fieldsForMcpStore(RestifyRequest $request): array
-    {
-        return [
-            field('title')->required(),
-            field('content')->required(),
-            field('excerpt'),
-            field('tags'),
-        ];
-    }
-    
-    // Fields AI agents can modify
-    public function fieldsForMcpUpdate(RestifyRequest $request): array
-    {
-        return [
-            field('title'),
-            field('content'),
-            field('excerpt'),
-            field('tags'),
-        ];
-    }
-}
-```
-
-### MCP Bulk Operations
-
-```php
-// Efficient AI bulk creation
-public function fieldsForMcpStoreBulk(RestifyRequest $request): array
-{
-    return [
-        field('title')->required(),
-        field('content')->required(),
-        field('status')->value('draft'),
-    ];
-}
-
-// Efficient AI bulk updates
-public function fieldsForMcpUpdateBulk(RestifyRequest $request): array
-{
-    return [
-        field('title'),
-        field('status'),
-        field('published_at'),
-    ];
-}
-```
-
-### MCP Getters
-
-Provide analytical and computed fields specifically for AI consumption:
-
-```php
-public function fieldsForMcpGetter(RestifyRequest $request): array
-{
-    return [
-        field('word_count', fn() => str_word_count(strip_tags($this->content))),
-        field('reading_time', fn() => ceil(str_word_count(strip_tags($this->content)) / 200)),
-        field('sentiment_score', fn() => $this->calculateSentiment()),
-        field('related_topics', fn() => $this->extractTopics()),
-    ];
-}
-```
-
-### Field Priority for MCP
-
-When an MCP request is made, Restify follows this priority order:
-
-1. **MCP-specific methods** (`fieldsForMcpIndex`, `fieldsForMcpShow`, etc.)
-2. **Request-specific methods** (`fieldsForIndex`, `fieldsForShow`, etc.) 
-3. **Default fields method** (`fields`)
-
-This allows you to provide optimized field sets for AI agents while maintaining full functionality for human users.
 
 ## Repository Lifecycle Events
 
@@ -1249,43 +1149,78 @@ Laravel Restify provides several lifecycle hooks that allow you to perform actio
 ### Single Resource Events
 
 ```php
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+
 class PostRepository extends Repository
 {
     // Called after a single resource is successfully stored
     public static function stored($model, $request)
     {
-        // Log the creation
-        Log::info("Post created: {$model->title}");
+        // Log the creation with context
+        Log::info("Post created: {$model->title}", [
+            'post_id' => $model->id,
+            'user_id' => $request->user()->id,
+            'ip' => $request->ip(),
+        ]);
         
-        // Send notifications
-        NotificationService::notifyNewPost($model);
+        // Send notifications to subscribers
+        $model->author->notify(new PostPublishedNotification($model));
         
         // Update caches
-        cache()->forget('recent_posts');
+        Cache::tags(['posts', 'recent'])->flush();
+        
+        // Add to search index
+        $model->searchable();
+        
+        // Update statistics
+        cache()->increment('posts_count_today');
     }
     
     // Called after a single resource is successfully updated
     public static function updated($model, $request)
     {
-        // Log the update
-        Log::info("Post updated: {$model->title}");
+        // Log the update with changed fields
+        $dirty = $model->getDirty();
+        Log::info("Post updated: {$model->title}", [
+            'post_id' => $model->id,
+            'changed_fields' => array_keys($dirty),
+            'user_id' => $request->user()->id,
+        ]);
         
         // Clear related caches
-        cache()->forget("post_{$model->id}");
+        Cache::forget("post_{$model->id}");
+        Cache::tags(['posts', $model->slug])->flush();
         
-        // Index for search
-        $model->searchable();
+        // Re-index for search if content changed
+        if (isset($dirty['content']) || isset($dirty['title'])) {
+            $model->searchable();
+        }
+        
+        // Handle status change
+        if (isset($dirty['status']) && $model->status === 'published') {
+            event(new PostPublished($model));
+        }
     }
     
     // Called after a single resource is successfully deleted
     public static function deleted($status, $request)
     {
-        // Log deletion
-        Log::info("Post deleted, status: {$status}");
+        // Log deletion with context
+        Log::info("Post deleted", [
+            'status' => $status,
+            'user_id' => $request->user()->id,
+            'soft_delete' => $request->repository()->resource->trashed() ?? false,
+        ]);
         
-        // Clean up related data
+        // Clean up related data only on successful deletion
         if ($status) {
-            cache()->flush();
+            Cache::tags(['posts'])->flush();
+            
+            // Remove from search index
+            if (method_exists($request->repository()->resource, 'unsearchable')) {
+                $request->repository()->resource->unsearchable();
+            }
         }
     }
 }

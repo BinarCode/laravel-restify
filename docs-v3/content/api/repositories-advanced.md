@@ -1,13 +1,25 @@
 ---
-title: Repositories advanced
+title: Advanced Repositories
 menuTitle: Advanced
 category: API 
 position: 7
 ---
 
-## Query Builder
+This guide covers advanced repository features for experienced Laravel Restify users. If you're new to Restify, start with the [Basic Repositories](/api/repositories-basic) guide.
 
-To perform any request to the database, Restify has to create a query builder instance. The query builder is passed through a few static methods from the repository, so you can override them and intercept the builder to add your custom statements.
+## Overview
+
+Advanced repository features include:
+- **Query Customization** - Control how data is fetched from the database
+- **Custom Field Methods** - Different fields for different operations
+- **Public Repositories** - Allow unauthenticated access
+- **Repository Lifecycle** - Hook into CRUD operations
+- **Custom Routes** - Add your own endpoints
+- **Performance Optimization** - Bulk operations, caching, eager loading
+
+## Query Customization
+
+Restify provides several methods to customize how data is queried from your database. These methods are called in a specific order, allowing you to build complex query logic.
 
 ### Main query
 
@@ -517,17 +529,348 @@ the `routes` method. You should be careful about this behavior.
 </alert>
 
 
+## Advanced Field Methods
+
+While the basic `fields()` method works for most cases, you can define different fields for different operations:
+
+```php
+class PostRepository extends Repository
+{
+    // Default fields used for all operations
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('content'),
+            field('excerpt'),
+            field('published_at'),
+            field('created_at'),
+            field('updated_at'),
+        ];
+    }
+    
+    // Lighter fields for listing operations
+    public function fieldsForIndex(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('excerpt'),
+            field('published_at'),
+        ];
+    }
+    
+    // Full detail fields for individual resources
+    public function fieldsForShow(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('content'),
+            field('excerpt'),
+            field('published_at'),
+            field('author_name', fn() => $this->author->name),
+        ];
+    }
+    
+    // Only allow certain fields to be created
+    public function fieldsForStore(RestifyRequest $request): array
+    {
+        return [
+            field('title')->required(),
+            field('content')->required(),
+            field('excerpt'),
+        ];
+    }
+    
+    // Only allow certain fields to be updated
+    public function fieldsForUpdate(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('content'),
+            field('excerpt'),
+            field('published_at'),
+        ];
+    }
+}
+```
+
+### Field Method Priority
+
+Restify uses this priority order when determining which fields to use:
+1. **Operation-specific method** (`fieldsForIndex`, `fieldsForShow`, etc.) - **Highest priority**
+2. **Default fields method** (`fields`) - **Fallback**
+
+## Public Repositories
+
+Sometimes you need to expose certain repositories without authentication (e.g., for a public blog or documentation site).
+
+<alert type="warning">
+Use public repositories carefully. Consider using the [serializer](/api/serializer) for custom public endpoints instead.
+</alert>
+
+```php
+class PostRepository extends Repository
+{
+    // Allow public access
+    public static bool $public = true;
+    
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('content'),
+            field('published_at'),
+        ];
+    }
+}
+```
+
+### Public Repository Setup
+
+**1. Update your global gate to allow null users:**
+
+```php
+// app/Providers/RestifyApplicationServiceProvider.php
+protected function gate(): void
+{
+    Gate::define('viewRestify', function ($user = null) {
+        if (is_null($user)) {
+            return true; // Allow public access
+        }
+        
+        return in_array($user->email, [...]);
+    });
+}
+```
+
+**2. Update your policies to allow null users:**
+
+```php
+// app/Policies/PostPolicy.php
+public function allowRestify(User $user = null): bool
+{
+    return true; // Allow all users (authenticated or not)
+}
+
+public function view(User $user = null, Post $post): bool
+{
+    return $post->status === 'published'; // Only show published posts
+}
+```
+
+## Repository Collections and Transforms
+
+### Transform Collections Before Serialization
+
+```php
+class PostRepository extends Repository
+{
+    public function indexCollection(RestifyRequest $request, Collection $items): Collection
+    {
+        // Filter out unpublished posts
+        return $items->filter(function ($post) {
+            return $post->published_at <= now();
+        });
+    }
+}
+```
+
+### Custom Serialization
+
+Take complete control over how your resources are serialized:
+
+```php
+class PostRepository extends Repository
+{
+    public function serializeForIndex(RestifyRequest $request): array
+    {
+        return [
+            'id' => $this->id,
+            'title' => $this->title,
+            'excerpt' => Str::limit($this->content, 100),
+            'read_time' => $this->calculateReadTime(),
+            'url' => route('posts.show', $this->slug),
+        ];
+    }
+    
+    public function serializeForShow(RestifyRequest $request): array
+    {
+        $data = parent::serializeForShow($request);
+        
+        // Add computed fields
+        $data['computed'] = [
+            'word_count' => str_word_count(strip_tags($this->content)),
+            'reading_time' => ceil(str_word_count($this->content) / 200),
+            'related_posts' => $this->getRelatedPosts(3),
+        ];
+        
+        return $data;
+    }
+}
+```
+
+## Repository Labels and Identifiers
+
+### Custom Labels
+
+Customize how your repository appears in API documentation:
+
+```php
+class PostRepository extends Repository
+{
+    public static string $label = 'Blog Articles';
+    
+    // Or dynamically
+    public static function label(): string
+    {
+        return __('repository.posts');
+    }
+}
+```
+
+### Title and Subtitle Fields
+
+```php
+class PostRepository extends Repository
+{
+    public static string $title = 'title'; // Default is 'id'
+    
+    public function title(): string
+    {
+        return $this->title ?: "Post #{$this->id}";
+    }
+    
+    public function subtitle(): ?string
+    {
+        return "By {$this->author->name} on {$this->published_at->format('M j, Y')}";
+    }
+}
+```
+
+### Custom URI Keys
+
+```php
+class PostRepository extends Repository
+{
+    // Use 'articles' instead of 'posts' in URLs
+    public static string $uriKey = 'articles';
+    
+    // Or dynamically
+    public static function uriKey(): string
+    {
+        return config('app.locale') === 'es' ? 'articulos' : 'articles';
+    }
+}
+```
+
+## Repository Lifecycle and Events
+
+Hook into repository operations to perform additional logic:
+
+### Single Resource Events
+
+```php
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+
+class PostRepository extends Repository
+{
+    // Called after successfully creating a resource
+    public static function stored($model, $request)
+    {
+        Log::info("Post created: {$model->title}");
+        Cache::tags(['posts'])->flush();
+        $model->searchable(); // Add to search index
+    }
+    
+    // Called after successfully updating a resource  
+    public static function updated($model, $request)
+    {
+        $dirty = $model->getDirty();
+        Log::info("Post updated: {$model->title}", [
+            'changed_fields' => array_keys($dirty),
+        ]);
+        
+        if (isset($dirty['content']) || isset($dirty['title'])) {
+            $model->searchable(); // Re-index if content changed
+        }
+    }
+    
+    // Called after successfully deleting a resource
+    public static function deleted($status, $request)
+    {
+        if ($status) {
+            Cache::tags(['posts'])->flush();
+        }
+    }
+}
+```
+
+### Bulk Operation Events
+
+```php
+class PostRepository extends Repository
+{
+    public static function storedBulk(Collection $models, $request)
+    {
+        Log::info("Bulk created {$models->count()} posts");
+        $models->searchable(); // Bulk index for search
+    }
+    
+    public static function updatedBulk(Collection $models, $request)
+    {
+        Cache::tags(['posts'])->flush();
+    }
+}
+```
+
+### Authorization Hooks
+
+Custom authorization logic beyond policies:
+
+```php
+class PostRepository extends Repository
+{
+    public function allowToShow($request): self
+    {
+        if (!$this->model()->isPublished() && !$request->user()->isAdmin()) {
+            throw new AuthorizationException('Cannot view unpublished post');
+        }
+        
+        return $this;
+    }
+    
+    public function allowToStore(RestifyRequest $request, $payload = null): self
+    {
+        if ($request->user()->posts()->today()->count() >= 10) {
+            throw new AuthorizationException('Daily post limit reached');
+        }
+        
+        return $this;
+    }
+    
+    public function allowToUpdate(RestifyRequest $request, $payload = null): self
+    {
+        if ($this->model()->isPublished() && !$request->user()->isEditor()) {
+            throw new AuthorizationException('Cannot edit published posts');
+        }
+        
+        return $this;
+    }
+}
+```
+
 ## Repository Lifecycle
 
-Each repository has several lifecycle methods. The most useful is `booted`, which is called as soon as the repository is loaded with the resource:
+Each repository has several lifecycle methods. The most useful is `booted`, which is called as soon as the repository is loaded:
 
-````php
+```php
 // PostRepository.php
 protected static function booted()
 {
-    // 
+    // Initialization logic here
 }
-````
+```
 
 
 
