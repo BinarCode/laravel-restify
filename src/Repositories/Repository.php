@@ -84,7 +84,6 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  * @method array fieldsForMcpUpdate(RestifyRequest $request) Define fields for MCP update operations. Override to limit fields AI agents can modify.
  * @method array fieldsForMcpStoreBulk(RestifyRequest $request) Define fields for MCP bulk store operations. Override for efficient AI bulk creation.
  * @method array fieldsForMcpUpdateBulk(RestifyRequest $request) Define fields for MCP bulk update operations. Override for efficient AI bulk updates.
- * @method array fieldsForMcpGetter(RestifyRequest $request) Define fields for MCP getter operations. Override to provide analytical/computed fields for AI.
  */
 class Repository implements JsonSerializable, RestifySearchable
 {
@@ -301,8 +300,6 @@ class Repository implements JsonSerializable, RestifySearchable
                 $method = 'fieldsForMcpStoreBulk';
             } elseif ($request->isUpdateBulkRequest() && method_exists($this, 'fieldsForMcpUpdateBulk')) {
                 $method = 'fieldsForMcpUpdateBulk';
-            } elseif ($request->isGetterRequest() && method_exists($this, 'fieldsForMcpGetter')) {
-                $method = 'fieldsForMcpGetter';
             }
         }
 
