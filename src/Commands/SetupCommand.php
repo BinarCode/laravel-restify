@@ -46,9 +46,9 @@ class SetupCommand extends Command
         }
 
         $this->setAppNamespace();
-        
+
         $this->configureUserModel();
-        
+
         $this->createAiRoutesFile();
 
         $this->info('Restify setup successfully.');
@@ -148,30 +148,32 @@ class SetupCommand extends Command
     protected function configureUserModel()
     {
         $this->comment('Searching for User models in your application...');
-        
+
         $userModels = $this->findUserModels();
-        
+
         if (empty($userModels)) {
             $this->warn('No User models found in App namespace. Using default \\App\\Models\\User.');
+
             return;
         }
-        
+
         if (count($userModels) === 1) {
             $selectedModel = $userModels[0];
             if ($this->confirm("Found User model: {$selectedModel}. Use this as your authentication model?", true)) {
                 $this->updateUserModelConfig($selectedModel);
                 $this->info("Updated restify config to use: {$selectedModel}");
             }
+
             return;
         }
-        
+
         $this->info('Multiple User models found:');
         foreach ($userModels as $index => $model) {
             $this->line(" [{$index}] {$model}");
         }
-        
+
         $choice = $this->ask('Please select the User model to use (enter the number)', '0');
-        
+
         if (isset($userModels[$choice])) {
             $selectedModel = $userModels[$choice];
             $this->updateUserModelConfig($selectedModel);
@@ -191,24 +193,24 @@ class SetupCommand extends Command
         $appPath = app_path();
         $namespace = $this->laravel->getNamespace();
         $userModels = [];
-        
+
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($appPath, \RecursiveDirectoryIterator::SKIP_DOTS),
             \RecursiveIteratorIterator::SELF_FIRST
         );
-        
+
         foreach ($iterator as $file) {
             if ($file->isFile() && $file->getExtension() === 'php') {
-                $relativePath = str_replace($appPath . DIRECTORY_SEPARATOR, '', $file->getPathname());
+                $relativePath = str_replace($appPath.DIRECTORY_SEPARATOR, '', $file->getPathname());
                 $className = str_replace(['/', '.php'], ['\\', ''], $relativePath);
-                $fqcn = $namespace . $className;
-                
+                $fqcn = $namespace.$className;
+
                 if ($this->isUserModel($file->getPathname(), $className)) {
                     $userModels[] = $fqcn;
                 }
             }
         }
-        
+
         return $userModels;
     }
 
@@ -224,9 +226,9 @@ class SetupCommand extends Command
         if (! str_contains(strtolower($className), 'user')) {
             return false;
         }
-        
+
         $content = file_get_contents($filePath);
-        
+
         return str_contains($content, 'extends Authenticatable') ||
                str_contains($content, 'use Authenticatable') ||
                str_contains($content, 'implements AuthenticatableContract') ||
@@ -242,20 +244,21 @@ class SetupCommand extends Command
     protected function updateUserModelConfig($userModel)
     {
         $configPath = config_path('restify.php');
-        
+
         if (! file_exists($configPath)) {
             $this->warn('restify.php config file not found.');
+
             return;
         }
-        
+
         $content = file_get_contents($configPath);
         $escapedUserModel = addslashes($userModel);
-        
+
         $pattern = "/'user_model'\s*=>\s*['\"].*?['\"]/";
         $replacement = "'user_model' => \"{$escapedUserModel}\"";
-        
+
         $newContent = preg_replace($pattern, $replacement, $content);
-        
+
         if ($newContent !== $content) {
             file_put_contents($configPath, $newContent);
         } else {
@@ -271,19 +274,20 @@ class SetupCommand extends Command
     protected function createAiRoutesFile()
     {
         $routesPath = base_path('routes');
-        $aiRoutesFile = $routesPath . '/ai.php';
-        
+        $aiRoutesFile = $routesPath.'/ai.php';
+
         if (file_exists($aiRoutesFile)) {
             $this->line('AI routes file already exists.');
+
             return;
         }
-        
+
         app(Filesystem::class)->ensureDirectoryExists($routesPath);
-        
+
         $content = "<?php\n\nuse Binaryk\\LaravelRestify\\MCP\\RestifyServer;\nuse Laravel\\Mcp\\Server\\Facades\\Mcp;\n\n// Restify MCP Server - provides AI agents access to your Restify repositories\n// Mcp::web('restify', RestifyServer::class)\n//     ->middleware(['auth:sanctum']); // Available at /mcp/restify\n\n// Mcp::local('restify', RestifyServer::class); // Start with ./artisan mcp:start restify\n\n// Example custom servers:\n// Mcp::web('demo', \\App\\Mcp\\Servers\\PublicServer::class); // Available at /mcp/demo\n// Mcp::local('demo', \\App\\Mcp\\Servers\\LocalServer::class); // Start with ./artisan mcp:start demo\n";
-        
+
         file_put_contents($aiRoutesFile, $content);
-        
+
         $this->info('Created routes/ai.php file for MCP server configuration.');
     }
 }
