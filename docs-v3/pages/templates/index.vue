@@ -7,20 +7,25 @@
           Laravel Restify Templates
         </h1>
         <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-          Jump-start your API development with ready-to-use templates and examples. 
+          Jump-start your API development with ready-to-use templates and examples.
           Copy, customize, and ship faster.
         </p>
       </div>
 
       <!-- Template Categories -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-        <!-- Basic CRUD Template -->
+        <!-- Starter Kit Template -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-          <div class="h-48 bg-gradient-to-br from-blue-500 to-blue-600 relative">
+          <div class="h-48 bg-gradient-to-br from-green-500 to-emerald-600 relative">
             <div class="absolute inset-0 bg-black bg-opacity-20"></div>
             <div class="absolute bottom-4 left-4 right-4">
-              <h3 class="text-xl font-bold text-white mb-2">Basic CRUD API</h3>
-              <p class="text-blue-100 text-sm">Complete CRUD operations with validation</p>
+              <h3 class="text-xl font-bold text-white mb-2">Laravel Restify Starter Kit</h3>
+              <p class="text-green-100 text-sm">Production-ready API starter with auth</p>
+            </div>
+            <div class="absolute top-4 right-4">
+              <span class="px-2 py-1 bg-green-500 text-white text-xs font-bold rounded-full">
+                FREE
+              </span>
             </div>
           </div>
           <div class="p-6">
@@ -29,35 +34,42 @@
                 Beginner
               </span>
               <span class="ml-2 text-gray-500 dark:text-gray-400 text-sm">
-                5 min setup
+                10 min setup
               </span>
             </div>
             <p class="text-gray-600 dark:text-gray-400 mb-4">
-              Get started with basic Create, Read, Update, Delete operations including field validation and relationships.
+              Complete auth system, advanced teams with member management, role-based permissions, and production-ready API architecture.
             </p>
             <div class="flex items-center justify-between">
-              <NuxtLink 
-                to="/templates/basic-crud" 
-                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
+              <a
+                href="https://restifytemplates.com/download/free/bOcviUe7kYdm"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium"
               >
-                View Template →
-              </NuxtLink>
+                Get Started Free →
+              </a>
               <div class="flex space-x-2">
-                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
                 <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
                 <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Authentication Template -->
+        <!-- Essential Template -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-          <div class="h-48 bg-gradient-to-br from-green-500 to-emerald-600 relative">
+          <div class="h-48 bg-gradient-to-br from-blue-500 to-blue-600 relative">
             <div class="absolute inset-0 bg-black bg-opacity-20"></div>
             <div class="absolute bottom-4 left-4 right-4">
-              <h3 class="text-xl font-bold text-white mb-2">Authentication & Auth</h3>
-              <p class="text-green-100 text-sm">Sanctum auth with role-based access</p>
+              <h3 class="text-xl font-bold text-white mb-2">Essential Package</h3>
+              <p class="text-blue-100 text-sm">Great for solo devs or MVPs</p>
+            </div>
+            <div class="absolute top-4 right-4">
+              <span class="px-2 py-1 bg-blue-600 text-white text-xs font-bold rounded-full">
+                €19.99
+              </span>
             </div>
           </div>
           <div class="p-6">
@@ -66,35 +78,42 @@
                 Intermediate
               </span>
               <span class="ml-2 text-gray-500 dark:text-gray-400 text-sm">
-                15 min setup
+                20 min setup
               </span>
             </div>
             <p class="text-gray-600 dark:text-gray-400 mb-4">
-              Complete authentication system with Laravel Sanctum, user registration, login, and policy-based authorization.
+              Everything from Free + Advanced features, CI/CD setup, file uploads with S3, custom middlewares, and versioned API endpoints.
             </p>
             <div class="flex items-center justify-between">
-              <NuxtLink 
-                to="/templates/authentication" 
-                class="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 font-medium"
+              <a
+                href="https://restifytemplates.com/checkout/essential"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
               >
-                View Template →
-              </NuxtLink>
+                Unlock Essential →
+              </a>
               <div class="flex space-x-2">
-                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
                 <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-                <span class="w-2 h-2 bg-red-500 rounded-full"></span>
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
+                <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- MCP Integration Template -->
+        <!-- Pro Template -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
           <div class="h-48 bg-gradient-to-br from-purple-500 to-violet-600 relative">
             <div class="absolute inset-0 bg-black bg-opacity-20"></div>
             <div class="absolute bottom-4 left-4 right-4">
-              <h3 class="text-xl font-bold text-white mb-2">MCP Integration</h3>
-              <p class="text-purple-100 text-sm">AI-ready API with MCP server</p>
+              <h3 class="text-xl font-bold text-white mb-2">Multi-tenant SaaS</h3>
+              <p class="text-purple-100 text-sm">Tenant isolation & subscription billing</p>
+            </div>
+            <div class="absolute top-4 right-4">
+              <span class="px-2 py-1 bg-purple-600 text-white text-xs font-bold rounded-full">
+                €49.00
+              </span>
             </div>
           </div>
           <div class="p-6">
@@ -103,35 +122,42 @@
                 Advanced
               </span>
               <span class="ml-2 text-gray-500 dark:text-gray-400 text-sm">
-                25 min setup
+                35 min setup
               </span>
             </div>
             <p class="text-gray-600 dark:text-gray-400 mb-4">
-              Enable AI agents to interact with your API using the Model Context Protocol with automatic tool generation.
+              Everything in Essential + OpenAI Integration, AI Solutions, Stripe integration, multi-tenancy support, Laravel Scout search, and webhook event broadcasting.
             </p>
             <div class="flex items-center justify-between">
-              <NuxtLink 
-                to="/templates/mcp-integration" 
+              <a
+                href="https://restifytemplates.com/checkout/pro"
+                target="_blank"
+                rel="noopener noreferrer"
                 class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 font-medium"
               >
-                View Template →
-              </NuxtLink>
+                Unlock Pro →
+              </a>
               <div class="flex space-x-2">
                 <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
                 <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
-                <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
+                <span class="w-2 h-2 bg-green-500 rounded-full"></span>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- E-commerce Template -->
+        <!-- Premium Template -->
         <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
           <div class="h-48 bg-gradient-to-br from-orange-500 to-red-600 relative">
             <div class="absolute inset-0 bg-black bg-opacity-20"></div>
             <div class="absolute bottom-4 left-4 right-4">
-              <h3 class="text-xl font-bold text-white mb-2">E-commerce API</h3>
-              <p class="text-orange-100 text-sm">Products, orders & payment handling</p>
+              <h3 class="text-xl font-bold text-white mb-2">Premium Package</h3>
+              <p class="text-orange-100 text-sm">For teams who want to move fast</p>
+            </div>
+            <div class="absolute top-4 right-4">
+              <span class="px-2 py-1 bg-orange-600 text-white text-xs font-bold rounded-full">
+                €99.99
+              </span>
             </div>
           </div>
           <div class="p-6">
@@ -144,78 +170,14 @@
               </span>
             </div>
             <p class="text-gray-600 dark:text-gray-400 mb-4">
-              Complete e-commerce backend with products, categories, orders, payments, and inventory management.
+              Everything in Pro + Anthropic & Gemini AI integration, MCP Server with your data, MCP Client for smart AI Chat, Laravel Nova admin, and priority support.
             </p>
             <div class="flex items-center justify-between">
-              <span class="text-gray-400 font-medium">Coming Soon</span>
+                <span class="text-gray-400 font-medium">Coming Soon</span>
               <div class="flex space-x-2">
                 <span class="w-2 h-2 bg-orange-500 rounded-full"></span>
                 <span class="w-2 h-2 bg-red-500 rounded-full"></span>
-                <span class="w-2 h-2 bg-yellow-500 rounded-full"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Blog API Template -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-          <div class="h-48 bg-gradient-to-br from-indigo-500 to-purple-600 relative">
-            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-            <div class="absolute bottom-4 left-4 right-4">
-              <h3 class="text-xl font-bold text-white mb-2">Blog & CMS API</h3>
-              <p class="text-indigo-100 text-sm">Posts, comments & content management</p>
-            </div>
-          </div>
-          <div class="p-6">
-            <div class="flex items-center mb-4">
-              <span class="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/20 text-yellow-800 dark:text-yellow-200 text-xs font-medium rounded-full">
-                Intermediate
-              </span>
-              <span class="ml-2 text-gray-500 dark:text-gray-400 text-sm">
-                30 min setup
-              </span>
-            </div>
-            <p class="text-gray-600 dark:text-gray-400 mb-4">
-              Content management system with posts, categories, tags, comments, and user roles for content creation.
-            </p>
-            <div class="flex items-center justify-between">
-              <span class="text-gray-400 font-medium">Coming Soon</span>
-              <div class="flex space-x-2">
-                <span class="w-2 h-2 bg-indigo-500 rounded-full"></span>
                 <span class="w-2 h-2 bg-purple-500 rounded-full"></span>
-                <span class="w-2 h-2 bg-pink-500 rounded-full"></span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Multi-tenant Template -->
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
-          <div class="h-48 bg-gradient-to-br from-teal-500 to-cyan-600 relative">
-            <div class="absolute inset-0 bg-black bg-opacity-20"></div>
-            <div class="absolute bottom-4 left-4 right-4">
-              <h3 class="text-xl font-bold text-white mb-2">Multi-tenant SaaS</h3>
-              <p class="text-teal-100 text-sm">Tenant isolation & subscription billing</p>
-            </div>
-          </div>
-          <div class="p-6">
-            <div class="flex items-center mb-4">
-              <span class="px-2 py-1 bg-red-100 dark:bg-red-900/20 text-red-800 dark:text-red-200 text-xs font-medium rounded-full">
-                Advanced
-              </span>
-              <span class="ml-2 text-gray-500 dark:text-gray-400 text-sm">
-                60 min setup
-              </span>
-            </div>
-            <p class="text-gray-600 dark:text-gray-400 mb-4">
-              Multi-tenant architecture with tenant isolation, subscription management, and scalable data segregation.
-            </p>
-            <div class="flex items-center justify-between">
-              <span class="text-gray-400 font-medium">Coming Soon</span>
-              <div class="flex space-x-2">
-                <span class="w-2 h-2 bg-teal-500 rounded-full"></span>
-                <span class="w-2 h-2 bg-cyan-500 rounded-full"></span>
-                <span class="w-2 h-2 bg-blue-500 rounded-full"></span>
               </div>
             </div>
           </div>
@@ -229,7 +191,7 @@
             Need a Custom Template?
           </h2>
           <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
-            Have a specific use case or need help creating a custom template? 
+            Have a specific use case or need help creating a custom template?
             Join our community or reach out for support.
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
@@ -240,7 +202,7 @@
               Join Community
             </NuxtLink>
             <a
-              href="https://github.com/BinarCode/laravel-restify/discussions"
+              href="https://www.binarcode.com/estimate-project"
               target="_blank"
               rel="noopener noreferrer"
               class="inline-flex items-center px-6 py-3 bg-transparent border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 font-medium rounded-lg transition-colors"
