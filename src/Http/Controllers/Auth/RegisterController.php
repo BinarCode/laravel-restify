@@ -28,14 +28,14 @@ class RegisterController extends Controller
 
         $tokenTtl = config('restify.auth.token_ttl');
         $expiresAt = $tokenTtl ? now()->addMinutes($tokenTtl) : null;
-        
+
         $token = $user->createToken('login', ['*'], $expiresAt);
-        
+
         $meta = [
             'token' => $token->plainTextToken,
             'expires_in' => $tokenTtl ? $tokenTtl * 60 : null,
         ];
-        
+
         if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
             $user->notify(new VerifyEmail);
             $meta['email_verification_sent'] = true;
