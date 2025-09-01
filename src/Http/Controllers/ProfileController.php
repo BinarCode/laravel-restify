@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 use Binaryk\LaravelRestify\Http\Requests\ProfileRequestRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
@@ -15,7 +14,7 @@ class ProfileController extends RepositoryController
     {
         if ($repository = $this->guessRepository($request)) {
             return $request->repositoryWith(tap($request->modelQuery(Auth::id(), 'users'),
-                fn($query) => $repository::showQuery(
+                fn ($query) => $repository::showQuery(
                     $request,
                     $repository::mainQuery($request,
                         $query->with($repository::collectWiths($request, $repository)->all()))
@@ -38,7 +37,7 @@ class ProfileController extends RepositoryController
         }
 
         if (method_exists($repository, 'canUseForProfile') && ! call_user_func([$repository, 'canUseForProfile'],
-                $request)) {
+            $request)) {
             return null;
         }
 

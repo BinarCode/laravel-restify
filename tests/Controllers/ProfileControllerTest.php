@@ -48,7 +48,7 @@ class ProfileControllerTest extends IntegrationTestCase
         $this->getJson(Restify::path('profile', [
             'related' => 'posts',
         ]))
-            ->assertJson(fn($json) => $json
+            ->assertJson(fn ($json) => $json
                 ->where('data.attributes.email', $this->authenticatedAs->email)
                 ->has('data.relationships.posts')
                 ->etc()

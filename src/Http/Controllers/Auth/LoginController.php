@@ -32,7 +32,7 @@ class LoginController extends Controller
 
         $tokenTtl = config('restify.auth.token_ttl');
         $expiresAt = $tokenTtl ? now()->addMinutes($tokenTtl) : null;
-        
+
         $token = $user->createToken('login', ['*'], $expiresAt);
 
         return rest($user)->indexMeta([
