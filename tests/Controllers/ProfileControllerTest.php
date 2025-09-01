@@ -30,6 +30,8 @@ class ProfileControllerTest extends IntegrationTestCase
 
     public function test_profile_returns_authenticated_user(): void
     {
+        $this->withoutExceptionHandling();
+
         $response = $this->getJson(Restify::path('profile'))
             ->assertOk()
             ->assertJsonStructure([
@@ -46,16 +48,11 @@ class ProfileControllerTest extends IntegrationTestCase
         $this->getJson(Restify::path('profile', [
             'related' => 'posts',
         ]))
-            ->assertOk()
-            ->assertJsonStructure([
-                'data' => [
-                    'posts' => [
-                        [
-                            'title',
-                        ],
-                    ],
-                ],
-            ]);
+            ->assertJson(fn($json) => $json
+                ->where('data.attributes.email', $this->authenticatedAs->email)
+                ->has('data.relationships.posts')
+                ->etc()
+            );
     }
 
     public function test_profile_update()

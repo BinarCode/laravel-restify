@@ -6,10 +6,16 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\UserProfile;
+use Illuminate\Http\Request;
 
 class UserRepository extends Repository
 {
     use UserProfile;
+
+    public static function canUseForProfile(Request $request): bool
+    {
+        return true;
+    }
 
     public static string $model = User::class;
 
