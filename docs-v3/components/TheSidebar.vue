@@ -144,16 +144,14 @@ watch(isMobileMenuOpen, (isOpen) => {
   }
 })
 
-// Collapsible sections state - start with API section expanded
+// Collapsible sections state - start with all sections expanded
 const collapsedSections = ref<Set<string>>(new Set())
 
-// Initialize sections as collapsed except for API section
+// Initialize all sections as expanded
 onMounted(() => {
   if (navigationSections.value) {
-    const allSectionTitles = navigationSections.value.map(section => section.title)
-    // Start with all sections collapsed except 'API'
-    const sectionsToCollapse = allSectionTitles.filter(title => title !== 'API')
-    collapsedSections.value = new Set(sectionsToCollapse)
+    // Start with all sections expanded (empty set means all open)
+    collapsedSections.value = new Set()
   }
 })
 
