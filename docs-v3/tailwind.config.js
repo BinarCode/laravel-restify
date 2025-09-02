@@ -63,10 +63,10 @@ module.exports = {
               fontWeight: '600'
             },
             code: {
-              color: theme('colors.gray.800'),
-              backgroundColor: theme('colors.gray.100'),
-              padding: '0.25rem 0.375rem',
-              borderRadius: '0.25rem',
+              color: theme('colors.blue.900'),
+              backgroundColor: theme('colors.blue.200'),
+              padding: '0.375rem 0.5rem',
+              borderRadius: '0.375rem',
               fontSize: '0.875em',
               fontWeight: '500'
             },
@@ -101,8 +101,8 @@ module.exports = {
               color: theme('colors.gray.100')
             },
             code: {
-              color: theme('colors.gray.200'),
-              backgroundColor: theme('colors.gray.800')
+              color: theme('colors.blue.300'),
+              backgroundColor: theme('colors.gray.700')
             },
             pre: {
               backgroundColor: theme('colors.gray.800')

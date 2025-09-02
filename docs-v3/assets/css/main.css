@@ -114,12 +114,12 @@ pre {
 }
 
 .prose-docs code {
-  @apply text-sm font-mono bg-blue-100 dark:bg-gray-800 text-blue-900 dark:text-blue-400 px-1 py-0.5 rounded;
+  @apply text-sm font-mono bg-blue-200 dark:bg-gray-700 text-blue-900 dark:text-blue-300 px-2 py-1 rounded;
 }
 
 /* Inline code styling */
 .prose-docs :not(pre) > code {
-  @apply bg-blue-100 dark:bg-gray-800 text-blue-900 dark:text-blue-400 px-1 py-0.5 rounded font-medium;
+  @apply bg-blue-200 dark:bg-gray-700 text-blue-900 dark:text-blue-300 px-2 py-1 rounded font-medium;
 }
 
 /* Navigation active states */

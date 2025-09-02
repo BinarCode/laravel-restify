@@ -195,12 +195,14 @@
             Join our community or reach out for support.
           </p>
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
-            <NuxtLink
-              to="/community"
+            <a
+              href="https://restifytemplates.com/"
+              target="_blank"
+              rel="noopener noreferrer"
               class="inline-flex items-center px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
             >
-              Join Community
-            </NuxtLink>
+              See More
+            </a>
             <a
               href="https://www.binarcode.com/estimate-project"
               target="_blank"
