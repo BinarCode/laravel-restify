@@ -1,14 +1,14 @@
 <template>
   <section class="relative text-center py-20 mb-8">
-    <div class="mb-8">
-      <Sparkles :size="48" class="mb-6 text-primary-500 mx-auto" />
-    </div>
     <h1 class="text-5xl md:text-7xl font-bold text-gray-900 dark:text-white mb-6">
       Laravel Restify
     </h1>
     <p class="text-2xl text-gray-600 dark:text-gray-400 mb-8 max-w-3xl mx-auto leading-relaxed">
       <slot name="subtitle" />
     </p>
+    <div class="mb-12">
+      <HumanToAiTransformation />
+    </div>
     <div class="flex flex-col sm:flex-row gap-4 justify-center">
       <NuxtLink
         to="/quickstart"
@@ -33,5 +33,6 @@
 </template>
 
 <script setup lang="ts">
-import { Sparkles, ArrowRight, Github } from 'lucide-vue-next'
+import { ArrowRight, Github } from 'lucide-vue-next'
+import HumanToAiTransformation from './HumanToAiTransformation.vue'
 </script>
