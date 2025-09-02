@@ -1,5 +1,5 @@
 <template>
-  <section class="py-20">
+  <section class="py-20" :id="id">
     <h2 class="text-4xl font-bold text-center text-gray-900 dark:text-white mb-20">
       How It Works
     </h2>
@@ -47,4 +47,10 @@
 
 <script setup lang="ts">
 import { Database, Sparkles, Users, Bot } from 'lucide-vue-next'
+
+interface Props {
+  id?: string
+}
+
+defineProps<Props>()
 </script>

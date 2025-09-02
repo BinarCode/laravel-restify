@@ -19,14 +19,14 @@ Laravel Restify turns your Eloquent models into both JSON:API endpoints and MCP 
 - **GraphQL** schema generation
 - **Authorization** using Laravel policies
 
-## Templates
+## How It Works
 
-Need a head start? Check out our [Restify Templates](https://restifytemplates.com) for ready-made API starter kits.
+Laravel Restify follows a simple workflow: define your models, create repositories, and automatically get both REST APIs and MCP servers from the same codebase.
 
-## Playground
+## Examples
 
-You can find a playground in the [Restify Demo GitHub repository](https://github.com/BinarCode/restify-demo).
+See how Laravel Restify generates both REST APIs for humans and MCP servers for AI agents from the same Laravel models.
 
-## Videos
+## Contributors
 
-You can find the [full course here](https://www.binarcode.com/learn/restify) with many useful features and insights on how Laravel Restify works. Note that the videos are from a previous version of Restify and may not reflect the latest features.
+Laravel Restify is built and maintained by an amazing community of developers who contribute to making it better every day.

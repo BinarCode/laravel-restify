@@ -9,13 +9,13 @@
         </Hero>
 
         <!-- Clean Feature Grid -->
-        <FeatureGrid />
+        <FeatureGrid id="key-features" />
 
         <!-- Clean How It Works Section -->
-        <HowItWorks />
+        <HowItWorks id="how-it-works" />
 
         <!-- Code Preview Section -->
-        <section class="py-16 relative">
+        <section id="examples" class="py-16 relative">
           <div class="mx-auto px-4">
             <h2 class="text-4xl font-bold text-center text-gray-900 dark:text-white mb-4">
               One Codebase, Two Outputs
@@ -146,7 +146,7 @@ class PostRepository extends Repository
         </section>
 
         <!-- Contributors Section -->
-        <section class="py-16 overflow-hidden">
+        <section id="contributors" class="py-16 overflow-hidden">
           <div class="max-w-6xl mx-auto text-center mb-12">
             <h2 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
               Built by Amazing Contributors
@@ -243,22 +243,40 @@ interface Contributor {
 
 const contributors = ref<Contributor[]>([])
 
-// Fetch contributors from GitHub API
-onMounted(async () => {
+function getFallbackContributors(): Contributor[] {
+  return [
+    { 
+      login: 'BinarCode', 
+      avatar_url: 'https://github.com/BinarCode.png', 
+      html_url: 'https://github.com/BinarCode', 
+      contributions: 100 
+    },
+    { 
+      login: 'eduardlupacescu', 
+      avatar_url: 'https://github.com/eduardlupacescu.png', 
+      html_url: 'https://github.com/eduardlupacescu', 
+      contributions: 50 
+    }
+  ]
+}
+
+async function fetchContributors() {
   try {
     const response = await fetch('https://api.github.com/repos/BinarCode/laravel-restify/contributors?per_page=50')
-    if (response.ok) {
-      contributors.value = await response.json()
-    }
+    if (!response.ok) return
+    
+    contributors.value = await response.json()
   } catch (error) {
     console.warn('Failed to fetch contributors:', error)
-    // Fallback data if API fails
-    contributors.value = [
-      { login: 'BinarCode', avatar_url: 'https://github.com/BinarCode.png', html_url: 'https://github.com/BinarCode', contributions: 100 },
-      { login: 'eduardlupacescu', avatar_url: 'https://github.com/eduardlupacescu.png', html_url: 'https://github.com/eduardlupacescu', contributions: 50 }
-    ]
+    contributors.value = getFallbackContributors()
   }
-})
+}
+
+function initializePage() {
+  fetchContributors()
+}
+
+onMounted(initializePage)
 
 useHead({
   title: 'Laravel Restify - Build amazing REST APIs with Laravel',

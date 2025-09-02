@@ -1,5 +1,5 @@
 <template>
-  <section class="py-16">
+  <section class="py-16" :id="id">
     <h2 class="text-4xl font-bold text-center text-gray-900 dark:text-white mb-16">
       Key Features
     </h2>
@@ -52,5 +52,10 @@
 
 <script setup lang="ts">
 import { Database, Bot, Lock, Search, Layers, ShieldCheck } from 'lucide-vue-next'
-import FeatureCard from './FeatureCard.vue'
+
+interface Props {
+  id?: string
+}
+
+defineProps<Props>()
 </script>
