@@ -19,6 +19,7 @@
     "@nuxtjs/tailwindcss": "^6.12.1",
     "@tailwindcss/typography": "^0.5.16",
     "@vueuse/nuxt": "^11.1.0",
+    "lucide-vue-next": "^0.542.0",
     "nuxt": "^3.13.2",
     "vue": "latest"
   },
