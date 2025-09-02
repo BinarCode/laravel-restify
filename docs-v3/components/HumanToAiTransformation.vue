@@ -1,138 +1,120 @@
 <template>
-  <div class="w-full max-w-3xl mx-auto px-4 py-6">
-    <!-- Main transformation container -->
+  <div class="w-full max-w-4xl mx-auto px-4 py-8 hidden md:block">
+    <!-- Main container showing One Codebase → Two Outputs -->
     <div class="relative flex items-center justify-between">
-      <!-- Left side - Humans -->
+      <!-- Center - One Codebase (Laravel Models) -->
       <div class="flex flex-col items-center space-y-2">
         <div class="relative">
-          <!-- Smaller Users icon -->
+          <!-- Laravel/Database icon representing the single codebase -->
+          <div class="w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg">
+            <Database :size="32" class="text-white" />
+          </div>
+          <!-- Pulsing effect to show it's the source -->
+          <div class="absolute inset-0 rounded-xl bg-primary-400 opacity-20 animate-pulse"></div>
+        </div>
+        <div class="flex flex-col gap-1">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white text-center">One Codebase</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 text-center">Laravel Models</p>
+        </div>
+      </div>
+
+      <!-- Animated branching lines -->
+      <div class="flex-1 relative px-8">
+        <!-- Top branch to REST API -->
+        <div class="relative mb-4">
+          <div class="h-0.5 bg-gradient-to-r from-transparent to-primary-500 transition-all duration-[2s] ease-out"
+               :style="{ width: topBranchWidth }"></div>
+        </div>
+        
+        <!-- Bottom branch to MCP Server -->
+        <div class="relative">
+          <div class="h-0.5 bg-gradient-to-r from-transparent to-primary-500 transition-all duration-[2s] ease-out"
+               :style="{ width: bottomBranchWidth }"></div>
+        </div>
+      </div>
+
+      <!-- Right side - Two Outputs -->
+      <div class="flex flex-col space-y-6">
+        <!-- REST API Output -->
+        <div class="flex items-center space-x-3 transition-all duration-500">
           <div class="w-12 h-12 bg-gradient-to-br from-blue-100 to-blue-200 dark:from-blue-900 dark:to-blue-800 rounded-xl flex items-center justify-center shadow-md">
             <Users :size="24" class="text-blue-600 dark:text-blue-400" />
           </div>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Humans</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 text-center">REST APIs</p>
-      </div>
-
-      <!-- Center - Progress Bar Only -->
-      <div class="flex-1 flex items-center px-6">
-        <!-- Progress bar container -->
-        <div class="relative w-full">
-          <!-- Background bar -->
-          <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden relative">
-            <!-- Left to Right progress bar (Human → AI) -->
-            <div 
-              class="absolute inset-0 h-full bg-gradient-to-r from-green-400 to-green-600 rounded-full transition-all ease-out"
-              :style="{ 
-                width: leftToRightWidth,
-                transitionDuration: transitionDuration,
-                opacity: showLeftToRight ? 1 : 0
-              }"
-            ></div>
-            <!-- Right to Left progress bar (AI → Human) -->
-            <div 
-              class="absolute inset-0 h-full bg-gradient-to-l from-green-400 to-green-600 rounded-full transition-all ease-out ml-auto"
-              :style="{ 
-                width: rightToLeftWidth,
-                transitionDuration: transitionDuration,
-                opacity: showRightToLeft ? 1 : 0
-              }"
-            ></div>
+          <div>
+            <h4 class="text-base font-semibold text-gray-900 dark:text-white">REST API</h4>
+            <p class="text-xs text-gray-600 dark:text-gray-400">For Humans</p>
           </div>
         </div>
-      </div>
 
-      <!-- Right side - AI Agents -->
-      <div class="flex flex-col items-center space-y-2">
-        <div class="relative">
-          <!-- Smaller Bot icon -->
+        <!-- MCP Server Output -->
+        <div class="flex items-center space-x-3 transition-all duration-500">
           <div class="w-12 h-12 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900 dark:to-emerald-800 rounded-xl flex items-center justify-center shadow-md">
             <Bot :size="24" class="text-emerald-600 dark:text-emerald-400" />
           </div>
+          <div>
+            <h4 class="text-base font-semibold text-gray-900 dark:text-white">MCP Server</h4>
+            <p class="text-xs text-gray-600 dark:text-gray-400">For AI Agents</p>
+          </div>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">AI Agents</h3>
-        <p class="text-sm text-gray-600 dark:text-gray-400 text-center">MCP Server</p>
       </div>
     </div>
 
-    <!-- Connecting lines with animation -->
-    <svg class="absolute inset-0 w-full h-full pointer-events-none" style="z-index: -1;">
-      <defs>
-        <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-          <stop offset="0%" style="stop-color:#3b82f6;stop-opacity:0.4" />
-          <stop offset="50%" style="stop-color:#10b981;stop-opacity:0.5" />
-          <stop offset="100%" style="stop-color:#10b981;stop-opacity:0.4" />
-        </linearGradient>
-      </defs>
-      <path 
-        :d="connectionPath"
-        stroke="url(#connectionGradient)"
-        stroke-width="1"
-        fill="none"
-        stroke-dasharray="8,4"
-        :style="{ strokeDashoffset: dashOffset }"
-        class="transition-all duration-1000"
-      />
-    </svg>
+    <!-- "Automatically Generated" indicator -->
+    <div class="text-center mt-6">
+      <div class="inline-flex items-center px-3 py-1 rounded-full bg-green-100 dark:bg-green-900 transition-opacity duration-500"
+           :style="{ opacity: showAutoGenerated ? 1 : 0 }">
+        <Sparkles :size="14" class="text-green-600 dark:text-green-400 mr-1" />
+        <span class="text-xs font-medium text-green-700 dark:text-green-300">Automatically Generated</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { Users, Bot } from 'lucide-vue-next'
+import { ref, onMounted, onUnmounted } from 'vue'
+import { Users, Bot, Database, Sparkles } from 'lucide-vue-next'
 
-const leftToRightWidth = ref('0%')
-const rightToLeftWidth = ref('0%')
-const showLeftToRight = ref(true)
-const showRightToLeft = ref(false)
-const isComplete = ref(false)
-const dashOffset = ref(100)
-const transitionDuration = ref('3000ms')
-
-const connectionPath = computed(() => {
-  return 'M80,40 Q240,20 400,40'
-})
+// Animation states for the "One Codebase, Two Outputs" concept
+const topBranchWidth = ref('0%')
+const bottomBranchWidth = ref('0%')
+const showTopEndpoint = ref(false)
+const showBottomEndpoint = ref(false)
+const highlightRest = ref(false)
+const highlightMcp = ref(false)
+const showAutoGenerated = ref(false)
 
 let animationTimeout: NodeJS.Timeout | null = null
 
 const startAnimation = () => {
   // Reset everything
-  leftToRightWidth.value = '0%'
-  rightToLeftWidth.value = '0%'
-  showLeftToRight.value = true
-  showRightToLeft.value = false
-  isComplete.value = false
-  dashOffset.value = 100
-  transitionDuration.value = '3000ms'
+  topBranchWidth.value = '0%'
+  bottomBranchWidth.value = '0%'
+  showTopEndpoint.value = false
+  showBottomEndpoint.value = false
+  highlightRest.value = false
+  highlightMcp.value = false
+  showAutoGenerated.value = false
 
-  // Phase 1: Human → AI (Left to Right)
+  // Phase 1: Codebase generates BOTH outputs simultaneously
   setTimeout(() => {
-    leftToRightWidth.value = '100%'
-    dashOffset.value = 0
-    isComplete.value = true
-  }, 100)
+    topBranchWidth.value = '100%'
+    bottomBranchWidth.value = '100%'
+  }, 500)
 
-  // Phase 2: Switch to AI → Human after 2 seconds
+  // Phase 2: Both endpoints appear at the same time
   setTimeout(() => {
-    showLeftToRight.value = false
-    showRightToLeft.value = true
-    leftToRightWidth.value = '0%'
-    rightToLeftWidth.value = '0%'
-    isComplete.value = false
-    dashOffset.value = 100
-  }, 5100) // 100ms + 3000ms + 2000ms wait
+    showTopEndpoint.value = true
+    showBottomEndpoint.value = true
+    highlightRest.value = true
+    highlightMcp.value = true
+  }, 2000)
 
-  // Fill right to left (AI → Human)
+  // Phase 3: Show "Automatically Generated" message
   setTimeout(() => {
-    rightToLeftWidth.value = '100%'
-    dashOffset.value = 0
-    isComplete.value = true
-  }, 5200)
+    showAutoGenerated.value = true
+  }, 2000)
 
-  // Restart cycle after 2 seconds
-  setTimeout(() => {
-    animationTimeout = setTimeout(startAnimation, 1000)
-  }, 8200)
+  // Animation completes and stays in final state (no restart)
 }
 
 onMounted(() => {
