@@ -46,9 +46,8 @@
       <div class="flex flex-col items-center space-y-2">
         <div class="relative">
           <!-- Smaller Bot icon -->
-          <div class="w-12 h-12 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900 dark:to-emerald-800 rounded-xl flex items-center justify-center shadow-md"
-               :class="{ 'ring-2 ring-emerald-300 dark:ring-emerald-600 ring-opacity-40': isComplete }">
-            <Bot :size="24" class="text-emerald-600 dark:text-emerald-400 transition-all duration-300" :class="{ 'scale-105': isComplete }" />
+          <div class="w-12 h-12 bg-gradient-to-br from-emerald-100 to-emerald-200 dark:from-emerald-900 dark:to-emerald-800 rounded-xl flex items-center justify-center shadow-md">
+            <Bot :size="24" class="text-emerald-600 dark:text-emerald-400" />
           </div>
         </div>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white">AI Agents</h3>

@@ -7,42 +7,42 @@
       <FeatureCard
         :icon="Database"
         title="JSON:API Endpoints"
-        color="from-primary-500 to-blue-500"
+        color="from-primary-500 to-primary-600"
       >
         Automatically generate JSON:API compliant endpoints from your Laravel Eloquent models with zero configuration.
       </FeatureCard>
       <FeatureCard
         :icon="Bot"
         title="MCP Server Generation"
-        color="from-blue-600 to-indigo-600"
+        color="from-slate-500 to-slate-600"
       >
         Enable AI agents to interact with your APIs using the Model Context Protocol for seamless AI integration.
       </FeatureCard>
       <FeatureCard
         :icon="Lock"
         title="Laravel Sanctum Auth"
-        color="from-green-500 to-teal-500"
+        color="from-primary-500 to-primary-600"
       >
         Built-in authentication using Laravel Sanctum for secure API access with token-based authentication.
       </FeatureCard>
       <FeatureCard
         :icon="Search"
         title="Advanced Search & Filtering"
-        color="from-blue-500 to-cyan-500"
+        color="from-slate-500 to-slate-600"
       >
         Powerful query capabilities with filtering, sorting, and search functionality built right into your API endpoints.
       </FeatureCard>
       <FeatureCard
         :icon="Layers"
         title="GraphQL Schema"
-        color="from-slate-500 to-gray-600"
+        color="from-primary-500 to-primary-600"
       >
         Automatic GraphQL schema generation from your models for flexible data querying and modern API interactions.
       </FeatureCard>
       <FeatureCard
         :icon="ShieldCheck"
         title="Policy-Based Authorization"
-        color="from-amber-500 to-orange-500"
+        color="from-slate-500 to-slate-600"
       >
         Secure your APIs with Laravel's built-in authorization system using policies for fine-grained access control.
       </FeatureCard>

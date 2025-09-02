@@ -28,9 +28,7 @@
               <!-- REST API Example -->
               <div class="group">
                 <div class="flex items-center mb-4">
-                  <div class="w-8 h-8 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center mr-3">
-                    <span class="text-sm">👥</span>
-                  </div>
+                  <span class="text-3xl mr-3">👥</span>
                   <h3 class="text-2xl font-bold text-gray-900 dark:text-white">REST API</h3>
                   <span class="ml-3 text-sm text-gray-500 dark:text-gray-400">For humans & applications</span>
                 </div>
@@ -59,9 +57,7 @@
               <!-- MCP Server Example -->
               <div class="group">
                 <div class="flex items-center mb-4">
-                  <div class="w-8 h-8 bg-gradient-to-br from-purple-500 to-pink-500 rounded-lg flex items-center justify-center mr-3">
-                    <span class="text-sm">🤖</span>
-                  </div>
+                  <span class="text-3xl mr-3">🤖</span>
                   <h3 class="text-2xl font-bold text-gray-900 dark:text-white">MCP Server</h3>
                   <span class="ml-3 text-sm text-gray-500 dark:text-gray-400">For AI agents</span>
                 </div>
