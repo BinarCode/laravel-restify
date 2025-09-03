@@ -1,13 +1,15 @@
 ---
-title: Introduction
-description: One Codebase. REST for Humans, MCP for AI Agents.
+title: Laravel Restify - PHP REST API Framework & JSON API Generator
+description: Transform Laravel Eloquent models into JSON:API endpoints and MCP servers automatically. Complete Laravel API framework with authentication, filtering, and AI agent integration.
 menuTitle: Introduction
 category: Getting Started
 ---
 
-# Unified Laravel API Layer for Humans and AI.
+# Laravel REST API Framework & JSON:API Generator
 
-Laravel Restify turns your Eloquent models into both JSON:API endpoints and MCP servers -- automatically. Build once, and instantly serve APIs that work seamlessly for developers, apps, and AI agents.
+Laravel Restify is a powerful **Laravel API package** that automatically transforms your Eloquent models into **JSON:API endpoints** and **MCP servers** for AI agents. This comprehensive **PHP REST API framework** enables you to build production-ready APIs with minimal code while following industry standards.
+
+**Build once, serve everywhere** - Create APIs that work seamlessly for developers, web applications, mobile apps, and AI agents like Claude Desktop.
 
 
 ## Key Features
