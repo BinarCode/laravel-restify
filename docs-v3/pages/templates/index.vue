@@ -505,20 +505,6 @@ useHead({
       name: 'description',
       content: 'Jump-start your API development with ready-to-use Laravel Restify templates. CRUD, authentication, MCP integration, and more.'
     }
-  ],
-  script: [
-    {
-      async: true,
-      src: 'https://www.googletagmanager.com/gtag/js?id=G-R8WWHZK13N'
-    },
-    {
-      innerHTML: `
-        window.dataLayer = window.dataLayer || [];
-        function gtag(){dataLayer.push(arguments);}
-        gtag('js', new Date());
-        gtag('config', 'G-R8WWHZK13N');
-      `
-    }
   ]
 })
 </script>

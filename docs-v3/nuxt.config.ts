@@ -47,6 +47,18 @@ export default defineNuxtConfig({
         {
           src: '//code.tidio.co/pgx3d8jlrufene0cnyv274lgege4u5c1.js',
           async: true
+        },
+        {
+          src: 'https://www.googletagmanager.com/gtag/js?id=G-R8WWHZK13N',
+          async: true
+        },
+        {
+          innerHTML: `
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-R8WWHZK13N');
+          `
         }
       ]
     }

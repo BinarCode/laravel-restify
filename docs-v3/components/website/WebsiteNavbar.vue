@@ -30,7 +30,7 @@
         <div class="hidden lg:flex lg:items-center lg:space-x-8">
           <NuxtLink
             to="/docs"
-            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
             :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/docs') }"
           >
             Documentation
@@ -38,7 +38,7 @@
           
           <NuxtLink
             to="/templates"
-            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
             :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/templates') }"
           >
             Templates
@@ -46,7 +46,7 @@
           
           <NuxtLink
             to="/case-studies"
-            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
             :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/case-studies') }"
           >
             Case Studies
@@ -54,7 +54,7 @@
           
           <NuxtLink
             to="/community"
-            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
             :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/community') }"
           >
             Community
@@ -62,7 +62,7 @@
           
           <NuxtLink
             to="/playground"
-            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors"
+            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
             :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/playground') }"
           >
             Playground
@@ -104,7 +104,7 @@
         <NuxtLink
           to="/docs"
           @click="toggleMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
           :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/docs') }"
         >
           Documentation
@@ -113,7 +113,7 @@
         <NuxtLink
           to="/templates"
           @click="toggleMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
           :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/templates') }"
         >
           Templates
@@ -122,7 +122,7 @@
         <NuxtLink
           to="/case-studies"
           @click="toggleMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
           :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/case-studies') }"
         >
           Case Studies
@@ -131,7 +131,7 @@
         <NuxtLink
           to="/community"
           @click="toggleMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
           :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/community') }"
         >
           Community
@@ -140,7 +140,7 @@
         <NuxtLink
           to="/playground"
           @click="toggleMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors"
+          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
           :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/playground') }"
         >
           Playground
