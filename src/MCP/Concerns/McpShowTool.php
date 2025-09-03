@@ -45,6 +45,6 @@ trait McpShowTool
             ->required();
 
         $schema->string('include')
-            ->description(static::formatRelationshipDocumentation());
+            ->description(static::formatRelationshipDocumentation(app(McpShowRequest::class)));
     }
 }
