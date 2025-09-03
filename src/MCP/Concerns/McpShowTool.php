@@ -21,7 +21,7 @@ trait McpShowTool
         $query = static::query($request);
 
         // Apply showQuery and mainQuery with proper relationship loading
-        $model = tap($query, fn($query) => static::showQuery(
+        $model = tap($query, fn ($query) => static::showQuery(
             $request,
             static::mainQuery($request, $query->with(static::collectWiths(
                 $request, $this
