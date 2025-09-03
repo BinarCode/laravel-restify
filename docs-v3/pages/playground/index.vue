@@ -10,7 +10,7 @@
           Test and experiment with Laravel Restify features in our interactive playground.
           See how your API endpoints work without setting up a local environment.
         </p>
-        
+
         <!-- GitHub Repository Link -->
         <div class="mt-8 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800 max-w-2xl mx-auto">
           <div class="flex items-center justify-center space-x-2 text-blue-700 dark:text-blue-300">
@@ -18,9 +18,9 @@
               <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd" />
             </svg>
             <span class="font-medium">Demo Repository:</span>
-            <a 
-              href="https://github.com/BinarCode/restify-demo" 
-              target="_blank" 
+            <a
+              href="https://github.com/BinarCode/restify-demo"
+              target="_blank"
               rel="noopener noreferrer"
               class="font-mono text-sm hover:underline"
             >
@@ -62,6 +62,82 @@
                 <span class="text-lg">MCP Server</span>
               </div>
               <p class="text-sm opacity-80 mt-1">AI Agents & Model Context Protocol</p>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quick Examples -->
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quick Examples</h2>
+        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6">
+          <!-- HTTP API Examples -->
+          <div v-if="activeTab === 'http'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button
+              @click="loadExample('api/restify/organizations', 'GET')"
+              class="p-4 text-left bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-800"
+            >
+              <div class="font-mono text-sm text-blue-600 dark:text-blue-400 font-medium">GET</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Organizations</div>
+            </button>
+
+            <button
+              @click="loadExample('api/restify/organizations?search=Roma', 'GET')"
+              class="p-4 text-left bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors border border-purple-200 dark:border-purple-800"
+            >
+              <div class="font-mono text-sm text-purple-600 dark:text-purple-400 font-medium">GET</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Search Roma</div>
+            </button>
+
+            <button
+              @click="loadExample('api/restify/organizations?related=contacts', 'GET')"
+              class="p-4 text-left bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors border border-green-200 dark:border-green-800"
+            >
+              <div class="font-mono text-sm text-green-600 dark:text-green-400 font-medium">GET</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">With Contacts</div>
+            </button>
+
+            <button
+              @click="loadExample('api/restify/contacts', 'GET')"
+              class="p-4 text-left bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-colors border border-orange-200 dark:border-orange-800"
+            >
+              <div class="font-mono text-sm text-orange-600 dark:text-orange-400 font-medium">GET</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Contacts</div>
+            </button>
+          </div>
+
+          <!-- MCP Examples -->
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <button
+              @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'initialize', params: {}}))"
+              class="p-4 text-left bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors border border-indigo-200 dark:border-indigo-800"
+            >
+              <div class="font-mono text-sm text-indigo-600 dark:text-indigo-400 font-medium">POST</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Initialize</div>
+            </button>
+
+            <button
+              @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'tools/list', params: {}, jsonrpc: '2.0', id: 2}, null, 2))"
+              class="p-4 text-left bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 rounded-lg transition-colors border border-cyan-200 dark:border-cyan-800"
+            >
+              <div class="font-mono text-sm text-cyan-600 dark:text-cyan-400 font-medium">POST</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">List Tools</div>
+            </button>
+
+            <button
+              @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'tools/call', params: {name: 'restify-list', arguments: {resource: 'organizations', search: 'Roma'}}, jsonrpc: '2.0', id: 3}, null, 2))"
+              class="p-4 text-left bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800"
+            >
+              <div class="font-mono text-sm text-emerald-600 dark:text-emerald-400 font-medium">POST</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Organization List (Roma)</div>
+            </button>
+
+            <button
+              @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'tools/call', params: {name: 'organizations-index-tool', arguments: {search: 'BinarCode'}}, jsonrpc: '2.0', id: 2}, null, 2))"
+              class="p-4 text-left bg-amber-50 dark:bg-amber-900/20 hover:bg-amber-100 dark:hover:bg-amber-900/30 rounded-lg transition-colors border border-amber-200 dark:border-amber-800"
+            >
+              <div class="font-mono text-sm text-amber-600 dark:text-amber-400 font-medium">POST</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Search BinarCode</div>
             </button>
           </div>
         </div>
@@ -154,73 +230,6 @@
         </div>
       </div>
 
-      <!-- Quick Examples -->
-      <div class="mb-16">
-        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quick Examples</h2>
-        <div class="bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6">
-          <!-- HTTP API Examples -->
-          <div v-if="activeTab === 'http'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <button
-              @click="loadExample('api/restify/organizations', 'GET')"
-              class="p-4 text-left bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 rounded-lg transition-colors border border-blue-200 dark:border-blue-800"
-            >
-              <div class="font-mono text-sm text-blue-600 dark:text-blue-400 font-medium">GET</div>
-              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Organizations</div>
-            </button>
-
-            <button
-              @click="loadExample('api/restify/organizations?search=Roma', 'GET')"
-              class="p-4 text-left bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 rounded-lg transition-colors border border-purple-200 dark:border-purple-800"
-            >
-              <div class="font-mono text-sm text-purple-600 dark:text-purple-400 font-medium">GET</div>
-              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Search Roma</div>
-            </button>
-
-            <button
-              @click="loadExample('api/restify/organizations?related=contacts', 'GET')"
-              class="p-4 text-left bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/30 rounded-lg transition-colors border border-green-200 dark:border-green-800"
-            >
-              <div class="font-mono text-sm text-green-600 dark:text-green-400 font-medium">GET</div>
-              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">With Contacts</div>
-            </button>
-
-            <button
-              @click="loadExample('api/restify/contacts', 'GET')"
-              class="p-4 text-left bg-orange-50 dark:bg-orange-900/20 hover:bg-orange-100 dark:hover:bg-orange-900/30 rounded-lg transition-colors border border-orange-200 dark:border-orange-800"
-            >
-              <div class="font-mono text-sm text-orange-600 dark:text-orange-400 font-medium">GET</div>
-              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Contacts</div>
-            </button>
-          </div>
-
-          <!-- MCP Examples -->
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <button 
-              @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'initialize', params: {}}))"
-              class="p-4 text-left bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors border border-indigo-200 dark:border-indigo-800"
-            >
-              <div class="font-mono text-sm text-indigo-600 dark:text-indigo-400 font-medium">POST</div>
-              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Initialize</div>
-            </button>
-            
-            <button 
-              @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'tools/list', params: {}}))"
-              class="p-4 text-left bg-cyan-50 dark:bg-cyan-900/20 hover:bg-cyan-100 dark:hover:bg-cyan-900/30 rounded-lg transition-colors border border-cyan-200 dark:border-cyan-800"
-            >
-              <div class="font-mono text-sm text-cyan-600 dark:text-cyan-400 font-medium">POST</div>
-              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">List Tools</div>
-            </button>
-            
-            <button 
-              @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'tools/call', params: {name: 'restify-list', arguments: {resource: 'organizations'}}}))"
-              class="p-4 text-left bg-emerald-50 dark:bg-emerald-900/20 hover:bg-emerald-100 dark:hover:bg-emerald-900/30 rounded-lg transition-colors border border-emerald-200 dark:border-emerald-800"
-            >
-              <div class="font-mono text-sm text-emerald-600 dark:text-emerald-400 font-medium">POST</div>
-              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Call Tool</div>
-            </button>
-          </div>
-        </div>
-      </div>
 
       <!-- Sample Data Section -->
       <div class="mb-16">
@@ -330,11 +339,12 @@ const placeholderText = computed(() => {
   "description": "Sample organization"
 }`
     : `{
-  "method": "call",
+  "method": "tools/list",
   "params": {
-    "name": "restify-list",
-    "arguments": {}
-  }
+
+  },
+  "jsonrpc": "2.0",
+  "id": 2
 }`
 })
 
@@ -396,7 +406,7 @@ const sendRequest = async () => {
     const res = await fetch(url, options)
     const responseText = await res.text()
     let data
-    
+
     if (responseText.trim()) {
       try {
         data = JSON.parse(responseText)
