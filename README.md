@@ -220,7 +220,7 @@ Need a production-ready starting point? Check out [Restify Templates](https://re
 
 ## Resources
 
-- **[Documentation](https://restify.binarcode.com)** - Complete guides and API reference
+- **[Documentation](https://laravel-restify.com)** - Complete guides and API reference
 - **[Demo Repository](https://github.com/BinarCode/restify-demo)** - Working example
 - **[Video Course](https://www.binarcode.com/learn/restify)** - Visual learning resource
 
