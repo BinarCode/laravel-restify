@@ -109,7 +109,7 @@
           <!-- MCP Examples -->
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
-              @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'initialize', params: {}}))"
+              @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({jsonrpc: '2.0', method: 'initialize', params: {capabilities: {tools: []}}, id: 1}, null, 2))"
               class="p-4 text-left bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/30 rounded-lg transition-colors border border-indigo-200 dark:border-indigo-800"
             >
               <div class="font-mono text-sm text-indigo-600 dark:text-indigo-400 font-medium">POST</div>
