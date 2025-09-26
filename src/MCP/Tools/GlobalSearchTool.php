@@ -6,10 +6,10 @@ use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\GlobalSearch;
-use Generator;
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
-use Laravel\Mcp\Server\Tools\ToolResult;
 
 class GlobalSearchTool extends Tool
 {
@@ -23,7 +23,7 @@ class GlobalSearchTool extends Tool
         return 'Search across all repositories in the Laravel Restify application. Returns matching records from all searchable repositories with repository context, titles, and direct API links.';
     }
 
-    public function schema(ToolInputSchema $schema): ToolInputSchema
+    public function schema(JsonSchema $schema): array
     {
         $searchableRepositories = collect(Restify::globallySearchableRepositories(app(McpRequest::class)));
 
@@ -34,35 +34,31 @@ class GlobalSearchTool extends Tool
             return "{$repo::uriKey()} ({$searchableFields})";
         })->implode(', ');
 
-        $schema->string('search')
-            ->description("Search query to find records across all repositories. Searchable fields by repository: {$searchableInfo}")
-            ->required();
-
-        $schema->integer('limit')
-            ->description('Maximum number of results to return (default: uses each repository\'s globalSearchResults setting)');
-
-        return $schema;
+        return [
+            'search' => $schema->string()->description("Search query to find records across all repositories. Searchable fields by repository: {$searchableInfo}")->required(),
+            'limit' => $schema->integer()->description('Maximum number of results to return (default: uses each repository\'s globalSearchResults setting)'),
+        ];
     }
 
-    public function handle(array $arguments): ToolResult|Generator
+    public function handle(Request $request): Response
     {
-        $request = app(McpRequest::class);
-        $request->merge([
-            'search' => $arguments['search'] ?? '',
+        $mcpRequest = app(McpRequest::class);
+        $mcpRequest->merge([
+            'search' => $request->input('search', ''),
         ]);
 
         // If limit is provided, we could apply it per repository, but for now
         // we'll respect each repository's globalSearchResults setting
         // This matches the behavior of GlobalSearchController
 
-        $globallySearchableRepositories = Restify::globallySearchableRepositories($request);
+        $globallySearchableRepositories = Restify::globallySearchableRepositories($mcpRequest);
 
         $results = (new GlobalSearch(
-            $request,
+            $mcpRequest,
             $globallySearchableRepositories
         ))->get();
 
-        return ToolResult::json([
+        return Response::json([
             'results' => $results,
             'total' => count($results),
             'searched_repositories' => collect($globallySearchableRepositories)->map(fn ($repo) => [

@@ -4,36 +4,21 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
+use Illuminate\JsonSchema\JsonSchema;
 
 /**
  * @mixin \Binaryk\LaravelRestify\Repositories\Repository
  */
 trait McpActionTool
 {
-    public function actionTool(Action $action, array $arguments, McpActionRequest $actionRequest): array
+    public function actionTool(Action $action, McpActionRequest $actionRequest): array
     {
-        $actionRequest->merge($arguments);
-
-        $this->sanitizeToolRequest($actionRequest, $arguments);
-
         if ($id = $actionRequest->input('id')) {
             if (! $action->authorizedToRun($actionRequest, $actionRequest->findModelOrFail($id))) {
                 return [
                     'error' => 'Not authorized to run this action',
                     'getter' => $action->uriKey(),
                 ];
-            }
-        }
-
-        // Set up the action request context based on action type
-        if (! $action->isStandalone()) {
-            if (isset($arguments['id'])) {
-                // Single model action (show context)
-                $actionRequest->merge(['id' => $arguments['id']]);
-            } elseif (isset($arguments['repositories'])) {
-                // Multiple models action (index context)
-                $actionRequest->merge(['repositories' => $arguments['repositories']]);
             }
         }
 
@@ -61,9 +46,10 @@ trait McpActionTool
         }
     }
 
-    public static function actionToolSchema(Action $action, ToolInputSchema $schema, McpActionRequest $mcpRequest): void
+    public static function actionToolSchema(Action $action, JsonSchema $schema, McpActionRequest $mcpRequest): array
     {
         $modelName = class_basename(static::guessModelClassName());
+        $properties = [];
 
         // Add action-specific validation rules
         $actionRules = $action->rules();
@@ -73,13 +59,13 @@ trait McpActionTool
 
             // Determine field type based on rules
             if (in_array('boolean', $rulesArray)) {
-                $fieldSchema = $schema->boolean($field);
+                $fieldSchema = $schema->boolean();
             } elseif (in_array('integer', $rulesArray) || in_array('numeric', $rulesArray)) {
-                $fieldSchema = $schema->number($field);
+                $fieldSchema = $schema->number();
             } elseif (in_array('array', $rulesArray)) {
-                $fieldSchema = $schema->string($field);
+                $fieldSchema = $schema->string();
             } else {
-                $fieldSchema = $schema->string($field);
+                $fieldSchema = $schema->string();
             }
 
             if ($isRequired) {
@@ -87,12 +73,13 @@ trait McpActionTool
             }
 
             $fieldSchema->description("Action parameter: {$field}");
+            $properties[$field] = $fieldSchema;
         }
 
         // Add context-specific fields based on action type
         if ($action->isStandalone()) {
             // Standalone actions don't need ID or repositories
-            $schema->string('include')
+            $properties['include'] = $schema->string()
                 ->description('Comma-separated list of relationships to include in response');
         } else {
             // Check if it's primarily a show action or index action
@@ -101,21 +88,23 @@ trait McpActionTool
 
             if ($shownOnShow && ! $shownOnIndex) {
                 // Show action - requires single ID
-                $schema->string('id')
+                $properties['id'] = $schema->string()
                     ->description("The ID of the {$modelName} to perform the action on")
                     ->required();
 
-                $schema->string('include')
+                $properties['include'] = $schema->string()
                     ->description('Comma-separated list of relationships to include');
             } else {
                 // Index action - requires repositories array
-                $schema->string('repositories')
+                $properties['repositories'] = $schema->string()
                     ->description("Array of {$modelName} IDs to perform the action on. e.g. repositories=[1,2,3]")
                     ->required();
 
-                $schema->string('include')
+                $properties['include'] = $schema->string()
                     ->description('Comma-separated list of relationships to include');
             }
         }
+
+        return $properties;
     }
 }

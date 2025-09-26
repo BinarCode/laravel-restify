@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
@@ -11,15 +10,6 @@ use Binaryk\LaravelRestify\Repositories\Repository;
  */
 trait McpToolHelpers
 {
-    protected function sanitizeToolRequest(RestifyRequest $request, array $arguments): void
-    {
-        if (! isset($arguments['id'])) {
-            $request->merge([
-                'id' => null,
-            ]);
-        }
-    }
-
     protected static function getRelationshipFields(string $repositoryClass, McpRequest $request): array
     {
         try {

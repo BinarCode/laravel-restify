@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Generator;
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
-use Laravel\Mcp\Server\Tools\ToolResult;
 
 class ShowTool extends Tool
 {
@@ -37,18 +37,31 @@ class ShowTool extends Tool
         return "Retrieve a single {$modelName} record by ID from the {$uriKey} repository with optional relationship loading.";
     }
 
-    public function schema(ToolInputSchema $schema): ToolInputSchema
+    public function schema(JsonSchema $schema): array
     {
         $repositoryClass = get_class($this->repository);
-        $repositoryClass::showToolSchema($schema);
 
-        return $schema;
+        // Use repository's schema method if it has MCP tools
+        if (method_exists($repositoryClass, 'showToolSchema')) {
+            return $repositoryClass::showToolSchema($schema);
+        }
+
+        // Fallback to basic schema
+        $modelName = class_basename($repositoryClass::guessModelClassName());
+
+        return [
+            'id' => $schema->string()->description("The ID of the $modelName to retrieve")->required(),
+            'include' => $schema->string()->description('Comma-separated list of relationships to include'),
+        ];
     }
 
-    public function handle(array $arguments): ToolResult|Generator
+    public function handle(Request $request): Response
     {
-        $result = $this->repository->showTool($arguments, app(McpShowRequest::class));
+        $mcpRequest = app(McpShowRequest::class);
+        $mcpRequest->replace($request->all());
 
-        return ToolResult::json($result);
+        $result = $this->repository->showTool($mcpRequest);
+
+        return Response::json($result);
     }
 }

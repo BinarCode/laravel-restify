@@ -774,13 +774,6 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
      */
     public function guessFieldType(): string
     {
-        // Check field class type first
-        $fieldType = $this->guessTypeFromFieldClass();
-        if ($fieldType) {
-            return $fieldType;
-        }
-
-        // Check validation rules
         $ruleType = $this->guessTypeFromValidationRules();
         if ($ruleType) {
             return $ruleType;
@@ -794,28 +787,6 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
 
         // Default to string
         return 'string';
-    }
-
-    /**
-     * Guess type from field class name.
-     */
-    protected function guessTypeFromFieldClass(): ?string
-    {
-        $className = class_basename(static::class);
-
-        return match ($className) {
-            'Boolean', 'BooleanField' => 'boolean',
-            'Number', 'Integer', 'Decimal', 'Float' => 'number',
-            'Email' => 'string',
-            'Password' => 'string',
-            'Textarea' => 'string',
-            'Text', 'TextField' => 'string',
-            'Date', 'DateTime' => 'string',
-            'File', 'Image' => 'string',
-            'Select', 'MultiSelect' => 'array',
-            'BelongsTo', 'HasOne', 'HasMany', 'BelongsToMany' => 'object',
-            default => null
-        };
     }
 
     /**
@@ -842,7 +813,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
             return 'boolean';
         }
 
-        if ($this->hasAnyRule($ruleStrings, ['email', 'url', 'ip', 'uuid', 'string', 'regex', 'in', 'array'])) {
+        if ($this->hasAnyRule($ruleStrings, ['email', 'url', 'ip', 'uuid', 'string', 'regex', 'array'])) {
             return 'string';
         }
 

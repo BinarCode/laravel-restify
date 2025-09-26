@@ -18,7 +18,8 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Mcp\Server\Facades\Mcp;
+use Illuminate\Testing\Fluent\AssertableJson;
+use Laravel\Mcp\Facades\Mcp;
 use Laravel\Mcp\Server\McpServiceProvider;
 
 class McpFieldsIntegrationTest extends IntegrationTestCase
@@ -382,9 +383,15 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             'params' => [],
         ];
 
-        $toolsResponse = $this->postJson('/test-restify-relations', $toolsListPayload);
+        $this->getJson($mcpPostRepository::route())
+            ->assertJson(function (AssertableJson $json) {
+                $json
+                    ->where('data.0.attributes.title', 'Test Post with User')
+                    ->where('data.0.attributes.description', 'A post that belongs to a user')
+                    ->etc();
+            });
 
-        $toolsData = $toolsResponse->json();
+        $toolsData = $this->postJson('/test-restify-relations', $toolsListPayload)->json();
 
         // Find the post index tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();

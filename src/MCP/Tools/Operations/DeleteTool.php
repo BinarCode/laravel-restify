@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpDestroyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Generator;
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
-use Laravel\Mcp\Server\Tools\ToolResult;
 
 class DeleteTool extends Tool
 {
@@ -37,18 +37,23 @@ class DeleteTool extends Tool
         return "Delete an existing {$modelName} record by ID from the {$uriKey} repository.";
     }
 
-    public function schema(ToolInputSchema $schema): ToolInputSchema
+    public function schema(JsonSchema $schema): array
     {
         $repositoryClass = get_class($this->repository);
-        $repositoryClass::destroyToolSchema($schema);
+        $modelName = class_basename($repositoryClass::guessModelClassName());
 
-        return $schema;
+        return [
+            'id' => $schema->string()->description("The ID of the $modelName to delete")->required(),
+        ];
     }
 
-    public function handle(array $arguments): ToolResult|Generator
+    public function handle(Request $request): Response
     {
-        $result = $this->repository->deleteTool($arguments, app(McpDestroyRequest::class));
+        $mcpRequest = app(McpDestroyRequest::class);
+        $mcpRequest->merge($request->all());
 
-        return ToolResult::json($result);
+        $result = $this->repository->deleteTool($mcpRequest);
+
+        return Response::json($result);
     }
 }

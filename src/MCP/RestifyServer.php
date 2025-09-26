@@ -24,34 +24,64 @@ use Laravel\Mcp\Server;
 
 class RestifyServer extends Server
 {
-    public string $serverName = 'Laravel Restify';
+    /**
+     * The MCP server's name.
+     */
+    protected string $name = 'Laravel Restify';
 
-    public string $serverVersion = '0.0.1';
+    /**
+     * The MCP server's version.
+     */
+    protected string $version = '0.0.1';
 
+    /**
+     * The MCP server's instructions for the LLM.
+     */
     public string $instructions = 'Laravel Restify MCP server providing access to RESTful API resources, repository operations, field management, action execution, and filter/search capabilities. Restify helps build and interact with REST APIs efficiently.';
 
+    /**
+     * The default pagination length for resources that support pagination.
+     */
     public int $defaultPaginationLength = 50;
 
     /**
-     * @var string[]
+     * The tools registered with this MCP server.
+     *
+     * @var array<int, class-string<\Laravel\Mcp\Server\Tool>>
      */
-    public array $resources = [
+    protected array $tools = [];
+
+    /**
+     * The resources registered with this MCP server.
+     *
+     * @var array<int, class-string<\Laravel\Mcp\Server\Resource>>
+     */
+    protected array $resources = [
         ApplicationInfo::class,
     ];
 
-    public function boot(): void
+    /**
+     * The prompts registered with this MCP server.
+     *
+     * @var array<int, class-string<\Laravel\Mcp\Server\Prompt>>
+     */
+    protected array $prompts = [];
+
+    protected function boot(): void
     {
-        $this->discoverTools();
+        collect($this->discoverTools())->each(fn (string $tool): string => $this->tools[] = $tool);
         $this->discoverRepositoryTools();
-        $this->discoverResources();
-        $this->discoverPrompts();
+        collect($this->discoverResources())->each(fn (string $resource): string => $this->resources[] = $resource);
+        collect($this->discoverPrompts())->each(fn (string $prompt): string => $this->prompts[] = $prompt);
     }
 
     /**
-     * @return array<string>
+     * @return array<int, class-string<\Laravel\Mcp\Server\Tool>>
      */
     protected function discoverTools(): array
     {
+        $tools = [];
+
         $excludedTools = config('restify.mcp.tools.exclude', []);
         $toolDir = new \DirectoryIterator(__DIR__.DIRECTORY_SEPARATOR.'Tools');
 
@@ -59,7 +89,7 @@ class RestifyServer extends Server
             if ($toolFile->isFile() && $toolFile->getExtension() === 'php') {
                 $fqdn = 'Binaryk\\LaravelRestify\\MCP\\Tools\\'.$toolFile->getBasename('.php');
                 if (class_exists($fqdn) && ! in_array($fqdn, $excludedTools, true)) {
-                    $this->addTool($fqdn);
+                    $tools[] = $fqdn;
                 }
             }
         }
@@ -72,7 +102,7 @@ class RestifyServer extends Server
                 if ($toolFile->isFile() && $toolFile->getExtension() === 'php') {
                     $fqdn = 'App\\Restify\\Mcp\\Tools\\'.$toolFile->getBasename('.php');
                     if (class_exists($fqdn) && ! in_array($fqdn, $excludedTools, true)) {
-                        $this->addTool($fqdn);
+                        $tools[] = $fqdn;
                     }
                 }
             }
@@ -81,11 +111,11 @@ class RestifyServer extends Server
         $extraTools = config('restify.mcp.tools.include', []);
         foreach ($extraTools as $toolClass) {
             if (class_exists($toolClass)) {
-                $this->addTool($toolClass);
+                $tools[] = $toolClass;
             }
         }
 
-        return $this->registeredTools;
+        return $tools;
     }
 
     protected function discoverRepositoryTools(): void
@@ -99,27 +129,27 @@ class RestifyServer extends Server
 
                 // if it's for User repository, add the ProfileTool
                 if ($repositoryInstance::uriKey() === 'users') {
-                    $this->addTool(new ProfileTool($repository));
+                    $this->tools[] = new ProfileTool($repository);
                 }
 
                 if (method_exists($repositoryInstance, 'mcpAllowsIndex') && $repositoryInstance->mcpAllowsIndex()) {
-                    $this->addTool(new IndexTool($repository));
+                    $this->tools[] = new IndexTool($repository);
                 }
 
                 if (method_exists($repositoryInstance, 'mcpAllowsShow') && $repositoryInstance->mcpAllowsShow()) {
-                    $this->addTool(new ShowTool($repository));
+                    $this->tools[] = new ShowTool($repository);
                 }
 
                 if (method_exists($repositoryInstance, 'mcpAllowsStore') && $repositoryInstance->mcpAllowsStore()) {
-                    $this->addTool(new StoreTool($repository));
+                    $this->tools[] = new StoreTool($repository);
                 }
 
                 if (method_exists($repositoryInstance, 'mcpAllowsUpdate') && $repositoryInstance->mcpAllowsUpdate()) {
-                    $this->addTool(new UpdateTool($repository));
+                    $this->tools[] = new UpdateTool($repository);
                 }
 
                 if (method_exists($repositoryInstance, 'mcpAllowsDelete') && $repositoryInstance->mcpAllowsDelete()) {
-                    $this->addTool(new DeleteTool($repository));
+                    $this->tools[] = new DeleteTool($repository);
                 }
 
                 if (method_exists($repositoryInstance, 'mcpAllowsActions') && $repositoryInstance->mcpAllowsActions()) {
@@ -144,7 +174,7 @@ class RestifyServer extends Server
             ->filter(fn (Action $action) => $action->isShownOnMcp($actionRequest, $repositoryInstance))
             ->filter(fn (Action $action) => $action->authorizedToSee($actionRequest))
             ->unique(fn (Action $action) => $action->uriKey()) // Avoid duplicates
-            ->each(fn (Action $action) => $this->addTool(new ActionTool($repositoryClass, $action)));
+            ->each(fn (Action $action) => $this->tools[] = new ActionTool($repositoryClass, $action));
     }
 
     protected function discoverGettersForRepository(string $repositoryClass, Repository $repositoryInstance): void
@@ -159,21 +189,23 @@ class RestifyServer extends Server
             ->filter(fn (Getter $getter) => $getter->isShownOnMcp($getterRequest, $repositoryInstance))
             ->filter(fn (Getter $getter) => $getter->authorizedToSee($getterRequest))
             ->unique(fn (Getter $getter) => $getter->uriKey()) // Avoid duplicates
-            ->each(fn (Getter $getter) => $this->addTool(new GetterTool($repositoryClass, $getter)));
+            ->each(fn (Getter $getter) => $this->tools[] = new GetterTool($repositoryClass, $getter));
     }
 
     /**
-     * @return array<string>
+     * @return array<int, class-string<\Laravel\Mcp\Server\Resource>>
      */
     protected function discoverResources(): array
     {
+        $resources = [];
+
         $excludedResources = config('restify.mcp.resources.exclude', []);
         $resourceDir = new \DirectoryIterator(__DIR__.DIRECTORY_SEPARATOR.'Resources');
         foreach ($resourceDir as $resourceFile) {
             if ($resourceFile->isFile() && $resourceFile->getExtension() === 'php') {
                 $fqdn = 'Binaryk\\LaravelRestify\\MCP\\Resources\\'.$resourceFile->getBasename('.php');
-                if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources, true)) {
-                    $this->addResource($fqdn);
+                if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources, true) && $fqdn !== ApplicationInfo::class) {
+                    $resources[] = $fqdn;
                 }
             }
         }
@@ -186,7 +218,7 @@ class RestifyServer extends Server
                 if ($resourceFile->isFile() && $resourceFile->getExtension() === 'php') {
                     $fqdn = 'App\\Restify\\Mcp\\Resources\\'.$resourceFile->getBasename('.php');
                     if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources, true)) {
-                        $this->addResource($fqdn);
+                        $resources[] = $fqdn;
                     }
                 }
             }
@@ -195,25 +227,29 @@ class RestifyServer extends Server
         $extraResources = config('restify.mcp.resources.include', []);
         foreach ($extraResources as $resourceClass) {
             if (class_exists($resourceClass)) {
-                $this->addResource($resourceClass);
+                $resources[] = $resourceClass;
             }
         }
 
-        return $this->registeredResources;
+        return $resources;
     }
 
     /**
-     * @return array<string>
+     * @return array<int, class-string<\Laravel\Mcp\Server\Prompt>>
      */
     protected function discoverPrompts(): array
     {
+        $prompts = [];
+
         $excludedPrompts = config('restify.mcp.prompts.exclude', []);
-        $promptDir = new \DirectoryIterator(__DIR__.DIRECTORY_SEPARATOR.'Prompts');
-        foreach ($promptDir as $promptFile) {
-            if ($promptFile->isFile() && $promptFile->getExtension() === 'php') {
-                $fqdn = 'Binaryk\\LaravelRestify\\MCP\\Prompts\\'.$promptFile->getBasename('.php');
-                if (class_exists($fqdn) && ! in_array($fqdn, $excludedPrompts, true)) {
-                    $this->addPrompt($fqdn);
+        if (is_dir(__DIR__.DIRECTORY_SEPARATOR.'Prompts')) {
+            $promptDir = new \DirectoryIterator(__DIR__.DIRECTORY_SEPARATOR.'Prompts');
+            foreach ($promptDir as $promptFile) {
+                if ($promptFile->isFile() && $promptFile->getExtension() === 'php') {
+                    $fqdn = 'Binaryk\\LaravelRestify\\MCP\\Prompts\\'.$promptFile->getBasename('.php');
+                    if (class_exists($fqdn) && ! in_array($fqdn, $excludedPrompts, true)) {
+                        $prompts[] = $fqdn;
+                    }
                 }
             }
         }
@@ -221,10 +257,10 @@ class RestifyServer extends Server
         $extraPrompts = config('restify.mcp.prompts.include', []);
         foreach ($extraPrompts as $promptClass) {
             if (class_exists($promptClass)) {
-                $this->addPrompt($promptClass);
+                $prompts[] = $promptClass;
             }
         }
 
-        return $this->registeredPrompts;
+        return $prompts;
     }
 }

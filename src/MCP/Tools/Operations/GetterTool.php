@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Generator;
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
-use Laravel\Mcp\Server\Tools\ToolResult;
 
 class GetterTool extends Tool
 {
@@ -49,20 +49,40 @@ class GetterTool extends Tool
         }
     }
 
-    public function schema(ToolInputSchema $schema): ToolInputSchema
+    public function schema(JsonSchema $schema): array
     {
-        $repositoryClass = $this->repository;
-        $repositoryClass::getterToolSchema($this->getter, $schema, app(McpGetterRequest::class));
+        $repositoryClass = get_class($this->repository);
+        $modelName = class_basename($repositoryClass::guessModelClassName());
+        $getterName = $this->getter->name();
 
-        return $schema;
+        $fields = [];
+
+        // Check if it's primarily a show getter or index getter
+        $mcpRequest = app(McpGetterRequest::class);
+        $shownOnShow = $this->getter->isShownOnShow($mcpRequest, $this->repository);
+        $shownOnIndex = $this->getter->isShownOnIndex($mcpRequest, $this->repository);
+
+        if ($shownOnShow && ! $shownOnIndex) {
+            // Show getter - requires single ID
+            $fields['id'] = $schema->string()->description("The ID of the $modelName to execute the getter on")->required();
+            $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+        } else {
+            // Index getters typically don't require specific IDs
+            $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+        }
+
+        return $fields;
     }
 
-    public function handle(array $arguments): ToolResult|Generator
+    public function handle(Request $request): Response
     {
-        $this->repository->request = app(McpGetterRequest::class);
+        $mcpRequest = app(McpGetterRequest::class);
+        $mcpRequest->replace($request->all());
 
-        $result = $this->repository->getterTool($this->getter, $arguments, app(McpGetterRequest::class));
+        $this->repository->request = $mcpRequest;
 
-        return ToolResult::json($result);
+        $result = $this->repository->getterTool($this->getter, $mcpRequest);
+
+        return Response::json($result);
     }
 }

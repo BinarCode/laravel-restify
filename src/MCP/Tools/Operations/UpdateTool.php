@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Generator;
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
-use Laravel\Mcp\Server\Tools\ToolResult;
 
 class UpdateTool extends Tool
 {
@@ -37,19 +37,33 @@ class UpdateTool extends Tool
         return "Update an existing {$modelName} record by ID in the {$uriKey} repository with the provided data.";
     }
 
-    public function schema(ToolInputSchema $schema): ToolInputSchema
+    public function schema(JsonSchema $schema): array
     {
         $repositoryClass = get_class($this->repository);
 
-        $repositoryClass::updateToolSchema($schema);
+        // Use repository's schema method if it has MCP tools
+        if (method_exists($repositoryClass, 'updateToolSchema')) {
+            $fields = $repositoryClass::updateToolSchema($schema);
+        } else {
+            $modelName = class_basename($repositoryClass::guessModelClassName());
+            $fields = [
+                'id' => $schema->string()->description("The ID of the $modelName to update")->required(),
+            ];
+        }
 
-        return $schema;
+        // Add basic include field
+        $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+
+        return $fields;
     }
 
-    public function handle(array $arguments): ToolResult|Generator
+    public function handle(Request $request): Response
     {
-        $result = $this->repository->updateTool($arguments, app(McpUpdateRequest::class));
+        $mcpRequest = app(McpUpdateRequest::class);
+        $mcpRequest->replace($request->all());
 
-        return ToolResult::json($result);
+        $result = $this->repository->updateTool($mcpRequest);
+
+        return Response::json($result);
     }
 }

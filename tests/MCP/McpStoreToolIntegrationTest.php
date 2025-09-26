@@ -12,12 +12,19 @@ use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Laravel\Mcp\Server\Facades\Mcp;
+use Laravel\Mcp\Facades\Mcp;
 use Laravel\Mcp\Server\McpServiceProvider;
 
 class McpStoreToolIntegrationTest extends IntegrationTestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['app.debug' => true]);
+    }
 
     protected function getPackageProviders($app): array
     {
@@ -80,6 +87,7 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
             'params' => [],
         ];
 
+        $this->withoutExceptionHandling();
         $toolsResponse = $this->postJson('/test-restify', $toolsListPayload);
         $toolsResponse->assertOk();
 

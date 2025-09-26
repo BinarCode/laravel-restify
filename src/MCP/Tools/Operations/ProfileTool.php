@@ -4,13 +4,11 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Generator;
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\Annotations\Title;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
-use Laravel\Mcp\Server\Tools\ToolResult;
 
-#[Title('GetMyProfile')]
 class ProfileTool extends Tool
 {
     protected Repository $repository;
@@ -34,35 +32,38 @@ class ProfileTool extends Tool
         return "Get the current authenticated user profile including {$modelName} and relationship information.";
     }
 
-    public function schema(ToolInputSchema $schema): ToolInputSchema
+    public function schema(JsonSchema $schema): array
     {
         $relatedOptions = $this->repository::collectRelated()
             ->intoAssoc()
             ->keys()
             ->toArray();
 
-        $schema->string('include')
-            ->description('Comma-separated list of relationships to include in the response. Available options: '.implode(', ', $relatedOptions).' (e.g., include=employee,roles.permissions)');
-
-        return $schema;
+        return [
+            'include' => $schema->string()->description('Comma-separated list of relationships to include in the response. Available options: '.implode(', ',
+                $relatedOptions).' (e.g., include=employee,roles.permissions)'),
+        ];
     }
 
-    public function handle(array $arguments): ToolResult|Generator
+    public function handle(Request $request): Response
     {
         $user = auth()->user();
 
         if (! $user) {
-            return ToolResult::json([
+            return Response::json([
                 'error' => 'No authenticated user found',
             ]);
         }
 
-        $arguments['id'] = $user->id;
+        $mcpRequest = app(McpRequest::class);
+        $requestData = $request->all();
+        $requestData['id'] = $user->id;
+        $mcpRequest->replace($requestData);
 
-        $this->repository->request = app(McpRequest::class);
+        $this->repository->request = $mcpRequest;
 
-        $result = $this->repository->indexTool($arguments, app(McpRequest::class));
+        $result = $this->repository->indexTool($mcpRequest);
 
-        return ToolResult::json($result);
+        return Response::json($result);
     }
 }

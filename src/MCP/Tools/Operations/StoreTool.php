@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Generator;
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
-use Laravel\Mcp\Server\Tools\ToolResult;
 
 class StoreTool extends Tool
 {
@@ -37,18 +37,30 @@ class StoreTool extends Tool
         return "Create a new {$modelName} record in the {$uriKey} repository with the provided data.";
     }
 
-    public function schema(ToolInputSchema $schema): ToolInputSchema
+    public function schema(JsonSchema $schema): array
     {
         $repositoryClass = get_class($this->repository);
-        $repositoryClass::storeToolSchema($schema);
 
-        return $schema;
+        // Use repository's schema method if it has MCP tools
+        if (method_exists($repositoryClass, 'storeToolSchema')) {
+            $fields = $repositoryClass::storeToolSchema($schema);
+        } else {
+            $fields = [];
+        }
+
+        // Add basic include field
+        $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+
+        return $fields;
     }
 
-    public function handle(array $arguments): ToolResult|Generator
+    public function handle(Request $request): Response
     {
-        $result = $this->repository->storeTool($arguments, app(McpStoreRequest::class));
+        $mcpRequest = app(McpStoreRequest::class);
+        $mcpRequest->replace($request->all());
 
-        return ToolResult::json($result);
+        $result = $this->repository->storeTool($mcpRequest);
+
+        return Response::json($result);
     }
 }

@@ -6,10 +6,10 @@ use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Generator;
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
-use Laravel\Mcp\Server\Tools\ToolResult;
 
 class ActionTool extends Tool
 {
@@ -57,18 +57,44 @@ class ActionTool extends Tool
         }
     }
 
-    public function schema(ToolInputSchema $schema): ToolInputSchema
+    public function schema(JsonSchema $schema): array
     {
-        $repositoryClass = $this->repository;
-        $repositoryClass::actionToolSchema($this->action, $schema, app(McpActionRequest::class));
+        $repositoryClass = get_class($this->repository);
+        $modelName = class_basename($repositoryClass::guessModelClassName());
+        $actionName = $this->action->name();
 
-        return $schema;
+        $fields = [];
+
+        if ($this->action->isStandalone()) {
+            // Standalone actions don't need ID or repositories
+            $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+        } else {
+            // Check if it's primarily a show action or index action
+            $mcpRequest = app(McpActionRequest::class);
+            $shownOnShow = $this->action->isShownOnShow($mcpRequest, $this->repository);
+            $shownOnIndex = $this->action->isShownOnIndex($mcpRequest, $this->repository);
+
+            if ($shownOnShow && ! $shownOnIndex) {
+                // Show action - requires single ID
+                $fields['id'] = $schema->string()->description("The ID of the $modelName to perform the action on")->required();
+                $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+            } else {
+                // Index action - requires repositories array
+                $fields['repositories'] = $schema->string()->description("Array of $modelName IDs to perform the action on. e.g. repositories=[1,2,3]")->required();
+                $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+            }
+        }
+
+        return $fields;
     }
 
-    public function handle(array $arguments): ToolResult|Generator
+    public function handle(Request $request): Response
     {
-        $result = $this->repository->actionTool($this->action, $arguments, app(McpActionRequest::class));
+        $mcpRequest = app(McpActionRequest::class);
+        $mcpRequest->replace($request->all());
 
-        return ToolResult::json($result);
+        $result = $this->repository->actionTool($this->action, $mcpRequest);
+
+        return Response::json($result);
     }
 }
