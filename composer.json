@@ -18,7 +18,7 @@
         }
     ],
     "require": {
-        "php": "^8.2|^8.3",
+        "php": "^8.3",
         "illuminate/contracts": "^12.0",
         "laravel/pint": "^1.25.1",
         "laravel/mcp": "^0.2.0",
