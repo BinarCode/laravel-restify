@@ -19,7 +19,7 @@
     ],
     "require": {
         "php": "^8.2|^8.3",
-        "illuminate/contracts": "^11.0|^12.0",
+        "illuminate/contracts": "^12.0",
         "laravel/pint": "^1.25.1",
         "laravel/mcp": "^0.2.0",
         "spatie/laravel-data": "^4.4",
@@ -31,7 +31,7 @@
         "doctrine/dbal": "^3.0|^4.0",
         "nunomaduro/collision": "^8.1",
         "openai-php/laravel": "^0.8.1|^0.11",
-        "orchestra/testbench": "^9.0|^10.0",
+        "orchestra/testbench": "^10.0",
         "phpstan/extension-installer": "^1.1",
         "phpstan/phpstan-deprecation-rules": "^1.0|^2.0",
         "phpstan/phpstan-phpunit": "^1.0|^2.0",
