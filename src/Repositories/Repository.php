@@ -35,6 +35,7 @@ use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;

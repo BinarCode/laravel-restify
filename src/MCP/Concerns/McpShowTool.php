@@ -3,19 +3,16 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
+use Illuminate\JsonSchema\JsonSchema;
 
 /**
  * @mixin \Binaryk\LaravelRestify\Repositories\Repository
  */
 trait McpShowTool
 {
-    public function showTool(array $arguments, McpShowRequest $request): array
+    public function showTool(McpShowRequest $request): array
     {
-        $id = $arguments['id'] ?? null;
-        unset($arguments['id']);
-        $request->merge($arguments);
-        $this->sanitizeToolRequest($request, $arguments);
+        $id = $request->input('id');
 
         // Build the query following the same pattern as RepositoryShowController
         $query = static::query($request);
@@ -36,15 +33,16 @@ trait McpShowTool
         return $repository->serializeForShow($request);
     }
 
-    public static function showToolSchema(ToolInputSchema $schema): void
+    public static function showToolSchema(JsonSchema $schema): array
     {
         $modelName = class_basename(static::guessModelClassName());
 
-        $schema->string('id')
-            ->description("The ID of the $modelName to retrieve")
-            ->required();
-
-        $schema->string('include')
-            ->description(static::formatRelationshipDocumentation(app(McpShowRequest::class)));
+        return [
+            'id' => $schema->string()
+                ->description("The ID of the $modelName to retrieve")
+                ->required(),
+            'include' => $schema->string()
+                ->description(static::formatRelationshipDocumentation(app(McpShowRequest::class))),
+        ];
     }
 }

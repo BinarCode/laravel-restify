@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Generator;
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
-use Laravel\Mcp\Server\Tools\ToolResult;
 
 class IndexTool extends Tool
 {
@@ -37,18 +37,30 @@ class IndexTool extends Tool
         return "Retrieve a paginated list of {$modelName} records from the {$uriKey} repository with filtering, sorting, and search capabilities.";
     }
 
-    public function schema(ToolInputSchema $schema): ToolInputSchema
+    public function schema(JsonSchema $schema): array
     {
         $repositoryClass = get_class($this->repository);
-        $repositoryClass::indexToolSchema($schema);
 
-        return $schema;
+        // Use repository's schema method if it has MCP tools
+        if (method_exists($repositoryClass, 'indexToolSchema')) {
+            return $repositoryClass::indexToolSchema($schema);
+        }
+
+        // Fallback to basic schema
+        return [
+            'page' => $schema->number()->description('Page number for pagination'),
+            'perPage' => $schema->number()->description('Number of records per page'),
+            'include' => $schema->string()->description('Comma-separated list of relationships to include'),
+        ];
     }
 
-    public function handle(array $arguments): ToolResult|Generator
+    public function handle(Request $request): Response
     {
-        $result = $this->repository->indexTool($arguments, app(McpIndexRequest::class));
+        $mcpRequest = app(McpIndexRequest::class);
+        $mcpRequest->replace($request->all());
 
-        return ToolResult::json($result);
+        $result = $this->repository->indexTool($mcpRequest);
+
+        return Response::json($result);
     }
 }

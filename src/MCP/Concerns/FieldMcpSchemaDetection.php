@@ -4,36 +4,40 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
+use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 
 trait FieldMcpSchemaDetection
 {
     /**
-     * Resolve the tool schema for this field to be used in MCP tools.
+     * Resolve the JSON schema for this field to be used in MCP tools.
      */
-    public function resolveToolSchema(ToolInputSchema $schema, Repository $repository): self
+    public function resolveJsonSchema(JsonSchema $schema, Repository $repository): ?Type
     {
         // Check if there's a custom callback defined
         if (is_callable($this->toolInputSchemaCallback)) {
-            call_user_func($this->toolInputSchemaCallback, $schema, $repository, $this);
-
-            return $this;
+            $result = call_user_func($this->toolInputSchemaCallback, $schema, $repository, $this);
+            if ($result instanceof Type) {
+                return $result;
+            }
         }
 
-        // Skip computed fields for default implementation
-        if ($this->computed()) {
-            return $this;
+        // For MCP tools, we include computed fields that have resolve callbacks
+        // since they represent storable fields in MCP contexts
+        // Only skip truly computed fields without resolve callbacks
+        if ($this->computed() && ! $this->resolveCallback) {
+            return null;
         }
 
-        $attribute = $this->label ?? $this->attribute;
         $fieldType = $this->guessFieldType();
 
-        // Add the field to schema based on its type
+        dd($fieldType);
+        // Create the field schema based on its type
         $schemaField = match ($fieldType) {
-            'boolean' => $schema->boolean($attribute),
-            'number' => $schema->number($attribute),
-            'array' => $schema->string($attribute), // Arrays are typically sent as JSON strings
-            default => $schema->string($attribute)
+            'boolean' => $schema->boolean(),
+            'number' => $schema->number(),
+            'array' => $schema->string(), // Arrays are typically sent as JSON strings
+            default => $schema->string()
         };
 
         // Add description
@@ -45,7 +49,7 @@ trait FieldMcpSchemaDetection
             $schemaField->required();
         }
 
-        return $this;
+        return $schemaField;
     }
 
     /**

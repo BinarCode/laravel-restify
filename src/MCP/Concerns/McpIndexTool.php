@@ -8,37 +8,36 @@ use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
-use Laravel\Mcp\Server\Tools\ToolInputSchema;
+use Illuminate\JsonSchema\JsonSchema;
 
 /**
  * @mixin \Binaryk\LaravelRestify\Repositories\Repository
  */
 trait McpIndexTool
 {
-    public function indexTool(array $arguments, McpIndexRequest $request): array
+    public function indexTool(McpIndexRequest $request): array
     {
-        $request->merge($arguments);
-        $this->sanitizeToolRequest($request, $arguments);
-
         return $this->indexAsArray($request);
     }
 
-    public static function indexToolSchema(ToolInputSchema $schema): void
+    public static function indexToolSchema(JsonSchema $schema): array
     {
         $key = static::uriKey();
 
-        $schema->number('page')
-            ->description('Page number for pagination');
+        $properties = [
+            'page' => $schema->number()
+                ->description('Page number for pagination'),
 
-        $schema->number('perPage')
-            ->description("Number of $key per page");
+            'perPage' => $schema->number()
+                ->description("Number of $key per page"),
 
-        $schema->string('include')
-            ->description(static::formatRelationshipDocumentation(app(McpIndexRequest::class)));
+            'include' => $schema->string()
+                ->description(static::formatRelationshipDocumentation(app(McpIndexRequest::class))),
+        ];
 
         $searchableFields = (new SearchablesCollection(static::searchables()))->formatForDocumentation();
 
-        $schema->string('search')
+        $properties['search'] = $schema->string()
             ->description("Search term to filter $key by name or description. Available searchable fields: {$searchableFields} (e.g., search=term)");
 
         $sortOptions = collect(static::sorts())
@@ -55,24 +54,26 @@ trait McpIndexTool
             ->values()
             ->toArray();
 
-        $schema->string('sort')
+        $properties['sort'] = $schema->string()
             ->description("Sorting criteria for the $key. Available options: ".implode(', ',
-                $sortOptions).' (e.g., sort=field or sort=-field for descending)');
+                    $sortOptions).' (e.g., sort=field or sort=-field for descending)');
 
         MatchesCollection::make(static::matches())
             ->normalize()
             ->authorized(app(McpRequest::class))
-            ->each(function (MatchFilter $matchFilter) use ($schema, $key) {
+            ->each(function (MatchFilter $matchFilter) use ($schema, $key, &$properties) {
                 $filterKey = $matchFilter->column();
 
-                return match ($matchFilter->getType()) {
-                    RestifySearchable::MATCH_INTEGER, 'integer' => $schema->integer($filterKey)
+                $properties[$filterKey] = match ($matchFilter->getType()) {
+                    RestifySearchable::MATCH_INTEGER, 'integer' => $schema->integer()
                         ->description("Filter $key resource. Description: ".$matchFilter->description()),
-                    RestifySearchable::MATCH_BOOL, 'boolean' => $schema->boolean($filterKey)
+                    RestifySearchable::MATCH_BOOL, 'boolean' => $schema->boolean()
                         ->description("Filter $key resource. Description: ".$matchFilter->description()),
-                    default => $schema->string($filterKey)
+                    default => $schema->string()
                         ->description("Filter $key resource. Description: ".$matchFilter->description())
                 };
             });
+
+        return $properties;
     }
 }

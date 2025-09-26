@@ -1,18 +1,34 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Binaryk\LaravelRestify\MCP\Resources;
 
-use Laravel\Mcp\Server\Contracts\Resources\Content;
+use Binaryk\LaravelRestify\Restify;
+use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Resource;
 
 class ApplicationInfo extends Resource
 {
-    public function description(): string
-    {
-        return 'Information about the Laravel Restify application and its capabilities.';
-    }
+    /**
+     * The resource's description.
+     */
+    protected string $description = 'Information about the Laravel Restify application and its capabilities, including repositories, version information, and system context.';
 
-    public function read(): string|Content
+    /**
+     * The resource's URI.
+     */
+    protected string $uri = 'file://instructions/application-info.md';
+
+    /**
+     * The resource's MIME type.
+     */
+    protected string $mimeType = 'text/markdown';
+
+    /**
+     * Handle the resource request.
+     */
+    public function handle(): Response
     {
         $system = <<<'EOT'
 You are an AI assistant integrated into Laravel Restify API system. You have access to:
@@ -46,7 +62,7 @@ EOT;
             'repositories' => $this->getRepositoryMetadata(),
         ];
 
-        return json_encode($context);
+        return Response::json($context);
     }
 
     protected function getRestifyVersion(): string
@@ -66,5 +82,22 @@ EOT;
         }
 
         return 'Unknown';
+    }
+
+    protected function getRepositoryMetadata(): array
+    {
+        return collect(Restify::$repositories)
+            ->map(function (string $repository) {
+                $instance = app($repository);
+
+                return [
+                    'name' => $repository,
+                    'uri_key' => $instance->uriKey(),
+                    'label' => $instance::label(),
+                    'model' => $instance::guessModelClassName(),
+                ];
+            })
+            ->values()
+            ->toArray();
     }
 }
