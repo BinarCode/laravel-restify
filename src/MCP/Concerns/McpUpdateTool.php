@@ -4,8 +4,8 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
-use Illuminate\Validation\ValidationException;
 use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\Validation\ValidationException;
 
 /**
  * @mixin \Binaryk\LaravelRestify\Repositories\Repository

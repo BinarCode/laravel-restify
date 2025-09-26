@@ -41,7 +41,7 @@ class ProfileTool extends Tool
 
         return [
             'include' => $schema->string()->description('Comma-separated list of relationships to include in the response. Available options: '.implode(', ',
-                    $relatedOptions).' (e.g., include=employee,roles.permissions)'),
+                $relatedOptions).' (e.g., include=employee,roles.permissions)'),
         ];
     }
 

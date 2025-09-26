@@ -56,7 +56,7 @@ trait McpIndexTool
 
         $properties['sort'] = $schema->string()
             ->description("Sorting criteria for the $key. Available options: ".implode(', ',
-                    $sortOptions).' (e.g., sort=field or sort=-field for descending)');
+                $sortOptions).' (e.g., sort=field or sort=-field for descending)');
 
         MatchesCollection::make(static::matches())
             ->normalize()

@@ -3,18 +3,13 @@
 namespace Binaryk\LaravelRestify\Tests\MCP;
 
 use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
-use Illuminate\JsonSchema\JsonSchema;
 
 class FieldSchemaValidationTest extends IntegrationTestCase
 {
-
     public function test_field_rules_convert_to_correct_schema_types(): void
     {
-//        // Test string field type detection
+        //        // Test string field type detection
         $titleField = Field::make('title')->rules(['required', 'string', 'max:255']);
         $this->assertEquals('string', $titleField->guessFieldType());
 
@@ -27,7 +22,7 @@ class FieldSchemaValidationTest extends IntegrationTestCase
         $actualRules = $reflection->getValue($priorityField);
 
         // This should help us understand what's happening
-        $this->assertContains('integer', $actualRules, 'Integer rule not found in: ' . json_encode($actualRules));
+        $this->assertContains('integer', $actualRules, 'Integer rule not found in: '.json_encode($actualRules));
         $this->assertEquals('number', $priorityField->guessFieldType());
 
         // Test boolean field type detection

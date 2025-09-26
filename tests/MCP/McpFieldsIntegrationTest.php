@@ -384,11 +384,11 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         ];
 
         $this->getJson($mcpPostRepository::route())
-            ->assertJson(function(AssertableJson $json) {
+            ->assertJson(function (AssertableJson $json) {
                 $json
                     ->where('data.0.attributes.title', 'Test Post with User')
-                     ->where('data.0.attributes.description', 'A post that belongs to a user')
-                     ->etc();
+                    ->where('data.0.attributes.description', 'A post that belongs to a user')
+                    ->etc();
             });
 
         $toolsData = $this->postJson('/test-restify-relations', $toolsListPayload)->json();

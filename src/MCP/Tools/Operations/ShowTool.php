@@ -48,6 +48,7 @@ class ShowTool extends Tool
 
         // Fallback to basic schema
         $modelName = class_basename($repositoryClass::guessModelClassName());
+
         return [
             'id' => $schema->string()->description("The ID of the $modelName to retrieve")->required(),
             'include' => $schema->string()->description('Comma-separated list of relationships to include'),
