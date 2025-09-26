@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
@@ -55,9 +55,9 @@ class ProfileTool extends Tool
             ]);
         }
 
-        $mcpRequest = app(McpRequest::class);
+        $mcpRequest = app(McpIndexRequest::class);
         $requestData = $request->all();
-        $requestData['id'] = $user->id;
+        $requestData['id'] = $user->getKey();
         $mcpRequest->replace($requestData);
 
         $this->repository->request = $mcpRequest;
