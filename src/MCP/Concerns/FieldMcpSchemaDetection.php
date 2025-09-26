@@ -31,7 +31,6 @@ trait FieldMcpSchemaDetection
 
         $fieldType = $this->guessFieldType();
 
-        dd($fieldType);
         // Create the field schema based on its type
         $schemaField = match ($fieldType) {
             'boolean' => $schema->boolean(),
