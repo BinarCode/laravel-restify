@@ -5,8 +5,9 @@ on: [push, pull_request]
 jobs:
     test:
         runs-on: ${{ matrix.os }}
+        timeout-minutes: 30
         strategy:
-            fail-fast: true
+            fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest]
                 php: [8.3, 8.4]
