@@ -9,7 +9,6 @@ class RestifyJsSetupControllerTest extends IntegrationTestCase
 {
     public function test_returns_configurations(): void
     {
-        $this->markTestSkipped('Skipping until we decide how to handle JS setup.');
         $this
             ->withoutExceptionHandling()
             ->getJson(Restify::path('restifyjs/setup'))
