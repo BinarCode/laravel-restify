@@ -60,8 +60,6 @@ class ProfileTool extends Tool
         $requestData['id'] = $user->getKey();
         $mcpRequest->replace($requestData);
 
-        $this->repository->request = $mcpRequest;
-
         $result = $this->repository->indexTool($mcpRequest);
 
         return Response::json($result);

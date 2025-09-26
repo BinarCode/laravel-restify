@@ -1143,9 +1143,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function serializeForIndex(RestifyRequest $request): array
     {
-        $this->request = $request;
-
-        $data = $this->filter([
+        return $this->filter([
             'id' => $this->when($id = $this->getId($request), $id),
             'type' => $this->when($type = $this->getType($request), $type),
             'attributes' => $this->when((bool) $attrs = $this->resolveIndexAttributes($request), $attrs),
@@ -1153,8 +1151,6 @@ class Repository implements JsonSerializable, RestifySearchable
             'meta' => $this->when(value($meta = $this->resolveIndexMeta($request)), $meta),
             'pivots' => $this->when(value($pivots = $this->resolveIndexPivots($request)), $pivots),
         ]);
-
-        return $data;
     }
 
     protected function getType(RestifyRequest $request): ?string
