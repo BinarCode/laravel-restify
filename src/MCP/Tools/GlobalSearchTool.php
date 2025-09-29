@@ -43,8 +43,8 @@ class GlobalSearchTool extends Tool
     public function handle(Request $request): Response
     {
         $mcpRequest = app(McpRequest::class);
-        $mcpRequest->merge([
-            'search' => $request->input('search', ''),
+        $mcpRequest->replace([
+            'search' => $request->get('search', ''),
         ]);
 
         // If limit is provided, we could apply it per repository, but for now
