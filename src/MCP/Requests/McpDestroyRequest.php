@@ -2,4 +2,4 @@
 
 namespace Binaryk\LaravelRestify\MCP\Requests;
 
-class McpDestroyRequest extends McpRequest implements McpRequestable{}
+class McpDestroyRequest extends McpRequest implements McpRequestable {}

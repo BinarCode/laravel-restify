@@ -4,6 +4,4 @@ namespace Binaryk\LaravelRestify\MCP\Requests;
 
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 
-class McpActionRequest extends ActionRequest implements  McpRequestable
-{
-}
+class McpActionRequest extends ActionRequest implements McpRequestable {}
