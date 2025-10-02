@@ -92,6 +92,27 @@ class ActionTool extends Tool
     {
         $mcpRequest = app(McpActionRequest::class);
         $mcpRequest->replace($request->all());
+        $mcpRequest->merge([
+            'mcp_repository_key' => $this->repository->uriKey(),
+        ]);
+
+        // Parse repositories string to array if provided
+        if ($mcpRequest->has('repositories') && is_string($mcpRequest->input('repositories'))) {
+            $repositories = json_decode($mcpRequest->input('repositories'), true) ?? [];
+            $mcpRequest->merge(['repositories' => $repositories]);
+        }
+
+        // For show actions with single ID, set the route parameter
+        if ($id = $mcpRequest->input('id')) {
+            $mcpRequest->setRouteResolver(function () use ($id) {
+                return new class($id) {
+                    public function __construct(private $id) {}
+                    public function parameter($key, $default = null) {
+                        return $key === 'repositoryId' ? $this->id : $default;
+                    }
+                };
+            });
+        }
 
         $result = $this->repository->actionTool($this->action, $mcpRequest);
 
