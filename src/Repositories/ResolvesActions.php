@@ -44,7 +44,7 @@ trait ResolvesActions
             ->filter(fn ($action) => $action->isShownOnShow(
                 $request,
                 $request->repositoryWith(
-                    $request->findModelOrFail(uriKey:  static::uriKey())
+                    $request->findModelOrFail(uriKey: static::uriKey())
                 )
             ))->values();
     }
