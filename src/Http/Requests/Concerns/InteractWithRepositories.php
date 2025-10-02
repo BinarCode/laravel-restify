@@ -96,12 +96,12 @@ trait InteractWithRepositories
         );
     }
 
-    public function findModelOrFail($id = null): Model
+    public function findModelOrFail($id = null, ?string $uriKey = null): Model
     {
         return $id
-            ? $this->modelQuery($id)->firstOrFail()
-            : once(function () {
-                return $this->modelQuery()->firstOrFail();
+            ? $this->modelQuery($id, $uriKey)->firstOrFail()
+            : once(function () use ($uriKey) {
+                return $this->modelQuery(uriKey: $uriKey)->firstOrFail();
             });
     }
 

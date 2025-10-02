@@ -15,7 +15,7 @@ trait McpGetterTool
     public function getterTool(Getter $getter, McpGetterRequest $getterRequest): array
     {
         if ($id = $getterRequest->input('id')) {
-            if (! $getter->authorizedToRun($getterRequest, $getterRequest->findModelOrFail($id))) {
+            if (! $getter->authorizedToRun($getterRequest, $getterRequest->findModelOrFail($id, static::uriKey()))) {
                 return [
                     'error' => 'Not authorized to run this getter',
                     'getter' => $getter->uriKey(),
