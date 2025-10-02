@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -27,7 +27,7 @@ class MatchesCollection extends Collection
                 ? $matchType
                 : tap(
                     MatchFilter::make(),
-                    fn (MatchFilter $filter) => is_string($matchType) ? $filter->setType($matchType) : ''
+                    fn(MatchFilter $filter) => is_string($matchType) ? $filter->setType($matchType) : ''
                 );
 
             if ($matchType instanceof Closure) {
@@ -50,7 +50,7 @@ class MatchesCollection extends Collection
 
     public function hydrateRepository(Repository $repository): self
     {
-        return $this->each(fn (Filter $filter) => $filter->setRepository($repository));
+        return $this->each(fn(Filter $filter) => $filter->setRepository($repository));
     }
 
     public function inQuery(RestifyRequest $request): self
@@ -70,11 +70,11 @@ class MatchesCollection extends Collection
             $value = $request->query($filter->column());
             $negatedValue = $request->query("-{$filter->column()}");
 
-            if ($request instanceof McpRequest) {
+            if ($request instanceof McpRequestable) {
                 $negatedValue = $request->input("-{$filter->column()}");
             }
 
-            if ($request instanceof McpRequest) {
+            if ($request instanceof McpRequestable) {
                 $value = $request->input($filter->column());
             }
 
@@ -85,7 +85,7 @@ class MatchesCollection extends Collection
 
     public function authorized(RestifyRequest $request): self
     {
-        return $this->filter(fn (MatchFilter $filter) => $filter->authorizedToSee($request));
+        return $this->filter(fn(MatchFilter $filter) => $filter->authorizedToSee($request));
     }
 
     public function hydrateDefinition(RestifyRequest $request, Repository $repository): MatchesCollection

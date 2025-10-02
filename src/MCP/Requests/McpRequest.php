@@ -4,7 +4,7 @@ namespace Binaryk\LaravelRestify\MCP\Requests;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 
-class McpRequest extends RestifyRequest
+class McpRequest extends RestifyRequest implements McpRequestable
 {
     /**
      * Get the MCP tool name from the request payload.

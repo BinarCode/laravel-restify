@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
 use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Closure;
 use Illuminate\Http\Request;
@@ -65,7 +66,7 @@ abstract class OrganicField extends BaseField
         $this->showOnShow = is_callable($callback) ? function () use ($callback) {
             return ! call_user_func_array($callback, func_get_args());
         }
-        : ! $callback;
+            : ! $callback;
 
         return $this;
     }
@@ -75,7 +76,7 @@ abstract class OrganicField extends BaseField
         $this->showOnIndex = is_callable($callback) ? function () use ($callback) {
             return ! call_user_func_array($callback, func_get_args());
         }
-        : ! $callback;
+            : ! $callback;
 
         return $this;
     }
@@ -101,7 +102,7 @@ abstract class OrganicField extends BaseField
         }
 
         // Check MCP-specific visibility for MCP requests
-        if ($request instanceof McpRequest) {
+        if ($request instanceof McpRequestable) {
             return $this->isShownOnMcp($request, $repository);
         }
 
@@ -124,7 +125,7 @@ abstract class OrganicField extends BaseField
         }
 
         // Check MCP-specific visibility for MCP requests
-        if ($request instanceof McpRequest) {
+        if ($request instanceof McpRequestable) {
             return $this->isShownOnMcp($request, $repository);
         }
 

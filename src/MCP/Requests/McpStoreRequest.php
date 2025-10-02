@@ -2,4 +2,6 @@
 
 namespace Binaryk\LaravelRestify\MCP\Requests;
 
-class McpStoreRequest extends McpRequest {}
+class McpStoreRequest extends McpRequest implements  McpRequestable
+{
+}

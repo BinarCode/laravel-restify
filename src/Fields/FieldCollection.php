@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -61,7 +61,7 @@ class FieldCollection extends Collection
     public function forIndex(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn (Field $field) => ! $field instanceof EagerField)
+            ->filter(fn(Field $field) => ! $field instanceof EagerField)
             ->filter(function (Field $field) use ($repository, $request) {
                 return $field->isShownOnIndex($request, $repository);
             })->values();
@@ -70,15 +70,15 @@ class FieldCollection extends Collection
     public function forMcpIndex(RestifyRequest $request, $repository): self
     {
         // If this is an MCP request and repository has fieldsForMcpIndex method
-        if ($request instanceof McpRequest && method_exists($repository, 'fieldsForMcpIndex')) {
+        if ($request instanceof McpRequestable && method_exists($repository, 'fieldsForMcpIndex')) {
             // Get the MCP-specific fields from the repository
             $mcpFields = $repository->fieldsForMcpIndex($request);
-            $mcpFieldAttributes = collect($mcpFields)->map(fn ($field) => $field->attribute)->toArray();
+            $mcpFieldAttributes = collect($mcpFields)->map(fn($field) => $field->attribute)->toArray();
 
             // Filter the current collection to only include MCP fields
             return $this
-                ->filter(fn (Field $field) => ! $field instanceof EagerField)
-                ->filter(fn (Field $field) => in_array($field->attribute, $mcpFieldAttributes))
+                ->filter(fn(Field $field) => ! $field instanceof EagerField)
+                ->filter(fn(Field $field) => in_array($field->attribute, $mcpFieldAttributes))
                 ->filter(function (Field $field) use ($repository, $request) {
                     return $field->isShownOnMcp($request, $repository);
                 })->values();
@@ -91,7 +91,7 @@ class FieldCollection extends Collection
     public function forShow(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn (Field $field) => ! $field instanceof EagerField)
+            ->filter(fn(Field $field) => ! $field instanceof EagerField)
             ->filter(function (Field $field) use ($repository, $request) {
                 return $field->isShownOnShow($request, $repository);
             })->values();
@@ -100,7 +100,7 @@ class FieldCollection extends Collection
     public function forStore(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn (Field $field) => ! $field instanceof EagerField)
+            ->filter(fn(Field $field) => ! $field instanceof EagerField)
             ->filter(function (Field $field) use ($repository, $request) {
                 return $field->isShownOnStore($request, $repository);
             })->values();
@@ -110,14 +110,14 @@ class FieldCollection extends Collection
     {
         return $this
             ->inRequest($request, $row)
-            ->filter(fn (Field $field) => $field->isActionable())
+            ->filter(fn(Field $field) => $field->isActionable())
             ->values();
     }
 
     public function withoutActions(RestifyRequest $request, $repository): self
     {
         return $this
-            ->reject(fn (Field $field) => $field->isActionable() && $field->actionHandler?->skipFieldFill($request))
+            ->reject(fn(Field $field) => $field->isActionable() && $field->actionHandler?->skipFieldFill($request))
             ->values();
     }
 
@@ -131,7 +131,7 @@ class FieldCollection extends Collection
     public function forUpdate(RestifyRequest $request, $repository): self
     {
         return $this
-            ->filter(fn (Field $field) => ! $field instanceof EagerField)
+            ->filter(fn(Field $field) => ! $field instanceof EagerField)
             ->filter(function (Field $field) use ($repository, $request) {
                 return $field->isShownOnUpdate($request, $repository);
             })->values();
@@ -148,27 +148,27 @@ class FieldCollection extends Collection
     {
         return $this->filter(function ($field) {
             return $field instanceof BelongsToMany || $field instanceof MorphToMany;
-        })->filter(fn (EagerField $field) => $field->authorize($request));
+        })->filter(fn(EagerField $field) => $field->authorize($request));
     }
 
     public function forEager(RestifyRequest $request, Repository $repository): self
     {
         return $this
-            ->filter(fn (Field $field) => $field instanceof EagerField)
-            ->filter(fn (Field $field) => $field->authorize($request))
+            ->filter(fn(Field $field) => $field instanceof EagerField)
+            ->filter(fn(Field $field) => $field->authorize($request))
             ->unique();
     }
 
     public function forBelongsTo(RestifyRequest $request): self
     {
         return $this
-            ->filter(fn (Field $field) => $field instanceof BelongsTo)
+            ->filter(fn(Field $field) => $field instanceof BelongsTo)
             ->unique();
     }
 
     public function setRepository(Repository $repository): self
     {
-        return $this->each(fn (Field $field) => $field->setRepository($repository));
+        return $this->each(fn(Field $field) => $field->setRepository($repository));
     }
 
     public function findFieldByAttribute($attribute, $default = null)
@@ -186,7 +186,7 @@ class FieldCollection extends Collection
     {
         return $this
             ->filter(
-                fn (Field $field) => $request->hasAny($field->attribute, $row.'.'.$field->attribute)
+                fn(Field $field) => $request->hasAny($field->attribute, $row.'.'.$field->attribute)
                     || $request->hasFile($field->attribute)
             )
             ->values();
@@ -195,7 +195,7 @@ class FieldCollection extends Collection
     public function inList(array $columns = []): self
     {
         return $this
-            ->filter(fn (Field $field) => in_array($field->getAttribute(), $columns, true))
+            ->filter(fn(Field $field) => in_array($field->getAttribute(), $columns, true))
             ->values();
     }
 }

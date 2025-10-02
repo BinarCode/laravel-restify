@@ -2,4 +2,8 @@
 
 namespace Binaryk\LaravelRestify\MCP\Requests;
 
-class McpGetterRequest extends McpRequest {}
+use Binaryk\LaravelRestify\Http\Requests\GetterRequest;
+
+class McpGetterRequest extends GetterRequest implements McpRequestable
+{
+}
