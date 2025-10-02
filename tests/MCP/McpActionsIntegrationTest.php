@@ -10,7 +10,6 @@ use Binaryk\LaravelRestify\MCP\RestifyServer;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishInvokablePostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\ActivateAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\DisableProfileAction;
@@ -88,7 +87,7 @@ class McpActionsIntegrationTest extends IntegrationTestCase
             'params' => [
                 'name' => $actionToolName,
                 'arguments' => [
-                    'repositories' => '[' . $posts->first()->id . ',' . $posts->last()->id . ']',
+                    'repositories' => '['.$posts->first()->id.','.$posts->last()->id.']',
                 ],
             ],
         ]);
@@ -97,7 +96,7 @@ class McpActionsIntegrationTest extends IntegrationTestCase
         $responseData = $response->json();
 
         if (isset($responseData['error'])) {
-            $this->fail('MCP Error: ' . $responseData['error']['message']);
+            $this->fail('MCP Error: '.$responseData['error']['message']);
         }
 
         $this->assertArrayHasKey('result', $responseData);
@@ -169,7 +168,7 @@ class McpActionsIntegrationTest extends IntegrationTestCase
             'params' => [
                 'name' => $actionToolName,
                 'arguments' => [
-                    'repositories' => '[' . $posts->first()->id . ',' . $posts->last()->id . ']',
+                    'repositories' => '['.$posts->first()->id.','.$posts->last()->id.']',
                 ],
             ],
         ]);
@@ -178,7 +177,7 @@ class McpActionsIntegrationTest extends IntegrationTestCase
         $responseData = $response->json();
 
         if (isset($responseData['error'])) {
-            $this->fail('MCP Error: ' . $responseData['error']['message']);
+            $this->fail('MCP Error: '.$responseData['error']['message']);
         }
 
         $this->assertArrayHasKey('result', $responseData);
@@ -252,7 +251,7 @@ class McpActionsIntegrationTest extends IntegrationTestCase
         $responseData = $response->json();
 
         if (isset($responseData['error'])) {
-            $this->fail('MCP Error: ' . $responseData['error']['message']);
+            $this->fail('MCP Error: '.$responseData['error']['message']);
         }
 
         $this->assertArrayHasKey('result', $responseData);
@@ -323,7 +322,7 @@ class McpActionsIntegrationTest extends IntegrationTestCase
         $responseData = $response->json();
 
         if (isset($responseData['error'])) {
-            $this->fail('MCP Error: ' . $responseData['error']['message']);
+            $this->fail('MCP Error: '.$responseData['error']['message']);
         }
 
         $this->assertArrayHasKey('result', $responseData);
@@ -473,7 +472,7 @@ class McpActionsIntegrationTest extends IntegrationTestCase
             'params' => [
                 'name' => $actionToolName,
                 'arguments' => [
-                    'repositories' => '[' . $posts->first()->id . ']',
+                    'repositories' => '['.$posts->first()->id.']',
                     'title' => 'Test Title',
                     'is_active' => true,
                 ],
@@ -484,7 +483,7 @@ class McpActionsIntegrationTest extends IntegrationTestCase
         $responseData = $response->json();
 
         if (isset($responseData['error'])) {
-            $this->fail('MCP Error: ' . $responseData['error']['message']);
+            $this->fail('MCP Error: '.$responseData['error']['message']);
         }
 
         $resultContent = json_decode($responseData['result']['content'][0]['text'], true);
