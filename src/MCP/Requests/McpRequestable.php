@@ -2,6 +2,4 @@
 
 namespace Binaryk\LaravelRestify\MCP\Requests;
 
-interface McpRequestable
-{
-}
+interface McpRequestable {}
