@@ -14,7 +14,7 @@ trait McpActionTool
     public function actionTool(Action $action, McpActionRequest $actionRequest): array
     {
         if ($id = $actionRequest->input('id')) {
-            if (! $action->authorizedToRun($actionRequest, $actionRequest->findModelOrFail($id))) {
+            if (! $action->authorizedToRun($actionRequest, $actionRequest->findModelOrFail($id, static::uriKey()))) {
                 return [
                     'error' => 'Not authorized to run this action',
                     'getter' => $action->uriKey(),
