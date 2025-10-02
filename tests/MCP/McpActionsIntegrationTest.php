@@ -25,24 +25,6 @@ class McpActionsIntegrationTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    protected array $originalRepositories = [];
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        // Save original repositories to restore after each test
-        $this->originalRepositories = Restify::$repositories;
-    }
-
-    protected function tearDown(): void
-    {
-        // Restore original repositories to prevent test pollution
-        Restify::$repositories = $this->originalRepositories;
-
-        parent::tearDown();
-    }
-
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [
