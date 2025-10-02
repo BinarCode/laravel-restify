@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Fixtures\Post;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
