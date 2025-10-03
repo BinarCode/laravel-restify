@@ -39,15 +39,18 @@ jobs:
             - name: Get next version
               id: get_version
               run: |
-                  # Get the latest tag
-                  LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "v0.0.0")
+                  # Get all tags and sort by version number (descending)
+                  LATEST_TAG=$(git tag -l | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/^v//' | sort -t. -k1,1nr -k2,2nr -k3,3nr | head -n1)
+
+                  # If no tags found, default to 0.0.0
+                  if [ -z "$LATEST_TAG" ]; then
+                      LATEST_TAG="0.0.0"
+                  fi
+
                   echo "Latest tag: $LATEST_TAG"
 
-                  # Extract version numbers (remove 'v' prefix)
-                  VERSION_NUM=${LATEST_TAG#v}
-
                   # Split version into parts
-                  IFS='.' read -r MAJOR MINOR PATCH <<< "$VERSION_NUM"
+                  IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_TAG"
 
                   # Default to 0 if parts are empty
                   MAJOR=${MAJOR:-0}
