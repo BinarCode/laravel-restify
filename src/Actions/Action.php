@@ -56,7 +56,7 @@ abstract class Action implements JsonSerializable
     /**
      * The callback used to authorize running the action.
      */
-    public ?Closure $runCallback;
+    public ?Closure $runCallback = null;
 
     public function name()
     {

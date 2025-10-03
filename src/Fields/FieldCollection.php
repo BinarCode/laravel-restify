@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -70,7 +70,7 @@ class FieldCollection extends Collection
     public function forMcpIndex(RestifyRequest $request, $repository): self
     {
         // If this is an MCP request and repository has fieldsForMcpIndex method
-        if ($request instanceof McpRequest && method_exists($repository, 'fieldsForMcpIndex')) {
+        if ($request instanceof McpRequestable && method_exists($repository, 'fieldsForMcpIndex')) {
             // Get the MCP-specific fields from the repository
             $mcpFields = $repository->fieldsForMcpIndex($request);
             $mcpFieldAttributes = collect($mcpFields)->map(fn ($field) => $field->attribute)->toArray();

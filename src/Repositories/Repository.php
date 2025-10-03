@@ -15,7 +15,7 @@ use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
@@ -288,7 +288,7 @@ class Repository implements JsonSerializable, RestifySearchable
         $method = 'fields';
 
         // MCP-specific field methods (highest priority)
-        if ($request instanceof McpRequest) {
+        if ($request instanceof McpRequestable) {
             if ($request->isIndexRequest() && method_exists($this, 'fieldsForMcpIndex')) {
                 $method = 'fieldsForMcpIndex';
             } elseif ($request->isShowRequest() && method_exists($this, 'fieldsForMcpShow')) {
@@ -575,7 +575,7 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function resolveRelationships($request): array
     {
-        if ($request instanceof McpRequest) {
+        if ($request instanceof McpRequestable) {
             $this->forMcp(get_class($request));
         }
 

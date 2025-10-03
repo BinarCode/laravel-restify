@@ -12,7 +12,15 @@ use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpDestroyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 
 /**
  * @mixin RestifyRequest
@@ -21,11 +29,8 @@ trait DetermineRequestType
 {
     public function isIndexRequest(): bool
     {
-        if ($this instanceof McpRequest) {
-            return $this->isIndexRequest();
-        }
-
-        return $this instanceof RepositoryIndexRequest;
+        return $this instanceof RepositoryIndexRequest
+            || $this instanceof McpIndexRequest;
     }
 
     public function isGlobalRequest(): bool
@@ -35,73 +40,49 @@ trait DetermineRequestType
 
     public function isShowRequest(): bool
     {
-        if ($this instanceof McpRequest) {
-            return $this->isShowRequest();
-        }
-
-        return $this instanceof RepositoryShowRequest;
+        return $this instanceof RepositoryShowRequest
+            || $this instanceof McpShowRequest;
     }
 
     public function isUpdateRequest(): bool
     {
-        if ($this instanceof McpRequest) {
-            return $this->isUpdateRequest();
-        }
-
-        return $this instanceof RepositoryUpdateRequest;
+        return $this instanceof RepositoryUpdateRequest
+            || $this instanceof McpUpdateRequest;
     }
 
     public function isStoreRequest(): bool
     {
-        if ($this instanceof McpRequest) {
-            return $this->isStoreRequest();
-        }
-
-        return $this instanceof RepositoryStoreRequest;
+        return $this instanceof RepositoryStoreRequest
+            || $this instanceof McpStoreRequest;
     }
 
     public function isDestroyRequest(): bool
     {
-        if ($this instanceof McpRequest) {
-            return $this->isDestroyRequest();
-        }
-
-        return $this instanceof RepositoryDestroyRequest;
+        return $this instanceof RepositoryDestroyRequest
+            || $this instanceof McpDestroyRequest;
     }
 
     public function isStoreBulkRequest(): bool
     {
-        if ($this instanceof McpRequest) {
-            return $this->isStoreBulkRequest();
-        }
-
-        return $this instanceof RepositoryStoreBulkRequest;
+        return $this instanceof RepositoryStoreBulkRequest
+            || $this instanceof McpStoreBulkRequest;
     }
 
     public function isUpdateBulkRequest(): bool
     {
-        if ($this instanceof McpRequest) {
-            return $this->isUpdateBulkRequest();
-        }
-
-        return $this instanceof RepositoryUpdateBulkRequest;
+        return $this instanceof RepositoryUpdateBulkRequest
+            || $this instanceof McpUpdateBulkRequest;
     }
 
     public function isActionRequest(): bool
     {
-        if ($this instanceof McpRequest) {
-            return $this->isActionRequest();
-        }
-
-        return $this instanceof ActionRequest;
+        return $this instanceof ActionRequest
+            || $this instanceof McpActionRequest;
     }
 
     public function isGetterRequest(): bool
     {
-        if ($this instanceof McpRequest) {
-            return $this->isGetterRequest();
-        }
-
-        return $this instanceof GetterRequest;
+        return $this instanceof GetterRequest
+            || $this instanceof McpGetterRequest;
     }
 }
