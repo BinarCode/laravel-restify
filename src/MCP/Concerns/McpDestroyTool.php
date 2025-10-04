@@ -16,12 +16,16 @@ trait McpDestroyTool
 
         $model = static::query($request)->findOrFail($id);
 
-        return static::resolveWith($model)->destroy($request, $id);
+        static::resolveWith($model)->destroy($request, $id);
+
+        return [
+            'id' => $id,
+            'deleted' => true,
+        ];
     }
 
     public static function destroyToolSchema(JsonSchema $schema): array
     {
-        $key = static::uriKey();
         $modelName = class_basename(static::guessModelClassName());
 
         return [

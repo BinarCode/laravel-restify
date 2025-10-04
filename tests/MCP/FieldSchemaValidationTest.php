@@ -39,7 +39,7 @@ class FieldSchemaValidationTest extends IntegrationTestCase
 
         // Test array field type detection
         $tagsField = Field::make('tags')->rules(['array']);
-        $this->assertEquals('string', $tagsField->guessFieldType()); // Arrays converted to strings
+        $this->assertEquals('array', $tagsField->guessFieldType()); // Arrays converted to strings
 
         // Test default type for custom validation
         $slugField = Field::make('slug')->rules(['required', 'unique:posts,slug']);

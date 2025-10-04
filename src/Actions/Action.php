@@ -58,9 +58,19 @@ abstract class Action implements JsonSerializable
      */
     public ?Closure $runCallback = null;
 
+    /**
+     * Action description, usually used in the UI or MCP.
+     */
+    public string $description = '';
+
     public function name()
     {
         return Restify::humanize($this);
+    }
+
+    public function description(RestifyRequest $request): string
+    {
+        return $this->description;
     }
 
     /**
@@ -196,6 +206,7 @@ abstract class Action implements JsonSerializable
     {
         return array_merge([
             'name' => $this->name(),
+            'description' => $this->description(app(RestifyRequest::class)),
             'destructive' => $this instanceof DestructiveAction,
             'uriKey' => $this->uriKey(),
             'payload' => $this->payload(),

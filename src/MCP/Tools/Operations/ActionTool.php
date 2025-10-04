@@ -36,8 +36,13 @@ class ActionTool extends Tool
 
     public function description(): string
     {
+        if ($description = $this->action->description(app(McpActionRequest::class))){
+            return $description;
+        }
+
         $repositoryUriKey = $this->repository->uriKey();
         $actionName = $this->action->name();
+
         $modelName = class_basename($this->repository::guessModelClassName());
 
         if ($this->action->isStandalone()) {
@@ -65,25 +70,40 @@ class ActionTool extends Tool
 
         $fields = [];
 
-        if ($this->action->isStandalone()) {
-            // Standalone actions don't need ID or repositories
-            $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
-        } else {
-            // Check if it's primarily a show action or index action
-            $mcpRequest = app(McpActionRequest::class);
-            $shownOnShow = $this->action->isShownOnShow($mcpRequest, $this->repository);
-            $shownOnIndex = $this->action->isShownOnIndex($mcpRequest, $this->repository);
+        foreach($this->action->rules() as $field => $rules) {
+            $fieldType = $this->guessTypeFromValidationRules($rules);
 
-            if ($shownOnShow && ! $shownOnIndex) {
-                // Show action - requires single ID
-                $fields['id'] = $schema->string()->description("The ID of the $modelName to perform the action on")->required();
-                $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
-            } else {
-                // Index action - requires repositories array
-                $fields['repositories'] = $schema->string()->description("Array of $modelName IDs to perform the action on. e.g. repositories=[1,2,3]")->required();
-                $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+            $schemaField = match ($fieldType) {
+                'boolean' => $schema->boolean(),
+                'number' => $schema->number(),
+                'array' => $schema->array(),
+                default => $schema->string()
+            };
+
+            if ($this->isRequired($rules)) {
+                $schemaField->required();
             }
+
+            $fields[$field] = $schemaField;
         }
+
+        if ($this->action->isStandalone()) {
+            return $fields;
+        }
+
+        if ($this->action->isShownOnIndex(app(McpActionRequest::class), $this->repository)) {
+            $fields['repositories'] = $schema->array()
+                ->items(
+                    $schema->string()
+                )
+                ->required()
+                ->description("Array of {$modelName} IDs to run the {$actionName} action on.");
+        } else {
+            $fields['id'] = $schema->string()
+                ->description("The ID of the {$modelName} to run the {$actionName} action on.")
+                ->required();
+        }
+
 
         return $fields;
     }
@@ -120,5 +140,70 @@ class ActionTool extends Tool
         $result = $this->repository->actionTool($this->action, $mcpRequest);
 
         return Response::json($result);
+    }
+
+    protected function guessTypeFromValidationRules(array $rules): ?string
+    {
+        $ruleStrings = collect($rules)->map(function ($rule) {
+            if (is_string($rule)) {
+                return $rule;
+            }
+            if (is_object($rule)) {
+                return get_class($rule);
+            }
+
+            return (string) $rule;
+        })->toArray();
+
+        // Check for specific types
+        if ($this->hasAnyRule($ruleStrings, ['boolean', 'bool'])) {
+            return 'boolean';
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['array'])) {
+            return 'array';
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['email', 'url', 'ip', 'uuid', 'string', 'regex'])) {
+            return 'string';
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['date', 'date_format:', 'before:', 'after:', 'before_or_equal:', 'after_or_equal:'])) {
+            return 'string'; // Dates are typically handled as strings in schemas
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['file', 'image', 'mimes:', 'mimetypes:'])) {
+            return 'string'; // Files are typically handled as strings (paths/URLs)
+        }
+
+        if ($this->hasAnyRule($ruleStrings, ['integer', 'int', 'numeric', 'between:'])) {
+            return 'number';
+        }
+
+        return null;
+    }
+
+    /**
+     * Check if field is required based on validation rules.
+     */
+    protected function isRequired(array $rules): bool
+    {
+        return in_array('required', $rules) ||
+            collect($rules)->contains(function ($rule) {
+                return is_string($rule) && str_starts_with($rule, 'required');
+            });
+    }
+
+    protected function hasAnyRule(array $ruleStrings, array $rulesToCheck): bool
+    {
+        foreach ($ruleStrings as $rule) {
+            foreach ($rulesToCheck as $check) {
+                if ($rule === $check || str_starts_with($rule, $check)) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 }
