@@ -36,7 +36,7 @@ class ActionTool extends Tool
 
     public function description(): string
     {
-        if ($description = $this->action->description(app(McpActionRequest::class))){
+        if ($description = $this->action->description(app(McpActionRequest::class))) {
             return $description;
         }
 
@@ -70,7 +70,7 @@ class ActionTool extends Tool
 
         $fields = [];
 
-        foreach($this->action->rules() as $field => $rules) {
+        foreach ($this->action->rules() as $field => $rules) {
             $fieldType = $this->guessTypeFromValidationRules($rules);
 
             $schemaField = match ($fieldType) {
@@ -103,7 +103,6 @@ class ActionTool extends Tool
                 ->description("The ID of the {$modelName} to run the {$actionName} action on.")
                 ->required();
         }
-
 
         return $fields;
     }
