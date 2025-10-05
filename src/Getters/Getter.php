@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Getters;
 
 use Binaryk\LaravelRestify\Http\Requests\GetterRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\AuthorizedToRun;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
@@ -14,6 +15,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonSerializable;
@@ -44,9 +46,32 @@ abstract class Getter implements JsonSerializable
      */
     public $action;
 
+    /**
+     * Getter description, usually used in the UI or MCP.
+     */
+    public string $description = '';
+
     public static function indexQuery(RestifyRequest $request, $query): void
     {
         //
+    }
+
+    public function description(RestifyRequest $request): string
+    {
+        return $this->description;
+    }
+
+    /**
+     * Validation rules to be applied to the getter parameters.
+     */
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function toolSchema(JsonSchema $schema): array
+    {
+        return app(JsonSchemaFromRulesAction::class)($schema, $this->rules());
     }
 
     public function name(): string

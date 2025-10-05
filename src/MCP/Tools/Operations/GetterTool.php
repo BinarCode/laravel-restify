@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
 use Binaryk\LaravelRestify\Getters\Getter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\JsonSchema\JsonSchema;
@@ -32,6 +33,10 @@ class GetterTool extends Tool
 
     public function description(): string
     {
+        if ($description = $this->getter->description(app(McpGetterRequest::class))) {
+            return $description;
+        }
+
         $repositoryUriKey = $this->repository->uriKey();
         $getterName = $this->getter->name();
         $modelName = class_basename($this->repository::guessModelClassName());
@@ -51,27 +56,31 @@ class GetterTool extends Tool
 
     public function schema(JsonSchema $schema): array
     {
-        $repositoryClass = get_class($this->repository);
-        $modelName = class_basename($repositoryClass::guessModelClassName());
-        $getterName = $this->getter->name();
+        $validationSchema = [];
 
-        $fields = [];
+        $modelName = class_basename($this->repository::guessModelClassName());
 
-        // Check if it's primarily a show getter or index getter
-        $mcpRequest = app(McpGetterRequest::class);
-        $shownOnShow = $this->getter->isShownOnShow($mcpRequest, $this->repository);
-        $shownOnIndex = $this->getter->isShownOnIndex($mcpRequest, $this->repository);
-
-        if ($shownOnShow && ! $shownOnIndex) {
-            // Show getter - requires single ID
-            $fields['id'] = $schema->string()->description("The ID of the $modelName to execute the getter on")->required();
-            $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
-        } else {
-            // Index getters typically don't require specific IDs
-            $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+        if ($this->getter->isShownOnIndex(app(RestifyRequest::class), $this->repository)) {
+            $validationSchema['resources'] = $schema->array()
+                ->items(
+                    $schema->string()
+                        ->description("The ID of the resource to perform the getter on.")
+                        ->required())
+                ->title('resources')
+                ->description("The ids of the resources {$modelName} to perform the getter on. Use string 'all' to select all resources.")
+                ->required();
+        } else if ($this->getter->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+            $validationSchema['id'] = $schema->string()
+                ->title('id')
+                ->description("The ID of the resource ({$modelName}) to perform the getter on.")
+                ->required();
         }
 
-        return $fields;
+        $querySchema = $this->repository::indexToolSchema($schema);
+
+        $rulesSchema = $this->getter->toolSchema($schema);
+
+        return array_merge($querySchema, $rulesSchema, $validationSchema);
     }
 
     public function handle(Request $request): Response

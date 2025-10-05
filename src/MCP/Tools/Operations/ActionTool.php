@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -36,7 +37,7 @@ class ActionTool extends Tool
 
     public function description(): string
     {
-        if ($description = $this->action::description(app(McpActionRequest::class))) {
+        if ($description = $this->action->description(app(McpActionRequest::class))) {
             return $description;
         }
 
@@ -64,7 +65,29 @@ class ActionTool extends Tool
 
     public function schema(JsonSchema $schema): array
     {
-        return $this->action->toolSchema($schema);
+        $validationSchema = [];
+
+        $modelName = class_basename($this->repository::guessModelClassName());
+
+        if ($this->action->isShownOnIndex(app(RestifyRequest::class), $this->repository)) {
+            $validationSchema['resources'] = $schema->array()
+                ->items(
+                    $schema->string()
+                        ->description("The ID of the resource {$modelName} to perform the action on.")
+                        ->required())
+                ->title('resources')
+                ->description("The ids of the resources {$modelName} to perform the action on. Use string 'all' to select all resources.")
+                ->required();
+        } else if ($this->action->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+            $validationSchema['id'] = $schema->string()
+                ->title('id')
+                ->description('The ID of the resource to perform the action on.')
+                ->required();
+        }
+
+        $rulesSchema = $this->action->toolSchema($schema);
+
+        return array_merge($rulesSchema, $validationSchema);
     }
 
     public function handle(Request $request): Response
