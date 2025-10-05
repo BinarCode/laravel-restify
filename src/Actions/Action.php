@@ -214,7 +214,7 @@ abstract class Action implements JsonSerializable
     {
         return array_merge([
             'name' => $this->name(),
-            'description' => $this->description(app(RestifyRequest::class)),
+            'description' => static::description(app(RestifyRequest::class)),
             'destructive' => $this instanceof DestructiveAction,
             'uriKey' => $this->uriKey(),
             'payload' => $this->payload(),
