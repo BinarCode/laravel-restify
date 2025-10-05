@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Getters\Getter;
+use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -69,6 +70,10 @@ class GetterRequest extends RestifyRequest
 
     public function isForRepositoryRequest(): bool
     {
+        if ($this instanceof McpGetterRequest) {
+            return $this->input('id') != null;
+        }
+
         return $this instanceof RepositoryGetterRequest;
     }
 }

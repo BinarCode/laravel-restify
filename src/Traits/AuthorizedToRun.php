@@ -11,7 +11,7 @@ trait AuthorizedToRun
     /**
      * The callback used to authorize running the action.
      */
-    public ?Closure $runCallback;
+    public ?Closure $runCallback = null;
 
     /**
      * Determine if the action is executable for the given request.

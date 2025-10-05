@@ -13,6 +13,9 @@ use Laravel\Mcp\Server\Tool;
 
 class GetterTool extends Tool
 {
+    /**
+     * @var Repository|\Illuminate\Foundation\Application|mixed|object|string
+     */
     protected Repository $repository;
 
     protected Getter $getter;
@@ -69,11 +72,13 @@ class GetterTool extends Tool
                 ->title('resources')
                 ->description("The ids of the resources {$modelName} to perform the getter on. Use string 'all' to select all resources.")
                 ->required();
-        } else if ($this->getter->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
-            $validationSchema['id'] = $schema->string()
-                ->title('id')
-                ->description("The ID of the resource ({$modelName}) to perform the getter on.")
-                ->required();
+        } else {
+            if ($this->getter->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+                $validationSchema['id'] = $schema->string()
+                    ->title('id')
+                    ->description("The ID of the resource ({$modelName}) to perform the getter on.")
+                    ->required();
+            }
         }
 
         $querySchema = $this->repository::indexToolSchema($schema);
@@ -87,8 +92,31 @@ class GetterTool extends Tool
     {
         $mcpRequest = app(McpGetterRequest::class);
         $mcpRequest->replace($request->all());
+        $mcpRequest->merge([
+            'mcp_repository_key' => $this->repository->uriKey(),
+        ]);
 
-        $this->repository->request = $mcpRequest;
+        // Parse repositories string to array if provided
+        if ($mcpRequest->has('repositories') && is_string($mcpRequest->input('repositories'))) {
+            $repositories = json_decode($mcpRequest->input('repositories'), true) ?? [];
+            $mcpRequest->merge(['repositories' => $repositories]);
+        }
+
+        // For show actions with single ID, set the route parameter
+        if ($id = $mcpRequest->input('id')) {
+            $mcpRequest->setRouteResolver(function () use ($id) {
+                return new class($id) {
+                    public function __construct(private $id)
+                    {
+                    }
+
+                    public function parameter($key, $default = null)
+                    {
+                        return $key === 'repositoryId' ? $this->id : $default;
+                    }
+                };
+            });
+        }
 
         $result = $this->repository->getterTool($this->getter, $mcpRequest);
 

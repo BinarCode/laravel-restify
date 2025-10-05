@@ -1177,8 +1177,6 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function serializeForIndex(RestifyRequest $request): array
     {
-        $this->request = $request;
-
         $data = $this->filter([
             'id' => $this->when($id = $this->getId($request), $id),
             'type' => $this->when($type = $this->getType($request), $type),
