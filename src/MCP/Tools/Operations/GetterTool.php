@@ -72,7 +72,7 @@ class GetterTool extends Tool
             $validationSchema['resources'] = $schema->array()
                 ->items(
                     $schema->string()
-                        ->description("The ID of the resource to perform the getter on.")
+                        ->description('The ID of the resource to perform the getter on.')
                         ->required())
                 ->title('resources')
                 ->description("The ids of the resources {$modelName} to perform the getter on. Use string 'all' to select all resources.")
@@ -110,10 +110,9 @@ class GetterTool extends Tool
         // For show actions with single ID, set the route parameter
         if ($id = $mcpRequest->input('id')) {
             $mcpRequest->setRouteResolver(function () use ($id) {
-                return new class($id) {
-                    public function __construct(private $id)
-                    {
-                    }
+                return new class($id)
+                {
+                    public function __construct(private $id) {}
 
                     public function parameter($key, $default = null)
                     {
