@@ -24,7 +24,7 @@ class DeleteTool extends Tool
 
     public function title(): string
     {
-        return $this->repository::label() . ' Delete';
+        return $this->repository::label().' Delete';
     }
 
     public function name(): string
