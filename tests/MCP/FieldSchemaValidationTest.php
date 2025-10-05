@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\MCP;
 
 use Binaryk\LaravelRestify\Fields\Field;
-use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
@@ -109,13 +108,11 @@ class FieldSchemaValidationTest extends IntegrationTestCase
     {
         $field = field('published_at')->rules([new UniqueClientCompanyNameRule]);
 
-        $type = $field->guessFieldType(new McpStoreRequest());
+        $type = $field->guessFieldType(new McpStoreRequest);
         $this->assertInstanceOf(StringType::class, $type);
     }
 }
 class UniqueClientCompanyNameRule implements ValidationRule
 {
-    public function validate(string $attribute, mixed $value, \Closure $fail): void
-    {
-    }
+    public function validate(string $attribute, mixed $value, \Closure $fail): void {}
 }

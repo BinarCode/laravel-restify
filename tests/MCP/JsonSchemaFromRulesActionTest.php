@@ -4,8 +4,6 @@ namespace Binaryk\LaravelRestify\Tests\MCP;
 
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
-use Closure;
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\JsonSchema\Types\IntegerType;
 use Illuminate\JsonSchema\Types\StringType;

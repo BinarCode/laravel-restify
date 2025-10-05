@@ -77,11 +77,11 @@ class JsonSchemaFromRulesAction
 
             $schemaType = match (true) {
                 $rule instanceof Email => $schema->string()
-                    ->description("This field must be a valid email address."),
+                    ->description('This field must be a valid email address.'),
                 $rule instanceof File => $schema->string()
-                    ->description("This field must be a valid file path."),
+                    ->description('This field must be a valid file path.'),
                 $rule instanceof Password => $schema->string()
-                    ->description("This field must be a valid password."),
+                    ->description('This field must be a valid password.'),
                 default => $schema->string()
                     ->description("This field uses a custom validation rule: {$class}."),
             };
@@ -91,7 +91,7 @@ class JsonSchemaFromRulesAction
 
         if ($rule instanceof Closure) {
             return $existingType ?? $schema->string()
-                ->description("This field uses a custom validation closure.");
+                ->description('This field uses a custom validation closure.');
         }
 
         [$rule, $parameters] = ValidationRuleParser::parse($rule);
