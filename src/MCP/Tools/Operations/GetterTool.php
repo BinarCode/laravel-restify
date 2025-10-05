@@ -77,20 +77,16 @@ class GetterTool extends Tool
                 ->title('resources')
                 ->description("The ids of the resources {$modelName} to perform the getter on. Use string 'all' to select all resources.")
                 ->required();
-        } else {
-            if ($this->getter->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
-                $validationSchema['id'] = $schema->string()
-                    ->title('id')
-                    ->description("The ID of the resource ({$modelName}) to perform the getter on.")
-                    ->required();
-            }
+        } elseif ($this->getter->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+            $validationSchema['id'] = $schema->string()
+                ->title('id')
+                ->description("The ID of the resource ({$modelName}) to perform the getter on.")
+                ->required();
         }
-
-        $querySchema = $this->repository::indexToolSchema($schema);
 
         $rulesSchema = $this->getter->toolSchema($schema);
 
-        return array_merge($querySchema, $rulesSchema, $validationSchema);
+        return array_merge($rulesSchema, $validationSchema);
     }
 
     public function handle(Request $request): Response
