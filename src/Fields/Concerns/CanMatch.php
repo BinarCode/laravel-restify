@@ -6,12 +6,10 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Illuminate\JsonSchema\Types\ArrayType;
 use Illuminate\JsonSchema\Types\BooleanType;
 use Illuminate\JsonSchema\Types\IntegerType;
 use Illuminate\JsonSchema\Types\NumberType;
-use Illuminate\JsonSchema\Types\ObjectType;
 
 trait CanMatch
 {
@@ -44,7 +42,7 @@ trait CanMatch
 
         $this->matchableColumn = $column ?? $this->getAttribute();
         $this->matchableType = $type ?? $this->guessMatchType(
-        // we'll use the store request to identify rules and guess types
+            // we'll use the store request to identify rules and guess types
             app(RepositoryStoreRequest::class)
         );
 

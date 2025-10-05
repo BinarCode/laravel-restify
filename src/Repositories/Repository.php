@@ -285,9 +285,6 @@ class Repository implements JsonSerializable, RestifySearchable
 
     /**
      * This is the description used for the IndexTool MCP.
-     *
-     * @param  RestifyRequest  $request
-     * @return string
      */
     public static function description(RestifyRequest $request): string
     {
@@ -296,7 +293,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
         // Ai Agent description
         $description = "This repository manages the [{$modelName}] model, which corresponds to the [{$table}] table in the database. "
-            . "It provides functionalities such as listing, searching, sorting, filtering, and relationship management. ";
+            .'It provides functionalities such as listing, searching, sorting, filtering, and relationship management. ';
 
         $potentialAttributesFromTable = implode(', ', self::newModel()->getFillable());
 
