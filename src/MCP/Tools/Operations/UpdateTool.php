@@ -24,7 +24,7 @@ class UpdateTool extends Tool
 
     public function title(): string
     {
-        return $this->repository::label() . ' Update';
+        return $this->repository::label().' Update';
     }
 
     public function name(): string

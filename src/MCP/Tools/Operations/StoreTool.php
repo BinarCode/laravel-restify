@@ -24,7 +24,7 @@ class StoreTool extends Tool
 
     public function title(): string
     {
-        return $this->repository::label() . ' Create';
+        return $this->repository::label().' Create';
     }
 
     public function name(): string

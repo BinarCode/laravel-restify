@@ -24,7 +24,7 @@ class IndexTool extends Tool
 
     public function title(): string
     {
-        return $this->repository::label() . ' Index';
+        return $this->repository::label().' Index';
     }
 
     public function name(): string

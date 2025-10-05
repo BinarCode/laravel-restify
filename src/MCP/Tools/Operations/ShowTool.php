@@ -24,7 +24,7 @@ class ShowTool extends Tool
 
     public function title(): string
     {
-        return $this->repository::label() . ' Show';
+        return $this->repository::label().' Show';
     }
 
     public function name(): string
