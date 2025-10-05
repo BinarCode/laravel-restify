@@ -32,7 +32,7 @@ class FieldActionTest extends IntegrationTestCase
 
         PostRepository::partialMock()
             ->shouldReceive('fieldsForStore')
-            ->andreturn([
+            ->andReturn([
                 Field::new('title'),
 
                 Field::new('description')->action($action),
@@ -50,7 +50,6 @@ class FieldActionTest extends IntegrationTestCase
                     ->where('data.attributes.description', 'Actionable Description')
                     ->etc()
             );
-
     }
 
     #[Test]
@@ -72,7 +71,7 @@ class FieldActionTest extends IntegrationTestCase
 
         PostRepository::partialMock()
             ->shouldReceive('fieldsForStoreBulk')
-            ->andreturn([
+            ->andReturn([
                 Field::new('title'),
 
                 Field::new('description')->action($action),
@@ -117,7 +116,7 @@ class FieldActionTest extends IntegrationTestCase
 
         PostRepository::partialMock()
             ->shouldReceive('fieldsForUpdateBulk')
-            ->andreturn([
+            ->andReturn([
                 Field::new('title'),
 
                 Field::new('description')->action($action),

@@ -3,8 +3,15 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Fields\File;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\JsonSchemaTypeFactory;
+use Illuminate\JsonSchema\Types\ArrayType;
+use Illuminate\JsonSchema\Types\BooleanType;
+use Illuminate\JsonSchema\Types\NumberType;
 use Illuminate\JsonSchema\Types\Type;
 
 /**
@@ -13,89 +20,64 @@ use Illuminate\JsonSchema\Types\Type;
 trait FieldMcpSchemaDetection
 {
     /**
-     * Resolve the JSON schema for this field to be used in MCP tools.
-     */
-    public function resolveJsonSchema(JsonSchema $schema, Repository $repository): ?Type
-    {
-        // Check if there's a custom callback defined
-        if (is_callable($this->toolInputSchemaCallback)) {
-            $result = call_user_func($this->toolInputSchemaCallback, $schema, $repository, $this);
-            if ($result instanceof Type) {
-                return $result;
-            }
-        }
-
-        // For MCP tools, we include computed fields that have resolve callbacks
-        // since they represent storable fields in MCP contexts
-        // Only skip truly computed fields without resolve callbacks
-        if ($this->computed() && ! $this->resolveCallback) {
-            return null;
-        }
-
-        $fieldType = $this->guessFieldType();
-
-        // Create the field schema based on its type
-        $schemaField = match ($fieldType) {
-            'boolean' => $schema->boolean(),
-            'number' => $schema->number(),
-            'array' => $schema->string(), // Arrays are typically sent as JSON strings
-            default => $schema->string()
-        };
-
-        // Add description
-        $description = $this->generateFieldDescription($repository);
-        $schemaField->description($description);
-
-        // Mark as required if field has required validation
-        if ($this->isRequired()) {
-            $schemaField->required();
-        }
-
-        return $schemaField;
-    }
-
-    /**
      * Guess the field type based on validation rules, field class, and attribute patterns.
      */
-    public function guessFieldType(): string
+    public function guessFieldType(RestifyRequest $request): Type
     {
-        $ruleType = $this->guessTypeFromValidationRules();
+        $schema = new JsonSchemaTypeFactory();
+
+        $rules = $this->getRulesForRequest($request);
+
+        $ruleType = app(JsonSchemaFromRulesAction::class)->buildTypeFromRules(
+            $schema,
+            $this->attribute,
+            $rules,
+        );
+
         if ($ruleType) {
             return $ruleType;
         }
 
         // Check attribute name patterns
-        $attributeType = $this->guessTypeFromAttributeName();
+        $attributeType = $this->guessTypeFromAttributeName($schema);
+
         if ($attributeType) {
             return $attributeType;
         }
 
-        // Default to string
-        return 'string';
+        return $schema->string();
     }
 
-    /**
-     * Generate a comprehensive description for the field.
-     */
-    protected function generateFieldDescription(Repository $repository): string
+    public function getDescription(RestifyRequest $request, Repository $repository): string
     {
-        $attribute = $this->label ?? $this->attribute;
-        $fieldType = $this->guessFieldType();
+        ray('getting description for '.$this->attribute);
+        if (is_callable($this->descriptionCallback)) {
+            $description = call_user_func($this->descriptionCallback, $this, $repository);
 
-        $description = "Field: {$attribute} (type: {$fieldType})";
-
-        // Add validation rules information
-        $rules = $this->getStoringRules();
-        if (! empty($rules)) {
-            $ruleDescriptions = $this->formatValidationRules($rules);
-            if (! empty($ruleDescriptions)) {
-                $description .= '. Validation: '.implode(', ', $ruleDescriptions);
+            if (is_string($description)) {
+                return $description;
             }
         }
 
-        // Add relationship information for relationship fields
-        if ($this->isRelationshipField()) {
-            $description .= '. This is a relationship field';
+        if ($description = data_get($this->jsonSchema()?->toArray(), 'description')) {
+            if (is_string($description)) {
+                return $description;
+            }
+        }
+
+        $attribute = $this->label ?? $this->attribute;
+
+        $description = "Field: {$attribute}.";
+
+        // Add validation rules information
+        $rules = $this->getRulesForRequest($request);
+
+        if (! empty($rules)) {
+            $ruleDescriptions = $this->formatValidationRules($rules);
+
+            if (! empty($ruleDescriptions)) {
+                $description .= '. Validation: '.implode(', ', $ruleDescriptions);
+            }
         }
 
         // Add file information for file fields
@@ -104,15 +86,14 @@ trait FieldMcpSchemaDetection
         }
 
         // Add examples based on field type and name
-        $examples = $this->generateFieldExamples();
-        if (! empty($examples)) {
-            $description .= '. Examples: '.implode(', ', $examples);
+        if ($this->jsonSchema instanceof Type) {
+            $examples = $this->generateFieldExamples($this->jsonSchema);
+
+            if (! empty($examples)) {
+                $description .= '. Examples: '.implode(', ', $examples);
+            }
         }
 
-        // Apply custom description callback if provided
-        if (is_callable($this->descriptionCallback)) {
-            $description = call_user_func($this->descriptionCallback, $description, $this, $repository);
-        }
 
         return $description;
     }
@@ -128,17 +109,6 @@ trait FieldMcpSchemaDetection
             collect($rules)->contains(function ($rule) {
                 return is_string($rule) && str_starts_with($rule, 'required');
             });
-    }
-
-    /**
-     * Check if field is a relationship field.
-     */
-    protected function isRelationshipField(): bool
-    {
-        return $this instanceof \Binaryk\LaravelRestify\Fields\BelongsTo ||
-            $this instanceof \Binaryk\LaravelRestify\Fields\HasOne ||
-            $this instanceof \Binaryk\LaravelRestify\Fields\HasMany ||
-            $this instanceof \Binaryk\LaravelRestify\Fields\BelongsToMany;
     }
 
     /**
@@ -173,17 +143,23 @@ trait FieldMcpSchemaDetection
     /**
      * Generate examples for the field.
      */
-    protected function generateFieldExamples(): array
+    protected function generateFieldExamples(JsonSchema $fieldType): array
     {
         $attribute = strtolower($this->attribute);
-        $fieldType = $this->guessFieldType();
 
-        return match ($fieldType) {
-            'boolean' => ['true', 'false'],
-            'number' => $this->getNumberExamples($attribute),
-            'array' => ['["item1", "item2"]', '{"key": "value"}'],
-            default => $this->getStringExamples($attribute)
-        };
+        if ($fieldType instanceof BooleanType) {
+            return ['true', 'false'];
+        }
+
+        if ($fieldType instanceof NumberType) {
+            return $this->getNumberExamples($attribute);
+        }
+
+        if ($fieldType instanceof ArrayType) {
+            return ['["item1", "item2"]', '{"key": "value"}'];
+        }
+
+        return $this->getStringExamples($attribute);
     }
 
     /**
@@ -191,7 +167,8 @@ trait FieldMcpSchemaDetection
      */
     protected function getNumberExamples(string $attribute): array
     {
-        if (str_contains($attribute, 'price') || str_contains($attribute, 'cost') || str_contains($attribute, 'amount')) {
+        if (str_contains($attribute, 'price') || str_contains($attribute, 'cost') || str_contains($attribute,
+                'amount')) {
             return ['99.99', '29.95'];
         }
         if (str_contains($attribute, 'age')) {
@@ -269,7 +246,8 @@ trait FieldMcpSchemaDetection
             return 'string';
         }
 
-        if ($this->hasAnyRule($ruleStrings, ['date', 'date_format:', 'before:', 'after:', 'before_or_equal:', 'after_or_equal:'])) {
+        if ($this->hasAnyRule($ruleStrings,
+            ['date', 'date_format:', 'before:', 'after:', 'before_or_equal:', 'after_or_equal:'])) {
             return 'string'; // Dates are typically handled as strings in schemas
         }
 
@@ -303,7 +281,7 @@ trait FieldMcpSchemaDetection
     /**
      * Guess type from attribute name patterns.
      */
-    protected function guessTypeFromAttributeName(): ?string
+    protected function guessTypeFromAttributeName(JsonSchema $schema): ?Type
     {
         $attribute = $this->attribute;
 
@@ -315,36 +293,41 @@ trait FieldMcpSchemaDetection
 
         // Boolean patterns
         if (preg_match('/^(is_|has_|can_|should_|will_|was_|were_)/', $attribute) ||
-            in_array($attribute, ['active', 'enabled', 'disabled', 'verified', 'published', 'featured', 'public', 'private'])) {
-            return 'boolean';
+            in_array($attribute,
+                ['active', 'enabled', 'disabled', 'verified', 'published', 'featured', 'public', 'private'])) {
+            return $schema->boolean();
         }
 
         // Number patterns
         if (preg_match('/_(id|count|number|amount|price|cost|total|sum|quantity|qty)$/', $attribute) ||
-            in_array($attribute, ['id', 'age', 'year', 'month', 'day', 'hour', 'minute', 'second', 'weight', 'height', 'size'])) {
-            return 'number';
+            in_array($attribute,
+                ['id', 'age', 'year', 'month', 'day', 'hour', 'minute', 'second', 'weight', 'height', 'size'])) {
+            return $schema->number();
         }
 
         // Date patterns
         if (preg_match('/_(at|date|time)$/', $attribute) ||
-            in_array($attribute, ['created_at', 'updated_at', 'deleted_at', 'published_at', 'birthday', 'date_of_birth'])) {
-            return 'string';
+            in_array($attribute,
+                ['created_at', 'updated_at', 'deleted_at', 'published_at', 'birthday', 'date_of_birth'])) {
+            return $schema->string()->description('The attribute should be a date string in ISO 8601 format (e.g., "2024-01-01T00:00:00Z")');
         }
 
         // Email pattern
         if (str_contains($attribute, 'email')) {
-            return 'string';
+            return $schema->string();
         }
 
         // Password pattern
         if (str_contains($attribute, 'password')) {
-            return 'string';
+            return $schema->string();
         }
 
         // Array patterns (JSON fields)
         if (preg_match('/_(json|data|metadata|config|settings|options)$/', $attribute) ||
             str_contains($attribute, 'tags')) {
-            return 'array';
+            return $schema->array()->items(
+                $schema->string()
+            );
         }
 
         return null;

@@ -33,8 +33,9 @@ trait McpStoreTool
                 ->forStore($request, $repository)
                 ->withoutActions($request, $repository);
 
-        $fields->each(function (Field $field) use ($schema, $repository, &$properties) {
-            $fieldSchema = $field->resolveJsonSchema($schema, $repository);
+        $fields->each(function (Field $field) use ($schema, $repository, &$properties, $request) {
+            $fieldSchema = $field->resolveJsonSchema($schema, $request, $repository)->jsonSchema();
+
             if ($fieldSchema !== null) {
                 $properties[$field->attribute] = $fieldSchema;
             }

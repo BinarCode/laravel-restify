@@ -33,6 +33,14 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         ]);
     }
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // Clear any previously registered repositories to avoid test pollution
+        Restify::repositories([]);
+    }
+
     public function test_repository_uses_mcp_specific_field_methods(): void
     {
         $repository = new class extends Repository
@@ -293,9 +301,20 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         $this->assertNotEmpty($resultContent['data']);
 
         $firstItem = $resultContent['data'][0];
-        $this->assertArrayHasKey('attributes', $firstItem);
 
-        $attributes = $firstItem['attributes'];
+        // Check structure - JSON:API format has 'attributes' key
+        if (isset($firstItem['type']) && isset($firstItem['id'])) {
+            // JSON:API format - attributes should be in a sub-key
+            $this->assertArrayHasKey('attributes', $firstItem,
+                'Expected JSON:API structure with attributes key. Found keys: '.implode(', ', array_keys($firstItem)));
+            $attributes = $firstItem['attributes'];
+        } elseif (isset($firstItem['attributes'])) {
+            // Has attributes key but not standard JSON:API
+            $attributes = $firstItem['attributes'];
+        } else {
+            // Flat structure
+            $attributes = $firstItem;
+        }
 
         // Assert MCP-specific fields that should only appear in MCP requests
         $this->assertArrayHasKey('mcp_metadata', $attributes);

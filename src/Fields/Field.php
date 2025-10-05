@@ -10,13 +10,24 @@ use Binaryk\LaravelRestify\Fields\Concerns\HasAction;
 use Binaryk\LaravelRestify\Fields\Concerns\ValidationMethods;
 use Binaryk\LaravelRestify\Fields\Contracts\Matchable;
 use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateBulkRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Concerns\FieldMcpSchemaDetection;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use JsonSerializable;
@@ -148,7 +159,12 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     /**
      * Closure to modify the generated field description.
      */
-    public $descriptionCallback = null;
+    public Closure|null $descriptionCallback = null;
+
+    /**
+     * This is the resolved JsonSchema for the field during the MCP requests.
+     */
+    public ?JsonSchema $jsonSchema = null;
 
     /**
      * Create a new field.
@@ -484,6 +500,29 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         return array_merge($this->rules, $this->updateBulkRules);
     }
 
+    public function getRulesForRequest(RestifyRequest $request): array
+    {
+        $rules = [];
+
+        if ($request instanceof McpStoreRequest || $request instanceof RepositoryStoreRequest) {
+            $rules = $this->getStoringRules();
+        }
+
+        if ($request instanceof McpUpdateRequest || $request instanceof RepositoryUpdateRequest) {
+            $rules = $this->getUpdatingRules();
+        }
+
+        if ($request instanceof McpUpdateBulkRequest || $request instanceof RepositoryUpdateBulkRequest) {
+            $rules = $this->getUpdatingBulkRules();
+        }
+
+        if ($request instanceof McpStoreBulkRequest || $request instanceof RepositoryStoreBulkRequest) {
+            $rules = $this->getStoringBulkRules();
+        }
+
+        return $rules;
+    }
+
     /**
      * Determine if the attribute is computed.
      *
@@ -795,6 +834,42 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         }
 
         $this->descriptionCallback = $callback;
+
+        return $this;
+    }
+
+    public function jsonSchema(): ?JsonSchema
+    {
+        return $this->jsonSchema;
+    }
+
+    public function resolveJsonSchema(JsonSchema $parentSchema, McpRequest $request, Repository $repository): self
+    {
+        if (is_callable($this->toolInputSchemaCallback)) {
+            $result = call_user_func($this->toolInputSchemaCallback, $parentSchema, $repository, $this);
+            if ($result instanceof Type) {
+                $this->jsonSchema = $result;
+
+                return $this;
+            }
+        }
+
+        // For MCP tools, we include computed fields that have resolve callbacks
+        // since they represent storable fields in MCP contexts
+        // Only skip truly computed fields without resolve callbacks
+        if ($this->computed() && ! $this->resolveCallback) {
+            return $this;
+        }
+
+        if ($this->isReadonly(app(McpRequest::class))) {
+            return $this;
+        }
+
+        $this->jsonSchema = $this->guessFieldType($request);
+
+        $description = $this->getDescription($request, $repository);
+
+        $this->jsonSchema->description($description);
 
         return $this;
     }

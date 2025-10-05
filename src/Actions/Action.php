@@ -2,8 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Actions;
 
+use Binaryk\LaravelRestify\Actions\Concerns\HasSchemaResolver;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
@@ -16,6 +18,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
@@ -29,6 +32,7 @@ use ReturnTypeWillChange;
 abstract class Action implements JsonSerializable
 {
     use AuthorizedToSee;
+    use HasSchemaResolver;
     use Make;
     use ProxiesCanSeeToGate;
     use Visibility;
@@ -199,6 +203,11 @@ abstract class Action implements JsonSerializable
     public function skipFieldFill(RestifyRequest $request): bool
     {
         return $this->skipFieldFill;
+    }
+
+    public function toolSchema(JsonSchema $schema): array
+    {
+        return app(JsonSchemaFromRulesAction::class)($schema, $this->rules());
     }
 
     #[ReturnTypeWillChange]

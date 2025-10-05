@@ -31,10 +31,7 @@ class IndexTool extends Tool
 
     public function description(): string
     {
-        $uriKey = $this->repository->uriKey();
-        $modelName = class_basename($this->repository::guessModelClassName());
-
-        return "Retrieve a paginated list of {$modelName} records from the {$uriKey} repository with filtering, sorting, and search capabilities.";
+        return $this->repository->description(app(McpIndexRequest::class));
     }
 
     public function schema(JsonSchema $schema): array

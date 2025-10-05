@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
+use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
@@ -334,6 +336,11 @@ class GraphqlGenerateCommand extends Command
         return "input {$typeName}Input {\n{$fieldsString}\n}";
     }
 
+    /**
+     * @param Field $field
+     * @param  bool  $isInput
+     * @return string
+     */
     protected function mapFieldToGraphQLType($field, bool $isInput = false): string
     {
         $fieldClass = get_class($field);
@@ -341,7 +348,7 @@ class GraphqlGenerateCommand extends Command
 
         // Use the field's built-in type guessing if available
         if (method_exists($field, 'guessFieldType')) {
-            $fieldType = $field->guessFieldType();
+            $fieldType = $field->guessFieldType(app(RepositoryStoreRequest::class));
 
             switch ($fieldType) {
                 case 'boolean':

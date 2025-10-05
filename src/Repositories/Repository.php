@@ -150,6 +150,11 @@ class Repository implements JsonSerializable, RestifySearchable
     public static string $title = 'id';
 
     /**
+     * Action description, usually used in the UI or MCP.
+     */
+    public static string $description = '';
+
+    /**
      * Attribute that should be used for displaying the `id` in the json:format.
      */
     public static string $id = 'id';
@@ -276,6 +281,32 @@ class Repository implements JsonSerializable, RestifySearchable
     public function subtitle(): ?string
     {
         return null;
+    }
+
+    /**
+     * This is the description used for the IndexTool MCP.
+     *
+     * @param  RestifyRequest  $request
+     * @return string
+     */
+    public static function description(RestifyRequest $request): string
+    {
+        $modelName = class_basename(self::guessModelClassName());
+        $table = self::newModel()->getTable();
+
+        // Ai Agent description
+        $description = "This repository manages the [{$modelName}] model, which corresponds to the [{$table}] table in the database. "
+            . "It provides functionalities such as listing, searching, sorting, filtering, and relationship management. ";
+
+        $potentialAttributesFromTable = implode(', ', self::newModel()->getFillable());
+
+        if (! empty($potentialAttributesFromTable)) {
+            $description .= " The model has the following attributes: {$potentialAttributesFromTable}.";
+        }
+
+        return static::$description !== ''
+            ? static::$description
+            : $description;
     }
 
     public function filters(RestifyRequest $request): array
