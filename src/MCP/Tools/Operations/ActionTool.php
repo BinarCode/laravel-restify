@@ -64,10 +64,6 @@ class ActionTool extends Tool
 
     public function schema(JsonSchema $schema): array
     {
-        $repositoryClass = get_class($this->repository);
-        $modelName = class_basename($repositoryClass::guessModelClassName());
-        $actionName = $this->action->name();
-
         return $this->action->toolSchema($schema);
     }
 

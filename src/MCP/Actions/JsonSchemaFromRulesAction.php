@@ -9,7 +9,6 @@ use Illuminate\JsonSchema\Types\BooleanType;
 use Illuminate\JsonSchema\Types\IntegerType;
 use Illuminate\JsonSchema\Types\NumberType;
 use Illuminate\JsonSchema\Types\ObjectType;
-use Illuminate\JsonSchema\Types\StringType;
 use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Validation\Rules\Email;
 use Illuminate\Validation\Rules\File;
