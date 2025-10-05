@@ -1851,7 +1851,13 @@ trait SchemaAttributes
             return $existing;
         }
 
-        return $schema->number()->description('Must be a numeric value');
+        $newType = $schema->number()->description('Must be a numeric value');
+
+        if ($existing && property_exists($existing, 'isRequired') && $existing->isRequired) {
+            $newType->required();
+        }
+
+        return $newType;
     }
 
     /**
@@ -1992,6 +1998,8 @@ trait SchemaAttributes
      */
     public function validateRequired(string $attribute, $schema, array $parameters)
     {
+        $this->markAttributeAsRequired($attribute);
+
         $type = $this->rulesSchema[$attribute] ?? $schema->string();
 
         return $type->required()->description('This field is required');
@@ -2569,7 +2577,13 @@ trait SchemaAttributes
             return $existing;
         }
 
-        return $schema->string()->description('Must be a string');
+        $newType = $schema->string()->description('Must be a string');
+
+        if ($existing && property_exists($existing, 'isRequired') && $existing->isRequired) {
+            $newType->required();
+        }
+
+        return $newType;
     }
 
     /**

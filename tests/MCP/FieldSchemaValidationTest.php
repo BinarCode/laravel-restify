@@ -3,9 +3,11 @@
 namespace Binaryk\LaravelRestify\Tests\MCP;
 
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\JsonSchema\Types\ArrayType;
 use Illuminate\JsonSchema\Types\BooleanType;
@@ -101,5 +103,19 @@ class FieldSchemaValidationTest extends IntegrationTestCase
 
         $schema = $field->jsonSchema()->toArray();
         $this->assertSame('This is a custom description.', $schema['description']);
+    }
+
+    public function test_can_validate_custom_rule(): void
+    {
+        $field = field('published_at')->rules([new UniqueClientCompanyNameRule]);
+
+        $type = $field->guessFieldType(new McpStoreRequest());
+        $this->assertInstanceOf(StringType::class, $type);
+    }
+}
+class UniqueClientCompanyNameRule implements ValidationRule
+{
+    public function validate(string $attribute, mixed $value, \Closure $fail): void
+    {
     }
 }

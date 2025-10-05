@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Actions\Concerns\HasSchemaResolver;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
-use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -65,16 +64,16 @@ abstract class Action implements JsonSerializable
     /**
      * Action description, usually used in the UI or MCP.
      */
-    public string $description = '';
+    public static string $description = '';
 
     public function name()
     {
         return Restify::humanize($this);
     }
 
-    public function description(RestifyRequest $request): string
+    public static function description(RestifyRequest $request): string
     {
-        return $this->description;
+        return static::$description;
     }
 
     /**
@@ -169,7 +168,7 @@ abstract class Action implements JsonSerializable
         }
 
         if ($this->isStandalone()) {
-            return Transaction::run(fn () => $this->handle($request));
+            return Transaction::run(fn() => $this->handle($request));
         }
 
         $response = null;

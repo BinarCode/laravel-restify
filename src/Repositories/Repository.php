@@ -300,8 +300,14 @@ class Repository implements JsonSerializable, RestifySearchable
 
         $potentialAttributesFromTable = implode(', ', self::newModel()->getFillable());
 
+        if (empty($potentialAttributesFromTable)) {
+            $potentialAttributesFromTable = implode(', ', self::newModel()->getConnection()
+                ->getSchemaBuilder()
+                ->getColumnListing($table));
+        }
+
         if (! empty($potentialAttributesFromTable)) {
-            $description .= " The model has the following attributes: {$potentialAttributesFromTable}.";
+            $description .= " The model/table has the following attributes: {$potentialAttributesFromTable}.";
         }
 
         return static::$description !== ''

@@ -50,7 +50,6 @@ trait FieldMcpSchemaDetection
 
     public function getDescription(RestifyRequest $request, Repository $repository): string
     {
-        ray('getting description for '.$this->attribute);
         if (is_callable($this->descriptionCallback)) {
             $description = call_user_func($this->descriptionCallback, $this, $repository);
 

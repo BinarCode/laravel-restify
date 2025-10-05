@@ -31,7 +31,7 @@ class IndexTool extends Tool
 
     public function description(): string
     {
-        return $this->repository->description(app(McpIndexRequest::class));
+        return $this->repository::description(app(McpIndexRequest::class));
     }
 
     public function schema(JsonSchema $schema): array

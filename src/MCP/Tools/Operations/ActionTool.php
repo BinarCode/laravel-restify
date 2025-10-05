@@ -36,7 +36,7 @@ class ActionTool extends Tool
 
     public function description(): string
     {
-        if ($description = $this->action->description(app(McpActionRequest::class))) {
+        if ($description = $this->action::description(app(McpActionRequest::class))) {
             return $description;
         }
 
@@ -84,9 +84,10 @@ class ActionTool extends Tool
         // For show actions with single ID, set the route parameter
         if ($id = $mcpRequest->input('id')) {
             $mcpRequest->setRouteResolver(function () use ($id) {
-                return new class($id)
-                {
-                    public function __construct(private $id) {}
+                return new class($id) {
+                    public function __construct(private $id)
+                    {
+                    }
 
                     public function parameter($key, $default = null)
                     {

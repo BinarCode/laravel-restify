@@ -2,7 +2,9 @@
 
 namespace Binaryk\LaravelRestify\MCP\Actions;
 
+use Closure;
 use Illuminate\Contracts\Validation\Rule;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\ArrayType;
 use Illuminate\JsonSchema\Types\BooleanType;
@@ -20,6 +22,8 @@ class JsonSchemaFromRulesAction
     use SchemaAttributes;
 
     protected array $rulesSchema = [];
+
+    protected array $requiredAttributes = [];
 
     /**
      * Convert Laravel validation rules to JSON Schema types.
@@ -48,6 +52,10 @@ class JsonSchemaFromRulesAction
         foreach ($rules as $rule) {
             $type = $this->buildTypeFromRule($schema, $attribute, $rule);
 
+            if ($this->isAttributeRequired($attribute)) {
+                $type?->required();
+            }
+
             if ($type) {
                 $this->rulesSchema[$attribute] = $type;
             }
@@ -58,21 +66,38 @@ class JsonSchemaFromRulesAction
 
     public function buildTypeFromRule(JsonSchema $schema, string $attribute, $rule): ?Type
     {
+        $existingType = $this->rulesSchema[$attribute] ?? null;
+
+        if ($rule instanceof Rule || $rule instanceof ValidationRule) {
+            $class = get_class($rule);
+
+            if ($existingType) {
+                return $existingType;
+            }
+
+            $schemaType = match (true) {
+                $rule instanceof Email => $schema->string()
+                    ->description("This field must be a valid email address."),
+                $rule instanceof File => $schema->string()
+                    ->description("This field must be a valid file path."),
+                $rule instanceof Password => $schema->string()
+                    ->description("This field must be a valid password."),
+                default => $schema->string()
+                    ->description("This field uses a custom validation rule: {$class}."),
+            };
+
+            return $schemaType;
+        }
+
+        if ($rule instanceof Closure) {
+            return $existingType ?? $schema->string()
+                ->description("This field uses a custom validation closure.");
+        }
+
         [$rule, $parameters] = ValidationRuleParser::parse($rule);
 
         if ($rule === '') {
             return null;
-        }
-
-        if ($rule instanceof Rule) {
-            $schemaType = match (true) {
-                $rule instanceof Email => $schema->string(),
-                $rule instanceof File => $schema->string(),
-                $rule instanceof Password => $schema->string(),
-                default => $schema->string(),
-            };
-
-            return $this->rulesSchema[$attribute] ?? $schemaType;
         }
 
         $method = 'validate'.$rule;
@@ -122,5 +147,17 @@ class JsonSchemaFromRulesAction
             ObjectType::class => 'object',
             default => 'string',
         };
+    }
+
+    protected function isAttributeRequired(string $attribute): bool
+    {
+        return in_array($attribute, $this->requiredAttributes, true);
+    }
+
+    protected function markAttributeAsRequired(string $attribute): void
+    {
+        if (! in_array($attribute, $this->requiredAttributes, true)) {
+            $this->requiredAttributes[] = $attribute;
+        }
     }
 }

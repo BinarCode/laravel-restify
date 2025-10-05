@@ -4,6 +4,8 @@ namespace Binaryk\LaravelRestify\Tests\MCP;
 
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Closure;
+use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\JsonSchema\Types\IntegerType;
 use Illuminate\JsonSchema\Types\StringType;
@@ -49,5 +51,8 @@ class JsonSchemaFromRulesActionTest extends IntegrationTestCase
 
         $this->assertEquals('integer', $serialized['type']);
         $this->assertEquals(18, $serialized['minimum']);
+
+        $reflection = new \ReflectionProperty($result['age'], 'required');
+        $this->assertTrue($reflection->getValue($result['age']));
     }
 }
