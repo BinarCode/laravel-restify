@@ -74,10 +74,10 @@ class RestifyServer extends Server
 
     protected function boot(): void
     {
-        collect($this->discoverTools())->each(fn(string $tool): string => $this->tools[] = $tool);
+        collect($this->discoverTools())->each(fn (string $tool): string => $this->tools[] = $tool);
         $this->discoverRepositoryTools();
-        collect($this->discoverResources())->each(fn(string $resource): string => $this->resources[] = $resource);
-        collect($this->discoverPrompts())->each(fn(string $prompt): string => $this->prompts[] = $prompt);
+        collect($this->discoverResources())->each(fn (string $resource): string => $this->resources[] = $resource);
+        collect($this->discoverPrompts())->each(fn (string $prompt): string => $this->prompts[] = $prompt);
     }
 
     /**
@@ -172,11 +172,11 @@ class RestifyServer extends Server
         $actionRequest = app(McpActionRequest::class);
 
         $repositoryInstance->resolveActions($actionRequest)
-            ->filter(fn($action) => $action instanceof Action)
-            ->filter(fn(Action $action) => $action->isShownOnMcp($actionRequest, $repositoryInstance))
-            ->filter(fn(Action $action) => $action->authorizedToSee($actionRequest))
-            ->unique(fn(Action $action) => $action->uriKey()) // Avoid duplicates
-            ->each(fn(Action $action) => $this->tools[] = new ActionTool($repositoryClass, $action));
+            ->filter(fn ($action) => $action instanceof Action)
+            ->filter(fn (Action $action) => $action->isShownOnMcp($actionRequest, $repositoryInstance))
+            ->filter(fn (Action $action) => $action->authorizedToSee($actionRequest))
+            ->unique(fn (Action $action) => $action->uriKey()) // Avoid duplicates
+            ->each(fn (Action $action) => $this->tools[] = new ActionTool($repositoryClass, $action));
     }
 
     protected function discoverGettersForRepository(string $repositoryClass, Repository $repositoryInstance): void
@@ -184,11 +184,11 @@ class RestifyServer extends Server
         $getterRequest = app(McpGetterRequest::class);
 
         $repositoryInstance->resolveGetters($getterRequest)
-            ->filter(fn($getter) => $getter instanceof Getter)
-            ->filter(fn(Getter $getter) => $getter->isShownOnMcp($getterRequest, $repositoryInstance))
-            ->filter(fn(Getter $getter) => $getter->authorizedToSee($getterRequest))
-            ->unique(fn(Getter $getter) => $getter->uriKey()) // Avoid duplicates
-            ->each(fn(Getter $getter) => $this->tools[] = new GetterTool($repositoryClass, $getter));
+            ->filter(fn ($getter) => $getter instanceof Getter)
+            ->filter(fn (Getter $getter) => $getter->isShownOnMcp($getterRequest, $repositoryInstance))
+            ->filter(fn (Getter $getter) => $getter->authorizedToSee($getterRequest))
+            ->unique(fn (Getter $getter) => $getter->uriKey()) // Avoid duplicates
+            ->each(fn (Getter $getter) => $this->tools[] = new GetterTool($repositoryClass, $getter));
     }
 
     /**
@@ -204,7 +204,7 @@ class RestifyServer extends Server
             if ($resourceFile->isFile() && $resourceFile->getExtension() === 'php') {
                 $fqdn = 'Binaryk\\LaravelRestify\\MCP\\Resources\\'.$resourceFile->getBasename('.php');
                 if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources,
-                        true) && $fqdn !== ApplicationInfo::class) {
+                    true) && $fqdn !== ApplicationInfo::class) {
                     $resources[] = $fqdn;
                 }
             }
