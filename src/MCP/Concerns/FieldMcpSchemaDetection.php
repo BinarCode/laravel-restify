@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
@@ -24,7 +23,7 @@ trait FieldMcpSchemaDetection
      */
     public function guessFieldType(RestifyRequest $request): Type
     {
-        $schema = new JsonSchemaTypeFactory();
+        $schema = new JsonSchemaTypeFactory;
 
         $rules = $this->getRulesForRequest($request);
 
@@ -92,7 +91,6 @@ trait FieldMcpSchemaDetection
                 $description .= '. Examples: '.implode(', ', $examples);
             }
         }
-
 
         return $description;
     }
@@ -167,7 +165,7 @@ trait FieldMcpSchemaDetection
     protected function getNumberExamples(string $attribute): array
     {
         if (str_contains($attribute, 'price') || str_contains($attribute, 'cost') || str_contains($attribute,
-                'amount')) {
+            'amount')) {
             return ['99.99', '29.95'];
         }
         if (str_contains($attribute, 'age')) {

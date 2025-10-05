@@ -337,9 +337,7 @@ class GraphqlGenerateCommand extends Command
     }
 
     /**
-     * @param Field $field
-     * @param  bool  $isInput
-     * @return string
+     * @param  Field  $field
      */
     protected function mapFieldToGraphQLType($field, bool $isInput = false): string
     {

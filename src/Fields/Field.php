@@ -159,7 +159,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     /**
      * Closure to modify the generated field description.
      */
-    public Closure|null $descriptionCallback = null;
+    public ?Closure $descriptionCallback = null;
 
     /**
      * This is the resolved JsonSchema for the field during the MCP requests.
