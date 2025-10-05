@@ -18,6 +18,11 @@ class ProfileTool extends Tool
         $this->repository = app($repositoryClass);
     }
 
+    public function title(): string
+    {
+        return 'Profile Tool';
+    }
+
     public function name(): string
     {
         $uriKey = $this->repository->uriKey();

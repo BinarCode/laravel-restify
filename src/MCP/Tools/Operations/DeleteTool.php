@@ -22,6 +22,11 @@ class DeleteTool extends Tool
         $this->repository = app($repositoryClass);
     }
 
+    public function title(): string
+    {
+        return $this->repository::label() . ' Delete';
+    }
+
     public function name(): string
     {
         $uriKey = $this->repository->uriKey();

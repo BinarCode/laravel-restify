@@ -22,6 +22,11 @@ class ShowTool extends Tool
         $this->repository = app($repositoryClass);
     }
 
+    public function title(): string
+    {
+        return $this->repository::label() . ' Show';
+    }
+
     public function name(): string
     {
         $uriKey = $this->repository->uriKey();

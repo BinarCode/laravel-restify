@@ -26,6 +26,11 @@ class GetterTool extends Tool
         $this->getter = $getter;
     }
 
+    public function title(): string
+    {
+        return $this->getter->name();
+    }
+
     public function name(): string
     {
         $repositoryUriKey = $this->repository->uriKey();

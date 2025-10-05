@@ -22,6 +22,11 @@ class UpdateTool extends Tool
         $this->repository = app($repositoryClass);
     }
 
+    public function title(): string
+    {
+        return $this->repository::label() . ' Update';
+    }
+
     public function name(): string
     {
         $uriKey = $this->repository->uriKey();

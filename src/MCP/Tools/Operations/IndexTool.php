@@ -22,6 +22,11 @@ class IndexTool extends Tool
         $this->repository = app($repositoryClass);
     }
 
+    public function title(): string
+    {
+        return $this->repository::label() . ' Index';
+    }
+
     public function name(): string
     {
         $uriKey = $this->repository->uriKey();

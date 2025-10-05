@@ -27,6 +27,11 @@ class ActionTool extends Tool
         $this->action = $action;
     }
 
+    public function title(): string
+    {
+        return $this->action->name();
+    }
+
     public function name(): string
     {
         $repositoryUriKey = $this->repository->uriKey();

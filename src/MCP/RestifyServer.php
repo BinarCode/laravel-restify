@@ -165,9 +165,6 @@ class RestifyServer extends Server
     protected function discoverActionsForRepository(string $repositoryClass, Repository $repositoryInstance): void
     {
         $actionRequest = app(McpActionRequest::class);
-        $actionRequest->merge([
-            'mcp_repository_key' => $repositoryInstance::uriKey(),
-        ]);
 
         $repositoryInstance->resolveActions($actionRequest)
             ->filter(fn ($action) => $action instanceof Action)
@@ -180,9 +177,6 @@ class RestifyServer extends Server
     protected function discoverGettersForRepository(string $repositoryClass, Repository $repositoryInstance): void
     {
         $getterRequest = app(McpGetterRequest::class);
-        $getterRequest->merge([
-            'mcp_repository_key' => $repositoryInstance::uriKey(),
-        ]);
 
         $repositoryInstance->resolveGetters($getterRequest)
             ->filter(fn ($getter) => $getter instanceof Getter)
