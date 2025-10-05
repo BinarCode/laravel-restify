@@ -78,7 +78,7 @@ class ActionTool extends Tool
                 ->title('resources')
                 ->description("The ids of the resources {$modelName} to perform the action on. Use string 'all' to select all resources.")
                 ->required();
-        } else if ($this->action->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+        } elseif ($this->action->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
             $validationSchema['id'] = $schema->string()
                 ->title('id')
                 ->description('The ID of the resource to perform the action on.')
