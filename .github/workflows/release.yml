@@ -34,7 +34,7 @@ jobs:
                     composer update --prefer-stable --prefer-dist --no-interaction
 
             - name: Execute tests
-              run: ./vendor/bin/testbench package:test --no-coverage
+              run: composer test
 
             - name: Get next version
               id: get_version

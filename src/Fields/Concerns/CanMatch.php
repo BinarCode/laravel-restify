@@ -4,7 +4,12 @@ namespace Binaryk\LaravelRestify\Fields\Concerns;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\JsonSchema\Types\ArrayType;
+use Illuminate\JsonSchema\Types\BooleanType;
+use Illuminate\JsonSchema\Types\IntegerType;
+use Illuminate\JsonSchema\Types\NumberType;
 
 trait CanMatch
 {
@@ -36,7 +41,10 @@ trait CanMatch
         }
 
         $this->matchableColumn = $column ?? $this->getAttribute();
-        $this->matchableType = $type ?? $this->guessMatchType();
+        $this->matchableType = $type ?? $this->guessMatchType(
+            // we'll use the store request to identify rules and guess types
+            app(RepositoryStoreRequest::class)
+        );
 
         return $this;
     }
@@ -118,56 +126,15 @@ trait CanMatch
         return $this->matchableType;
     }
 
-    protected function guessMatchType(): string
+    protected function guessMatchType(RestifyRequest $request): string
     {
-        // Use field type detection from Field class if available
-        if (method_exists($this, 'guessFieldType')) {
-            $fieldType = $this->guessFieldType();
+        $fieldType = $this->guessFieldType($request);
 
-            return match ($fieldType) {
-                'boolean' => RestifySearchable::MATCH_BOOL,
-                'number' => RestifySearchable::MATCH_INTEGER,
-                'array' => RestifySearchable::MATCH_ARRAY,
-                default => RestifySearchable::MATCH_TEXT,
-            };
-        }
-
-        // Fallback to attribute name patterns
-        $attribute = $this->getAttribute();
-
-        if (! is_string($attribute)) {
-            return RestifySearchable::MATCH_TEXT;
-        }
-
-        $attribute = strtolower($attribute);
-
-        // Boolean patterns
-        if (preg_match('/^(is_|has_|can_|should_|will_|was_|were_)/', $attribute) ||
-            in_array($attribute,
-                ['active', 'enabled', 'disabled', 'verified', 'published', 'featured', 'public', 'private'])) {
-            return RestifySearchable::MATCH_BOOL;
-        }
-
-        // Number patterns
-        if (preg_match('/_(id|count|number|amount|price|cost|total|sum|quantity|qty)$/', $attribute) ||
-            in_array($attribute,
-                ['id', 'age', 'year', 'month', 'day', 'hour', 'minute', 'second', 'weight', 'height', 'size'])) {
-            return RestifySearchable::MATCH_INTEGER;
-        }
-
-        // Date patterns
-        if (preg_match('/_(at|date|time)$/', $attribute) ||
-            in_array($attribute,
-                ['created_at', 'updated_at', 'deleted_at', 'published_at', 'birthday', 'date_of_birth'])) {
-            return RestifySearchable::MATCH_DATETIME;
-        }
-
-        // Array patterns (JSON fields)
-        if (preg_match('/_(json|data|metadata|config|settings|options|tags)$/', $attribute)) {
-            return RestifySearchable::MATCH_ARRAY;
-        }
-
-        // Default to text matching
-        return RestifySearchable::MATCH_TEXT;
+        return match (get_class($fieldType)) {
+            ArrayType::class => RestifySearchable::MATCH_ARRAY,
+            BooleanType::class => RestifySearchable::MATCH_BOOL,
+            IntegerType::class, NumberType::class => RestifySearchable::MATCH_INTEGER,
+            default => 'string',
+        };
     }
 }

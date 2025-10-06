@@ -2,9 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Actions;
 
+use Binaryk\LaravelRestify\Actions\Concerns\HasSchemaResolver;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
+use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -16,6 +17,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
@@ -29,6 +31,7 @@ use ReturnTypeWillChange;
 abstract class Action implements JsonSerializable
 {
     use AuthorizedToSee;
+    use HasSchemaResolver;
     use Make;
     use ProxiesCanSeeToGate;
     use Visibility;
@@ -58,9 +61,19 @@ abstract class Action implements JsonSerializable
      */
     public ?Closure $runCallback = null;
 
+    /**
+     * Action description, usually used in the UI or MCP.
+     */
+    public string $description = '';
+
     public function name()
     {
         return Restify::humanize($this);
+    }
+
+    public function description(RestifyRequest $request): string
+    {
+        return $this->description;
     }
 
     /**
@@ -191,11 +204,17 @@ abstract class Action implements JsonSerializable
         return $this->skipFieldFill;
     }
 
+    public function toolSchema(JsonSchema $schema): array
+    {
+        return app(JsonSchemaFromRulesAction::class)($schema, $this->rules());
+    }
+
     #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return array_merge([
             'name' => $this->name(),
+            'description' => $this->description(app(RestifyRequest::class)),
             'destructive' => $this instanceof DestructiveAction,
             'uriKey' => $this->uriKey(),
             'payload' => $this->payload(),

@@ -22,6 +22,11 @@ class StoreTool extends Tool
         $this->repository = app($repositoryClass);
     }
 
+    public function title(): string
+    {
+        return $this->repository::label().' Create';
+    }
+
     public function name(): string
     {
         $uriKey = $this->repository->uriKey();

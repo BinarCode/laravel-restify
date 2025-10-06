@@ -40,9 +40,14 @@ class RestifyServer extends Server
     public string $instructions = 'Laravel Restify MCP server providing access to RESTful API resources, repository operations, field management, action execution, and filter/search capabilities. Restify helps build and interact with REST APIs efficiently.';
 
     /**
+     * The maximum pagination length for resources that support pagination.
+     */
+    public int $maxPaginationLength = 200;
+
+    /**
      * The default pagination length for resources that support pagination.
      */
-    public int $defaultPaginationLength = 50;
+    public int $defaultPaginationLength = 150;
 
     /**
      * The tools registered with this MCP server.
@@ -165,9 +170,6 @@ class RestifyServer extends Server
     protected function discoverActionsForRepository(string $repositoryClass, Repository $repositoryInstance): void
     {
         $actionRequest = app(McpActionRequest::class);
-        $actionRequest->merge([
-            'mcp_repository_key' => $repositoryInstance::uriKey(),
-        ]);
 
         $repositoryInstance->resolveActions($actionRequest)
             ->filter(fn ($action) => $action instanceof Action)
@@ -180,9 +182,6 @@ class RestifyServer extends Server
     protected function discoverGettersForRepository(string $repositoryClass, Repository $repositoryInstance): void
     {
         $getterRequest = app(McpGetterRequest::class);
-        $getterRequest->merge([
-            'mcp_repository_key' => $repositoryInstance::uriKey(),
-        ]);
 
         $repositoryInstance->resolveGetters($getterRequest)
             ->filter(fn ($getter) => $getter instanceof Getter)
@@ -204,7 +203,8 @@ class RestifyServer extends Server
         foreach ($resourceDir as $resourceFile) {
             if ($resourceFile->isFile() && $resourceFile->getExtension() === 'php') {
                 $fqdn = 'Binaryk\\LaravelRestify\\MCP\\Resources\\'.$resourceFile->getBasename('.php');
-                if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources, true) && $fqdn !== ApplicationInfo::class) {
+                if (class_exists($fqdn) && ! in_array($fqdn, $excludedResources,
+                    true) && $fqdn !== ApplicationInfo::class) {
                     $resources[] = $fqdn;
                 }
             }

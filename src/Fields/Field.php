@@ -10,13 +10,24 @@ use Binaryk\LaravelRestify\Fields\Concerns\HasAction;
 use Binaryk\LaravelRestify\Fields\Concerns\ValidationMethods;
 use Binaryk\LaravelRestify\Fields\Contracts\Matchable;
 use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateBulkRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Concerns\FieldMcpSchemaDetection;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use JsonSerializable;
@@ -148,7 +159,12 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     /**
      * Closure to modify the generated field description.
      */
-    public $descriptionCallback = null;
+    public ?Closure $descriptionCallback = null;
+
+    /**
+     * This is the resolved JsonSchema for the field during the MCP requests.
+     */
+    public ?JsonSchema $jsonSchema = null;
 
     /**
      * Create a new field.
@@ -484,6 +500,29 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         return array_merge($this->rules, $this->updateBulkRules);
     }
 
+    public function getRulesForRequest(RestifyRequest $request): array
+    {
+        $rules = [];
+
+        if ($request instanceof McpStoreRequest || $request instanceof RepositoryStoreRequest) {
+            $rules = $this->getStoringRules();
+        }
+
+        if ($request instanceof McpUpdateRequest || $request instanceof RepositoryUpdateRequest) {
+            $rules = $this->getUpdatingRules();
+        }
+
+        if ($request instanceof McpUpdateBulkRequest || $request instanceof RepositoryUpdateBulkRequest) {
+            $rules = $this->getUpdatingBulkRules();
+        }
+
+        if ($request instanceof McpStoreBulkRequest || $request instanceof RepositoryStoreBulkRequest) {
+            $rules = $this->getStoringBulkRules();
+        }
+
+        return $rules;
+    }
+
     /**
      * Determine if the attribute is computed.
      *
@@ -770,135 +809,6 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     }
 
     /**
-     * Guess the field type based on validation rules, field class, and attribute patterns.
-     */
-    public function guessFieldType(): string
-    {
-        $ruleType = $this->guessTypeFromValidationRules();
-        if ($ruleType) {
-            return $ruleType;
-        }
-
-        // Check attribute name patterns
-        $attributeType = $this->guessTypeFromAttributeName();
-        if ($attributeType) {
-            return $attributeType;
-        }
-
-        // Default to string
-        return 'string';
-    }
-
-    /**
-     * Guess type from validation rules.
-     */
-    protected function guessTypeFromValidationRules(): ?string
-    {
-        $allRules = array_merge($this->rules, $this->storingRules, $this->updatingRules);
-
-        // Convert rule objects to strings for checking
-        $ruleStrings = collect($allRules)->map(function ($rule) {
-            if (is_string($rule)) {
-                return $rule;
-            }
-            if (is_object($rule)) {
-                return get_class($rule);
-            }
-
-            return (string) $rule;
-        })->toArray();
-
-        // Check for specific types
-        if ($this->hasAnyRule($ruleStrings, ['boolean', 'bool'])) {
-            return 'boolean';
-        }
-
-        if ($this->hasAnyRule($ruleStrings, ['email', 'url', 'ip', 'uuid', 'string', 'regex', 'array'])) {
-            return 'string';
-        }
-
-        if ($this->hasAnyRule($ruleStrings, ['date', 'date_format:', 'before:', 'after:', 'before_or_equal:', 'after_or_equal:'])) {
-            return 'string'; // Dates are typically handled as strings in schemas
-        }
-
-        if ($this->hasAnyRule($ruleStrings, ['file', 'image', 'mimes:', 'mimetypes:'])) {
-            return 'string'; // Files are typically handled as strings (paths/URLs)
-        }
-
-        if ($this->hasAnyRule($ruleStrings, ['integer', 'int', 'numeric', 'between:'])) {
-            return 'number';
-        }
-
-        return null;
-    }
-
-    /**
-     * Guess type from attribute name patterns.
-     */
-    protected function guessTypeFromAttributeName(): ?string
-    {
-        $attribute = $this->attribute;
-
-        if (! is_string($attribute)) {
-            return null;
-        }
-
-        $attribute = strtolower($attribute);
-
-        // Boolean patterns
-        if (preg_match('/^(is_|has_|can_|should_|will_|was_|were_)/', $attribute) ||
-            in_array($attribute, ['active', 'enabled', 'disabled', 'verified', 'published', 'featured', 'public', 'private'])) {
-            return 'boolean';
-        }
-
-        // Number patterns
-        if (preg_match('/_(id|count|number|amount|price|cost|total|sum|quantity|qty)$/', $attribute) ||
-            in_array($attribute, ['id', 'age', 'year', 'month', 'day', 'hour', 'minute', 'second', 'weight', 'height', 'size'])) {
-            return 'number';
-        }
-
-        // Date patterns
-        if (preg_match('/_(at|date|time)$/', $attribute) ||
-            in_array($attribute, ['created_at', 'updated_at', 'deleted_at', 'published_at', 'birthday', 'date_of_birth'])) {
-            return 'string';
-        }
-
-        // Email pattern
-        if (str_contains($attribute, 'email')) {
-            return 'string';
-        }
-
-        // Password pattern
-        if (str_contains($attribute, 'password')) {
-            return 'string';
-        }
-
-        // Array patterns (JSON fields)
-        if (preg_match('/_(json|data|metadata|config|settings|options)$/', $attribute) ||
-            str_contains($attribute, 'tags')) {
-            return 'array';
-        }
-
-        return null;
-    }
-
-    /**
-     * Check if any of the given rules exist in the rule strings.
-     */
-    protected function hasAnyRule(array $ruleStrings, array $rulesToCheck): bool
-    {
-        foreach ($ruleStrings as $rule) {
-            foreach ($rulesToCheck as $check) {
-                if ($rule === $check || str_starts_with($rule, $check)) {
-                    return true;
-                }
-            }
-        }
-
-        return false;
-    }
-
-    /**
      * Set a custom callback for defining the tool schema.
      *
      * @return $this
@@ -924,6 +834,42 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         }
 
         $this->descriptionCallback = $callback;
+
+        return $this;
+    }
+
+    public function jsonSchema(): ?JsonSchema
+    {
+        return $this->jsonSchema;
+    }
+
+    public function resolveJsonSchema(JsonSchema $parentSchema, McpRequest $request, Repository $repository): self
+    {
+        if (is_callable($this->toolInputSchemaCallback)) {
+            $result = call_user_func($this->toolInputSchemaCallback, $parentSchema, $repository, $this);
+            if ($result instanceof Type) {
+                $this->jsonSchema = $result;
+
+                return $this;
+            }
+        }
+
+        // For MCP tools, we include computed fields that have resolve callbacks
+        // since they represent storable fields in MCP contexts
+        // Only skip truly computed fields without resolve callbacks
+        if ($this->computed() && ! $this->resolveCallback) {
+            return $this;
+        }
+
+        if ($this->isReadonly(app(McpRequest::class))) {
+            return $this;
+        }
+
+        $this->jsonSchema = $this->guessFieldType($request);
+
+        $description = $this->getDescription($request, $repository);
+
+        $this->jsonSchema->description($description);
 
         return $this;
     }

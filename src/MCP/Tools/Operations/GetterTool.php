@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 
 use Binaryk\LaravelRestify\Getters\Getter;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\JsonSchema\JsonSchema;
@@ -12,6 +13,9 @@ use Laravel\Mcp\Server\Tool;
 
 class GetterTool extends Tool
 {
+    /**
+     * @var Repository|\Illuminate\Foundation\Application|mixed|object|string
+     */
     protected Repository $repository;
 
     protected Getter $getter;
@@ -20,6 +24,11 @@ class GetterTool extends Tool
     {
         $this->repository = app($repositoryClass);
         $this->getter = $getter;
+    }
+
+    public function title(): string
+    {
+        return $this->getter->name();
     }
 
     public function name(): string
@@ -32,6 +41,10 @@ class GetterTool extends Tool
 
     public function description(): string
     {
+        if ($description = $this->getter->description(app(McpGetterRequest::class))) {
+            return $description;
+        }
+
         $repositoryUriKey = $this->repository->uriKey();
         $getterName = $this->getter->name();
         $modelName = class_basename($this->repository::guessModelClassName());
@@ -51,35 +64,59 @@ class GetterTool extends Tool
 
     public function schema(JsonSchema $schema): array
     {
-        $repositoryClass = get_class($this->repository);
-        $modelName = class_basename($repositoryClass::guessModelClassName());
-        $getterName = $this->getter->name();
+        $validationSchema = [];
 
-        $fields = [];
+        $modelName = class_basename($this->repository::guessModelClassName());
 
-        // Check if it's primarily a show getter or index getter
-        $mcpRequest = app(McpGetterRequest::class);
-        $shownOnShow = $this->getter->isShownOnShow($mcpRequest, $this->repository);
-        $shownOnIndex = $this->getter->isShownOnIndex($mcpRequest, $this->repository);
-
-        if ($shownOnShow && ! $shownOnIndex) {
-            // Show getter - requires single ID
-            $fields['id'] = $schema->string()->description("The ID of the $modelName to execute the getter on")->required();
-            $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
-        } else {
-            // Index getters typically don't require specific IDs
-            $fields['include'] = $schema->string()->description('Comma-separated list of relationships to include');
+        if ($this->getter->isShownOnIndex(app(RestifyRequest::class), $this->repository)) {
+            $validationSchema['resources'] = $schema->array()
+                ->items(
+                    $schema->string()
+                        ->description('The ID of the resource to perform the getter on.')
+                        ->required())
+                ->title('resources')
+                ->description("The ids of the resources {$modelName} to perform the getter on. Use string 'all' to select all resources.")
+                ->required();
+        } elseif ($this->getter->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+            $validationSchema['id'] = $schema->string()
+                ->title('id')
+                ->description("The ID of the resource ({$modelName}) to perform the getter on.")
+                ->required();
         }
 
-        return $fields;
+        $rulesSchema = $this->getter->toolSchema($schema);
+
+        return array_merge($rulesSchema, $validationSchema);
     }
 
     public function handle(Request $request): Response
     {
         $mcpRequest = app(McpGetterRequest::class);
         $mcpRequest->replace($request->all());
+        $mcpRequest->merge([
+            'mcp_repository_key' => $this->repository->uriKey(),
+        ]);
 
-        $this->repository->request = $mcpRequest;
+        // Parse repositories string to array if provided
+        if ($mcpRequest->has('repositories') && is_string($mcpRequest->input('repositories'))) {
+            $repositories = json_decode($mcpRequest->input('repositories'), true) ?? [];
+            $mcpRequest->merge(['repositories' => $repositories]);
+        }
+
+        // For show actions with single ID, set the route parameter
+        if ($id = $mcpRequest->input('id')) {
+            $mcpRequest->setRouteResolver(function () use ($id) {
+                return new class($id)
+                {
+                    public function __construct(private $id) {}
+
+                    public function parameter($key, $default = null)
+                    {
+                        return $key === 'repositoryId' ? $this->id : $default;
+                    }
+                };
+            });
+        }
 
         $result = $this->repository->getterTool($this->getter, $mcpRequest);
 
