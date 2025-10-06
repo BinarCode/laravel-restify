@@ -2,7 +2,7 @@
 title: Model Context Protocol (MCP)
 menuTitle: MCP
 category: MCP
-position: 14
+position: 1
 ---
 
 Laravel Restify provides seamless integration with the Model Context Protocol (MCP), allowing AI agents to interact with your REST API resources through structured tool interfaces. So you can simply tranform your repositories into a tools for AI agents to consume. Incredible!

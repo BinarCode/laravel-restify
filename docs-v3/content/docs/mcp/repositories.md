@@ -101,6 +101,86 @@ Notice how the generated tool automatically includes:
 - Sort options from sortable fields (title)
 - Filter parameters for each matchable field (status, category)
 
+## Repository Description for AI Agents
+
+Providing a clear description of your repository helps AI agents understand its purpose, domain, and capabilities. You can customize the repository description by setting the static `$description` property or by overriding the static `description()` method.
+
+### Using the Static Property
+
+The simplest way to provide a repository description is by setting the `$description` property:
+
+```php
+use Binaryk\LaravelRestify\Traits\HasMcpTools;
+
+#[Model(Post::class)]
+class PostRepository extends Repository
+{
+    use HasMcpTools;
+
+    public static string $description = 'Manages blog posts including articles, tutorials, and news. Posts can be published, drafted, or scheduled for future publication. Each post belongs to an author and can have multiple tags and categories.';
+
+    //...
+}
+```
+
+### Using the Description Method
+
+For dynamic descriptions or when you need more control, override the static `description()` method:
+
+```php
+use Binaryk\LaravelRestify\Traits\HasMcpTools;
+
+#[Model(Post::class)]
+class PostRepository extends Repository
+{
+    use HasMcpTools;
+
+    public static function description(RestifyRequest $request): string
+    {
+        $userRole = $request->user()?->role;
+
+        if ($userRole === 'admin') {
+            return 'Manages all blog posts with full administrative access. Posts can be created, edited, published, or deleted. Includes moderation tools and analytics.';
+        }
+
+        return 'Manages blog posts for content creators. Authors can create and edit their own posts, submit for review, and view publication status.';
+    }
+
+    //...
+}
+```
+
+### Default Auto-Generated Description
+
+If you don't provide a custom description, Restify automatically generates one based on your model structure:
+
+```php
+// For a Post model with table 'posts' and fillable fields: ['title', 'content', 'status', 'author_id']
+// Auto-generated description:
+"This repository manages the [Post] model, which corresponds to the [posts] table in the database.
+It provides functionalities such as listing, searching, sorting, filtering, and relationship management.
+The model/table has the following attributes: title, content, status, author_id."
+```
+
+### Best Practices for Repository Descriptions
+
+1. **Be specific about the domain**: Explain what the repository manages in business terms
+2. **Mention key capabilities**: Highlight special features like publishing workflows, approval processes, or calculations
+3. **Include context**: Describe relationships and dependencies that AI agents should know about
+4. **Keep it concise**: Aim for 2-3 sentences that provide clear context without overwhelming detail
+
+**Good Example:**
+```php
+public static string $description = 'Manages user subscriptions and billing. Handles subscription creation, upgrades, downgrades, cancellations, and payment processing through Stripe. Each subscription is linked to a user and a pricing plan.';
+```
+
+**Poor Example:**
+```php
+public static string $description = 'CRUD operations for subscriptions.'; // Too vague
+```
+
+This description will be used by AI agents when deciding which tools to use and how to interact with your API, making it crucial for effective AI integration.
+
 ## Configuring MCP Tools
 
 By default, the `HasMcpTools` trait only enables the **index** tool. To enable other tools like show, store, update, or delete, you need to override the corresponding methods in your repository:

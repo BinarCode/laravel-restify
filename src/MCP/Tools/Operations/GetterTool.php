@@ -68,20 +68,13 @@ class GetterTool extends Tool
 
         $modelName = class_basename($this->repository::guessModelClassName());
 
-        if ($this->getter->isShownOnIndex(app(RestifyRequest::class), $this->repository)) {
-            $validationSchema['resources'] = $schema->array()
-                ->items(
-                    $schema->string()
-                        ->description('The ID of the resource to perform the getter on.')
-                        ->required())
-                ->title('resources')
-                ->description("The ids of the resources {$modelName} to perform the getter on. Use string 'all' to select all resources.")
-                ->required();
-        } elseif ($this->getter->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
-            $validationSchema['id'] = $schema->string()
-                ->title('id')
-                ->description("The ID of the resource ({$modelName}) to perform the getter on.")
-                ->required();
+        if (! $this->getter->isShownOnIndex(app(RestifyRequest::class), $this->repository)) {
+            if ($this->getter->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+                $validationSchema['id'] = $schema->string()
+                    ->title('id')
+                    ->required()
+                    ->description("The ID of the resource ({$modelName}) to perform the getter on.");
+            }
         }
 
         $rulesSchema = $this->getter->toolSchema($schema);
