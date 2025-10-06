@@ -160,6 +160,68 @@ class StripeInformationGetter extends Getter
 };
 ```
 
+### MCP Server Integration
+
+When using Laravel Restify with the Model Context Protocol (MCP), getters are automatically exposed as tools to AI agents. You can enhance the AI's understanding of your getters by providing descriptions and validation rules.
+
+#### Getter Description
+
+Provide a clear description of what your getter retrieves by setting the `description` property or method. This helps AI agents understand when and how to use your getter:
+
+```php
+class StripeInformationGetter extends Getter
+{
+    public string $description = 'Retrieve Stripe customer information and subscription status';
+
+    // Or override the method for dynamic descriptions
+    public function description(RestifyRequest $request): string
+    {
+        return 'Retrieve Stripe customer information and subscription status';
+    }
+
+    //...
+}
+```
+
+#### Validation Rules for AI Schema
+
+The `rules()` method is crucial for MCP integration. Restify automatically converts your Laravel validation rules into JSON Schema that AI agents can understand. This allows the AI to validate parameters before executing the getter:
+
+```php
+class UserAnalyticsGetter extends Getter
+{
+    public string $description = 'Get user analytics for a specific date range';
+
+    public function rules(): array
+    {
+        return [
+            'start_date' => ['required', 'date', 'before:end_date'],
+            'end_date' => ['required', 'date', 'after:start_date'],
+            'metrics' => ['array'],
+            'metrics.*' => ['string', 'in:views,clicks,conversions'],
+        ];
+    }
+
+    public function handle(Request $request, User $user): JsonResponse
+    {
+        $validated = $request->validate($this->rules());
+
+        // Getter implementation
+        return response()->json([
+            'data' => $user->analytics($validated),
+        ]);
+    }
+}
+```
+
+The AI agent will automatically receive a JSON Schema indicating:
+- `start_date`: date string (required, must be before end_date)
+- `end_date`: date string (required, must be after start_date)
+- `metrics`: array (optional)
+- `metrics.*`: string items (must be one of: views, clicks, conversions)
+
+This schema generation works with 60+ Laravel validation rules including: `email`, `url`, `uuid`, `integer`, `min`, `max`, `between`, `before`, `after`, `in`, `array`, and many more.
+
 ## Getters scope
 
 By default, any getter could be used on [index](#index-getters) as well as on [show](#show-getters). However, you can choose to instruct your getter to be displayed to a specific scope.

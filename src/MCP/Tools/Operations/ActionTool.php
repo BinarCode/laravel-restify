@@ -74,20 +74,22 @@ class ActionTool extends Tool
 
         $modelName = class_basename($this->repository::guessModelClassName());
 
-        if ($this->action->isShownOnIndex(app(RestifyRequest::class), $this->repository)) {
-            $validationSchema['resources'] = $schema->array()
-                ->items(
-                    $schema->string()
-                        ->description("The ID of the resource {$modelName} to perform the action on.")
-                        ->required())
-                ->title('resources')
-                ->description("The ids of the resources {$modelName} to perform the action on. Use string 'all' to select all resources.")
-                ->required();
-        } elseif ($this->action->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
-            $validationSchema['id'] = $schema->string()
-                ->title('id')
-                ->description('The ID of the resource to perform the action on.')
-                ->required();
+        if (! $this->action->isStandalone()) {
+            if ($this->action->isShownOnIndex(app(RestifyRequest::class), $this->repository)) {
+                $validationSchema['resources'] = $schema->array()
+                    ->items(
+                        $schema->string()
+                            ->description("The ID of the resource {$modelName} to perform the action on.")
+                            ->required())
+                    ->title('resources')
+                    ->description("The ids of the resources {$modelName} to perform the action on. Use string 'all' to select all resources.")
+                    ->required();
+            } elseif ($this->action->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+                $validationSchema['id'] = $schema->string()
+                    ->title('id')
+                    ->description('The ID of the resource to perform the action on.')
+                    ->required();
+            }
         }
 
         $rulesSchema = $this->action->toolSchema($schema);

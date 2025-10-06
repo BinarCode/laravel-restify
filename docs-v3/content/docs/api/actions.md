@@ -218,10 +218,67 @@ Always validate the payload as early as possible in the `handle` method:
 public function handle(ActionRequest $request, Collection $models)
 {
     $request->validate($this->rules());
-    
+
     ...
 }
 ```
+
+### MCP Server Integration
+
+When using Laravel Restify with the Model Context Protocol (MCP), actions are automatically exposed as tools to AI agents. You can enhance the AI's understanding of your actions by providing descriptions and validation rules.
+
+#### Action Description
+
+Provide a clear description of what your action does by setting the `description` property or method. This helps AI agents understand when and how to use your action:
+
+```php
+class PublishPostAction extends Action
+{
+    public string $description = 'Publish selected posts and notify authors via email';
+
+    // Or override the method for dynamic descriptions
+    public function description(RestifyRequest $request): string
+    {
+        return 'Publish selected posts and notify authors via email';
+    }
+
+    //...
+}
+```
+
+#### Validation Rules for AI Schema
+
+The `rules()` method is crucial for MCP integration. Restify automatically converts your Laravel validation rules into JSON Schema that AI agents can understand. This allows the AI to validate parameters before executing the action:
+
+```php
+class PublishPostAction extends Action
+{
+    public string $description = 'Publish selected posts with optional scheduling';
+
+    public function rules(): array
+    {
+        return [
+            'notify_authors' => ['boolean'],
+            'publish_date' => ['nullable', 'date', 'after:now'],
+            'notification_message' => ['nullable', 'string', 'max:500'],
+        ];
+    }
+
+    public function handle(ActionRequest $request, Collection $models)
+    {
+        $request->validate($this->rules());
+
+        // Action implementation
+    }
+}
+```
+
+The AI agent will automatically receive a JSON Schema indicating:
+- `notify_authors`: boolean (optional)
+- `publish_date`: date string (optional, must be in the future)
+- `notification_message`: string (optional, max 500 characters)
+
+This schema generation works with 60+ Laravel validation rules including: `email`, `url`, `uuid`, `integer`, `min`, `max`, `between`, `before`, `after`, `in`, `array`, and many more.
 
 ## Actions scope
 
