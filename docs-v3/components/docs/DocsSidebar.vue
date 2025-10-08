@@ -174,7 +174,10 @@ const docsNavigationSections = computed(() => [
     items: [
       { title: "MCP Server", path: "/docs/mcp/mcp" },
       { title: "MCP Repositories", path: "/docs/mcp/repositories" },
-      { title: "MCP Fields", path: "/docs/mcp/fields" }
+      { title: "MCP Fields", path: "/docs/mcp/fields" },
+      { title: "MCP Getters", path: "/docs/mcp/getters" },
+      { title: "JSON Schema Converter", path: "/docs/mcp/json-schema-converter" },
+      { title: "MCP Actions", path: "/docs/mcp/actions" }
     ]
   },
   {
