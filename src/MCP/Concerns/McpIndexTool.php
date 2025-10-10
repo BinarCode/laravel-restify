@@ -17,7 +17,7 @@ trait McpIndexTool
 {
     public function indexTool(McpIndexRequest $request): array
     {
-        return $this->index($request)->getData();
+        return $this->index($request)->getData(true);
     }
 
     public static function indexToolSchema(JsonSchema $schema): array
