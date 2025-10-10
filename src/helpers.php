@@ -153,8 +153,8 @@ if (! function_exists('mcpSchema')) {
      */
     function mcpSchema(array $rules): array
     {
-        $converter = new \Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction();
-        $schema = new \Illuminate\JsonSchema\JsonSchemaTypeFactory();
+        $converter = new \Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
+        $schema = new \Illuminate\JsonSchema\JsonSchemaTypeFactory;
 
         return $converter($schema, $rules);
     }
