@@ -286,7 +286,6 @@ class File extends Field implements DeletableContract, StorableContract
             return $this;
         }
 
-
         if ($this->isPrunable()) {
             call_user_func(
                 $this->deleteCallback,
