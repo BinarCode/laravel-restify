@@ -65,7 +65,7 @@ trait FieldMcpSchemaDetection
 
         if ($description = data_get($this->jsonSchema()?->toArray(), 'description')) {
             if (is_string($description)) {
-                return $description . ' ' . $partialDescription;
+                return $description.' '.$partialDescription;
             }
         }
 
@@ -93,7 +93,7 @@ trait FieldMcpSchemaDetection
             }
         }
 
-        return $description . ' ' . $partialDescription;
+        return $description.' '.$partialDescription;
     }
 
     /**
