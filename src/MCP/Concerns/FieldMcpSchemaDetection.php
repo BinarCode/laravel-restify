@@ -57,9 +57,15 @@ trait FieldMcpSchemaDetection
             }
         }
 
+        $partialDescription = '';
+
+        if ($this instanceof File) {
+            $partialDescription = ' -- Important: This should be an absolute path or URL to the file that can be read.';
+        }
+
         if ($description = data_get($this->jsonSchema()?->toArray(), 'description')) {
             if (is_string($description)) {
-                return $description;
+                return $description . ' ' . $partialDescription;
             }
         }
 
@@ -78,11 +84,6 @@ trait FieldMcpSchemaDetection
             }
         }
 
-        // Add file information for file fields
-        if ($this instanceof File) {
-            $description .= '. Upload a file';
-        }
-
         // Add examples based on field type and name
         if ($this->jsonSchema instanceof Type) {
             $examples = $this->generateFieldExamples($this->jsonSchema);
@@ -92,7 +93,7 @@ trait FieldMcpSchemaDetection
             }
         }
 
-        return $description;
+        return $description . ' ' . $partialDescription;
     }
 
     /**

@@ -3,7 +3,9 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Illuminate\Http\UploadedFile;
 use Illuminate\JsonSchema\JsonSchema;
 
 /**
@@ -13,6 +15,40 @@ trait McpStoreTool
 {
     public function storeTool(McpStoreRequest $request): array
     {
+        $this->collectFields($request)
+            ->forStore($request, $this)
+            ->areFiles()
+            ->each(function (File $file) use ($request) {
+                if (! $request->has($file->attribute)) {
+                    return;
+                }
+
+                $filePath = $request->input($file->attribute);
+                $actualPath = null;
+                $fileName = null;
+
+                if (file_exists($filePath) && is_readable($filePath)) {
+                    $actualPath = $filePath;
+                    $fileName = basename($filePath);
+                } elseif (filter_var($filePath, FILTER_VALIDATE_URL)) {
+                    $actualPath = tempnam(sys_get_temp_dir(), 'upload_');
+                    file_put_contents($actualPath, file_get_contents($filePath));
+                    $fileName = basename(parse_url($filePath, PHP_URL_PATH));
+                }
+
+                if ($actualPath) {
+                    $uploadedFile = new UploadedFile(
+                        $actualPath,
+                        $fileName,
+                        mime_content_type($actualPath),
+                        null,
+                        true // Mark it as test mode to allow local files
+                    );
+
+                    $request->merge([$file->attribute => $uploadedFile]);
+                }
+            });
+
         return $this
             ->allowToStore($request)
             ->store($request)
