@@ -2,6 +2,7 @@
 
 use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
+use Binaryk\LaravelRestify\MCP\Tools\GlobalSearchTool;
 use Binaryk\LaravelRestify\Repositories\ActionLogRepository;
 
 return [
@@ -295,7 +296,7 @@ return [
         ],
         'resources' => [
             'exclude' => [
-                // Resource classes to exclude from discovery
+                GlobalSearchTool::class,
             ],
             'include' => [
                 // Additional resource classes to include
