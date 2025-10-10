@@ -140,13 +140,12 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is 7 bit ASCII.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateAscii($attribute, $value)
+    public function validateAscii(string $attribute, $schema, array $parameters)
     {
-        return Str::isAscii($value);
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be 7 bit ASCII');
     }
 
     /**
@@ -154,11 +153,12 @@ trait SchemaAttributes
      *
      * Always returns true, just lets us put "bail" in rules.
      *
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateBail()
+    public function validateBail(string $attribute, $schema, array $parameters)
     {
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string();
     }
 
     /**
@@ -409,13 +409,12 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a list.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateList($attribute, $value)
+    public function validateList(string $attribute, $schema, array $parameters)
     {
-        return is_array($value) && array_is_list($value);
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be a list (sequential array)');
     }
 
     /**
@@ -1314,39 +1313,34 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is lowercase.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateLowercase($attribute, $value, $parameters)
+    public function validateLowercase(string $attribute, $schema, array $parameters)
     {
-        return Str::lower($value) === $value;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be lowercase');
     }
 
     /**
      * Validate that an attribute is uppercase.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateUppercase($attribute, $value, $parameters)
+    public function validateUppercase(string $attribute, $schema, array $parameters)
     {
-        return Str::upper($value) === $value;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be uppercase');
     }
 
     /**
      * Validate that an attribute is a valid HEX color.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateHexColor($attribute, $value)
+    public function validateHexColor(string $attribute, $schema, array $parameters)
     {
-        return preg_match('/^#(?:(?:[0-9a-f]{3}){1,2}|(?:[0-9a-f]{4}){1,2})$/i', $value) === 1;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be a valid HEX color');
     }
 
     /**

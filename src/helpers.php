@@ -143,3 +143,19 @@ if (! function_exists('json')) {
         return field($attribute)->rules('json');
     }
 }
+
+if (! function_exists('mcpSchema')) {
+    /**
+     * Convert Laravel validation rules to MCP JSON Schema.
+     *
+     * @param  array  $rules  Laravel validation rules
+     * @return array Array of Type instances keyed by attribute name
+     */
+    function mcpSchema(array $rules): array
+    {
+        $converter = new \Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction();
+        $schema = new \Illuminate\JsonSchema\JsonSchemaTypeFactory();
+
+        return $converter($schema, $rules);
+    }
+}
