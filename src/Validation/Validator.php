@@ -11,7 +11,7 @@ class Validator extends BaseValidator
     public function toMcpSchema(?JsonSchema $schema = null): array
     {
         $schema = $schema ?? app(JsonSchema::class);
-        $action = new JsonSchemaFromRulesAction();
+        $action = new JsonSchemaFromRulesAction;
 
         return $action($schema, $this->getRules());
     }
