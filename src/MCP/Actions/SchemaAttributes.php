@@ -2,9 +2,6 @@
 
 namespace Binaryk\LaravelRestify\MCP\Actions;
 
-use Brick\Math\BigDecimal;
-use Brick\Math\BigNumber;
-use Brick\Math\Exception\MathException as BrickMathException;
 use DateTime;
 use DateTimeInterface;
 use Exception;
@@ -38,24 +35,13 @@ trait SchemaAttributes
     /**
      * Validate that an attribute was "accepted" when another attribute has a given value.
      *
-     * @param  string  $attribute
      * @param  mixed  $value
      * @param  mixed  $parameters
      * @return bool
      */
-    public function validateAcceptedIf($attribute, $value, $parameters)
+    public function validateAcceptedIf(string $attribute, $schema, array $parameters)
     {
-        $acceptable = ['yes', 'on', '1', 1, true, 'true'];
-
-        $this->requireParameterCount(2, $parameters, 'accepted_if');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (in_array($other, $values, is_bool($other) || is_null($other))) {
-            return $this->validateRequired($attribute, $value) && in_array($value, $acceptable, true);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be accepted when another attribute has a given value');
     }
 
     /**
@@ -63,66 +49,34 @@ trait SchemaAttributes
      *
      * This validation rule implies the attribute is "required".
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateDeclined($attribute, $value)
+    public function validateDeclined(string $attribute, $schema, array $parameters)
     {
-        $acceptable = ['no', 'off', '0', 0, false, 'false'];
-
-        return $this->validateRequired($attribute, $value) && in_array($value, $acceptable, true);
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be declined (no, off, 0, false)');
     }
 
     /**
      * Validate that an attribute was "declined" when another attribute has a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateDeclinedIf($attribute, $value, $parameters)
+    public function validateDeclinedIf(string $attribute, $schema, array $parameters)
     {
-        $acceptable = ['no', 'off', '0', 0, false, 'false'];
-
-        $this->requireParameterCount(2, $parameters, 'declined_if');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (in_array($other, $values, is_bool($other) || is_null($other))) {
-            return $this->validateRequired($attribute, $value) && in_array($value, $acceptable, true);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be declined when another attribute has a given value');
     }
 
     /**
      * Validate that an attribute is an active URL.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateActiveUrl($attribute, $value)
+    public function validateActiveUrl(string $attribute, $schema, array $parameters)
     {
-        if (! is_string($value)) {
-            return false;
-        }
-
-        if ($url = parse_url($value, PHP_URL_HOST)) {
-            try {
-                $records = $this->getDnsRecords($url.'.', DNS_A | DNS_AAAA);
-
-                if (is_array($records) && count($records) > 0) {
-                    return true;
-                }
-            } catch (Exception) {
-                return false;
-            }
-        }
-
-        return false;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be an active URL with valid DNS records');
     }
 
     /**
@@ -420,24 +374,12 @@ trait SchemaAttributes
     /**
      * Validate that an array has all of the given keys.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateRequiredArrayKeys($attribute, $value, $parameters)
+    public function validateRequiredArrayKeys(string $attribute, $schema, array $parameters)
     {
-        if (! is_array($value)) {
-            return false;
-        }
-
-        foreach ($parameters as $param) {
-            if (! Arr::exists($value, $param)) {
-                return false;
-            }
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Array must have all required keys');
     }
 
     /**
@@ -479,14 +421,12 @@ trait SchemaAttributes
     /**
      * Validate that an attribute has a matching confirmation.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array{0: string}  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateConfirmed($attribute, $value, $parameters)
+    public function validateConfirmed(string $attribute, $schema, array $parameters)
     {
-        return $this->validateSame($attribute, $value, [$parameters[0] ?? $attribute.'_confirmation']);
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must have a matching confirmation field');
     }
 
     /**
@@ -608,132 +548,56 @@ trait SchemaAttributes
     /**
      * Validate that an attribute has a given number of decimal places.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateDecimal($attribute, $value, $parameters)
+    public function validateDecimal(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'decimal');
-
-        if (! $this->validateNumeric($attribute, $value, [])) {
-            return false;
-        }
-
-        $matches = [];
-
-        if (preg_match('/^[+-]?\d*\.?(\d*)$/', $value, $matches) !== 1) {
-            return false;
-        }
-
-        $decimals = strlen(end($matches));
-
-        if (! isset($parameters[1])) {
-            return $decimals == $parameters[0];
-        }
-
-        return $decimals >= $parameters[0] &&
-            $decimals <= $parameters[1];
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must have a specific number of decimal places');
     }
 
     /**
      * Validate that an attribute is different from another attribute.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateDifferent($attribute, $value, $parameters)
+    public function validateDifferent(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'different');
-
-        foreach ($parameters as $parameter) {
-            if (Arr::has($this->data, $parameter)) {
-                $other = Arr::get($this->data, $parameter);
-
-                if ($value === $other) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be different from another attribute');
     }
 
     /**
      * Validate that an attribute has a given number of digits.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateDigits($attribute, $value, $parameters)
+    public function validateDigits(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'digits');
-
-        return ! preg_match('/[^0-9]/', $value)
-            && strlen((string) $value) == $parameters[0];
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must have a specific number of digits');
     }
 
     /**
      * Validate that an attribute is between a given number of digits.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateDigitsBetween($attribute, $value, $parameters)
+    public function validateDigitsBetween(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'digits_between');
-
-        $length = strlen((string) $value);
-
-        return ! preg_match('/[^0-9]/', $value)
-            && $length >= $parameters[0] && $length <= $parameters[1];
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must have digits between a range');
     }
 
     /**
      * Validate the dimensions of an image matches the given values.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateDimensions($attribute, $value, $parameters)
+    public function validateDimensions(string $attribute, $schema, array $parameters)
     {
-        if ($this->isValidFileInstance($value) && in_array($value->getMimeType(), ['image/svg+xml', 'image/svg'])) {
-            return true;
-        }
-
-        if (! $this->isValidFileInstance($value)) {
-            return false;
-        }
-
-        $dimensions = method_exists($value, 'dimensions')
-            ? $value->dimensions()
-            : @getimagesize($value->getRealPath());
-
-        if (! $dimensions) {
-            return false;
-        }
-
-        $this->requireParameterCount(1, $parameters, 'dimensions');
-
-        [$width, $height] = $dimensions;
-
-        $parameters = $this->parseNamedParameters($parameters);
-
-        return ! (
-            $this->failsBasicDimensionChecks($parameters, $width, $height) ||
-            $this->failsRatioCheck($parameters, $width, $height) ||
-            $this->failsMinRatioCheck($parameters, $width, $height) ||
-            $this->failsMaxRatioCheck($parameters, $width, $height)
-        );
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Image must match specified dimensions');
     }
 
     /**
@@ -822,20 +686,12 @@ trait SchemaAttributes
     /**
      * Validate an attribute is unique among other values.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateDistinct($attribute, $value, $parameters)
+    public function validateDistinct(string $attribute, $schema, array $parameters)
     {
-        $data = Arr::except($this->getDistinctValues($attribute), $attribute);
-
-        if (in_array('ignore_case', $parameters)) {
-            return empty(preg_grep('/^'.preg_quote($value, '/').'$/iu', $data));
-        }
-
-        return ! in_array($value, array_values($data), in_array('strict', $parameters));
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be unique among other values');
     }
 
     /**
@@ -1077,22 +933,12 @@ trait SchemaAttributes
     /**
      * Validate the extension of a file upload attribute is in a set of defined extensions.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateExtensions($attribute, $value, $parameters)
+    public function validateExtensions(string $attribute, $schema, array $parameters)
     {
-        if (! $this->isValidFileInstance($value)) {
-            return false;
-        }
-
-        if ($this->shouldBlockPhpUpload($value, $parameters)) {
-            return false;
-        }
-
-        return in_array(strtolower($value->getClientOriginalExtension()), $parameters);
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be a valid file with allowed extensions');
     }
 
     /**
@@ -1115,199 +961,56 @@ trait SchemaAttributes
     /**
      * Validate the given attribute is filled if it is present.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateFilled($attribute, $value)
+    public function validateFilled(string $attribute, $schema, array $parameters)
     {
-        if (Arr::has($this->data, $attribute)) {
-            return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be filled when present');
     }
 
     /**
      * Validate that an attribute is greater than another attribute.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateGt($attribute, $value, $parameters)
+    public function validateGt(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'gt');
-
-        $comparedToValue = $this->getValue($parameters[0]);
-
-        $this->shouldBeNumeric($attribute, 'Gt');
-
-        if (is_null($comparedToValue) && (is_numeric($value) && is_numeric($parameters[0]))) {
-            try {
-                return BigNumber::of($this->getSize($attribute, $value))->isGreaterThan($this->trim($parameters[0]));
-            } catch (MathException) {
-                return false;
-            }
-        }
-
-        if (is_numeric($parameters[0])) {
-            return false;
-        }
-
-        if ($this->hasRule($attribute, $this->numericRules) && is_numeric($value) && is_numeric($comparedToValue)) {
-            try {
-                return BigNumber::of($this->trim($value))->isGreaterThan($this->trim($comparedToValue));
-            } catch (MathException) {
-                return false;
-            }
-        }
-
-        if (! $this->isSameType($value, $comparedToValue)) {
-            return false;
-        }
-
-        try {
-            return $this->getSize($attribute, $value) > $this->getSize($attribute, $comparedToValue);
-        } catch (MathException) {
-            return false;
-        }
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be greater than another attribute');
     }
 
     /**
      * Validate that an attribute is less than another attribute.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateLt($attribute, $value, $parameters)
+    public function validateLt(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'lt');
-
-        $comparedToValue = $this->getValue($parameters[0]);
-
-        $this->shouldBeNumeric($attribute, 'Lt');
-
-        if (is_null($comparedToValue) && (is_numeric($value) && is_numeric($parameters[0]))) {
-            try {
-                return BigNumber::of($this->getSize($attribute, $value))->isLessThan($this->trim($parameters[0]));
-            } catch (MathException) {
-                return false;
-            }
-        }
-
-        if (is_numeric($parameters[0])) {
-            return false;
-        }
-
-        if ($this->hasRule($attribute, $this->numericRules) && is_numeric($value) && is_numeric($comparedToValue)) {
-            return BigNumber::of($this->trim($value))->isLessThan($this->trim($comparedToValue));
-        }
-
-        if (! $this->isSameType($value, $comparedToValue)) {
-            return false;
-        }
-
-        try {
-            return $this->getSize($attribute, $value) < $this->getSize($attribute, $comparedToValue);
-        } catch (MathException) {
-            return false;
-        }
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be less than another attribute');
     }
 
     /**
      * Validate that an attribute is greater than or equal another attribute.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateGte($attribute, $value, $parameters)
+    public function validateGte(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'gte');
-
-        $comparedToValue = $this->getValue($parameters[0]);
-
-        $this->shouldBeNumeric($attribute, 'Gte');
-
-        if (is_null($comparedToValue) && (is_numeric($value) && is_numeric($parameters[0]))) {
-            try {
-                return BigNumber::of($this->getSize($attribute,
-                    $value))->isGreaterThanOrEqualTo($this->trim($parameters[0]));
-            } catch (MathException) {
-                return false;
-            }
-        }
-
-        if (is_numeric($parameters[0])) {
-            return false;
-        }
-
-        if ($this->hasRule($attribute, $this->numericRules) && is_numeric($value) && is_numeric($comparedToValue)) {
-            try {
-                return BigNumber::of($this->trim($value))->isGreaterThanOrEqualTo($this->trim($comparedToValue));
-            } catch (MathException) {
-                return false;
-            }
-        }
-
-        if (! $this->isSameType($value, $comparedToValue)) {
-            return false;
-        }
-
-        try {
-            return $this->getSize($attribute, $value) >= $this->getSize($attribute, $comparedToValue);
-        } catch (MathException) {
-            return false;
-        }
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be greater than or equal to another attribute');
     }
 
     /**
      * Validate that an attribute is less than or equal another attribute.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateLte($attribute, $value, $parameters)
+    public function validateLte(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'lte');
-
-        $comparedToValue = $this->getValue($parameters[0]);
-
-        $this->shouldBeNumeric($attribute, 'Lte');
-
-        if (is_null($comparedToValue) && (is_numeric($value) && is_numeric($parameters[0]))) {
-            try {
-                return BigNumber::of($this->getSize($attribute,
-                    $value))->isLessThanOrEqualTo($this->trim($parameters[0]));
-            } catch (MathException) {
-                return false;
-            }
-        }
-
-        if (is_numeric($parameters[0])) {
-            return false;
-        }
-
-        if ($this->hasRule($attribute, $this->numericRules) && is_numeric($value) && is_numeric($comparedToValue)) {
-            return BigNumber::of($this->trim($value))->isLessThanOrEqualTo($this->trim($comparedToValue));
-        }
-
-        if (! $this->isSameType($value, $comparedToValue)) {
-            return false;
-        }
-
-        try {
-            return $this->getSize($attribute, $value) <= $this->getSize($attribute, $comparedToValue);
-        } catch (MathException) {
-            return false;
-        }
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be less than or equal to another attribute');
     }
 
     /**
@@ -1399,28 +1102,12 @@ trait SchemaAttributes
     /**
      * Validate that an array has at least one of the given keys.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateInArrayKeys($attribute, $value, $parameters)
+    public function validateInArrayKeys(string $attribute, $schema, array $parameters)
     {
-        if (! is_array($value)) {
-            return false;
-        }
-
-        if (empty($parameters)) {
-            return false;
-        }
-
-        foreach ($parameters as $param) {
-            if (Arr::exists($value, $param)) {
-                return true;
-            }
-        }
-
-        return false;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Array must have at least one of the specified keys');
     }
 
     /**
@@ -1551,18 +1238,12 @@ trait SchemaAttributes
     /**
      * Validate that an attribute has a maximum number of digits.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateMaxDigits($attribute, $value, $parameters)
+    public function validateMaxDigits(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'max_digits');
-
-        $length = strlen((string) $value);
-
-        return ! preg_match('/[^0-9]/', $value) && $length <= $parameters[0];
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must have a maximum number of digits');
     }
 
     /**
@@ -1659,150 +1340,78 @@ trait SchemaAttributes
     /**
      * Validate that an attribute has a minimum number of digits.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateMinDigits($attribute, $value, $parameters)
+    public function validateMinDigits(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'min_digits');
-
-        $length = strlen((string) $value);
-
-        return ! preg_match('/[^0-9]/', $value) && $length >= $parameters[0];
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must have a minimum number of digits');
     }
 
     /**
      * Validate that an attribute is missing.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateMissing($attribute, $value, $parameters)
+    public function validateMissing(string $attribute, $schema, array $parameters)
     {
-        return ! Arr::has($this->data, $attribute);
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be missing from the data');
     }
 
     /**
      * Validate that an attribute is missing when another attribute has a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateMissingIf($attribute, $value, $parameters)
+    public function validateMissingIf(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'missing_if');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (in_array($other, $values, is_bool($other) || is_null($other))) {
-            return $this->validateMissing($attribute, $value, $parameters);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be missing when another attribute has a given value');
     }
 
     /**
      * Validate that an attribute is missing unless another attribute has a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateMissingUnless($attribute, $value, $parameters)
+    public function validateMissingUnless(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'missing_unless');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (! in_array($other, $values, is_bool($other) || is_null($other))) {
-            return $this->validateMissing($attribute, $value, $parameters);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be missing unless another attribute has a given value');
     }
 
     /**
      * Validate that an attribute is missing when any given attribute is present.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateMissingWith($attribute, $value, $parameters)
+    public function validateMissingWith(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'missing_with');
-
-        if (Arr::hasAny($this->data, $parameters)) {
-            return $this->validateMissing($attribute, $value, $parameters);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be missing when any given attribute is present');
     }
 
     /**
      * Validate that an attribute is missing when all given attributes are present.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateMissingWithAll($attribute, $value, $parameters)
+    public function validateMissingWithAll(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'missing_with_all');
-
-        if (Arr::has($this->data, $parameters)) {
-            return $this->validateMissing($attribute, $value, $parameters);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be missing when all given attributes are present');
     }
 
     /**
      * Validate the value of an attribute is a multiple of a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateMultipleOf($attribute, $value, $parameters)
+    public function validateMultipleOf(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'multiple_of');
-
-        if (! $this->validateNumeric($attribute, $value, []) || ! $this->validateNumeric($attribute, $parameters[0],
-            [])) {
-            return false;
-        }
-
-        try {
-            $numerator = BigDecimal::of($this->trim($value));
-            $denominator = BigDecimal::of($this->trim($parameters[0]));
-
-            if ($numerator->isZero() && $denominator->isZero()) {
-                return false;
-            }
-
-            if ($numerator->isZero()) {
-                return true;
-            }
-
-            if ($denominator->isZero()) {
-                return false;
-            }
-
-            return $numerator->remainder($denominator)->isZero();
-        } catch (BrickMathException $e) {
-            throw new MathException('An error occurred while handling the multiple_of input values.', previous: $e);
-        }
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be a multiple of a given value');
     }
 
     /**
@@ -1821,14 +1430,12 @@ trait SchemaAttributes
     /**
      * Validate an attribute is not contained within a list of values.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateNotIn($attribute, $value, $parameters)
+    public function validateNotIn(string $attribute, $schema, array $parameters)
     {
-        return ! $this->validateIn($attribute, $value, $parameters);
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must not be one of the specified values');
     }
 
     /**
@@ -1857,131 +1464,78 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists even if not filled.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validatePresent($attribute, $value)
+    public function validatePresent(string $attribute, $schema, array $parameters)
     {
-        return Arr::has($this->data, $attribute);
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present in the data');
     }
 
     /**
      * Validate that an attribute is present when another attribute has a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validatePresentIf($attribute, $value, $parameters)
+    public function validatePresentIf(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'present_if');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (in_array($other, $values, is_bool($other) || is_null($other))) {
-            return $this->validatePresent($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present when another attribute has a given value');
     }
 
     /**
      * Validate that an attribute is present unless another attribute has a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validatePresentUnless($attribute, $value, $parameters)
+    public function validatePresentUnless(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'present_unless');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (! in_array($other, $values, is_bool($other) || is_null($other))) {
-            return $this->validatePresent($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present unless another attribute has a given value');
     }
 
     /**
      * Validate that an attribute is present when any given attribute is present.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validatePresentWith($attribute, $value, $parameters)
+    public function validatePresentWith(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'present_with');
-
-        if (Arr::hasAny($this->data, $parameters)) {
-            return $this->validatePresent($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present when any given attribute is present');
     }
 
     /**
      * Validate that an attribute is present when all given attributes are present.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validatePresentWithAll($attribute, $value, $parameters)
+    public function validatePresentWithAll(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'present_with_all');
-
-        if (Arr::has($this->data, $parameters)) {
-            return $this->validatePresent($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present when all given attributes are present');
     }
 
     /**
      * Validate that an attribute passes a regular expression check.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateRegex($attribute, $value, $parameters)
+    public function validateRegex(string $attribute, $schema, array $parameters)
     {
-        if (! is_string($value) && ! is_numeric($value)) {
-            return false;
-        }
-
-        $this->requireParameterCount(1, $parameters, 'regex');
-
-        return preg_match($parameters[0], $value) > 0;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must match the specified regular expression');
     }
 
     /**
      * Validate that an attribute does not pass a regular expression check.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateNotRegex($attribute, $value, $parameters)
+    public function validateNotRegex(string $attribute, $schema, array $parameters)
     {
-        if (! is_string($value) && ! is_numeric($value)) {
-            return false;
-        }
-
-        $this->requireParameterCount(1, $parameters, 'not_regex');
-
-        return preg_match($parameters[0], $value) < 1;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must not match the specified regular expression');
     }
 
     /**
@@ -2013,259 +1567,155 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when another attribute was "accepted".
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateRequiredIfAccepted($attribute, $value, $parameters)
+    public function validateRequiredIfAccepted(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'required_if_accepted');
-
-        if ($this->validateAccepted($parameters[0], $this->getValue($parameters[0]))) {
-            return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present when another attribute is accepted');
     }
 
     /**
      * Validate that an attribute exists when another attribute was "declined".
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateRequiredIfDeclined($attribute, $value, $parameters)
+    public function validateRequiredIfDeclined(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'required_if_declined');
-
-        if ($this->validateDeclined($parameters[0], $this->getValue($parameters[0]))) {
-            return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present when another attribute is declined');
     }
 
     /**
      * Validate that an attribute does not exist or is an empty string.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateProhibited($attribute, $value)
+    public function validateProhibited(string $attribute, $schema, array $parameters)
     {
-        return ! $this->validateRequired($attribute, $value);
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must not be present or must be empty');
     }
 
     /**
      * Validate that an attribute does not exist when another attribute has a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateProhibitedIf($attribute, $value, $parameters)
+    public function validateProhibitedIf(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'prohibited_if');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (in_array($other, $values, is_bool($other) || is_null($other))) {
-            return ! $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must not be present when another attribute has a given value');
     }
 
     /**
      * Validate that an attribute does not exist when another attribute was "accepted".
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateProhibitedIfAccepted($attribute, $value, $parameters)
+    public function validateProhibitedIfAccepted(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'prohibited_if_accepted');
-
-        if ($this->validateAccepted($parameters[0], $this->getValue($parameters[0]))) {
-            return $this->validateProhibited($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must not be present when another attribute is accepted');
     }
 
     /**
      * Validate that an attribute does not exist when another attribute was "declined".
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateProhibitedIfDeclined($attribute, $value, $parameters)
+    public function validateProhibitedIfDeclined(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'prohibited_if_declined');
-
-        if ($this->validateDeclined($parameters[0], $this->getValue($parameters[0]))) {
-            return $this->validateProhibited($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must not be present when another attribute is declined');
     }
 
     /**
      * Validate that an attribute does not exist unless another attribute has a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateProhibitedUnless($attribute, $value, $parameters)
+    public function validateProhibitedUnless(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'prohibited_unless');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (! in_array($other, $values, is_bool($other) || is_null($other))) {
-            return ! $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must not be present unless another attribute has a given value');
     }
 
     /**
      * Validate that other attributes do not exist when this attribute exists.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateProhibits($attribute, $value, $parameters)
+    public function validateProhibits(string $attribute, $schema, array $parameters)
     {
-        if ($this->validateRequired($attribute, $value)) {
-            foreach ($parameters as $parameter) {
-                if ($this->validateRequired($parameter, Arr::get($this->data, $parameter))) {
-                    return false;
-                }
-            }
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Prohibits other specified attributes from being present');
     }
 
     /**
      * Indicate that an attribute is excluded.
      *
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateExclude()
+    public function validateExclude(string $attribute, $schema, array $parameters)
     {
-        return false;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('This attribute is excluded from validation');
     }
 
     /**
      * Indicate that an attribute should be excluded when another attribute has a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateExcludeIf($attribute, $value, $parameters)
+    public function validateExcludeIf(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'exclude_if');
-
-        if (! Arr::has($this->data, $parameters[0])) {
-            return true;
-        }
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        return ! in_array($other, $values, is_bool($other) || is_null($other));
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('This attribute is excluded when another attribute has a given value');
     }
 
     /**
      * Indicate that an attribute should be excluded when another attribute does not have a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateExcludeUnless($attribute, $value, $parameters)
+    public function validateExcludeUnless(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'exclude_unless');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        return in_array($other, $values, is_bool($other) || is_null($other));
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('This attribute is excluded unless another attribute has a given value');
     }
 
     /**
      * Validate that an attribute exists when another attribute does not have a given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateRequiredUnless($attribute, $value, $parameters)
+    public function validateRequiredUnless(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(2, $parameters, 'required_unless');
-
-        [$values, $other] = $this->parseDependentRuleParameters($parameters);
-
-        if (! in_array($other, $values, is_bool($other) || is_null($other))) {
-            return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string();
     }
 
     /**
      * Indicate that an attribute should be excluded when another attribute presents.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateExcludeWith($attribute, $value, $parameters)
+    public function validateExcludeWith(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'exclude_with');
-
-        if (! Arr::has($this->data, $parameters[0])) {
-            return true;
-        }
-
-        return false;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('This attribute is excluded when another attribute is present');
     }
 
     /**
      * Indicate that an attribute should be excluded when another attribute is missing.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateExcludeWithout($attribute, $value, $parameters)
+    public function validateExcludeWithout(string $attribute, $schema, array $parameters)
     {
-        $this->requireParameterCount(1, $parameters, 'exclude_without');
-
-        if ($this->anyFailingRequired($parameters)) {
-            return false;
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('This attribute is excluded when another attribute is missing');
     }
 
     /**
@@ -2337,69 +1787,45 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when any other attribute exists.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateRequiredWith($attribute, $value, $parameters)
+    public function validateRequiredWith(string $attribute, $schema, array $parameters)
     {
-        if (! $this->allFailingRequired($parameters)) {
-            return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present when any other attribute exists');
     }
 
     /**
      * Validate that an attribute exists when all other attributes exist.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateRequiredWithAll($attribute, $value, $parameters)
+    public function validateRequiredWithAll(string $attribute, $schema, array $parameters)
     {
-        if (! $this->anyFailingRequired($parameters)) {
-            return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present when all other attributes exist');
     }
 
     /**
      * Validate that an attribute exists when another attribute does not.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateRequiredWithout($attribute, $value, $parameters)
+    public function validateRequiredWithout(string $attribute, $schema, array $parameters)
     {
-        if ($this->anyFailingRequired($parameters)) {
-            return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present when another attribute does not exist');
     }
 
     /**
      * Validate that an attribute exists when all other attributes do not.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  mixed  $parameters
-     * @return bool
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type
      */
-    public function validateRequiredWithoutAll($attribute, $value, $parameters)
+    public function validateRequiredWithoutAll(string $attribute, $schema, array $parameters)
     {
-        if ($this->allFailingRequired($parameters)) {
-            return $this->validateRequired($attribute, $value);
-        }
-
-        return true;
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be present when all other attributes do not exist');
     }
 
     /**
