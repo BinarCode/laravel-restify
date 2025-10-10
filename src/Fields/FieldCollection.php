@@ -198,4 +198,11 @@ class FieldCollection extends Collection
             ->filter(fn (Field $field) => in_array($field->getAttribute(), $columns, true))
             ->values();
     }
+
+    public function areFiles(): self
+    {
+        return $this
+            ->filter(fn (Field $field) => $field instanceof File)
+            ->values();
+    }
 }

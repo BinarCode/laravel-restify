@@ -955,7 +955,7 @@ trait SchemaAttributes
             return $existing;
         }
 
-        return $schema->string()->description('Must be a valid file');
+        return $schema->string()->description('Must be a valid file, or file absolute path');
     }
 
     /**
@@ -1266,7 +1266,7 @@ trait SchemaAttributes
             return $schema->string()->description("Allowed file extensions: {$extensions}");
         }
 
-        return $schema->string()->description('Must be a valid file with allowed extension');
+        return $schema->string()->description('Must be a valid file, or file absolute path with allowed extension');
     }
 
     /**
@@ -1289,7 +1289,7 @@ trait SchemaAttributes
             return $schema->string()->description("Allowed MIME types: {$types}");
         }
 
-        return $schema->string()->description('Must be a valid file with allowed MIME type');
+        return $schema->string()->description('Must be a valid file, or file absolute path with allowed MIME type');
     }
 
     /**
