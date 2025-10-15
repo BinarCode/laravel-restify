@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests\Fields;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
@@ -30,7 +31,7 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
             }), // Conditional MCP visibility
         ]);
 
-        // Regular request
+//        // Regular request
         $regularRequest = new RestifyRequest;
         $regularIndexFields = $fields->forIndex($regularRequest, $this->repository);
 
@@ -41,7 +42,7 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
         $this->assertContains('admin_notes', $regularFieldNames);
 
         // MCP request without admin
-        $mcpRequest = new McpRequest;
+        $mcpRequest = new McpIndexRequest();
         $mcpIndexFields = $fields->forIndex($mcpRequest, $this->repository);
 
         $mcpFieldNames = $mcpIndexFields->map(fn ($field) => $field->getAttribute())->toArray();

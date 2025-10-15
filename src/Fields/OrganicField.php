@@ -3,7 +3,9 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
+use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
 use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Closure;
 use Illuminate\Http\Request;
@@ -65,7 +67,7 @@ abstract class OrganicField extends BaseField
         $this->showOnShow = is_callable($callback) ? function () use ($callback) {
             return ! call_user_func_array($callback, func_get_args());
         }
-        : ! $callback;
+            : ! $callback;
 
         return $this;
     }
@@ -75,21 +77,25 @@ abstract class OrganicField extends BaseField
         $this->showOnIndex = is_callable($callback) ? function () use ($callback) {
             return ! call_user_func_array($callback, func_get_args());
         }
-        : ! $callback;
+            : ! $callback;
 
         return $this;
     }
 
     public function showOnMcp($callback = true)
     {
-        $this->showOnMcp = $callback;
+        $this->showOnMcp = $callback instanceof Closure
+            ? $callback
+            : fn() => (bool) $callback;
 
         return $this;
     }
 
     public function hideFromMcp($callback = true)
     {
-        $this->hideFromMcpCallback = $callback;
+        $this->hideFromMcpCallback = $callback instanceof Closure
+            ? $callback
+            : fn() => (bool) $callback;
 
         return $this;
     }
@@ -152,6 +158,14 @@ abstract class OrganicField extends BaseField
 
         if (is_callable($this->showOnMcp)) {
             return call_user_func($this->showOnMcp, $request, $repository);
+        }
+
+        if ($request instanceof McpShowRequest) {
+            return $this->isHiddenOnShow($request, $repository) === false;
+        }
+
+        if ($request instanceof McpIndexRequest) {
+            return $this->isHiddenOnIndex($request, $repository) === false;
         }
 
         return $this->showOnMcp;
