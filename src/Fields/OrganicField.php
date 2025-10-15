@@ -67,7 +67,7 @@ abstract class OrganicField extends BaseField
         $this->showOnShow = is_callable($callback) ? function () use ($callback) {
             return ! call_user_func_array($callback, func_get_args());
         }
-            : ! $callback;
+        : ! $callback;
 
         return $this;
     }
@@ -77,7 +77,7 @@ abstract class OrganicField extends BaseField
         $this->showOnIndex = is_callable($callback) ? function () use ($callback) {
             return ! call_user_func_array($callback, func_get_args());
         }
-            : ! $callback;
+        : ! $callback;
 
         return $this;
     }
@@ -86,7 +86,7 @@ abstract class OrganicField extends BaseField
     {
         $this->showOnMcp = $callback instanceof Closure
             ? $callback
-            : fn() => (bool) $callback;
+            : fn () => (bool) $callback;
 
         return $this;
     }
@@ -95,7 +95,7 @@ abstract class OrganicField extends BaseField
     {
         $this->hideFromMcpCallback = $callback instanceof Closure
             ? $callback
-            : fn() => (bool) $callback;
+            : fn () => (bool) $callback;
 
         return $this;
     }
