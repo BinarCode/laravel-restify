@@ -31,7 +31,7 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
             }), // Conditional MCP visibility
         ]);
 
-//        // Regular request
+        //        // Regular request
         $regularRequest = new RestifyRequest;
         $regularIndexFields = $fields->forIndex($regularRequest, $this->repository);
 
@@ -42,7 +42,7 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
         $this->assertContains('admin_notes', $regularFieldNames);
 
         // MCP request without admin
-        $mcpRequest = new McpIndexRequest();
+        $mcpRequest = new McpIndexRequest;
         $mcpIndexFields = $fields->forIndex($mcpRequest, $this->repository);
 
         $mcpFieldNames = $mcpIndexFields->map(fn ($field) => $field->getAttribute())->toArray();
