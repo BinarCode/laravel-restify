@@ -180,6 +180,7 @@ The MCP integration respects your existing Restify configuration and adds MCP-sp
     'server_name' => 'My App MCP Server',
     'server_version' => '1.0.0',
     'default_pagination' => 25,
+    'mode' => env('RESTIFY_MCP_MODE', 'direct'), // 'direct' or 'wrapper'
     'tools' => [
         'exclude' => [
             // Tools to exclude from discovery
@@ -190,3 +191,227 @@ The MCP integration respects your existing Restify configuration and adds MCP-sp
     ],
 ],
 ```
+
+## MCP Mode: Direct vs Wrapper
+
+Laravel Restify offers two modes for exposing your repositories through MCP: **Direct Mode** and **Wrapper Mode**. Each mode has different trade-offs in terms of token usage and discoverability.
+
+### Direct Mode (Default)
+
+In direct mode, every repository operation (index, show, store, update, delete) and custom action/getter is exposed as a separate MCP tool. This provides maximum discoverability for AI agents.
+
+**When to use Direct Mode:**
+- You have a small number of repositories (< 10)
+- You want AI agents to instantly see all available operations
+- Token usage is not a concern
+- You prefer simpler, more straightforward tool discovery
+
+**Example:** With 10 repositories, each having 5 CRUD operations plus 2 actions, you would expose **70 tools** to the AI agent.
+
+**Configuration:**
+```php
+// .env
+RESTIFY_MCP_MODE=direct
+```
+
+### Wrapper Mode (Token-Efficient)
+
+Wrapper mode uses a progressive discovery pattern that exposes only **4 wrapper tools** regardless of how many repositories you have. AI agents discover and execute operations through a multi-step workflow.
+
+**When to use Wrapper Mode:**
+- You have many repositories (10+)
+- Token usage efficiency is important (e.g., working with large context windows)
+- You want to reduce the initial tool list size
+- You're building complex applications with dozens of repositories
+
+**Token Savings Example:**
+- Direct mode with 50 repositories: ~250+ tools exposed
+- Wrapper mode with 50 repositories: **4 tools exposed**
+- **Token reduction: ~98% fewer tokens used for tool definitions**
+
+**Configuration:**
+```php
+// .env
+RESTIFY_MCP_MODE=wrapper
+```
+
+### The 4 Wrapper Tools
+
+When using wrapper mode, AI agents use these 4 tools in a progressive discovery workflow:
+
+#### 1. `discover-repositories`
+Lists all available MCP-enabled repositories with metadata. Supports optional search filtering.
+
+**Example Request:**
+```json
+{
+  "search": "user"
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "repositories": [
+    {
+      "name": "users",
+      "title": "Users",
+      "description": "Manage user accounts",
+      "operations": ["index", "show", "store", "update", "delete", "profile"],
+      "actions_count": 2,
+      "getters_count": 1
+    }
+  ]
+}
+```
+
+#### 2. `get-repository-operations`
+Lists all operations, actions, and getters available for a specific repository.
+
+**Example Request:**
+```json
+{
+  "repository": "users"
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "repository": "users",
+  "crud_operations": ["index", "show", "store", "update", "delete", "profile"],
+  "actions": [
+    {
+      "name": "activate-user",
+      "title": "Activate User",
+      "description": "Activate a user account"
+    }
+  ],
+  "getters": [
+    {
+      "name": "active-users",
+      "title": "Active Users",
+      "description": "Get all active users"
+    }
+  ]
+}
+```
+
+#### 3. `get-operation-details`
+Returns the complete JSON schema and documentation for a specific operation, including all parameters, validation rules, and examples.
+
+**Example Request:**
+```json
+{
+  "repository": "users",
+  "operation_type": "store"
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "operation": "store",
+  "type": "create",
+  "title": "Create User",
+  "description": "Create a new user account",
+  "schema": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string",
+        "description": "The user's full name",
+        "required": true
+      },
+      "email": {
+        "type": "string",
+        "description": "The user's email address",
+        "required": true
+      }
+    }
+  },
+  "examples": [
+    {
+      "name": "John Doe",
+      "email": "john@example.com"
+    }
+  ]
+}
+```
+
+#### 4. `execute-operation`
+Executes a repository operation with the provided parameters. This is the final step after discovering the repository, listing operations, and getting operation details.
+
+**Example Request:**
+```json
+{
+  "repository": "users",
+  "operation_type": "store",
+  "parameters": {
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
+}
+```
+
+**Example Response:**
+```json
+{
+  "success": true,
+  "data": {
+    "id": 123,
+    "name": "John Doe",
+    "email": "john@example.com"
+  }
+}
+```
+
+### Wrapper Mode Workflow
+
+Here's a typical workflow when an AI agent uses wrapper mode:
+
+1. **Discover repositories**: Agent calls `discover-repositories` to see what repositories are available
+2. **Explore operations**: Agent calls `get-repository-operations` for the target repository
+3. **Get schema**: Agent calls `get-operation-details` to understand required parameters
+4. **Execute**: Agent calls `execute-operation` with the correct parameters
+
+This progressive discovery pattern reduces token usage while maintaining full functionality.
+
+### Switching Between Modes
+
+You can switch between modes at any time by updating your `.env` file:
+
+```bash
+# Direct mode (default)
+RESTIFY_MCP_MODE=direct
+
+# Wrapper mode (token-efficient)
+RESTIFY_MCP_MODE=wrapper
+```
+
+No code changes are required. The MCP server automatically adapts to the configured mode.
+
+### Performance Considerations
+
+**Direct Mode:**
+- ✅ Faster initial discovery (all tools visible immediately)
+- ❌ Higher token usage (all tools loaded into context)
+- ✅ Simpler for AI agents to understand
+- ❌ Can overwhelm context window with large applications
+
+**Wrapper Mode:**
+- ✅ Dramatically lower token usage (4 tools vs 100+)
+- ✅ Scales well with large applications
+- ❌ Requires multi-step workflow
+- ✅ Better for applications with many repositories
+
+### Best Practices
+
+1. **Start with Direct Mode** during development to verify all tools are working correctly
+2. **Switch to Wrapper Mode** in production if you have 10+ repositories or token efficiency is important
+3. **Use wrapper mode** when working with AI agents that have limited context windows
+4. **Monitor token usage** to determine which mode is best for your application
+5. **Document your choice** so team members understand which mode is active

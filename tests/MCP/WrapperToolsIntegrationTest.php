@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Laravel\Mcp\Facades\Mcp;
 use Laravel\Mcp\Server\McpServiceProvider;
 
@@ -28,8 +29,14 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
         // Enable wrapper mode
         config(['restify.mcp.mode' => 'wrapper']);
 
-        // Clear any cached repository data between tests
-        \Illuminate\Support\Facades\Cache::flush();
+        // Mock cache to prevent database cache table errors in tests
+        Cache::partialMock()
+            ->shouldReceive('remember')
+            ->andReturnUsing(function ($key, $ttl, $callback) {
+                return $callback();
+            })
+            ->shouldReceive('flush')
+            ->andReturn(true);
 
         // Reset Restify repositories to prevent cross-test contamination
         Restify::$repositories = [];
