@@ -16,6 +16,8 @@ use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
@@ -288,6 +290,20 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public static function description(RestifyRequest $request): string
     {
+        if ($request instanceof McpStoreRequest) {
+            $uriKey = static::uriKey();
+            $modelName = class_basename(static::guessModelClassName());
+
+            return "Create a new {$modelName} record in the {$uriKey} repository with the provided data.";
+        }
+
+        if ($request instanceof McpUpdateRequest) {
+            $uriKey = static::uriKey();
+            $modelName = class_basename(static::guessModelClassName());
+
+            return "Update an existing {$modelName} record by ID in the {$uriKey} repository with the provided data.";
+        }
+
         $modelName = class_basename(self::guessModelClassName());
         $table = self::newModel()->getTable();
 
