@@ -125,6 +125,14 @@ class RestifyServer extends Server
 
     protected function discoverRepositoryTools(): void
     {
+        // Check if we should use wrapper mode
+        if (config('restify.mcp.mode') === 'wrapper') {
+            $this->registerWrapperTools();
+
+            return;
+        }
+
+        // Direct mode - register each operation as a separate tool
         collect(Restify::$repositories)
             ->filter(function (string $repository) {
                 return in_array(HasMcpTools::class, class_uses_recursive($repository));
@@ -165,6 +173,17 @@ class RestifyServer extends Server
                     $this->discoverGettersForRepository($repository, $repositoryInstance);
                 }
             });
+    }
+
+    /**
+     * Register wrapper tools for progressive discovery mode.
+     */
+    protected function registerWrapperTools(): void
+    {
+        $this->tools[] = \Binaryk\LaravelRestify\MCP\Tools\Wrapper\DiscoverRepositoriesTool::class;
+        $this->tools[] = \Binaryk\LaravelRestify\MCP\Tools\Wrapper\GetRepositoryOperationsTool::class;
+        $this->tools[] = \Binaryk\LaravelRestify\MCP\Tools\Wrapper\GetOperationDetailsTool::class;
+        $this->tools[] = \Binaryk\LaravelRestify\MCP\Tools\Wrapper\ExecuteOperationTool::class;
     }
 
     protected function discoverActionsForRepository(string $repositoryClass, Repository $repositoryInstance): void

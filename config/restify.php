@@ -284,6 +284,27 @@ return [
     |
     */
     'mcp' => [
+        /*
+        |--------------------------------------------------------------------------
+        | MCP Mode
+        |--------------------------------------------------------------------------
+        |
+        | This setting controls how repository operations are exposed to MCP clients.
+        |
+        | - 'direct': Each repository operation (index, show, store, etc.) is
+        |   registered as a separate MCP tool. This provides immediate access to
+        |   all operations but can result in many tools.
+        |
+        | - 'wrapper': Repository operations are accessed through 4 wrapper tools
+        |   (discover, get operations, get details, execute). This reduces tool
+        |   count and provides progressive discovery but requires multiple calls.
+        |
+        | Static tools (like GlobalSearchTool) are always registered directly
+        | regardless of this setting.
+        |
+        */
+        'mode' => env('RESTIFY_MCP_MODE', 'direct'),
+
         'tools' => [
             'exclude' => [
                 // Tool classes to exclude from discovery
