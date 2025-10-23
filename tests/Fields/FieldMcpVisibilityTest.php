@@ -7,6 +7,9 @@ use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
@@ -171,5 +174,130 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
         $this->assertContains('readonly_field', $indexFieldNames);
         $this->assertNotContains('mcp_hidden', $indexFieldNames);
         $this->assertNotContains('eager_field', $indexFieldNames); // EagerFields excluded from index
+    }
+
+    public function test_mcp_show_request_does_not_cause_infinite_loop(): void
+    {
+        $fields = new FieldCollection([
+            Field::make('title'),
+            Field::make('secret_key')->hideFromMcp(),
+            Field::make('visible_field')->showOnShow(true),
+        ]);
+
+        // This test ensures that McpShowRequest doesn't cause infinite recursion
+        // between isShownOnMcp() and isShownOnShow() methods
+        $mcpShowRequest = new McpShowRequest;
+
+        // This should not cause infinite loop
+        $showFields = $fields->forShow($mcpShowRequest, $this->repository);
+        $fieldNames = $showFields->map(fn ($field) => $field->getAttribute())->toArray();
+
+        $this->assertContains('title', $fieldNames);
+        $this->assertNotContains('secret_key', $fieldNames); // Hidden from MCP
+        $this->assertContains('visible_field', $fieldNames);
+    }
+
+    public function test_mcp_index_request_does_not_cause_infinite_loop(): void
+    {
+        $fields = new FieldCollection([
+            Field::make('name'),
+            Field::make('internal_token')->hideFromMcp(),
+            Field::make('public_data')->showOnIndex(true),
+        ]);
+
+        // This test ensures that McpIndexRequest doesn't cause infinite recursion
+        $mcpIndexRequest = new McpIndexRequest;
+
+        // This should not cause infinite loop
+        $indexFields = $fields->forIndex($mcpIndexRequest, $this->repository);
+        $fieldNames = $indexFields->map(fn ($field) => $field->getAttribute())->toArray();
+
+        $this->assertContains('name', $fieldNames);
+        $this->assertNotContains('internal_token', $fieldNames); // Hidden from MCP
+        $this->assertContains('public_data', $fieldNames);
+    }
+
+    public function test_mcp_store_request_respects_hide_from_mcp(): void
+    {
+        $fields = new FieldCollection([
+            Field::make('title'),
+            Field::make('secret_api_key')->hideFromMcp(),
+            Field::make('content'),
+            Field::make('internal_metadata')->hideFromMcp(function ($request) {
+                return ! $request->get('is_admin', false);
+            }),
+        ]);
+
+        // MCP store request without admin
+        $mcpStoreRequest = new McpStoreRequest;
+        $storeFields = $fields->forStore($mcpStoreRequest, $this->repository);
+        $fieldNames = $storeFields->map(fn ($field) => $field->getAttribute())->toArray();
+
+        $this->assertContains('title', $fieldNames);
+        $this->assertNotContains('secret_api_key', $fieldNames); // Hidden from MCP
+        $this->assertContains('content', $fieldNames);
+        $this->assertNotContains('internal_metadata', $fieldNames); // Hidden by callback
+
+        // MCP store request with admin
+        $mcpStoreRequestAdmin = new McpStoreRequest(['is_admin' => true]);
+        $storeFieldsAdmin = $fields->forStore($mcpStoreRequestAdmin, $this->repository);
+        $fieldNamesAdmin = $storeFieldsAdmin->map(fn ($field) => $field->getAttribute())->toArray();
+
+        $this->assertContains('title', $fieldNamesAdmin);
+        $this->assertNotContains('secret_api_key', $fieldNamesAdmin); // Still hidden from MCP
+        $this->assertContains('content', $fieldNamesAdmin);
+        $this->assertContains('internal_metadata', $fieldNamesAdmin); // Visible to admin
+
+        // Regular store request should show all fields except readonly
+        $regularStoreRequest = new RestifyRequest;
+        $regularStoreFields = $fields->forStore($regularStoreRequest, $this->repository);
+        $regularFieldNames = $regularStoreFields->map(fn ($field) => $field->getAttribute())->toArray();
+
+        $this->assertContains('title', $regularFieldNames);
+        $this->assertContains('secret_api_key', $regularFieldNames); // Visible in regular request
+        $this->assertContains('content', $regularFieldNames);
+        $this->assertContains('internal_metadata', $regularFieldNames);
+    }
+
+    public function test_mcp_update_request_respects_hide_from_mcp(): void
+    {
+        $fields = new FieldCollection([
+            Field::make('name'),
+            Field::make('password')->hideFromMcp(),
+            Field::make('email'),
+            Field::make('admin_notes')->hideFromMcp(function ($request) {
+                return $request->get('role') !== 'admin';
+            }),
+        ]);
+
+        // MCP update request without admin role
+        $mcpUpdateRequest = new McpUpdateRequest(['role' => 'user']);
+        $updateFields = $fields->forUpdate($mcpUpdateRequest, $this->repository);
+        $fieldNames = $updateFields->map(fn ($field) => $field->getAttribute())->toArray();
+
+        $this->assertContains('name', $fieldNames);
+        $this->assertNotContains('password', $fieldNames); // Hidden from MCP
+        $this->assertContains('email', $fieldNames);
+        $this->assertNotContains('admin_notes', $fieldNames); // Hidden by callback
+
+        // MCP update request with admin role
+        $mcpUpdateRequestAdmin = new McpUpdateRequest(['role' => 'admin']);
+        $updateFieldsAdmin = $fields->forUpdate($mcpUpdateRequestAdmin, $this->repository);
+        $fieldNamesAdmin = $updateFieldsAdmin->map(fn ($field) => $field->getAttribute())->toArray();
+
+        $this->assertContains('name', $fieldNamesAdmin);
+        $this->assertNotContains('password', $fieldNamesAdmin); // Still hidden from MCP
+        $this->assertContains('email', $fieldNamesAdmin);
+        $this->assertContains('admin_notes', $fieldNamesAdmin); // Visible to admin
+
+        // Regular update request should show all fields except readonly
+        $regularUpdateRequest = new RestifyRequest;
+        $regularUpdateFields = $fields->forUpdate($regularUpdateRequest, $this->repository);
+        $regularFieldNames = $regularUpdateFields->map(fn ($field) => $field->getAttribute())->toArray();
+
+        $this->assertContains('name', $regularFieldNames);
+        $this->assertContains('password', $regularFieldNames); // Visible in regular request
+        $this->assertContains('email', $regularFieldNames);
+        $this->assertContains('admin_notes', $regularFieldNames);
     }
 }
