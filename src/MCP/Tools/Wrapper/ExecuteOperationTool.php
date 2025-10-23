@@ -38,8 +38,7 @@ class ExecuteOperationTool extends Tool
                 ->description('Required only for "action" and "getter" operation types. The URI key of the specific action or getter to execute.'),
 
             'parameters' => $schema->object()
-                ->description('The parameters to pass to the operation. The required parameters depend on the operation type. Use get-operation-details to see the schema for the specific operation.')
-                ->required(),
+                ->description('The parameters to pass to the operation. The required parameters depend on the operation type. Use get-operation-details to see the schema for the specific operation.'),
         ];
     }
 
