@@ -2,32 +2,34 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
+use Illuminate\JsonSchema\JsonSchemaTypeFactory;
+
 trait WrapperToolHelpers
 {
     /**
      * Format operation schema for display.
+     *
+     * Wraps the schema properties in an ObjectType before serialization to properly
+     * handle required fields and other attributes according to JSON Schema spec.
+     * This matches how Laravel MCP's Tool::toArray() works.
      */
     protected function formatSchemaForDisplay(array $schema): array
     {
-        $formatted = [];
+        $schemaFactory = new JsonSchemaTypeFactory;
+        $objectType = $schemaFactory->object($schema);
 
-        foreach ($schema as $key => $value) {
-            if (is_object($value) && method_exists($value, 'toArray')) {
-                $formatted[$key] = $value->toArray();
-            } else {
-                $formatted[$key] = $value;
-            }
-        }
-
-        return $formatted;
+        return $objectType->toArray();
     }
 
     /**
      * Generate examples from operation schema.
+     *
+     * After wrapping in ObjectType, the schema has a 'properties' key containing all fields.
      */
     protected function generateExamplesFromSchema(array $schema, string $operationType): array
     {
         $examples = [];
+        $properties = $schema['properties'] ?? [];
 
         switch ($operationType) {
             case 'index':
@@ -39,7 +41,7 @@ trait WrapperToolHelpers
                     ],
                 ];
 
-                if (isset($schema['search'])) {
+                if (isset($properties['search'])) {
                     $examples[] = [
                         'description' => 'Search with pagination',
                         'parameters' => [
@@ -50,7 +52,7 @@ trait WrapperToolHelpers
                     ];
                 }
 
-                if (isset($schema['include'])) {
+                if (isset($properties['include'])) {
                     $examples[] = [
                         'description' => 'With relationships',
                         'parameters' => [
@@ -70,7 +72,7 @@ trait WrapperToolHelpers
                     ],
                 ];
 
-                if (isset($schema['include'])) {
+                if (isset($properties['include'])) {
                     $examples[] = [
                         'description' => 'Show with relationships',
                         'parameters' => [
@@ -83,7 +85,7 @@ trait WrapperToolHelpers
 
             case 'store':
                 $exampleParams = [];
-                foreach ($schema as $key => $field) {
+                foreach ($properties as $key => $field) {
                     if ($key === 'include') {
                         continue;
                     }
@@ -101,7 +103,7 @@ trait WrapperToolHelpers
 
             case 'update':
                 $exampleParams = ['id' => '1'];
-                foreach ($schema as $key => $field) {
+                foreach ($properties as $key => $field) {
                     if (in_array($key, ['id', 'include'])) {
                         continue;
                     }
