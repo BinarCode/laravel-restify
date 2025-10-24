@@ -441,11 +441,14 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
         $this->assertArrayHasKey('examples', $resultContent);
 
         // Assert schema contains expected fields
+        // Schema is now wrapped in ObjectType following JSON Schema spec
         $schema = $resultContent['schema'];
-        $this->assertArrayHasKey('page', $schema);
-        $this->assertArrayHasKey('perPage', $schema);
-        $this->assertArrayHasKey('search', $schema);
-        $this->assertArrayHasKey('include', $schema);
+        $this->assertEquals('object', $schema['type']);
+        $this->assertArrayHasKey('properties', $schema);
+        $this->assertArrayHasKey('page', $schema['properties']);
+        $this->assertArrayHasKey('perPage', $schema['properties']);
+        $this->assertArrayHasKey('search', $schema['properties']);
+        $this->assertArrayHasKey('include', $schema['properties']);
 
         // Assert examples are provided
         $this->assertNotEmpty($resultContent['examples']);
@@ -729,7 +732,8 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
         $detailsResult = json_decode($detailsResponse->json()['result']['content'][0]['text'], true);
 
         $this->assertArrayHasKey('schema', $detailsResult);
-        $this->assertArrayHasKey('title', $detailsResult['schema']);
+        // Schema is now wrapped in ObjectType, so check for properties
+        $this->assertArrayHasKey('properties', $detailsResult['schema']);
 
         // Step 4: Execute the store operation
         $executePayload = [
