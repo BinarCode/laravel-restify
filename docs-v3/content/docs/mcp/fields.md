@@ -344,6 +344,138 @@ class PostRepository extends Repository
 }
 ```
 
+## File Field with Custom Filenames
+
+The File field supports custom filenames from request data, perfect for automation workflows like n8n where you want to control the filename during upload.
+
+### Basic File Upload
+
+```php
+class ExpenseRepository extends Repository
+{
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('receipt_path')->file()
+                ->path('expense_receipts/'.Auth::id())
+                ->storeOriginalName('receipt_filename')
+                ->storeSize('receipt_size')
+                ->deletable()
+                ->disk('s3'),
+
+            field('receipt_filename')
+                ->description('Original filename of the uploaded receipt.'),
+
+            field('receipt_size')
+                ->description('Size of the uploaded receipt in bytes.'),
+        ];
+    }
+}
+```
+
+### Custom Filename from Request
+
+Use `storeAs()` with a callback to read the custom filename from the request:
+
+```php
+field('receipt_path')->file()
+    ->path('expense_receipts/'.Auth::id())
+    ->storeAs(fn($request) => $request->input('receipt_filename'))
+    ->storeOriginalName('receipt_filename')
+    ->storeSize('receipt_size')
+    ->deletable()
+    ->disk('s3'),
+
+field('receipt_filename')
+    ->description('Custom filename for the receipt. Provide a meaningful name.'),
+```
+
+### Smart Extension Handling
+
+The File field automatically handles file extensions:
+
+```php
+// Request: receipt_filename = "Invoice_Jan_2024"
+// Uploaded file: expense.pdf
+// Result: Invoice_Jan_2024.pdf (extension auto-appended)
+
+// Request: receipt_filename = "Invoice_Jan_2024.pdf"
+// Uploaded file: expense.pdf
+// Result: Invoice_Jan_2024.pdf (used as-is)
+
+// Request: receipt_filename = "" or null
+// Uploaded file: expense.pdf
+// Result: a1b2c3d4e5f6.pdf (fallback to auto-generated hash)
+```
+
+### File Field Behaviors
+
+**With Callable `storeAs()`:**
+```php
+->storeAs(fn($request) => $request->input('custom_name'))
+```
+- Uses the returned filename for storage
+- Uses the same filename for `storeOriginalName()` column
+- Auto-appends extension if missing
+- Falls back to auto-generated name if returns empty/null
+
+**With Static `storeAs()`:**
+```php
+->storeAs('avatar.jpg')
+```
+- Uses the static filename for storage
+- Uses uploaded file's original name for `storeOriginalName()` column
+- Extension must be included in the static string
+
+**Without `storeAs()`:**
+```php
+field('receipt')->file()
+```
+- Auto-generates hash-based filename
+- Uses uploaded file's original name for `storeOriginalName()` column
+
+### MCP-Optimized File Fields
+
+Hide file fields from MCP responses to reduce token usage:
+
+```php
+class ExpenseRepository extends Repository
+{
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('receipt_path')->file()
+                ->path('expense_receipts/'.Auth::id())
+                ->storeAs(fn($request) => $request->input('receipt_filename'))
+                ->storeOriginalName('receipt_filename')
+                ->resolveUsingTemporaryUrl($request->boolean('temporary_urls'))
+                ->hideFromMcp()
+                ->description('Only send the absolute URL if you have it, otherwise do not send this field.')
+                ->disk('s3'),
+
+            field('receipt_filename')
+                ->description('Filename of the receipt. Keep it descriptive.'),
+        ];
+    }
+}
+```
+
+### File Upload Automation Example
+
+Perfect for n8n workflows where files are extracted from emails:
+
+```json
+{
+  "receipt_path": "<uploaded_file>",
+  "receipt_filename": "Invoice_ABC_Company_Jan_2024",
+  "amount": 1500.00,
+  "date": "2024-01-15",
+  "vendor": "ABC Company"
+}
+```
+
+The file will be stored as `expense_receipts/123/Invoice_ABC_Company_Jan_2024.pdf` and the `receipt_filename` column will contain `Invoice_ABC_Company_Jan_2024.pdf`.
+
 ## Best Practices
 
 ### 1. Field Selection Strategy
@@ -358,6 +490,7 @@ class PostRepository extends Repository
 - Inline simple relationship data instead of separate API calls
 - Use computed fields to provide aggregated information
 - Avoid deeply nested relationship structures
+- Hide file fields from MCP using `hideFromMcp()` to save tokens
 
 ### 3. Security Considerations
 
