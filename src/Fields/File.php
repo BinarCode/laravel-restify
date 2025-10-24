@@ -44,6 +44,20 @@ class File extends Field implements DeletableContract, StorableContract
     public $sizeColumn;
 
     /**
+     * The custom filename resolved from storeAs callback.
+     *
+     * @var string|null
+     */
+    protected $customFilename;
+
+    /**
+     * Whether to use the custom filename for the original name column.
+     *
+     * @var bool
+     */
+    protected $useCustomFilenameForOriginal = false;
+
+    /**
      * The callback that should be executed to store the file.
      *
      * @var callable|Storable
@@ -188,12 +202,38 @@ class File extends Field implements DeletableContract, StorableContract
         }
 
         if (! $this->storeAs) {
+            $this->customFilename = null;
+            $this->useCustomFilenameForOriginal = false;
+
             return $file->store($this->getStorageDir(), $this->getStorageDisk());
         }
 
+        $isCallable = is_callable($this->storeAs);
+        $filename = $isCallable
+            ? call_user_func($this->storeAs, $request)
+            : $this->storeAs;
+
+        // If storeAs returns empty/null, fallback to auto-generated name
+        if (empty($filename)) {
+            $this->customFilename = null;
+            $this->useCustomFilenameForOriginal = false;
+
+            return $file->store($this->getStorageDir(), $this->getStorageDisk());
+        }
+
+        // Smart extension handling - append if missing
+        $extension = $file->getClientOriginalExtension();
+        if ($extension && ! str_ends_with(strtolower($filename), '.'.$extension)) {
+            $filename = $filename.'.'.$extension;
+        }
+
+        $this->customFilename = $filename;
+        // Only use custom filename for original name if it came from a callable
+        $this->useCustomFilenameForOriginal = $isCallable;
+
         return $file->storeAs(
             $this->getStorageDir(),
-            is_callable($this->storeAs) ? call_user_func($this->storeAs, $request) : $this->storeAs,
+            $filename,
             $this->getStorageDisk()
         );
     }
@@ -223,7 +263,9 @@ class File extends Field implements DeletableContract, StorableContract
         $file = $this->resolveFileFromRequest($request);
 
         if ($this->originalNameColumn) {
-            $attributes[$this->originalNameColumn] = $file->getClientOriginalName();
+            $attributes[$this->originalNameColumn] = ($this->useCustomFilenameForOriginal && $this->customFilename)
+                ? $this->customFilename
+                : $file->getClientOriginalName();
         }
 
         if ($this->sizeColumn) {
