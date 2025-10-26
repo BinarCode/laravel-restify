@@ -11,6 +11,8 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
+use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
+use Binaryk\LaravelRestify\MCP\McpToolsManager;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
@@ -142,5 +144,10 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         if (! App::runningUnitTests()) {
             $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto);
         }
+
+        // Register MCP tools manager as singleton
+        $this->app->singleton(McpToolsManager::class, function ($app) {
+            return new McpToolsManager($app->make(BootMcpTools::class));
+        });
     }
 }
