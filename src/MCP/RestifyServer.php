@@ -77,20 +77,7 @@ namespace Binaryk\LaravelRestify\MCP;
  */
 
 use Binaryk\LaravelRestify\Actions\Action;
-use Binaryk\LaravelRestify\Getters\Getter;
-use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
-use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
-use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\MCP\Resources\ApplicationInfo;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\ActionTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\DeleteTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\GetterTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\IndexTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\ProfileTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\ShowTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\StoreTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\UpdateTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\DiscoverRepositoriesTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\ExecuteOperationTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\GetOperationDetailsTool;
@@ -317,5 +304,4 @@ class RestifyServer extends Server
             'type' => $tool['type'],
         ]);
     }
-
 }

@@ -2,19 +2,8 @@
 
 namespace Binaryk\LaravelRestify\MCP\Services;
 
-use Binaryk\LaravelRestify\Actions\Action;
-use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\MCP\McpTools;
-use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpDestroyRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Binaryk\LaravelRestify\MCP\RestifyServer;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\ProfileTool;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\Support\Collection;
@@ -237,7 +226,6 @@ class ToolRegistry
             default => throw new \InvalidArgumentException("Invalid operation type: {$operationType}"),
         };
     }
-
 
     protected function executeIndexOperation(array $tool, array $parameters): Response
     {
