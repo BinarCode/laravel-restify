@@ -20,6 +20,10 @@ use Illuminate\Support\Facades\Facade;
  * @method static \Illuminate\Support\Collection byCategory()
  * @method static \Illuminate\Support\Collection byRepository()
  * @method static void rediscover()
+ * @method static \Illuminate\Support\Collection getAvailableRepositories(?string $search = null)
+ * @method static array getRepositoryOperations(string $repositoryKey)
+ * @method static array getOperationDetails(string $repositoryKey, string $operationType, ?string $operationName = null)
+ * @method static \Laravel\Mcp\Response executeOperation(string $repositoryKey, string $operationType, ?string $operationName, array $parameters)
  *
  * @see \Binaryk\LaravelRestify\MCP\McpToolsManager
  */

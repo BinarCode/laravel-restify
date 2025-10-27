@@ -56,15 +56,24 @@ namespace Binaryk\LaravelRestify\MCP;
  * ## How Permissions Work in Wrapper Mode
  *
  * Even though wrapper mode only registers 4 wrapper tools with the MCP server,
- * ALL individual operations are still discovered and available for permission checks:
+ * ALL individual operations are discovered and filtered by your `canUseTool()` method.
  *
- * 1. AI calls wrapper tool: `execute-operation(repository="posts", operation="store")`
- * 2. Wrapper tool looks up "posts-store" in McpTools
- * 3. Before execution, calls `canUseTool("posts-store")`
- * 4. Your `canUseTool()` implementation checks if token has "posts-store" permission
- * 5. If yes, executes; if no, throws AuthorizationException
+ * **Discovery Phase** (AI explores available operations):
+ * 1. AI calls `discover-repositories` → Shows only repositories with ≥1 accessible operation
+ * 2. AI calls `get-repository-operations(repository="posts")` → Lists only operations user can access
+ *    - If token lacks "posts-store" permission, store won't appear in the list
+ *    - Actions/getters are also filtered by permission
+ * 3. AI calls `get-operation-details(repository="posts", operation="store")` → Checks `canUseTool("posts-store")`
+ *    - If no permission, throws AuthorizationException
  *
- * This allows fine-grained permissions even in wrapper mode!
+ * **Execution Phase** (AI executes an operation):
+ * 4. AI calls `execute-operation(repository="posts", operation="store", parameters={...})`
+ * 5. Wrapper looks up "posts-store" tool in McpTools
+ * 6. Calls `canUseTool("posts-store")` before execution
+ * 7. If yes → executes, if no → throws AuthorizationException
+ *
+ * **Key Point**: Your `canUseTool()` method is called during BOTH discovery and execution,
+ * ensuring users only see and can execute operations they have permission for.
  *
  * ## Getting Authorized Tools at Runtime
  *
@@ -76,28 +85,17 @@ namespace Binaryk\LaravelRestify\MCP;
  * ```
  */
 
-use Binaryk\LaravelRestify\Actions\Action;
-use Binaryk\LaravelRestify\Getters\Getter;
-use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
-use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
-use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
-use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
+use Binaryk\LaravelRestify\MCP\Collections\ToolsCollection;
+use Binaryk\LaravelRestify\MCP\Enums\ToolsCategoryEnum;
 use Binaryk\LaravelRestify\MCP\Resources\ApplicationInfo;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\ActionTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\DeleteTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\GetterTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\IndexTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\ProfileTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\ShowTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\StoreTool;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\UpdateTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\DiscoverRepositoriesTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\ExecuteOperationTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\GetOperationDetailsTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\GetRepositoryOperationsTool;
-use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Restify;
+use Illuminate\Support\Collection;
 use Laravel\Mcp\Server;
+use Laravel\Mcp\Server\Prompt;
+use Laravel\Mcp\Server\Tool;
 
 class RestifyServer extends Server
 {
@@ -129,7 +127,7 @@ class RestifyServer extends Server
     /**
      * The tools registered with this MCP server.
      *
-     * @var array<int, class-string<\Laravel\Mcp\Server\Tool>>
+     * @var array<int, class-string<Tool>>
      */
     protected array $tools = [];
 
@@ -145,7 +143,7 @@ class RestifyServer extends Server
     /**
      * The prompts registered with this MCP server.
      *
-     * @var array<int, class-string<\Laravel\Mcp\Server\Prompt>>
+     * @var array<int, class-string<Prompt>>
      */
     protected array $prompts = [];
 
@@ -156,42 +154,43 @@ class RestifyServer extends Server
         McpTools::setServer($this);
 
         // Register tools with the server
-        collect($this->discoverTools())->each(fn (string $tool): string => $this->tools[] = $tool);
-        $this->discoverRepositoryTools();
+        $this->discoverTools()->each(fn (string $tool): string => $this->tools[] = $tool);
+        $this->registerRepositoryTools();
         collect($this->discoverResources())->each(fn (string $resource): string => $this->resources[] = $resource);
         collect($this->discoverPrompts())->each(fn (string $prompt): string => $this->prompts[] = $prompt);
     }
 
     /**
-     * @return array<int, class-string<\Laravel\Mcp\Server\Tool>>
+     * @return array<int, class-string<Tool>>
      */
-    protected function discoverTools(): array
+    protected function discoverTools(): ToolsCollection
     {
-        return McpTools::category('Custom Tools')
+        return McpTools::category(ToolsCategoryEnum::CUSTOM_TOOLS->value)
             ->filter(fn (array $tool): bool => $this->canUseTool($tool['instance']))
-            ->pluck('class')
-            ->toArray();
+            ->pluck('class');
     }
 
-    protected function discoverRepositoryTools(): void
+    protected function registerRepositoryTools(): void
     {
-        // Check if we should use wrapper mode
-        if (config('restify.mcp.mode') === 'wrapper') {
+        $mode = request()->get('mode', config('restify.mcp.mode'));
+
+        if ($mode === 'wrapper') {
             $this->registerWrapperTools();
 
             return;
         }
 
-        // Direct mode - register each operation as a separate tool
         McpTools::all()
-            ->whereIn('category', ['CRUD Operations', 'Actions', 'Getters', 'Profile'])
+            ->whereIn('category', [
+                ToolsCategoryEnum::CRUD_OPERATIONS->value,
+                ToolsCategoryEnum::ACTIONS->value,
+                ToolsCategoryEnum::GETTERS->value,
+                ToolsCategoryEnum::PROFILE->value,
+            ])
             ->filter(fn (array $tool): bool => $this->canUseTool($tool['instance']))
             ->each(fn (array $tool) => $this->tools[] = $tool['instance']);
     }
 
-    /**
-     * Register wrapper tools for progressive discovery mode.
-     */
     protected function registerWrapperTools(): void
     {
         $this->tools[] = DiscoverRepositoriesTool::class;
@@ -244,7 +243,7 @@ class RestifyServer extends Server
     }
 
     /**
-     * @return array<int, class-string<\Laravel\Mcp\Server\Prompt>>
+     * @return array<int, class-string<Prompt>>
      */
     protected function discoverPrompts(): array
     {
@@ -293,29 +292,16 @@ class RestifyServer extends Server
      * all individual operations are still discovered and available for permission checks.
      * This allows you to create tokens with fine-grained permissions for specific operations.
      */
-    public function getAllAvailableTools(): \Illuminate\Support\Collection
+    public function getAllAvailableTools(): Collection
     {
-        return McpTools::all()->map(fn (array $tool): array => [
-            'name' => $tool['name'],
-            'title' => $tool['title'],
-            'description' => $tool['description'],
-            'category' => $tool['category'],
-            'type' => $tool['type'],
-        ]);
+        return McpTools::all()->toUi();
     }
 
     /**
      * Get tools that the current user/token is authorized to use.
      */
-    public function getAuthorizedTools(): \Illuminate\Support\Collection
+    public function getAuthorizedTools(): Collection
     {
-        return McpTools::authorized()->map(fn (array $tool): array => [
-            'name' => $tool['name'],
-            'title' => $tool['title'],
-            'description' => $tool['description'],
-            'category' => $tool['category'],
-            'type' => $tool['type'],
-        ]);
+        return McpTools::authorized()->toUi();
     }
-
 }

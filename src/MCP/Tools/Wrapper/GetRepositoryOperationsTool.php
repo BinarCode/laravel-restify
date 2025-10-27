@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Wrapper;
 
 use Binaryk\LaravelRestify\MCP\Concerns\WrapperToolHelpers;
-use Binaryk\LaravelRestify\MCP\Services\ToolRegistry;
+use Binaryk\LaravelRestify\MCP\McpTools;
 use Illuminate\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -35,7 +35,6 @@ class GetRepositoryOperationsTool extends Tool
     public function handle(Request $request): Response
     {
         try {
-            $registry = app(ToolRegistry::class);
             $repositoryKey = $request->get('repository');
 
             if (! $repositoryKey) {
@@ -45,7 +44,7 @@ class GetRepositoryOperationsTool extends Tool
                 ));
             }
 
-            $operations = $registry->getRepositoryOperations($repositoryKey);
+            $operations = McpTools::getRepositoryOperations($repositoryKey);
 
             $nextSteps = [];
 

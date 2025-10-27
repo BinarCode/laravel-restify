@@ -4,7 +4,10 @@ namespace Binaryk\LaravelRestify\MCP\Bootstrap;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Getters\Getter;
+use Binaryk\LaravelRestify\MCP\Collections\ToolsCollection;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
+use Binaryk\LaravelRestify\MCP\Enums\OperationTypeEnum;
+use Binaryk\LaravelRestify\MCP\Enums\ToolsCategoryEnum;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\MCP\Tools\Operations\ActionTool;
@@ -18,6 +21,7 @@ use Binaryk\LaravelRestify\MCP\Tools\Operations\UpdateTool;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -43,6 +47,14 @@ class BootMcpTools
         // Cache key includes mode to prevent cache pollution between modes
         $mode = config('restify.mcp.mode', 'direct');
         $cacheKey = "restify.mcp.all_tools_metadata.{$mode}";
+
+        if (App::hasDebugModeEnabled()) {
+            return collect()
+                ->merge($this->discoverCustomTools())
+                ->merge($this->discoverRepositoryTools())
+                ->values()
+                ->toArray();
+        }
 
         $tools = Cache::remember($cacheKey, 3600, function (): array {
             return collect()
@@ -71,13 +83,13 @@ class BootMcpTools
                 if (class_exists($fqdn) && ! in_array($fqdn, $excludedTools, true)) {
                     $instance = app($fqdn);
                     $tools->push([
-                        'type' => 'custom',
+                        'type' => OperationTypeEnum::custom,
                         'name' => $instance->name(),
                         'title' => $instance->title(),
                         'description' => $instance->description(),
                         'class' => $fqdn,
                         'instance' => $instance,
-                        'category' => 'Custom Tools',
+                        'category' => ToolsCategoryEnum::CUSTOM_TOOLS->value,
                     ]);
                 }
             }
@@ -93,13 +105,13 @@ class BootMcpTools
                     if (class_exists($fqdn) && ! in_array($fqdn, $excludedTools, true)) {
                         $instance = app($fqdn);
                         $tools->push([
-                            'type' => 'wrapper',
+                            'type' => OperationTypeEnum::wrapper,
                             'name' => $instance->name(),
                             'title' => $instance->title(),
                             'description' => $instance->description(),
                             'class' => $fqdn,
                             'instance' => $instance,
-                            'category' => 'Wrapper Tools',
+                            'category' => ToolsCategoryEnum::WRAPPER_TOOLS->value,
                         ]);
                     }
                 }
@@ -116,13 +128,13 @@ class BootMcpTools
                     if (class_exists($fqdn) && ! in_array($fqdn, $excludedTools, true)) {
                         $instance = app($fqdn);
                         $tools->push([
-                            'type' => 'custom',
+                            'type' => OperationTypeEnum::custom,
                             'name' => $instance->name(),
                             'title' => $instance->title(),
                             'description' => $instance->description(),
                             'class' => $fqdn,
                             'instance' => $instance,
-                            'category' => 'Custom Tools',
+                            'category' => ToolsCategoryEnum::CUSTOM_TOOLS->value,
                         ]);
                     }
                 }
@@ -135,13 +147,13 @@ class BootMcpTools
             if (class_exists($toolClass)) {
                 $instance = app($toolClass);
                 $tools->push([
-                    'type' => 'custom',
+                    'type' => OperationTypeEnum::custom,
                     'name' => $instance->name(),
                     'title' => $instance->title(),
                     'description' => $instance->description(),
                     'class' => $toolClass,
                     'instance' => $instance,
-                    'category' => 'Custom Tools',
+                    'category' => ToolsCategoryEnum::CUSTOM_TOOLS->value,
                 ]);
             }
         }
@@ -155,115 +167,65 @@ class BootMcpTools
     protected function discoverRepositoryTools(): Collection
     {
         return collect(Restify::$repositories)
-            ->filter(fn (string $repo): bool => in_array(HasMcpTools::class, class_uses_recursive($repo)))
-            ->flatMap(fn (string $repoClass): Collection => $this->discoverRepositoryOperations($repoClass))
+            ->filter(fn(string $repo): bool => in_array(HasMcpTools::class, class_uses_recursive($repo)))
+            ->flatMap(fn(string $repoClass): Collection => $this->discoverRepositoryOperations($repoClass))
             ->values();
     }
 
     /**
      * Discover all operations (CRUD, actions, getters) for a specific repository.
      */
-    protected function discoverRepositoryOperations(string $repositoryClass): Collection
+    protected function discoverRepositoryOperations(string $repositoryClass): ToolsCollection
     {
         $repository = app($repositoryClass);
-        $tools = collect();
+        $tools = ToolsCollection::make();
 
-        // Profile tool (only for users repository)
         if ($repository::uriKey() === 'users') {
-            $instance = new ProfileTool($repositoryClass);
-            $tools->push([
-                'type' => 'profile',
-                'name' => $instance->name(),
-                'title' => $instance->title(),
-                'description' => $instance->description(),
-                'class' => ProfileTool::class,
-                'instance' => $instance,
-                'repository' => $repository::uriKey(),
-                'category' => 'Profile',
-            ]);
+            $tools->pushTool(
+                new ProfileTool($repositoryClass),
+                $repository::uriKey()
+            );
         }
 
-        // Index operation
         if (method_exists($repository, 'mcpAllowsIndex') && $repository->mcpAllowsIndex()) {
-            $instance = new IndexTool($repositoryClass);
-            $tools->push([
-                'type' => 'index',
-                'name' => $instance->name(),
-                'title' => $instance->title(),
-                'description' => $instance->description(),
-                'class' => IndexTool::class,
-                'instance' => $instance,
-                'repository' => $repository::uriKey(),
-                'category' => 'CRUD Operations',
-            ]);
+            $tools->pushTool(
+                new IndexTool($repositoryClass),
+                $repository::uriKey()
+            );
         }
 
-        // Show operation
         if (method_exists($repository, 'mcpAllowsShow') && $repository->mcpAllowsShow()) {
-            $instance = new ShowTool($repositoryClass);
-            $tools->push([
-                'type' => 'show',
-                'name' => $instance->name(),
-                'title' => $instance->title(),
-                'description' => $instance->description(),
-                'class' => ShowTool::class,
-                'instance' => $instance,
-                'repository' => $repository::uriKey(),
-                'category' => 'CRUD Operations',
-            ]);
+            $tools->pushTool(
+                new ShowTool($repositoryClass),
+                $repository::uriKey()
+            );
         }
 
-        // Store operation
         if (method_exists($repository, 'mcpAllowsStore') && $repository->mcpAllowsStore()) {
-            $instance = new StoreTool($repositoryClass);
-            $tools->push([
-                'type' => 'store',
-                'name' => $instance->name(),
-                'title' => $instance->title(),
-                'description' => $instance->description(),
-                'class' => StoreTool::class,
-                'instance' => $instance,
-                'repository' => $repository::uriKey(),
-                'category' => 'CRUD Operations',
-            ]);
+            $tools->pushTool(
+                new StoreTool($repositoryClass),
+                $repository::uriKey()
+            );
         }
 
-        // Update operation
         if (method_exists($repository, 'mcpAllowsUpdate') && $repository->mcpAllowsUpdate()) {
-            $instance = new UpdateTool($repositoryClass);
-            $tools->push([
-                'type' => 'update',
-                'name' => $instance->name(),
-                'title' => $instance->title(),
-                'description' => $instance->description(),
-                'class' => UpdateTool::class,
-                'instance' => $instance,
-                'repository' => $repository::uriKey(),
-                'category' => 'CRUD Operations',
-            ]);
+            $tools->pushTool(
+                new UpdateTool($repositoryClass),
+                $repository::uriKey()
+            );
         }
 
-        // Delete operation
         if (method_exists($repository, 'mcpAllowsDelete') && $repository->mcpAllowsDelete()) {
-            $instance = new DeleteTool($repositoryClass);
-            $tools->push([
-                'type' => 'delete',
-                'name' => $instance->name(),
-                'title' => $instance->title(),
-                'description' => $instance->description(),
-                'class' => DeleteTool::class,
-                'instance' => $instance,
-                'repository' => $repository::uriKey(),
-                'category' => 'CRUD Operations',
-            ]);
+            $tools->pushTool(
+                new DeleteTool($repositoryClass),
+                $repository::uriKey()
+            );
         }
 
-        // Actions
         if (method_exists($repository, 'mcpAllowsActions') && $repository->mcpAllowsActions()) {
             $tools = $tools->merge($this->discoverActions($repositoryClass, $repository));
         }
 
-        // Getters
         if (method_exists($repository, 'mcpAllowsGetters') && $repository->mcpAllowsGetters()) {
             $tools = $tools->merge($this->discoverGetters($repositoryClass, $repository));
         }
@@ -271,30 +233,27 @@ class BootMcpTools
         return $tools;
     }
 
-    /**
-     * Discover all actions for a repository.
-     */
     protected function discoverActions(string $repositoryClass, Repository $repository): Collection
     {
         $actionRequest = app(McpActionRequest::class);
 
         return $repository->resolveActions($actionRequest)
-            ->filter(fn ($action): bool => $action instanceof Action)
-            ->filter(fn (Action $action): bool => $action->isShownOnMcp($actionRequest, $repository))
-            ->filter(fn (Action $action): bool => $action->authorizedToSee($actionRequest))
-            ->unique(fn (Action $action): string => $action->uriKey())
+            ->filter(fn($action): bool => $action instanceof Action)
+            ->filter(fn(Action $action): bool => $action->isShownOnMcp($actionRequest, $repository))
+            ->filter(fn(Action $action): bool => $action->authorizedToSee($actionRequest))
+            ->unique(fn(Action $action): string => $action->uriKey())
             ->map(function (Action $action) use ($repositoryClass, $repository): array {
                 $instance = new ActionTool($repositoryClass, $action);
 
                 return [
-                    'type' => 'action',
+                    'type' => OperationTypeEnum::action,
                     'name' => $instance->name(),
                     'title' => $instance->title(),
                     'description' => $instance->description(),
                     'class' => ActionTool::class,
                     'instance' => $instance,
                     'repository' => $repository::uriKey(),
-                    'category' => 'Actions',
+                    'category' => ToolsCategoryEnum::ACTIONS->value,
                     'action' => $action,
                 ];
             })
@@ -309,22 +268,22 @@ class BootMcpTools
         $getterRequest = app(McpGetterRequest::class);
 
         return $repository->resolveGetters($getterRequest)
-            ->filter(fn ($getter): bool => $getter instanceof Getter)
-            ->filter(fn (Getter $getter): bool => $getter->isShownOnMcp($getterRequest, $repository))
-            ->filter(fn (Getter $getter): bool => $getter->authorizedToSee($getterRequest))
-            ->unique(fn (Getter $getter): string => $getter->uriKey())
+            ->filter(fn($getter): bool => $getter instanceof Getter)
+            ->filter(fn(Getter $getter): bool => $getter->isShownOnMcp($getterRequest, $repository))
+            ->filter(fn(Getter $getter): bool => $getter->authorizedToSee($getterRequest))
+            ->unique(fn(Getter $getter): string => $getter->uriKey())
             ->map(function (Getter $getter) use ($repositoryClass, $repository): array {
                 $instance = new GetterTool($repositoryClass, $getter);
 
                 return [
-                    'type' => 'getter',
+                    'type' => OperationTypeEnum::getter,
                     'name' => $instance->name(),
                     'title' => $instance->title(),
                     'description' => $instance->description(),
                     'class' => GetterTool::class,
                     'instance' => $instance,
                     'repository' => $repository::uriKey(),
-                    'category' => 'Getters',
+                    'category' => ToolsCategoryEnum::GETTERS->value,
                     'getter' => $getter,
                 ];
             })

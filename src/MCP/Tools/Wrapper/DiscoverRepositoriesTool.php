@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Wrapper;
 
 use Binaryk\LaravelRestify\MCP\Concerns\WrapperToolHelpers;
-use Binaryk\LaravelRestify\MCP\Services\ToolRegistry;
+use Binaryk\LaravelRestify\MCP\McpTools;
 use Illuminate\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -34,10 +34,9 @@ class DiscoverRepositoriesTool extends Tool
     public function handle(Request $request): Response
     {
         try {
-            $registry = app(ToolRegistry::class);
             $search = $request->get('search');
 
-            $repositories = $registry->getAvailableRepositories($search);
+            $repositories = McpTools::getAvailableRepositories($search);
 
             return Response::json([
                 'success' => true,
