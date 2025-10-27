@@ -92,7 +92,6 @@ use Binaryk\LaravelRestify\MCP\Tools\Wrapper\DiscoverRepositoriesTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\ExecuteOperationTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\GetOperationDetailsTool;
 use Binaryk\LaravelRestify\MCP\Tools\Wrapper\GetRepositoryOperationsTool;
-use Illuminate\Support\Collection;
 use Laravel\Mcp\Server;
 use Laravel\Mcp\Server\Prompt;
 use Laravel\Mcp\Server\Tool;
