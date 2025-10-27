@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\MCP\Collections;
 
 use Binaryk\LaravelRestify\MCP\Enums\OperationTypeEnum;
 use Binaryk\LaravelRestify\MCP\Enums\ToolsCategoryEnum;
-use Binaryk\LaravelRestify\MCP\Tools\Operations\StoreTool;
 use Illuminate\Support\Collection;
 use Laravel\Mcp\Server\Tool;
 
@@ -34,5 +33,4 @@ class ToolsCollection extends Collection
             'category' => ToolsCategoryEnum::fromTool($tool)->value,
         ], $extra));
     }
-
 }

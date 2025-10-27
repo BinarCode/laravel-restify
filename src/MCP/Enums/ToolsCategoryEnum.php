@@ -29,17 +29,17 @@ enum ToolsCategoryEnum: string
     {
         return match (true) {
             $tool instanceof IndexTool,
-                $tool instanceof ShowTool,
-                $tool instanceof StoreTool,
-                $tool instanceof UpdateTool,
-                $tool instanceof DeleteTool => self::CRUD_OPERATIONS,
+            $tool instanceof ShowTool,
+            $tool instanceof StoreTool,
+            $tool instanceof UpdateTool,
+            $tool instanceof DeleteTool => self::CRUD_OPERATIONS,
             $tool instanceof ProfileTool => self::PROFILE,
             $tool instanceof ActionTool => self::ACTIONS,
             $tool instanceof GetterTool => self::GETTERS,
             $tool instanceof GetOperationDetailsTool,
-                $tool instanceof ExecuteOperationTool,
-                $tool instanceof DiscoverRepositoriesTool,
-                $tool instanceof GetRepositoryOperationsTool => self::WRAPPER_TOOLS,
+            $tool instanceof ExecuteOperationTool,
+            $tool instanceof DiscoverRepositoriesTool,
+            $tool instanceof GetRepositoryOperationsTool => self::WRAPPER_TOOLS,
             default => self::CUSTOM_TOOLS,
         };
     }
