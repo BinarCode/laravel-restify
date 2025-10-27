@@ -634,9 +634,9 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
 
         $resultContent = json_decode($response->json()['result']['content'][0]['text'], true);
 
-        // Should return error about not allowing store
+        // Should return error about operation not found (because it's not discovered when mcpAllowsStore is false)
         $this->assertArrayHasKey('error', $resultContent);
-        $this->assertStringContainsString('does not allow store operation', $resultContent['error']);
+        $this->assertStringContainsString("Operation 'store' not found", $resultContent['error']);
     }
 
     public function test_wrapper_mode_complete_workflow(): void

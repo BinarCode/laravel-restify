@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Wrapper;
 
 use Binaryk\LaravelRestify\MCP\Concerns\WrapperToolHelpers;
-use Binaryk\LaravelRestify\MCP\Services\ToolRegistry;
+use Binaryk\LaravelRestify\MCP\McpTools;
 use Illuminate\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -45,8 +45,6 @@ class ExecuteOperationTool extends Tool
     public function handle(Request $request): Response
     {
         try {
-            $registry = app(ToolRegistry::class);
-
             $repositoryKey = $request->get('repository');
             $operationType = $request->get('operation_type');
             $operationName = $request->get('operation_name');
@@ -81,7 +79,7 @@ class ExecuteOperationTool extends Tool
             }
 
             // Execute the operation through the registry
-            $result = $registry->executeOperation($repositoryKey, $operationType, $operationName, $parameters);
+            $result = McpTools::executeOperation($repositoryKey, $operationType, $operationName, $parameters);
 
             return $result;
         } catch (\InvalidArgumentException $e) {

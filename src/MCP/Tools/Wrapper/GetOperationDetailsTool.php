@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools\Wrapper;
 
 use Binaryk\LaravelRestify\MCP\Concerns\WrapperToolHelpers;
-use Binaryk\LaravelRestify\MCP\Services\ToolRegistry;
+use Binaryk\LaravelRestify\MCP\McpTools;
 use Illuminate\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
@@ -42,8 +42,6 @@ class GetOperationDetailsTool extends Tool
     public function handle(Request $request): Response
     {
         try {
-            $registry = app(ToolRegistry::class);
-
             $repositoryKey = $request->get('repository');
             $operationType = $request->get('operation_type');
             $operationName = $request->get('operation_name');
@@ -69,7 +67,7 @@ class GetOperationDetailsTool extends Tool
                 ));
             }
 
-            $details = $registry->getOperationDetails($repositoryKey, $operationType, $operationName);
+            $details = McpTools::getOperationDetails($repositoryKey, $operationType, $operationName);
 
             // Format schema for better readability
             $formattedSchema = $this->formatSchemaForDisplay($details['schema']);
