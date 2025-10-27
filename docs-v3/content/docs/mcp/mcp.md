@@ -415,3 +415,220 @@ No code changes are required. The MCP server automatically adapts to the configu
 3. **Use wrapper mode** when working with AI agents that have limited context windows
 4. **Monitor token usage** to determine which mode is best for your application
 5. **Document your choice** so team members understand which mode is active
+
+## Fine-Grained Tool Permissions
+
+Laravel Restify's MCP integration includes a powerful permission system that allows you to control which tools each API token can access. This is essential for multi-tenant applications or when you need to restrict AI agent capabilities.
+
+### How Permission Control Works
+
+The `RestifyServer` class provides a `canUseTool()` method that is called whenever a tool is accessed. By default, this method returns `true` (all tools are accessible), but you can override it in your application server to implement custom permission logic.
+
+**Key Behavior:**
+- `canUseTool()` is called during **tool discovery** (what tools the AI agent sees)
+- `canUseTool()` is called during **tool execution** (whether the operation is allowed)
+- In **wrapper mode**, permissions are checked for individual operations, not just the 4 wrapper tools
+- Tools without permission are completely hidden from the AI agent
+
+### Implementing Token-Based Permissions
+
+Create a custom MCP server that extends `RestifyServer` and implements permission checks:
+
+```php
+<?php
+
+namespace App\Mcp;
+
+use Binaryk\LaravelRestify\MCP\RestifyServer;
+use App\Models\McpToken;
+
+class ApplicationServer extends RestifyServer
+{
+    public function canUseTool(string|object $tool): bool
+    {
+        // Extract tool name from string or object
+        $toolName = is_string($tool) ? $tool : $tool->name();
+
+        // Get the API token from the request
+        $bearerToken = request()->bearerToken();
+
+        if (!$bearerToken) {
+            return false;
+        }
+
+        // Find the MCP token record
+        $mcpToken = McpToken::where('token', hash('sha256', $bearerToken))
+            ->first();
+
+        if (!$mcpToken) {
+            return false;
+        }
+
+        // Check if this tool is in the token's allowed tools list
+        // $mcpToken->allowed_tools is a JSON array like:
+        // ["users-index", "posts-store", "posts-update-status-action"]
+        return in_array($toolName, $mcpToken->allowed_tools ?? [], true);
+    }
+}
+```
+
+Then register your custom server instead of the base `RestifyServer`:
+
+```php
+use App\Mcp\ApplicationServer;
+use Laravel\Mcp\Facades\Mcp;
+
+Mcp::web('restify', ApplicationServer::class)->name('mcp.restify');
+```
+
+### Generating Tokens with Tool Selection
+
+To create a token creation UI, you need to show users which tools are available and let them select which ones to grant access to:
+
+```php
+use Binaryk\LaravelRestify\MCP\RestifyServer;
+
+// Get all available tools
+$server = app(RestifyServer::class);
+$allTools = $server->getAllAvailableTools();
+
+// Returns a collection with all tools, regardless of mode:
+// [
+//     ['name' => 'users-index', 'title' => 'List Users', 'description' => '...', 'category' => 'CRUD Operations'],
+//     ['name' => 'users-store', 'title' => 'Create User', 'description' => '...', 'category' => 'CRUD Operations'],
+//     ['name' => 'posts-publish-action', 'title' => 'Publish Post', 'description' => '...', 'category' => 'Actions'],
+// ]
+
+// Group tools by category for better UI
+$groupedTools = $allTools->toSelectOptions();
+
+// Returns:
+// [
+//     ['category' => 'CRUD Operations', 'tools' => [...]],
+//     ['category' => 'Actions', 'tools' => [...]],
+//     ['category' => 'Getters', 'tools' => [...]],
+// ]
+```
+
+### Example Token Creation Flow
+
+Here's a complete example of creating a token with specific tool permissions:
+
+```php
+use App\Models\McpToken;
+use Illuminate\Support\Str;
+
+// 1. Show available tools to user
+$server = app(RestifyServer::class);
+$availableTools = $server->getAllAvailableTools()->toSelectOptions();
+
+// 2. User selects which tools to grant access to
+$selectedTools = [
+    'users-index',
+    'users-show',
+    'posts-index',
+    'posts-store',
+    'posts-publish-action',
+];
+
+// 3. Generate the token
+$plainTextToken = Str::random(64);
+
+// 4. Store token with permissions
+$mcpToken = McpToken::create([
+    'name' => 'AI Agent Token',
+    'token' => hash('sha256', $plainTextToken),
+    'allowed_tools' => $selectedTools, // Cast to JSON in model
+    'user_id' => auth()->id(),
+    'expires_at' => now()->addDays(30),
+]);
+
+// 5. Return plain text token to user (only shown once)
+return response()->json([
+    'token' => $plainTextToken,
+    'allowed_tools' => $selectedTools,
+]);
+```
+
+### Database Schema Example
+
+Here's a suggested database schema for storing MCP tokens with permissions:
+
+```php
+Schema::create('mcp_tokens', function (Blueprint $table) {
+    $table->id();
+    $table->string('name'); // Token description
+    $table->string('token')->unique(); // Hashed token
+    $table->json('allowed_tools')->nullable(); // Array of tool names
+    $table->foreignId('user_id')->constrained()->cascadeOnDelete();
+    $table->timestamp('last_used_at')->nullable();
+    $table->timestamp('expires_at')->nullable();
+    $table->timestamps();
+});
+```
+
+And the corresponding Eloquent model:
+
+```php
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+
+class McpToken extends Model
+{
+    protected $fillable = [
+        'name',
+        'token',
+        'allowed_tools',
+        'user_id',
+        'expires_at',
+    ];
+
+    protected $casts = [
+        'allowed_tools' => 'array',
+        'expires_at' => 'datetime',
+        'last_used_at' => 'datetime',
+    ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+}
+```
+
+### Permission Behavior in Different Modes
+
+**Direct Mode:**
+- Tools without permission are filtered out of the tools list
+- AI agent only sees tools they have access to
+- Attempting to use a restricted tool results in "tool not found"
+
+**Wrapper Mode:**
+- The 4 wrapper tools are always visible (discover, get-operations, get-details, execute)
+- When discovering repositories, only those with ≥1 accessible operation are shown
+- When listing operations, only permitted operations appear
+- Attempting to get details or execute a restricted operation throws `AuthorizationException`
+
+### Getting Authorized Tools at Runtime
+
+You can get only the tools the current user/token can access:
+
+```php
+$server = app(RestifyServer::class);
+$authorizedTools = $server->getAuthorizedTools();
+
+// Returns only tools that pass the canUseTool() check
+// Useful for showing "Your API Access" in a dashboard
+```
+
+### Security Best Practices
+
+1. **Always hash tokens** before storing in the database (use `hash('sha256', $token)`)
+2. **Generate tokens with sufficient entropy** (at least 64 random characters)
+3. **Implement token expiration** and enforce it in `canUseTool()`
+4. **Log token usage** by updating `last_used_at` on each request
+5. **Revoke tokens** by deleting the database record
+6. **Use HTTPS** to protect tokens in transit
+7. **Implement rate limiting** per token to prevent abuse
+8. **Audit permission changes** when updating `allowed_tools`
