@@ -292,7 +292,7 @@ class RestifyServer extends Server
      * all individual operations are still discovered and available for permission checks.
      * This allows you to create tokens with fine-grained permissions for specific operations.
      */
-    public function getAllAvailableTools(): Collection
+    public function getAllAvailableTools(): ToolsCollection
     {
         return McpTools::all()->toUi();
     }
@@ -300,7 +300,7 @@ class RestifyServer extends Server
     /**
      * Get tools that the current user/token is authorized to use.
      */
-    public function getAuthorizedTools(): Collection
+    public function getAuthorizedTools(): ToolsCollection
     {
         return McpTools::authorized()->toUi();
     }
