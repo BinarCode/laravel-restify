@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Http\Requests\GetterRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\AuthorizedToRun;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Traits\Make;
