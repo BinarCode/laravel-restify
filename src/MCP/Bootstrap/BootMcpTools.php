@@ -140,8 +140,8 @@ class BootMcpTools
     protected function discoverRepositoryTools(): Collection
     {
         return collect(Restify::$repositories)
-            ->filter(fn(string $repo): bool => in_array(HasMcpTools::class, class_uses_recursive($repo)))
-            ->flatMap(fn(string $repoClass): Collection => $this->discoverRepositoryOperations($repoClass))
+            ->filter(fn (string $repo): bool => in_array(HasMcpTools::class, class_uses_recursive($repo)))
+            ->flatMap(fn (string $repoClass): Collection => $this->discoverRepositoryOperations($repoClass))
             ->values();
     }
 
@@ -211,10 +211,10 @@ class BootMcpTools
         $actionRequest = app(McpActionRequest::class);
 
         return $repository->resolveActions($actionRequest)
-            ->filter(fn($action): bool => $action instanceof Action)
-            ->filter(fn(Action $action): bool => $action->isShownOnMcp($actionRequest, $repository))
-            ->filter(fn(Action $action): bool => $action->authorizedToSee($actionRequest))
-            ->unique(fn(Action $action): string => $action->uriKey())
+            ->filter(fn ($action): bool => $action instanceof Action)
+            ->filter(fn (Action $action): bool => $action->isShownOnMcp($actionRequest, $repository))
+            ->filter(fn (Action $action): bool => $action->authorizedToSee($actionRequest))
+            ->unique(fn (Action $action): string => $action->uriKey())
             ->map(function (Action $action) use ($repositoryClass, $repository): array {
                 $instance = new ActionTool($repositoryClass, $action);
 
@@ -241,10 +241,10 @@ class BootMcpTools
         $getterRequest = app(McpGetterRequest::class);
 
         return $repository->resolveGetters($getterRequest)
-            ->filter(fn($getter): bool => $getter instanceof Getter)
-            ->filter(fn(Getter $getter): bool => $getter->isShownOnMcp($getterRequest, $repository))
-            ->filter(fn(Getter $getter): bool => $getter->authorizedToSee($getterRequest))
-            ->unique(fn(Getter $getter): string => $getter->uriKey())
+            ->filter(fn ($getter): bool => $getter instanceof Getter)
+            ->filter(fn (Getter $getter): bool => $getter->isShownOnMcp($getterRequest, $repository))
+            ->filter(fn (Getter $getter): bool => $getter->authorizedToSee($getterRequest))
+            ->unique(fn (Getter $getter): string => $getter->uriKey())
             ->map(function (Getter $getter) use ($repositoryClass, $repository): array {
                 $instance = new GetterTool($repositoryClass, $getter);
 
