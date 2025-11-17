@@ -117,9 +117,7 @@ abstract class Getter implements JsonSerializable
             );
         }
 
-        $query = RepositorySearchService::make()->search($request, $request->repository());
-
-        return $this->handle($request, $query);
+        return $this->handle($request);
     }
 
     public function withoutMiddleware(string|array $middleware): self
