@@ -84,7 +84,7 @@ class PerformGetterControllerTest extends IntegrationTestCase
 
         // Call getter with active filter - should return only 3 active posts
         $this
-            ->getJson(PostRepository::getter(PostsFilteredQueryGetter::class) . '?is_active=1')
+            ->getJson(PostRepository::getter(PostsFilteredQueryGetter::class).'?is_active=1')
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
@@ -95,7 +95,7 @@ class PerformGetterControllerTest extends IntegrationTestCase
 
         // Call getter with inactive filter - should return only 2 inactive posts
         $this
-            ->getJson(PostRepository::getter(PostsFilteredQueryGetter::class) . '?is_active=0')
+            ->getJson(PostRepository::getter(PostsFilteredQueryGetter::class).'?is_active=0')
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
