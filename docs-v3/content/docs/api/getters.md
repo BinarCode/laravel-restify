@@ -143,6 +143,27 @@ public function handle(Request $request)
 }
 ```
 
+#### Accessing the filtered query
+
+For index getters, you can access the filtered query builder via `$request->filteredQuery()`. This query builder already has all filters, search queries, and other query modifiers applied by Restify:
+
+```php
+public function handle(Request $request): JsonResponse
+{
+    // Get the filtered query builder with all applied filters, search, etc.
+    $query = $request->filteredQuery();
+
+    // You can further refine the query
+    $data = $query->where('status', 'active')->get();
+
+    return response()->json([
+        'data' => $data,
+    ]);
+}
+```
+
+This allows you to build upon the existing query without having to manually apply filters again.
+
 ## Getter customizations
 
 Getters could be easily customized.
@@ -278,15 +299,25 @@ Index getters are used when you have to apply them for many items.
 
 ### Index getter definition
 
-The index getter definition differs in how it receives arguments for the `handle` method. 
+The index getter definition receives only the `$request` in the `handle` method. You can access the filtered query builder using `$request->filteredQuery()`:
 
 ```php
 public function handle(Request $request): JsonResponse
 {
-    //
+    // Get the filtered query builder with all applied filters, search, etc.
+    $query = $request->filteredQuery();
+
+    // You can further refine the query
+    $data = $query->where('status', 'active')->get();
+
+    return response()->json([
+        'data' => $data,
+    ]);
 }
 
 ```
+
+The filtered query builder contains all repository filters, search queries, and other query modifiers already applied. This allows you to leverage existing filters without re-implementing them.
 
 ### Index getter registration
 

@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -120,5 +121,10 @@ trait InteractWithRepositories
         }
 
         return $parentRepository && $parentRepositoryId;
+    }
+
+    public function filteredQuery(): Builder
+    {
+        return RepositorySearchService::make()->search($this, $this->repository());
     }
 }
