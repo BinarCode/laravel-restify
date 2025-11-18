@@ -11,9 +11,6 @@
     <!-- Website Footer -->
     <WebsiteFooter />
     
-    <!-- Search Modal (if needed) -->
-    <SearchModal />
-    
     <!-- Toast Notifications -->
     <ToastContainer />
   </div>
