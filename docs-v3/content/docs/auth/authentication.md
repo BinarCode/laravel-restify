@@ -52,7 +52,6 @@ php artisan migrate
 Define your authenticatable class in the config file: 
 
 ```php [config/restify.php]
-
 'auth' => [
     ...
    'user_model' => \App\Models\User::class,
