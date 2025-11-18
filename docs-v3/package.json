@@ -13,7 +13,9 @@
     "postinstall": "nuxt prepare"
   },
   "dependencies": {
+    "@iconify/json": "^2.2.408",
     "@nuxt/content": "^3.8.2",
+    "@nuxt/icon": "^2.1.0",
     "@nuxt/ui": "^4.1.0",
     "@vueuse/nuxt": "^12.0.0",
     "better-sqlite3": "^12.4.1",
