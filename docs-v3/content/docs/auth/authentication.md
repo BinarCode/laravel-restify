@@ -68,9 +68,7 @@ Laravel 11 will automatically add this trait to your `User` model.
 </alert>
 
 
-```php
-// User.php
-
+```php [User.php]
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -133,8 +131,7 @@ Next, add the `auth:sanctum` middleware after the `api` middleware in your confi
 
 Let's ensure the authentication is working correctly. Create a user in the `DatabaseSeeder` class:
 
-```php
-// DatabaseSeeder.php
+```php [DatabaseSeeder.php]
 \App\Models\User::factory()->create([
    'name' => 'Test User',
    'email' => 'test@example.com',
@@ -224,8 +221,7 @@ Laravel Restify uses Sanctum tokens for API authentication with the following ch
 
 By default, tokens **never expire**. You can configure token expiration in your `config/restify.php` file:
 
-```php
-// config/restify.php
+```php [config/restify.php]
 'auth' => [
     'token_ttl' => null, // Default: tokens never expire
     // Set to minutes for token expiration
@@ -323,8 +319,7 @@ Email verification is only available when your User model implements the `MustVe
 
 Update your User model to implement email verification:
 
-```php
-// app/Models/User.php
+```php [app/Models/User.php]
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
@@ -442,8 +437,7 @@ $token = $user->createToken('AI Agent Token')->plainTextToken;
 
 When configuring the MCP server, tokens are passed in the Authorization header:
 
-```php
-// config/ai.php - MCP server with authentication
+```php [config/ai.php]
 Mcp::web('restify', RestifyServer::class)
     ->middleware(['auth:sanctum'])  // Same authentication as REST API
     ->name('mcp.restify');
@@ -569,8 +563,7 @@ Laravel Restify provides several configuration options in `config/restify.php` u
 
 ### Available Options
 
-```php
-// config/restify.php
+```php [config/restify.php]
 'auth' => [
     // User model for authentication
     'user_model' => \App\Models\User::class,

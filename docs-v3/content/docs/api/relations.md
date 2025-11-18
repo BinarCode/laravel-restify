@@ -75,8 +75,7 @@ Above we can see a few types of relationships declarations that Restify provides
 
 This means that there is a relationship of the `hasMany` type declared in the Company model. The Eloquent relationship name is `users` (see the first argument of the HasMany field): 
 
-```php
-// app/Models/Company.php
+```php [app/Models/Company.php]
 public function users(): \Illuminate\Database\Eloquent\Relations\HasMany
 {
     return $this->hasMany(User::class);
@@ -270,9 +269,7 @@ public static function related(): array
 
 The model should define the relationship `user`: 
 
-```php
-// Post.php
-
+```php [Post.php]
 public function user()
 {
     return $this->belongsTo(User::class);
@@ -610,9 +607,7 @@ You have a few options to authorize the `attach` endpoint.
 
 First, you can define the policy method `attachUsers`. The name should start with `attach` and suffix with the `CamelCase` name of the model's relationship name: 
 
-```php
-// CompanyPolicy.php
-
+```php [CompanyPolicy.php]
 public function attachUsers(User $authenticatedUser, Company $company, User $userToBeAttached): bool
 { 
     return $authenticatedUser->isAdmin();
@@ -691,9 +686,7 @@ $role->permissions()->sync($request->input('permissions'));
 
 You can define a policy method `syncPermissions`. The name should start with `sync` and suffix with the plural `CamelCase` name of the model's relationship name:
 
-```php
-// RolePolicy.php
-
+```php [RolePolicy.php]
 public function syncPermissions(User $authenticatedUser, Company $company, Collection $keys): bool
 { 
     // $keys are the primary keys of the related model (permissions in our case) Restify is trying to `sync`
@@ -722,9 +715,7 @@ You have a few options to authorize the `detach` endpoint.
 
 Primarily, you can define the policy method `detachUsers`, as the name should start with `detach` and suffix with the `CamelCase` name of the model relationship name:
 
-```php
-// CompanyPolicy.php
-
+```php [CompanyPolicy.php]
 public function detachUsers(User $authenticatedUser, Company $company, User $userToBeDetached): bool
 { 
     return $authenticatedUser->isAdmin();

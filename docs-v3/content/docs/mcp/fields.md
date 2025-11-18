@@ -280,8 +280,7 @@ class PostRepository extends Repository
 
 Test your MCP-specific field methods to ensure they work correctly:
 
-```php
-// tests/Feature/McpRepositoryTest.php
+```php [tests/Feature/McpRepositoryTest.php]
 class McpRepositoryTest extends TestCase
 {
     public function test_mcp_index_fields_are_optimized()

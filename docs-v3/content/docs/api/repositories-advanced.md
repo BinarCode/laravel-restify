@@ -161,8 +161,7 @@ class PostRepository extends Repository
 
 The default prefix of all Restify routes (except `login` and `register`) lives under the `restify->base` config:
 
-```php
-// config/restify.php
+```php [config/restify.php]
 ...
 'base' => '/api/restify',
 ...
@@ -183,8 +182,7 @@ GET: /api/restify/users
 
 However, you can prefix the repository with your own:
 
-```php
-// UserRepository
+```php [UserRepository]
 public static $prefix = 'api/v1';
 ```
 
@@ -206,8 +204,7 @@ will be used for all the endpoints related to the user repository.
 Each repository has the middlewares from the config `restify.middleware` out of the box for the CRUD methods. However,
 you're free to add your own middlewares for a specific repository.
 
-```php
-    // PostRepository.php
+```php [PostRepository.php]
 
     public static $middleware = [
         NeedsCompanyMiddleware::class,
@@ -629,8 +626,7 @@ class PostRepository extends Repository
 
 **1. Update your global gate to allow null users:**
 
-```php
-// app/Providers/RestifyApplicationServiceProvider.php
+```php [app/Providers/RestifyApplicationServiceProvider.php]
 protected function gate(): void
 {
     Gate::define('viewRestify', function ($user = null) {
@@ -645,8 +641,7 @@ protected function gate(): void
 
 **2. Update your policies to allow null users:**
 
-```php
-// app/Policies/PostPolicy.php
+```php [app/Policies/PostPolicy.php]
 public function allowRestify(User $user = null): bool
 {
     return true; // Allow all users (authenticated or not)
@@ -864,8 +859,7 @@ class PostRepository extends Repository
 
 Each repository has several lifecycle methods. The most useful is `booted`, which is called as soon as the repository is loaded:
 
-```php
-// PostRepository.php
+```php [PostRepository.php]
 protected static function booted()
 {
     // Initialization logic here
