@@ -433,30 +433,21 @@ Determine if the user can update a specific model.
 
 The `update` method corresponds to the following routes:
 
-<code-group>
+::code-group
 
-  <code-block label="Full Update" active>
-  
-  ```http request
-  PUT: api/restify/posts/{id}
-  ```
-  </code-block>
+```http [Full Update]
+PUT: api/restify/posts/{id}
+```
 
-  <code-block label="Partial Update">
+```http [Partial Update]
+PATCH: api/restify/posts/{id}
+```
 
-  ```http request
-  PATCH: api/restify/posts/{id}
-  ```
-  </code-block>
+```http [File uploads]
+POST: api/restify/posts/{id}
+```
 
-  <code-block label="File uploads">
-
-  ```http request
-  POST: api/restify/posts/{id}
-  ```
-  </code-block>
-
-</code-group>
+::
 
 Definition:
 
