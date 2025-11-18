@@ -103,8 +103,7 @@ By default, all endpoints are prefixed with `/api/restify`. You can customize th
 
 For production use, enable authentication by uncommenting the Sanctum middleware:
 
-```php
-// config/restify.php
+```php [config/restify.php]
 'middleware' => [
     'api',
     'auth:sanctum', // Uncomment this line
@@ -185,8 +184,7 @@ The `--all` flag creates:
 
 ### Example Repository
 
-```php
-// app/Restify/PostRepository.php
+```php [app/Restify/PostRepository.php]
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Attributes\Model;

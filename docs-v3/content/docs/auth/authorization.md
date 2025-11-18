@@ -53,9 +53,7 @@ The global `viewRestify` gate is the first authorization checkpoint that control
 
 The gate is defined in your `RestifyApplicationServiceProvider`:
 
-```php
-// app/Providers/RestifyServiceProvider.php
-
+```php [app/Providers/RestifyServiceProvider.php]
 protected function gate()
 {
     Gate::define('viewRestify', function ($user) {
@@ -562,9 +560,7 @@ POST: /api/restify/users/{id}/attach/posts
 
 Restify will guess the policy's name by the related entity. For this reason, it will be `attachPost`:
 
-```php
-// UserPolicy.php
-
+```php [UserPolicy.php]
 /**
  * Determine if the post could be attached to the user.
  *

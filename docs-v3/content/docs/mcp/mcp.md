@@ -173,8 +173,7 @@ This approach allows you to:
 
 The MCP integration respects your existing Restify configuration and adds MCP-specific options:
 
-```php
-// config/restify.php
+```php [config/restify.php]
 'mcp' => [
     'enabled' => true,
     'server_name' => 'My App MCP Server',

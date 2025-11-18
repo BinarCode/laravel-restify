@@ -93,9 +93,7 @@ class StripeInformationGetter extends Getter
 
 Then add the getter instance to the repository `getters` method:
 
-```php
-// UserRepository.php
-
+```php [UserRepository.php]
 public function getters(RestifyRequest $request): array
 {
     return [
