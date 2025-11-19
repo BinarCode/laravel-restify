@@ -86,7 +86,7 @@ class RepositorySearchService
         $eager = ($this->repository)::collectRelated()
             ->forRequest($request, $this->repository)
             ->map(
-                fn($relation) => $relation instanceof EagerField
+                fn ($relation) => $relation instanceof EagerField
                     ? $relation->relation
                     : $relation
             )
@@ -98,8 +98,8 @@ class RepositorySearchService
             return $query;
         }
 
-        $filtered = collect($request->related()->makeTree())->filter(fn(string $relationships) => in_array(
-            str($relationships)->whenContains('.', fn(Stringable $string) => $string->before('.'))->toString(),
+        $filtered = collect($request->related()->makeTree())->filter(fn (string $relationships) => in_array(
+            str($relationships)->whenContains('.', fn (Stringable $string) => $string->before('.'))->toString(),
             $eager,
             true,
         ))->filter(function ($relation) use ($query) {
@@ -158,14 +158,14 @@ class RepositorySearchService
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
         if ($request->isIndexRequest() || $request->isGlobalRequest()) {
-            return fn($query) => $repository::indexQuery($request, $query);
+            return fn ($query) => $repository::indexQuery($request, $query);
         }
 
         if ($request->isShowRequest()) {
-            return fn($query) => $repository::showQuery($request, $query);
+            return fn ($query) => $repository::showQuery($request, $query);
         }
 
-        return fn($query) => $query;
+        return fn ($query) => $query;
     }
 
     public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
@@ -193,7 +193,7 @@ class RepositorySearchService
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository): callable
     {
-        return fn($query) => $repository::mainQuery($request, $query->with($repository::collectWiths(
+        return fn ($query) => $repository::mainQuery($request, $query->with($repository::collectWiths(
             $request,
             $repository
         )->all()));
@@ -293,8 +293,8 @@ class RepositorySearchService
                     $ownerKey = $relation->getOwnerKeyName();
 
                     // Build fully qualified column names
-                    $localTableForeignKey = $this->repository->model()->getTable() . '.' . $foreignKey;
-                    $relatedTableOwnerKey = $relatedTable . '.' . $ownerKey;
+                    $localTableForeignKey = $this->repository->model()->getTable().'.'.$foreignKey;
+                    $relatedTableOwnerKey = $relatedTable.'.'.$ownerKey;
 
                     // Add JOIN only if it hasn't been added already
                     $joinAlreadyExists = collect($query->toBase()->joins ?? [])->contains(function ($join) use (
@@ -310,7 +310,7 @@ class RepositorySearchService
                         // Only set select if it hasn't been set already
                         if (empty($query->getQuery()->columns)) {
                             $mainTable = $this->repository->model()->getTable();
-                            $query->select([$mainTable . '.*']);
+                            $query->select([$mainTable.'.*']);
                         }
                     }
                 } catch (\Exception $e) {
