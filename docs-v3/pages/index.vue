@@ -12,6 +12,9 @@
     <!-- Community Section -->
     <CommunitySection />
 
+    <!-- Contributors Section -->
+    <ContributorsSection />
+
     <!-- CTA Section -->
     <CtaSection />
 
@@ -26,6 +29,7 @@ import WebsiteNavbar from '~/components/website/WebsiteNavbar.vue'
 import HeroSection from '~/components/website/HeroSection.vue'
 import FeaturesSection from '~/components/website/FeaturesSection.vue'
 import CommunitySection from '~/components/website/CommunitySection.vue'
+import ContributorsSection from '~/components/website/ContributorsSection.vue'
 import CtaSection from '~/components/website/CtaSection.vue'
 import WebsiteFooter from '~/components/website/WebsiteFooter.vue'
 
