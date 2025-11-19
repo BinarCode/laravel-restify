@@ -8,15 +8,15 @@
 
     <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
-      <div class="text-center mb-20">
-        <div class="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 mb-8">
+      <div class="text-center mb-16 md:mb-20 px-4 md:px-0">
+        <div class="inline-flex items-center px-4 md:px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 mb-6 md:mb-8">
           <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
           </svg>
           One Codebase, Infinite Possibilities
         </div>
         
-        <h2 class="text-4xl md:text-6xl font-black tracking-tight mb-8">
+        <h2 class="text-3xl md:text-4xl lg:text-6xl font-black tracking-tight mb-6 md:mb-8">
           <span class="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
             Write Once,
           </span>
@@ -26,7 +26,7 @@
           </span>
         </h2>
         
-        <p class="text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
+        <p class="text-lg md:text-xl text-gray-300 max-w-4xl mx-auto leading-relaxed">
           Transform your Laravel models into production-ready APIs and AI-compatible servers 
           with <span class="text-blue-400 font-semibold">zero configuration</span>. 
           The future of API development is here.
@@ -34,9 +34,9 @@
       </div>
 
       <!-- Feature Showcase -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-4 md:px-0">
         <!-- JSON:API Compliant -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
+        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           
           <div class="relative z-10">
@@ -46,7 +46,7 @@
               </svg>
             </div>
             
-            <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
               JSON:API Standard
             </h3>
             
@@ -54,7 +54,7 @@
               Automatically generates endpoints that follow JSON:API specifications with proper relationships, pagination, filtering, and sparse fieldsets.
             </p>
 
-            <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+            <div class="bg-gray-800/50 rounded-xl p-3 md:p-4 border border-gray-700/30">
               <pre class="text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap break-words"><code>{
   "data": {
     "id": "1",
@@ -75,7 +75,7 @@
         </div>
 
         <!-- Policy-Based Authorization -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
+        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           
           <div class="relative z-10">
@@ -85,7 +85,7 @@
               </svg>
             </div>
             
-            <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
               Laravel Policies
             </h3>
             
@@ -93,7 +93,7 @@
               Built-in integration with Laravel's authorization system. Use policies for fine-grained access control on every endpoint and MCP tool.
             </p>
 
-            <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+            <div class="bg-gray-800/50 rounded-xl p-3 md:p-4 border border-gray-700/30">
               <pre class="text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap break-words"><code><span class="text-purple-400">class</span> <span class="text-yellow-400">PostPolicy</span>
 {
     <span class="text-purple-400">public function</span> <span class="text-yellow-400">index</span>(<span class="text-blue-400">User</span> <span class="text-white">$user</span>)
@@ -106,7 +106,7 @@
         </div>
 
         <!-- Advanced Filtering -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
+        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           
           <div class="relative z-10">
@@ -116,7 +116,7 @@
               </svg>
             </div>
             
-            <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
               Smart Filtering
             </h3>
             
@@ -124,7 +124,7 @@
               Complex queries, sorting, filtering, and search across relationships without any extra configuration. Full-text search included.
             </p>
 
-            <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+            <div class="bg-gray-800/50 rounded-xl p-3 md:p-4 border border-gray-700/30">
               <pre class="text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap break-words"><code><span class="text-green-400">GET</span> /api/restify/posts?
   filter[title]=Laravel&
   filter[status]=published&
@@ -136,7 +136,7 @@
         </div>
 
         <!-- MCP Server Support -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
+        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           
           <div class="relative z-10">
@@ -144,7 +144,7 @@
               <span class="text-2xl">🤖</span>
             </div>
             
-            <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
               AI Agent Ready
             </h3>
             
@@ -152,7 +152,7 @@
               Generate Model Context Protocol servers that allow AI agents to interact with your APIs using structured, type-safe tools.
             </p>
 
-            <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+            <div class="bg-gray-800/50 rounded-xl p-3 md:p-4 border border-gray-700/30">
               <pre class="text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap break-words"><code><span class="text-blue-400">Mcp</span>::<span class="text-yellow-400">web</span>(<span class="text-green-400">'restify'</span>, <span class="text-orange-400">RestifyServer</span>::<span class="text-purple-400">class</span>)
   -><span class="text-yellow-400">middleware</span>([<span class="text-green-400">'auth:sanctum'</span>])
   -><span class="text-yellow-400">name</span>(<span class="text-green-400">'mcp.restify'</span>);</code></pre>
@@ -161,7 +161,7 @@
         </div>
 
         <!-- Zero Configuration -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
+        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           
           <div class="relative z-10">
@@ -171,7 +171,7 @@
               </svg>
             </div>
             
-            <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
               Zero Configuration
             </h3>
             
@@ -179,7 +179,7 @@
               Start building in seconds. Just create a repository class pointing to your model and you're ready with a production API.
             </p>
 
-            <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+            <div class="bg-gray-800/50 rounded-xl p-3 md:p-4 border border-gray-700/30">
               <pre class="text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap break-words"><code><span class="text-purple-400">class</span> <span class="text-yellow-400">UserRepository</span> <span class="text-purple-400">extends</span> <span class="text-blue-400">Repository</span>
 {
     <span class="text-purple-400">public static</span> <span class="text-blue-400">string</span> <span class="text-white">$model</span> = <span class="text-orange-400">User</span>::<span class="text-purple-400">class</span>;
@@ -191,7 +191,7 @@
         </div>
 
         <!-- Laravel Ecosystem -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
+        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
           <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
           
           <div class="relative z-10">
@@ -201,7 +201,7 @@
               </svg>
             </div>
             
-            <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
+            <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
               Laravel Native
             </h3>
             
@@ -209,7 +209,7 @@
               Built specifically for Laravel, leveraging Eloquent ORM, Service Container, and all Laravel conventions you already know and love.
             </p>
 
-            <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700/30">
+            <div class="bg-gray-800/50 rounded-xl p-3 md:p-4 border border-gray-700/30">
               <pre class="text-xs text-gray-300 overflow-x-auto whitespace-pre-wrap break-words"><code><span class="text-blue-400">Route</span>::<span class="text-yellow-400">middleware</span>(<span class="text-green-400">'auth:sanctum'</span>)
   -><span class="text-yellow-400">group</span>(<span class="text-purple-400">function</span> () {
       <span class="text-blue-400">Route</span>::<span class="text-yellow-400">restify</span>();

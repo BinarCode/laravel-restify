@@ -26,21 +26,18 @@
             </svg>
           </div>
           Open Source • Laravel Package • MIT Licensed
-          <svg class="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-          </svg>
         </div>
       </div>
 
       <!-- Revolutionary Title -->
       <div class="text-center mb-8">
-        <h1 class="text-2xl md:text-4xl lg:text-4xl font-black tracking-tight mb-6">
-          <span class="bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent leading-tight text-5xl md:text-7xl lg:text-8xl">
+        <h1 class="text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6">
+          <span class="bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent leading-tight">
             Build APIs for
           </span>
           <br />
           <span class="relative">
-                        <span class="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent text-5xl md:text-7xl lg:text-8xl">
+            <span class="bg-gradient-to-r from-blue-400 via-cyan-400 to-blue-500 bg-clip-text text-transparent">
               Humans & AI
             </span>
           </span>
@@ -50,30 +47,28 @@
               Simultaneously
             </span>
             <!-- Underline decoration -->
-            <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-64 h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent animate-pulse"></div>
+            <div class="absolute -bottom-2 left-1/2 transform -translate-x-1/2 w-32 md:w-64 h-1 bg-gradient-to-r from-transparent via-blue-400 to-transparent animate-pulse"></div>
           </span>
-        </h1>
-
-        <!-- Enhanced Subtitle with typing effect -->
+        </h1>        <!-- Enhanced Subtitle with typing effect -->
         <div class="max-w-4xl mx-auto">
-          <p class="text-xl md:text-2xl text-gray-300 mb-4 leading-relaxed font-light">
+          <p class="text-lg md:text-xl lg:text-2xl text-gray-300 mb-4 leading-relaxed font-light px-4 md:px-0">
             Transform your <span class="text-orange-400 font-semibold">Laravel Eloquent models</span> into 
             <span class="text-green-400 font-semibold">JSON:API endpoints</span> and 
             <span class="text-blue-400 font-semibold">MCP servers</span> automatically.
           </p>
-          <p class="text-lg text-gray-400 italic">
+          <p class="text-base md:text-lg text-gray-400 italic px-4 md:px-0">
             Zero boilerplate. Pure results. Future-ready architecture.
           </p>
         </div>
 
         <!-- Enhanced Action Buttons -->
-        <div class="flex flex-col sm:flex-row gap-6 justify-center mt-8">
+        <div class="flex flex-col sm:flex-row gap-4 justify-center mt-8 px-4 md:px-0">
           <!-- Primary CTA -->
           <a
             href="https://restify.binarcode.com/docs"
             target="_blank"
             rel="noopener noreferrer"
-            class="group relative inline-flex items-center justify-center gap-3 px-8 py-4 text-lg font-semibold text-white bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25"
+            class="group relative inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-4 text-base sm:text-lg font-semibold text-white bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full overflow-hidden transition-all duration-300 hover:scale-105 hover:shadow-2xl hover:shadow-blue-500/25 min-h-[56px]"
           >
             <div class="absolute inset-0 bg-gradient-to-r from-blue-600 to-cyan-700 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <svg class="relative z-10 w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -87,7 +82,7 @@
             href="https://github.com/binaryk/laravel-restify"
             target="_blank"
             rel="noopener noreferrer"
-            class="group relative inline-flex items-center justify-center gap-3 px-8 py-4 text-lg font-semibold text-gray-300 bg-white/5 border border-white/10 backdrop-blur-sm rounded-full overflow-hidden transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-105"
+            class="group relative inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-4 text-base sm:text-lg font-semibold text-gray-300 bg-white/5 border border-white/10 backdrop-blur-sm rounded-full overflow-hidden transition-all duration-300 hover:bg-white/10 hover:border-white/20 hover:scale-105 min-h-[56px]"
           >
             <svg class="w-5 h-5 group-hover:rotate-12 transition-transform duration-300" fill="currentColor" viewBox="0 0 24 24">
               <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
@@ -103,17 +98,18 @@
           <!-- Terminal Window -->
           <div class="bg-gray-900/50 backdrop-blur-lg border border-gray-700/50 rounded-2xl overflow-hidden shadow-2xl">
             <!-- Terminal Header -->
-            <div class="flex items-center justify-between p-6 border-b border-gray-700/50">
+            <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-700/50">
               <div class="flex items-center space-x-3">
                 <div class="flex space-x-2">
                   <div class="w-3 h-3 bg-red-500 rounded-full animate-pulse"></div>
                   <div class="w-3 h-3 bg-yellow-500 rounded-full animate-pulse animation-delay-200"></div>
                   <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse animation-delay-400"></div>
                 </div>
-                <span class="text-gray-400 text-sm font-mono">terminal</span>
+                <span class="text-gray-400 text-sm font-mono hidden sm:block">terminal</span>
               </div>
-              <div class="flex items-center gap-4 text-gray-400 text-sm font-mono">
-                <span class="px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-green-400 font-bold text-base">composer require binaryk/laravel-restify</span>
+              <div class="flex items-center gap-2 md:gap-4 text-gray-400 text-xs md:text-sm font-mono">
+                <span class="hidden md:inline-block px-4 py-2 bg-gray-800 border border-gray-600 rounded-lg text-green-400 font-bold text-base">composer require binaryk/laravel-restify</span>
+                <span class="md:hidden px-2 py-1 bg-gray-800 border border-gray-600 rounded text-green-400 font-bold text-xs">install</span>
                 <button @click="copyToClipboard" class="p-2 hover:bg-gray-700 rounded transition-colors group" title="Copy command">
                   <svg v-if="!copied" class="w-4 h-4 group-hover:text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
@@ -126,10 +122,10 @@
             </div>
 
             <!-- Code Content with Enhanced Styling -->
-            <div class="p-8">
-              <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div class="p-4 md:p-8">
+              <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 md:gap-8">
                 <!-- Input Code -->
-                <div class="space-y-6">
+                <div class="space-y-4 md:space-y-6">
                   <div class="flex items-center gap-2 mb-4">
                     <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
                     <span class="text-blue-400 text-sm font-semibold uppercase tracking-wider">Input</span>
@@ -138,7 +134,7 @@
                   <div class="space-y-4">
                     <div>
                       <div class="text-gray-500 text-xs mb-2 font-mono">// 1. Create your repository</div>
-                      <pre class="text-emerald-400 font-mono text-sm leading-relaxed"><code><span class="text-purple-400">class</span> <span class="text-yellow-400">PostRepository</span> <span class="text-purple-400">extends</span> <span class="text-blue-400">Repository</span>
+                      <pre class="text-emerald-400 font-mono text-xs md:text-sm leading-relaxed overflow-x-auto"><code><span class="text-purple-400">class</span> <span class="text-yellow-400">PostRepository</span> <span class="text-purple-400">extends</span> <span class="text-blue-400">Repository</span>
 {
     <span class="text-purple-400">public static</span> <span class="text-blue-400">string</span> <span class="text-white">$model</span> = <span class="text-orange-400">Post</span>::<span class="text-purple-400">class</span>;
 }</code></pre>
@@ -146,13 +142,13 @@
                     
                     <div>
                       <div class="text-gray-500 text-xs mb-2 font-mono">// 2. Enable MCP for AI agents</div>
-                      <pre class="text-emerald-400 font-mono text-sm leading-relaxed"><code><span class="text-blue-400">Mcp</span>::<span class="text-yellow-400">web</span>(<span class="text-green-400">'restify'</span>, <span class="text-orange-400">RestifyServer</span>::<span class="text-purple-400">class</span>);</code></pre>
+                      <pre class="text-emerald-400 font-mono text-xs md:text-sm leading-relaxed overflow-x-auto"><code><span class="text-blue-400">Mcp</span>::<span class="text-yellow-400">web</span>(<span class="text-green-400">'restify'</span>, <span class="text-orange-400">RestifyServer</span>::<span class="text-purple-400">class</span>);</code></pre>
                     </div>
                   </div>
                 </div>
 
                 <!-- Output -->
-                <div class="space-y-6">
+                <div class="space-y-4 md:space-y-6">
                   <div class="flex items-center gap-2 mb-4">
                     <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                     <span class="text-green-400 text-sm font-semibold uppercase tracking-wider">Output</span>
@@ -160,12 +156,12 @@
                   
                   <div class="space-y-4">
                     <!-- REST API -->
-                    <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700/30">
+                    <div class="bg-gray-800/50 rounded-lg p-3 md:p-4 border border-gray-700/30">
                       <div class="flex items-center gap-2 mb-2">
                         <div class="w-3 h-3 bg-red-500 rounded-full"></div>
                         <span class="text-red-400 text-xs font-bold">REST API</span>
                       </div>
-                      <div class="space-y-1 text-xs font-mono text-gray-300">
+                      <div class="space-y-1 text-xs font-mono text-gray-300 overflow-x-auto">
                         <div><span class="text-green-400">GET</span> /api/restify/posts</div>
                         <div><span class="text-blue-400">POST</span> /api/restify/posts</div>
                         <div><span class="text-yellow-400">PATCH</span> /api/restify/posts/{id}</div>
@@ -174,7 +170,7 @@
                     </div>
 
                     <!-- MCP Tools -->
-                    <div class="bg-gray-800/50 rounded-lg p-4 border border-gray-700/30">
+                    <div class="bg-gray-800/50 rounded-lg p-3 md:p-4 border border-gray-700/30">
                       <div class="flex items-center gap-2 mb-2">
                         <div class="w-3 h-3 bg-blue-500 rounded-full"></div>
                         <span class="text-blue-400 text-xs font-bold">MCP TOOLS</span>
