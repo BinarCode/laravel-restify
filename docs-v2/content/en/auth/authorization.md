@@ -15,7 +15,7 @@ Before diving into details about authorization, it is important for you to under
 
 When you run a request (ie via Postman), it hits the Laravel application. Laravel will load every single Service Provider it has defined into `config/app.php` and [auto discovered ](https://laravel.com/docs/packages#package-discovery) providers as well.
 
-Restify injects the `RestifyApplicationServiceProvider` in your `config/app.php` and it also has an auto discovered provider called `LaravelRestify\LaravelRestifyServiceProvider`.
+Restify injects the `RestifyApplicationServiceProvider` in your `config/app.php` and it also has an auto discovered provider called `\Binaryk\LaravelRestify\LaravelRestifyServiceProvider`.
 
 - The `LaravelRestifyServiceProvider` is booted first. This will basically push the `RestifyInjector` middleware at the end of the middleware stack. 
 
@@ -23,7 +23,13 @@ Restify injects the `RestifyApplicationServiceProvider` in your `config/app.php`
 
 - The `RestifyInjector` will be handled. It will register all the routes.
 
-- On each request, if the requested route is a Restify route, Laravel will handle other middlewares defined in the `restify.php` -> `middleware`.
+- On each request, if the requested route is a Restify route, Laravel will handle other middlewares defined in the `restify.php` -> `middleware`. Here is where you should have the `auth:sanctum` middleware to protect your API against unauthenticated users.
+
+## Prerequisites
+
+Before we dive into the details of authorization, we need to make sure that you have a basic understanding of how Laravel's authorization works. If you are not familiar with it, we highly recommend reading the [documentation](https://laravel.com/docs/authorization) before you move forward.
+
+You may also visit the [Authentication/login](/auth/authentication#authorization) section to learn how to login and use the Bearer token.
 
 
 ## View Restify
@@ -133,6 +139,11 @@ class PostPolicy
     }
 
     public function delete(User $user, Post $model): bool
+    {
+        //
+    }
+
+    public function deleteBulk(User $user, Post $model): bool
     {
         //
     }
@@ -349,6 +360,34 @@ public function delete(User $user, Post $model)
 }
 ```
 
+
+### Allow deleteBulk
+
+Determine if the user can delete multiple entities at once. When performing bulk deletion, this method will be invoked for each entity you're trying to delete.
+
+The deleteBulk method corresponds to the following route:
+
+```http request
+DELETE: api/restify/posts/bulk/delete
+```
+
+Definition:
+
+```php
+/**
+ * Determine whether the user can delete multiple models at once.
+ *
+ * @param User $user
+ * @param Post $model
+ * @return mixed
+ */
+public function deleteBulk(User $user, Post $model)
+{
+    //
+}
+```
+
+
 ### Allow Attach
 
 <alert type="warning">
@@ -413,7 +452,7 @@ POST: api/restify/users/{id}/detach/posts
  * @param Post $model
  * @return mixed
  */
-public function attachPost(User $user, Post $model)
+public function detachPost(User $user, Post $model)
 {
     return $user->is($model->creator()->first());
 }

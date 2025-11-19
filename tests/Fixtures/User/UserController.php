@@ -26,7 +26,6 @@ class UserController extends RestController
     /**
      * Store a newly created resource in storage.
      *
-     * @param  Request  $request
      * @return JsonResponse
      */
     public function store(Request $request)
@@ -56,7 +55,6 @@ class UserController extends RestController
     /**
      * Update the specified resource in storage.
      *
-     * @param  Request  $request
      * @param  int  $id
      * @return JsonResponse
      */
@@ -71,7 +69,7 @@ class UserController extends RestController
             $this->gate('access', $user);
 
             return $this->respond($user);
-        } catch (EntityNotFoundException | GatePolicy | BindingResolutionException $e) {
+        } catch (EntityNotFoundException|GatePolicy|BindingResolutionException $e) {
             return $this->response()
                 ->addError('Entity not found.')
                 ->missing()

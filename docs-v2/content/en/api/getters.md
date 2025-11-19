@@ -26,9 +26,44 @@ The `classic` approach is good, although it has a few limitations. First, you ha
 
 That way, code readability, testability, and maintainability can become hard.
 
+## Invokable Getter Format
+
+The simplest way to define a getter is to use the `invokable` class format.
+
+Here's an example:
+
+```php
+namespace App\Restify\Getters;
+
+class StripeInformationGetter
+{
+    public function __invoke()
+    {
+        return response()->json([
+            'foo' => 'bar',
+        ]);
+    }
+}
+```
+
+Then add the getter instance to the repository `getters` method:
+
+```php
+...
+public function getters(RestifyRequest $request): array
+{
+    return [
+        new StripeInformationGetter,
+    ];
+}
+...
+```
+
+Bellow we will see how to define getters in a more advanced way.
+
 ## Getter definition
 
-Getters are very similar to getters. The big difference is that getters only allow getting requests, and should not perform any kind of DB data writing:
+Getters are very similar to actions in this sense. The big difference is that getters only allow GET requests, and should not perform any kind of DB data writing:
 
 The getter is nothing more than a class that extends the `Binaryk\LaravelRestify\Getters\Getter` abstract class.
 
@@ -78,7 +113,7 @@ public function getters(RestifyRequest $request): array
 {
     return [
         StripeInformationGetter::new()->canSee(function (Request $request) {
-            return $request->user()->can('seeStripeInfo),
+            return $request->user()->can('seeStripeInfo'),
         }),
     ];
 }
@@ -89,7 +124,7 @@ public function getters(RestifyRequest $request): array
 To call a getter, you simply access:
 
 ```http request
-POST: api/restify/posts/getters/stripe-information
+GET: api/restify/posts/getters/stripe-information
 ```
 
 The `getter` query param value is the `ke-bab` form of the filter class name by default, or a custom `$uriKey` [defined in the getter](#custom-uri-key)
@@ -165,7 +200,7 @@ public function getters(RestifyRequest $request)
 The post URL should include the key of the model we want Restify to resolve:
 
 ```http request
-POST: api/restfiy/users/1/getters/stripe-information
+GET: api/restfiy/users/1/getters/stripe-information
 ```
 ### List show getters
 
@@ -209,7 +244,7 @@ public function getters(RestifyRequest $request)
 The post URL:
 
 ```http request
-POST: api/restfiy/posts/getters/stripe-information
+GET: api/restfiy/posts/getters/stripe-information
 ```
 
 ### List index getters

@@ -7,11 +7,11 @@ use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Tests\Database\Factories\CommentFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class ShowRelatedFeatureTest extends IntegrationTest
+class ShowRelatedFeatureTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 

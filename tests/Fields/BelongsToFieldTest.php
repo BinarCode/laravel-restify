@@ -13,11 +13,11 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class BelongsToFieldTest extends IntegrationTest
+class BelongsToFieldTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {
@@ -220,16 +220,15 @@ class BelongsToFieldTest extends IntegrationTest
                 'user' => BelongsTo::make('user', UserRepository::class),
             ]);
 
-        $this->withoutExceptionHandling();
-
         $this->getJson(PostRepository::route($post, query: [
-            'include' => 'user[name]',
+            'include' => 'user[name|email]',
         ]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data.relationships.user.attributes.name')
-                ->missing('data.relationships.user.attributes.email')
-                ->etc()
+                    ->has('data.relationships.user.attributes.name')
+                    ->has('data.relationships.user.attributes.email')
+                    ->missing('data.relationships.user.attributes.password')
+                    ->etc()
             );
     }
 }

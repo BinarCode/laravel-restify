@@ -2,6 +2,4 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
-abstract class BaseField
-{
-}
+abstract class BaseField {}

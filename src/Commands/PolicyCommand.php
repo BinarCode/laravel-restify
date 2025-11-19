@@ -25,6 +25,8 @@ class PolicyCommand extends GeneratorCommand
 
         $class = $this->replaceQualifiedModel($class);
 
+        $class = $this->replaceUserImport($class);
+
         return $class;
     }
 
@@ -45,6 +47,22 @@ class PolicyCommand extends GeneratorCommand
         return str_replace('{{ modelQualified }}', $this->guessQualifiedModel(), $stub);
     }
 
+    protected function replaceUserImport($stub)
+    {
+        $qualifiedModel = $this->guessQualifiedModel();
+        $userQualified = $this->rootNamespace().'Models\User';
+
+        // If the model being generated is the User model, don't duplicate the import
+        if ($qualifiedModel === $userQualified) {
+            // Remove the entire user import line since it would be duplicate
+            $stub = preg_replace('/use\s+\{\{\s*userQualified\s*\}\};\s*\n/', '', $stub);
+
+            return $stub;
+        }
+
+        return str_replace('{{ userQualified }}', $userQualified, $stub);
+    }
+
     protected function guessQualifiedModel(): string
     {
         $model = Str::singular(class_basename(Str::beforeLast($this->getNameInput(), 'Policy')));
@@ -56,7 +74,7 @@ class PolicyCommand extends GeneratorCommand
     {
         $name = $this->getNameInput();
 
-        if (false === Str::endsWith($name, 'Policy')) {
+        if (Str::endsWith($name, 'Policy') === false) {
             $name .= 'Policy';
         }
 

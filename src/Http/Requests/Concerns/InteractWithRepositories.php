@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -24,7 +25,7 @@ trait InteractWithRepositories
     public function repository($key = null): Repository
     {
         try {
-            $key = $key ?? $this->route('repository');
+            $key = $key ?? $this->route('repository') ?? $this->input('mcp_repository_key');
 
             /**
              * @var Repository|null $class
@@ -60,21 +61,21 @@ trait InteractWithRepositories
         }
     }
 
-    public function repositoryWith(Model $model, string $uriKey = null): Repository
+    public function repositoryWith(Model $model, ?string $uriKey = null): Repository
     {
         $repository = $this->repository($uriKey);
 
         return $repository::resolveWith($model);
     }
 
-    public function model(string $uriKey = null): Model
+    public function model(?string $uriKey = null): Model
     {
         $repository = $this->repository($uriKey);
 
         return $repository::newModel();
     }
 
-    public function newQuery(string $uriKey = null): Builder|Relation
+    public function newQuery(?string $uriKey = null): Builder|Relation
     {
         if (! $this->isViaRepository()) {
             return $this->model($uriKey)->newQuery();
@@ -88,19 +89,20 @@ trait InteractWithRepositories
         return $this->relatedEagerField()->getRelation();
     }
 
-    public function modelQuery(string $repositoryId = null, string $uriKey = null): Builder|Relation
+    public function modelQuery(?string $repositoryId = null, ?string $uriKey = null): Builder|Relation
     {
-        return $this->newQuery($uriKey)->whereKey(
+        return $this->newQuery($uriKey)->where(
+            $this->model($uriKey)->getRouteKeyName(),
             $repositoryId ?? $this->route('repositoryId')
         );
     }
 
-    public function findModelOrFail($id = null): Model
+    public function findModelOrFail($id = null, ?string $uriKey = null): Model
     {
         return $id
-            ? $this->modelQuery($id)->firstOrFail()
-            : once(function () {
-                return $this->modelQuery()->firstOrFail();
+            ? $this->modelQuery($id, $uriKey)->firstOrFail()
+            : once(function () use ($uriKey) {
+                return $this->modelQuery(uriKey: $uriKey)->firstOrFail();
             });
     }
 
@@ -109,7 +111,7 @@ trait InteractWithRepositories
         $parentRepository = $this->route('parentRepository');
         $parentRepositoryId = $this->route('parentRepositoryId');
 
-        //TODO: Find another implementation for prefixes:
+        // TODO: Find another implementation for prefixes:
         $matchSomePrefixes = collect(Restify::$repositories)->some(fn (
             $repository
         ) => $repository::prefix() === "$parentRepository/$parentRepositoryId");
@@ -119,5 +121,10 @@ trait InteractWithRepositories
         }
 
         return $parentRepository && $parentRepositoryId;
+    }
+
+    public function filteredQuery(): Builder
+    {
+        return RepositorySearchService::make()->search($this, $this->repository());
     }
 }

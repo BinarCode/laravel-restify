@@ -6,9 +6,9 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Repositories\ActionLogRepository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class ActionLogRepositoryTest extends IntegrationTest
+class ActionLogRepositoryTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {

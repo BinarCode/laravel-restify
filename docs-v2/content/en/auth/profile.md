@@ -5,28 +5,38 @@ category: Auth
 position: 1
 ---
 
-## Sanctum middleware
+## Prerequisites  
 
-To make sure you can get your profile just right, you should add the `auth:sanctum` middleware to the restify middleware config:
+Make sure you followed the [Authentication](/docs/auth/authentication) guide before, because one common mistake is that people do not add this middleware:
 
 ```php
 // config/restify.php
-
 'middleware' => [
-    'api',
+// ...
     'auth:sanctum',
-    \Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent::class,
-    \Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify::class,
+// ...
 ]
 ```
 
 ## Get profile
+
+Before retrieving the user's profile, you need to log in and obtain an authentication token. You can refer to the [login documentation](/auth/authentication#login) for details on how to authenticate a user. Make sure to include the `Bearer {$token}` in the `Authorization` header for the subsequent API requests, either using Postman or cURL.
 
 When retrieving the user's profile, it is serialized by using the `UserRepository`.
 
 ```http request
 GET: /api/restify/profile
 ```
+
+Here's an example of a cURL request for retrieving the user's profile with a random token:
+
+```bash
+curl -X GET "http://your-domain.com/api/restify/profile" \
+     -H "Accept: application/json" \
+     -H "Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9..."
+```
+
+Replace `http://your-domain.com` with your actual domain and `eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9...` with the authentication token you obtained after logging in.
 
 This is what we have for a basic profile:
 

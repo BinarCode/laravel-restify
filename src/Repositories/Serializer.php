@@ -101,9 +101,9 @@ class Serializer implements JsonSerializable, Responsable
     public function jsonSerialize(): mixed
     {
         if (is_null($this->items) || $this->items->count() === 1) {
-            return $this->repository->serializeForShow(
+            return tap($this->repository->serializeForShow(
                 $this->request(RepositoryShowRequest::class)
-            );
+            ), fn (array &$data) => $data['meta'] = array_merge($data['meta'] ?? [], $this->meta));
         }
 
         $paginator = new Paginator($this->items->values(), $this->perPage);
@@ -133,7 +133,7 @@ class Serializer implements JsonSerializable, Responsable
         ]);
     }
 
-    private function request(string $class = null): RestifyRequest
+    private function request(?string $class = null): RestifyRequest
     {
         /**
          * @var RestifyRequest $request

@@ -7,15 +7,16 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\Test;
 
-class FieldActionTest extends IntegrationTest
+class FieldActionTest extends IntegrationTestCase
 {
-    /** * @test */
+    #[Test]
     public function can_use_actionable_field(): void
     {
-        $action = new class() extends Action
+        $action = new class extends Action
         {
             public bool $showOnShow = true;
 
@@ -31,7 +32,7 @@ class FieldActionTest extends IntegrationTest
 
         PostRepository::partialMock()
             ->shouldReceive('fieldsForStore')
-            ->andreturn([
+            ->andReturn([
                 Field::new('title'),
 
                 Field::new('description')->action($action),
@@ -51,10 +52,10 @@ class FieldActionTest extends IntegrationTest
             );
     }
 
-    /** @test */
+    #[Test]
     public function can_use_actionable_field_on_bulk_store(): void
     {
-        $action = new class() extends Action
+        $action = new class extends Action
         {
             public bool $showOnShow = true;
 
@@ -70,7 +71,7 @@ class FieldActionTest extends IntegrationTest
 
         PostRepository::partialMock()
             ->shouldReceive('fieldsForStoreBulk')
-            ->andreturn([
+            ->andReturn([
                 Field::new('title'),
 
                 Field::new('description')->action($action),
@@ -96,10 +97,10 @@ class FieldActionTest extends IntegrationTest
             );
     }
 
-    /** @test */
+    #[Test]
     public function can_use_actionable_field_on_bulk_update(): void
     {
-        $action = new class() extends Action
+        $action = new class extends Action
         {
             public bool $showOnShow = true;
 
@@ -115,7 +116,7 @@ class FieldActionTest extends IntegrationTest
 
         PostRepository::partialMock()
             ->shouldReceive('fieldsForUpdateBulk')
-            ->andreturn([
+            ->andReturn([
                 Field::new('title'),
 
                 Field::new('description')->action($action),

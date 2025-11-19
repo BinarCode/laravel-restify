@@ -3,17 +3,17 @@
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
-    public function __invoke(Request $request): JsonResponse
+    public function __invoke(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'email', 'exists:users,email'],
+            'email' => ['required', 'email'],
             'password' => ['required'],
         ]);
 
@@ -28,9 +28,16 @@ class LoginController extends Controller
             abort(401, 'Invalid credentials.');
         }
 
-        return data([
-            'user' => $user,
-            'token' => $user->createToken('login'),
+        Auth::login($user);
+
+        $tokenTtl = config('restify.auth.token_ttl');
+        $expiresAt = $tokenTtl ? now()->addMinutes($tokenTtl) : null;
+
+        $token = $user->createToken('login', ['*'], $expiresAt);
+
+        return rest($user)->indexMeta([
+            'token' => $token->plainTextToken,
+            'expires_in' => $tokenTtl ? $tokenTtl * 60 : null,
         ]);
     }
 }

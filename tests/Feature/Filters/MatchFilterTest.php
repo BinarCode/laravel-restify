@@ -4,19 +4,20 @@ namespace Binaryk\LaravelRestify\Tests\Feature\Filters;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class MatchFilterTest extends IntegrationTest
+class MatchFilterTest extends IntegrationTestCase
 {
     public function test_matchable_filter_has_key(): void
     {
-        $filter = new class() extends MatchFilter
+        $filter = new class extends MatchFilter
         {
             public ?string $column = 'approved_at';
         };
@@ -175,6 +176,26 @@ class MatchFilterTest extends IntegrationTest
         $this->getJson(UserRepository::route(query: ['created_at' => '2020-12-01']))->assertJsonCount(3, 'data');
     }
 
+    public function test_can_match_boolean(): void
+    {
+        PostRepository::$match = [
+            'is_active' => 'boolean',
+        ];
+
+        Post::factory(2)->sequence(
+            ['is_active' => true, 'title' => 'Active post 1'],
+            ['is_active' => false, 'title' => 'Inactive post 2'],
+        )->create();
+
+        $this->getJson(PostRepository::route())->assertJsonCount(2, 'data');
+
+        $this->getJson(PostRepository::route(query: ['is_active' => true]))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['is_active' => false]))
+            ->assertJsonCount(1, 'data');
+    }
+
     public function test_can_match_datetime_interval(): void
     {
         User::factory()->state([
@@ -226,8 +247,8 @@ class MatchFilterTest extends IntegrationTest
             ->getJson(UserRepository::route(query: ['is_active' => true]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->count('data', 1)
-                ->etc()
+                    ->count('data', 1)
+                    ->etc()
             );
     }
 }

@@ -6,15 +6,11 @@ trait RepositoryEvents
 {
     /**
      * The array of booted repositories.
-     *
-     * @var array
      */
     protected static array $booted = [];
 
     /**
      * Perform any actions required before the repository boots.
-     *
-     * @return void
      */
     protected static function booting(): void
     {
@@ -23,8 +19,6 @@ trait RepositoryEvents
 
     /**
      * Boot the repository.
-     *
-     * @return void
      */
     protected static function boot(): void
     {
@@ -33,8 +27,6 @@ trait RepositoryEvents
 
     /**
      * Perform any actions required after the repository boots.
-     *
-     * @return void
      */
     protected static function booted(): void
     {
@@ -61,8 +53,6 @@ trait RepositoryEvents
 
     /**
      * Clear the list of booted repositories, so they will be re-booted.
-     *
-     * @return void
      */
     public static function clearBootedRepositories(): void
     {

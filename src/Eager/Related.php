@@ -18,8 +18,8 @@ use ReturnTypeWillChange;
 
 class Related implements JsonSerializable
 {
-    use Make;
     use HasColumns;
+    use Make;
 
     private string $relation;
 
@@ -39,7 +39,7 @@ class Related implements JsonSerializable
 
     public ?RelatedQuery $relatedQuery = null;
 
-    public function __construct(string $relation, EagerField $field = null)
+    public function __construct(string $relation, ?EagerField $field = null)
     {
         $this->relation = $relation;
         $this->field = $field;
@@ -64,6 +64,7 @@ class Related implements JsonSerializable
     {
         return $this
             ->field
+            ->forMcp($repository->detectMcpRequest())
             ->columns($this->getColumns())
             ->resolve($repository);
     }

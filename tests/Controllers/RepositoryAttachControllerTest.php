@@ -9,14 +9,15 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
+
 use function PHPUnit\Framework\assertInstanceOf;
 
-class RepositoryAttachControllerTest extends IntegrationTest
+class RepositoryAttachControllerTest extends IntegrationTestCase
 {
     public function test_can_attach_repositories(): void
     {
@@ -103,9 +104,9 @@ class RepositoryAttachControllerTest extends IntegrationTest
             'include' => 'users',
         ]))->assertOk()->assertJson(
             fn (AssertableJson $json) => $json
-            ->where('data.relationships.users.0.pivots.is_admin', true)
-            ->where('data.relationships.users.1.pivots.is_admin', false)
-            ->etc()
+                ->where('data.relationships.users.0.pivots.is_admin', true)
+                ->where('data.relationships.users.1.pivots.is_admin', false)
+                ->etc()
         );
     }
 
@@ -122,9 +123,9 @@ class RepositoryAttachControllerTest extends IntegrationTest
             'include' => 'users',
         ]))->assertOk()->assertJson(
             fn (AssertableJson $json) => $json
-            ->where('data.0.relationships.users.0.pivots.is_admin', true)
-            ->where('data.0.relationships.users.1.pivots.is_admin', false)
-            ->etc()
+                ->where('data.0.relationships.users.0.pivots.is_admin', true)
+                ->where('data.0.relationships.users.1.pivots.is_admin', false)
+                ->etc()
         );
     }
 
@@ -185,7 +186,7 @@ class RepositoryAttachControllerTest extends IntegrationTest
 
                         return true;
                     })
-                    ->attachCallback(new AttachInvokable()),
+                    ->attachCallback(new AttachInvokable),
             ]);
 
         $this->postJson(CompanyRepository::route("$company->id/attach/users"), [

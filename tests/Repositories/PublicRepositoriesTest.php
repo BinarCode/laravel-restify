@@ -3,9 +3,9 @@
 namespace Binaryk\LaravelRestify\Tests\Repositories;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class PublicRepositoriesTest extends IntegrationTest
+class PublicRepositoriesTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {

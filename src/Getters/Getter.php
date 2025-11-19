@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Getters;
 
 use Binaryk\LaravelRestify\Http\Requests\GetterRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\AuthorizedToRun;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
@@ -14,14 +15,16 @@ use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
 use JsonSerializable;
 use ReturnTypeWillChange;
 use Symfony\Component\HttpFoundation\Response;
+use Throwable;
+
 use function tap;
 use function throw_unless;
-use Throwable;
 
 /**
  * Class Getter
@@ -30,18 +33,11 @@ use Throwable;
  */
 abstract class Getter implements JsonSerializable
 {
-    use Make;
-    use AuthorizedToSee;
     use AuthorizedToRun;
+    use AuthorizedToSee;
+    use Make;
     use ProxiesCanSeeToGate;
     use Visibility;
-
-    /**
-     * Default uri key for the getter.
-     *
-     * @var string
-     */
-    public static $uriKey;
 
     /**
      * The route action array.
@@ -50,9 +46,32 @@ abstract class Getter implements JsonSerializable
      */
     public $action;
 
+    /**
+     * Getter description, usually used in the UI or MCP.
+     */
+    public string $description = '';
+
     public static function indexQuery(RestifyRequest $request, $query): void
     {
         //
+    }
+
+    public function description(RestifyRequest $request): string
+    {
+        return $this->description;
+    }
+
+    /**
+     * Validation rules to be applied to the getter parameters.
+     */
+    public function rules(): array
+    {
+        return [];
+    }
+
+    public function toolSchema(JsonSchema $schema): array
+    {
+        return app(JsonSchemaFromRulesAction::class)($schema, $this->rules());
     }
 
     public function name(): string
@@ -62,7 +81,22 @@ abstract class Getter implements JsonSerializable
 
     public function uriKey(): string
     {
-        return static::$uriKey ?? Str::slug($this->name(), '-', null);
+        if (property_exists(static::class, 'uriKey') && is_string(static::$uriKey)) {
+            return static::$uriKey;
+        }
+
+        return Str::slug($this->name(), '-', null);
+    }
+
+    public static function guessUriKey(mixed $target): string
+    {
+        if ($target instanceof self) {
+            return $target->uriKey();
+        }
+
+        return property_exists($target, 'uriKey')
+            ? $target::$uriKey
+            : Str::slug(Restify::humanize($target), '-', null);
     }
 
     /**

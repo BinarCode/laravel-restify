@@ -102,23 +102,17 @@ class RestResponse extends JsonResponse implements Responsable
      * The value of the attributes key MUST be an object (an “attributes object”).
      * Members of the attributes object (“attributes”) represent information
      * about the resource object in which it’s defined.
-     *
-     * @var array
      */
     protected array $attributes;
 
     /**
      * Where specified, a meta member can be used to include non-standard meta-information.
      * The value of each meta member MUST be an object (a “meta object”).
-     *
-     * @var array
      */
     protected ?array $meta = null;
 
     /**
      * A links object containing links related to the resource.
-     *
-     * @var array
      */
     protected array $links;
 
@@ -141,15 +135,11 @@ class RestResponse extends JsonResponse implements Responsable
 
     /**
      * Model related entities.
-     *
-     * @var
      */
     protected $relationships;
 
     /**
      * Indicate if response could include sensitive information (file, line).
-     *
-     * @var bool
      */
     public bool $debug = false;
 
@@ -241,8 +231,6 @@ class RestResponse extends JsonResponse implements Responsable
      * Magic to allow setting the response
      * code in method chaining.
      *
-     * @param $func
-     * @param $args
      * @return $this|int|mixed|RestResponse
      */
     public function __call($func, $args)
@@ -260,13 +248,12 @@ class RestResponse extends JsonResponse implements Responsable
      * Build a new response with our response data.
      *
      * @param  mixed  $response
-     * @return JsonResponse
      */
     public function respond($response = null): JsonResponse
     {
         if (! func_num_args()) {
-            $response = new \stdClass();
-            $response->data = new \stdClass();
+            $response = new \stdClass;
+            $response->data = new \stdClass;
 
             foreach (static::$RESPONSE_DEFAULT_ATTRIBUTES as $property) {
                 if (isset($this->{$property})) {
@@ -274,7 +261,7 @@ class RestResponse extends JsonResponse implements Responsable
                 }
             }
 
-            //according with https://jsonapi.org/format/#document-top-level these fields should be in data:
+            // according with https://jsonapi.org/format/#document-top-level these fields should be in data:
             foreach (['attributes', 'relationships', 'type', 'id'] as $item) {
                 if (isset($this->{$item})) {
                     $response->data->{$item} = $this->{$item};
@@ -290,8 +277,6 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set a root meta on response object.
      *
-     * @param $name
-     * @param $value
      * @return $this
      */
     public function setMeta($name, $value): self
@@ -304,7 +289,6 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set a root meta on response object.
      *
-     * @param $meta
      * @return $this
      */
     public function meta($meta): self
@@ -321,7 +305,6 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set a root meta on response object.
      *
-     * @param $links
      * @return $this
      */
     public function links($links): self
@@ -338,8 +321,6 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set a root link on response object.
      *
-     * @param $name
-     * @param $value
      * @return $this
      */
     public function setLink($name, $value): self
@@ -351,9 +332,6 @@ class RestResponse extends JsonResponse implements Responsable
 
     /**
      * Set message on response.
-     *
-     * @param $message
-     * @return RestResponse
      */
     public function message($message): self
     {
@@ -363,7 +341,6 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Get a response object root attribute.
      *
-     * @param $name
      * @return mixed
      */
     public function getAttribute($name)
@@ -374,7 +351,6 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set attributes at root level.
      *
-     * @param  array  $attributes
      * @return mixed
      */
     public function setAttributes(array $attributes)
@@ -387,7 +363,6 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Set "id" at root level for a model.
      *
-     * @param $id
      * @return mixed
      */
     public function id($id): self
@@ -408,7 +383,6 @@ class RestResponse extends JsonResponse implements Responsable
      * Useful when newly created repository, will prepare the response according
      * with JSON:API https://jsonapi.org/format/#document-resource-object-fields.
      *
-     * @param  Repository  $repository
      * @param  bool  $withRelations
      * @return $this
      */
@@ -416,7 +390,7 @@ class RestResponse extends JsonResponse implements Responsable
     {
         $model = $repository->model();
 
-        if (false === $model instanceof Model) {
+        if ($model instanceof Model === false) {
             return $this;
         }
 
@@ -440,7 +414,7 @@ class RestResponse extends JsonResponse implements Responsable
 
     public static function beforeRespond($response)
     {
-        //The members data and errors MUST NOT coexist in the same document. - https://jsonapi.org/format/#introduction
+        // The members data and errors MUST NOT coexist in the same document. - https://jsonapi.org/format/#introduction
         if (isset($response->errors)) {
             unset($response->data);
 
@@ -507,26 +481,17 @@ class RestResponse extends JsonResponse implements Responsable
         return $this;
     }
 
-    /**
-     * @param $response
-     * @param $request
-     */
     public function withResponse($response, $request)
     {
         //
     }
 
-    /**
-     * @return array|null
-     */
     public function getErrors(): ?array
     {
         return $this->errors instanceof Arrayable ? $this->errors->toArray() : $this->errors;
     }
 
     /**
-     * @param  Throwable  $exception
-     * @param $condition
      * @return $this
      */
     public function dump(Throwable $exception, $condition)
@@ -547,7 +512,6 @@ class RestResponse extends JsonResponse implements Responsable
     /**
      * Debug the log if the environment is local.
      *
-     * @param  Throwable  $exception
      * @return $this
      */
     public function dumpLocal(Throwable $exception): self
@@ -560,7 +524,6 @@ class RestResponse extends JsonResponse implements Responsable
      *
      * $this->model( User::find(1) )
      *
-     * @param  Model  $model
      * @return $this
      */
     public function model(Model $model): self
@@ -574,7 +537,7 @@ class RestResponse extends JsonResponse implements Responsable
 
     public static function created()
     {
-        return (new self())->code(201);
+        return (new self)->code(201);
     }
 
     public static function index(AbstractPaginator|Paginator $paginator, array $meta = []): JsonResponse

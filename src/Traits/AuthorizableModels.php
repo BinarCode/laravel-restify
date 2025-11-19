@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -35,7 +36,7 @@ trait AuthorizableModels
                 : false;
         };
 
-        return PolicyCache::resolve(PolicyCache::keyForAllowRestify(static::uriKey()), $resolver);
+        return PolicyCache::resolve(PolicyCache::keyForAllowRestify(static::uriKey()), $resolver, static::newModel());
     }
 
     /**
@@ -109,9 +110,33 @@ trait AuthorizableModels
             ? Gate::check($method, [$this->model(), $model])
             : abort(403, "Missing method [$method] in your [$policyClass] policy.");
 
-        if (false === $authorized) {
-            abort(403,
-                'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.');
+        if ($authorized === false) {
+            abort(
+                403,
+                'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.'
+            );
+        }
+
+        return false;
+    }
+
+    public function authorizeToSync(Request $request, $method, Collection $keys): bool
+    {
+        if (! static::authorizable()) {
+            return false;
+        }
+
+        $policyClass = get_class(Gate::getPolicyFor($this->model()));
+
+        $authorized = method_exists($policy = Gate::getPolicyFor($this->model()), $method)
+            ? Gate::check($method, [$this->model(), $keys])
+            : abort(403, "Missing method [$method] in your [$policyClass] policy.");
+
+        if ($authorized === false) {
+            abort(
+                403,
+                'You cannot sync key to the model:'.get_class($this->model()).', check your permissions.'
+            );
         }
 
         return false;
@@ -120,15 +145,15 @@ trait AuthorizableModels
     public function authorizeToDetach(Request $request, $method, $model)
     {
         if (! static::authorizable()) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
 
         $authorized = method_exists(Gate::getPolicyFor($this->model()), $method)
             ? Gate::check($method, [$this->model(), $model])
             : false;
 
-        if (false === $authorized) {
-            throw new AuthorizationException();
+        if ($authorized === false) {
+            throw new AuthorizationException;
         }
     }
 
@@ -169,7 +194,7 @@ trait AuthorizableModels
     public function authorizeTo(Request $request, iterable|string $ability): void
     {
         if ($this->authorizedTo($request, $ability) === false) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
     }
 
@@ -181,12 +206,13 @@ trait AuthorizableModels
 
         return PolicyCache::resolve(
             PolicyCache::keyForPolicyMethods(static::uriKey(), $ability, $this->resource->getKey()),
-            fn () => Gate::check($ability, $this->resource)
+            fn () => Gate::check($ability, $this->resource),
+            $this->model(),
         );
     }
 
     public static function isRepositoryContext(): bool
     {
-        return new static() instanceof Repository;
+        return new static instanceof Repository;
     }
 }

@@ -47,7 +47,7 @@ class ActionLog extends Model
 
     public const ACTION_DELETED = 'Deleted';
 
-    public static function forRepositoryStored(Model $model, Authenticatable $user = null, array $dirty = null): self
+    public static function forRepositoryStored(Model $model, ?Authenticatable $user = null, ?array $dirty = null): self
     {
         return new static([
             'batch_id' => (string) Str::uuid(),
@@ -69,7 +69,7 @@ class ActionLog extends Model
         ]);
     }
 
-    public static function forRepositoryUpdated(Model $model, Authenticatable $user = null): self
+    public static function forRepositoryUpdated(Model $model, ?Authenticatable $user = null): self
     {
         return new static([
             'batch_id' => (string) Str::uuid(),
@@ -91,7 +91,7 @@ class ActionLog extends Model
         ]);
     }
 
-    public static function forRepositoryDestroy(Model $model, Authenticatable $user = null): self
+    public static function forRepositoryDestroy(Model $model, ?Authenticatable $user = null): self
     {
         return new static([
             'batch_id' => (string) Str::uuid(),
@@ -113,7 +113,7 @@ class ActionLog extends Model
         ]);
     }
 
-    public static function forRepositoryAction(Action $action, Model $model, Authenticatable $user = null): self
+    public static function forRepositoryAction(Action $action, Model $model, ?Authenticatable $user = null): self
     {
         return new static([
             'batch_id' => (string) Str::uuid(),

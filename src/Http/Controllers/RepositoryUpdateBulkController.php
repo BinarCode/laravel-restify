@@ -21,7 +21,7 @@ class RepositoryUpdateBulkController extends RepositoryController
                     $repository = $request->repositoryWith($model);
 
                     return $repository
-                        ->allowToUpdateBulk($request)
+                        ->allowToUpdateBulk($request, $item)
                         ->updateBulk(
                             $request,
                             $id,

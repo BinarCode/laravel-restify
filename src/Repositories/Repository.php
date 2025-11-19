@@ -5,17 +5,23 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
+use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
+use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Binaryk\LaravelRestify\Models\CreationAware;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
+use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithCache;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithModel;
 use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
 use Binaryk\LaravelRestify\Repositories\Concerns\Testing;
@@ -35,97 +41,133 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
 use ReturnTypeWillChange;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
+ * Repository base class for Laravel Restify.
+ *
+ * You can define the associated Eloquent model using either:
+ *
+ * 1. Modern approach with PHP attributes (recommended):
+ * ```php
+ * use Binaryk\LaravelRestify\Attributes\Model;
+ *
+ * #[Model(User::class)]
+ * class UserRepository extends Repository
+ * {
+ *     // No need for static $model property
+ * }
+ * ```
+ *
+ * 2. Traditional approach with static property:
+ * ```php
+ * class UserRepository extends Repository
+ * {
+ *     public static string $model = User::class;
+ * }
+ * ```
+ *
+ * 3. Auto-guessing (fallback):
+ * If no attribute or static property is defined, the model will be auto-guessed
+ * from the repository class name (e.g., UserRepository → User model).
+ *
  * @property string $type
+ *
+ * @method array fieldsForIndex(RestifyRequest $request) Define fields for index operations. Override to customize field visibility on listing.
+ * @method array fieldsForShow(RestifyRequest $request) Define fields for show operations. Override to customize field visibility on detail view.
+ * @method array fieldsForStore(RestifyRequest $request) Define fields for store operations. Override to customize field availability on creation.
+ * @method array fieldsForUpdate(RestifyRequest $request) Define fields for update operations. Override to customize field availability on updates.
+ * @method array fieldsForStoreBulk(RestifyRequest $request) Define fields for bulk store operations. Override for bulk creation handling.
+ * @method array fieldsForUpdateBulk(RestifyRequest $request) Define fields for bulk update operations. Override for bulk update handling.
+ * @method array fieldsForGetter(RestifyRequest $request) Define fields for getter operations. Override to customize getter responses.
+ * @method array fieldsForMcpIndex(RestifyRequest $request) Define fields for MCP index operations. Override to optimize token usage for AI listing (saves 60-70% tokens).
+ * @method array fieldsForMcpShow(RestifyRequest $request) Define fields for MCP show operations. Override to provide focused fields for AI detail views (saves 40-50% tokens).
+ * @method array fieldsForMcpStore(RestifyRequest $request) Define fields for MCP store operations. Override to specify fields AI agents can use for creation.
+ * @method array fieldsForMcpUpdate(RestifyRequest $request) Define fields for MCP update operations. Override to limit fields AI agents can modify.
+ * @method array fieldsForMcpStoreBulk(RestifyRequest $request) Define fields for MCP bulk store operations. Override for efficient AI bulk creation.
+ * @method array fieldsForMcpUpdateBulk(RestifyRequest $request) Define fields for MCP bulk update operations. Override for efficient AI bulk updates.
+ * @method array fieldsForMcpGetter(RestifyRequest $request) Define fields for MCP getter operations. Override to provide analytical/computed fields for AI.
  */
-class Repository implements RestifySearchable, JsonSerializable
+class Repository implements JsonSerializable, RestifySearchable
 {
-    use InteractWithSearch;
-    use ValidatingTrait;
-    use PerformsQueries;
     use ConditionallyLoadsAttributes;
     use DelegatesToResource;
+    use HasColumns;
+    use InteractsWithAttachers;
+    use InteractsWithCache;
+    use InteractsWithModel;
+    use InteractWithFields;
+    use InteractWithSearch;
+    use Mockable;
+    use PerformsQueries;
+    use RepositoryEvents;
     use ResolvesActions;
     use ResolvesGetters;
-    use RepositoryEvents;
-    use WithRoutePrefix;
-    use InteractWithFields;
-    use InteractsWithModel;
-    use InteractsWithAttachers;
-    use HasColumns;
-    use Mockable;
     use Testing;
+    use ValidatingTrait;
+    use WithRoutePrefix;
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
-     *
-     * @var Model
      */
     public Model $resource;
+
+    public ?string $forMcp = null;
 
     /**
      * The list of relations available for the show or index.
      *
      * e.g. ?related=users
-     *
-     * @var array
      */
     public static array $related;
 
     /**
      * The relationships that should be eager loaded when performing an index query.
-     *
-     * @var array
      */
     public static array $with = [];
 
     /**
      * The list of searchable fields.
-     *
-     * @var array
      */
-    public static array $search;
+    public static array $search = [];
 
     /**
      * The list of matchable fields.
-     *
-     * @var array
      */
     public static array $match;
 
     /**
      * The list of fields to be sortable.
-     *
-     * @var array
      */
     public static array $sort;
 
     /**
-     * Attribute that should be used for displaying single model.
-     *
-     * @var string
+     * The list of fields that can be used for grouping.
+     */
+    public static array $groupBy = [];
+
+    /**
+     * Attribute that should be used for displaying a single model.
      */
     public static string $title = 'id';
 
     /**
+     * Action description, usually used in the UI or MCP.
+     */
+    public static string $description = '';
+
+    /**
      * Attribute that should be used for displaying the `id` in the json:format.
-     *
-     * @var string
      */
     public static string $id = 'id';
 
     /**
      * Indicates if the repository should be globally searchable.
-     *
-     * @var bool
      */
     public static bool $globallySearchable = true;
 
     /**
      * The number of results to display in the global search.
-     *
-     * @var int
      */
     public static int $globalSearchResults = 5;
 
@@ -136,29 +178,21 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * The list of middlewares for the current repository.
-     *
-     * @var array
      */
     public static array $middleware = [];
 
     /**
      * The list of attach callable's.
-     *
-     * @var array
      */
     public static array $attachers = [];
 
     /**
      * The list of detach callable's.
-     *
-     * @var array
      */
     public static array $detachers = [];
 
     /**
      * Specify whether the repository could be accessed public.
-     *
-     * @var bool|array
      */
     public static bool|array $public = false;
 
@@ -166,22 +200,16 @@ class Repository implements RestifySearchable, JsonSerializable
      * Indicates if the repository is serializing for an eager relationship.
      *
      * The $eagerState will reference to the parent that renders this via related.
-     *
-     * @var null|string
      */
-    private null|string $eagerState = null;
+    private ?string $eagerState = null;
 
     /**
      * Extra fields attached to the repository. Useful when display pivot fields.
-     *
-     * @var array
      */
     public array $extraFields = [];
 
     /**
      * A collection of pivots for the nested relationships.
-     *
-     * @var PivotsCollection
      */
     private PivotsCollection $pivots;
 
@@ -190,12 +218,25 @@ class Repository implements RestifySearchable, JsonSerializable
     public function __construct()
     {
         $this->bootIfNotBooted();
+        $this->ensureResourceExists();
+    }
+
+    /**
+     * Boot all traits for the repository.
+     */
+    protected static function boot(): void
+    {
+        // Boot all traits that have a bootTrait method
+        foreach (class_uses_recursive(static::class) as $trait) {
+            $method = 'boot'.class_basename($trait);
+            if (method_exists(static::class, $method)) {
+                static::$method();
+            }
+        }
     }
 
     /**
      * Get the URI key for the repository.
-     *
-     * @return string
      */
     public static function uriKey(): string
     {
@@ -230,8 +271,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * Get the value that should be displayed to represent the repository.
-     *
-     * @return string
      */
     public function title(): string
     {
@@ -240,12 +279,53 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * Get the search result subtitle for the repository.
-     *
-     * @return string|null
      */
     public function subtitle(): ?string
     {
         return null;
+    }
+
+    /**
+     * This is the description used for the IndexTool MCP.
+     */
+    public static function description(RestifyRequest $request): string
+    {
+        if ($request instanceof McpStoreRequest) {
+            $uriKey = static::uriKey();
+            $modelName = class_basename(static::guessModelClassName());
+
+            return "Create a new {$modelName} record in the {$uriKey} repository with the provided data.";
+        }
+
+        if ($request instanceof McpUpdateRequest) {
+            $uriKey = static::uriKey();
+            $modelName = class_basename(static::guessModelClassName());
+
+            return "Update an existing {$modelName} record by ID in the {$uriKey} repository with the provided data.";
+        }
+
+        $modelName = class_basename(self::guessModelClassName());
+        $table = self::newModel()->getTable();
+
+        // Ai Agent description
+        $description = "This repository manages the [{$modelName}] model, which corresponds to the [{$table}] table in the database. "
+            .'It provides functionalities such as listing, searching, sorting, filtering, and relationship management. ';
+
+        $potentialAttributesFromTable = implode(', ', self::newModel()->getFillable());
+
+        if (empty($potentialAttributesFromTable)) {
+            $potentialAttributesFromTable = implode(', ', self::newModel()->getConnection()
+                ->getSchemaBuilder()
+                ->getColumnListing($table));
+        }
+
+        if (! empty($potentialAttributesFromTable)) {
+            $description .= " The model/table has the following attributes: {$potentialAttributesFromTable}.";
+        }
+
+        return static::$description !== ''
+            ? static::$description
+            : $description;
     }
 
     public function filters(RestifyRequest $request): array
@@ -257,28 +337,55 @@ class Repository implements RestifySearchable, JsonSerializable
     {
         $method = 'fields';
 
-        if ($request->isIndexRequest() && method_exists($this, 'fieldsForIndex')) {
-            $method = 'fieldsForIndex';
+        // MCP-specific field methods (highest priority)
+        if ($request instanceof McpRequestable) {
+            if ($request->isIndexRequest() && method_exists($this, 'fieldsForMcpIndex')) {
+                $method = 'fieldsForMcpIndex';
+            } elseif ($request->isShowRequest() && method_exists($this, 'fieldsForMcpShow')) {
+                $method = 'fieldsForMcpShow';
+            } elseif ($request->isUpdateRequest() && method_exists($this, 'fieldsForMcpUpdate')) {
+                $method = 'fieldsForMcpUpdate';
+            } elseif ($request->isStoreRequest() && method_exists($this, 'fieldsForMcpStore')) {
+                $method = 'fieldsForMcpStore';
+            } elseif ($request->isStoreBulkRequest() && method_exists($this, 'fieldsForMcpStoreBulk')) {
+                $method = 'fieldsForMcpStoreBulk';
+            } elseif ($request->isUpdateBulkRequest() && method_exists($this, 'fieldsForMcpUpdateBulk')) {
+                $method = 'fieldsForMcpUpdateBulk';
+            } elseif ($request->isGetterRequest() && method_exists($this, 'fieldsForMcpGetter')) {
+                $method = 'fieldsForMcpGetter';
+            }
         }
 
-        if ($request->isShowRequest() && method_exists($this, 'fieldsForShow')) {
-            $method = 'fieldsForShow';
-        }
+        // If no MCP method found, fall back to regular request-specific methods
+        if ($method === 'fields') {
+            if ($request->isIndexRequest() && method_exists($this, 'fieldsForIndex')) {
+                $method = 'fieldsForIndex';
+            }
 
-        if ($request->isUpdateRequest() && method_exists($this, 'fieldsForUpdate')) {
-            $method = 'fieldsForUpdate';
-        }
+            if ($request->isShowRequest() && method_exists($this, 'fieldsForShow')) {
+                $method = 'fieldsForShow';
+            }
 
-        if ($request->isStoreRequest() && method_exists($this, 'fieldsForStore')) {
-            $method = 'fieldsForStore';
-        }
+            if ($request->isUpdateRequest() && method_exists($this, 'fieldsForUpdate')) {
+                $method = 'fieldsForUpdate';
+            }
 
-        if ($request->isStoreBulkRequest() && method_exists($this, 'fieldsForStoreBulk')) {
-            $method = 'fieldsForStoreBulk';
-        }
+            if ($request->isStoreRequest() && method_exists($this, 'fieldsForStore')) {
+                $method = 'fieldsForStore';
+            }
 
-        if ($request->isUpdateBulkRequest() && method_exists($this, 'fieldsForUpdateBulk')) {
-            $method = 'fieldsForUpdateBulk';
+            if ($request->isStoreBulkRequest() && method_exists($this, 'fieldsForStoreBulk')) {
+                $method = 'fieldsForStoreBulk';
+            }
+
+            if ($request->isUpdateBulkRequest() && method_exists($this, 'fieldsForUpdateBulk')) {
+                $method = 'fieldsForUpdateBulk';
+            }
+
+            // Add missing getter support for regular requests too
+            if ($request->isGetterRequest() && method_exists($this, 'fieldsForGetter')) {
+                $method = 'fieldsForGetter';
+            }
         }
 
         return FieldCollection::make(
@@ -323,9 +430,6 @@ class Repository implements RestifySearchable, JsonSerializable
 
     /**
      * Resolve repository with given model.
-     *
-     * @param  Model  $model
-     * @return Repository
      */
     public static function resolveWith(Model $model): Repository
     {
@@ -351,8 +455,6 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Forward calls to the model (getKey() for example).
      *
-     * @param $method
-     * @param $parameters
      * @return mixed
      */
     public function __call($method, $parameters)
@@ -369,11 +471,9 @@ class Repository implements RestifySearchable, JsonSerializable
      *
      * However all options could be customized by passing an $options argument
      *
-     * @param  Router  $router
-     * @param  array  $attributes
      * @param  bool  $wrap  Choose the routes defined in the @routes method, should be wrapped in a group with attributes by default.
-     * If true then all routes will be grouped in a configuration attributes passed by restify, otherwise
-     * you should take care of that, by adding $router->group($attributes) in the @routes method
+     *                      If true then all routes will be grouped in a configuration attributes passed by restify, otherwise
+     *                      you should take care of that, by adding $router->group($attributes) in the @routes method
      */
     public static function routes(Router $router, array $attributes, $wrap = true)
     {
@@ -388,7 +488,6 @@ class Repository implements RestifySearchable, JsonSerializable
      * Resolve all model fields through showCallback methods and exclude from the final response if
      * that is required by method
      *
-     * @param $request
      * @return array
      */
     public function resolveShowAttributes(RestifyRequest $request)
@@ -435,28 +534,11 @@ class Repository implements RestifySearchable, JsonSerializable
      */
     public function resolveIndexAttributes($request)
     {
-        // Resolve the show method, and attach the value to the array
-        $fields = $this
-            ->collectFields($request)
-            ->when($this->hasCustomColumns(), fn (FieldCollection $fields) => $fields->inList($this->getColumns()))
-            ->forIndex($request, $this)
-            ->filter(fn (Field $field) => $field->authorize($request))
-            ->when(
-                $this->eagerState,
-                function ($items) {
-                    return $items->filter(fn (Field $field) => ! $field instanceof EagerField);
-                }
-            )
-            ->each(fn (Field $field) => $field->resolveForIndex($this))
-            ->map(fn (Field $field) => $field->serializeToValue($request))
-            ->mapWithKeys(fn ($value) => $value)
-            ->all();
-
         if ($this instanceof Mergeable) {
             // Hidden and authorized index fields
-            $fields = $this->modelAttributes($request)
+            return $this->modelAttributes($request)
                 ->filter(function ($value, $attribute) use ($request) {
-                    /** * @var Field $field */
+                    /** @var Field $field */
                     $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
 
                     if (is_null($field)) {
@@ -475,7 +557,23 @@ class Repository implements RestifySearchable, JsonSerializable
                 })->all();
         }
 
-        return $fields;
+        // Resolve the show method, and attach the value to the array
+        return $this
+            ->collectFields($request)
+            ->when(
+                $this->hasCustomColumns(),
+                fn (FieldCollection $fields) => $fields->inList($this->getColumns())
+            )
+            ->forIndex($request, $this)
+            ->filter(fn (Field $field) => $field->authorize($request))
+            ->when(
+                $this->eagerState,
+                fn ($items) => $items->filter(fn (Field $field) => ! $field instanceof EagerField)
+            )
+            ->each(fn (Field $field) => $field->resolveForIndex($this))
+            ->map(fn (Field $field) => $field->serializeToValue($request))
+            ->mapWithKeys(fn ($value) => $value)
+            ->all();
     }
 
     public function resolveShowMeta($request)
@@ -524,10 +622,13 @@ class Repository implements RestifySearchable, JsonSerializable
      * Return a list with relationship for the current model.
      *
      * @param  RestifyRequest  $request
-     * @return array
      */
     public function resolveRelationships($request): array
     {
+        if ($request instanceof McpRequestable) {
+            $this->forMcp(get_class($request));
+        }
+
         if (! $request->related()->hasRelated()) {
             return [];
         }
@@ -536,10 +637,11 @@ class Repository implements RestifySearchable, JsonSerializable
             ->forRequest($request, $this)
             ->mapIntoRelated($request, $this)
             ->unserialized($request, $this)
+            ->when($this->detectMcpRequest(), fn (RelatedCollection $collection) => $collection->forMcp($request, $this))
             ->map(fn (Related $related) => $related->resolve($request, $this)->getValue())
             ->map(function (mixed $items) {
                 if ($items instanceof Collection) {
-                    return $items->filter();
+                    return $items->filter()->values();
                 }
 
                 return $items;
@@ -550,7 +652,6 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Returns the format of the metadata for individual item in the index response.
      *
-     * @param $request
      * @return array
      */
     public function resolveIndexMeta($request)
@@ -569,7 +670,6 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Return a list with relationship for the current model.
      *
-     * @param $request
      * @return array
      */
     public function resolveIndexRelationships($request)
@@ -577,9 +677,19 @@ class Repository implements RestifySearchable, JsonSerializable
         return $this->resolveRelationships($request);
     }
 
-    public function index(RestifyRequest $request)
+    public function indexAsArray(RestifyRequest $request): array
     {
-        // Check if the user has the policy allowRestify
+        return $this->cacheIndex($request, function () use ($request) {
+            return $this->performIndexAsArray($request);
+        });
+    }
+
+    /**
+     * Perform the actual index array generation logic.
+     */
+    protected function performIndexAsArray(RestifyRequest $request): array
+    {
+        // Preserve the request instance for the entire flow
 
         // Check if the model was set under the repository
         throw_if(
@@ -596,14 +706,17 @@ class Repository implements RestifySearchable, JsonSerializable
             ->paginate($request->pagination()->perPage ?? static::$defaultPerPage, page: $request->pagination()->page);
 
         $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
-            return static::resolveWith($value);
+            $repository = static::resolveWith($value);
+            // Ensure each resolved repository maintains the original request
+
+            return $repository;
         })->filter(function (self $repository) use ($request) {
             return $repository->authorizedToShow($request);
         })->values();
 
         $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
 
-        return response()->json($this->filter([
+        return $this->filter([
             'meta' => $this->when(
                 $meta = $this->resolveIndexMainMeta(
                     $request,
@@ -631,7 +744,14 @@ class Repository implements RestifySearchable, JsonSerializable
                 $links
             ),
             'data' => $data,
-        ]));
+        ]);
+    }
+
+    public function index(RestifyRequest $request)
+    {
+        return response()->json(
+            $this->indexAsArray($request)
+        );
     }
 
     public function indexCollection(RestifyRequest $request, Collection $items): Collection
@@ -649,9 +769,16 @@ class Repository implements RestifySearchable, JsonSerializable
         return $links;
     }
 
+    public function showAsArray(RestifyRequest $request, $repositoryId): array
+    {
+        return $this->serializeForShow($request);
+    }
+
     public function show(RestifyRequest $request, $repositoryId)
     {
-        return data($this->serializeForShow($request));
+        return data(
+            $this->showAsArray($request, $repositoryId)
+        );
     }
 
     public function store(RestifyRequest $request)
@@ -764,14 +891,15 @@ class Repository implements RestifySearchable, JsonSerializable
 
     public function patch(RestifyRequest $request, $repositoryId)
     {
-        DB::transaction(function () use ($request) {
-            $keys = $request->json()->keys();
+        $keys = $request->json()->keys();
 
+        DB::transaction(function () use ($request, $keys) {
             $fields = $this->collectFields($request)
                 ->filter(
                     fn (Field $field) => in_array($field->attribute, $keys),
                 )
                 ->forUpdate($request, $this)
+                ->withoutActions($request, $this)
                 ->authorizedPatch($request)
                 ->merge($this->collectFields($request)->forBelongsTo($request));
 
@@ -789,6 +917,16 @@ class Repository implements RestifySearchable, JsonSerializable
         })->each(
             fn (Field $field) => $field->invokeAfter($request, $this->resource)
         );
+
+        $this
+            ->collectFields($request)
+            ->filter(
+                fn (Field $field) => in_array($field->attribute, $keys),
+            )
+            ->forUpdate($request, $this)
+            ->withActions($request, $this)
+            ->authorizedPatch($request)
+            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
 
         return data($this->serializeForShow($request));
     }
@@ -854,6 +992,21 @@ class Repository implements RestifySearchable, JsonSerializable
         return data($pivots, 201);
     }
 
+    public function sync(RestifyRequest $request, $repositoryId, Collection $pivots)
+    {
+        $eagerField = $this->authorizeBelongsToMany($request)->belongsToManyField($request);
+
+        if (! $eagerField) {
+            throw new NotFoundHttpException('Belongs to many field not found.');
+        }
+
+        $eagerField->authorizeToSync($request);
+
+        $this->model()->{$eagerField->relation}()->sync($pivots->all());
+
+        return ok();
+    }
+
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
     {
         /** * @var BelongsToMany $eagerField */
@@ -907,6 +1060,15 @@ class Repository implements RestifySearchable, JsonSerializable
         $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
 
         $attachers->each(fn ($model) => $this->authorizeToAttach($request, $methodGuesser, $model));
+
+        return $this;
+    }
+
+    public function allowToSync(RestifyRequest $request, Collection $attachers): self
+    {
+        $methodGuesser = 'sync'.Str::studly($request->relatedRepository);
+
+        $this->authorizeToSync($request, $methodGuesser, $attachers);
 
         return $this;
     }
@@ -968,7 +1130,6 @@ class Repository implements RestifySearchable, JsonSerializable
     }
 
     /**
-     * @param $request
      * @return $this
      *
      * @throws \Illuminate\Auth\Access\AuthorizationException
@@ -1065,10 +1226,14 @@ class Repository implements RestifySearchable, JsonSerializable
     #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
-        return $this->serializeForShow(app(RestifyRequest::class));
+        return $this->serializeForShow(
+            $this->detectMcpRequest()
+                ? app($this->detectMcpRequest())
+                : app(RestifyRequest::class)
+        );
     }
 
-    private function modelAttributes(Request $request = null): Collection
+    private function modelAttributes(?Request $request = null): Collection
     {
         return collect(method_exists($this->resource, 'toArray') ? $this->resource->toArray() : []);
     }
@@ -1076,9 +1241,6 @@ class Repository implements RestifySearchable, JsonSerializable
     /**
      * Fill each field separately.
      *
-     * @param  RestifyRequest  $request
-     * @param  Model  $model
-     * @param  Collection  $fields
      * @return Collection
      */
     protected static function fillFields(RestifyRequest $request, Model $model, Collection $fields)
@@ -1090,7 +1252,7 @@ class Repository implements RestifySearchable, JsonSerializable
         RestifyRequest $request,
         Model $model,
         Collection $fields,
-        int $bulkRow = null
+        ?int $bulkRow = null
     ) {
         return $fields->map(function (Field $field) use ($request, $model, $bulkRow) {
             return $field->fillAttribute($request, $model, $bulkRow);
@@ -1117,7 +1279,7 @@ class Repository implements RestifySearchable, JsonSerializable
         return static::$detachers;
     }
 
-    public function eager(EagerField $field = null): Repository
+    public function eager(?EagerField $field = null): Repository
     {
         if (! $field) {
             $this->eagerState = false;
@@ -1125,6 +1287,7 @@ class Repository implements RestifySearchable, JsonSerializable
             return $this;
         }
 
+        $this->forMcp($field->detectMcpRequest());
         $this->eagerState = $field->queryKeyThatRendered();
         $this->columns($field->getColumns());
 
@@ -1145,14 +1308,22 @@ class Repository implements RestifySearchable, JsonSerializable
     {
         return [
             'uriKey' => static::uriKey(),
-            'related' => static::collectFilters('matches'),
+            'related' => static::collectRelated(),
             'sort' => static::collectFilters('sortables'),
             'match' => static::collectFilters('matches'),
             'searchables' => static::collectFilters('searchables'),
-            'actions' => $this->resolveActions($request)->filter(fn (Action $action) => $action->isShownOnIndex(
-                $request,
-                $this
-            ))->values(),
+            'actions' => $this->resolveActions($request)
+                ->filter(fn (mixed $action) => $action instanceof Action)
+                ->filter(fn (Action $action) => $action->isShownOnIndex(
+                    $request,
+                    $this
+                ))->values(),
+            'getters' => $this->resolveGetters($request)
+                ->filter(fn (mixed $action) => $action instanceof Getter)
+                ->filter(fn (Getter $action) => $action->isShownOnIndex(
+                    $request,
+                    $this
+                ))->values(),
         ];
     }
 
@@ -1181,5 +1352,26 @@ class Repository implements RestifySearchable, JsonSerializable
     public function parentRepository(): ?Repository
     {
         return $this->parentRepository;
+    }
+
+    protected function ensureResourceExists(): self
+    {
+        if (! isset($this->resource)) {
+            $this->resource = static::newModel();
+        }
+
+        return $this;
+    }
+
+    public function forMcp($forMcp): self
+    {
+        $this->forMcp = $forMcp;
+
+        return $this;
+    }
+
+    public function detectMcpRequest(): ?string
+    {
+        return $this->forMcp;
     }
 }

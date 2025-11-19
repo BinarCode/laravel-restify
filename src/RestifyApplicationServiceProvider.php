@@ -6,10 +6,13 @@ use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ForgotPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\LoginController;
+use Binaryk\LaravelRestify\Http\Controllers\Auth\LogoutController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
+use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
+use Binaryk\LaravelRestify\MCP\McpToolsManager;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
@@ -34,19 +37,16 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     /**
      * Register the application's Rest resources.
      *
-     * @return void
      *
      * @throws ReflectionException
      */
     protected function repositories(): void
     {
-        Restify::repositoriesFrom(app_path('Restify'));
+        Restify::repositoriesFrom(app_path('Restify'), app()->getNamespace());
     }
 
     /**
      * Configure the Restify authorization services.
-     *
-     * @return void
      */
     protected function authorization(): void
     {
@@ -69,8 +69,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      *
      * This gate is checked in `authorization` method above and it should be overrided in the child
      * service provider
-     *
-     * @return void
      */
     protected function gate(): void
     {
@@ -83,29 +81,45 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
     protected function authRoutes(): void
     {
-        Route::macro('restifyAuth', function ($prefix = '/') {
+        Route::macro('restifyAuth', function ($prefix = '/', array $actions = ['register', 'login', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword']) {
             Route::group([
                 'prefix' => $prefix,
                 'middleware' => ['api'],
-            ], function () {
-                Route::post('register', RegisterController::class)
-                    ->name('restify.register');
+            ], function () use ($actions) {
+                if (in_array('register', $actions, true)) {
+                    Route::post('register', RegisterController::class)
+                        ->name('restify.register');
+                }
 
-                Route::post('login', LoginController::class)
-                    ->middleware('throttle:6,1')
-                    ->name('restify.login');
+                if (in_array('login', $actions, true)) {
+                    Route::post('login', LoginController::class)
+                        ->middleware('throttle:6,1')
+                        ->name('restify.login');
+                }
 
-                Route::post('verify/{id}/{hash}', VerifyController::class)
-                    ->middleware('throttle:6,1')
-                    ->name('restify.verify');
+                if (in_array('logout', $actions, true)) {
+                    Route::post('logout', LogoutController::class)
+                        ->middleware('auth:sanctum')
+                        ->name('restify.logout');
+                }
 
-                Route::post('forgotPassword', ForgotPasswordController::class)
-                    ->middleware('throttle:6,1')
-                    ->name('restify.forgotPassword');
+                if (in_array('verifyEmail', $actions, true)) {
+                    Route::post('verify/{id}/{hash}', VerifyController::class)
+                        ->middleware('throttle:6,1')
+                        ->name('restify.verify');
+                }
 
-                Route::post('resetPassword', ResetPasswordController::class)
-                    ->middleware('throttle:6,1')
-                    ->name('restify.resetPassword');
+                if (in_array('forgotPassword', $actions, true)) {
+                    Route::post('forgotPassword', ForgotPasswordController::class)
+                        ->middleware('throttle:6,1')
+                        ->name('restify.forgotPassword');
+                }
+
+                if (in_array('resetPassword', $actions, true)) {
+                    Route::post('resetPassword', ResetPasswordController::class)
+                        ->middleware('throttle:6,1')
+                        ->name('restify.resetPassword');
+                }
             });
         });
     }
@@ -128,7 +142,12 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     protected function singleton(): void
     {
         if (! App::runningUnitTests()) {
-            $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
+            $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto);
         }
+
+        // Register MCP tools manager as singleton
+        $this->app->singleton(McpToolsManager::class, function ($app) {
+            return new McpToolsManager($app->make(BootMcpTools::class));
+        });
     }
 }

@@ -3,11 +3,10 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Events\AdvancedFiltersApplied;
-use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
-use Binaryk\LaravelRestify\Filters\Filter;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
+use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
@@ -26,14 +25,15 @@ class RepositorySearchService
         $this->repository = $repository;
 
         $scoutQuery = null;
+        $shouldUseScout = $this->isScoutAvailable($repository);
 
-        if ($repository::usesScout()) {
+        if ($shouldUseScout) {
             $scoutQuery = $this->initializeQueryUsingScout($request, $repository);
         }
 
         $query = $this->prepareMatchFields(
             $request,
-            $repository::usesScout()
+            $shouldUseScout
                 ? $this->prepareRelations($request, $scoutQuery ?? $repository::query($request))
                 : $this->prepareSearchFields(
                     $request,
@@ -42,6 +42,8 @@ class RepositorySearchService
         );
 
         $query = $this->applyFilters($request, $repository, $query);
+
+        $query = $this->applyGroupBy($request, $repository, $query);
 
         $ordersBuilder = $this->prepareOrders($request, $query);
 
@@ -61,7 +63,6 @@ class RepositorySearchService
     /**
      * Resolve orders.
      *
-     * @param  RestifyRequest  $request
      * @param  Builder  $query
      * @return Builder
      */
@@ -115,7 +116,7 @@ class RepositorySearchService
         })->all();
 
         return $query->with(
-            array_merge($filtered, ($this->repository)::withs())
+            array_merge($filtered, ($this->repository)::collectWiths($request, $this->repository)->all()),
         );
     }
 
@@ -129,40 +130,31 @@ class RepositorySearchService
 
         $model = $query->getModel();
 
-        $query->where(function ($query) use ($search, $model, $request) {
+        // Collect all searchables and conditionally apply JOINs for BelongsTo relationships
+        $searchablesCollection = $this->repository::collectSearchables($request, $this->repository);
+
+        if (config('restify.search.use_joins_for_belongs_to', false)) {
+            $this->applyBelongsToJoins($query, $searchablesCollection, $request);
+        }
+
+        $query->where(function ($query) use ($search, $model, $request, $searchablesCollection) {
             $connectionType = $model->getConnection()->getDriverName();
 
+            $hasSearchableFields = $searchablesCollection->isNotEmpty();
+
+            // Handle primary key search if conditions are met
             $canSearchPrimaryKey = is_numeric($search) &&
                 in_array($query->getModel()->getKeyType(), ['int', 'integer']) &&
                 ($connectionType != 'pgsql' || $search <= PHP_INT_MAX) &&
+                $hasSearchableFields &&
                 in_array($query->getModel()->getKeyName(), $this->repository::searchables());
 
             if ($canSearchPrimaryKey) {
                 $query->orWhere($query->getModel()->getQualifiedKeyName(), $search);
             }
 
-            foreach ($this->repository::searchables() as $key => $column) {
-                $filter = $column instanceof Filter
-                    ? $column
-                    : SearchableFilter::make()->setColumn(
-                        $model->qualifyColumn(is_numeric($key) ? $column : $key)
-                    );
-
-                $filter
-                    ->setRepository($this->repository)
-                    ->setColumn(
-                        $filter->column ?? $model->qualifyColumn(is_numeric($key) ? $column : $key)
-                    );
-
-                $filter->filter($request, $query, $search);
-
-                $this->repository::collectRelated()
-                    ->onlySearchable($request)
-                    ->map(function (BelongsTo $field) {
-                        return SearchableFilter::make()->setRepository($this->repository)->usingBelongsTo($field);
-                    })
-                    ->each(fn (SearchableFilter $filter) => $filter->filter($request, $query, $search));
-            }
+            // Apply all searchables using the unified collection
+            $searchablesCollection->apply($request, $query, $search);
         });
 
         return $query;
@@ -183,25 +175,32 @@ class RepositorySearchService
 
     public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
     {
-        /**
-         * @var Collection $keys
-         */
-        $keys = tap(
-            is_null($request->input('search')) ? $repository::newModel() : $repository::newModel()->search($request->input('search')),
-            function ($scoutBuilder) use ($repository, $request) {
-                return $repository::scoutQuery($request, $scoutBuilder);
-            }
-        )->take($repository::$scoutSearchResults)->get()->map->getKey();
+        try {
+            /**
+             * @var Collection $keys
+             */
+            $keys = tap(
+                is_null($request->input('search')) ? $repository::newModel() : $repository::newModel()->search($request->input('search')),
+                function ($scoutBuilder) use ($repository, $request) {
+                    return $repository::scoutQuery($request, $scoutBuilder);
+                }
+            )->take($repository::$scoutSearchResults)->get()->map->getKey();
 
-        return $repository::newModel()->newQuery()->whereIn(
-            $repository::newModel()->getQualifiedKeyName(),
-            $keys->all()
-        );
+            return $repository::newModel()->newQuery()->whereIn(
+                $repository::newModel()->getQualifiedKeyName(),
+                $keys->all()
+            );
+        } catch (\Exception $e) {
+            // Scout operation failed, fall back to database search
+            return $repository::query($request);
+        }
     }
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository): callable
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::withs()));
+        return fn ($query) => $repository::mainQuery($request, $query->with($repository::collectWiths(
+            $request, $repository
+        )->all()));
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)
@@ -211,15 +210,122 @@ class RepositorySearchService
                 $repository,
                 AdvancedFiltersCollection::collectQueryFilters($request, $repository)
                     ->apply($request, $query),
-                $request->input('filters'),
+                $request->filters(),
             )
         );
 
         return $query;
     }
 
+    protected function applyGroupBy(RestifyRequest $request, Repository $repository, $query)
+    {
+        if (! $request->has('group_by')) {
+            return $query;
+        }
+
+        $model = $query->getModel();
+        $groupByColumns = explode(',', $request->input('group_by'));
+
+        foreach ($groupByColumns as $column) {
+            if (! in_array($column, $repository::$groupBy)) {
+                abort(422, sprintf(
+                    'The column [%s] is not allowed for grouping. Allowed columns are: %s',
+                    $column,
+                    implode(', ', $repository::$groupBy)
+                ));
+            }
+            $query->groupBy($model->qualifyColumn($column));
+        }
+
+        return $query;
+    }
+
+    /**
+     * Check if Scout is available and properly configured for the given repository.
+     */
+    protected function isScoutAvailable(Repository $repository): bool
+    {
+        // First check if the model uses Scout at all
+        if (! $repository::usesScout()) {
+            return false;
+        }
+
+        try {
+            // Check if Scout service is bound in the container
+            if (! app()->bound('Laravel\Scout\EngineManager')) {
+                return false;
+            }
+
+            // Try to get the Scout engine - this will fail if driver is not properly configured
+            $engine = app('Laravel\Scout\EngineManager')->engine();
+
+            // Basic connectivity test - try to create a search builder (this is lightweight)
+            $repository::newModel()->search('');
+
+            return true;
+        } catch (\Exception $e) {
+            // Scout is not available or misconfigured
+            return false;
+        }
+    }
+
+    /**
+     * Preemptively apply JOINs for all BelongsTo relationships that will be searched.
+     */
+    private function applyBelongsToJoins(
+        $query,
+        SearchablesCollection $searchablesCollection,
+        RestifyRequest $request
+    ): void {
+        $searchablesCollection
+            ->onlyBelongsTo()
+            ->each(function (SearchableFilter $searchable) use ($query, $request) {
+                $belongsToField = $searchable->belongsToField;
+
+                // Verify authorization
+                if (! $belongsToField->authorize($request)) {
+                    return;
+                }
+
+                try {
+                    // Get relationship details with error handling
+                    $relatedModel = $belongsToField->getRelatedModel($this->repository);
+                    $relatedTable = $relatedModel->getTable();
+
+                    $relation = $belongsToField->getRelation($this->repository);
+                    $foreignKey = $relation->getForeignKeyName();
+                    $ownerKey = $relation->getOwnerKeyName();
+
+                    // Build fully qualified column names
+                    $localTableForeignKey = $this->repository->model()->getTable().'.'.$foreignKey;
+                    $relatedTableOwnerKey = $relatedTable.'.'.$ownerKey;
+
+                    // Add JOIN only if it hasn't been added already
+                    $joinAlreadyExists = collect($query->toBase()->joins ?? [])->contains(function ($join) use (
+                        $relatedTable
+                    ) {
+                        return $join->table === $relatedTable;
+                    });
+
+                    if (! $joinAlreadyExists) {
+                        $query->leftJoin($relatedTable, $localTableForeignKey, '=', $relatedTableOwnerKey);
+
+                        // Ensure we only select columns from the main table to avoid column conflicts
+                        // Only set select if it hasn't been set already
+                        if (empty($query->getQuery()->columns)) {
+                            $mainTable = $this->repository->model()->getTable();
+                            $query->select([$mainTable.'.*']);
+                        }
+                    }
+                } catch (\Exception $e) {
+                    // Skip this JOIN if the relationship doesn't exist or has issues
+                    // This allows the code to gracefully handle missing relationships
+                }
+            });
+    }
+
     public static function make(): static
     {
-        return new static();
+        return new static;
     }
 }

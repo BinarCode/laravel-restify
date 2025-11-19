@@ -6,13 +6,14 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 
 class HasMany extends EagerField
 {
     protected $canEnableRelationshipCallback;
 
-    public function __construct($relation, string $parentRepository = null)
+    public function __construct($relation, ?string $parentRepository = null)
     {
         parent::__construct($relation, $parentRepository);
 
@@ -21,7 +22,6 @@ class HasMany extends EagerField
 
     /**
      * @param  Repository  $repository
-     * @param  null  $attribute
      * @return $this|EagerField|HasMany
      */
     public function resolve($repository, $attribute = null)
@@ -29,6 +29,9 @@ class HasMany extends EagerField
         if ($repository->model()->relationLoaded($this->relation)) {
             $paginator = $repository->model()->getRelation($this->relation);
         } else {
+            /**
+             * @var Relation $paginator
+             */
             $paginator = $repository->{$this->relation}();
             $paginator = $paginator
                 ->take(request('relatablePerPage') ?? ($this->repositoryClass::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))
@@ -49,7 +52,7 @@ class HasMany extends EagerField
         return $this;
     }
 
-    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
+    public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
         //
     }

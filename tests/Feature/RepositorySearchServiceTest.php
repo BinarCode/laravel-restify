@@ -10,9 +10,9 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\VerifiedMatcher;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class RepositorySearchServiceTest extends IntegrationTest
+class RepositorySearchServiceTest extends IntegrationTestCase
 {
     public function test_can_search_using_filter_searchable_definition(): void
     {
@@ -31,7 +31,7 @@ class RepositorySearchServiceTest extends IntegrationTest
         $this->getJson(UserRepository::route(query: ['search' => 'John']))->assertJsonCount(4, 'data');
     }
 
-    public function test_can_search_incase_sensitive(): void
+    public function test_can_search_case_insensitive(): void
     {
         config()->set('restify.search.case_sensitive', false);
 
@@ -48,6 +48,26 @@ class RepositorySearchServiceTest extends IntegrationTest
         ];
 
         $this->getJson(UserRepository::route(query: ['search' => 'John']))->assertJsonCount(4, 'data');
+    }
+
+    public function test_search_correctly_using_quotes(): void
+    {
+        config()->set('restify.search.case_sensitive', false);
+
+        User::factory(4)->create([
+            'name' => "Brian O'Donnel",
+        ]);
+
+        User::factory(4)->create([
+            'name' => 'wew',
+        ]);
+
+        UserRepository::$search = [
+            'name',
+        ];
+
+        $this->getJson(UserRepository::route(query: ['search' => "O'Donnel"]))
+            ->assertJsonCount(4, 'data');
     }
 
     public function test_can_search_using_belongs_to_field(): void
@@ -74,6 +94,95 @@ class RepositorySearchServiceTest extends IntegrationTest
 
         $this->getJson(PostRepository::route(query: ['search' => 'John']))
             ->assertJsonCount(2, 'data');
+    }
+
+    public function test_can_search_using_belongs_to_field_with_custom_foreign_key(): void
+    {
+        $foreignUser = User::factory()->create([
+            'name' => 'Curtis Dog',
+        ]);
+
+        Post::factory(4)->create([
+            'edited_by' => $foreignUser->id,
+        ]);
+
+        $john = User::factory()->create([
+            'name' => 'John Doe',
+        ]);
+
+        Post::factory(2)->create([
+            'edited_by' => $john->id,
+        ]);
+
+        PostRepository::$related = [
+            'editor' => BelongsTo::make('editor', UserRepository::class)->searchable([
+                'users.name',
+            ]),
+        ];
+
+        $this->withoutExceptionHandling();
+        $this->getJson(PostRepository::route(query: ['search' => 'John']))
+            ->assertJsonCount(2, 'data');
+    }
+
+    public function test_can_search_strings_with_quotes_and_double_quotes(): void
+    {
+        Post::factory()->create([
+            'title' => "A Guy Named O'Neal was Standing at 5 o'clock with a 10\" cookie.",
+        ]);
+
+        $this->getJson(PostRepository::route(query: ['search' => 'John']))
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => 'Guy']))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => "5 o'clock"]))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '10" present']))
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '10" cookie']))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '150TPL5 (1 1/2" PVC SCH40 THREADED PLUG']))
+            ->assertJsonCount(0, 'data');
+
+        config()->set('restify.search.case_sensitive', false);
+
+        $this->getJson(PostRepository::route(query: ['search' => 'John']))
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => 'Guy']))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => "5 o'clock"]))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '10" present']))
+            ->assertJsonCount(0, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '10" cookie']))
+            ->assertJsonCount(1, 'data');
+
+        $this->getJson(PostRepository::route(query: ['search' => '150TPL5 (1 1/2" PVC SCH40 THREADED PLUG']))
+            ->assertJsonCount(0, 'data');
+    }
+
+    public function test_can_match_closure(): void
+    {
+        User::factory(4)->create();
+
+        UserRepository::$match = [
+            'is_active' => function ($request, $query) {
+                $this->assertInstanceOf(Request::class, $request);
+                $this->assertInstanceOf(Builder::class, $query);
+            },
+        ];
+
+        $this->getJson('users?is_active=true')
+            ->assertStatus(404);
     }
 
     public function test_can_match_custom_matcher(): void

@@ -6,11 +6,11 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class RepositoryUpdateControllerTest extends IntegrationTest
+class RepositoryUpdateControllerTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {
@@ -75,9 +75,9 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $updated)
-                ->where('data.attributes.image', null)
-                ->etc()
+                    ->where('data.attributes.title', $updated)
+                    ->where('data.attributes.image', null)
+                    ->etc()
             );
     }
 
@@ -100,9 +100,9 @@ class RepositoryUpdateControllerTest extends IntegrationTest
         ])
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.attributes.title', $updated)
-                ->where('data.attributes.image', null)
-                ->etc()
+                    ->where('data.attributes.title', $updated)
+                    ->where('data.attributes.image', null)
+                    ->etc()
             );
     }
 }

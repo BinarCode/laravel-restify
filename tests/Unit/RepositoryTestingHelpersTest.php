@@ -6,9 +6,9 @@ use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsShowGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class RepositoryTestingHelpersTest extends IntegrationTest
+class RepositoryTestingHelpersTest extends IntegrationTestCase
 {
     public function test_action_helper_accepts_key(): void
     {

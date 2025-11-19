@@ -31,8 +31,8 @@ abstract class RestController extends BaseController
 {
     use AuthorizesRequests;
     use DispatchesJobs;
-    use ValidatesRequests;
     use ForwardsCalls;
+    use ValidatesRequests;
 
     protected RestResponse $response;
 
@@ -128,7 +128,6 @@ abstract class RestController extends BaseController
     /**
      * Returns with a list of errors.
      *
-     * @param  array  $errors
      * @return JsonResponse
      *
      * @throws BindingResolutionException

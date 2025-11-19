@@ -44,7 +44,7 @@ trait HasMode
             return '=';
         }
 
-        return 'LIKE'; //TODO: ilike support
+        return 'LIKE'; // TODO: ilike support
     }
 
     public function getLikeValue(string $value): string

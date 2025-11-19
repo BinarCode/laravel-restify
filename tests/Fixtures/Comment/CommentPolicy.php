@@ -44,7 +44,7 @@ class CommentPolicy
         return $_SERVER['restify.comment.delete'] ?? true;
     }
 
-    public function attachUser(object $user = null, $model, $userToAttach)
+    public function attachUser(?object $user, $model, $userToAttach)
     {
         return $_SERVER['restify.comment.allowAttachUser'] ?? true;
     }

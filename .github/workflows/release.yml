@@ -1,0 +1,101 @@
+name: Create Release
+
+on:
+    push:
+        branches:
+            - 10.x
+        paths-ignore:
+            - 'docs-v3/**'
+            - 'docs-v2/**'
+            - '*.md'
+            - '.gitignore'
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/10.x'
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: 8.3
+                  extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, imagick, fileinfo
+                  coverage: none
+
+            -   name: Install dependencies
+                run: |
+                    composer require "laravel/framework:12.*" "orchestra/testbench:10.*" --no-interaction --no-update
+                    composer update --prefer-stable --prefer-dist --no-interaction
+
+            - name: Execute tests
+              run: composer test
+
+            - name: Get next version
+              id: get_version
+              run: |
+                  # Get all tags and sort by version number (descending)
+                  LATEST_TAG=$(git tag -l | grep -E '^v?[0-9]+\.[0-9]+\.[0-9]+$' | sed 's/^v//' | sort -t. -k1,1nr -k2,2nr -k3,3nr | head -n1)
+
+                  # If no tags found, default to 0.0.0
+                  if [ -z "$LATEST_TAG" ]; then
+                      LATEST_TAG="0.0.0"
+                  fi
+
+                  echo "Latest tag: $LATEST_TAG"
+
+                  # Split version into parts
+                  IFS='.' read -r MAJOR MINOR PATCH <<< "$LATEST_TAG"
+
+                  # Default to 0 if parts are empty
+                  MAJOR=${MAJOR:-0}
+                  MINOR=${MINOR:-0}
+                  PATCH=${PATCH:-0}
+
+                  # Increment patch version for every merge
+                  PATCH=$((PATCH + 1))
+
+                  # Create new version
+                  NEW_VERSION="$MAJOR.$MINOR.$PATCH"
+
+                  echo "New version: $NEW_VERSION"
+                  echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
+                  echo "tag_name=$NEW_VERSION" >> $GITHUB_OUTPUT
+
+            - name: Generate changelog
+              id: changelog
+              run: |
+                  # Get the previous tag for changelog
+                  PREVIOUS_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
+
+                  if [ -z "$PREVIOUS_TAG" ]; then
+                    # If no previous tags, get all commits
+                    COMMITS=$(git log --pretty=format:"* %s (%an)" --no-merges)
+                  else
+                    # Get commits since last tag
+                    COMMITS=$(git log ${PREVIOUS_TAG}..HEAD --pretty=format:"* %s (%an)" --no-merges)
+                  fi
+
+                  # Create changelog
+                  CHANGELOG="## What's Changed\n\n$COMMITS"
+
+                  # Handle multiline output for GitHub Actions
+                  echo "changelog<<EOF" >> $GITHUB_OUTPUT
+                  echo -e "$CHANGELOG" >> $GITHUB_OUTPUT
+                  echo "EOF" >> $GITHUB_OUTPUT
+
+            - name: Create Release
+              uses: softprops/action-gh-release@v1
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                  tag_name: ${{ steps.get_version.outputs.tag_name }}
+                  name: Release ${{ steps.get_version.outputs.tag_name }}
+                  body: ${{ steps.changelog.outputs.changelog }}
+                  draft: false
+                  prerelease: false

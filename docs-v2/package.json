@@ -6,13 +6,14 @@
     "private": true,
     "scripts": {
         "dev": "MINIMAL=1 CSB=1 nuxt",
-        "build": "nuxt build",
+        "build": "NODE_OPTIONS=--openssl-legacy-provider nuxt build",
         "start": "nuxt start",
-        "generate": "nuxt generate",
+        "generate": "NODE_OPTIONS=--openssl-legacy-provider nuxt generate",
         "post-update": "yarn upgrade --latest"
     },
     "dependencies": {
         "@nuxt/content-theme-docs": "0.10.1",
+        "@nuxtjs/gtm": "^2.4.0",
         "nuxt": "^2.15.8"
     }
 }

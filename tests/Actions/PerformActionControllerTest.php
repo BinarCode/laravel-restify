@@ -4,15 +4,16 @@ namespace Binaryk\LaravelRestify\Tests\Actions;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishInvokablePostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PublishPostAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\ActivateAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\DisableProfileAction;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
-class PerformActionControllerTest extends IntegrationTest
+class PerformActionControllerTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {
@@ -40,6 +41,22 @@ class PerformActionControllerTest extends IntegrationTest
         $this->assertEquals(1, PublishPostAction::$applied[0][1]->id);
     }
 
+    public function test_could_perform_invokable_action_for_multiple_repositories(): void
+    {
+        $post = $this->mockPosts(1, 2);
+
+        $this->postJson(PostRepository::action(PublishInvokablePostAction::class), [
+            'repositories' => [
+                $post->first()->id,
+                $post->last()->id,
+            ],
+        ])
+            ->assertSuccessful()
+            ->assertJsonStructure([
+                'data',
+            ]);
+    }
+
     public function test_could_perform_action_using_all(): void
     {
         $this->assertDatabaseCount('posts', 0);
@@ -47,7 +64,7 @@ class PerformActionControllerTest extends IntegrationTest
         PostRepository::partialMock()
             ->shouldReceive('actions')
             ->andReturn([
-                new class() extends Action
+                new class extends Action
                 {
                     public static $uriKey = 'publish';
 
@@ -71,7 +88,8 @@ class PerformActionControllerTest extends IntegrationTest
     {
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
-        $this->postJson(PostRepository::action(PublishPostAction::class), [])
+        $this
+            ->postJson(PostRepository::action(PublishPostAction::class), [])
             ->assertNotFound();
     }
 

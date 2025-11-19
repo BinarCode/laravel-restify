@@ -12,10 +12,10 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class MorphToManyFieldTest extends IntegrationTest
+class MorphToManyFieldTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {
@@ -38,8 +38,8 @@ class MorphToManyFieldTest extends IntegrationTest
             'related' => 'roles',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-            ->count('data.relationships.roles', 3)
-            ->etc()
+                ->count('data.relationships.roles', 3)
+                ->etc()
         );
     }
 

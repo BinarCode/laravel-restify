@@ -7,10 +7,10 @@ use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class RepositorySerializerTest extends IntegrationTest
+class RepositorySerializerTest extends IntegrationTestCase
 {
     public function test_can_manually_serialize_repository(): void
     {
@@ -35,6 +35,8 @@ class RepositorySerializerTest extends IntegrationTest
         $assertable
             ->has('meta')
             ->has('data')
+            ->has('data.0.relationships.user')
+            ->where('data.0.type', 'posts')
             ->count('data', 20)
             ->etc();
     }
@@ -48,8 +50,8 @@ class RepositorySerializerTest extends IntegrationTest
         $this->getJson(PostRepository::route($posts->first()))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->missing('data.meta')
-                ->etc()
+                    ->missing('data.meta')
+                    ->etc()
             );
 
         $this->getJson(PostRepository::route($posts->first(), query: [
@@ -57,8 +59,8 @@ class RepositorySerializerTest extends IntegrationTest
         ]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data.meta')
-                ->etc()
+                    ->has('data.meta')
+                    ->etc()
             );
     }
 
@@ -71,8 +73,8 @@ class RepositorySerializerTest extends IntegrationTest
         $this->getJson(PostRepository::route())
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->missing('data.0.meta')
-                ->etc()
+                    ->missing('data.0.meta')
+                    ->etc()
             );
 
         $this->getJson(PostRepository::route(query: [
@@ -80,8 +82,8 @@ class RepositorySerializerTest extends IntegrationTest
         ]))
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->has('data.0.meta')
-                ->etc()
+                    ->has('data.0.meta')
+                    ->etc()
             );
     }
 }

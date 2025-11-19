@@ -10,7 +10,6 @@ class AdvancedFiltersApplied
     public function __construct(
         public Repository $repository,
         public AdvancedFiltersCollection $advancedFiltersCollection,
-        public ?string $rawFilters = null,
-    ) {
-    }
+        public array $rawFilters = [],
+    ) {}
 }

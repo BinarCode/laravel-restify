@@ -10,6 +10,8 @@ trait Visibility
 
     public bool $showOnShow = true;
 
+    public bool $showOnMcp = true;
+
     public function showOnShow($callback = true)
     {
         $this->showOnShow = $callback;
@@ -71,12 +73,12 @@ trait Visibility
 
     public function isHiddenOnShow(RestifyRequest $request, $repository): bool
     {
-        return false === $this->isShownOnShow($request, $repository);
+        return $this->isShownOnShow($request, $repository) === false;
     }
 
     public function isShownOnIndex(RestifyRequest $request, $repository): bool
     {
-        return false === $this->isHiddenOnIndex($request, $repository);
+        return $this->isHiddenOnIndex($request, $repository) === false;
     }
 
     public function isHiddenOnIndex(RestifyRequest $request, $repository): bool
@@ -86,5 +88,45 @@ trait Visibility
         }
 
         return ! $this->showOnIndex;
+    }
+
+    public function showOnMcp($callback = true)
+    {
+        $this->showOnMcp = $callback;
+
+        return $this;
+    }
+
+    public function onlyOnMcp($value = true)
+    {
+        $this->showOnIndex = ! $value;
+        $this->showOnShow = ! $value;
+        $this->showOnMcp = $value;
+
+        return $this;
+    }
+
+    public function hideFromMcp($callback = true)
+    {
+        $this->showOnMcp = is_callable($callback) ? function () use ($callback) {
+            return ! call_user_func_array($callback, func_get_args());
+        }
+        : ! $callback;
+
+        return $this;
+    }
+
+    public function isShownOnMcp(RestifyRequest $request, $repository): bool
+    {
+        if (is_callable($this->showOnMcp)) {
+            $this->showOnMcp = call_user_func($this->showOnMcp, $request, $repository);
+        }
+
+        return $this->showOnMcp;
+    }
+
+    public function isHiddenFromMcp(RestifyRequest $request, $repository): bool
+    {
+        return $this->isShownOnMcp($request, $repository) === false;
     }
 }

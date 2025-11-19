@@ -9,15 +9,18 @@ use Binaryk\LaravelRestify\Fields\Concerns\Deletable;
 use Binaryk\LaravelRestify\Fields\Concerns\FileStorable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Storable;
+use Carbon\CarbonInterface;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
-class File extends Field implements StorableContract, DeletableContract
+class File extends Field implements DeletableContract, StorableContract
 {
-    use FileStorable;
     use AcceptsTypes;
     use Deletable;
+    use FileStorable;
 
     /**
      * The callback that should be used to determine the file's storage name.
@@ -41,13 +44,27 @@ class File extends Field implements StorableContract, DeletableContract
     public $sizeColumn;
 
     /**
+     * The custom filename resolved from storeAs callback.
+     *
+     * @var string|null
+     */
+    protected $customFilename;
+
+    /**
+     * Whether to use the custom filename for the original name column.
+     *
+     * @var bool
+     */
+    protected $useCustomFilenameForOriginal = false;
+
+    /**
      * The callback that should be executed to store the file.
      *
      * @var callable|Storable
      */
     public $storageCallback;
 
-    public function __construct($attribute, callable $resolveCallback = null)
+    public function __construct($attribute, ?callable $resolveCallback = null)
     {
         parent::__construct($attribute, $resolveCallback);
 
@@ -76,12 +93,59 @@ class File extends Field implements StorableContract, DeletableContract
     }
 
     /**
-     * Prepare the storage callback.
+     * Resolve a temporary URL for s3 compatible disks.
      *
-     * @param  callable|null  $storageCallback
-     * @return void
+     * @return $this
      */
-    protected function prepareStorageCallback(callable $storageCallback = null): void
+    public function resolveUsingTemporaryUrl(
+        bool $resolveTemporaryUrl = true,
+        ?CarbonInterface $expiration = null,
+        array $options = []
+    ): self {
+        if (! $resolveTemporaryUrl) {
+            return $this;
+        }
+
+        $callback = function ($value) use ($expiration) {
+            if (! $value) {
+                return;
+            }
+
+            return Storage::disk($this->getStorageDisk())->temporaryUrl(
+                $value,
+                $expiration ?? now()->addMinutes(5)
+            );
+        };
+
+        $this->resolveCallback($callback);
+
+        return $this;
+    }
+
+    /**
+     * Resolve a full path for the file.
+     *
+     * @return $this
+     */
+    public function resolveUsingFullUrl(): self
+    {
+        $callback = function ($value) {
+            if (! $value) {
+                return;
+            }
+
+            return Storage::disk($this->getStorageDisk())->url($value);
+        };
+
+        $this->resolveCallback($callback);
+
+        return $this;
+    }
+
+    /**
+     * Prepare the storage callback.
+     */
+    protected function prepareStorageCallback(?callable $storageCallback = null): void
     {
         $this->storageCallback = $storageCallback ?? function ($request, $model) {
             return $this->mergeExtraStorageColumns($request, [
@@ -116,15 +180,60 @@ class File extends Field implements StorableContract, DeletableContract
         return $this;
     }
 
-    protected function storeFile(Request $request, string $requestAttribute)
+    protected function resolveFileFromRequest(Request $request): ?UploadedFile
     {
-        if (! $this->storeAs) {
-            return $request->file($requestAttribute)->store($this->getStorageDir(), $this->getStorageDisk());
+        if (($file = $request->input($this->attribute)) instanceof UploadedFile && $file->isValid()) {
+            return $file;
         }
 
-        return $request->file($requestAttribute)->storeAs(
+        if (($file = $request->file($this->attribute)) && $file->isValid()) {
+            return $file;
+        }
+
+        return null;
+    }
+
+    protected function storeFile(Request $request, string $requestAttribute)
+    {
+        $file = $this->resolveFileFromRequest($request);
+
+        if (! $file) {
+            throw new RuntimeException("No valid file found in the request for attribute {$requestAttribute}");
+        }
+
+        if (! $this->storeAs) {
+            $this->customFilename = null;
+            $this->useCustomFilenameForOriginal = false;
+
+            return $file->store($this->getStorageDir(), $this->getStorageDisk());
+        }
+
+        $isCallable = is_callable($this->storeAs);
+        $filename = $isCallable
+            ? call_user_func($this->storeAs, $request)
+            : $this->storeAs;
+
+        // If storeAs returns empty/null, fallback to auto-generated name
+        if (empty($filename)) {
+            $this->customFilename = null;
+            $this->useCustomFilenameForOriginal = false;
+
+            return $file->store($this->getStorageDir(), $this->getStorageDisk());
+        }
+
+        // Smart extension handling - append if missing
+        $extension = $file->getClientOriginalExtension();
+        if ($extension && ! str_ends_with(strtolower($filename), '.'.$extension)) {
+            $filename = $filename.'.'.$extension;
+        }
+
+        $this->customFilename = $filename;
+        // Only use custom filename for original name if it came from a callable
+        $this->useCustomFilenameForOriginal = $isCallable;
+
+        return $file->storeAs(
             $this->getStorageDir(),
-            is_callable($this->storeAs) ? call_user_func($this->storeAs, $request) : $this->storeAs,
+            $filename,
             $this->getStorageDisk()
         );
     }
@@ -148,15 +257,15 @@ class File extends Field implements StorableContract, DeletableContract
      * Merge the specified extra file information columns into the storable attributes.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @param  array  $attributes
-     * @return array
      */
     protected function mergeExtraStorageColumns($request, array $attributes): array
     {
-        $file = $request->file($this->attribute);
+        $file = $this->resolveFileFromRequest($request);
 
         if ($this->originalNameColumn) {
-            $attributes[$this->originalNameColumn] = $file->getClientOriginalName();
+            $attributes[$this->originalNameColumn] = ($this->useCustomFilenameForOriginal && $this->customFilename)
+                ? $this->customFilename
+                : $file->getClientOriginalName();
         }
 
         if ($this->sizeColumn) {
@@ -168,8 +277,6 @@ class File extends Field implements StorableContract, DeletableContract
 
     /**
      * Get an array of the columns that should be deleted and their values.
-     *
-     * @return array
      */
     protected function columnsThatShouldBeDeleted(): array
     {
@@ -186,15 +293,42 @@ class File extends Field implements StorableContract, DeletableContract
         return $attributes;
     }
 
-    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
+    public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
-        if (is_null($file = $request->file($this->attribute)) || ! $file->isValid()) {
+        if ($this->storeCallback instanceof Closure) {
+            return call_user_func($this->storeCallback, $request, $model, $this->attribute);
+        }
+
+        // Handle URL input first
+        if ($request->has($this->attribute) && is_string($request->input($this->attribute))) {
+            $url = $request->input($this->attribute);
+
+            if (filter_var($url, FILTER_VALIDATE_URL)) {
+                if ($this->isPrunable()) {
+                    call_user_func(
+                        $this->deleteCallback,
+                        $request,
+                        $model,
+                        $this->getStorageDisk(),
+                        $this->getStoragePath()
+                    );
+                }
+
+                $model->{$this->attribute} = $url;
+
+                if ($this->originalNameColumn) {
+                    $model->{$this->originalNameColumn} = basename($url);
+                }
+
+                return $this;
+            }
+        }
+
+        if (! $this->resolveFileFromRequest($request)) {
             return $this;
         }
 
         if ($this->isPrunable()) {
-            // Delete old file if exists.
-//            return function () use ($model, $request) {
             call_user_func(
                 $this->deleteCallback,
                 $request,
@@ -202,7 +336,6 @@ class File extends Field implements StorableContract, DeletableContract
                 $this->getStorageDisk(),
                 $this->getStoragePath()
             );
-//            };
         }
 
         $result = call_user_func(
@@ -233,6 +366,20 @@ class File extends Field implements StorableContract, DeletableContract
         }
 
         return $this;
+    }
+
+    public function getStoringRules(): array
+    {
+        $rules = parent::getStoringRules();
+
+        // Modify validation to accept URLs
+        foreach ($rules as &$rule) {
+            if (is_string($rule) && str($rule)->startsWith('file')) {
+                $rule = 'sometimes|'.$rule;
+            }
+        }
+
+        return $rules;
     }
 
     /**

@@ -9,6 +9,12 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
+/**
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @extends \Illuminate\Support\Collection<TKey, TValue>
+ */
 class SortCollection extends Collection
 {
     public function __construct($items = [])
@@ -45,8 +51,8 @@ class SortCollection extends Collection
     public function inRepository(RestifyRequest $request, Repository $repository): self
     {
         $collection = static::make($repository::sorts())->merge(
-            $repository::collectRelated()->mapIntoSortable()
-        );
+            $repository::collectRelated()->mapIntoSortable($request)
+        )->merge($repository::collectFieldSorts($request, $repository));
 
         return $this->filter(fn (SortableFilter $filter) => $collection->contains('column', '=', $filter->column));
     }
@@ -56,9 +62,9 @@ class SortCollection extends Collection
         return $this->filter(fn (SortableFilter $filter) => $filter->authorizedToSee($request));
     }
 
-    public function hydrateDefinition(Repository $repository): SortCollection
+    public function hydrateDefinition(Repository $repository, RestifyRequest $request): SortCollection
     {
-        $relatedSortables = $repository::collectRelated()->mapIntoSortable();
+        $relatedSortables = $repository::collectRelated()->mapIntoSortable($request);
 
         return $this->map(function (SortableFilter $filter) use ($repository, $relatedSortables) {
             /** * @var SortableFilter $relatedSortableFilter */
@@ -73,6 +79,10 @@ class SortCollection extends Collection
             }
 
             $definition = Arr::get($repository::sorts(), $filter->column());
+
+            if (is_string($definition) && class_exists($definition)) {
+                $definition = app($definition);
+            }
 
             if (is_callable($definition)) {
                 return $filter->usingClosure($definition);

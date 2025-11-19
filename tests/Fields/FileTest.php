@@ -8,18 +8,18 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\AvatarFile;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\AvatarStore;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 
-class FileTest extends IntegrationTest
+class FileTest extends IntegrationTestCase
 {
     public function test_can_correctly_fill_the_main_attribute_and_store_file(): void
     {
         Storage::fake();
         Storage::fake('public');
 
-        $model = new User();
+        $model = new User;
         $field = AvatarFile::make('avatar');
         $field->storeAs(function () {
             return 'avatar.jpg';

@@ -2,10 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
-use Faker\Generator as Faker;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
-use Illuminate\Database\ConnectionResolverInterface as Resolver;
 use Illuminate\Support\Str;
 use Symfony\Component\Process\Process;
 
@@ -15,24 +13,19 @@ class DevCommand extends Command
 
     protected $signature = 'restify:dev {--path= : The path to the root local directory.}
                                         {--git : Use the latest vcs git repository}
+                                        {--revert : Revert composer.json to remove local development setup}
     ';
 
     protected $description = 'Add laravel-restify from a local directory.';
-
-    /** * @var Faker */
-    private $faker;
-
-    public function __construct(Resolver $resolver, Faker $faker)
-    {
-        parent::__construct();
-        $this->resolver = $resolver;
-        $this->faker = $faker;
-    }
 
     public function handle()
     {
         if (! $this->confirmToProceed()) {
             return true;
+        }
+
+        if ($this->option('revert')) {
+            return $this->revert();
         }
 
         $this->addRepositoryToRootComposer();
@@ -138,5 +131,64 @@ class DevCommand extends Command
         return $this->option('git')
             ? 'git@github.com:BinarCode/laravel-restify.git'
             : '../../binarcode/laravel-restify';
+    }
+
+    protected function revert(): int
+    {
+        $this->removeRepositoryFromComposer();
+
+        $this->info('Removed local path from repositories.');
+
+        $this->restorePackageVersion();
+
+        $this->info('Restored package version in composer.json.');
+
+        $this->composerUpdate();
+
+        $this->info('Composer updated. Development setup reverted.');
+
+        return 0;
+    }
+
+    protected function removeRepositoryFromComposer(): void
+    {
+        $composer = json_decode(file_get_contents(base_path('composer.json')), true);
+
+        if (! array_key_exists('repositories', $composer)) {
+            return;
+        }
+
+        $composer['repositories'] = collect($composer['repositories'])->filter(function ($repository) {
+            if (! array_key_exists('url', $repository)) {
+                return true;
+            }
+
+            return ! Str::contains($repository['url'], 'laravel-restify');
+        })->values()->toArray();
+
+        if (empty($composer['repositories'])) {
+            unset($composer['repositories']);
+        }
+
+        file_put_contents(
+            base_path('composer.json'),
+            json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
+    }
+
+    protected function restorePackageVersion(): void
+    {
+        $composer = json_decode(file_get_contents(base_path('composer.json')), true);
+
+        if (! array_key_exists('require', $composer) || ! array_key_exists('binaryk/laravel-restify', $composer['require'])) {
+            return;
+        }
+
+        $composer['require']['binaryk/laravel-restify'] = '^10.0';
+
+        file_put_contents(
+            base_path('composer.json'),
+            json_encode($composer, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+        );
     }
 }

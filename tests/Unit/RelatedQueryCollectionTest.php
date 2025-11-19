@@ -7,9 +7,9 @@ use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class RelatedQueryCollectionTest extends IntegrationTest
+class RelatedQueryCollectionTest extends IntegrationTestCase
 {
     public function test_can_create_collection_from_query(): void
     {

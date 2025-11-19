@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Auth\Middleware\Authenticate;
 
-class RepositoryMiddlewaresTest extends IntegrationTest
+class RepositoryMiddlewaresTest extends IntegrationTestCase
 {
     protected function tearDown(): void
     {

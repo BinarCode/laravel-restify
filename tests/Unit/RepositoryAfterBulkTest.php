@@ -5,10 +5,10 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Collection;
 
-class RepositoryAfterBulkTest extends IntegrationTest
+class RepositoryAfterBulkTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {

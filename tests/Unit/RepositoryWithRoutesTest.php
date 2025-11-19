@@ -4,10 +4,10 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Routing\Router;
 
-class RepositoryWithRoutesTest extends IntegrationTest
+class RepositoryWithRoutesTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {

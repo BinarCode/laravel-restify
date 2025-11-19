@@ -67,7 +67,7 @@ class DatabaseGenerator
     public function integer(Column $columnDefinition, $column): ?int
     {
         if ($columnDefinition->getAutoincrement() === true) {
-            //primary key
+            // primary key
             return null;
         }
 

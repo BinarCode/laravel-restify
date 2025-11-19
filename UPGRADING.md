@@ -1,5 +1,312 @@
 # Upgrading
 
+## From 9.x to 10.x
+
+### New Features
+
+#### Modern Model Definition with PHP Attributes
+
+Laravel Restify v10 introduces a modern way to define models using PHP 8+ attributes. While your existing static property approach will continue to work, we recommend migrating to the new attribute-based syntax for better developer experience.
+
+**Before (v9 and earlier):**
+```php
+class UserRepository extends Repository
+{
+    public static string $model = User::class;
+    
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('name'),
+            field('email'),
+        ];
+    }
+}
+```
+
+**After (v10 - Recommended):**
+```php
+use Binaryk\LaravelRestify\Attributes\Model;
+
+#[Model(User::class)]
+class UserRepository extends Repository
+{
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('name'),
+            field('email'),
+        ];
+    }
+}
+```
+
+**Benefits of migrating to attributes:**
+- 🎯 **Modern, declarative approach** - More intuitive and cleaner code
+- 🔍 **Better IDE support** - Enhanced autocompletion and static analysis
+- 📦 **Type-safe** - Use `::class` syntax for better refactoring support
+- 🔧 **More discoverable** - Attributes are easier to find with reflection tools
+- 🚀 **Future-proof** - Follows modern PHP practices
+
+**Migration Strategy:**
+
+1. **No immediate action required** - All existing repositories continue to work as-is
+2. **Gradual migration** - Update repositories one at a time when convenient
+3. **Mixed approach** - You can use both attributes and static properties in the same codebase
+
+**Priority order for model resolution:**
+1. `#[Model]` attribute (highest priority)
+2. `public static string $model` property
+3. Auto-guessing from repository class name (lowest priority)
+
+This change is **100% backward compatible** - no existing code will break.
+
+#### Improved Field-Level Search and Sorting
+
+Laravel Restify v10 introduces a more intuitive way to define searchable and sortable fields directly on the field definitions. While the static array approach continues to work, the new field-level methods provide better organization and discoverability.
+
+**Before (v9 and earlier):**
+```php
+class UserRepository extends Repository
+{
+    public static array $search = ['name', 'email'];
+    public static array $sort = ['name', 'email', 'created_at'];
+    
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('name'),
+            field('email'),
+            field('created_at'),
+        ];
+    }
+}
+```
+
+**After (v10 - Recommended):**
+```php
+#[Model(User::class)]
+class UserRepository extends Repository
+{
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('name')->searchable()->sortable(),
+            field('email')->searchable()->sortable(),
+            field('created_at')->sortable(),
+        ];
+    }
+}
+```
+
+**Benefits of field-level configuration:**
+- 📍 **Co-located configuration** - Search/sort behavior defined alongside the field
+- 🔍 **Better discoverability** - Easy to see which fields are searchable/sortable at a glance  
+- 🎛️ **More granular control** - Configure search and sort behavior per field
+- 🧹 **Cleaner repositories** - Reduces static array properties
+- 💡 **IDE-friendly** - Better autocompletion and method chaining
+
+**Migration Strategy:**
+
+1. **Static arrays still work** - No need to change existing repositories immediately
+2. **Field-level takes precedence** - If both are defined, field-level configuration wins
+3. **Gradual migration** - Update fields one at a time or per repository
+4. **Mixed approach** - You can use both approaches in the same codebase during transition
+
+**Priority order for search/sort resolution:**
+1. Field-level `->searchable()`/`->sortable()` methods (highest priority)
+2. Static `$search`/`$sort` arrays (fallback)
+
+This change is also **100% backward compatible** - existing static arrays continue to work perfectly.
+
+#### Enhanced BelongsTo Search Performance with Configurable JOINs
+
+Laravel Restify v10 introduces a significant performance optimization for BelongsTo relationship searches by replacing slow subqueries with efficient JOINs. This feature is configurable and enabled by default for better performance.
+
+**Performance Impact:**
+
+**Before (v9 and earlier - Subquery approach):**
+```sql
+-- Slow subquery-based search
+SELECT * FROM users WHERE (
+  (SELECT name FROM organizations WHERE organizations.id = users.organization_id LIMIT 1) LIKE '%Tech%'
+  OR
+  (SELECT phone FROM organizations WHERE organizations.id = users.organization_id LIMIT 1) LIKE '%Tech%'
+)
+```
+
+**After (v10 - Optimized JOIN approach):**
+```sql
+-- Fast JOIN-based search with proper column selection
+SELECT users.* FROM users 
+LEFT JOIN organizations ON users.organization_id = organizations.id
+WHERE (organizations.name LIKE '%Tech%' OR organizations.phone LIKE '%Tech%')
+```
+
+**Configuration Options:**
+
+The JOIN optimization can be controlled via configuration:
+
+```php
+// config/restify.php
+'search' => [
+    'case_sensitive' => true,
+    
+    /*
+    | Use JOINs for BelongsTo Relationships
+    | When enabled, BelongsTo relationship searches will use JOINs instead of
+    | subqueries for better performance. This is generally recommended for
+    | better query performance, but can be disabled if compatibility issues arise.
+    | Default: true (recommended for better performance)
+    */
+    'use_joins_for_belongs_to' => env('RESTIFY_USE_JOINS_FOR_BELONGS_TO', true),
+],
+```
+
+**Environment Variable Control:**
+```bash
+# .env file
+RESTIFY_USE_JOINS_FOR_BELONGS_TO=true   # Enable JOINs (default, recommended)
+RESTIFY_USE_JOINS_FOR_BELONGS_TO=false  # Disable JOINs (legacy subqueries)
+```
+
+**Benefits of JOIN optimization:**
+- 🚀 **Better Performance** - JOINs are significantly faster than subqueries for relationship searches
+- 📊 **Improved Scalability** - Better performance with large datasets
+- 🔧 **Automatic Column Qualification** - Prevents column name conflicts in complex queries
+- ⚡ **Pagination Optimization** - Both main and count queries benefit from JOINs
+
+**When to disable JOINs:**
+- 🔄 **During migration** - Test both approaches during deployment
+- 🐛 **Compatibility issues** - If you encounter any edge cases with complex queries
+- 📊 **Specific database setups** - Some database configurations may prefer subqueries
+- 🧪 **Testing phases** - Compare performance in your specific environment
+
+**Migration Strategy:**
+
+1. **Default behavior** - JOINs are enabled by default for better performance
+2. **No code changes needed** - Existing BelongsTo searches automatically benefit
+3. **Easy rollback** - Set `RESTIFY_USE_JOINS_FOR_BELONGS_TO=false` to revert to v9 behavior
+4. **Gradual testing** - Test in development/staging before production deployment
+
+**Example Usage:**
+```php
+// This automatically benefits from JOIN optimization in v10
+class PostRepository extends Repository
+{
+    public static array $related = [
+        'user' => BelongsTo::make('user', UserRepository::class)
+            ->searchable(['name', 'email']),
+        'organization' => BelongsTo::make('organization', OrganizationRepository::class)
+            ->searchable(['name', 'phone']),
+    ];
+}
+```
+
+This change is **100% backward compatible** with an option to disable if needed. The optimization is transparent to your application code while providing significant performance improvements.
+
+## Breaking Changes
+
+### Default Search Behavior Change
+
+🚨 **Breaking Change**: In version 10, repositories no longer search by the model's primary key (ID) by default when no searchable fields are defined.
+
+**Before (v9 and earlier):**
+```php
+class UserRepository extends Repository
+{
+    // No $search property defined
+    // Automatically searched by 'id' field by default
+}
+```
+
+**After (v10):**
+```php
+class UserRepository extends Repository
+{
+    // No $search property defined
+    // No searchable fields available - search returns empty results
+}
+```
+
+**To maintain the previous behavior**, add this method to your Repository parent class or individual repositories:
+
+```php
+public static function searchables(): array
+{
+    return empty(static::$search)
+        ? [static::newModel()->getKeyName()]
+        : static::$search;
+}
+```
+
+**Why this change was made:**
+- **Security**: Prevents unintended ID-based searches on sensitive repositories
+- **Explicit configuration**: Forces developers to explicitly define searchable fields
+- **Performance**: Avoids unnecessary database queries when search isn't intended
+- **Consistency**: Aligns with the principle of explicit over implicit behavior
+
+**Migration strategy:**
+1. **Immediate fix**: Add the `searchables()` method to your base Repository class to restore v9 behavior globally
+2. **Recommended approach**: Review each repository and explicitly define `$search` arrays with appropriate fields
+3. **Security review**: Consider which repositories should actually be searchable and by which fields
+
+### Configuration File Updates
+
+When upgrading to v10, it's important to ensure your local `config/restify.php` file includes all the new configuration options that have been added.
+
+**Recommended Steps:**
+
+1. **Compare configuration files** - Check your local `config/restify.php` against the latest version
+2. **Review new sections** - Look for new configuration options that may have been added
+3. **Merge changes** - Add any missing configuration sections to your local file
+
+**New configuration sections in v10 may include:**
+
+```php
+// Example new sections (check the actual config file for current options)
+'search' => [
+    'case_sensitive' => true,
+    
+    // New: JOIN optimization for BelongsTo searches (v10+)
+    'use_joins_for_belongs_to' => env('RESTIFY_USE_JOINS_FOR_BELONGS_TO', true),
+],
+
+'mcp' => [
+    'tools' => [
+        'exclude' => [],
+        'include' => [],
+    ],
+    'resources' => [
+        'exclude' => [],
+        'include' => [],
+    ],
+    'prompts' => [
+        'exclude' => [],
+        'include' => [],
+    ],
+],
+
+'ai_solutions' => [
+    'model' => 'gpt-4.1-mini',
+    'max_tokens' => 1000,
+],
+```
+
+**How to update your config:**
+
+1. **Backup your current config** - Copy your existing `config/restify.php`
+2. **Republish the config** (optional):
+   ```bash
+   php artisan vendor:publish --provider="Binaryk\LaravelRestify\LaravelRestifyServiceProvider" --tag="config" --force
+   ```
+3. **Merge your custom settings** - Copy your custom values back into the new config file
+4. **Test your application** - Ensure all functionality works as expected
+
+<alert type="warning">
+Always backup your existing configuration before making changes, especially if you have custom settings.
+</alert>
+
 ## From 7.3.1 to 7.4.0
 
 ## Breaking

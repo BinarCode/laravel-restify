@@ -3,9 +3,9 @@
 namespace Binaryk\LaravelRestify\Tests\Console\Commands;
 
 use Binaryk\LaravelRestify\Bootstrap\RoutesBoot;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 
-class RouteListCommandTest extends IntegrationTest
+class RouteListCommandTest extends IntegrationTestCase
 {
     public function test_can_list_restify_routes(): void
     {

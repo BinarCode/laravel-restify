@@ -18,24 +18,31 @@
         }
     ],
     "require": {
-        "php": "^8.0",
-        "illuminate/contracts": "^9.0",
-        "laravel/pint": "^1.0",
-        "spatie/data-transfer-object": "^3.1",
+        "php": "^8.3",
+        "illuminate/contracts": "^11.0|^12.0",
+        "laravel/framework": "^11.0|^12.0",
+        "laravel/mcp": "^0.2.0",
+        "laravel/pint": "^1.25.1",
+        "spatie/laravel-data": "^4.4",
         "spatie/laravel-package-tools": "^1.12",
         "spatie/once": "^3.0"
     },
     "require-dev": {
-        "brianium/paratest": "^6.2",
-        "doctrine/dbal": "^3.0",
-        "nunomaduro/collision": "^6.0",
-        "orchestra/testbench": "^7.0",
+        "brianium/paratest": "^7.0.6",
+        "doctrine/dbal": "^3.0|^4.0",
+        "nunomaduro/collision": "^8.1",
+        "openai-php/laravel": "^0.8.1|^0.11",
+        "orchestra/testbench": "^9.0|^10.0",
         "phpstan/extension-installer": "^1.1",
-        "phpstan/phpstan-deprecation-rules": "^1.0",
-        "phpstan/phpstan-phpunit": "^1.0",
-        "phpunit/phpunit": "^9.3",
+        "phpstan/phpstan-deprecation-rules": "^1.0|^2.0",
+        "phpstan/phpstan-phpunit": "^1.0|^2.0",
+        "phpunit/phpunit": "^10.0|^11.0|^12.0",
         "spatie/laravel-ray": "^1.9",
-        "vimeo/psalm": "^4.4"
+        "vimeo/psalm": "^6.0@dev"
+    },
+    "suggest": {
+        "nuwave/lighthouse": "For GraphQL schema generation and resolvers (^6.0)",
+        "pusher/pusher-php-server": "For real-time broadcasting features (^7.0)"
     },
     "autoload": {
         "files": [
@@ -48,7 +55,9 @@
     "autoload-dev": {
         "psr-4": {
             "Binaryk\\LaravelRestify\\Tests\\": "tests",
-            "Binaryk\\LaravelRestify\\Tests\\Database\\Factories\\": "tests/database/factories"
+            "Binaryk\\LaravelRestify\\Tests\\Database\\Factories\\": "tests/database/factories",
+            "App\\": "tests/Fixtures/App",
+            "CustomNamespace\\": "tests/Fixtures/CustomNamespace"
         }
     },
     "scripts": {
@@ -71,5 +80,7 @@
                 "Restify": "Binaryk\\LaravelRestify\\RestifyFacade"
             }
         }
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

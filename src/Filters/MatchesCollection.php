@@ -3,12 +3,19 @@
 namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 
+/**
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @extends \Illuminate\Support\Collection<TKey, TValue>
+ */
 class MatchesCollection extends Collection
 {
     public function __construct($items = [])
@@ -60,8 +67,19 @@ class MatchesCollection extends Collection
                 }
             }
 
-            return ! is_null($request->query("-{$filter->column()}"))
-                || ! is_null($request->query($filter->column()));
+            $value = $request->query($filter->column());
+            $negatedValue = $request->query("-{$filter->column()}");
+
+            if ($request instanceof McpRequestable) {
+                $negatedValue = $request->input("-{$filter->column()}");
+            }
+
+            if ($request instanceof McpRequestable) {
+                $value = $request->input($filter->column());
+            }
+
+            return ! is_null($negatedValue)
+                || ! is_null($value);
         });
     }
 
@@ -91,7 +109,6 @@ class MatchesCollection extends Collection
     }
 
     /**
-     * @param  RestifyRequest  $request
      * @param  Builder|Relation  $builder
      * @return $this
      */

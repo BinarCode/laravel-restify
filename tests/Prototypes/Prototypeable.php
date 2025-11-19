@@ -6,7 +6,7 @@ use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Assertables\AssertableModel;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
@@ -19,9 +19,8 @@ abstract class Prototypeable implements JsonSerializable
     use Make;
 
     public function __construct(
-        public IntegrationTest $test,
-    ) {
-    }
+        public IntegrationTestCase $test,
+    ) {}
 
     protected array $attributes = [];
 
@@ -113,7 +112,7 @@ abstract class Prototypeable implements JsonSerializable
         return $this->test->getJson(static::repositoryClass()::route());
     }
 
-    public function create(Closure $assertable = null, Closure $tap = null): self
+    public function create(?Closure $assertable = null, ?Closure $tap = null): self
     {
         $this->ensureRepositoryClassDefined();
 
@@ -124,7 +123,7 @@ abstract class Prototypeable implements JsonSerializable
         return $this->wirteableCallback($id, $assertable);
     }
 
-    public function update(string|int $key = null, Closure $assertable = null, Closure $tap = null): self
+    public function update(string|int|null $key = null, ?Closure $assertable = null, ?Closure $tap = null): self
     {
         $key = $key ?? $this->model()->getKey();
 
@@ -135,7 +134,7 @@ abstract class Prototypeable implements JsonSerializable
         return $this->wirteableCallback($id, $assertable);
     }
 
-    public function destroy(string|int $key = null, Closure $assertable = null, Closure $tap = null): self
+    public function destroy(string|int|null $key = null, ?Closure $assertable = null, ?Closure $tap = null): self
     {
         $key = $key ?? $this->model()->getKey();
 
@@ -146,7 +145,7 @@ abstract class Prototypeable implements JsonSerializable
         return $this;
     }
 
-    public function runAction(string $actionClass, array $payload = [], Closure $cb = null): self
+    public function runAction(string $actionClass, array $payload = [], ?Closure $cb = null): self
     {
         abort_unless(is_subclass_of($actionClass, Action::class), 400, __('Invalid class instance.'));
 
@@ -166,7 +165,7 @@ abstract class Prototypeable implements JsonSerializable
         return $this;
     }
 
-    protected function wirteableCallback(mixed $key, Closure $cb = null): self
+    protected function wirteableCallback(mixed $key, ?Closure $cb = null): self
     {
         if (is_null($key)) {
             return $this;

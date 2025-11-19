@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -15,11 +16,11 @@ class ActionRequest extends RestifyRequest
         return $this->repository()->availableActions($this);
     }
 
-    public function action(): Action
+    public function action()
     {
         return once(function () {
             return $this->availableActions()->first(function ($action) {
-                return $this->query('action') === $action->uriKey();
+                return $this->query('action') === Action::guessUriKey($action);
             }) ?: abort(
                 $this->actionExists() ? 403 : 404,
                 'Action does not exists or you don\'t have enough permissions to perform it.'
@@ -29,16 +30,18 @@ class ActionRequest extends RestifyRequest
 
     protected function actionExists(): bool
     {
-        return $this->availableActions()->contains(function (Action $action) {
-            return $action->uriKey() === $this->query('action');
-        });
+        return $this->availableActions()
+            ->contains(function (mixed $action) {
+                return Action::guessUriKey($action) === $this->query('action');
+            });
     }
 
     public function builder(Action $action, int $size): Builder
     {
-        return tap(RepositorySearchService::make()->search($this, $this->repository()), function ($query) use ($action) {
-            $action::indexQuery($this, $query);
-        })
+        return tap(RepositorySearchService::make()->search($this, $this->repository()),
+            function ($query) use ($action) {
+                $action::indexQuery($this, $query);
+            })
             ->when($this->input('repositories') !== 'all', function ($query) {
                 $query->whereKey($this->input('repositories', []));
             })
@@ -62,6 +65,10 @@ class ActionRequest extends RestifyRequest
 
     public function isForRepositoryRequest(): bool
     {
+        if ($this instanceof McpActionRequest) {
+            return $this->input('id') != null;
+        }
+
         return $this instanceof RepositoryActionRequest;
     }
 }

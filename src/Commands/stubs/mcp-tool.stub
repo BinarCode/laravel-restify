@@ -1,0 +1,45 @@
+<?php
+
+namespace DummyNamespace;
+
+use Illuminate\JsonSchema\JsonSchema;
+use Laravel\Mcp\Request;
+use Laravel\Mcp\Response;
+use Laravel\Mcp\Server\Tool;
+
+class DummyClass extends Tool
+{
+    public function name(): string
+    {
+        return 'DummyToolName';
+    }
+
+    public function description(): string
+    {
+        return 'Description of what this tool does';
+    }
+
+    public function schema(JsonSchema $schema): array
+    {
+        // Define your tool's input parameters here
+        // Example:
+        // return [
+        //     'input' => $schema->string()
+        //         ->description('The input parameter')
+        //         ->required(),
+        // ];
+
+        return [];
+    }
+
+    public function handle(Request $request): Response
+    {
+        // Implement your tool's logic here
+        // Access input parameters via $request->input('parameter_name')
+
+        return Response::json([
+            'success' => true,
+            'message' => 'Tool executed successfully',
+        ]);
+    }
+}

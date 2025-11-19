@@ -21,6 +21,11 @@ trait Attachable
     /**
      * @var Closure
      */
+    private $canSyncCallback;
+
+    /**
+     * @var Closure
+     */
     private $validationCallback;
 
     /**
@@ -38,6 +43,13 @@ trait Attachable
     public function canAttach(callable|Closure $callback)
     {
         $this->canAttachCallback = $callback;
+
+        return $this;
+    }
+
+    public function canSync(callable|Closure $callback)
+    {
+        $this->canSyncCallback = $callback;
 
         return $this;
     }
@@ -60,6 +72,13 @@ trait Attachable
             : true;
     }
 
+    public function authorizedToSync(RestifyRequest $request, Pivot $pivot): bool
+    {
+        return is_callable($this->canAttachCallback)
+            ? call_user_func($this->canAttachCallback, $request, $pivot)
+            : true;
+    }
+
     public function authorizeToAttach(RestifyRequest $request)
     {
         collect(Arr::wrap($request->input($request->relatedRepository)))->each(function ($relatedRepositoryId) use ($request) {
@@ -70,7 +89,24 @@ trait Attachable
             );
 
             if (! $this->authorizedToAttach($request, $pivot)) {
-                throw new AuthorizationException();
+                throw new AuthorizationException;
+            }
+        });
+
+        return $this;
+    }
+
+    public function authorizeToSync(RestifyRequest $request)
+    {
+        collect(Arr::wrap($request->input($request->relatedRepository)))->each(function ($relatedRepositoryId) use ($request) {
+            $pivot = $this->initializePivot(
+                $request,
+                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(),
+                $relatedRepositoryId
+            );
+
+            if (! $this->authorizedToSync($request, $pivot)) {
+                throw new AuthorizationException;
             }
         });
 
@@ -87,7 +123,7 @@ trait Attachable
     public function authorizeToDetach(RestifyRequest $request, Pivot $pivot)
     {
         if (! $this->authorizedToDetach($request, $pivot)) {
-            throw new AuthorizationException();
+            throw new AuthorizationException;
         }
 
         return $this;
@@ -120,12 +156,12 @@ trait Attachable
 
         if ($relationship->withTimestamps) {
             $pivot->forceFill([
-                $relationship->createdAt() => new DateTime(),
-                $relationship->updatedAt() => new DateTime(),
+                $relationship->createdAt() => new DateTime,
+                $relationship->updatedAt() => new DateTime,
             ]);
         }
 
-        $fields = $this->collectPivotFields()->filter(fn ($pivotField) => $request->has($pivotField->attribute))->values();
+        $fields = $this->collectPivotFields()->values();
 
         $repository = $request->repository();
 
@@ -178,8 +214,8 @@ trait Attachable
     {
         $this->validationCallback = function (RestifyRequest $request, $pivot) {
             $valid = $this->getRelation($request->repository())
-                    ->where($pivot->toArray())
-                    ->count() === 0;
+                ->where($pivot->toArray())
+                ->count() === 0;
 
             throw_unless($valid, ValidationException::withMessages([__('Invalid data. The relation must be unique.')]));
 

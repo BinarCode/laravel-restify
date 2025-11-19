@@ -2,12 +2,13 @@
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class RepositoryFilterControllerTest extends IntegrationTest
+class RepositoryFilterControllerTest extends IntegrationTestCase
 {
     public function test_available_filters_contains_matches_sortables_searches(): void
     {
@@ -34,16 +35,16 @@ class RepositoryFilterControllerTest extends IntegrationTest
             // 2 searchable
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.0.rules.is_active', 'bool')
-                ->where('data.4.type', 'text')
-                ->where('data.4.column', 'title')
-                ->where('data.5.type', 'value')
-                ->where('data.5.column', 'title')
-                ->where('data.6.type', 'value')
-                ->where('data.6.column', 'id')
-                ->etc()
+                    ->where('data.0.rules.is_active', 'bool')
+                    ->where('data.5.type', 'text')
+                    ->where('data.5.column', 'title')
+                    ->where('data.6.type', 'value')
+                    ->where('data.6.column', 'title')
+                    ->where('data.7.type', 'value')
+                    ->where('data.7.column', 'id')
+                    ->etc()
             )
-            ->assertJsonCount(8, 'data');
+            ->assertJsonCount(9, 'data');
     }
 
     public function test_available_filters_returns_only_matches_sortables_searches(): void
@@ -72,5 +73,27 @@ class RepositoryFilterControllerTest extends IntegrationTest
 
         $this->getJson(PostRepository::route('filters', query: ['only' => 'searchables']))
             ->assertJsonCount(2, 'data');
+    }
+
+    public function test_filters_will_render_placeholder(): void
+    {
+        PostRepository::$match = [
+            'title' => MatchFilter::make()
+                ->setDescription('Sort by title')
+                ->setPlaceholder('-title')
+                ->setType('string'),
+        ];
+
+        $this->getJson(PostRepository::route('filters', query: [
+            'only' => 'matches',
+        ]))
+            ->assertJson(function (AssertableJson $json) {
+                $json
+                    ->where('data.0.placeholder', '-title')
+                    ->where('data.0.description', 'This is a exact match for title (e.g., title=some_value). It accepts negation by prefixing the column with a hyphen (e.g., -title=some_value). The filter type is string.')
+                    ->where('data.0.type', 'string')
+                    ->where('data.0.column', 'title')
+                    ->etc();
+            });
     }
 }

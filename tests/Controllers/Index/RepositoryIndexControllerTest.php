@@ -8,15 +8,16 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\Test;
 
-class RepositoryIndexControllerTest extends IntegrationTest
+class RepositoryIndexControllerTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    /** * @test */
+    #[Test]
     public function it_can_paginate(): void
     {
         PostFactory::many(15);
@@ -65,7 +66,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         );
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_search_using_query(): void
     {
         PostFactory::one([
@@ -91,7 +92,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         ]))->assertJson(fn (AssertableJson $json) => $json->count('data', 2)->etc());
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_sort_using_query(): void
     {
         PostFactory::one([
@@ -125,7 +126,7 @@ class RepositoryIndexControllerTest extends IntegrationTest
         );
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_return_related_entity(): void
     {
         PostRepository::$related = [

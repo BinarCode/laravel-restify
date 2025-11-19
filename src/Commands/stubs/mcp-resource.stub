@@ -1,0 +1,27 @@
+<?php
+
+namespace DummyNamespace;
+
+use Laravel\Mcp\Server\Contracts\Resources\Content;
+use Laravel\Mcp\Server\Resource;
+
+class DummyClass extends Resource
+{
+    public function description(): string
+    {
+        return 'Description of what this resource provides';
+    }
+
+    public function read(): string|Content
+    {
+        // Return the resource content as a string or Content object
+        // This can be JSON, text, or any other format
+        
+        $data = [
+            'example' => 'This is example data',
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        return json_encode($data, JSON_PRETTY_PRINT);
+    }
+}

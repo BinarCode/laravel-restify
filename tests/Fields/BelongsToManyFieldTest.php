@@ -7,10 +7,10 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class BelongsToManyFieldTest extends IntegrationTest
+class BelongsToManyFieldTest extends IntegrationTestCase
 {
     public function test_belongs_to_many_displays_on_relationships_show(): void
     {

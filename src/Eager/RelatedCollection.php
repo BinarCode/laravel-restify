@@ -11,9 +11,16 @@ use Binaryk\LaravelRestify\Fields\HasOne;
 use Binaryk\LaravelRestify\Fields\MorphToMany;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
 
+/**
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @extends \Illuminate\Support\Collection<TKey, TValue>
+ */
 class RelatedCollection extends Collection
 {
     public function intoAssoc(): self
@@ -53,16 +60,16 @@ class RelatedCollection extends Collection
         })->filter(fn (EagerField $field) => $field->authorize($request));
     }
 
-    public function mapIntoSortable(): self
+    public function mapIntoSortable(RestifyRequest $request): self
     {
         return $this
             ->filter(fn ($key) => $key instanceof Sortable)
-            ->filter(fn (Sortable $field) => $field->isSortable())
-            ->map(function (Sortable $field) {
+            ->filter(fn (Sortable $field) => $field->isSortable($request))
+            ->map(function (Sortable $field) use ($request) {
                 $filter = SortableFilter::make();
 
                 if ($field instanceof BelongsTo || $field instanceof HasOne) {
-                    return $filter->usingRelation($field)->setColumn($field->qualifySortable());
+                    return $filter->usingRelation($field)->setColumn($field->qualifySortable($request));
                 }
 
                 return null;
@@ -88,6 +95,21 @@ class RelatedCollection extends Collection
             }
 
             return $related;
+        });
+    }
+
+    public function forMcp(RestifyRequest $request, Repository $repository): self
+    {
+        return $this->filter(function (Related $related) {
+            // If there's an EagerField, check its repository class
+            if ($related->field && $related->field->repositoryClass) {
+                return in_array(HasMcpTools::class, class_uses_recursive($related->field->repositoryClass), true);
+            }
+
+            // For string relationships (without EagerField), we need to find the repository
+            // This happens when relationships are defined as static::$related = ['user']
+            // We'll allow these through and let the serialization handle the filtering
+            return true;
         });
     }
 
@@ -161,7 +183,8 @@ class RelatedCollection extends Collection
             ->authorized($request)
             ->inRequest($request, $repository)
             ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))
-            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository));
+            ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository))
+            ->when($repository->detectMcpRequest(), fn (self $collection) => $collection->forIndex($request, $repository));
     }
 
     public function unserialized(RestifyRequest $request, Repository $repository)
@@ -178,7 +201,7 @@ class RelatedCollection extends Collection
     public function markQuerySerialized(RestifyRequest $request, Repository $repository): self
     {
         return $this->each(function (Related $related) {
-//            dd($related->getValue());
+            //            dd($related->getValue());
             $related->relatedQuery?->serialized();
 
             return $related;

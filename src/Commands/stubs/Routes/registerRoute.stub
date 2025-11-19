@@ -1,0 +1,2 @@
+Route::post('register', \App\Http\Controllers\Restify\Auth\RegisterController::class)
+    ->name('restify.register');

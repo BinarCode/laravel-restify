@@ -7,8 +7,11 @@ use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsFilteredQueryGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsIndexGetter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsIndexInvokableGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsShowGetter;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsShowInvokableGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\UnauthenticatedActionGetter;
 use Illuminate\Support\Collection;
 
@@ -25,9 +28,15 @@ class PostRepository extends Repository
 
     public static array $match = [
         'title' => RestifySearchable::MATCH_TEXT,
+        'is_active' => RestifySearchable::MATCH_BOOL,
     ];
 
     public static array $middleware = [];
+
+    public static array $sort = [
+        'title',
+        'is_active',
+    ];
 
     public static function indexQuery(RestifyRequest $request, $query)
     {
@@ -43,11 +52,13 @@ class PostRepository extends Repository
 
             field('title')->storingRules('required')->messages([
                 'required' => 'This field is required',
-            ]),
+            ])->matchableText(),
 
             field('description')->storingRules('required')->messages([
                 'required' => 'Description field is required',
             ]),
+
+            field('is_active')->matchableBool(),
         ];
     }
 
@@ -93,6 +104,7 @@ class PostRepository extends Repository
             SelectCategoryFilter::new(),
             CreatedAfterDateFilter::new(),
             InactiveFilter::new(),
+            ValueFilter::new(),
         ];
     }
 
@@ -118,6 +130,7 @@ class PostRepository extends Repository
                 ->canSee(function (ActionRequest $request) {
                     return $_SERVER['actions.posts.invalidate'] ?? true;
                 }),
+            new PublishInvokablePostAction,
         ];
     }
 
@@ -127,6 +140,9 @@ class PostRepository extends Repository
             PostsIndexGetter::make(),
             PostsShowGetter::make()->onlyOnShow(),
             UnauthenticatedActionGetter::make()->withoutMiddleware(AuthorizeRestify::class),
+            PostsFilteredQueryGetter::make(),
+            new PostsShowInvokableGetter,
+            new PostsIndexInvokableGetter,
         ];
     }
 }

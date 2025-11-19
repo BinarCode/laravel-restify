@@ -6,14 +6,21 @@ use Binaryk\LaravelRestify\Commands\ActionCommand;
 use Binaryk\LaravelRestify\Commands\BaseRepositoryCommand;
 use Binaryk\LaravelRestify\Commands\DevCommand;
 use Binaryk\LaravelRestify\Commands\FilterCommand;
+use Binaryk\LaravelRestify\Commands\GenerateRepositoriesCommand;
 use Binaryk\LaravelRestify\Commands\GetterCommand;
+use Binaryk\LaravelRestify\Commands\GraphqlGenerateCommand;
+use Binaryk\LaravelRestify\Commands\McpResourceCommand;
 use Binaryk\LaravelRestify\Commands\PolicyCommand;
+use Binaryk\LaravelRestify\Commands\PrepareSanctumCommand;
 use Binaryk\LaravelRestify\Commands\PublishAuthCommand;
 use Binaryk\LaravelRestify\Commands\Refresh;
 use Binaryk\LaravelRestify\Commands\RepositoryCommand;
+use Binaryk\LaravelRestify\Commands\RestifyRouteListCommand;
+use Binaryk\LaravelRestify\Commands\SetupAuthCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
+use Binaryk\LaravelRestify\Commands\ToolCommand;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -29,6 +36,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
             ->runsMigrations()
             ->hasCommands([
                 RepositoryCommand::class,
+                GenerateRepositoriesCommand::class,
                 ActionCommand::class,
                 GetterCommand::class,
                 StoreCommand::class,
@@ -40,6 +48,12 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
                 Refresh::class,
                 StubCommand::class,
                 PublishAuthCommand::class,
+                RestifyRouteListCommand::class,
+                PrepareSanctumCommand::class,
+                SetupAuthCommand::class,
+                ToolCommand::class,
+                McpResourceCommand::class,
+                GraphqlGenerateCommand::class,
             ]);
     }
 
@@ -56,7 +70,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
 
         // Register the main class to use with the facade
         $this->app->singleton('laravel-restify', function () {
-            return new Restify();
+            return new Restify;
         });
     }
 
@@ -65,5 +79,9 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         $this->publishes([
             __DIR__.'/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
         ], 'restify-provider');
+
+        $this->publishes([
+            __DIR__.'/../resources/views' => resource_path('views/vendor/restify'),
+        ], 'restify-views');
     }
 }

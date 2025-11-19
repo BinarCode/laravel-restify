@@ -2,9 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Actions;
 
+use Binaryk\LaravelRestify\Actions\Concerns\HasSchemaResolver;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
+use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -16,6 +17,7 @@ use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
@@ -29,37 +31,25 @@ use ReturnTypeWillChange;
 abstract class Action implements JsonSerializable
 {
     use AuthorizedToSee;
-    use ProxiesCanSeeToGate;
+    use HasSchemaResolver;
     use Make;
+    use ProxiesCanSeeToGate;
     use Visibility;
 
     /**
      * Number of models into a chunk when action for 'all'.
-     *
-     * @var int
      */
     public static int $chunkCount = 200;
 
     /**
      * Indicated if this action don't require any models.
-     *
-     * @var bool
      */
     public bool $standalone = false;
 
     /**
      * Indicates if Restify should skip the field default update behavior in case it's actionable field.
-     *
-     * @var bool
      */
     public bool $skipFieldFill = true;
-
-    /**
-     * Default uri key for the action.
-     *
-     * @var string
-     */
-    public static $uriKey;
 
     public static function indexQuery(RestifyRequest $request, $query)
     {
@@ -68,30 +58,50 @@ abstract class Action implements JsonSerializable
 
     /**
      * The callback used to authorize running the action.
-     *
-     * @var Closure|null
      */
-    public ?Closure $runCallback;
+    public ?Closure $runCallback = null;
+
+    /**
+     * Action description, usually used in the UI or MCP.
+     */
+    public string $description = '';
 
     public function name()
     {
         return Restify::humanize($this);
     }
 
+    public function description(RestifyRequest $request): string
+    {
+        return $this->description;
+    }
+
     /**
      * Get the URI key for the action.
-     *
-     * @return string
      */
-    public function uriKey()
+    public function uriKey(): string
     {
-        return static::$uriKey ?? Str::slug($this->name(), '-', null);
+        if (property_exists(static::class, 'uriKey') && is_string(static::$uriKey)) {
+            return static::$uriKey;
+        }
+
+        return Str::slug($this->name(), '-', null);
+    }
+
+    public static function guessUriKey(mixed $target): string
+    {
+        if ($target instanceof self) {
+            return $target->uriKey();
+        }
+
+        return property_exists($target, 'uriKey')
+            ? $target::$uriKey
+            : Str::slug(Restify::humanize($target), '-', null);
     }
 
     /**
      * Determine if the action is executable for the given request.
      *
-     * @param  Request  $request
      * @param  Model  $model
      * @return bool
      */
@@ -103,7 +113,6 @@ abstract class Action implements JsonSerializable
     /**
      * Set the callback to be run to authorize running the action.
      *
-     * @param  Closure  $callback
      * @return $this
      */
     public function canRun(Closure $callback)
@@ -116,7 +125,6 @@ abstract class Action implements JsonSerializable
     /**
      * Get the payload available on the action.
      *
-     * @return array
      *
      * @deprecated Use rules instead
      */
@@ -127,8 +135,6 @@ abstract class Action implements JsonSerializable
 
     /**
      * Validation rules to be applied before the action is called.
-     *
-     * @return array
      */
     public function rules(): array
     {
@@ -137,9 +143,6 @@ abstract class Action implements JsonSerializable
 
     /**
      * Make current action being standalone. No model query will be performed.
-     *
-     * @param  bool  $standalone
-     * @return self
      */
     public function standalone(bool $standalone = true): self
     {
@@ -150,15 +153,13 @@ abstract class Action implements JsonSerializable
 
     /**
      * Check if the action is standalone.
-     *
-     * @return bool
      */
     public function isStandalone(): bool
     {
         return $this->standalone;
     }
 
-//    abstract public function handle(ActionRequest $request, Collection $models): JsonResponse;
+    //    abstract public function handle(ActionRequest $request, Collection $models): JsonResponse;
 
     public function handleRequest(ActionRequest $request)
     {
@@ -178,9 +179,9 @@ abstract class Action implements JsonSerializable
                     $response = $this->handle($request, $models);
 
                     $models->each(function (Model $model) {
-//                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
-//                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
-//                        }
+                        //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
+                        //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
+                        //                        }
                     });
                 });
             });
@@ -203,11 +204,17 @@ abstract class Action implements JsonSerializable
         return $this->skipFieldFill;
     }
 
+    public function toolSchema(JsonSchema $schema): array
+    {
+        return app(JsonSchemaFromRulesAction::class)($schema, $this->rules());
+    }
+
     #[ReturnTypeWillChange]
     public function jsonSerialize()
     {
         return array_merge([
             'name' => $this->name(),
+            'description' => $this->description(app(RestifyRequest::class)),
             'destructive' => $this instanceof DestructiveAction,
             'uriKey' => $this->uriKey(),
             'payload' => $this->payload(),

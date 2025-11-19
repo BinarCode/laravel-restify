@@ -4,6 +4,10 @@ namespace Binaryk\LaravelRestify\Filters;
 
 use Illuminate\Support\Collection;
 
-class FiltersCollection extends Collection
-{
-}
+/**
+ * @template TKey of array-key
+ * @template TValue
+ *
+ * @extends \Illuminate\Support\Collection<TKey, TValue>
+ */
+class FiltersCollection extends Collection {}

@@ -6,14 +6,16 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
+
 use function PHPUnit\Framework\assertInstanceOf;
 use function PHPUnit\Framework\assertSame;
 
-class FieldTest extends IntegrationTest
+class FieldTest extends IntegrationTestCase
 {
     public function test_fields_can_have_custom_index_callback()
     {
@@ -81,7 +83,7 @@ class FieldTest extends IntegrationTest
         $field->resolveForIndex((object) []);
         $field->resolveForShow((object) []);
         $field->resolve((object) []);
-        $value = $field->serializeToValue(new RestifyRequest());
+        $value = $field->serializeToValue(new RestifyRequest);
 
         $this->assertEquals('Title', data_get($field->jsonSerialize(), 'value'));
         $this->assertEquals('Title', $value['title']);
@@ -95,7 +97,7 @@ class FieldTest extends IntegrationTest
             'title' => 'Request value.',
         ]);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $fillable = ['title'];
         };
@@ -114,7 +116,7 @@ class FieldTest extends IntegrationTest
     {
         $request = new RepositoryStoreRequest([], []);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $fillable = ['title'];
         };
@@ -136,7 +138,7 @@ class FieldTest extends IntegrationTest
             'title' => 'Request title.',
         ]);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $fillable = ['title'];
         };
@@ -154,7 +156,7 @@ class FieldTest extends IntegrationTest
     {
         $request = new RepositoryStoreRequest([], []);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $fillable = ['title'];
         };
@@ -164,7 +166,7 @@ class FieldTest extends IntegrationTest
             ->value(function () {
                 return 'from append callback';
             })
-            ->fillCallback(new InvokableFill())
+            ->fillCallback(new InvokableFill)
             ->storeCallback(function () {
                 return 'from store callback';
             })
@@ -182,8 +184,7 @@ class FieldTest extends IntegrationTest
         $request = new RepositoryStoreRequest([], []);
 
         $request->setRouteResolver(function () use ($request) {
-            return tap(new Route('POST', '/{repository}', function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });
@@ -193,7 +194,7 @@ class FieldTest extends IntegrationTest
             'title' => 'title from request',
         ]);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $fillable = ['title'];
         };
@@ -211,8 +212,7 @@ class FieldTest extends IntegrationTest
         $request = new RepositoryStoreRequest([], []);
 
         $request->setRouteResolver(function () use ($request) {
-            return tap(new Route('POST', '/{repository}', function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });
@@ -222,7 +222,7 @@ class FieldTest extends IntegrationTest
             'title' => 'title from request',
         ]);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $fillable = ['title'];
         };
@@ -240,8 +240,7 @@ class FieldTest extends IntegrationTest
         $request = new RepositoryStoreRequest([], []);
 
         $request->setRouteResolver(function () use ($request) {
-            return tap(new Route('POST', '/{repository}', function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });
@@ -251,7 +250,7 @@ class FieldTest extends IntegrationTest
             'title' => 'After store title',
         ]);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $table = 'posts';
 
@@ -259,7 +258,7 @@ class FieldTest extends IntegrationTest
         };
 
         /** * @var Field $field */
-        $field = Field::new('title')->afterStore(new InvokableAfterStore());
+        $field = Field::new('title')->afterStore(new InvokableAfterStore);
 
         $field->fillAttribute($request, $model);
 
@@ -270,7 +269,7 @@ class FieldTest extends IntegrationTest
 
     public function test_field_after_update_called()
     {
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $table = 'posts';
 
@@ -283,8 +282,7 @@ class FieldTest extends IntegrationTest
         $request = new RepositoryUpdateRequest([], []);
 
         $request->setRouteResolver(function () use ($request, $model) {
-            return tap(new Route('PUT', "/{repository}/{$model->id}", function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('PUT', "/{repository}/{$model->id}", function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });
@@ -323,8 +321,7 @@ class FieldTest extends IntegrationTest
         $request = new RepositoryStoreRequest([], []);
 
         $request->setRouteResolver(function () use ($request) {
-            return tap(new Route('POST', '/{repository}', function () {
-            }), function (Route $route) use ($request) {
+            return tap(new Route('POST', '/{repository}', function () {}), function (Route $route) use ($request) {
                 $route->bind($request);
                 $route->setParameter('repository', PostRepository::uriKey());
             });
@@ -334,7 +331,7 @@ class FieldTest extends IntegrationTest
             'custom_title' => 'title from request',
         ]);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $fillable = ['title'];
         };
@@ -355,7 +352,7 @@ class FieldTest extends IntegrationTest
             'title' => 'Title from the request.',
         ]);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $table = 'posts';
 
@@ -387,7 +384,7 @@ class FieldTest extends IntegrationTest
             'title' => 'Title from the request.',
         ]);
 
-        $model = new class() extends Model
+        $model = new class extends Model
         {
             protected $table = 'posts';
 
@@ -404,6 +401,184 @@ class FieldTest extends IntegrationTest
         $model->save();
 
         $this->assertEquals($model->title, 'Append title');
+    }
+
+    public function test_field_can_be_hidden_from_mcp(): void
+    {
+        $field = Field::make('secret_token')->hideFromMcp();
+        $repository = new PostRepository;
+
+        // Regular request - field should be visible
+        $regularRequest = new RestifyRequest;
+        $this->assertTrue($field->isShownOnIndex($regularRequest, $repository));
+        $this->assertTrue($field->isShownOnShow($regularRequest, $repository));
+
+        // MCP request - field should be hidden
+        $mcpRequest = new McpRequest;
+        $this->assertFalse($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($mcpRequest, $repository));
+    }
+
+    public function test_field_can_be_conditionally_hidden_from_mcp(): void
+    {
+        $field = Field::make('admin_notes')->hideFromMcp(function ($request, $repository) {
+            return ! $request->get('is_admin', false);
+        });
+        $repository = new PostRepository;
+
+        // MCP request without admin - should be hidden
+        $mcpRequest = new McpRequest(['is_admin' => false]);
+        $this->assertFalse($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($mcpRequest, $repository));
+
+        // MCP request with admin - should be visible
+        $mcpRequestAsAdmin = new McpRequest(['is_admin' => true]);
+        $this->assertTrue($field->isShownOnIndex($mcpRequestAsAdmin, $repository));
+        $this->assertTrue($field->isShownOnShow($mcpRequestAsAdmin, $repository));
+    }
+
+    public function test_field_can_be_shown_only_in_mcp(): void
+    {
+        $field = Field::make('mcp_metadata')
+            ->showOnIndex(false)
+            ->showOnShow(false)
+            ->showOnMcp(true);
+        $repository = new PostRepository;
+
+        // Regular request - field should be hidden
+        $regularRequest = new RestifyRequest;
+        $this->assertFalse($field->isShownOnIndex($regularRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($regularRequest, $repository));
+
+        // MCP request - field should be visible
+        $mcpRequest = new McpRequest;
+        $this->assertTrue($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertTrue($field->isShownOnShow($mcpRequest, $repository));
+    }
+
+    public function test_field_mcp_visibility_with_callback(): void
+    {
+        $field = Field::make('sensitive_data')->showOnMcp(function ($request, $repository) {
+            // For testing, we'll check a custom property instead of user()
+            return $request->get('has_permission', false);
+        });
+        $repository = new PostRepository;
+
+        // MCP request without permission - should be hidden
+        $mcpRequest = new McpRequest(['has_permission' => false]);
+        $this->assertFalse($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($mcpRequest, $repository));
+
+        // MCP request with permission - should be visible
+        $mcpRequestWithPermission = new McpRequest(['has_permission' => true]);
+        $this->assertTrue($field->isShownOnIndex($mcpRequestWithPermission, $repository));
+        $this->assertTrue($field->isShownOnShow($mcpRequestWithPermission, $repository));
+    }
+
+    public function test_field_respects_general_hidden_status_in_mcp(): void
+    {
+        $field = Field::make('general_hidden')->hidden(true);
+        $repository = new PostRepository;
+
+        // Both regular and MCP requests should respect general hidden status
+        $regularRequest = new RestifyRequest;
+        $mcpRequest = new McpRequest;
+
+        $this->assertFalse($field->isShownOnIndex($regularRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($regularRequest, $repository));
+        $this->assertFalse($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertFalse($field->isShownOnShow($mcpRequest, $repository));
+    }
+
+    public function test_field_mcp_methods_return_field_instance(): void
+    {
+        $field = Field::make('test');
+
+        // Test method chaining
+        $result = $field->showOnMcp(true)->hideFromMcp(false);
+        $this->assertInstanceOf(Field::class, $result);
+        $this->assertSame($field, $result);
+    }
+
+    public function test_field_mcp_visibility_defaults(): void
+    {
+        $field = Field::make('default_field');
+        $repository = new PostRepository;
+        $mcpRequest = new McpRequest;
+
+        // By default, fields should be visible in MCP
+        $this->assertTrue($field->isShownOnIndex($mcpRequest, $repository));
+        $this->assertTrue($field->isShownOnShow($mcpRequest, $repository));
+        $this->assertFalse($field->isHiddenFromMcp($mcpRequest, $repository));
+    }
+
+    public function test_field_is_hidden_from_mcp_method(): void
+    {
+        $repository = new PostRepository;
+        $mcpRequest = new McpRequest;
+
+        // Test hideFromMcp with boolean
+        $hiddenField = Field::make('hidden')->hideFromMcp(true);
+        $this->assertTrue($hiddenField->isHiddenFromMcp($mcpRequest, $repository));
+
+        $visibleField = Field::make('visible')->hideFromMcp(false);
+        $this->assertFalse($visibleField->isHiddenFromMcp($mcpRequest, $repository));
+
+        // Test hideFromMcp with callback
+        $callbackField = Field::make('callback')->hideFromMcp(function () {
+            return true;
+        });
+        $this->assertTrue($callbackField->isHiddenFromMcp($mcpRequest, $repository));
+    }
+
+    public function test_field_can_be_marked_as_sortable(): void
+    {
+        $field = Field::make('name');
+
+        // Initially not sortable
+        $this->assertFalse($field->isSortable());
+
+        // Mark as sortable
+        $result = $field->sortable();
+        $this->assertTrue($field->isSortable());
+        $this->assertInstanceOf(Field::class, $result);
+        $this->assertSame($field, $result);
+
+        // Can be explicitly set to false
+        $field->sortable(false);
+        $this->assertFalse($field->isSortable());
+
+        // Can be explicitly set to true
+        $field->sortable(true);
+        $this->assertTrue($field->isSortable());
+    }
+
+    public function test_field_sortable_method_is_fluent(): void
+    {
+        $field = Field::make('name')
+            ->sortable()
+            ->label('Custom Label')
+            ->default('Default Value');
+
+        $this->assertTrue($field->isSortable());
+        $this->assertEquals('Custom Label', $field->label);
+    }
+
+    public function test_field_can_be_marked_as_lazy(): void
+    {
+        $field = Field::make('tags');
+        $request = new RestifyRequest;
+
+        // Initially not lazy
+        $this->assertFalse($field->isLazy($request));
+        $this->assertNull($field->getLazyRelationshipName());
+
+        // Mark as lazy with specific relationship name
+        $result = $field->lazy('tags');
+        $this->assertTrue($field->isLazy($request));
+        $this->assertEquals('tags', $field->getLazyRelationshipName());
+        $this->assertInstanceOf(Field::class, $result);
+        $this->assertSame($field, $result);
     }
 }
 

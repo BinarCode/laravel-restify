@@ -8,7 +8,13 @@ class PerformGetterController extends RepositoryController
 {
     public function __invoke(GetterRequest $request)
     {
-        return $request->getter()?->handleRequest(
+        $getter = $request->getter();
+
+        if (is_callable($getter)) {
+            return $getter($request);
+        }
+
+        return $getter?->handleRequest(
             $request,
         );
     }

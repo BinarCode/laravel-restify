@@ -8,7 +8,7 @@ use Throwable;
 
 class Transaction
 {
-    public static function run(callable $callback, callable $finished = null)
+    public static function run(callable $callback, ?callable $finished = null)
     {
         try {
             DB::beginTransaction();

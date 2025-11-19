@@ -23,7 +23,6 @@ trait FileStorable
     /**
      * Set the name of the disk the file is stored on by default.
      *
-     * @param  string  $disk
      * @return $this
      */
     public function disk(string $disk): self

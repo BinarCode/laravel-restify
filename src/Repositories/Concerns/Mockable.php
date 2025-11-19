@@ -130,7 +130,6 @@ trait Mockable
     /**
      * Clear a resolved repository instance.
      *
-     * @param $name
      * @return void
      */
     public static function clearResolvedInstance($name)
@@ -160,7 +159,7 @@ trait Mockable
         throw new RuntimeException('Repository does not implement uriKey method.');
     }
 
-    public static function getMock(): null | MockInterface | Repository
+    public static function getMock(): null|MockInterface|Repository
     {
         return static::isMock()
             ? static::$resolvedInstance[static::uriKey()]

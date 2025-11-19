@@ -6,12 +6,12 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Illuminate\Testing\TestResponse;
 
-class RepositoryStoreControllerTest extends IntegrationTest
+class RepositoryStoreControllerTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {
@@ -62,7 +62,7 @@ class RepositoryStoreControllerTest extends IntegrationTest
         $this->assertModelExists($post);
     }
 
-    public function test_will_store_only_defined_fields_from_fieldsForStore(): void
+    public function test_will_store_only_defined_fields_from_fields_for_store(): void
     {
         $user = $this->mockUsers()->first();
 

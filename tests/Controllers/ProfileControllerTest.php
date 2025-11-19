@@ -6,13 +6,13 @@ use Binaryk\LaravelRestify\Fields\Image;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class ProfileControllerTest extends IntegrationTest
+class ProfileControllerTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {
@@ -30,6 +30,8 @@ class ProfileControllerTest extends IntegrationTest
 
     public function test_profile_returns_authenticated_user(): void
     {
+        $this->withoutExceptionHandling();
+
         $response = $this->getJson(Restify::path('profile'))
             ->assertOk()
             ->assertJsonStructure([
@@ -46,16 +48,11 @@ class ProfileControllerTest extends IntegrationTest
         $this->getJson(Restify::path('profile', [
             'related' => 'posts',
         ]))
-            ->assertOk()
-            ->assertJsonStructure([
-                'data' => [
-                    'posts' => [
-                        [
-                            'title',
-                        ],
-                    ],
-                ],
-            ]);
+            ->assertJson(fn ($json) => $json
+                ->where('data.attributes.email', $this->authenticatedAs->email)
+                ->has('data.relationships.posts')
+                ->etc()
+            );
     }
 
     public function test_profile_update()

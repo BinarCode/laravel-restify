@@ -1,8 +1,10 @@
+/.phpunit.cache
 build
 composer.lock
 vendor
 coverage
 .idea
+.claude
 html
 output
 docs/node_modules

@@ -21,6 +21,7 @@ class CreatePostsTable extends Migration
             $table->string('image')->nullable();
             $table->string('category')->nullable();
             $table->boolean('is_active')->default(true);
+            $table->unsignedInteger('edited_by')->index()->nullable();
             $table->timestamps();
         });
     }

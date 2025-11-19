@@ -11,7 +11,7 @@ To perform any request to the database, Restify has to create a query builder in
 
 ### Main query
 
-The `main` query is applied for `show`, `index` and `global search` requests. You can override it in the repository:
+The `mainQuery` method is called for ALL repository operations and serves as the base query that other query methods build upon. This is the foundational query method that's applied to `show`, `index`, `global search`, and all other requests:
 
 ```php
 // PostRepository
@@ -22,15 +22,19 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 public static function mainQuery(RestifyRequest $request, Builder | Relation $query)
 {
-    //
+    return $query->where('company_id', $request->user()->company_id);
 }
 ```
 
+This method is ideal for:
+- **Global scoping** (e.g., multi-tenancy isolation)
+- **Common filtering logic** that applies to all operations
+- **Security constraints** that should never be bypassed
+- **Global eager loading** for frequently used relationships
 
 ### Index query
 
-
-The `index` query is applied for `index` and `global search` requests. You can override it in the repository:
+The `indexQuery` method is specifically called for listing operations (`GET /api/restify/posts`) and global search requests. It builds on top of the `mainQuery`:
 
 ```php
 // PostRepository
@@ -41,14 +45,21 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 public static function indexQuery(RestifyRequest $request, Builder | Relation $query)
 {
-    //
+    return $query->where('status', 'published')
+                 ->with('author:id,name')
+                 ->orderBy('published_at', 'desc');
 }
 ```
 
+This method is perfect for:
+- **Index-specific filtering** (e.g., only show published items)
+- **Default sorting** for listings
+- **Performance optimizations** for list views
+- **Lightweight eager loading** for index displays
+
 ### Show query
 
-
-The `show` query is applied for the `show` request. You can override it in the repository:
+The `showQuery` method is applied specifically for individual resource requests (`GET /api/restify/posts/1`). It allows you to customize queries when fetching a single resource:
 
 ```php
 // PostRepository
@@ -59,7 +70,78 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 
 public static function showQuery(RestifyRequest $request, Builder | Relation $query)
 {
-    //
+    return $query->with(['author', 'categories', 'tags', 'comments.user']);
+}
+```
+
+This method is useful for:
+- **Detailed eager loading** for full resource display
+- **Show-specific constraints** or permissions
+- **Performance optimizations** for single resource fetching
+
+### Scout query
+
+When using Laravel Scout for full-text search, you can customize the Scout query builder:
+
+```php
+// PostRepository
+
+public static function scoutQuery(RestifyRequest $request, $scoutBuilder)
+{
+    return $scoutBuilder->where('status', 'published')
+                       ->where('tenant_id', $request->user()->tenant_id);
+}
+```
+
+### Query Method Hierarchy
+
+The query methods are applied in this specific order:
+
+1. **Base Query**: `query()` - Creates the initial query builder from the model
+2. **Main Query**: `mainQuery()` - Applied to ALL operations for global constraints
+3. **Specific Query**: `indexQuery()` or `showQuery()` - Applied based on the operation type
+4. **Search/Filters**: Applied by Restify's search service based on request parameters
+5. **Scout Query**: `scoutQuery()` - Only applied when using Laravel Scout search
+
+### Complete Example: Multi-tenant Blog Repository
+
+```php
+class PostRepository extends Repository
+{
+    // Step 2: Applied to ALL operations - ensures tenant isolation
+    public static function mainQuery(RestifyRequest $request, $query)
+    {
+        return $query->where('tenant_id', $request->user()->tenant_id)
+                     ->whereNull('deleted_at'); // Global soft delete check
+    }
+    
+    // Step 3a: Only for listing - show published posts with minimal data
+    public static function indexQuery(RestifyRequest $request, $query)
+    {
+        return $query->where('status', 'published')
+                     ->with('author:id,name,avatar')
+                     ->orderBy('published_at', 'desc');
+    }
+    
+    // Step 3b: Only for individual posts - load complete relationships
+    public static function showQuery(RestifyRequest $request, $query)
+    {
+        return $query->with([
+            'author',
+            'categories',
+            'tags',
+            'comments' => function ($query) {
+                $query->where('approved', true)->with('user:id,name');
+            }
+        ]);
+    }
+    
+    // Step 5: Scout search within tenant boundaries
+    public static function scoutQuery(RestifyRequest $request, $scoutBuilder)
+    {
+        return $scoutBuilder->where('tenant_id', $request->user()->tenant_id)
+                           ->where('status', 'published');
+    }
 }
 ```
 
@@ -74,7 +156,7 @@ The default prefix of all Restify routes (except `login` and `register`) lives u
 ...
 ```
 
-Tjus, Restify generates the URI for the repository in the following way:
+Thus, Restify generates the URI for the repository in the following way:
 
 ```php
 config('restify.base') . '/' . UserRepository::uriKey() . '/'
@@ -146,6 +228,33 @@ public static function collectMiddlewares(RestifyRequest $request): ?Collection
 }
 ```
 
+## Repository registration
+
+Laravel Restify registers all repositories automatically in the App namespace. However, you can register your own repositories from any service provider using the InteractsWithRestifyRepositories trait. Here's an example:
+
+```php
+<?php
+
+namespace MyPackage\Cart;
+
+use Binaryk\LaravelRestify\Traits\InteractsWithRestifyRepositories;
+use Illuminate\Support\ServiceProvider;
+
+class MyPackageCart extends ServiceProvider
+{
+    use InteractsWithRestifyRepositories;
+
+    public function register(): void
+    {
+        $this->loadRestifyFrom(__DIR__.'/Restify', __NAMESPACE__.'\\Restify\\');
+        
+        // The rest of your package's registration code goes here.
+    }
+}
+```
+
+If you want to load Restify from your own service provider, you must use the InteractsWithRestifyRepositories trait in the service provider class. The loadRestifyFrom method takes the path to the directory containing the repositories and the namespace under which the repositories will be registered.
+
 ## Dependency injection
 
 The Laravel [service container](https://laravel.com/docs/7.x/container) is used to resolve all the Laravel Restify
@@ -154,7 +263,7 @@ declared dependencies will automatically be resolved and injected into the repos
 
 <alert> 
 
-Parent Don't forget to call the parent `constructor`.
+Important: Don't forget to call the parent `constructor`.
 
 </alert>
 
@@ -178,8 +287,8 @@ class PostRepository extends Repository
 ### Custom CRUD
 
 Restify injects all `CRUD`'s operations for you. However, sometimes you may want to intercept or override
-the entire logic of a specific action. Let's say your `save` method has to do something else besides the action itself. In
-this case you can easily override each action ([defined here](#actions-handled-by-the-repository)) from the repository:
+the entire logic of a specific action. Let's say your `save` method needs to perform additional operations beyond the default action. In
+this case you can easily override each action ([defined here](/repositories#actions-handled-by-the-repository)) in the repository:
 
 ### index
 
@@ -282,12 +391,12 @@ public function makePrimary(Post $post)
 }
 ```
 
-Let's dive into a more "real life" example, shall we?. Let's take the Post repository we had above:
+Let's examine a more practical example. Let's use the Post repository we defined above:
 
 <alert>
 
-Route wrap The `$wrap` argument is the one that tells your route to be wrapped in the default `middlewares`
-, `controllers namespace`, and `prefix` your routes with the base of the repository (ie `/api/restify/posts/`).
+Route wrapping: The `$wrap` argument determines whether your route should be wrapped with the default `middlewares`,
+`controllers namespace`, and `prefix` your routes with the repository's base (i.e., `/api/restify/posts/`).
 
 </alert>
 
@@ -338,9 +447,9 @@ class PostController extends RestController
 
 ### Route prefix
 
-As we noticed in the example above, the route is a child of the current repository. However, you might want to
-have a separate prefix from time to time, which could be out of the URI of the current repository. Restify provide you an easy way of doing that by
-adding default value `prefix` for the second `$attributes` argument:
+As we saw in the example above, the route is a child of the current repository. However, you might want to
+have a separate prefix occasionally, which could be outside the URI of the current repository. Restify provides an easy way to do this by
+adding a default value `prefix` for the second `$attributes` argument:
 
 ```php
 /**
@@ -365,8 +474,8 @@ With `api` as a custom prefix.
 
 ### Route middleware
 
-All routes declared in the `routes` method, will have the same middelwares defined in your `restify.middleware`
-configuration file. Overriding default middlewares is a breeze with Restify:
+All routes declared in the `routes` method will have the same middlewares defined in your `restify.middleware`
+configuration file. Overriding default middlewares is straightforward with Restify:
 
 ```php
 /**
@@ -401,16 +510,16 @@ public static function routes(Router $router, $attributes = ['namespace' => 'App
 
 <alert type="warning">
 
-Non wrapped route Clean routes if `$wrap` is false. Your routes will basically have any Route group `$attributes`, which means that no
-prefix, middleware, or namespace will be applied out of the box, even if you defined it as a default argument in
-the `routes` method. You should be very attentive to that.
+Non-wrapped routes: When `$wrap` is false, your routes will only have the Route group `$attributes`, which means that no
+prefix, middleware, or namespace will be applied automatically, even if you defined them as default arguments in
+the `routes` method. You should be careful about this behavior.
 
 </alert>
 
 
 ## Repository Lifecycle
 
-Each repository has a few lifecycles. The most useful is `booted`, it is called as soon the repository is loaded with the resource:
+Each repository has several lifecycle methods. The most useful is `booted`, which is called as soon as the repository is loaded with the resource:
 
 ````php
 // PostRepository.php

@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Fields\EagerField;
-use Binaryk\LaravelRestify\Filters\PaginationDto;
+use Binaryk\LaravelRestify\Filters\PaginationDataObject;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
@@ -46,7 +46,7 @@ class RestifyRequest extends FormRequest
         return $eagerField;
     }
 
-    public function pagination(): PaginationDto
+    public function pagination(): PaginationDataObject
     {
         $perPage = ($this->input('page.size') ?? $this->input('perPage'));
 
@@ -56,7 +56,7 @@ class RestifyRequest extends FormRequest
             $pageNumber = $this->input('page');
         }
 
-        return new PaginationDto(
+        return new PaginationDataObject(
             perPage: $perPage,
             page: $pageNumber,
         );
@@ -69,5 +69,17 @@ class RestifyRequest extends FormRequest
         } catch (Throwable) {
             return app(RelatedDto::class);
         }
+    }
+
+    public function filters(): array
+    {
+        return $this instanceof RepositoryApplyFiltersRequest
+            ? $this->input('filters', [])
+            : (json_decode(base64_decode($this->input('filters')), true) ?? []);
+    }
+
+    public function groupBy(): ?string
+    {
+        return $this->input('group_by');
     }
 }

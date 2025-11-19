@@ -3,6 +3,8 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\HasColumns;
@@ -11,6 +13,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Str;
 
 class EagerField extends Field
 {
@@ -18,21 +21,19 @@ class EagerField extends Field
 
     /**
      * Name of the relationship.
-     *
-     * @var string
      */
     public string $relation;
 
     /**
      * The class name of the related repository.
-     *
-     * @var string
      */
     public string $repositoryClass;
 
     private RelatedQuery $relatedQuery;
 
-    public function __construct($attribute, string $parentRepository = null)
+    public ?string $forMcp = null;
+
+    public function __construct($attribute, ?string $parentRepository = null)
     {
         parent::__construct(attribute: $attribute);
 
@@ -55,7 +56,6 @@ class EagerField extends Field
     /**
      * Determine if the field should be displayed for the given request.
      *
-     * @param  Request  $request
      * @return bool
      */
     public function authorize(Request $request)
@@ -88,7 +88,7 @@ class EagerField extends Field
             $serializableRepository = $this->repositoryClass::resolveWith($relatedModel);
 
             $this->value = $serializableRepository
-                ->allowToShow(app(Request::class))
+                ->allowToShow($this->detectMcpRequest() ? app(McpRequest::class) : app(RestifyRequest::class))
                 ->columns()
                 ->eager($this);
         } catch (AuthorizationException) {
@@ -106,7 +106,7 @@ class EagerField extends Field
     }
 
     public function getRelation(
-        Repository $repository = null
+        ?Repository $repository = null
     ): Relation {
         $repository = $repository ?? $this->parentRepository;
 
@@ -123,7 +123,7 @@ class EagerField extends Field
         Repository $repository
     ): string {
         return $repository->resource->qualifyColumn(
-            $this->getRelation($repository)->getRelated()->getForeignKey()
+            $repository->resource->{$this->relation}()->getForeignKeyName()
         );
     }
 
@@ -143,5 +143,42 @@ class EagerField extends Field
     public function queryKeyThatRendered(): string
     {
         return $this->relatedQuery->relation;
+    }
+
+    public function qualifySortable(RestifyRequest $request): ?string
+    {
+        if (! $this->isSortable($request)) {
+            return null;
+        }
+
+        if (Str::contains($this->sortableColumn, '.attributes')) {
+            return $this->sortableColumn;
+        }
+
+        $table = $this->repositoryClass::newModel()->getTable();
+
+        if (Str::contains($this->sortableColumn, '.') && Str::startsWith($this->sortableColumn, $table)) {
+            return $table.'.attributes.'.Str::after($this->sortableColumn, "$table.");
+        }
+
+        return $table.'.attributes.'.$this->sortableColumn;
+    }
+
+    public function forMcp(null|string|callable $forMcp = null): self
+    {
+        if (is_callable($forMcp)) {
+            $this->forMcp = $forMcp();
+
+            return $this;
+        }
+
+        $this->forMcp = $forMcp;
+
+        return $this;
+    }
+
+    public function detectMcpRequest(): ?string
+    {
+        return $this->forMcp;
     }
 }

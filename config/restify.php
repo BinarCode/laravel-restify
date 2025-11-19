@@ -2,6 +2,7 @@
 
 use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
+use Binaryk\LaravelRestify\MCP\Tools\GlobalSearchTool;
 use Binaryk\LaravelRestify\Repositories\ActionLogRepository;
 
 return [
@@ -45,9 +46,41 @@ return [
 
         'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
 
+        /*
+        |--------------------------------------------------------------------------
+        | User Email Verification URL
+        |--------------------------------------------------------------------------
+        |
+        | This URL is used to redirect users after they click the email verification
+        | link. The API will validate the verification and redirect to this frontend
+        | URL with success/failure query parameters.
+        |
+        | Available placeholders:
+        | {id} - User ID
+        | {emailHash} - SHA1 hash of user's email
+        |
+        | Query parameters added by API:
+        | ?success=true&message=Email verified successfully.
+        | ?success=false&message=Invalid or expired verification link.
+        |
+        */
         'user_verify_url' => env('FRONTEND_APP_URL').'/verify/{id}/{emailHash}',
 
-        'user_model' => \Illuminate\Foundation\Auth\User::class,
+        'user_model' => "\App\Models\User",
+
+        /*
+        |--------------------------------------------------------------------------
+        | Token TTL (Time To Live)
+        |--------------------------------------------------------------------------
+        |
+        | This value determines the number of minutes that authentication tokens
+        | will be considered valid. After this time expires, users will need to
+        | re-authenticate. Set to null for tokens that never expire.
+        |
+        | Default: null (never expires)
+        |
+        */
+        'token_ttl' => env('RESTIFY_TOKEN_TTL', null),
     ],
 
     /*
@@ -95,7 +128,7 @@ return [
 
     'middleware' => [
         'api',
-        //'auth:sanctum',
+        // 'auth:sanctum',
         DispatchRestifyStartingEvent::class,
         AuthorizeRestify::class,
     ],
@@ -132,9 +165,24 @@ return [
         | Specify either the search should be case-sensitive or not.
         */
         'case_sensitive' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Use JOINs for BelongsTo Relationships
+        |--------------------------------------------------------------------------
+        |
+        | When enabled, BelongsTo relationship searches will use JOINs instead of
+        | subqueries for better performance. This is generally recommended for
+        | better query performance, but can be disabled if compatibility issues arise.
+        |
+        | Default: true (recommended for better performance)
+        |
+        */
+        'use_joins_for_belongs_to' => env('RESTIFY_USE_JOINS_FOR_BELONGS_TO', false),
     ],
 
     'repositories' => [
+
         /*
         | Specify either to serialize index meta (policy) information or not. For performance reasons we recommend disabling it.
         */
@@ -144,6 +192,145 @@ return [
         | Specify either to serialize show meta (policy) information or not.
         */
         'serialize_show_meta' => true,
+
+        /*
+        |--------------------------------------------------------------------------
+        | Repository Index Caching
+        |--------------------------------------------------------------------------
+        |
+        | These settings control caching for repository index requests. Caching
+        | can significantly improve performance for expensive queries with filters,
+        | searches, and sorts. Cache is automatically disabled in test environment.
+        |
+        */
+        'cache' => [
+            /*
+            | Enable or disable repository index caching globally.
+            | Individual repositories can override this setting.
+            */
+            'enabled' => env('RESTIFY_REPOSITORY_CACHE_ENABLED', false),
+
+            /*
+            | Default cache TTL in seconds for repository index requests.
+            | Individual repositories can override this setting.
+            */
+            'ttl' => env('RESTIFY_REPOSITORY_CACHE_TTL', 300), // 5 minutes
+
+            /*
+            | Cache store to use. If null, uses the default cache store.
+            */
+            'store' => env('RESTIFY_REPOSITORY_CACHE_STORE'),
+
+            /*
+            | Skip caching for authenticated requests. Useful if you have
+            | user-specific authorization that makes caching less effective.
+            */
+            'skip_authenticated' => env('RESTIFY_REPOSITORY_CACHE_SKIP_AUTHENTICATED', false),
+
+            /*
+            | Enable caching in test environment. By default, caching is
+            | automatically disabled during testing to avoid test isolation issues.
+            */
+            'enable_in_tests' => env('RESTIFY_REPOSITORY_CACHE_ENABLE_IN_TESTS', false),
+
+            /*
+            | Default cache tags for all repositories. Individual repositories
+            | can add their own tags in addition to these.
+            |
+            | Note: Cache tags are only used if the cache store supports them.
+            | Database and file cache stores do not support tagging.
+            | Redis and Memcached stores support tagging.
+            */
+            'tags' => ['restify', 'repositories'],
+        ],
+    ],
+
+    'cache' => [
+        /*
+        | Specify the cache configuration for the resources policies.
+        | When enabled, methods from the policy will be cached for the active user.
+        */
+        'policies' => [
+            'enabled' => false,
+
+            'ttl' => 5 * 60, // seconds
+        ],
+    ],
+
+    /*
+    | Specify if restify can call OpenAI for solution generation.
+    |
+    | By default this feature is enabled, but you still have to extend the Exception handler with the Restify one and set the API key.
+     */
+    'ai_solutions' => [
+        /*
+        | Specify the OpenAI model to use.
+        */
+        'model' => 'gpt-4.1-mini',
+
+        /*
+        | Specify the OpenAI temperature to use.
+        */
+        'max_tokens' => 1000,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Model Context Protocol (MCP)
+    |--------------------------------------------------------------------------
+    |
+    | These settings control the MCP integration that allows AI agents to
+    | interact with your Restify repositories through structured tool interfaces.
+    |
+    */
+    'mcp' => [
+        /*
+        |--------------------------------------------------------------------------
+        | MCP Mode
+        |--------------------------------------------------------------------------
+        |
+        | This setting controls how repository operations are exposed to MCP clients.
+        |
+        | - 'direct': Each repository operation (index, show, store, etc.) is
+        |   registered as a separate MCP tool. This provides immediate access to
+        |   all operations but can result in many tools.
+        |
+        | - 'wrapper': Repository operations are accessed through 4 wrapper tools
+        |   (discover, get operations, get details, execute). This reduces tool
+        |   count and provides progressive discovery but requires multiple calls.
+        |
+        | Static tools (like GlobalSearchTool) are always registered directly
+        | regardless of this setting.
+        |
+        */
+        'mode' => env('RESTIFY_MCP_MODE', 'direct'),
+
+        'tools' => [
+            'exclude' => [
+                // Tool classes to exclude from discovery
+                // 'App\MCP\Tools\SensitiveTool',
+            ],
+            'include' => [
+                // Additional tool classes to include
+                // 'App\MCP\Tools\CustomTool',
+            ],
+        ],
+        'resources' => [
+            'exclude' => [
+                GlobalSearchTool::class,
+            ],
+            'include' => [
+                // Additional resource classes to include
+            ],
+        ],
+        'prompts' => [
+            'exclude' => [
+                // Prompt classes to exclude from discovery
+            ],
+            'include' => [
+                // Additional prompt classes to include
+            ],
+        ],
     ],
 
     'cache' => [

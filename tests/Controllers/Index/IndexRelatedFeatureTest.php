@@ -20,12 +20,13 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\Request;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\Test;
 
-class IndexRelatedFeatureTest extends IntegrationTest
+class IndexRelatedFeatureTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
@@ -33,7 +34,7 @@ class IndexRelatedFeatureTest extends IntegrationTest
     {
         parent::setUp();
 
-        $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto());
+        $this->app->singletonIf(RelatedDto::class, fn ($app) => new RelatedDto);
     }
 
     public function test_can_retrieve_nested_relationships(): void
@@ -44,7 +45,7 @@ class IndexRelatedFeatureTest extends IntegrationTest
                 'owner',
                 'users' => HasMany::make('users', UserRepository::class),
                 'extraData' => fn () => ['country' => 'Romania'],
-                'extraMeta' => new InvokableExtraMeta(),
+                'extraMeta' => new InvokableExtraMeta,
             ]);
 
         UserRepository::partialMock()
@@ -111,19 +112,19 @@ class IndexRelatedFeatureTest extends IntegrationTest
             'related' => 'parent, children',
         ]))->assertJson(
             fn (AssertableJson $json) => $json
-            ->where('data.2.attributes.comment', 'Root comment')
-            ->has('data.2.relationships.parent')
-            ->missing('data.2.relationships.parent.relationships.parent')
-            ->missing('data.2.relationships.parent.relationships.children')
-            ->has('data.2.relationships.children')
-            ->count('data.2.relationships.children', 2)
-            ->missing('data.2.relationships.children.0.relationships.parent')
-            ->missing('data.2.relationships.children.1.relationships.parent')
-            ->where('data.0.attributes.comment', 'Children comments')
-            ->has('data.0.relationships.parent')
-            ->has('data.0.relationships.children')
-            ->count('data.0.relationships.children', 0)
-            ->etc()
+                ->where('data.2.attributes.comment', 'Root comment')
+                ->has('data.2.relationships.parent')
+                ->missing('data.2.relationships.parent.relationships.parent')
+                ->missing('data.2.relationships.parent.relationships.children')
+                ->has('data.2.relationships.children')
+                ->count('data.2.relationships.children', 2)
+                ->missing('data.2.relationships.children.0.relationships.parent')
+                ->missing('data.2.relationships.children.1.relationships.parent')
+                ->where('data.0.attributes.comment', 'Children comments')
+                ->has('data.0.relationships.parent')
+                ->has('data.0.relationships.children')
+                ->count('data.0.relationships.children', 0)
+                ->etc()
         );
     }
 
@@ -197,7 +198,7 @@ class IndexRelatedFeatureTest extends IntegrationTest
         );
     }
 
-    /** * @test */
+    #[Test]
     public function it_can_paginate_keeping_relationships(): void
     {
         PostRepository::$related = [
@@ -226,6 +227,31 @@ class IndexRelatedFeatureTest extends IntegrationTest
                     ->where('data.0.relationships.user.name', $owner)
                     ->etc()
             );
+    }
+
+    #[Test]
+    public function it_will_call_fields_method_for_related(): void
+    {
+        UserRepository::partialMock()
+            ->shouldReceive('fields')
+            ->once()
+            ->andReturn([
+                field('name'),
+            ]);
+
+        PostRepository::$related = [
+            'user' => BelongsTo::make('user', UserRepository::class),
+        ];
+
+        PostFactory::one();
+
+        $this->getJson(PostRepository::route(query: [
+            'related' => 'user',
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->has('data.0.relationships.user.attributes.name')
+                ->etc()
+        );
     }
 }
 

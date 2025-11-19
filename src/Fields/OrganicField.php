@@ -3,11 +3,19 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
+use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
+use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Closure;
 use Illuminate\Http\Request;
 
 abstract class OrganicField extends BaseField
 {
+    use ProxiesCanSeeToGate;
+
     public $canSeeCallback;
 
     public $canUpdateCallback;
@@ -37,6 +45,10 @@ abstract class OrganicField extends BaseField
     public $showOnIndex = true;
 
     public $showOnShow = true;
+
+    public $showOnMcp = true;
+
+    public $hideFromMcpCallback;
 
     public function showOnShow($callback = true)
     {
@@ -72,10 +84,33 @@ abstract class OrganicField extends BaseField
         return $this;
     }
 
+    public function showOnMcp($callback = true)
+    {
+        $this->showOnMcp = $callback instanceof Closure
+            ? $callback
+            : fn () => (bool) $callback;
+
+        return $this;
+    }
+
+    public function hideFromMcp($callback = true)
+    {
+        $this->hideFromMcpCallback = $callback instanceof Closure
+            ? $callback
+            : fn () => (bool) $callback;
+
+        return $this;
+    }
+
     public function isShownOnShow(RestifyRequest $request, $repository): bool
     {
         if ($this->isHidden($request)) {
             return false;
+        }
+
+        // Check MCP-specific visibility for MCP requests
+        if ($request instanceof McpRequestable) {
+            return $this->isShownOnMcp($request, $repository);
         }
 
         if (is_callable($this->showOnShow)) {
@@ -87,7 +122,7 @@ abstract class OrganicField extends BaseField
 
     public function isHiddenOnShow(RestifyRequest $request, $repository): bool
     {
-        return false === $this->isShownOnShow($request, $repository);
+        return $this->isShownOnShow($request, $repository) === false;
     }
 
     public function isShownOnIndex(RestifyRequest $request, $repository): bool
@@ -96,7 +131,12 @@ abstract class OrganicField extends BaseField
             return false;
         }
 
-        return false === $this->isHiddenOnIndex($request, $repository);
+        // Check MCP-specific visibility for MCP requests
+        if ($request instanceof McpRequestable) {
+            return $this->isShownOnMcp($request, $repository);
+        }
+
+        return $this->isHiddenOnIndex($request, $repository) === false;
     }
 
     public function isHiddenOnIndex(RestifyRequest $request, $repository): bool
@@ -106,6 +146,67 @@ abstract class OrganicField extends BaseField
         }
 
         return ! $this->showOnIndex;
+    }
+
+    public function isShownOnMcp(RestifyRequest $request, $repository): bool
+    {
+        // Check if field is hidden from MCP
+        if ($this->isHiddenFromMcp($request, $repository)) {
+            return false;
+        }
+
+        // For store and update requests, hidden fields should still be writable
+        // So we check isHidden() only for show/index requests
+        $isReadOperation = $request instanceof McpShowRequest || $request instanceof McpIndexRequest;
+
+        if ($isReadOperation && $this->isHidden($request)) {
+            return false;
+        }
+
+        if (is_callable($this->showOnMcp)) {
+            return call_user_func($this->showOnMcp, $request, $repository);
+        }
+
+        // For MCP show requests, check the base showOnShow property without recursion
+        if ($request instanceof McpShowRequest) {
+            if (is_callable($this->showOnShow)) {
+                $this->showOnShow = call_user_func($this->showOnShow, $request, $repository);
+            }
+
+            return $this->showOnShow;
+        }
+
+        // For MCP index requests, check the base showOnIndex property without recursion
+        if ($request instanceof McpIndexRequest) {
+            if (is_callable($this->showOnIndex)) {
+                $this->showOnIndex = call_user_func($this->showOnIndex, $request, $repository);
+            }
+
+            return $this->showOnIndex;
+        }
+
+        // For MCP store requests, check if field is not readonly
+        if ($request instanceof McpStoreRequest) {
+            return ! $this->isReadonly($request);
+        }
+
+        // For MCP update requests, check if field is not readonly
+        if ($request instanceof McpUpdateRequest) {
+            return ! $this->isReadonly($request);
+        }
+
+        return $this->showOnMcp;
+    }
+
+    public function isHiddenFromMcp(RestifyRequest $request, $repository): bool
+    {
+        return with($this->hideFromMcpCallback, function ($callback) use ($request, $repository) {
+            if ($callback === true || (is_callable($callback) && call_user_func($callback, $request, $repository))) {
+                return true;
+            }
+
+            return false;
+        });
     }
 
     public function authorize(Request $request)
@@ -193,21 +294,41 @@ abstract class OrganicField extends BaseField
 
     public function isShownOnUpdate(RestifyRequest $request, $repository): bool
     {
+        // Check MCP-specific visibility for MCP requests
+        if ($request instanceof McpRequestable) {
+            return $this->isShownOnMcp($request, $repository);
+        }
+
         return ! $this->isReadonly($request);
     }
 
     public function isShownOnUpdateBulk(RestifyRequest $request, $repository): bool
     {
+        // Check MCP-specific visibility for MCP requests
+        if ($request instanceof McpRequestable) {
+            return $this->isShownOnMcp($request, $repository);
+        }
+
         return ! $this->isReadonly($request);
     }
 
     public function isShownOnStore(RestifyRequest $request, $repository): bool
     {
+        // Check MCP-specific visibility for MCP requests
+        if ($request instanceof McpRequestable) {
+            return $this->isShownOnMcp($request, $repository);
+        }
+
         return ! $this->isReadonly($request);
     }
 
     public function isShownOnStoreBulk(RestifyRequest $request, $repository): bool
     {
+        // Check MCP-specific visibility for MCP requests
+        if ($request instanceof McpRequestable) {
+            return $this->isShownOnMcp($request, $repository);
+        }
+
         return ! $this->isReadonly($request);
     }
 

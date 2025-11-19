@@ -10,23 +10,21 @@ abstract class AdvancedFilter extends Filter
 {
     /**
      * This is the value resolved from the frontend when applying the filter.
-     *
-     * @var AdvancedFilterPayloadDto
      */
-    public AdvancedFilterPayloadDto $dto;
+    public AdvancedFilterPayloadDataObject $dataObject;
 
-    public function resolve(RestifyRequest $request, AdvancedFilterPayloadDto $dto): self
+    public function resolve(RestifyRequest $request, AdvancedFilterPayloadDataObject $dataObject): self
     {
-        $this->dto = $dto;
+        $this->dataObject = $dataObject;
 
         return $this;
     }
 
-    public function validatePayload(RestifyRequest $request, AdvancedFilterPayloadDto $dto): self
+    public function validatePayload(RestifyRequest $request, AdvancedFilterPayloadDataObject $dataObject): self
     {
-        if (is_array($dto->value)) {
+        if (is_array($dataObject->value)) {
             Validator::make(
-                $dto->value,
+                $dataObject->value,
                 $this->rules($request)
             )->validate();
         }
@@ -34,9 +32,14 @@ abstract class AdvancedFilter extends Filter
         return $this;
     }
 
-    protected function input(string $key = null, $default = null)
+    protected function input(?string $key = null, $default = null)
     {
-        return data_get($this->dto->value, $key, $default);
+        return data_get($this->dataObject->value, $key, $default);
+    }
+
+    protected function rest(?string $key = null, $default = null)
+    {
+        return data_get($this->dataObject->rest, $key, $default);
     }
 
     abstract public function rules(Request $request): array;

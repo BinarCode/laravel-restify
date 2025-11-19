@@ -45,9 +45,6 @@ class Restify
 
     /**
      * Get the repository class name for a given key.
-     *
-     * @param  string  $key
-     * @return string|null
      */
     public static function repositoryClassForKey(string $key): ?string
     {
@@ -58,9 +55,6 @@ class Restify
 
     /**
      * Get the repository class for the prefix.
-     *
-     * @param  string  $prefix
-     * @return string|null
      */
     public static function repositoryClassForPrefix(string $prefix): ?string
     {
@@ -76,10 +70,8 @@ class Restify
     /**
      * Return the repository instance for a given key.
      *
-     * @param  string  $key
-     * @throw RepositoryNotFoundException
      *
-     * @return Repository
+     * @throw RepositoryNotFoundException
      */
     public static function repository(string $key): Repository
     {
@@ -128,7 +120,6 @@ class Restify
     /**
      * Register the given repositories.
      *
-     * @param  array  $repositories
      * @return static
      */
     public static function repositories(array $repositories)
@@ -141,32 +132,28 @@ class Restify
             (new BootRepository($repository))->boot();
         });
 
-        return new static();
+        return new static;
     }
 
     /**
-     * Register all of the repository classes in the given directory.
-     *
-     * @param  string  $directory
-     * @return void
+     * Register all repository classes in the given directory and namespace.
      *
      * @throws ReflectionException
      */
-    public static function repositoriesFrom(string $directory): void
+    public static function repositoriesFrom(string $directory, string $namespace): void
     {
-        $namespace = app()->getNamespace();
-
+        $basePath = $namespace === 'App\\' ? app_path() : $directory;
         $repositories = [];
 
         if (! is_dir($directory)) {
             return;
         }
 
-        foreach ((new Finder())->in($directory)->files() as $repository) {
+        foreach ((new Finder)->in($directory)->files() as $repository) {
             $repository = $namespace.str_replace(
                 ['/', '.php'],
                 ['\\', ''],
-                Str::after($repository->getPathname(), app_path().DIRECTORY_SEPARATOR)
+                Str::after($repository->getPathname(), $basePath.DIRECTORY_SEPARATOR)
             );
 
             if (is_subclass_of(
@@ -185,7 +172,6 @@ class Restify
     /**
      * Get the URI path prefix utilized by Restify.
      *
-     * @param  null  $plus
      * @return string
      */
     public static function path($plus = null, array $query = [])
@@ -251,7 +237,7 @@ class Restify
     /**
      * Humanize the given value into a proper name.
      *
-     * @param  string  $value
+     * @param  string|object  $value
      * @return string
      */
     public static function humanize($value)
@@ -291,7 +277,7 @@ class Restify
     public static function ensureRepositoriesLoaded(): void
     {
         if (empty(static::$repositories)) {
-            static::repositoriesFrom(app_path('Restify'));
+            static::repositoriesFrom(app_path('Restify'), app()->getNamespace());
         }
     }
 }

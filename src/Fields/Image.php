@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Storage;
 
 class Image extends File
 {
-    public function __construct($attribute, callable $resolveCallback = null)
+    public function __construct($attribute, ?callable $resolveCallback = null)
     {
         parent::__construct($attribute, $resolveCallback);
 

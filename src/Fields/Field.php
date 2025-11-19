@@ -2,27 +2,52 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Fields\Concerns\CanLoadLazyRelationship;
+use Binaryk\LaravelRestify\Fields\Concerns\CanMatch;
+use Binaryk\LaravelRestify\Fields\Concerns\CanSearch;
+use Binaryk\LaravelRestify\Fields\Concerns\CanSort;
 use Binaryk\LaravelRestify\Fields\Concerns\HasAction;
+use Binaryk\LaravelRestify\Fields\Concerns\ValidationMethods;
+use Binaryk\LaravelRestify\Fields\Contracts\Matchable;
+use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateBulkRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Concerns\FieldMcpSchemaDetection;
+use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateBulkRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\Make;
 use Closure;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rules\Unique;
 use JsonSerializable;
 use ReturnTypeWillChange;
 
-class Field extends OrganicField implements JsonSerializable
+class Field extends OrganicField implements JsonSerializable, Matchable, Sortable
 {
-    use Make;
+    use CanLoadLazyRelationship;
+    use CanMatch;
+    use CanSearch;
+    use CanSort;
+    use FieldMcpSchemaDetection;
     use HasAction;
+    use Make;
+    use ValidationMethods;
 
     /**
      * The resource associated with the field.
      *
-     * @var  Repository
+     * @var Repository
      */
     public $repository;
 
@@ -44,15 +69,11 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * In case of the update, this will keep the previous value.
-     *
-     * @var
      */
     public $valueBeforeUpdate;
 
     /**
      * Closure to resolve the index method.
-     *
-     * @var
      */
     private $indexCallback;
 
@@ -119,6 +140,8 @@ class Field extends OrganicField implements JsonSerializable
      */
     protected $valueCallback;
 
+    protected $fillDefaultCallback;
+
     /**
      * Closure be used to be called after the field value stored.
      */
@@ -131,13 +154,25 @@ class Field extends OrganicField implements JsonSerializable
 
     public $label;
 
+    public $toolInputSchemaCallback = null;
+
+    /**
+     * Closure to modify the generated field description.
+     */
+    public ?Closure $descriptionCallback = null;
+
+    /**
+     * This is the resolved JsonSchema for the field during the MCP requests.
+     */
+    public ?JsonSchema $jsonSchema = null;
+
     /**
      * Create a new field.
      *
      * @param  string|callable|null  $attribute
      * @param  callable|null  $resolveCallback
      */
-    public function __construct($attribute, callable|Closure $resolveCallback = null)
+    public function __construct($attribute, callable|Closure|null $resolveCallback = null)
     {
         $this->attribute = $attribute;
 
@@ -210,14 +245,27 @@ class Field extends OrganicField implements JsonSerializable
     }
 
     /**
+     * This is called after the fill and store callbacks.
+     *
+     * You can pass a callable or a value, and it will be attached to the model if no value provided otherwise.
+     *
+     * Imagine it's like `attributes` in the model.
+     *
+     * @return $this
+     */
+    public function defaultCallback(mixed $callback)
+    {
+        $this->fillDefaultCallback = $callback;
+
+        return $this;
+    }
+
+    /**
      * Fill attribute with value from the request or delegate this action to the user defined callback.
      *
-     * @param  RestifyRequest  $request
-     * @param $model
-     * @param  int|null  $bulkRow
      * @return mixed|void
      */
-    public function fillAttribute(RestifyRequest $request, $model, int $bulkRow = null)
+    public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
         $this->resolveValueBeforeUpdate($request, $model);
 
@@ -253,6 +301,12 @@ class Field extends OrganicField implements JsonSerializable
             $bulkRow
         );
 
+        $this->fillAttributeFromDefault(
+            $request,
+            $model,
+            $this->label ?? $this->attribute
+        );
+
         $this->fillAttributeFromValue(
             $request,
             $model,
@@ -264,13 +318,8 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Fill the model with value from the request.
-     *
-     * @param  RestifyRequest  $request
-     * @param $model
-     * @param $attribute
-     * @param  int|null  $bulkRow
      */
-    protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
+    protected function fillAttributeFromRequest(RestifyRequest $request, $model, $attribute, ?int $bulkRow = null)
     {
         $attribute = is_null($bulkRow)
             ? $attribute
@@ -290,13 +339,8 @@ class Field extends OrganicField implements JsonSerializable
 
     /**
      * Fill the model with value from the callback.
-     *
-     * @param  RestifyRequest  $request
-     * @param $model
-     * @param $attribute
-     * @param  int|null  $bulkRow
      */
-    protected function fillAttributeFromCallback(RestifyRequest $request, $model, $attribute, int $bulkRow = null)
+    protected function fillAttributeFromCallback(RestifyRequest $request, $model, $attribute, ?int $bulkRow = null)
     {
         if (is_callable($cb = $this->guessBeforeFillableCallable($request))) {
             $value = $request->input($attribute ?? $this->attribute);
@@ -312,9 +356,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Fill the model with the value from value.
      *
-     * @param  RestifyRequest  $request
-     * @param $model
-     * @param $attribute
      * @return Field
      */
     protected function fillAttributeFromValue(RestifyRequest $request, $model, $attribute)
@@ -330,6 +371,23 @@ class Field extends OrganicField implements JsonSerializable
         return $this;
     }
 
+    protected function fillAttributeFromDefault(RestifyRequest $request, $model, $attribute)
+    {
+        if ($model->{$attribute}) {
+            return $this;
+        }
+
+        if (! isset($this->fillDefaultCallback)) {
+            return $this;
+        }
+
+        $model->{$attribute} = is_callable($this->fillDefaultCallback)
+            ? call_user_func($this->fillDefaultCallback, $request, $model, $attribute)
+            : $this->fillDefaultCallback;
+
+        return $this;
+    }
+
     /**
      * @return callable|string|null
      */
@@ -341,7 +399,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Validation rules for store.
      *
-     * @param $rules
      * @return Field
      */
     public function storingRules($rules)
@@ -368,7 +425,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Alias for storingRules - to maintain it consistent.
      *
-     * @param $rules
      * @return $this
      */
     public function storeRules($rules)
@@ -379,7 +435,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Validation rules for update.
      *
-     * @param $rules
      * @return Field
      */
     public function updatingRules($rules)
@@ -392,12 +447,17 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Validation rules for store.
      *
-     * @param $rules
      * @return Field
      */
     public function rules($rules)
     {
-        $this->rules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
+        $newRules = ($rules instanceof Rule || is_string($rules) || $rules instanceof Unique) ? func_get_args() : $rules;
+
+        if (! is_array($newRules)) {
+            $newRules = [$newRules];
+        }
+
+        $this->rules = array_merge($this->rules, $newRules);
 
         return $this;
     }
@@ -438,6 +498,29 @@ class Field extends OrganicField implements JsonSerializable
     public function getUpdatingBulkRules(): array
     {
         return array_merge($this->rules, $this->updateBulkRules);
+    }
+
+    public function getRulesForRequest(RestifyRequest $request): array
+    {
+        $rules = [];
+
+        if ($request instanceof McpStoreRequest || $request instanceof RepositoryStoreRequest) {
+            $rules = $this->getStoringRules();
+        }
+
+        if ($request instanceof McpUpdateRequest || $request instanceof RepositoryUpdateRequest) {
+            $rules = $this->getUpdatingRules();
+        }
+
+        if ($request instanceof McpUpdateBulkRequest || $request instanceof RepositoryUpdateBulkRequest) {
+            $rules = $this->getUpdatingBulkRules();
+        }
+
+        if ($request instanceof McpStoreBulkRequest || $request instanceof RepositoryStoreBulkRequest) {
+            $rules = $this->getStoringBulkRules();
+        }
+
+        return $rules;
     }
 
     /**
@@ -578,7 +661,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Set the callback to be used for determining the field's default value.
      *
-     * @param $callback
      * @return $this
      */
     public function default($callback)
@@ -591,7 +673,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Resolve the default value for the field.
      *
-     * @param  RestifyRequest  $request
      * @return callable|mixed
      */
     protected function resolveDefaultValue(RestifyRequest $request)
@@ -606,7 +687,6 @@ class Field extends OrganicField implements JsonSerializable
     /**
      * Define the callback that should be used to resolve the field's value.
      *
-     * @param  callable  $resolveCallback
      * @return $this
      */
     public function resolveCallback(callable $resolveCallback)
@@ -682,7 +762,6 @@ class Field extends OrganicField implements JsonSerializable
     }
 
     /**
-     * @param $value
      * @return $this
      *
      * @deprecated
@@ -719,13 +798,6 @@ class Field extends OrganicField implements JsonSerializable
         return $this->storeCallback;
     }
 
-    public function required(): self
-    {
-        $this->rules += ['required'];
-
-        return $this;
-    }
-
     public function file(): File
     {
         return File::make($this->attribute);
@@ -734,5 +806,71 @@ class Field extends OrganicField implements JsonSerializable
     public function image(): Image
     {
         return Image::make($this->attribute);
+    }
+
+    /**
+     * Set a custom callback for defining the tool schema.
+     *
+     * @return $this
+     */
+    public function toolSchema(callable|Closure $callback): self
+    {
+        $this->toolInputSchemaCallback = $callback;
+
+        return $this;
+    }
+
+    /**
+     * Set a callback to modify the generated field description.
+     *
+     * @return $this
+     */
+    public function description(string|callable|Closure $callback): self
+    {
+        if (is_string($callback)) {
+            $this->descriptionCallback = fn () => $callback;
+
+            return $this;
+        }
+
+        $this->descriptionCallback = $callback;
+
+        return $this;
+    }
+
+    public function jsonSchema(): ?JsonSchema
+    {
+        return $this->jsonSchema;
+    }
+
+    public function resolveJsonSchema(JsonSchema $parentSchema, McpRequest $request, Repository $repository): self
+    {
+        if (is_callable($this->toolInputSchemaCallback)) {
+            $result = call_user_func($this->toolInputSchemaCallback, $parentSchema, $repository, $this);
+            if ($result instanceof Type) {
+                $this->jsonSchema = $result;
+
+                return $this;
+            }
+        }
+
+        // For MCP tools, we include computed fields that have resolve callbacks
+        // since they represent storable fields in MCP contexts
+        // Only skip truly computed fields without resolve callbacks
+        if ($this->computed() && ! $this->resolveCallback) {
+            return $this;
+        }
+
+        if ($this->isReadonly(app(McpRequest::class))) {
+            return $this;
+        }
+
+        $this->jsonSchema = $this->guessFieldType($request);
+
+        $description = $this->getDescription($request, $repository);
+
+        $this->jsonSchema->description($description);
+
+        return $this;
     }
 }

@@ -34,7 +34,7 @@ class ActionCommand extends GeneratorCommand
      */
     protected function buildClass($name)
     {
-        if (false === Str::endsWith($name, 'Action')) {
+        if (Str::endsWith($name, 'Action') === false) {
             $name .= 'Action';
         }
 
@@ -48,7 +48,7 @@ class ActionCommand extends GeneratorCommand
 
     protected function getPath($name)
     {
-        if (false === Str::endsWith($name, 'Action')) {
+        if (Str::endsWith($name, 'Action') === false) {
             $name .= 'Action';
         }
 

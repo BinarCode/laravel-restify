@@ -13,16 +13,16 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Binaryk\LaravelRestify\Tests\IntegrationTest;
+use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
 
-class HasOneFieldTest extends IntegrationTest
+class HasOneFieldTest extends IntegrationTestCase
 {
     protected function setUp(): void
     {
         parent::setUp();
-//        $this->authenticate();
+        //        $this->authenticate();
 
         unset($_SERVER['restify.post.show']);
 
@@ -110,9 +110,9 @@ class HasOneFieldTest extends IntegrationTest
                 'perPage' => 5,
             ]))->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.0.attributes.name', 'Last')
-                ->where('data.1.attributes.name', 'First')
-                ->etc()
+                    ->where('data.0.attributes.name', 'Last')
+                    ->where('data.1.attributes.name', 'First')
+                    ->etc()
             );
 
         $this
@@ -122,9 +122,9 @@ class HasOneFieldTest extends IntegrationTest
                 'perPage' => 5,
             ]))->assertJson(
                 fn (AssertableJson $json) => $json
-                ->where('data.0.attributes.name', 'First')
-                ->where('data.1.attributes.name', 'Last')
-                ->etc()
+                    ->where('data.0.attributes.name', 'First')
+                    ->where('data.1.attributes.name', 'Last')
+                    ->etc()
             );
     }
 }

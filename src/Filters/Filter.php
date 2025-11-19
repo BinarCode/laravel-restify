@@ -17,8 +17,8 @@ use ReturnTypeWillChange;
 
 abstract class Filter implements JsonSerializable
 {
-    use Make;
     use HasMode;
+    use Make;
     use Metable;
 
     public string $type = 'value';
@@ -26,6 +26,8 @@ abstract class Filter implements JsonSerializable
     public ?string $title = null;
 
     public string $description = '';
+
+    public string $placeholder = '';
 
     public ?string $column = null;
 
@@ -227,6 +229,7 @@ abstract class Filter implements JsonSerializable
             'advanced' => $this->advanced,
             'title' => $this->title(),
             'description' => $this->description(),
+            'placeholder' => $this->placeholder(),
             'column' => $this->column(),
             'key' => static::uriKey(),
         ], function (array $initial) {
@@ -256,11 +259,9 @@ abstract class Filter implements JsonSerializable
         return $this;
     }
 
-    protected function booted()
-    {
-    }
+    protected function booted() {}
 
-    protected function getType(): string
+    public function getType(): string
     {
         return $this->type;
     }
@@ -281,5 +282,24 @@ abstract class Filter implements JsonSerializable
     protected function description(): string
     {
         return $this->description;
+    }
+
+    protected function placeholder(): string
+    {
+        return $this->placeholder;
+    }
+
+    public function setPlaceholder(string $placeholder): self
+    {
+        $this->placeholder = $placeholder;
+
+        return $this;
+    }
+
+    public function setDescription(string $description): self
+    {
+        $this->description = $description;
+
+        return $this;
     }
 }

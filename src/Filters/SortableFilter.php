@@ -20,12 +20,14 @@ class SortableFilter extends Filter
 
     private HasOne|BelongsTo $relation;
 
-    private Closure $resolver;
+    /**
+     * @var callable|Closure
+     */
+    private $resolver;
 
     public const TYPE = 'sortable';
 
     /**
-     * @param  RestifyRequest  $request
      * @param  Builder  $query
      * @param  string  $value
      * @return Builder
@@ -33,7 +35,7 @@ class SortableFilter extends Filter
     public function filter(RestifyRequest $request, Builder|Relation $query, $value)
     {
         if (isset($this->resolver) && is_callable($this->resolver)) {
-            return call_user_func($this->resolver, $request, $query, $value);
+            return call_user_func($this->resolver, $request, $query, $value, $this->column());
         }
 
         if (isset($this->relation)) {
@@ -129,7 +131,7 @@ class SortableFilter extends Filter
         return $this;
     }
 
-    public function syncDirection(string $direction = null): self
+    public function syncDirection(?string $direction = null): self
     {
         if (! is_null($direction) && in_array($direction, ['asc', 'desc'])) {
             $this->direction = $direction;
@@ -156,7 +158,7 @@ class SortableFilter extends Filter
         return $this->asc();
     }
 
-    public function usingClosure(Closure $closure): self
+    public function usingClosure(callable|Closure $closure): self
     {
         $this->resolver = $closure;
 

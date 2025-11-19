@@ -9,15 +9,12 @@ interface Deletable
     /**
      * Specify the callback that should be used to delete the field.
      *
-     * @param  callable  $deleteCallback
      * @return $this
      */
     public function delete(callable $deleteCallback): self;
 
     /**
      * Return the deletable callback.
-     *
-     * @return Closure|null
      */
     public function getDeleteCallback(): ?Closure;
 
@@ -31,15 +28,11 @@ interface Deletable
 
     /**
      * Determine if the field should be pruned when the resource is deleted.
-     *
-     * @return bool
      */
     public function isPrunable(): bool;
 
     /**
      * Determine if the field can be deleted.
-     *
-     * @return bool
      */
     public function isDeletable(): bool;
 
