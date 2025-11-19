@@ -165,11 +165,11 @@
       <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
         <div class="flex flex-col md:flex-row items-center justify-between">
           <p class="text-gray-600 dark:text-gray-400 text-sm">
-            © 2024 Laravel Restify. Open source under MIT License.
+            © {{ currentYear }} Laravel Restify. Open source under MIT License.
           </p>
           <div class="mt-4 md:mt-0">
             <p class="text-gray-600 dark:text-gray-400 text-sm">
-              Made with <span class="text-red-500">❤</span> by the BinarCode team
+              Made with <span class="text-red-500">❤</span> by the <a href="https://binarcode.com" target="_blank" rel="noopener noreferrer" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors font-medium">BinarCode</a> team
             </p>
           </div>
         </div>
@@ -180,4 +180,5 @@
 
 <script setup lang="ts">
 // Website footer component
+const currentYear = computed(() => new Date().getFullYear())
 </script>
