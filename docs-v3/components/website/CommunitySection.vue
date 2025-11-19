@@ -10,9 +10,7 @@
       <!-- Section Header -->
       <div class="text-center mb-16 md:mb-20 px-4 md:px-0">
         <div class="inline-flex items-center px-4 md:px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 mb-6 md:mb-8">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-          </svg>
+          <UsersIcon class="w-4 h-4 mr-2" />
           Join the Revolution
         </div>
         
@@ -39,9 +37,7 @@
           
           <div class="relative z-10 flex flex-col h-full">
             <div class="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.367 2.684 3 3 0 00-5.367-2.684z" />
-              </svg>
+              <ShareIcon class="h-10 w-10 text-white" />
             </div>
             
             <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
@@ -72,9 +68,7 @@
           
           <div class="relative z-10 flex flex-col h-full">
             <div class="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
+              <BookOpenIcon class="h-10 w-10 text-white" />
             </div>
             
             <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
@@ -89,9 +83,7 @@
               to="/docs"
               class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl text-sm font-medium text-blue-300 hover:bg-blue-500/30 hover:border-blue-500/50 transition-all duration-300 group/btn"
             >
-              <svg class="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
+              <CheckCircleIcon class="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform duration-300" />
               Read Docs
             </NuxtLink>
           </div>
@@ -103,9 +95,7 @@
           
           <div class="relative z-10 flex flex-col h-full">
             <div class="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="h-10 w-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a2 2 0 01-2-2v-6a2 2 0 012-2h8z" />
-              </svg>
+              <ChatBubbleLeftRightIcon class="h-10 w-10 text-white" />
             </div>
             
             <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
@@ -122,9 +112,7 @@
               rel="noopener noreferrer"
               class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl text-sm font-medium text-blue-300 hover:bg-blue-500/30 hover:border-blue-500/50 transition-all duration-300 group/btn"
             >
-              <svg class="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-              </svg>
+              <ChatBubbleLeftRightIcon class="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform duration-300" />
               Join Discussion
             </a>
           </div>
@@ -153,9 +141,7 @@
               rel="noopener noreferrer"
               class="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl text-sm font-medium text-blue-300 hover:bg-blue-500/30 hover:border-blue-500/50 transition-all duration-300 group/btn"
             >
-              <svg class="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9v-9m0 0l-3-3m3 3l3-3" />
-              </svg>
+              <ArrowTopRightOnSquareIcon class="mr-2 h-4 w-4 group-hover/btn:rotate-12 transition-transform duration-300" />
               Visit Website
             </a>
           </div>
@@ -194,3 +180,14 @@
     </div>
   </section>
 </template>
+
+<script setup>
+import {
+  UsersIcon,
+  ShareIcon,
+  BookOpenIcon,
+  ChatBubbleLeftRightIcon,
+  CheckCircleIcon,
+  ArrowTopRightOnSquareIcon
+} from '@heroicons/vue/24/outline'
+</script>

@@ -10,9 +10,7 @@
       <!-- Section Header -->
       <div class="text-center mb-16 md:mb-20 px-4 md:px-0">
         <div class="inline-flex items-center px-4 md:px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 mb-6 md:mb-8">
-          <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-          </svg>
+          <BoltIcon class="w-4 h-4 mr-2" />
           One Codebase, Infinite Possibilities
         </div>
         
@@ -41,14 +39,8 @@
           
           <div class="relative z-10">
             <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4" />
-              </svg>
+              <CircleStackIcon class="h-8 w-8 text-white" />
             </div>
-            
-            <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
-              JSON:API Standard
-            </h3>
             
             <p class="text-gray-400 mb-6 leading-relaxed">
               Automatically generates endpoints that follow JSON:API specifications with proper relationships, pagination, filtering, and sparse fieldsets.
@@ -80,14 +72,8 @@
           
           <div class="relative z-10">
             <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+              <ShieldCheckIcon class="h-8 w-8 text-white" />
             </div>
-            
-            <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
-              Laravel Policies
-            </h3>
             
             <p class="text-gray-400 mb-6 leading-relaxed">
               Built-in integration with Laravel's authorization system. Use policies for fine-grained access control on every endpoint and MCP tool.
@@ -166,9 +152,7 @@
           
           <div class="relative z-10">
             <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+              <BoltIcon class="h-8 w-8 text-white" />
             </div>
             
             <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
@@ -221,3 +205,14 @@
     </div>
   </section>
 </template>
+
+<script setup>
+import {
+  BoltIcon,
+  CircleStackIcon,
+  ShieldCheckIcon,
+  CpuChipIcon,
+  CommandLineIcon,
+  SwatchIcon
+} from '@heroicons/vue/24/outline'
+</script>
