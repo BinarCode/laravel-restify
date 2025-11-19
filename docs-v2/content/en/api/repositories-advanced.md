@@ -169,7 +169,7 @@ UserRepository is:
 GET: /api/restify/users
 ```
 
-Nonetheless, you can prefix the repository with your own:
+However, you can prefix the repository with your own:
 
 ```php
 // UserRepository

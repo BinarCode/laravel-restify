@@ -44,7 +44,7 @@ return [
 
         'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),
 
-        'password_reset_url' => env('FRONTEND_APP_URL').'/password/reset?token={token}&email={email}',
+        'password_reset_url' => env('FRONTEND_APP_URL') . '/password/reset?token={token}&email={email}',
 
         /*
         |--------------------------------------------------------------------------
@@ -64,7 +64,7 @@ return [
         | ?success=false&message=Invalid or expired verification link.
         |
         */
-        'user_verify_url' => env('FRONTEND_APP_URL').'/verify/{id}/{emailHash}',
+        'user_verify_url' => env('FRONTEND_APP_URL') . '/verify/{id}/{emailHash}',
 
         'user_model' => "\App\Models\User",
 
@@ -330,18 +330,6 @@ return [
             'include' => [
                 // Additional prompt classes to include
             ],
-        ],
-    ],
-
-    'cache' => [
-        /*
-        | Specify the cache configuration for the resources policies.
-        | When enabled, methods from the policy will be cached for the active user.
-        */
-        'policies' => [
-            'enabled' => false,
-
-            'ttl' => 5 * 60, // seconds
         ],
     ],
 ];
