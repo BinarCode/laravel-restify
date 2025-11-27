@@ -57,6 +57,7 @@ Now the solution to your problems will automatically appear in the response:
 
 If you want to disable the solution feature you can set the `restify.ai_solution` to `false` in the `config/restify.php` file so Restify will not call the OpenAI API even you extended the exception handler. This might be useful in automated tests or other environments:
 
-```php [config/restify.php]
+```php
+// config/restify.php
 'ai_solutions' => true,
 ```

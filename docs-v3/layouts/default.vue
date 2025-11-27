@@ -15,11 +15,14 @@
         </div>
       </main>
       
-          <!-- Table of Contents (right sidebar) -->
-    <TheTableOfContents />
-  </div>
-  
-  <!-- Toast Notifications -->
+      <!-- Table of Contents (right sidebar) -->
+      <TheTableOfContents />
+    </div>
+    
+    <!-- Search Modal -->
+    <SearchModal />
+    
+    <!-- Toast Notifications -->
     <ToastContainer />
   </div>
 </template>

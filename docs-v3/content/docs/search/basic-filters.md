@@ -38,7 +38,8 @@ There are 2 ways to disable the global search:  for a repository, either return 
 
 So to disable the `Posts` from the global search using the repository property we do:
 
-```php [PostRepository.php]
+```php
+// PostRepository.php
 public static bool $globallySearchable = false;
 ```
 
@@ -46,7 +47,8 @@ public static bool $globallySearchable = false;
 
 You can limit the number of results that are returned in the global search by overriding the `globalSearchResults` property on the resource:
 
-```php [PostRepository.php]
+```php
+// PostRepository.php
 public static int $globalSearchResults = 5;
 ```
 
@@ -77,13 +79,16 @@ The default global search response looks like this:
 
 Where the `title` is the repository column defined by the `$title` property. So you can customize it:
 
-```php [UserRepository.php]
+```php
+// UserRepository.php
+
 public static string $title = 'email';
 ```
 
 The `subTitle` could be customized by overriding the `subtitle` method. The returned value will be displayed here:
 
-```php [UserRepository.php]
+```php
+// UserRepository.php
 public function subtitle(): ?string
 {
     return 'User email: ' . $this->model()->email;
@@ -93,8 +98,8 @@ public function subtitle(): ?string
 The `repositoryTitle` could be customized by overriding the `label` method or by defining the `$label` property. This will customize the displayed repository title in the global search response:
 
 ```php
-```php [UserRepository.php]
-public static string $label = 'Users';
+// UserRepository.php
+public static string $label = 'Custom Repository Title';
 
 // Or using the label method for dynamic titles:
 public static function label(): string
@@ -125,7 +130,9 @@ GET: /api/restify/users?search="John Doe"
 
 By default, Restify search is case-sensitive. You can change this behavior by changing the configuration:
 
-```php [restify.php]
+```php
+// restify.php
+
   'search' => [
       /*
       | Specify either the search should be case-sensitive or not.
@@ -391,7 +398,8 @@ class ActivePostMatchFiler extends MatchFilter
 
 The next step is to return this class instance from the `matchers` method:
 
-```php [PostRepository.php]
+```php
+// PostRepository.php
 public static function matches(): array
 {
     return [

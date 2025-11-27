@@ -11,8 +11,10 @@ Built in CRUD operations and filtering, Restify allows you to define extra actio
 
 Let's say you have a list of posts and you have to publish them. Usually, for these kind of operations, you have to define a custom route like:
 
-```php [PublishPostsController.php]
+```php
 $router->post('posts/publish', PublishPostsController::class);
+
+// PublishPostsController.php
 
 public function __invoke(RestifyRequest $request)
 {
@@ -98,7 +100,9 @@ The `$models` argument represents a collection of all the models for this query.
 
 Then add the action instance to the repository `actions` method:
 
-```php [PostRepository.php]
+```php
+// PostRepository.php
+
 public function actions(RestifyRequest $request): array
 {
     return [
@@ -290,7 +294,9 @@ The show action definition is different, in a way it receives arguments for the 
 
 Restify automatically resolves Eloquent models defined in the route id and passes them to the action's handle method:
 
-```php [PublishPostAction.php]
+```php
+// PublishPostAction.php
+
 public function handle(ActionRequest $request, Post $post): JsonResponse
 {
 
@@ -345,7 +351,8 @@ The index action definition is different in the way it receives arguments for th
 
 Restify automatically resolves Eloquent models sent via the `repositories` key into the call payload. Then, it passes it to the action's handle method as a collection of items:
 
-```php [PublishPostAction.php]
+```php
+// PublishPostAction.php
 use Illuminate\Support\Collection;
 
 public function handle(ActionRequest $request, Collection $posts): JsonResponse
@@ -359,7 +366,9 @@ public function handle(ActionRequest $request, Collection $posts): JsonResponse
 
 To register an index action, we have to use the `->onlyOnIndex()` accessor:
 
-```php [PostRepository.php]
+```php
+// PostRepository.php
+
 public function actions(RestifyRequest $request)
 {
     return [
@@ -400,7 +409,9 @@ Restify will get chunks of 200 and send them into the `Collection` argument for 
 
 You can customize the chunk number by customizing the `chunkCount` action property:
 
-```php [PublishPostAction.php]
+```php
+// PublishPostAction.php
+
 public static int $chunkCount = 500;
 ```
 
@@ -423,7 +434,9 @@ his/her account.
 
 The index action definition is different, in a way it doesn't require the second argument for the `handle`.
 
-```php [DisableProfileAction.php]
+```php
+// DisableProfileAction.php
+
 public function handle(ActionRequest $request): JsonResponse
 {
     //
@@ -435,7 +448,9 @@ public function handle(ActionRequest $request): JsonResponse
 
 There are two ways to register the standalone action:
 
-```php [UserRepository]
+```php
+// UserRepository
+
 public function actions(RestifyRequest $request)
 {
     return [
@@ -491,7 +506,9 @@ Thankfully, Restify makes it a breeze to add an action log to a model by attachi
 
 By simply adding the `HasActionLogs` trait to your model, it will log all actions and CRUD operations into the database into the `action_logs` table:
 
-```php [Post.php]
+```php
+// Post.php
+
 class Post extends Model 
 {
     use \Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
@@ -502,7 +519,8 @@ class Post extends Model
 
 You can display them by attaching them to the related repository for example:
 
-```php [PostRepository.php]
+```php
+// PostRepository.php
 use Binaryk\LaravelRestify\Fields\MorphToMany;
 use Binaryk\LaravelRestify\Repositories\ActionLogRepository;
 
@@ -540,7 +558,8 @@ performed for posts:
 
 You can definitely use your own `ActionLogRepository`. Just make sure you have it defined into the config: 
 
-```php [config/restify.php]
+```php
+// config/restify.php
 ...
 'logs' => [
     'repository' => MyCustomLogsRepository::class,

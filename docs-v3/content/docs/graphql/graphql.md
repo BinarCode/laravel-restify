@@ -58,8 +58,11 @@ Update your `config/lighthouse.php` to use the generated schema:
 
 Add the GraphQL route to your application:
 
-```php [routes/api.php]
-Route::restifyGraphQL();
+```php
+// routes/api.php
+Route::middleware(['api'])->group(function () {
+    Route::post('/graphql', \Nuwave\Lighthouse\Http\GraphQLController::class);
+});
 ```
 
 ## Example Generated Schema

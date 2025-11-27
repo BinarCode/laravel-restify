@@ -1,20 +1,35 @@
 export default defineNuxtConfig({
-  compatibilityDate: '2025-11-18',
   devtools: { enabled: true },
   modules: [
-    '@nuxt/ui',
     '@nuxt/content',
+    '@nuxtjs/tailwindcss',
+    '@nuxtjs/color-mode',
     '@vueuse/nuxt'
   ],
-
-  // Nuxt UI configuration for content
-  ui: {
-    content: true,
-    fonts: true
+  
+  // Content configuration
+  content: {
+    documentDriven: true,
+    navigation: {
+      fields: ['title', 'description', 'icon', 'category']
+    },
+    highlight: {
+      theme: {
+        default: 'github-light',
+        dark: 'github-dark'
+      },
+      preload: ['php', 'bash', 'javascript', 'typescript', 'vue', 'json']
+    },
+    markdown: {
+      anchorLinks: false,
+      remarkPlugins: [],
+      rehypePlugins: []
+    }
   },
 
   // CSS configuration
   css: ['~/assets/css/main.css'],
+
 
   // App configuration
   app: {
@@ -23,7 +38,7 @@ export default defineNuxtConfig({
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { name: 'description', content: 'Laravel Restify Documentation - Build amazing REST APIs with Laravel' }
+        { hid: 'description', name: 'description', content: 'Laravel Restify Documentation - Build amazing REST APIs with Laravel' }
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/icon.png' }
@@ -49,6 +64,17 @@ export default defineNuxtConfig({
     }
   },
 
+  // Color mode configuration
+  colorMode: {
+    classSuffix: ''
+  },
+
+  // Tailwind configuration
+  tailwindcss: {
+    cssPath: '~/assets/css/main.css',
+    configPath: 'tailwind.config.js'
+  },
+
   // TypeScript configuration
   typescript: {
     typeCheck: false
@@ -57,6 +83,7 @@ export default defineNuxtConfig({
   // Static site generation
   ssr: true,
   nitro: {
+    preset: 'static',
     prerender: {
       failOnError: false,
       crawlLinks: true,
