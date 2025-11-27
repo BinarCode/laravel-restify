@@ -28,10 +28,7 @@
         <div class="flex items-center space-x-4">
           <!-- Search (desktop) -->
           <div class="hidden lg:block">
-            <UContentSearchButton 
-              :collapsed="false"
-              placeholder="Search documentation..."
-            />
+            <SearchInput />
           </div>
           
           <!-- GitHub link -->
@@ -69,10 +66,7 @@
     <!-- Mobile search -->
     <div class="lg:hidden px-4 pb-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 w-full">
       <div class="pt-4 w-full">
-        <UContentSearchButton 
-          :collapsed="false" 
-          placeholder="Search documentation..."
-        />
+        <SearchInput />
       </div>
     </div>
   </header>

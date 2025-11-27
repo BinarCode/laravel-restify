@@ -312,7 +312,8 @@ type Mutation {
 
 Add the GraphQL endpoint to your routes:
 
-```php [routes/web.php or routes/api.php]
+```php
+// routes/web.php or routes/api.php
 Route::middleware(['api'])->group(function () {
     Route::post('/graphql', \Nuwave\Lighthouse\Http\GraphQLController::class);
 });

@@ -5,6 +5,10 @@ menuTitle: Introduction
 category: Getting Started
 ---
 
+# Laravel REST API Framework & JSON:API Generator
+
+Laravel Restify is a powerful **Laravel API package** that automatically transforms your Eloquent models into **JSON:API endpoints** and **MCP servers** for AI agents. This comprehensive **PHP REST API framework** enables you to build production-ready APIs with minimal code while following industry standards.
+
 **Build once, serve everywhere** - Create APIs that work seamlessly for developers, web applications, mobile apps, and AI agents like Claude Desktop.
 
 

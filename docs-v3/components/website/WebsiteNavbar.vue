@@ -73,7 +73,7 @@
         <div class="flex items-center space-x-4">
           <!-- Search (desktop only, for docs pages) -->
           <div v-if="$route.path.startsWith('/docs')" class="hidden lg:block">
-            <UContentSearchButton :label="'Search...'" :collapsed="false" />
+            <SearchInput />
           </div>
           
           <!-- GitHub link -->
@@ -150,7 +150,7 @@
       <!-- Mobile search for docs -->
       <div v-if="$route.path.startsWith('/docs')" class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
         <div class="pt-4">
-          <UContentSearchButton :label="'Search...'" :collapsed="false" />
+          <SearchInput />
         </div>
       </div>
     </div>

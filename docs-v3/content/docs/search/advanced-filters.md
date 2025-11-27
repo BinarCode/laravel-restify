@@ -42,7 +42,8 @@ class ReadyPostsFilter extends AdvancedFilter
 
 Then add the filter to the repository `filters` method: 
 
-```php [PostRepository.php]
+```php
+// PostRepository.php
 public function filters(RestifyRequest $request): array
 {
     return [
@@ -55,7 +56,8 @@ public function filters(RestifyRequest $request): array
 
 You can authorize certain filters to be active for specific users: 
 
-```php [PostRepository.php]
+```php
+// PostRepository.php
 public function filters(RestifyRequest $request): array
 {
     return [
@@ -302,7 +304,8 @@ class SelectCategoryFilter extends SelectFilter
 Using filter:
 
 
-```php [App/Restify/PostRepository.php]
+```php
+// App/Restify/PostRepository.php
 public function filters(RestifyRequest $request)
 {
     return [
@@ -350,7 +353,8 @@ class ActiveBooleanFilter extends BooleanFilter
 
 ```
 Using filter:
-```php [App/Restify/PostRepository.php]
+```php
+// App/Restify/PostRepository.php
 public function filters(RestifyRequest $request)
 {
     return [
