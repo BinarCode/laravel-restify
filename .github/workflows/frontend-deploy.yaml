@@ -1,0 +1,70 @@
+name: Deploy Docs V3
+
+on:
+  push:
+    branches: ["10.x"]
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: |
+          cd docs-v3
+          npm ci --production=false
+
+      - name: Build Nuxt
+        run: |
+          cd docs-v3
+          npm run build
+
+      - name: Upload build as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: docs-v3-build
+          path: docs-v3/.output
+          retention-days: 1
+
+      - name: Download build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: docs-v3-build
+          path: docs-v3/.output
+
+      - name: Deploy to Forge via SCP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.FORGE_HOST }}
+          username: forge
+          key: ${{ secrets.FORGE_SSH_KEY }}
+          source: "docs-v3/.output/*"
+          target: "/home/forge/restify.binarcode.com/docs-v3/.output"
+
+      - name: Finalize deployment on server
+        uses: appleboy/ssh-action@v1.1.0
+        with:
+          host: ${{ secrets.FORGE_HOST }}
+          username: forge
+          key: ${{ secrets.FORGE_SSH_KEY }}
+          script: |
+            cd /home/forge/restify.binarcode.com
+
+            git reset --hard
+            git fetch --all
+            git pull origin $FORGE_SITE_BRANCH
+
+            # PM2 restart (SSR only)
+            if [ -d "docs-v3/.output/server" ]; then
+                pm2 restart restify-docs || pm2 start docs-v3/.output/server/index.mjs --name "restify-docs"
+            else
+                echo "Static site detected. No PM2 process needed."
+            fi
