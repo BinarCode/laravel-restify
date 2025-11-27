@@ -288,8 +288,7 @@ GET /api/restify/posts?page=2&perPage=10
 
 Protect your repositories with Laravel policies:
 
-```php
-// app/Policies/PostPolicy.php
+```php [app/Policies/PostPolicy.php]
 class PostPolicy
 {
     public function allowRestify(User $user = null): bool

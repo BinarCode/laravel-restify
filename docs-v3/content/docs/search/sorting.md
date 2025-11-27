@@ -50,9 +50,7 @@ Using a `related` relationship, it becomes very easy to define a sortable by has
 
 You simply add the `->sortable()` method to the relationship:
 
-```php
-// UserRepository.php
-
+```php [UserRepository.php]
 public function related(): array
 {
     return [
@@ -86,9 +84,7 @@ The belongsTo sorting works in a similar way.
 
 You simply add the `->sortable()` method to the relationship:
 
-```php
-// PostRepository.php
-
+```php [PostRepository.php]
 public function related(): array
 {
     return [

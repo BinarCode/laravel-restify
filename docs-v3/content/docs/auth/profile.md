@@ -11,8 +11,7 @@ Laravel Restify provides a convenient profile endpoint that allows authenticated
 
 Make sure you followed the [Authentication](/auth/authentication) guide first, as you need the authentication middleware configured:
 
-```php
-// config/restify.php
+```php [config/restify.php]
 'middleware' => [
     // ...
     'auth:sanctum',
@@ -88,8 +87,7 @@ public static function related(): array
 
 Make sure your `User` model defines the proper Eloquent relationship:
 
-```php
-// User.php
+```php [User.php]
 public function roles(): BelongsToMany
 {
     return $this->belongsToMany(Role::class);
