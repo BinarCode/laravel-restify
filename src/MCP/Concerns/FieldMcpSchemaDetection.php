@@ -17,7 +17,10 @@ trait FieldMcpSchemaDetection
      */
     public static function hasJsonSchemaSupport(): bool
     {
-        return class_exists(\Illuminate\JsonSchema\JsonSchemaTypeFactory::class);
+        // Check for the interface first - this is what Laravel 12 provides
+        // The class_exists check on JsonSchemaTypeFactory would trigger autoloading
+        // which fails on Laravel 11 because the interface doesn't exist
+        return interface_exists(\Illuminate\Contracts\JsonSchema\JsonSchema::class);
     }
 
     /**
