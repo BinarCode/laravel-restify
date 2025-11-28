@@ -1,7 +1,9 @@
 export default defineNuxtConfig({
   compatibilityDate: '2025-11-18',
+  compatibilityDate: '2025-11-18',
   devtools: { enabled: true },
   modules: [
+    '@nuxt/ui',
     '@nuxt/ui',
     '@nuxt/content',
     '@vueuse/nuxt'
@@ -11,6 +13,13 @@ export default defineNuxtConfig({
   ui: {
     content: true,
     fonts: true
+  },
+
+  // Icon configuration - only bundle the collections we actually use
+  icon: {
+    serverBundle: {
+      collections: ['heroicons', 'lucide']
+    }
   },
 
   // CSS configuration
@@ -54,17 +63,14 @@ export default defineNuxtConfig({
     typeCheck: false
   },
 
-  // Static site generation
+  // Static site generation for Vercel
   ssr: true,
   nitro: {
+    preset: 'vercel-static',
     prerender: {
       failOnError: false,
       crawlLinks: true,
-      routes: ['/'],
-      ignore: [
-        '/api/_content/cache.**',
-        '/api/_content/query/**'
-      ]
+      routes: ['/']
     }
   }
 })

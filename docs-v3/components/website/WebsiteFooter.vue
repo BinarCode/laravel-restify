@@ -40,11 +40,7 @@
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors flex items-center"
               >
                 Documentation
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 3h6v6"></path>
-                  <path d="M10 14 21 3"></path>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                </svg>
+                <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1" />
               </NuxtLink>
             </li>
             <li>
@@ -53,11 +49,7 @@
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors flex items-center"
               >
                 Getting Started
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 3h6v6"></path>
-                  <path d="M10 14 21 3"></path>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                </svg>
+                <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1" />
               </NuxtLink>
             </li>
             <li>
@@ -68,11 +60,7 @@
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors flex items-center"
               >
                 Changelog
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 3h6v6"></path>
-                  <path d="M10 14 21 3"></path>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                </svg>
+                <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1" />
               </a>
             </li>
             <li>
@@ -83,11 +71,7 @@
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors flex items-center"
               >
                 Releases
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 3h6v6"></path>
-                  <path d="M10 14 21 3"></path>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                </svg>
+                <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1" />
               </a>
             </li>
           </ul>
@@ -105,11 +89,7 @@
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors flex items-center"
               >
                 GitHub
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 3h6v6"></path>
-                  <path d="M10 14 21 3"></path>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                </svg>
+                <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1" />
               </a>
             </li>
             <li>
@@ -120,11 +100,7 @@
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors flex items-center"
               >
                 Discussions
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 3h6v6"></path>
-                  <path d="M10 14 21 3"></path>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                </svg>
+                <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1" />
               </a>
             </li>
             <li>
@@ -135,11 +111,7 @@
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors flex items-center"
               >
                 Issues
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 3h6v6"></path>
-                  <path d="M10 14 21 3"></path>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                </svg>
+                <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1" />
               </a>
             </li>
             <li>
@@ -150,11 +122,7 @@
                 class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white transition-colors flex items-center"
               >
                 BinarCode
-                <svg class="w-3 h-3 ml-1" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-                  <path d="M15 3h6v6"></path>
-                  <path d="M10 14 21 3"></path>
-                  <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
-                </svg>
+                <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1" />
               </a>
             </li>
           </ul>
@@ -165,11 +133,11 @@
       <div class="mt-8 pt-8 border-t border-gray-200 dark:border-gray-700">
         <div class="flex flex-col md:flex-row items-center justify-between">
           <p class="text-gray-600 dark:text-gray-400 text-sm">
-            © 2024 Laravel Restify. Open source under MIT License.
+            © {{ currentYear }} Laravel Restify. Open source under MIT License.
           </p>
           <div class="mt-4 md:mt-0">
             <p class="text-gray-600 dark:text-gray-400 text-sm">
-              Made with <span class="text-red-500">❤</span> by the BinarCode team
+              Made with <span class="text-red-500">❤</span> by the <a href="https://binarcode.com" target="_blank" rel="noopener noreferrer" class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-colors font-medium">BinarCode</a> team
             </p>
           </div>
         </div>
@@ -179,5 +147,8 @@
 </template>
 
 <script setup lang="ts">
+import { ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline'
+
 // Website footer component
+const currentYear = computed(() => new Date().getFullYear())
 </script>

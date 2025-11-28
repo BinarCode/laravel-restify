@@ -24,9 +24,7 @@ useHead({
 
 // Fetch navigation and search data using the correct Nuxt Content composables
 const { data: navigation } = await useAsyncData('navigation', () => queryCollectionNavigation('content'))
-const { data: files } = useLazyAsyncData('search', () => queryCollectionSearchSections('content'), {
-  server: false
-})
+const { data: files } = await useAsyncData('search', () => queryCollectionSearchSections('content'))
 
 const searchTerm = ref('')
 </script>

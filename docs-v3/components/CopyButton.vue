@@ -61,14 +61,14 @@ const handleCopy = async () => {
     
   } catch (error) {
     console.error('❌ All copy methods failed:', error)
-    const { error: showError } = useToast()
+    const { error: showError } = useAppToast()
     showError('Copy failed - please manually select and copy the text')
   }
 }
 
 const showSuccess = () => {
   iscopied.value = true
-  const { success } = useToast()
+  const { success } = useAppToast()
   success('Copied to clipboard!')
   
   setTimeout(() => {
@@ -78,6 +78,8 @@ const showSuccess = () => {
 </script>
 
 <style scoped>
+@reference "tailwindcss";
+
 .copy-btn {
   @apply absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-all duration-200 p-2 bg-white/90 dark:bg-gray-800/90 hover:bg-white dark:hover:bg-gray-800 rounded-md border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 active:scale-95;
 }
