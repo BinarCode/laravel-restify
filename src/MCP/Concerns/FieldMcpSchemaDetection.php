@@ -6,12 +6,6 @@ use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\JsonSchema\JsonSchema;
-use Illuminate\JsonSchema\JsonSchemaTypeFactory;
-use Illuminate\JsonSchema\Types\ArrayType;
-use Illuminate\JsonSchema\Types\BooleanType;
-use Illuminate\JsonSchema\Types\NumberType;
-use Illuminate\JsonSchema\Types\Type;
 
 /**
  * @mixin \Binaryk\LaravelRestify\Fields\Field
@@ -19,11 +13,25 @@ use Illuminate\JsonSchema\Types\Type;
 trait FieldMcpSchemaDetection
 {
     /**
-     * Guess the field type based on validation rules, field class, and attribute patterns.
+     * Check if Laravel 12+ JsonSchema classes are available.
      */
-    public function guessFieldType(RestifyRequest $request): Type
+    public static function hasJsonSchemaSupport(): bool
     {
-        $schema = new JsonSchemaTypeFactory;
+        return class_exists(\Illuminate\JsonSchema\JsonSchemaTypeFactory::class);
+    }
+
+    /**
+     * Guess the field type based on validation rules, field class, and attribute patterns.
+     *
+     * @return \Illuminate\JsonSchema\Types\Type|null Returns Type on Laravel 12+, null on Laravel 11
+     */
+    public function guessFieldType(RestifyRequest $request): mixed
+    {
+        if (! static::hasJsonSchemaSupport()) {
+            return null;
+        }
+
+        $schema = new \Illuminate\JsonSchema\JsonSchemaTypeFactory;
 
         $rules = $this->getRulesForRequest($request);
 
@@ -84,8 +92,8 @@ trait FieldMcpSchemaDetection
             }
         }
 
-        // Add examples based on field type and name
-        if ($this->jsonSchema instanceof Type) {
+        // Add examples based on field type and name (Laravel 12+ only)
+        if (static::hasJsonSchemaSupport() && $this->jsonSchema instanceof \Illuminate\JsonSchema\Types\Type) {
             $examples = $this->generateFieldExamples($this->jsonSchema);
 
             if (! empty($examples)) {
@@ -140,20 +148,22 @@ trait FieldMcpSchemaDetection
 
     /**
      * Generate examples for the field.
+     *
+     * @param  \Illuminate\JsonSchema\JsonSchema  $fieldType
      */
-    protected function generateFieldExamples(JsonSchema $fieldType): array
+    protected function generateFieldExamples(mixed $fieldType): array
     {
         $attribute = strtolower($this->attribute);
 
-        if ($fieldType instanceof BooleanType) {
+        if ($fieldType instanceof \Illuminate\JsonSchema\Types\BooleanType) {
             return ['true', 'false'];
         }
 
-        if ($fieldType instanceof NumberType) {
+        if ($fieldType instanceof \Illuminate\JsonSchema\Types\NumberType) {
             return $this->getNumberExamples($attribute);
         }
 
-        if ($fieldType instanceof ArrayType) {
+        if ($fieldType instanceof \Illuminate\JsonSchema\Types\ArrayType) {
             return ['["item1", "item2"]', '{"key": "value"}'];
         }
 
@@ -278,8 +288,11 @@ trait FieldMcpSchemaDetection
 
     /**
      * Guess type from attribute name patterns.
+     *
+     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
+     * @return \Illuminate\JsonSchema\Types\Type|null
      */
-    protected function guessTypeFromAttributeName(JsonSchema $schema): ?Type
+    protected function guessTypeFromAttributeName(mixed $schema): mixed
     {
         $attribute = $this->attribute;
 

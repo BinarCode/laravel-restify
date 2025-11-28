@@ -344,23 +344,21 @@ class GraphqlGenerateCommand extends Command
         $fieldClass = get_class($field);
         $fieldClassName = class_basename($fieldClass);
 
-        // Use the field's built-in type guessing if available
-        if (method_exists($field, 'guessFieldType')) {
+        // Use the field's built-in type guessing if available (Laravel 12+ only)
+        if (method_exists($field, 'guessFieldType') && method_exists($field, 'hasJsonSchemaSupport') && $field::hasJsonSchemaSupport()) {
             $fieldType = $field->guessFieldType(app(RepositoryStoreRequest::class));
 
-            switch ($fieldType) {
-                case 'boolean':
-                    return 'Boolean';
-                case 'number':
-                case 'integer':
-                    return 'Int';
-                case 'array':
-                    return $isInput ? '[String!]' : '[String!]';
-                case 'object':
-                    return $isInput ? 'JSON' : 'JSON';
-                case 'string':
-                default:
-                    return 'String';
+            if ($fieldType !== null) {
+                // Check the Type object class to determine GraphQL type
+                $typeClass = class_basename(get_class($fieldType));
+
+                return match ($typeClass) {
+                    'BooleanType' => 'Boolean',
+                    'NumberType', 'IntegerType' => 'Int',
+                    'ArrayType' => $isInput ? '[String!]' : '[String!]',
+                    'ObjectType' => $isInput ? 'JSON' : 'JSON',
+                    default => 'String',
+                };
             }
         }
 
