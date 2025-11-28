@@ -53,9 +53,7 @@ The global `viewRestify` gate is the first authorization checkpoint that control
 
 The gate is defined in your `RestifyApplicationServiceProvider`:
 
-```php
-// app/Providers/RestifyServiceProvider.php
-
+```php [app/Providers/RestifyServiceProvider.php]
 protected function gate()
 {
     Gate::define('viewRestify', function ($user) {
@@ -433,30 +431,21 @@ Determine if the user can update a specific model.
 
 The `update` method corresponds to the following routes:
 
-<code-group>
+::code-group
 
-  <code-block label="Full Update" active>
-  
-  ```http request
-  PUT: api/restify/posts/{id}
-  ```
-  </code-block>
+```http [Full Update]
+PUT: api/restify/posts/{id}
+```
 
-  <code-block label="Partial Update">
+```http [Partial Update]
+PATCH: api/restify/posts/{id}
+```
 
-  ```http request
-  PATCH: api/restify/posts/{id}
-  ```
-  </code-block>
+```http [File uploads]
+POST: api/restify/posts/{id}
+```
 
-  <code-block label="File uploads">
-
-  ```http request
-  POST: api/restify/posts/{id}
-  ```
-  </code-block>
-
-</code-group>
+::
 
 Definition:
 
@@ -571,9 +560,7 @@ POST: /api/restify/users/{id}/attach/posts
 
 Restify will guess the policy's name by the related entity. For this reason, it will be `attachPost`:
 
-```php
-// UserPolicy.php
-
+```php [UserPolicy.php]
 /**
  * Determine if the post could be attached to the user.
  *

@@ -1,35 +1,27 @@
 export default defineNuxtConfig({
+  compatibilityDate: '2025-11-18',
   devtools: { enabled: true },
   modules: [
+    '@nuxt/ui',
     '@nuxt/content',
-    '@nuxtjs/tailwindcss',
-    '@nuxtjs/color-mode',
     '@vueuse/nuxt'
   ],
-  
-  // Content configuration
-  content: {
-    documentDriven: true,
-    navigation: {
-      fields: ['title', 'description', 'icon', 'category']
-    },
-    highlight: {
-      theme: {
-        default: 'github-light',
-        dark: 'github-dark'
-      },
-      preload: ['php', 'bash', 'javascript', 'typescript', 'vue', 'json']
-    },
-    markdown: {
-      anchorLinks: false,
-      remarkPlugins: [],
-      rehypePlugins: []
+
+  // Nuxt UI configuration for content
+  ui: {
+    content: true,
+    fonts: true
+  },
+
+  // Icon configuration - only bundle the collections we actually use
+  icon: {
+    serverBundle: {
+      collections: ['heroicons', 'lucide']
     }
   },
 
   // CSS configuration
   css: ['~/assets/css/main.css'],
-
 
   // App configuration
   app: {
@@ -38,7 +30,7 @@ export default defineNuxtConfig({
       meta: [
         { charset: 'utf-8' },
         { name: 'viewport', content: 'width=device-width, initial-scale=1' },
-        { hid: 'description', name: 'description', content: 'Laravel Restify Documentation - Build amazing REST APIs with Laravel' }
+        { name: 'description', content: 'Laravel Restify Documentation - Build amazing REST APIs with Laravel' }
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/icon.png' }
@@ -64,34 +56,19 @@ export default defineNuxtConfig({
     }
   },
 
-  // Color mode configuration
-  colorMode: {
-    classSuffix: ''
-  },
-
-  // Tailwind configuration
-  tailwindcss: {
-    cssPath: '~/assets/css/main.css',
-    configPath: 'tailwind.config.js'
-  },
-
   // TypeScript configuration
   typescript: {
     typeCheck: false
   },
 
-  // Static site generation
+  // Static site generation for Vercel
   ssr: true,
   nitro: {
-    preset: 'static',
+    preset: 'vercel-static',
     prerender: {
       failOnError: false,
       crawlLinks: true,
-      routes: ['/'],
-      ignore: [
-        '/api/_content/cache.**',
-        '/api/_content/query/**'
-      ]
+      routes: ['/']
     }
   }
 })

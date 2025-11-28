@@ -212,9 +212,7 @@ In order to get the public functionality you need to take a few extra steps to i
 
 Make sure you allow your global gate a nullable user: 
 
-```php
-// app/Providers/RestifyApplicationServiceProvider.php
-
+```php [app/Providers/RestifyApplicationServiceProvider.php]
 protected function gate(): void
 {
     Gate::define('viewRestify', function ($user = null) {
@@ -375,9 +373,7 @@ own `$id` property into the repository:
 
 ### ID
 
-```php
-// PostRepository.php
-    
+```php [PostRepository.php]
 public static string $id = 'uuid';
 ```
 
@@ -385,9 +381,7 @@ The next piece is the resource type and this is the table name. However, you can
 
 ### Type
 
-```php
-// PostRepository.php
-    
+```php [PostRepository.php]
 public static string $type = 'articles';
 ```
 
@@ -400,10 +394,8 @@ from the related policy (PostPolicy in our example).
 
 You can customize the `meta` by creating your own `resolveShowMeta` method:
 
-```php
-  // PostRepository.php
-
-  public function resolveShowMeta($request)
+```php [PostRepository.php]
+public function resolveShowMeta($request)
   {
       return [
           'is_published' => $this->model()->isPublished(),
@@ -421,9 +413,7 @@ $this->model()` represents the `Post` model with the `id=1`, because we're looki
 As we saw before, there are many ways to partially modify the serialized response for the `show` request, although you
 are free to customize the entire response at once by defining:
 
-```php
-// PostRepository.php
-
+```php [PostRepository.php]
 public function serializeForShow(RestifyRequest $request): array
 {
     return [
@@ -692,9 +682,7 @@ The rules list will be applied for the underlining field.
 
 You can always take ownership over the store method by overwriting it in the repository: 
 
-```php
-// PostRepository.php
-
+```php [PostRepository.php]
 public function store(RestifyRequest $request)
 {
     //
@@ -914,9 +902,7 @@ These models will be resolved from the database and checked for the `deleteBulk`
 Although Laravel Restify [provides eager](/search/) loading based on the query `related` property, you may want to force
 eager load a relationship when using it in fields:
 
-```php
-// UserRepository.php
-
+```php [UserRepository.php]
 public static $withs = ['posts'];
 ```
 

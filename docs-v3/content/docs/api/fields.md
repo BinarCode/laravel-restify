@@ -18,7 +18,6 @@ using their static `new` or `make` method.
 The first argument is always the attribute name and usually matches the database `column`.
 
 ```php
-
 use Illuminate\Support\Facades\Hash;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;

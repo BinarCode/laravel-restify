@@ -10,9 +10,7 @@
             class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
             aria-label="Toggle menu"
           >
-            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <Bars3Icon class="h-6 w-6" />
           </button>
           
           <!-- Logo -->
@@ -73,7 +71,7 @@
         <div class="flex items-center space-x-4">
           <!-- Search (desktop only, for docs pages) -->
           <div v-if="$route.path.startsWith('/docs')" class="hidden lg:block">
-            <SearchInput />
+            <UContentSearchButton :label="'Search...'" :collapsed="false" />
           </div>
           
           <!-- GitHub link -->
@@ -150,7 +148,7 @@
       <!-- Mobile search for docs -->
       <div v-if="$route.path.startsWith('/docs')" class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
         <div class="pt-4">
-          <SearchInput />
+          <UContentSearchButton :label="'Search...'" :collapsed="false" />
         </div>
       </div>
     </div>
