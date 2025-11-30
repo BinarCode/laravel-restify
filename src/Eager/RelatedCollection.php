@@ -180,8 +180,8 @@ class RelatedCollection extends Collection
 
         return $this
             ->intoAssoc()
-            ->authorized($request)
             ->inRequest($request, $repository)
+            ->authorized($request)
             ->when($request->isShowRequest(), fn (self $collection) => $collection->forShow($request, $repository))
             ->when($request->isIndexRequest(), fn (self $collection) => $collection->forIndex($request, $repository))
             ->when($repository->detectMcpRequest(), fn (self $collection) => $collection->forIndex($request, $repository));
