@@ -33,12 +33,12 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         ]);
     }
 
-    protected function setUp(): void
+    protected function tearDown(): void
     {
-        parent::setUp();
+        // Clear Restify repositories to prevent affecting subsequent tests
+        Restify::$repositories = [];
 
-        // Clear any previously registered repositories to avoid test pollution
-        Restify::repositories([]);
+        parent::tearDown();
     }
 
     public function test_repository_uses_mcp_specific_field_methods(): void
@@ -253,11 +253,15 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
 
         // Find our expected tool name
         $availableTools = collect($toolsData['result']['tools'])->pluck('name')->toArray();
-        $indexToolName = collect($availableTools)->filter(fn ($name) => str_contains($name,
-            'test-posts') && str_contains($name, 'index'))->first();
+        $indexToolName = collect($availableTools)->filter(fn ($name) => str_contains(
+            $name,
+            'test-posts'
+        ) && str_contains($name, 'index'))->first();
 
-        $this->assertNotNull($indexToolName,
-            'Expected test-posts index tool not found. Available tools: '.implode(', ', $availableTools));
+        $this->assertNotNull(
+            $indexToolName,
+            'Expected test-posts index tool not found. Available tools: '.implode(', ', $availableTools)
+        );
 
         // Create MCP JSON-RPC 2.0 request payload for calling the index tool
         $mcpPayload = [
@@ -305,8 +309,11 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         // Check structure - JSON:API format has 'attributes' key
         if (isset($firstItem['type']) && isset($firstItem['id'])) {
             // JSON:API format - attributes should be in a sub-key
-            $this->assertArrayHasKey('attributes', $firstItem,
-                'Expected JSON:API structure with attributes key. Found keys: '.implode(', ', array_keys($firstItem)));
+            $this->assertArrayHasKey(
+                'attributes',
+                $firstItem,
+                'Expected JSON:API structure with attributes key. Found keys: '.implode(', ', array_keys($firstItem))
+            );
             $attributes = $firstItem['attributes'];
         } elseif (isset($firstItem['attributes'])) {
             // Has attributes key but not standard JSON:API
@@ -418,8 +425,10 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
             fn ($name) => str_contains($name, 'test-posts-with-user') && str_contains($name, 'index')
         )->first();
 
-        $this->assertNotNull($postIndexToolName,
-            'Expected test-posts-with-user index tool not found. Available tools: '.implode(', ', $availableTools));
+        $this->assertNotNull(
+            $postIndexToolName,
+            'Expected test-posts-with-user index tool not found. Available tools: '.implode(', ', $availableTools)
+        );
 
         // Create MCP request with relationship inclusion
         $mcpPayload = [

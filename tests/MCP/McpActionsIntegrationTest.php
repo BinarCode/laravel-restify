@@ -32,6 +32,14 @@ class McpActionsIntegrationTest extends IntegrationTestCase
         ]);
     }
 
+    protected function tearDown(): void
+    {
+        // Clear Restify repositories to prevent affecting subsequent tests
+        Restify::$repositories = [];
+
+        parent::tearDown();
+    }
+
     public function test_could_perform_action_for_multiple_repositories(): void
     {
         PublishPostAction::$applied = [];

@@ -37,9 +37,14 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
             })
             ->shouldReceive('flush')
             ->andReturn(true);
+    }
 
-        // Reset Restify repositories to prevent cross-test contamination
+    protected function tearDown(): void
+    {
+        // Clear Restify repositories to prevent affecting subsequent tests
         Restify::$repositories = [];
+
+        parent::tearDown();
     }
 
     protected function getPackageProviders($app): array
