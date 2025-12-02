@@ -32,7 +32,7 @@
 
         <!-- API Reference -->
         <NuxtLink
-          to="/docs/api"
+          to="/docs/api/repositories"
           class="group block p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-600 transition-colors hover:shadow-lg"
         >
           <div class="flex items-center mb-4">
@@ -50,7 +50,7 @@
 
         <!-- MCP Integration -->
         <NuxtLink
-          to="/docs/mcp"
+          to="/docs/mcp/mcp"
           class="group block p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-600 transition-colors hover:shadow-lg"
         >
           <div class="flex items-center mb-4">
@@ -66,7 +66,7 @@
 
         <!-- Authentication -->
         <NuxtLink
-          to="/docs/auth"
+          to="/docs/auth/authentication"
           class="group block p-6 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 transition-colors hover:shadow-lg"
         >
           <div class="flex items-center mb-4">
@@ -145,7 +145,7 @@
               <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
                 <p>
                   Laravel Restify now supports automatic MCP server generation! Enable AI agents to interact with your APIs seamlessly.
-                  <NuxtLink to="/docs/mcp" class="font-medium underline hover:text-blue-600 dark:hover:text-blue-100">
+                  <NuxtLink to="/docs/mcp/mcp" class="font-medium underline hover:text-blue-600 dark:hover:text-blue-100">
                     Learn more →
                   </NuxtLink>
                 </p>
