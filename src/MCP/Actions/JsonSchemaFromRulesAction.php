@@ -3,9 +3,9 @@
 namespace Binaryk\LaravelRestify\MCP\Actions;
 
 use Closure;
-use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Contracts\Validation\Rule;
 use Illuminate\Contracts\Validation\ValidationRule;
+use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\ArrayType;
 use Illuminate\JsonSchema\Types\BooleanType;
 use Illuminate\JsonSchema\Types\IntegerType;

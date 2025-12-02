@@ -4,8 +4,8 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
-use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Http\JsonResponse;
+use Illuminate\JsonSchema\JsonSchema;
 
 /**
  * @mixin \Binaryk\LaravelRestify\Repositories\Repository

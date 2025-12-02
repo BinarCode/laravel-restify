@@ -5,8 +5,8 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
-use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Http\UploadedFile;
+use Illuminate\JsonSchema\JsonSchema;
 
 /**
  * @mixin \Binaryk\LaravelRestify\Repositories\Repository
