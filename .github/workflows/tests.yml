@@ -53,3 +53,8 @@ jobs:
 
             - name: Execute tests
               run: composer test
+              if: matrix.os != 'windows-latest'
+
+            - name: Execute tests (Windows)
+              run: composer test-sequential
+              if: matrix.os == 'windows-latest'
