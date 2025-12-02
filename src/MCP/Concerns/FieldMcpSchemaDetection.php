@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\JsonSchema\Types\ArrayType;
 use Illuminate\JsonSchema\Types\BooleanType;
@@ -141,7 +140,7 @@ trait FieldMcpSchemaDetection
     /**
      * Generate examples for the field.
      */
-    protected function generateFieldExamples(JsonSchema $fieldType): array
+    protected function generateFieldExamples(Type $fieldType): array
     {
         $attribute = strtolower($this->attribute);
 
@@ -279,7 +278,7 @@ trait FieldMcpSchemaDetection
     /**
      * Guess type from attribute name patterns.
      */
-    protected function guessTypeFromAttributeName(JsonSchema $schema): ?Type
+    protected function guessTypeFromAttributeName(JsonSchemaTypeFactory $schema): ?Type
     {
         $attribute = $this->attribute;
 
