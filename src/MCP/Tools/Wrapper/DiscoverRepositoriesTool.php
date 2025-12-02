@@ -4,7 +4,7 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Wrapper;
 
 use Binaryk\LaravelRestify\MCP\Concerns\WrapperToolHelpers;
 use Binaryk\LaravelRestify\MCP\McpTools;
-use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
