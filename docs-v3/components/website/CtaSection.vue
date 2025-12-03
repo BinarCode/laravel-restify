@@ -32,7 +32,7 @@
           <div class="text-left">
             <div class="flex items-center mb-3">
               <CloudArrowDownIcon class="h-5 w-5 text-blue-400 mr-2" />
-              <span class="text-gray-700 dark:text-gray-300 font-medium text-sm">Install via Composer</span>
+              <span class="text-gray-300 dark:text-gray-300 font-medium text-sm">Install via Composer</span>
             </div>
             <p class="text-gray-500 text-xs mb-4">
               Get started instantly with Composer package manager
@@ -52,7 +52,7 @@
           <div class="text-left">
             <div class="flex items-center mb-3">
               <CodeBracketIcon class="h-5 w-5 text-blue-400 mr-2" />
-              <span class="text-gray-700 dark:text-gray-300 font-medium text-sm">Clone from GitHub</span>
+              <span class="text-gray-300 dark:text-gray-300 font-medium text-sm">Clone from GitHub</span>
             </div>
             <p class="text-gray-500 text-xs mb-4">
               Explore the source code and contribute
