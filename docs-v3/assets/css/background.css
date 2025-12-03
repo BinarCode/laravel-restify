@@ -10,11 +10,15 @@
 
 .dark .app-layout {
     @apply bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950;
-    background-attachment: fixed;
+    /* GPU optimization: use transform instead of background-attachment: fixed */
 }
 
 .app-background {
     @apply fixed inset-0 hidden pointer-events-none;
+    /* GPU optimization: promote to own layer */
+    will-change: transform;
+    transform: translateZ(0);
+    contain: strict;
 }
 
 .dark .app-background {
