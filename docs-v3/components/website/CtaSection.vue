@@ -1,14 +1,14 @@
 <template>
-  <section class="py-24 bg-slate-950 relative overflow-hidden">
+  <section class="py-24 relative overflow-hidden">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <div class="mb-12 md:mb-16">
-        <div class="inline-flex items-center px-4 md:px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 mb-6 md:mb-8">
+        <div class="inline-flex items-center px-4 md:px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-600 dark:text-blue-300 mb-6 md:mb-8">
           <BoltIcon class="w-4 h-4 mr-2" />
           Start Building Today
         </div>
         
         <h2 class="text-3xl md:text-4xl lg:text-6xl font-black tracking-tight mb-6 md:mb-8">
-          <span class="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
             Ready to build
           </span>
           <br />
@@ -17,38 +17,59 @@
           </span>
         </h2>
         
-        <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8 md:mb-12 leading-relaxed">
+        <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8 md:mb-12 leading-relaxed">
           Install Laravel Restify today and transform your API development experience with elegant, powerful, and intuitive tools.
         </p>
       </div>
 
-      <div class="space-y-6 md:space-y-8 mb-8 md:mb-12 max-w-2xl mx-auto">
-        <InstallationCard
-          title="Install via Composer"
-          description="Get started instantly with Composer package manager"
+      <div class="grid grid-cols-1 gap-6 md:gap-8 mb-8 md:mb-12 max-w-3xl mx-auto">
+        <!-- Composer Install Terminal -->
+        <TerminalWindow 
+          title="composer" 
           :command="COMPOSER_COMMAND"
-          :copied="composerCopied"
-          @copy="handleCopyComposer"
+          :copyable="true"
         >
-          <CloudArrowDownIcon class="h-6 w-6 text-blue-400" />
-        </InstallationCard>
+          <div class="text-left">
+            <div class="flex items-center mb-3">
+              <CloudArrowDownIcon class="h-5 w-5 text-blue-400 mr-2" />
+              <span class="text-gray-700 dark:text-gray-300 font-medium text-sm">Install via Composer</span>
+            </div>
+            <p class="text-gray-500 text-xs mb-4">
+              Get started instantly with Composer package manager
+            </p>
+            <div class="bg-black/30 rounded-lg p-3 font-mono text-sm">
+              <span class="text-gray-500">$</span> <span class="text-green-400">{{ COMPOSER_COMMAND }}</span>
+            </div>
+          </div>
+        </TerminalWindow>
 
-        <InstallationCard
-          title="Clone from GitHub"
-          description="Explore the source code and contribute to development"
+        <!-- Git Clone Terminal -->
+        <TerminalWindow 
+          title="git" 
           :command="GIT_COMMAND"
-          :copied="gitCopied"
-          @copy="handleCopyGit"
+          :copyable="true"
         >
-          <CodeBracketIcon class="h-6 w-6 text-blue-400" />
-        </InstallationCard>
+          <div class="text-left">
+            <div class="flex items-center mb-3">
+              <CodeBracketIcon class="h-5 w-5 text-blue-400 mr-2" />
+              <span class="text-gray-700 dark:text-gray-300 font-medium text-sm">Clone from GitHub</span>
+            </div>
+            <p class="text-gray-500 text-xs mb-4">
+              Explore the source code and contribute
+            </p>
+            <div class="bg-black/30 rounded-lg p-3 font-mono text-sm">
+              <span class="text-gray-500">$</span> <span class="text-green-400">git clone</span> <span class="text-cyan-400">{{ GIT_COMMAND }}</span>
+            </div>
+          </div>
+        </TerminalWindow>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-4 justify-center px-4 md:px-0">
         <HeroButton
           type="primary"
-          href="https://restify.binarcode.com/docs"
+          href="/docs"
           :icon="BoltIcon"
+          :is-nuxt-link="true"
         >
           Start Building
         </HeroButton>
@@ -72,33 +93,9 @@ import {
   CodeBracketIcon
 } from '@heroicons/vue/24/outline'
 import HeroButton from './HeroButton.vue'
-import InstallationCard from './InstallationCard.vue'
+import TerminalWindow from './TerminalWindow.vue'
 
 const COMPOSER_COMMAND = 'composer require binaryk/laravel-restify'
 const GIT_COMMAND = 'git clone https://github.com/BinarCode/laravel-restify.git'
-
-const composerCopied = ref(false)
-const gitCopied = ref(false)
-
-const { copyToClipboard } = useClipboardCopy()
-
-async function handleCopyComposer(): Promise<void> {
-  const success = await copyToClipboard(COMPOSER_COMMAND)
-  if (!success) return
-  
-  composerCopied.value = true
-  setTimeout(() => {
-    composerCopied.value = false
-  }, 2000)
-}
-
-async function handleCopyGit(): Promise<void> {
-  const success = await copyToClipboard(GIT_COMMAND)
-  if (!success) return
-  
-  gitCopied.value = true
-  setTimeout(() => {
-    gitCopied.value = false
-  }, 2000)
-}
+const GIT_URL = 'github.com/.../restify'
 </script>

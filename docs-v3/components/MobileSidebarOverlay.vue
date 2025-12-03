@@ -17,7 +17,7 @@
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ title }}</h2>
           <button
             @click.stop="$emit('close')"
-            class="p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
+            class="p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
           >
             <XMarkIcon class="h-5 w-5" />
           </button>

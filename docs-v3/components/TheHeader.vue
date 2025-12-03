@@ -5,7 +5,7 @@
         <div class="flex items-center">
           <button
             @click="toggleMobileMenu"
-            class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
+            class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             aria-label="Toggle menu"
           >
             <Bars3Icon class="h-6 w-6" />
@@ -31,7 +31,7 @@
             href="https://github.com/binarcode/laravel-restify"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring rounded-md p-2"
+            class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white rounded-md p-2"
             aria-label="GitHub Repository"
           >
             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -43,7 +43,7 @@
             href="https://twitter.com/LupacescuEuard"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring rounded-md p-2"
+            class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white rounded-md p-2"
             aria-label="Twitter Profile"
           >
             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">

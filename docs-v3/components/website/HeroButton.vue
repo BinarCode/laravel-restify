@@ -30,11 +30,11 @@ const props = defineProps<Props>()
 const isPrimary = computed(() => props.type === 'primary')
 const linkComponent = computed(() => props.isNuxtLink ? 'NuxtLink' : 'a')
 
-const BASE_CLASSES = 'group relative inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-4 text-base sm:text-lg font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 min-h-[56px]'
+const BASE_CLASSES = 'cursor-pointer group relative inline-flex items-center justify-center gap-3 px-6 sm:px-8 py-4 text-base sm:text-lg font-semibold rounded-full overflow-hidden transition-all duration-300 hover:scale-105 min-h-[56px]'
 
 const BUTTON_STYLES: Record<ButtonType, string> = {
   primary: `${BASE_CLASSES} text-white bg-gradient-to-r from-blue-500 to-cyan-600 hover:shadow-2xl hover:shadow-blue-500/25`,
-  secondary: `${BASE_CLASSES} text-gray-300 bg-white/5 border border-white/10 backdrop-blur-sm hover:bg-white/10 hover:border-white/20`
+  secondary: `${BASE_CLASSES} text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-white/5 border border-gray-300 dark:border-white/10 backdrop-blur-sm hover:bg-gray-200 dark:hover:bg-white/10 hover:border-gray-400 dark:hover:border-white/20`
 }
 
 const buttonClasses = computed(() => BUTTON_STYLES[props.type])

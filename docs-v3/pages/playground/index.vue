@@ -3,17 +3,17 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <!-- Header -->
       <div class="text-center mb-16">
-        <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4">
+        <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
           Laravel Restify Playground
         </h1>
-        <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+        <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
           Test and experiment with Laravel Restify features in our interactive playground.
           See how your API endpoints work without setting up a local environment.
         </p>
 
         <!-- GitHub Repository Link -->
         <div class="mt-8 p-4 bg-blue-500/10 backdrop-blur-sm rounded-xl border border-blue-500/20 max-w-2xl mx-auto">
-          <div class="flex items-center justify-center space-x-2 text-blue-300">
+          <div class="flex items-center justify-center space-x-2 text-blue-600 dark:text-blue-300">
             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
               <path fill-rule="evenodd" d="M10 0C4.477 0 0 4.484 0 10.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0110 4.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.942.359.31.678.921.678 1.856 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0020 10.017C20 4.484 15.522 0 10 0z" clip-rule="evenodd" />
             </svg>
@@ -27,7 +27,7 @@
               BinarCode/restify-demo
             </a>
           </div>
-          <p class="text-sm text-blue-400 text-center mt-2">
+          <p class="text-sm text-blue-500 dark:text-blue-400 text-center mt-2">
             This playground uses the demo repository above. Feel free to explore the code or submit PRs!
           </p>
         </div>
@@ -35,11 +35,11 @@
 
       <!-- Tab Navigation -->
       <div class="mb-8">
-        <div class="bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-2">
+        <div class="bg-white/80 dark:bg-gray-900/30 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50 rounded-xl p-2">
           <div class="flex space-x-2">
             <button
               @click="switchToHttp"
-              :class="activeTab === 'http' ? 'bg-red-500 text-white shadow-md' : 'text-gray-400 hover:text-white'"
+              :class="activeTab === 'http' ? 'bg-red-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'"
               class="flex-1 px-6 py-4 rounded-lg font-medium transition-all duration-200"
             >
               <div class="flex items-center justify-center space-x-2">
@@ -52,7 +52,7 @@
             </button>
             <button
               @click="switchToMcp"
-              :class="activeTab === 'mcp' ? 'bg-red-500 text-white shadow-md' : 'text-gray-400 hover:text-white'"
+              :class="activeTab === 'mcp' ? 'bg-red-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'"
               class="flex-1 px-6 py-4 rounded-lg font-medium transition-all duration-200"
             >
               <div class="flex items-center justify-center space-x-2">
@@ -69,40 +69,40 @@
 
       <!-- Quick Examples -->
       <div class="mb-8">
-        <h2 class="text-2xl font-bold text-white mb-6">Quick Examples</h2>
-        <div class="bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-6">
+        <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Quick Examples</h2>
+        <div class="bg-white/80 dark:bg-gray-900/30 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50 rounded-xl p-6">
           <!-- HTTP API Examples -->
           <div v-if="activeTab === 'http'" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
               @click="loadExample('api/restify/organizations', 'GET')"
-              class="p-4 text-left bg-blue-500/20 hover:bg-blue-500/30 rounded-lg transition-colors border border-blue-500/30"
+              class="p-4 text-left bg-blue-500/10 dark:bg-blue-500/20 hover:bg-blue-500/20 dark:hover:bg-blue-500/30 rounded-lg transition-colors border border-blue-500/30"
             >
-              <div class="font-mono text-sm text-blue-400 font-medium">GET</div>
-              <div class="text-sm text-gray-300 mt-1">Organizations</div>
+              <div class="font-mono text-sm text-blue-500 dark:text-blue-400 font-medium">GET</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Organizations</div>
             </button>
 
             <button
               @click="loadExample('api/restify/organizations?search=Roma', 'GET')"
-              class="p-4 text-left bg-purple-500/20 hover:bg-purple-500/30 rounded-lg transition-colors border border-purple-500/30"
+              class="p-4 text-left bg-purple-500/10 dark:bg-purple-500/20 hover:bg-purple-500/20 dark:hover:bg-purple-500/30 rounded-lg transition-colors border border-purple-500/30"
             >
-              <div class="font-mono text-sm text-purple-400 font-medium">GET</div>
-              <div class="text-sm text-gray-300 mt-1">Search Roma</div>
+              <div class="font-mono text-sm text-purple-500 dark:text-purple-400 font-medium">GET</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Search Roma</div>
             </button>
 
             <button
               @click="loadExample('api/restify/organizations?related=contacts', 'GET')"
-              class="p-4 text-left bg-green-500/20 hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/30"
+              class="p-4 text-left bg-green-500/10 dark:bg-green-500/20 hover:bg-green-500/20 dark:hover:bg-green-500/30 rounded-lg transition-colors border border-green-500/30"
             >
-              <div class="font-mono text-sm text-green-400 font-medium">GET</div>
-              <div class="text-sm text-gray-300 mt-1">With Contacts</div>
+              <div class="font-mono text-sm text-green-500 dark:text-green-400 font-medium">GET</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">With Contacts</div>
             </button>
 
             <button
               @click="loadExample('api/restify/contacts', 'GET')"
-              class="p-4 text-left bg-orange-500/20 hover:bg-orange-500/30 rounded-lg transition-colors border border-orange-500/30"
+              class="p-4 text-left bg-orange-500/10 dark:bg-orange-500/20 hover:bg-orange-500/20 dark:hover:bg-orange-500/30 rounded-lg transition-colors border border-orange-500/30"
             >
-              <div class="font-mono text-sm text-orange-400 font-medium">GET</div>
-              <div class="text-sm text-gray-300 mt-1">Contacts</div>
+              <div class="font-mono text-sm text-orange-500 dark:text-orange-400 font-medium">GET</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Contacts</div>
             </button>
           </div>
 
@@ -110,34 +110,34 @@
           <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             <button
               @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({jsonrpc: '2.0', method: 'initialize', params: {capabilities: {tools: []}}, id: 1}, null, 2))"
-              class="p-4 text-left bg-indigo-500/20 hover:bg-indigo-500/30 rounded-lg transition-colors border border-indigo-500/30"
+              class="p-4 text-left bg-indigo-500/10 dark:bg-indigo-500/20 hover:bg-indigo-500/20 dark:hover:bg-indigo-500/30 rounded-lg transition-colors border border-indigo-500/30"
             >
-              <div class="font-mono text-sm text-indigo-400 font-medium">POST</div>
-              <div class="text-sm text-gray-300 mt-1">Initialize</div>
+              <div class="font-mono text-sm text-indigo-500 dark:text-indigo-400 font-medium">POST</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Initialize</div>
             </button>
 
             <button
               @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'tools/list', params: {}, jsonrpc: '2.0', id: 2}, null, 2))"
-              class="p-4 text-left bg-cyan-500/20 hover:bg-cyan-500/30 rounded-lg transition-colors border border-cyan-500/30"
+              class="p-4 text-left bg-cyan-500/10 dark:bg-cyan-500/20 hover:bg-cyan-500/20 dark:hover:bg-cyan-500/30 rounded-lg transition-colors border border-cyan-500/30"
             >
-              <div class="font-mono text-sm text-cyan-400 font-medium">POST</div>
-              <div class="text-sm text-gray-300 mt-1">List Tools</div>
+              <div class="font-mono text-sm text-cyan-500 dark:text-cyan-400 font-medium">POST</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">List Tools</div>
             </button>
 
             <button
               @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'tools/call', params: {name: 'restify-list', arguments: {resource: 'organizations', search: 'Roma'}}, jsonrpc: '2.0', id: 3}, null, 2))"
-              class="p-4 text-left bg-emerald-500/20 hover:bg-emerald-500/30 rounded-lg transition-colors border border-emerald-500/30"
+              class="p-4 text-left bg-emerald-500/10 dark:bg-emerald-500/20 hover:bg-emerald-500/20 dark:hover:bg-emerald-500/30 rounded-lg transition-colors border border-emerald-500/30"
             >
-              <div class="font-mono text-sm text-emerald-400 font-medium">POST</div>
-              <div class="text-sm text-gray-300 mt-1">Organization List (Roma)</div>
+              <div class="font-mono text-sm text-emerald-500 dark:text-emerald-400 font-medium">POST</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Organization List (Roma)</div>
             </button>
 
             <button
               @click="loadMcpExample('mcp/restify', 'POST', JSON.stringify({method: 'tools/call', params: {name: 'organizations-index-tool', arguments: {search: 'BinarCode'}}, jsonrpc: '2.0', id: 2}, null, 2))"
-              class="p-4 text-left bg-amber-500/20 hover:bg-amber-500/30 rounded-lg transition-colors border border-amber-500/30"
+              class="p-4 text-left bg-amber-500/10 dark:bg-amber-500/20 hover:bg-amber-500/20 dark:hover:bg-amber-500/30 rounded-lg transition-colors border border-amber-500/30"
             >
-              <div class="font-mono text-sm text-amber-400 font-medium">POST</div>
-              <div class="text-sm text-gray-300 mt-1">Search BinarCode</div>
+              <div class="font-mono text-sm text-amber-500 dark:text-amber-400 font-medium">POST</div>
+              <div class="text-sm text-gray-700 dark:text-gray-300 mt-1">Search BinarCode</div>
             </button>
           </div>
         </div>
@@ -147,33 +147,33 @@
       <div class="mb-16">
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <!-- Request Panel -->
-          <div class="bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-8">
-            <h2 class="text-2xl font-bold text-white mb-6">Request</h2>
+          <div class="bg-white/80 dark:bg-gray-900/30 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50 rounded-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Request</h2>
 
             <!-- Method & URL -->
             <div class="mb-6">
               <div class="flex space-x-3">
-                <select v-if="activeTab === 'http'" v-model="method" class="px-4 py-3 bg-gray-800/50 border border-gray-700/50 text-white rounded-lg font-mono text-sm font-medium">
+                <select v-if="activeTab === 'http'" v-model="method" class="px-4 py-3 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 text-gray-900 dark:text-white rounded-lg font-mono text-sm font-medium">
                   <option value="GET">GET</option>
                   <option value="POST">POST</option>
                   <option value="PATCH">PATCH</option>
                   <option value="DELETE">DELETE</option>
                 </select>
-                <div v-else class="px-4 py-3 bg-gray-800/50 border border-gray-700/50 text-white rounded-lg font-mono text-sm font-medium">
+                <div v-else class="px-4 py-3 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 text-gray-900 dark:text-white rounded-lg font-mono text-sm font-medium">
                   POST
                 </div>
                 <input
                   v-if="activeTab === 'http'"
                   v-model="endpoint"
                   type="text"
-                  class="flex-1 px-4 py-3 bg-gray-800/50 border border-gray-700/50 text-white font-mono text-sm outline-none rounded-lg focus:border-gray-600"
+                  class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 text-gray-900 dark:text-white font-mono text-sm outline-none rounded-lg focus:border-gray-400 dark:focus:border-gray-600"
                   placeholder="api/restify/organizations"
                 >
                 <input
                   v-else
                   v-model="mcpEndpoint"
                   type="text"
-                  class="flex-1 px-4 py-3 bg-gray-800/50 border border-gray-700/50 text-white font-mono text-sm outline-none rounded-lg focus:border-gray-600"
+                  class="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 text-gray-900 dark:text-white font-mono text-sm outline-none rounded-lg focus:border-gray-400 dark:focus:border-gray-600"
                   placeholder="mcp/restify"
                 >
               </div>
@@ -181,11 +181,11 @@
 
             <!-- Request Body -->
             <div class="mb-6">
-              <label class="block text-sm font-medium text-gray-400 mb-3">Request Body (JSON)</label>
+              <label class="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-3">Request Body (JSON)</label>
               <textarea
                 v-model="requestBody"
                 rows="12"
-                class="w-full px-4 py-3 bg-gray-800/50 border border-gray-700/50 text-white rounded-lg font-mono text-sm resize-none focus:border-gray-600 outline-none"
+                class="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 text-gray-900 dark:text-white rounded-lg font-mono text-sm resize-none focus:border-gray-400 dark:focus:border-gray-600 outline-none"
                 :placeholder="placeholderText"
               ></textarea>
             </div>
@@ -201,11 +201,11 @@
           </div>
 
           <!-- Response Panel -->
-          <div class="bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-xl p-8">
-            <h2 class="text-2xl font-bold text-white mb-6">Response</h2>
-            <div class="bg-gray-800/50 border border-gray-700/30 rounded-lg p-6 h-[800px] overflow-y-auto">
-              <pre class="text-green-400 text-sm whitespace-pre-wrap" v-if="response"><code>{{ response }}</code></pre>
-              <div class="text-gray-400 text-sm" v-else>
+          <div class="bg-white/80 dark:bg-gray-900/30 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50 rounded-xl p-8">
+            <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-6">Response</h2>
+            <div class="bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/30 rounded-lg p-6 h-[800px] overflow-y-auto">
+              <pre class="text-green-600 dark:text-green-400 text-sm whitespace-pre-wrap" v-if="response"><code>{{ response }}</code></pre>
+              <div class="text-gray-600 dark:text-gray-400 text-sm" v-else>
                 <p class="mb-4">Click "Send Request" to see the API response here.</p>
                 <p class="text-xs">Example response:</p>
                 <pre class="text-gray-500 text-xs mt-2"><code v-if="activeTab === 'http'">{
@@ -233,48 +233,48 @@
 
       <!-- Sample Data Section -->
       <div class="mb-16">
-        <h2 class="text-3xl font-bold text-white mb-8 text-center">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-8 text-center">
           Sample Data
         </h2>
 
-        <div class="bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-xl overflow-hidden">
-          <div class="bg-gray-800/50 px-6 py-4 border-b border-gray-700/50">
-            <h3 class="text-lg font-semibold text-white">Available Resources</h3>
-            <p class="text-gray-400 mt-1">The playground includes sample data for the following resources</p>
+        <div class="bg-white/80 dark:bg-gray-900/30 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50 rounded-xl overflow-hidden">
+          <div class="bg-gray-100/80 dark:bg-gray-800/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700/50">
+            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Available Resources</h3>
+            <p class="text-gray-600 dark:text-gray-400 mt-1">The playground includes sample data for the following resources</p>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
             <!-- Organizations -->
             <div class="text-center">
               <div class="w-12 h-12 bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <svg class="h-6 w-6 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-6 w-6 text-blue-500 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
                 </svg>
               </div>
-              <h4 class="text-lg font-semibold text-white">Organizations</h4>
-              <p class="text-gray-400 text-sm mt-2">25 organizations with contacts and locations across cities like Roma</p>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Organizations</h4>
+              <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">25 organizations with contacts and locations across cities like Roma</p>
             </div>
 
             <!-- Contacts -->
             <div class="text-center">
               <div class="w-12 h-12 bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <svg class="h-6 w-6 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-6 w-6 text-green-500 dark:text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
               </div>
-              <h4 class="text-lg font-semibold text-white">Contacts</h4>
-              <p class="text-gray-400 text-sm mt-2">50 contacts with organization relationships and profiles</p>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Contacts</h4>
+              <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">50 contacts with organization relationships and profiles</p>
             </div>
 
             <!-- Users -->
             <div class="text-center">
               <div class="w-12 h-12 bg-gradient-to-br from-purple-500/20 to-violet-500/20 border border-purple-500/30 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <svg class="h-6 w-6 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="h-6 w-6 text-purple-500 dark:text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z" />
                 </svg>
               </div>
-              <h4 class="text-lg font-semibold text-white">Users</h4>
-              <p class="text-gray-400 text-sm mt-2">15 users with authentication and access management</p>
+              <h4 class="text-lg font-semibold text-gray-900 dark:text-white">Users</h4>
+              <p class="text-gray-600 dark:text-gray-400 text-sm mt-2">15 users with authentication and access management</p>
             </div>
           </div>
         </div>
@@ -282,11 +282,11 @@
 
       <!-- Bottom CTA -->
       <div class="text-center">
-        <div class="bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-8">
-          <h2 class="text-2xl font-bold text-white mb-4">
+        <div class="bg-white/80 dark:bg-gray-900/30 backdrop-blur-sm border border-gray-200 dark:border-gray-700/50 rounded-2xl p-8">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Ready to Build Your Own API?
           </h2>
-          <p class="text-gray-400 mb-6 max-w-2xl mx-auto">
+          <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
             The playground gives you a taste of what's possible. Follow our quick start guide
             to build your own REST API with Laravel Restify in minutes.
           </p>
@@ -299,7 +299,7 @@
             </NuxtLink>
             <NuxtLink
               to="/templates"
-              class="inline-flex items-center px-6 py-3 bg-transparent border-2 border-gray-600 text-gray-300 hover:border-gray-500 hover:text-white font-medium rounded-lg transition-colors"
+              class="inline-flex items-center px-6 py-3 bg-transparent border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-500 hover:text-gray-900 dark:hover:text-white font-medium rounded-lg transition-colors"
             >
               Browse Templates
             </NuxtLink>

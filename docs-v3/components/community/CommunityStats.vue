@@ -3,7 +3,7 @@
     <div 
       v-for="stat in stats" 
       :key="stat.label"
-      class="relative bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 text-center overflow-hidden group hover:border-gray-600/50 transition-all duration-300"
+      class="relative bg-white/80 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-gray-700/50 p-6 text-center overflow-hidden group hover:border-gray-300 dark:hover:border-gray-600/50 transition-all duration-300"
     >
       <!-- Subtle gradient overlay -->
       <div 
@@ -13,7 +13,7 @@
       
       <div class="relative">
         <div class="text-3xl font-bold mb-2" :class="stat.colorClass">{{ stat.value }}</div>
-        <div class="text-gray-400 text-sm">{{ stat.label }}</div>
+        <div class="text-gray-600 dark:text-gray-400 text-sm">{{ stat.label }}</div>
       </div>
     </div>
   </div>

@@ -1,6 +1,6 @@
 <template>
   <div 
-    class="relative bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 overflow-hidden group hover:border-gray-600/50 transition-all duration-300"
+    class="relative bg-white/80 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-gray-700/50 p-8 overflow-hidden group hover:border-gray-300 dark:hover:border-gray-600/50 transition-all duration-300"
     :class="[`hover:shadow-lg hover:shadow-${accent}-500/10`]"
   >
     <!-- Accent top border -->
@@ -23,8 +23,8 @@
           </slot>
         </div>
         <div>
-          <h3 class="text-xl font-bold text-white">{{ title }}</h3>
-          <p class="text-sm text-gray-400 font-medium">{{ subtitle }}</p>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white">{{ title }}</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 font-medium">{{ subtitle }}</p>
         </div>
       </div>
       <span 
@@ -36,7 +36,7 @@
     </div>
     
     <!-- Description -->
-    <p class="text-gray-400 mb-6 text-sm leading-relaxed">
+    <p class="text-gray-600 dark:text-gray-400 mb-6 text-sm leading-relaxed">
       {{ description }}
     </p>
     
@@ -137,16 +137,16 @@ const statsTextClass = computed(() => {
 })
 
 const tagClass = computed(() => {
-  return 'bg-gray-800/50 text-gray-300 border-gray-700/50'
+  return 'bg-gray-100 dark:bg-gray-800/50 text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700/50'
 })
 
 const buttonClass = computed(() => {
   const buttons: Record<string, string> = {
-    rose: 'text-gray-300 border-gray-700/50 hover:bg-rose-500 hover:text-white hover:border-rose-500 group-hover:bg-rose-500 group-hover:text-white group-hover:border-rose-500',
-    blue: 'text-gray-300 border-gray-700/50 hover:bg-blue-500 hover:text-white hover:border-blue-500 group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500',
-    amber: 'text-gray-300 border-gray-700/50 hover:bg-amber-500 hover:text-white hover:border-amber-500 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500',
-    green: 'text-gray-300 border-gray-700/50 hover:bg-green-500 hover:text-white hover:border-green-500 group-hover:bg-green-500 group-hover:text-white group-hover:border-green-500',
-    red: 'text-gray-300 border-gray-700/50 hover:bg-red-500 hover:text-white hover:border-red-500 group-hover:bg-red-500 group-hover:text-white group-hover:border-red-500'
+    rose: 'text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700/50 hover:bg-rose-500 hover:text-white hover:border-rose-500 group-hover:bg-rose-500 group-hover:text-white group-hover:border-rose-500',
+    blue: 'text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700/50 hover:bg-blue-500 hover:text-white hover:border-blue-500 group-hover:bg-blue-500 group-hover:text-white group-hover:border-blue-500',
+    amber: 'text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700/50 hover:bg-amber-500 hover:text-white hover:border-amber-500 group-hover:bg-amber-500 group-hover:text-white group-hover:border-amber-500',
+    green: 'text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700/50 hover:bg-green-500 hover:text-white hover:border-green-500 group-hover:bg-green-500 group-hover:text-white group-hover:border-green-500',
+    red: 'text-gray-700 dark:text-gray-300 border-gray-300 dark:border-gray-700/50 hover:bg-red-500 hover:text-white hover:border-red-500 group-hover:bg-red-500 group-hover:text-white group-hover:border-red-500'
   }
   return buttons[props.accent]
 })

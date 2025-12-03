@@ -3,7 +3,7 @@
     :href="href"
     target="_blank"
     rel="noopener noreferrer"
-    class="group relative bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-6 overflow-hidden hover:border-gray-600/50 transition-all duration-300 block"
+    class="group relative bg-white/80 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-gray-700/50 p-6 overflow-hidden hover:border-gray-300 dark:hover:border-gray-600/50 transition-all duration-300 block"
   >
     <!-- Hover gradient -->
     <div 
@@ -20,12 +20,12 @@
           <slot name="icon" />
         </div>
         <div>
-          <h3 class="text-lg font-semibold text-white">{{ title }}</h3>
-          <p class="text-gray-400 text-sm">{{ subtitle }}</p>
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ title }}</h3>
+          <p class="text-gray-600 dark:text-gray-400 text-sm">{{ subtitle }}</p>
         </div>
       </div>
       
-      <p class="text-gray-400 mb-4">
+      <p class="text-gray-600 dark:text-gray-400 mb-4">
         {{ description }}
       </p>
       

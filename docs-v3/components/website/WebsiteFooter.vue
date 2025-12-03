@@ -1,5 +1,5 @@
 <template>
-  <footer class="bg-slate-950 border-t border-gray-800">
+  <footer class="bg-white/90 dark:bg-gray-900/90 backdrop-blur border-t border-gray-200 dark:border-gray-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <!-- Brand and description - spans 2 columns on desktop -->
@@ -8,9 +8,9 @@
             <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
               <span class="text-white font-bold text-lg">R</span>
             </div>
-            <span class="font-semibold text-xl text-white">Laravel Restify</span>
+            <span class="font-semibold text-xl text-gray-900 dark:text-white">Laravel Restify</span>
           </div>
-          <p class="text-gray-400 mb-6 max-w-md">
+          <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
             Build JSON:API compliant REST APIs and MCP servers from your Laravel Eloquent models 
             with zero configuration. Open source and community-driven.
           </p>
@@ -19,7 +19,7 @@
               href="https://github.com/binarcode/laravel-restify"
               target="_blank"
               rel="noopener noreferrer"
-              class="w-10 h-10 rounded-lg bg-gray-800/50 border border-gray-700/50 flex items-center justify-center text-gray-400 hover:text-white hover:border-gray-600 transition-colors"
+              class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700/50 flex items-center justify-center text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:border-gray-400 dark:hover:border-gray-600 transition-colors"
               aria-label="GitHub"
             >
               <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
@@ -31,7 +31,7 @@
 
         <!-- Resources -->
         <div>
-          <h3 class="font-semibold mb-4 text-white">Resources</h3>
+          <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">Resources</h3>
           <ul class="space-y-3">
             <li v-for="link in resourceLinks" :key="link.label">
               <component 
@@ -40,7 +40,7 @@
                 :href="link.isExternal ? link.href : undefined"
                 :target="link.isExternal ? '_blank' : undefined"
                 :rel="link.isExternal ? 'noopener noreferrer' : undefined"
-                class="text-gray-400 hover:text-white transition-colors flex items-center group"
+                class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center group"
               >
                 {{ link.label }}
                 <ArrowTopRightOnSquareIcon v-if="link.isExternal" class="w-3 h-3 ml-1 opacity-50 group-hover:opacity-100" />
@@ -51,14 +51,14 @@
 
         <!-- Community -->
         <div>
-          <h3 class="font-semibold mb-4 text-white">Community</h3>
+          <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">Community</h3>
           <ul class="space-y-3">
             <li v-for="link in communityLinks" :key="link.label">
               <a 
                 :href="link.href" 
                 target="_blank" 
                 rel="noopener noreferrer" 
-                class="text-gray-400 hover:text-white transition-colors flex items-center group"
+                class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center group"
               >
                 {{ link.label }}
                 <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1 opacity-50 group-hover:opacity-100" />
@@ -69,13 +69,13 @@
       </div>
 
       <!-- Bottom section -->
-      <div class="mt-12 pt-8 border-t border-gray-800">
+      <div class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
         <div class="flex flex-col md:flex-row items-center justify-between">
-          <p class="text-gray-500 text-sm">
+          <p class="text-gray-600 dark:text-gray-500 text-sm">
             © {{ currentYear }} Laravel Restify. Open source under MIT License.
           </p>
           <div class="mt-4 md:mt-0">
-            <p class="text-gray-500 text-sm">
+            <p class="text-gray-600 dark:text-gray-500 text-sm">
               Made with <span class="text-red-500">❤</span> by the 
               <a href="https://binarcode.com" target="_blank" rel="noopener noreferrer" class="text-red-400 hover:text-red-300 transition-colors font-medium">
                 BinarCode

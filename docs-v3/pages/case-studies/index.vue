@@ -3,10 +3,10 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <!-- Header -->
       <div class="text-center mb-16">
-        <h1 class="text-5xl font-bold text-white mb-6">
+        <h1 class="text-5xl font-bold text-gray-900 dark:text-white mb-6">
           Case Studies
         </h1>
-        <p class="text-xl text-gray-400 max-w-4xl mx-auto">
+        <p class="text-xl text-gray-600 dark:text-gray-400 max-w-4xl mx-auto">
           Real-world applications built with Laravel Restify and the BinarCode ecosystem.
           See how leading companies leverage our tools to build scalable, robust
           solutions.

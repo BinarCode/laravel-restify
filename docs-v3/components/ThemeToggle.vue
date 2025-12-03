@@ -1,7 +1,7 @@
 <template>
   <button
     @click="toggleDarkMode"
-    class="dark-mode-toggle p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
+    class="dark-mode-toggle p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
     :aria-label="isDark ? 'Switch to light mode' : 'Switch to dark mode'"
   >
     <SunIcon v-if="isDark" class="h-5 w-5" />

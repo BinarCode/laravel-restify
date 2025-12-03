@@ -3,10 +3,10 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
       <!-- Header -->
       <div class="text-center mb-16">
-        <h1 class="text-4xl sm:text-5xl font-bold text-white mb-4">
+        <h1 class="text-4xl sm:text-5xl font-bold text-gray-900 dark:text-white mb-4">
           Join the Laravel Restify Community
         </h1>
-        <p class="text-xl text-gray-400 max-w-3xl mx-auto">
+        <p class="text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
           Connect with fellow developers, get support, share your projects, and help make Laravel Restify better.
         </p>
       </div>
@@ -23,7 +23,7 @@
 
       <!-- Community Channels -->
       <div class="mb-16">
-        <h2 class="text-3xl font-bold text-white text-center mb-12">
+        <h2 class="text-3xl font-bold text-gray-900 dark:text-white text-center mb-12">
           Get Involved
         </h2>
         
@@ -100,13 +100,13 @@
       </div>
 
       <!-- Demo Repository -->
-      <div class="relative bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 text-center overflow-hidden">
+      <div class="relative bg-white/80 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-gray-700/50 p-8 text-center overflow-hidden">
         <div class="absolute inset-0 bg-gradient-to-r from-red-500/5 to-blue-500/5" />
         <div class="relative">
-          <h2 class="text-2xl font-bold text-white mb-4">
+          <h2 class="text-2xl font-bold text-gray-900 dark:text-white mb-4">
             Demo Repository
           </h2>
-          <p class="text-gray-400 mb-6 max-w-2xl mx-auto">
+          <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-2xl mx-auto">
             Explore a complete example of Laravel Restify in action with our demo repository. 
             See real-world implementation and get inspired for your own projects.
           </p>
@@ -114,7 +114,7 @@
             href="https://github.com/BinarCode/restify-demo"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center text-red-400 hover:text-red-300 font-medium transition-colors"
+            class="inline-flex items-center text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors"
           >
             View Demo Repository
             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">

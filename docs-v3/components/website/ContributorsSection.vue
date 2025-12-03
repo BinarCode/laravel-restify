@@ -1,23 +1,23 @@
 <template>
   <div class="relative py-12">
     <!-- Glass container -->
-    <div class="relative bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-700/50 p-8 overflow-hidden">
+    <div class="relative bg-white/80 dark:bg-gray-900/40 backdrop-blur-sm rounded-2xl border border-gray-200 dark:border-gray-700/50 p-8 overflow-hidden">
       <!-- Background gradient effects -->
       <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 via-transparent to-cyan-500/5" />
       
       <div class="relative">
         <div class="text-center mb-10">
-          <h2 class="text-3xl font-bold text-white mb-4">
+          <h2 class="text-3xl font-bold text-gray-900 dark:text-white mb-4">
             Built by Amazing Contributors
           </h2>
-          <p class="text-lg text-gray-400 max-w-2xl mx-auto">
+          <p class="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
             Laravel Restify is made possible by our incredible community of contributors who help make it better every day
           </p>
         </div>
         
         <div class="relative overflow-hidden mb-8">
-          <div class="absolute left-0 top-0 z-10 w-16 h-full bg-gradient-to-r from-gray-900/80 to-transparent pointer-events-none"></div>
-          <div class="absolute right-0 top-0 z-10 w-16 h-full bg-gradient-to-l from-gray-900/80 to-transparent pointer-events-none"></div>
+          <div class="absolute left-0 top-0 z-10 w-16 h-full bg-gradient-to-r from-white/80 dark:from-gray-900/80 to-transparent pointer-events-none"></div>
+          <div class="absolute right-0 top-0 z-10 w-16 h-full bg-gradient-to-l from-white/80 dark:from-gray-900/80 to-transparent pointer-events-none"></div>
           
           <div class="flex animate-scroll-left space-x-4">
             <div class="flex space-x-4 shrink-0">
@@ -46,7 +46,7 @@
             href="https://github.com/BinarCode/laravel-restify/graphs/contributors"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center text-red-400 hover:text-red-300 font-medium transition-colors group"
+            class="inline-flex items-center text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors group"
           >
             View All Contributors
             <ArrowRightIcon class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />

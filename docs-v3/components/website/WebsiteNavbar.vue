@@ -5,7 +5,7 @@
         <div class="flex items-center">
           <button
             @click="toggleMobileMenu"
-            class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
+            class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white"
             aria-label="Toggle menu"
           >
             <Bars3Icon class="h-6 w-6" />
@@ -13,7 +13,7 @@
           
           <NuxtLink to="/" class="flex items-center ml-2 lg:ml-0 group">
             <span class="text-2xl font-bold tracking-tight">
-              <span class="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text text-transparent drop-shadow-sm">
+              <span class="bg-gradient-to-r from-gray-700 via-gray-500 to-gray-700 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text text-transparent drop-shadow-sm">
                 Laravel Restify
               </span>
               <span class="inline-block w-2 h-2 ml-0.5 mb-1 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/50 group-hover:shadow-red-500/70 group-hover:scale-110 transition-all duration-300"></span>
@@ -42,7 +42,7 @@
             href="https://github.com/binarcode/laravel-restify"
             target="_blank"
             rel="noopener noreferrer"
-            class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring rounded-md p-2"
+            class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white rounded-md p-2"
             aria-label="GitHub Repository"
           >
             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">

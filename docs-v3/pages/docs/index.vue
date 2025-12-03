@@ -18,11 +18,7 @@
           class="group block p-6 glass-card glass-card-accent-red"
         >
           <div class="flex items-center mb-3">
-            <div class="icon-badge-red mr-4">
-              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 9l3 3m0 0l-3 3m3-3H8m13 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-            </div>
+            <ArrowRightCircleIcon class="h-6 w-6 text-gray-900 dark:text-white mr-4" />
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white transition-colors">Quick Start</h3>
           </div>
           <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
@@ -36,11 +32,7 @@
           class="group block p-6 glass-card glass-card-accent-blue"
         >
           <div class="flex items-center mb-3">
-            <div class="icon-badge-blue mr-4">
-              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-            </div>
+            <DocumentTextIcon class="h-6 w-6 text-gray-900 dark:text-white mr-4" />
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white transition-colors">API Reference</h3>
           </div>
           <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
@@ -54,9 +46,7 @@
           class="group block p-6 glass-card glass-card-accent-purple"
         >
           <div class="flex items-center mb-3">
-            <div class="icon-badge-purple mr-4">
-              <span class="text-lg">🤖</span>
-            </div>
+            <CpuChipIcon class="h-6 w-6 text-gray-900 dark:text-white mr-4" />
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white transition-colors">MCP Integration</h3>
           </div>
           <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
@@ -70,11 +60,7 @@
           class="group block p-6 glass-card glass-card-accent-green"
         >
           <div class="flex items-center mb-3">
-            <div class="icon-badge-green mr-4">
-              <svg class="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
+            <LockClosedIcon class="h-6 w-6 text-gray-900 dark:text-white mr-4" />
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white transition-colors">Authentication & Authorization</h3>
           </div>
           <p class="text-gray-600 dark:text-gray-400 text-sm leading-relaxed">
@@ -162,6 +148,13 @@
 </template>
 
 <script setup lang="ts">
+import {
+  ArrowRightCircleIcon,
+  DocumentTextIcon,
+  CpuChipIcon,
+  LockClosedIcon
+} from '@heroicons/vue/24/outline'
+
 useHead({
   title: 'Documentation - Laravel Restify',
   meta: [
