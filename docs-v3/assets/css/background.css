@@ -1,0 +1,44 @@
+/* ============================================
+   App Background Styles
+   Global background for dark/light modes
+   ============================================ */
+
+.app-layout {
+    @apply min-h-screen relative;
+    @apply bg-white;
+}
+
+.dark .app-layout {
+    @apply bg-gradient-to-b from-slate-950 via-gray-900 to-slate-950;
+    background-attachment: fixed;
+}
+
+.app-background {
+    @apply fixed inset-0 hidden pointer-events-none;
+}
+
+.dark .app-background {
+    @apply block;
+}
+
+.app-gradient-radial {
+    @apply absolute inset-0;
+    background: radial-gradient(circle at 50% 50%, rgba(120, 119, 198, 0.15), transparent 50%);
+}
+
+.app-grid-pattern {
+    @apply absolute inset-0;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, .02) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, .02) 1px, transparent 1px);
+    background-size: 100px 100px;
+}
+
+/* Website section backgrounds */
+.section-dark {
+    @apply bg-slate-950;
+}
+
+.section-dark-subtle {
+    @apply bg-gray-900/50;
+}

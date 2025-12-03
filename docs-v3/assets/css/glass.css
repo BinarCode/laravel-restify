@@ -1,0 +1,217 @@
+/* ============================================
+   Glass Effect Components
+   Cards, panels, and badges with glass morphism
+   ============================================ */
+
+/* Base glass card - transparent with blur */
+.glass-card {
+    @apply rounded-2xl border backdrop-blur-sm transition-all duration-300;
+    @apply border-gray-200 bg-gray-50/50;
+}
+
+.glass-card:hover {
+    @apply border-gray-300 bg-gray-100/50;
+}
+
+.dark .glass-card {
+    @apply border-gray-700/50 bg-gray-800/30;
+}
+
+.dark .glass-card:hover {
+    @apply border-gray-600 bg-gray-800/50;
+}
+
+/* Glass card interactive - for clickable cards */
+.glass-card-interactive {
+    @apply rounded-2xl border backdrop-blur-sm transition-all duration-300 cursor-pointer;
+    @apply border-gray-200 bg-gray-50/50;
+}
+
+.glass-card-interactive:hover {
+    @apply border-gray-300 bg-gray-100/50 shadow-lg;
+}
+
+.dark .glass-card-interactive {
+    @apply border-gray-700/50 bg-gray-800/30;
+}
+
+.dark .glass-card-interactive:hover {
+    @apply border-gray-600/80 bg-gray-800/50;
+}
+
+/* Glass card with colored accent on hover */
+.glass-card-accent-red:hover h3,
+.glass-card-accent-red:hover .glass-card-title {
+    @apply text-red-600;
+}
+
+.dark .glass-card-accent-red:hover h3,
+.dark .glass-card-accent-red:hover .glass-card-title {
+    @apply text-red-400;
+}
+
+.glass-card-accent-blue:hover h3,
+.glass-card-accent-blue:hover .glass-card-title {
+    @apply text-blue-600;
+}
+
+.dark .glass-card-accent-blue:hover h3,
+.dark .glass-card-accent-blue:hover .glass-card-title {
+    @apply text-blue-400;
+}
+
+.glass-card-accent-purple:hover h3,
+.glass-card-accent-purple:hover .glass-card-title {
+    @apply text-purple-600;
+}
+
+.dark .glass-card-accent-purple:hover h3,
+.dark .glass-card-accent-purple:hover .glass-card-title {
+    @apply text-purple-400;
+}
+
+.glass-card-accent-green:hover h3,
+.glass-card-accent-green:hover .glass-card-title {
+    @apply text-green-600;
+}
+
+.dark .glass-card-accent-green:hover h3,
+.dark .glass-card-accent-green:hover .glass-card-title {
+    @apply text-green-400;
+}
+
+/* Glass panel - for info boxes, alerts */
+.glass-panel {
+    @apply rounded-xl border backdrop-blur-sm p-6;
+    @apply border-gray-200 bg-gray-50/50;
+}
+
+.dark .glass-panel {
+    @apply border-gray-700/50 bg-gray-800/30;
+}
+
+.glass-panel-blue {
+    @apply rounded-xl border backdrop-blur-sm p-6;
+    @apply border-blue-200/50 bg-blue-50/50;
+}
+
+.dark .glass-panel-blue {
+    @apply border-blue-500/20 bg-blue-500/10;
+}
+
+.glass-panel-green {
+    @apply rounded-xl border backdrop-blur-sm p-6;
+    @apply border-green-200/50 bg-green-50/50;
+}
+
+.dark .glass-panel-green {
+    @apply border-green-500/20 bg-green-500/10;
+}
+
+.glass-panel-yellow {
+    @apply rounded-xl border backdrop-blur-sm p-6;
+    @apply border-yellow-200/50 bg-yellow-50/50;
+}
+
+.dark .glass-panel-yellow {
+    @apply border-yellow-500/20 bg-yellow-500/10;
+}
+
+.glass-panel-red {
+    @apply rounded-xl border backdrop-blur-sm p-6;
+    @apply border-red-200/50 bg-red-50/50;
+}
+
+.dark .glass-panel-red {
+    @apply border-red-500/20 bg-red-500/10;
+}
+
+/* Icon badge - colored icon container with gradient */
+.icon-badge {
+    @apply w-12 h-12 rounded-xl flex items-center justify-center transition-colors duration-300;
+}
+
+.icon-badge-sm {
+    @apply w-10 h-10 rounded-lg;
+}
+
+.icon-badge-lg {
+    @apply w-14 h-14 rounded-2xl;
+}
+
+/* Glass style icon badges (for dark theme) */
+.icon-badge-blue {
+    @apply bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30;
+}
+
+.icon-badge-blue:hover,
+.group:hover .icon-badge-blue {
+    @apply border-blue-400/50;
+}
+
+.icon-badge-green {
+    @apply bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30;
+}
+
+.icon-badge-green:hover,
+.group:hover .icon-badge-green {
+    @apply border-green-400/50;
+}
+
+.icon-badge-purple {
+    @apply bg-gradient-to-br from-purple-500/20 to-violet-500/20 border border-purple-500/30;
+}
+
+.icon-badge-purple:hover,
+.group:hover .icon-badge-purple {
+    @apply border-purple-400/50;
+}
+
+.icon-badge-red {
+    @apply bg-gradient-to-br from-red-500/20 to-pink-500/20 border border-red-500/30;
+}
+
+.icon-badge-red:hover,
+.group:hover .icon-badge-red {
+    @apply border-red-400/50;
+}
+
+.icon-badge-yellow {
+    @apply bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30;
+}
+
+.icon-badge-yellow:hover,
+.group:hover .icon-badge-yellow {
+    @apply border-yellow-400/50;
+}
+
+.icon-badge-cyan {
+    @apply bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30;
+}
+
+.icon-badge-cyan:hover,
+.group:hover .icon-badge-cyan {
+    @apply border-cyan-400/50;
+}
+
+.icon-badge-gray {
+    @apply bg-gradient-to-br from-gray-500/20 to-slate-500/20 border border-gray-500/30;
+}
+
+.icon-badge-gray:hover,
+.group:hover .icon-badge-gray {
+    @apply border-gray-400/50;
+}
+
+/* Arrow indicator for list items */
+.arrow-indicator {
+    @apply h-5 w-5 text-gray-400 transition-all;
+}
+
+.group:hover .arrow-indicator {
+    @apply text-gray-600 translate-x-1;
+}
+
+.dark .group:hover .arrow-indicator {
+    @apply text-gray-300;
+}

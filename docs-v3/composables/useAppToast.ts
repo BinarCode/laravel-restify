@@ -1,40 +1,51 @@
+import { ref, readonly } from 'vue'
+
+type ToastType = 'success' | 'error' | 'info'
+
 interface ToastMessage {
   id: string
   message: string
-  type: 'success' | 'error' | 'info'
+  type: ToastType
   duration?: number
 }
 
+const DEFAULT_DURATION = 3000
 const toasts = ref<ToastMessage[]>([])
 
-export const useAppToast = () => {
-  const showToast = (message: string, type: 'success' | 'error' | 'info' = 'info', duration = 3000) => {
-    const id = Math.random().toString(36).substr(2, 9)
+function generateId(): string {
+  return Math.random().toString(36).substr(2, 9)
+}
+
+export function useAppToast() {
+  function showToast(message: string, type: ToastType = 'info', duration = DEFAULT_DURATION): void {
+    const id = generateId()
     const toast: ToastMessage = { id, message, type, duration }
 
     toasts.value.push(toast)
 
-    setTimeout(() => {
+    setTimeout(function removeToastAfterDelay() {
       removeToast(id)
     }, duration)
   }
 
-  const removeToast = (id: string) => {
-    const index = toasts.value.findIndex(toast => toast.id === id)
-    if (index > -1) {
-      toasts.value.splice(index, 1)
-    }
+  function removeToast(id: string): void {
+    const index = toasts.value.findIndex(function findToast(toast) {
+      return toast.id === id
+    })
+    if (index === -1) return
+
+    toasts.value.splice(index, 1)
   }
 
-  const success = (message: string, duration?: number) => {
+  function success(message: string, duration?: number): void {
     showToast(message, 'success', duration)
   }
 
-  const error = (message: string, duration?: number) => {
+  function error(message: string, duration?: number): void {
     showToast(message, 'error', duration)
   }
 
-  const info = (message: string, duration?: number) => {
+  function info(message: string, duration?: number): void {
     showToast(message, 'info', duration)
   }
 

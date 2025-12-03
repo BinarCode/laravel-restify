@@ -2,9 +2,7 @@
   <header class="sticky top-0 z-40 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-700 w-full">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
       <div class="flex items-center justify-between h-16">
-        <!-- Logo and brand -->
         <div class="flex items-center">
-          <!-- Mobile menu button -->
           <button
             @click="toggleMobileMenu"
             class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
@@ -13,7 +11,6 @@
             <Bars3Icon class="h-6 w-6" />
           </button>
           
-          <!-- Logo -->
           <NuxtLink to="/" class="flex items-center ml-2 md:ml-0">
             <img src="/icon.png" alt="Laravel Restify" class="h-8 w-8" />
             <span class="ml-3 text-xl font-semibold text-gray-900 dark:text-white">
@@ -22,9 +19,7 @@
           </NuxtLink>
         </div>
 
-        <!-- Navigation and actions -->
         <div class="flex items-center space-x-4">
-          <!-- Search (desktop) -->
           <div class="hidden lg:block">
             <UContentSearchButton 
               :collapsed="false"
@@ -32,7 +27,6 @@
             />
           </div>
           
-          <!-- GitHub link -->
           <a
             href="https://github.com/binarcode/laravel-restify"
             target="_blank"
@@ -45,7 +39,6 @@
             </svg>
           </a>
           
-          <!-- Twitter link -->
           <a
             href="https://twitter.com/LupacescuEuard"
             target="_blank"
@@ -58,13 +51,11 @@
             </svg>
           </a>
           
-          <!-- Dark mode toggle -->
           <ThemeToggle />
         </div>
       </div>
     </div>
     
-    <!-- Mobile search -->
     <div class="lg:hidden px-4 pb-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 w-full">
       <div class="pt-4 w-full">
         <UContentSearchButton 
@@ -79,6 +70,5 @@
 <script setup lang="ts">
 import { Bars3Icon } from '@heroicons/vue/24/outline'
 
-// Inject mobile menu state from layout
-const toggleMobileMenu = inject('toggleMobileMenu', () => {})
+const toggleMobileMenu = inject('toggleMobileMenu', function() {})
 </script>

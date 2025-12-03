@@ -1,12 +1,6 @@
 <template>
-  <section class="py-24 bg-gradient-to-b from-slate-950 to-gray-900 relative overflow-hidden">
-    <!-- Background Effects -->
-    <div class="absolute inset-0">
-      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-blue-500/5 to-cyan-500/5 rounded-full blur-3xl"></div>
-      <div class="absolute top-20 right-20 w-64 h-64 bg-gradient-to-r from-blue-500/5 to-cyan-500/5 rounded-full blur-2xl"></div>
-    </div>
-
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section class="py-24 bg-slate-950 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="text-center mb-16 md:mb-20 px-4 md:px-0">
         <div class="inline-flex items-center px-4 md:px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 mb-6 md:mb-8">
@@ -32,12 +26,10 @@
       <!-- Community Grid -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8 px-4 md:px-0">
         <!-- Open Source -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 text-center hover:scale-105 transition-all duration-500 hover:border-blue-500/30 flex flex-col h-full">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 text-center hover:border-gray-600/50 transition-all duration-300 flex flex-col h-full">
           <div class="relative z-10 flex flex-col h-full">
-            <div class="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-              <ShareIcon class="h-10 w-10 text-white" />
+            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 flex items-center justify-center mx-auto mb-6 group-hover:border-blue-400/50 transition-colors duration-300">
+              <ShareIcon class="h-7 w-7 text-blue-400" />
             </div>
             
             <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
@@ -63,12 +55,10 @@
         </div>
 
         <!-- Documentation -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-8 text-center hover:scale-105 transition-all duration-500 hover:border-blue-500/30 flex flex-col h-full">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 text-center hover:border-gray-600/50 transition-all duration-300 flex flex-col h-full">
           <div class="relative z-10 flex flex-col h-full">
-            <div class="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-              <BookOpenIcon class="h-10 w-10 text-white" />
+            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/20 border border-purple-500/30 flex items-center justify-center mx-auto mb-6 group-hover:border-purple-400/50 transition-colors duration-300">
+              <BookOpenIcon class="h-7 w-7 text-purple-400" />
             </div>
             
             <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
@@ -90,12 +80,10 @@
         </div>
 
         <!-- Community Discussion -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-8 text-center hover:scale-105 transition-all duration-500 hover:border-blue-500/30 flex flex-col h-full">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 text-center hover:border-gray-600/50 transition-all duration-300 flex flex-col h-full">
           <div class="relative z-10 flex flex-col h-full">
-            <div class="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-              <ChatBubbleLeftRightIcon class="h-10 w-10 text-white" />
+            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 flex items-center justify-center mx-auto mb-6 group-hover:border-green-400/50 transition-colors duration-300">
+              <ChatBubbleLeftRightIcon class="h-7 w-7 text-green-400" />
             </div>
             
             <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
@@ -119,12 +107,10 @@
         </div>
 
         <!-- BinarCode -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-8 text-center hover:scale-105 transition-all duration-500 hover:border-blue-500/30 flex flex-col h-full">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 text-center hover:border-gray-600/50 transition-all duration-300 flex flex-col h-full">
           <div class="relative z-10 flex flex-col h-full">
-            <div class="w-20 h-20 bg-blue-500 rounded-3xl flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-              <span class="text-3xl font-black text-white">B</span>
+            <div class="w-14 h-14 rounded-xl bg-gradient-to-br from-red-500/20 to-orange-500/20 border border-red-500/30 flex items-center justify-center mx-auto mb-6 group-hover:border-red-400/50 transition-colors duration-300">
+              <span class="text-xl font-black text-red-400">B</span>
             </div>
             
             <h3 class="text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">

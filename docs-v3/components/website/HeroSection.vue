@@ -14,29 +14,29 @@
     <!-- Main Hero Content -->
     <div class="hero-content">
       <!-- Floating Badge -->
-      <div class="text-center mb-8">
+      <div class="text-center mb-4 md:mb-8">
         <div class="hero-badge">
-          <div class="flex items-center mr-3">
+          <div class="hidden sm:flex items-center mr-3">
             <div class="hero-status-dot"></div>
             <CodeBracketIcon class="hero-icon-sm hover:rotate-12" />
           </div>
-          Open Source • Laravel Package • MIT Licensed
+          <span class="text-xs sm:text-sm">Open Source • Laravel Package • MIT Licensed</span>
         </div>
       </div>
 
       <!-- Hero Title -->
-      <div class="text-center mb-8">
+      <div class="text-center mb-6 md:mb-8">
         <h1 class="hero-title">
-          <span class="hero-title-primary text-3xl md:text-5xl lg:text-5xl">
+          <span class="hero-title-primary text-4xl sm:text-5xl md:text-5xl lg:text-5xl">
             Build APIs for
           </span>
           <br />
-          <span class="hero-title-highlight text-4xl md:text-6xl lg:text-8xl font-extrabold">
+          <span class="hero-title-highlight text-5xl sm:text-6xl md:text-6xl lg:text-8xl font-extrabold">
             Humans & AI
           </span>
           <br />
           <span class="relative">
-            <span class="hero-title-accent text-2xl md:text-4xl lg:text-5xl font-light italic px-1">
+            <span class="hero-title-accent text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-light italic px-1">
               Simultaneously 
             </span>
             <div class="hero-title-underline"></div>
@@ -59,8 +59,9 @@
         <div class="hero-actions">
           <HeroButton
             type="primary"
-            href="https://restify.binarcode.com/docs"
+            href="/docs"
             :icon="BoltIcon"
+            :is-nuxt-link="true"
           >
             Start Building
           </HeroButton>
@@ -93,7 +94,7 @@
                 <span class="hero-install-command">composer require binaryk/laravel-restify</span>
                 <span class="hero-install-command-mobile">install</span>
                 <button 
-                  @click="copyToClipboard" 
+                  @click="handleCopyCommand" 
                   class="p-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600/50 rounded-lg transition-colors duration-200 group/btn"
                   :class="{ 'bg-green-500/20 border-green-500/50': copied }"
                   title="Copy command"
@@ -142,7 +143,6 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import { 
   BoltIcon, 
   CodeBracketIcon, 
@@ -153,7 +153,13 @@ import HeroButton from './HeroButton.vue'
 import HeroStat from './HeroStat.vue'
 import CodeSection from './CodeSection.vue'
 
-const copied = ref(false)
+const COMPOSER_COMMAND = 'composer require binaryk/laravel-restify'
+
+const { copied, copyToClipboard } = useClipboardCopy()
+
+function handleCopyCommand(): void {
+  copyToClipboard(COMPOSER_COMMAND)
+}
 
 const stats = [
   { icon: '⚡', label: 'Zero Config' },
@@ -198,18 +204,6 @@ const outputBlocks = [
     ]
   }
 ]
-
-const copyToClipboard = async () => {
-  try {
-    await navigator.clipboard.writeText('composer require binaryk/laravel-restify')
-    copied.value = true
-    setTimeout(() => {
-      copied.value = false
-    }, 2000)
-  } catch (err) {
-    console.error('Failed to copy: ', err)
-  }
-}
 </script>
 
 <style scoped>
@@ -258,11 +252,11 @@ const copyToClipboard = async () => {
 }
 
 .hero-content {
-  @apply relative z-10 flex flex-col justify-center min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16;
+  @apply relative z-10 flex flex-col justify-center min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16;
 }
 
 .hero-badge {
-  @apply inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 mb-8;
+  @apply inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full font-medium text-blue-300 mb-4 md:mb-8;
 }
 
 .hero-status-dot {
@@ -274,7 +268,7 @@ const copyToClipboard = async () => {
 }
 
 .hero-title {
-  @apply text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-8;
+  @apply text-4xl md:text-6xl lg:text-7xl font-black tracking-tight mb-6 md:mb-8;
 }
 
 .hero-title-primary {
@@ -298,19 +292,19 @@ const copyToClipboard = async () => {
 }
 
 .hero-subtitle {
-  @apply text-lg md:text-xl lg:text-2xl text-gray-300 mb-4 leading-relaxed font-light px-4 md:px-0;
+  @apply text-base sm:text-lg md:text-xl lg:text-2xl text-gray-300 mb-4 leading-relaxed font-light px-2 md:px-0;
 }
 
 .hero-tagline {
-  @apply text-base md:text-lg text-gray-400 italic px-4 md:px-0;
+  @apply text-sm sm:text-base md:text-lg text-gray-400 italic px-2 md:px-0;
 }
 
 .hero-actions {
-  @apply flex flex-col sm:flex-row gap-4 justify-center mt-8 px-4 md:px-0;
+  @apply flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-6 md:mt-8 px-2 md:px-0;
 }
 
 .hero-demo {
-  @apply mt-16;
+  @apply mt-10 md:mt-16;
 }
 
 .hero-demo-container {
@@ -360,10 +354,10 @@ const copyToClipboard = async () => {
 }
 
 .hero-stats {
-  @apply mt-16;
+  @apply mt-10 md:mt-16;
 }
 
 .hero-stats-grid {
-  @apply grid grid-cols-2 md:grid-cols-4 gap-8 max-w-4xl mx-auto;
+  @apply grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 max-w-4xl mx-auto;
 }
 </style>

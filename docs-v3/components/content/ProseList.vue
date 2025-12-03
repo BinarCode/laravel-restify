@@ -21,15 +21,14 @@ interface Props {
 const props = defineProps<Props>()
 
 const processedItems = computed(() => {
-  // Handle case where items might be a string instead of array
-  if (typeof props.items === 'string') {
-    try {
-      return JSON.parse(props.items)
-    } catch {
-      return [props.items]
-    }
+  if (Array.isArray(props.items)) return props.items
+  
+  if (typeof props.items !== 'string') return []
+
+  try {
+    return JSON.parse(props.items)
+  } catch {
+    return [props.items]
   }
-  // Handle case where it's already an array
-  return Array.isArray(props.items) ? props.items : []
 })
 </script>

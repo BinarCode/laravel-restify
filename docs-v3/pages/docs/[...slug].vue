@@ -39,16 +39,13 @@
 <script setup lang="ts">
 const route = useRoute()
 
-// Build the path from route params
 const pathSegments = Array.isArray(route.params.slug) ? route.params.slug : [route.params.slug || '']
 const contentPath = `/docs/${pathSegments.join('/')}`
 
-// Query the content using Nuxt Content v3 API
-const { data: post } = await useAsyncData(`docs-${contentPath}`, () => {
+const { data: post } = await useAsyncData(`docs-${contentPath}`, function fetchDocsContent() {
   return queryCollection('content').path(contentPath).first()
 })
 
-// Set page meta for SEO
 if (post.value) {
   useHead({
     title: post.value.title || 'Documentation',

@@ -2,9 +2,7 @@
   <nav class="sticky top-0 z-50 bg-white/90 dark:bg-gray-900/90 backdrop-blur border-b border-gray-200 dark:border-gray-700">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex items-center justify-between h-16">
-        <!-- Logo and brand -->
         <div class="flex items-center">
-          <!-- Mobile menu button -->
           <button
             @click="toggleMobileMenu"
             class="lg:hidden p-2 rounded-md text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white focus-ring"
@@ -13,7 +11,6 @@
             <Bars3Icon class="h-6 w-6" />
           </button>
           
-          <!-- Logo -->
           <NuxtLink to="/" class="flex items-center ml-2 lg:ml-0 group">
             <span class="text-2xl font-bold tracking-tight">
               <span class="bg-gradient-to-r from-gray-900 via-gray-700 to-gray-900 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text text-transparent drop-shadow-sm">
@@ -24,57 +21,23 @@
           </NuxtLink>
         </div>
 
-        <!-- Desktop Navigation -->
         <div class="hidden lg:flex lg:items-center lg:space-x-8">
           <NuxtLink
-            to="/docs"
+            v-for="link in navLinks"
+            :key="link.to"
+            :to="link.to"
             class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
-            :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/docs') }"
+            :class="{ 'text-red-600 dark:text-red-400': isActiveRoute(link.to) }"
           >
-            Documentation
-          </NuxtLink>
-          
-          <NuxtLink
-            to="/templates"
-            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
-            :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/templates') }"
-          >
-            Templates
-          </NuxtLink>
-          
-          <NuxtLink
-            to="/case-studies"
-            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
-            :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/case-studies') }"
-          >
-            Case Studies
-          </NuxtLink>
-          
-          <NuxtLink
-            to="/community"
-            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
-            :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/community') }"
-          >
-            Community
-          </NuxtLink>
-          
-          <NuxtLink
-            to="/playground"
-            class="text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer"
-            :class="{ 'text-red-600 dark:text-red-400': $route.path.startsWith('/playground') }"
-          >
-            Playground
+            {{ link.label }}
           </NuxtLink>
         </div>
 
-        <!-- Right side actions -->
         <div class="flex items-center space-x-4">
-          <!-- Search (desktop only, for docs pages) -->
-          <div v-if="$route.path.startsWith('/docs')" class="hidden lg:block">
-            <UContentSearchButton :label="'Search...'" :collapsed="false" />
+          <div v-if="isDocsPage" class="hidden lg:block">
+            <UContentSearchButton label="Search..." :collapsed="false" />
           </div>
           
-          <!-- GitHub link -->
           <a
             href="https://github.com/binarcode/laravel-restify"
             target="_blank"
@@ -87,68 +50,31 @@
             </svg>
           </a>
           
-          <!-- Dark mode toggle -->
           <ThemeToggle />
         </div>
       </div>
     </div>
     
-    <!-- Mobile Navigation Menu -->
     <div
       v-if="isMobileMenuOpen"
       class="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
     >
       <div class="px-2 pt-2 pb-3 space-y-1">
         <NuxtLink
-          to="/docs"
-          @click="toggleMobileMenu"
+          v-for="link in navLinks"
+          :key="link.to"
+          :to="link.to"
+          @click="closeMobileMenu"
           class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
-          :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/docs') }"
+          :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': isActiveRoute(link.to) }"
         >
-          Documentation
-        </NuxtLink>
-        
-        <NuxtLink
-          to="/templates"
-          @click="toggleMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
-          :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/templates') }"
-        >
-          Templates
-        </NuxtLink>
-        
-        <NuxtLink
-          to="/case-studies"
-          @click="toggleMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
-          :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/case-studies') }"
-        >
-          Case Studies
-        </NuxtLink>
-        
-        <NuxtLink
-          to="/community"
-          @click="toggleMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
-          :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/community') }"
-        >
-          Community
-        </NuxtLink>
-        
-        <NuxtLink
-          to="/playground"
-          @click="toggleMobileMenu"
-          class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white transition-colors cursor-pointer"
-          :class="{ 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20': $route.path.startsWith('/playground') }"
-        >
-          Playground
+          {{ link.label }}
         </NuxtLink>
       </div>
       
-      <!-- Mobile search for docs -->
-      <div v-if="$route.path.startsWith('/docs')" class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
+      <div v-if="isDocsPage" class="px-4 pb-4 border-t border-gray-200 dark:border-gray-700">
         <div class="pt-4">
-          <UContentSearchButton :label="'Search...'" :collapsed="false" />
+          <UContentSearchButton label="Search..." :collapsed="false" />
         </div>
       </div>
     </div>
@@ -158,20 +84,38 @@
 <script setup lang="ts">
 import { Bars3Icon } from '@heroicons/vue/24/outline'
 
-// Mobile menu state
+interface NavLink {
+  to: string
+  label: string
+}
+
+const navLinks: NavLink[] = [
+  { to: '/docs', label: 'Documentation' },
+  { to: '/templates', label: 'Templates' },
+  { to: '/case-studies', label: 'Case Studies' },
+  { to: '/community', label: 'Community' },
+  { to: '/playground', label: 'Playground' }
+]
+
+const route = useRoute()
 const isMobileMenuOpen = ref(false)
 
-const toggleMobileMenu = () => {
+const isDocsPage = computed(() => route.path.startsWith('/docs'))
+
+function isActiveRoute(path: string): boolean {
+  return route.path.startsWith(path)
+}
+
+function toggleMobileMenu(): void {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
 
-// Close mobile menu when route changes
-const route = useRoute()
-watch(() => route.path, () => {
+function closeMobileMenu(): void {
   isMobileMenuOpen.value = false
-})
+}
 
-// Provide mobile menu controls for child components that might need it
+watch(() => route.path, closeMobileMenu)
+
 provide('isMobileMenuOpen', isMobileMenuOpen)
 provide('toggleMobileMenu', toggleMobileMenu)
 </script>

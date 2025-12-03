@@ -1,12 +1,6 @@
 <template>
-  <section class="py-24 bg-gradient-to-b from-slate-900 via-gray-900 to-slate-950 relative overflow-hidden">
-    <!-- Background Effects -->
-    <div class="absolute inset-0">
-      <div class="absolute top-0 left-1/2 transform -translate-x-1/2 w-96 h-96 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-0 right-1/4 w-80 h-80 bg-gradient-to-r from-red-500/10 to-pink-500/10 rounded-full blur-3xl"></div>
-    </div>
-
-    <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+  <section class="py-24 bg-slate-950 relative overflow-hidden">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <!-- Section Header -->
       <div class="text-center mb-16 md:mb-20 px-4 md:px-0">
         <div class="inline-flex items-center px-4 md:px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 mb-6 md:mb-8">
@@ -34,12 +28,10 @@
       <!-- Feature Showcase -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 px-4 md:px-0">
         <!-- JSON:API Compliant -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 hover:border-gray-600/50 transition-all duration-300">
           <div class="relative z-10">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <CircleStackIcon class="h-8 w-8 text-white" />
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 border border-blue-500/30 flex items-center justify-center mb-6 group-hover:border-blue-400/50 transition-colors duration-300">
+              <CircleStackIcon class="h-6 w-6 text-blue-400" />
             </div>
             
             <p class="text-gray-400 mb-6 leading-relaxed">
@@ -67,12 +59,10 @@
         </div>
 
         <!-- Policy-Based Authorization -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 hover:border-gray-600/50 transition-all duration-300">
           <div class="relative z-10">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <ShieldCheckIcon class="h-8 w-8 text-white" />
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-green-500/20 to-emerald-500/20 border border-green-500/30 flex items-center justify-center mb-6 group-hover:border-green-400/50 transition-colors duration-300">
+              <ShieldCheckIcon class="h-6 w-6 text-green-400" />
             </div>
             
             <p class="text-gray-400 mb-6 leading-relaxed">
@@ -92,12 +82,10 @@
         </div>
 
         <!-- Advanced Filtering -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 hover:border-gray-600/50 transition-all duration-300">
           <div class="relative z-10">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-500/20 to-violet-500/20 border border-purple-500/30 flex items-center justify-center mb-6 group-hover:border-purple-400/50 transition-colors duration-300">
+              <svg class="h-6 w-6 text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
               </svg>
             </div>
@@ -122,12 +110,10 @@
         </div>
 
         <!-- MCP Server Support -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 hover:border-gray-600/50 transition-all duration-300">
           <div class="relative z-10">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <span class="text-2xl">🤖</span>
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-500/20 to-blue-500/20 border border-cyan-500/30 flex items-center justify-center mb-6 group-hover:border-cyan-400/50 transition-colors duration-300">
+              <span class="text-xl">🤖</span>
             </div>
             
             <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
@@ -147,12 +133,10 @@
         </div>
 
         <!-- Zero Configuration -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 hover:border-gray-600/50 transition-all duration-300">
           <div class="relative z-10">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <BoltIcon class="h-8 w-8 text-white" />
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-yellow-500/20 to-orange-500/20 border border-yellow-500/30 flex items-center justify-center mb-6 group-hover:border-yellow-400/50 transition-colors duration-300">
+              <BoltIcon class="h-6 w-6 text-yellow-400" />
             </div>
             
             <h3 class="text-xl md:text-2xl font-bold text-white mb-4 group-hover:text-blue-400 transition-colors">
@@ -175,12 +159,10 @@
         </div>
 
         <!-- Laravel Ecosystem -->
-        <div class="group relative bg-gradient-to-br from-gray-900/50 to-gray-800/50 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500 hover:border-blue-500/30">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
+        <div class="group relative bg-gray-900/30 backdrop-blur-sm border border-gray-700/50 rounded-2xl p-6 md:p-8 hover:border-gray-600/50 transition-all duration-300">
           <div class="relative z-10">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300">
-              <svg class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500/20 to-pink-500/20 border border-red-500/30 flex items-center justify-center mb-6 group-hover:border-red-400/50 transition-colors duration-300">
+              <svg class="h-6 w-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
               </svg>
             </div>
@@ -210,9 +192,6 @@
 import {
   BoltIcon,
   CircleStackIcon,
-  ShieldCheckIcon,
-  CpuChipIcon,
-  CommandLineIcon,
-  SwatchIcon
+  ShieldCheckIcon
 } from '@heroicons/vue/24/outline'
 </script>
