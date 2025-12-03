@@ -7,7 +7,7 @@
     </div>
 
     <!-- Main Hero Content -->
-    <div class="relative z-10 flex flex-col justify-center min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-16">
+    <div class="relative z-10 flex flex-col justify-center min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 md:py-12">
       <!-- Floating Badge -->
       <div class="text-center">
         <div class="inline-flex items-center px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full font-medium text-blue-600 dark:text-blue-300 mb-4 md:mb-8">
