@@ -39,45 +39,12 @@
     @apply border-gray-600/80 bg-gray-800/50;
 }
 
-/* Glass card with colored accent on hover */
-.glass-card-accent-red:hover h3,
-.glass-card-accent-red:hover .glass-card-title {
-    @apply text-red-600;
-}
-
-.dark .glass-card-accent-red:hover h3,
-.dark .glass-card-accent-red:hover .glass-card-title {
-    @apply text-red-400;
-}
-
-.glass-card-accent-blue:hover h3,
-.glass-card-accent-blue:hover .glass-card-title {
-    @apply text-blue-600;
-}
-
-.dark .glass-card-accent-blue:hover h3,
-.dark .glass-card-accent-blue:hover .glass-card-title {
-    @apply text-blue-400;
-}
-
-.glass-card-accent-purple:hover h3,
-.glass-card-accent-purple:hover .glass-card-title {
-    @apply text-purple-600;
-}
-
-.dark .glass-card-accent-purple:hover h3,
-.dark .glass-card-accent-purple:hover .glass-card-title {
-    @apply text-purple-400;
-}
-
-.glass-card-accent-green:hover h3,
-.glass-card-accent-green:hover .glass-card-title {
-    @apply text-green-600;
-}
-
-.dark .glass-card-accent-green:hover h3,
-.dark .glass-card-accent-green:hover .glass-card-title {
-    @apply text-green-400;
+/* Glass card with colored accent on hover - removed color changes, using base hover effects */
+.glass-card-accent-red,
+.glass-card-accent-blue,
+.glass-card-accent-purple,
+.glass-card-accent-green {
+    /* These classes now just use the base glass-card hover effects */
 }
 
 /* Glass panel - for info boxes, alerts */
