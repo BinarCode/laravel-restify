@@ -1,38 +1,37 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-900 transition-colors">
-    <!-- Header -->
-    <TheHeader />
+  <div class="app-layout">
+    <div class="app-background">
+      <div class="app-gradient-radial"></div>
+      <div class="app-grid-pattern"></div>
+    </div>
+
+    <div class="relative z-10">
+      <TheHeader />
+      
+      <div class="flex">
+        <TheSidebar />
+        
+        <main class="flex-1 min-w-0">
+          <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <slot />
+          </div>
+        </main>
+        
+        <TheTableOfContents />
+      </div>
     
-    <!-- Main container -->
-    <div class="flex">
-      <!-- Sidebar -->
-      <TheSidebar />
-      
-      <!-- Main content -->
-      <main class="flex-1 min-w-0">
-        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <slot />
-        </div>
-      </main>
-      
-          <!-- Table of Contents (right sidebar) -->
-    <TheTableOfContents />
-  </div>
-  
-  <!-- Toast Notifications -->
-    <ToastContainer />
+      <ToastContainer />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// Mobile menu state management
 const isMobileMenuOpen = ref(false)
 
-const toggleMobileMenu = () => {
+function toggleMobileMenu(): void {
   isMobileMenuOpen.value = !isMobileMenuOpen.value
 }
 
-// Provide mobile menu state to all child components
 provide('isMobileMenuOpen', isMobileMenuOpen)
 provide('toggleMobileMenu', toggleMobileMenu)
 </script>

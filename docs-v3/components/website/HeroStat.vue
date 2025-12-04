@@ -1,7 +1,7 @@
 <template>
   <div class="text-center">
-    <div class="text-3xl font-bold text-white mb-2">{{ icon }}</div>
-    <div class="text-gray-400 text-sm">{{ label }}</div>
+    <div class="text-3xl font-bold text-gray-900 dark:text-white mb-2">{{ icon }}</div>
+    <div class="text-gray-600 dark:text-gray-400 text-sm">{{ label }}</div>
   </div>
 </template>
 

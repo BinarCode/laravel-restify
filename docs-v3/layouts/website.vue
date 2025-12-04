@@ -1,22 +1,23 @@
 <template>
-  <div class="min-h-screen bg-white dark:bg-gray-900 transition-colors">
-    <!-- Website Header/Navbar -->
-    <WebsiteNavbar />
-    
-    <!-- Main content -->
-    <main>
-      <slot />
-    </main>
-    
-    <!-- Website Footer -->
-    <WebsiteFooter />
-    
-    <!-- Toast Notifications -->
-    <ToastContainer />
+  <div class="app-layout">
+    <div class="app-background">
+      <div class="app-gradient-radial"></div>
+      <div class="app-grid-pattern"></div>
+    </div>
+
+    <div class="relative z-10">
+      <WebsiteNavbar />
+      
+      <main>
+        <slot />
+      </main>
+      
+      <WebsiteFooter />
+      
+      <ToastContainer />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-// Website layout for marketing pages, templates, community, etc.
-// No sidebar navigation needed here
 </script>

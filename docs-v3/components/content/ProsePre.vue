@@ -7,7 +7,7 @@
       >
         PHP
       </span>
-      <UIcon v-else :name="icon || getFileTypeIcon(filename)" :class="ui.icon({ class: props.ui?.icon })" />
+      <UIcon v-else :name="icon || fileTypeIcon" :class="ui.icon({ class: props.ui?.icon })" />
 
       <span :class="ui.filename({ class: props.ui?.filename })">{{ filename }}</span>
     </div>
@@ -29,11 +29,11 @@
 </template>
 
 <script setup>
-import theme from "#build/ui/prose/pre";
-import { computed } from "vue";
-import { useClipboard } from "@vueuse/core";
-import { useAppConfig } from "#imports";
-import { tv } from "tailwind-variants";
+import theme from "#build/ui/prose/pre"
+import { computed } from "vue"
+import { useClipboard } from "@vueuse/core"
+import { useAppConfig } from "#imports"
+import { tv } from "tailwind-variants"
 
 const props = defineProps({
   icon: { type: [String, Object], required: false },
@@ -43,23 +43,32 @@ const props = defineProps({
   hideHeader: { type: Boolean, required: false },
   class: { type: null, required: false },
   ui: { type: null, required: false }
-});
-defineSlots();
+})
 
-const { copy, copied } = useClipboard();
-const appConfig = useAppConfig();
-const ui = computed(() => tv({ extend: tv(theme), ...appConfig.ui?.prose?.pre || {} })());
+defineSlots()
 
-const getFileTypeIcon = (filename) => {
-  if (!filename) return null;
+const { copy, copied } = useClipboard()
+const appConfig = useAppConfig()
+
+const ui = computed(function computeUi() {
+  return tv({ extend: tv(theme), ...appConfig.ui?.prose?.pre || {} })()
+})
+
+function getFileTypeIcon(filename) {
+  if (!filename) return null
   
-  const cleanFilename = filename.replace(/\s*\(.*\)\s*$/, "");
-  const extension = cleanFilename.includes(".") && cleanFilename.split(".").pop();
+  const cleanFilename = filename.replace(/\s*\(.*\)\s*$/, "")
+  const extension = cleanFilename.includes(".") && cleanFilename.split(".").pop()
   
-  return extension ? `i-vscode-icons-file-type-${extension}` : null;
-};
+  if (!extension) return null
+  return `i-vscode-icons-file-type-${extension}`
+}
 
-const copyCode = async () => {
-  await copy(props.code || '');
-};
+const fileTypeIcon = computed(function computeFileTypeIcon() {
+  return getFileTypeIcon(props.filename)
+})
+
+async function copyCode() {
+  await copy(props.code || '')
+}
 </script>

@@ -1,0 +1,50 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* Global cursor-pointer for all clickable elements */
+button,
+[role="button"],
+a,
+.cursor-pointer,
+input[type="submit"],
+input[type="button"],
+input[type="reset"],
+select {
+    cursor: pointer;
+}
+
+/* Fade transition */
+.fade-enter-active,
+.fade-leave-active {
+    transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+    opacity: 0;
+}
+
+/* Mobile menu transition */
+.mobile-menu-enter-active,
+.mobile-menu-leave-active {
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+
+.mobile-menu-enter-from,
+.mobile-menu-leave-to {
+    transform: translateX(-100%);
+    opacity: 0;
+}
+
+/* Dark mode toggle animation */
+.dark-mode-toggle {
+    transition: transform 0.2s ease;
+}
+
+.dark-mode-toggle:hover {
+    transform: scale(1.05);
+}

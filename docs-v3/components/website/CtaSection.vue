@@ -1,21 +1,14 @@
 <template>
-  <section class="py-24 bg-gradient-to-b from-gray-900 to-slate-950 relative overflow-hidden">
-    <!-- Background Effects -->
-    <div class="absolute inset-0">
-      <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-3xl"></div>
-      <div class="absolute bottom-20 left-20 w-64 h-64 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-full blur-2xl"></div>
-    </div>
-
-    <div class="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-      <!-- Section Header -->
+  <section class="py-24 relative overflow-hidden">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
       <div class="mb-12 md:mb-16">
-        <div class="inline-flex items-center px-4 md:px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-300 mb-6 md:mb-8">
+        <div class="inline-flex items-center px-4 md:px-6 py-3 bg-gradient-to-r from-blue-500/10 to-cyan-500/10 border border-blue-500/20 backdrop-blur-sm rounded-full text-sm font-medium text-blue-600 dark:text-blue-300 mb-6 md:mb-8">
           <BoltIcon class="w-4 h-4 mr-2" />
           Start Building Today
         </div>
         
         <h2 class="text-3xl md:text-4xl lg:text-6xl font-black tracking-tight mb-6 md:mb-8">
-          <span class="bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent">
+          <span class="bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent">
             Ready to build
           </span>
           <br />
@@ -24,89 +17,59 @@
           </span>
         </h2>
         
-        <p class="text-lg md:text-xl text-gray-300 max-w-3xl mx-auto mb-8 md:mb-12 leading-relaxed">
+        <p class="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto mb-8 md:mb-12 leading-relaxed">
           Install Laravel Restify today and transform your API development experience with elegant, powerful, and intuitive tools.
         </p>
       </div>
 
-      <!-- Installation Options -->
-      <div class="space-y-6 md:space-y-8 mb-8 md:mb-12 max-w-2xl mx-auto">
-        <!-- Composer Installation -->
-        <div class="group relative bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
-          <div class="relative z-10 text-center">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <CloudArrowDownIcon class="h-8 w-8 text-white" />
+      <div class="grid grid-cols-1 gap-6 md:gap-8 mb-8 md:mb-12 max-w-3xl mx-auto">
+        <!-- Composer Install Terminal -->
+        <TerminalWindow 
+          title="composer" 
+          :command="COMPOSER_COMMAND"
+          :copyable="true"
+        >
+          <div class="text-left">
+            <div class="flex items-center mb-3">
+              <CloudArrowDownIcon class="h-5 w-5 text-blue-400 mr-2" />
+              <span class="text-gray-300 dark:text-gray-300 font-medium text-sm">Install via Composer</span>
             </div>
-            
-            <h3 class="text-2xl font-bold text-white mb-4">
-              Install via Composer
-            </h3>
-            
-            <p class="text-gray-400 mb-6">
+            <p class="text-gray-500 text-xs mb-4">
               Get started instantly with Composer package manager
             </p>
-            
-            <div class="relative">
-              <div class="bg-black/50 backdrop-blur rounded-xl p-4 text-left font-mono text-sm text-gray-300 border border-gray-700/30">
-                <span class="text-gray-500">$</span> composer require binaryk/laravel-restify
-              </div>
-              
-              <button 
-                @click="copyComposerCommand"
-                class="absolute top-3 right-3 p-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600/50 rounded-lg transition-colors duration-200 group/btn"
-                :class="{ 'bg-green-500/20 border-green-500/50': composerCopied }"
-              >
-                <ClipboardIcon v-if="!composerCopied" class="h-4 w-4 text-gray-400 group-hover/btn:text-gray-300" />
-                <CheckIcon v-else class="h-4 w-4 text-green-400" />
-              </button>
+            <div class="bg-black/30 rounded-lg p-3 font-mono text-sm">
+              <span class="text-gray-500">$</span> <span class="text-green-400">{{ COMPOSER_COMMAND }}</span>
             </div>
           </div>
-        </div>
+        </TerminalWindow>
 
-        <!-- GitHub Clone -->
-        <div class="group relative bg-gradient-to-br from-gray-900/80 to-gray-800/80 backdrop-blur-lg border border-gray-700/50 rounded-3xl p-6 md:p-8 hover:scale-105 transition-all duration-500">
-          <div class="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-cyan-500/5 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-          
-          <div class="relative z-10 text-center">
-            <div class="w-16 h-16 bg-blue-500 rounded-2xl flex items-center justify-center mx-auto mb-6">
-              <CodeBracketIcon class="h-8 w-8 text-white" />
+        <!-- Git Clone Terminal -->
+        <TerminalWindow 
+          title="git" 
+          :command="GIT_COMMAND"
+          :copyable="true"
+        >
+          <div class="text-left">
+            <div class="flex items-center mb-3">
+              <CodeBracketIcon class="h-5 w-5 text-blue-400 mr-2" />
+              <span class="text-gray-300 dark:text-gray-300 font-medium text-sm">Clone from GitHub</span>
             </div>
-            
-            <h3 class="text-2xl font-bold text-white mb-4">
-              Clone from GitHub
-            </h3>
-            
-            <p class="text-gray-400 mb-6">
-              Explore the source code and contribute to development
+            <p class="text-gray-500 text-xs mb-4">
+              Explore the source code and contribute
             </p>
-            
-            <div class="relative">
-              <div class="bg-black/50 backdrop-blur rounded-xl p-4 text-left font-mono text-sm text-gray-300 border border-gray-700/30 break-all">
-                <span class="text-gray-500">$</span> git clone https://github.com/BinarCode/laravel-restify.git
-              </div>
-              
-              <button 
-                @click="copyGitCommand"
-                class="absolute top-3 right-3 p-2 bg-gray-800/50 hover:bg-gray-700/50 border border-gray-600/50 rounded-lg transition-colors duration-200 group/btn"
-                :class="{ 'bg-green-500/20 border-green-500/50': gitCopied }"
-              >
-                <ClipboardIcon v-if="!gitCopied" class="h-4 w-4 text-gray-400 group-hover/btn:text-gray-300" />
-                <CheckIcon v-else class="h-4 w-4 text-green-400" />
-              </button>
+            <div class="bg-black/30 rounded-lg p-3 font-mono text-sm">
+              <span class="text-gray-500">$</span> <span class="text-green-400">git clone</span> <span class="text-cyan-400">{{ GIT_COMMAND }}</span>
             </div>
           </div>
-        </div>
-      </div>
+        </TerminalWindow>
       </div>
 
-      <!-- Quick Links -->
       <div class="flex flex-col sm:flex-row gap-4 justify-center px-4 md:px-0">
         <HeroButton
           type="primary"
-          href="https://restify.binarcode.com/docs"
+          href="/docs"
           :icon="BoltIcon"
+          :is-nuxt-link="true"
         >
           Start Building
         </HeroButton>
@@ -119,45 +82,20 @@
           Explore Code
         </HeroButton>
       </div>
+    </div>
   </section>
 </template>
 
-<script setup>
-import { ref } from 'vue'
+<script setup lang="ts">
 import { 
   BoltIcon, 
   CloudArrowDownIcon, 
-  CodeBracketIcon, 
-  ClipboardIcon, 
-  CheckIcon,
-  BookOpenIcon
+  CodeBracketIcon
 } from '@heroicons/vue/24/outline'
 import HeroButton from './HeroButton.vue'
+import TerminalWindow from './TerminalWindow.vue'
 
-const composerCopied = ref(false)
-const gitCopied = ref(false)
-
-const copyComposerCommand = async () => {
-  try {
-    await navigator.clipboard.writeText('composer require binaryk/laravel-restify')
-    composerCopied.value = true
-    setTimeout(() => {
-      composerCopied.value = false
-    }, 2000)
-  } catch (err) {
-    console.error('Failed to copy composer command: ', err)
-  }
-}
-
-const copyGitCommand = async () => {
-  try {
-    await navigator.clipboard.writeText('git clone https://github.com/BinarCode/laravel-restify.git')
-    gitCopied.value = true
-    setTimeout(() => {
-      gitCopied.value = false
-    }, 2000)
-  } catch (err) {
-    console.error('Failed to copy git command: ', err)
-  }
-}
+const COMPOSER_COMMAND = 'composer require binaryk/laravel-restify'
+const GIT_COMMAND = 'git clone https://github.com/BinarCode/laravel-restify.git'
+const GIT_URL = 'github.com/.../restify'
 </script>
