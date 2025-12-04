@@ -25,6 +25,16 @@ class McpActionsIntegrationTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // MCP features require Laravel 12+ JsonSchema classes
+        if (! interface_exists(\Illuminate\Contracts\JsonSchema\JsonSchema::class)) {
+            $this->markTestSkipped('MCP features require Laravel 12+');
+        }
+    }
+
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [

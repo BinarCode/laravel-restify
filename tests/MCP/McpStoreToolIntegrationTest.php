@@ -23,6 +23,11 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
     {
         parent::setUp();
 
+        // MCP features require Laravel 12+ JsonSchema classes
+        if (! interface_exists(\Illuminate\Contracts\JsonSchema\JsonSchema::class)) {
+            $this->markTestSkipped('MCP features require Laravel 12+');
+        }
+
         config(['app.debug' => true]);
     }
 

@@ -6,7 +6,6 @@ use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
 use Binaryk\LaravelRestify\MCP\Collections\ToolsCollection;
 use Binaryk\LaravelRestify\MCP\Enums\OperationTypeEnum;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Mcp\Request;
@@ -349,9 +348,12 @@ class McpToolsManager
             throw new \Illuminate\Auth\Access\AuthorizationException('Not authorized to access this operation');
         }
 
-        // Get schema from the tool instance
-        $schema = new JsonSchemaTypeFactory;
-        $toolSchema = $tool['instance']->schema($schema);
+        // Get schema from the tool instance (requires Laravel 12+)
+        $toolSchema = null;
+        if (interface_exists(\Illuminate\Contracts\JsonSchema\JsonSchema::class)) {
+            $schema = new \Illuminate\JsonSchema\JsonSchemaTypeFactory;
+            $toolSchema = $tool['instance']->schema($schema);
+        }
 
         return [
             'operation' => $tool['name'],

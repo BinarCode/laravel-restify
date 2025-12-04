@@ -37,6 +37,11 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
     {
         parent::setUp();
 
+        // MCP features require Laravel 12+ JsonSchema classes
+        if (! interface_exists(\Illuminate\Contracts\JsonSchema\JsonSchema::class)) {
+            $this->markTestSkipped('MCP features require Laravel 12+');
+        }
+
         // Clear any previously registered repositories to avoid test pollution
         Restify::repositories([]);
     }

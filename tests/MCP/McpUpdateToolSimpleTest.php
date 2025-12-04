@@ -15,6 +15,16 @@ class McpUpdateToolSimpleTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // MCP features require Laravel 12+ JsonSchema classes
+        if (! interface_exists(\Illuminate\Contracts\JsonSchema\JsonSchema::class)) {
+            $this->markTestSkipped('MCP features require Laravel 12+');
+        }
+    }
+
     public function test_mcp_update_request_calls_fields_for_mcp_update(): void
     {
         $repository = new TestUpdateRepository;

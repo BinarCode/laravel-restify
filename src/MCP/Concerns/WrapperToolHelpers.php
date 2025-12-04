@@ -2,8 +2,6 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
-use Illuminate\JsonSchema\JsonSchemaTypeFactory;
-
 trait WrapperToolHelpers
 {
     /**
@@ -15,7 +13,12 @@ trait WrapperToolHelpers
      */
     protected function formatSchemaForDisplay(array $schema): array
     {
-        $schemaFactory = new JsonSchemaTypeFactory;
+        // JsonSchema classes are only available in Laravel 12+
+        if (! interface_exists(\Illuminate\Contracts\JsonSchema\JsonSchema::class)) {
+            return $schema;
+        }
+
+        $schemaFactory = new \Illuminate\JsonSchema\JsonSchemaTypeFactory;
         $objectType = $schemaFactory->object($schema);
 
         return $objectType->toArray();
