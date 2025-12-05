@@ -34,17 +34,23 @@
           <h3 class="font-semibold mb-4 text-gray-900 dark:text-white">Resources</h3>
           <ul class="space-y-3">
             <li v-for="link in resourceLinks" :key="link.label">
-              <component 
-                :is="link.isExternal ? 'a' : 'NuxtLink'"
-                :to="!link.isExternal ? link.href : undefined"
-                :href="link.isExternal ? link.href : undefined"
-                :target="link.isExternal ? '_blank' : undefined"
-                :rel="link.isExternal ? 'noopener noreferrer' : undefined"
+              <NuxtLink 
+                v-if="!link.isExternal"
+                :to="link.href"
                 class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center group"
               >
                 {{ link.label }}
-                <ArrowTopRightOnSquareIcon v-if="link.isExternal" class="w-3 h-3 ml-1 opacity-50 group-hover:opacity-100" />
-              </component>
+              </NuxtLink>
+              <a 
+                v-else
+                :href="link.href"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors flex items-center group"
+              >
+                {{ link.label }}
+                <ArrowTopRightOnSquareIcon class="w-3 h-3 ml-1 opacity-50 group-hover:opacity-100" />
+              </a>
             </li>
           </ul>
         </div>
@@ -101,8 +107,8 @@ interface FooterLink {
 
 const resourceLinks: FooterLink[] = [
   { label: 'Documentation', href: '/docs', isExternal: false },
-  { label: 'Getting Started', href: '/docs/quickstart', isExternal: false },
-  { label: 'Changelog', href: 'https://github.com/binarcode/laravel-restify/blob/main/CHANGELOG.md', isExternal: true },
+  { label: 'Getting Started', href: '/docs/getting-started/quickstart', isExternal: false },
+  { label: 'Changelog', href: 'https://github.com/binarcode/laravel-restify/blob/10.x/CHANGELOG.md', isExternal: true },
   { label: 'Releases', href: 'https://github.com/binarcode/laravel-restify/releases', isExternal: true }
 ]
 
