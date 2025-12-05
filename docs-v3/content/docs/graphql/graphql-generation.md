@@ -5,8 +5,6 @@ category: GraphQL
 position: 17
 ---
 
-# GraphQL Schema Generation
-
 Laravel Restify can automatically generate GraphQL schemas and resolvers from your existing Restify repositories, allowing you to quickly add GraphQL capabilities to your API.
 
 ## Overview

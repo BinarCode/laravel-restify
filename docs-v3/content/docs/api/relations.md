@@ -8,7 +8,6 @@ position: 10
 ## Introduction
 
 Eloquent provides a large variety of relationships. You can read about them [here](https://laravel.com/docs/eloquent-relationships).
-
 Restify handles all relationships and gives you an expressive way to list resource relationships.
 
 ## Definition

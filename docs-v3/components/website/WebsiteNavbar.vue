@@ -56,7 +56,7 @@
     </div>
     
     <div
-      v-if="isMobileMenuOpen"
+      v-if="showWebsiteMobileMenu"
       class="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
     >
       <div class="px-2 pt-2 pb-3 space-y-1">
@@ -98,24 +98,43 @@ const navLinks: NavLink[] = [
 ]
 
 const route = useRoute()
-const isMobileMenuOpen = ref(false)
+
+const injectedMobileMenuOpen = inject<Ref<boolean> | null>('isMobileMenuOpen', null)
+const injectedToggleMobileMenu = inject<(() => void) | null>('toggleMobileMenu', null)
+
+const localMobileMenuOpen = ref(false)
+const isMobileMenuOpen = injectedMobileMenuOpen ?? localMobileMenuOpen
 
 const isDocsPage = computed(() => route.path.startsWith('/docs'))
+
+const showWebsiteMobileMenu = computed(() => isMobileMenuOpen.value && !isDocsPage.value)
 
 function isActiveRoute(path: string): boolean {
   return route.path.startsWith(path)
 }
 
 function toggleMobileMenu(): void {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value
+  if (injectedToggleMobileMenu) {
+    injectedToggleMobileMenu()
+    return
+  }
+
+  localMobileMenuOpen.value = !localMobileMenuOpen.value
 }
 
 function closeMobileMenu(): void {
-  isMobileMenuOpen.value = false
+  if (injectedMobileMenuOpen) {
+    injectedMobileMenuOpen.value = false
+  }
+  
+  localMobileMenuOpen.value = false
 }
 
 watch(() => route.path, closeMobileMenu)
 
-provide('isMobileMenuOpen', isMobileMenuOpen)
-provide('toggleMobileMenu', toggleMobileMenu)
+// Only provide if we're using local state (not on docs pages)
+if (!injectedMobileMenuOpen) {
+  provide('isMobileMenuOpen', isMobileMenuOpen)
+  provide('toggleMobileMenu', toggleMobileMenu)
+}
 </script>

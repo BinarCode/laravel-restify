@@ -16,6 +16,8 @@
             <article class="prose prose-gray dark:prose-invert prose-lg max-w-none">
               <slot />
             </article>
+            
+            <DocsPagination />
           </div>
         </main>
         

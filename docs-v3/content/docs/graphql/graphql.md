@@ -5,8 +5,6 @@ category: GraphQL
 position: 16
 ---
 
-# GraphQL Integration
-
 Laravel Restify provides powerful GraphQL integration, allowing you to automatically generate GraphQL schemas and resolvers from your existing Restify repositories. This enables you to quickly add GraphQL capabilities to your API without rewriting your business logic.
 
 ## Overview

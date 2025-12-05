@@ -5,8 +5,6 @@ category: API
 position: 12
 ---
 
-# Repository Generation
-
 Laravel Restify provides powerful repository generation commands for both individual and bulk repository creation, with intelligent path detection and automatic relationship generation.
 
 ## Intelligent Path Detection

@@ -5,8 +5,6 @@ category: API
 position: 15
 ---
 
-# Fluent Validation Methods
-
 Laravel Restify provides a fluent API for adding validation rules to fields, similar to Laravel Nova. This makes it easy to chain validation methods for cleaner and more readable code.
 
 ## Basic Usage

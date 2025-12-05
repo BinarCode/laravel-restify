@@ -6,9 +6,6 @@
           <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             {{ post.title }}
           </h1>
-          <p v-if="post.description" class="text-xl text-gray-600 dark:text-gray-400">
-            {{ post.description }}
-          </p>
         </header>
         
         <div class="prose-docs">
