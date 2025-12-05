@@ -58,7 +58,7 @@
               Explore the source code and contribute
             </p>
             <div class="bg-black/30 rounded-lg p-3 font-mono text-sm">
-              <span class="text-gray-500">$</span> <span class="text-green-400">git clone</span> <span class="text-cyan-400">{{ GIT_COMMAND }}</span>
+              <span class="text-gray-500">$</span> <span class="text-green-400">{{ GIT_COMMAND }}</span>
             </div>
           </div>
         </TerminalWindow>
