@@ -221,9 +221,12 @@ import ConnectionStatus from '~/components/playground/ConnectionStatus.vue'
 import RequestTerminal from '~/components/playground/RequestTerminal.vue'
 import PlaygroundTerminal from '~/components/playground/PlaygroundTerminal.vue'
 import ExampleCard from '~/components/playground/ExampleCard.vue'
-import ResourceCard from '~/components/playground/ResourceCard.vue'
 import AppButton from '~/components/ui/AppButton.vue'
 import AppToggle from '~/components/ui/AppToggle.vue'
+import { usePlayground } from '~/composables/usePlayground'
+import ResourceCard from '~/components/playground/ResourceCard.vue'
+
+const { buildUrl } = usePlayground()
 
 useHead({
   title: 'Playground - Laravel Restify',
@@ -448,7 +451,7 @@ async function sendRequest() {
   const startTime = performance.now()
 
   try {
-    const url = `https://api.laravel-restify.com/${request.value.endpoint}`
+    const url = buildUrl(request.value.endpoint)
     const options: RequestInit = {
       method: request.value.method,
       headers: {

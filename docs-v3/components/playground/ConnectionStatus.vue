@@ -15,6 +15,8 @@
 </template>
 
 <script setup lang="ts">
+import { PLAYGROUND_API_DOMAIN } from '~/composables/usePlayground'
+
 interface Props {
   isConnected?: boolean
   baseUrl?: string
@@ -22,6 +24,6 @@ interface Props {
 
 withDefaults(defineProps<Props>(), {
   isConnected: true,
-  baseUrl: 'api.laravel-restify.com'
+  baseUrl: PLAYGROUND_API_DOMAIN
 })
 </script>

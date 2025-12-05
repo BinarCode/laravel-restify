@@ -46,7 +46,7 @@
         <!-- URL input - full width on mobile -->
         <div class="flex-1 flex items-center bg-gray-100 dark:bg-gray-800/80 rounded-lg border border-gray-200 dark:border-gray-600/50 overflow-hidden">
           <span class="hidden sm:block px-3 py-2 text-gray-400 dark:text-gray-500 font-mono text-sm border-r border-gray-200 dark:border-gray-600/50 bg-gray-50 dark:bg-gray-800/50 whitespace-nowrap">
-            {{ baseUrl }}
+            {{ displayBaseUrl }}
           </span>
           <span class="sm:hidden px-3 py-2 text-gray-400 dark:text-gray-500 font-mono text-sm">/</span>
           <input
@@ -100,6 +100,7 @@
 
 <script setup lang="ts">
 import { PlayIcon, ArrowPathIcon } from '@heroicons/vue/24/solid'
+import { usePlayground } from '~/composables/usePlayground'
 
 interface RequestData {
   method: string
@@ -117,14 +118,18 @@ interface Props {
   bodyPlaceholder?: string
 }
 
+const { apiUrl } = usePlayground()
+
 const props = withDefaults(defineProps<Props>(), {
   title: 'request',
   loading: false,
-  baseUrl: 'https://api.laravel-restify.com/',
+  baseUrl: undefined,
   methods: () => ['GET', 'POST', 'PATCH', 'DELETE'],
   endpointPlaceholder: 'api/restify/organizations',
   bodyPlaceholder: '{\n  "name": "value"\n}'
 })
+
+const displayBaseUrl = computed(() => props.baseUrl ?? `${apiUrl}/`)
 
 const emit = defineEmits<{
   'update:modelValue': [value: RequestData]
