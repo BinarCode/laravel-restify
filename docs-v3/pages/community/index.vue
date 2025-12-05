@@ -114,7 +114,7 @@
             href="https://github.com/BinarCode/restify-demo"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors"
+            class="inline-flex items-center text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 font-medium transition-colors"
           >
             View Demo Repository
             <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
