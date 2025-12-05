@@ -293,7 +293,7 @@
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <NuxtLink
               to="/docs/quickstart"
-              class="inline-flex items-center px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+              class="inline-flex items-center px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg transition-colors"
             >
               Get Started Now
             </NuxtLink>

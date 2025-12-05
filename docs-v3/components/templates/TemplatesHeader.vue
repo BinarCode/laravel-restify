@@ -8,28 +8,29 @@
     </p>
     
     <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
-      <a
+      <AppButton
+        variant="primary"
+        size="md"
         href="https://restifytemplates.com/"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center px-6 py-3 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-all duration-200"
+        :icon="RocketLaunchIcon"
+        :show-external-icon="true"
       >
         Browse All Templates
-        <ArrowTopRightOnSquareIcon class="w-4 h-4 ml-2" />
-      </a>
-      <a
+      </AppButton>
+      <AppButton
+        variant="secondary"
+        size="md"
         href="https://www.binarcode.com/estimate-project"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center px-6 py-3 bg-gray-100 dark:bg-gray-800/50 border border-gray-300 dark:border-gray-700 text-gray-700 dark:text-gray-300 hover:border-gray-400 dark:hover:border-gray-600 hover:bg-gray-200 dark:hover:bg-gray-800 font-medium rounded-lg transition-all duration-200"
+        :icon="WrenchScrewdriverIcon"
+        :show-external-icon="true"
       >
-        Get Your Custom Template
-        <ArrowTopRightOnSquareIcon class="w-4 h-4 ml-2" />
-      </a>
+        Get Custom Template
+      </AppButton>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline'
+import { RocketLaunchIcon, WrenchScrewdriverIcon } from '@heroicons/vue/24/outline'
+import AppButton from '~/components/ui/AppButton.vue'
 </script>

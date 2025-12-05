@@ -4,11 +4,8 @@
       <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
         <!-- Brand and description - spans 2 columns on desktop -->
         <div class="col-span-1 md:col-span-2">
-          <div class="flex items-center space-x-2 mb-4">
-            <div class="w-8 h-8 bg-gradient-to-br from-red-500 to-red-600 rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold text-lg">R</span>
-            </div>
-            <span class="font-semibold text-xl text-gray-900 dark:text-white">Laravel Restify</span>
+          <div class="mb-4">
+            <AppLogo />
           </div>
           <p class="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
             Build JSON:API compliant REST APIs and MCP servers from your Laravel Eloquent models 
@@ -96,6 +93,7 @@
 
 <script setup lang="ts">
 import { ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline'
+import AppLogo from '../ui/AppLogo.vue'
 
 const currentYear = new Date().getFullYear()
 

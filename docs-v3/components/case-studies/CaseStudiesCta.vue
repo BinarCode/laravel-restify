@@ -14,21 +14,23 @@
         Start your project today and become our next case study.
       </p>
       <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <HeroButton
-          type="primary"
+        <AppButton
+          variant="primary"
           href="/docs"
           :icon="BookOpenIcon"
           :is-nuxt-link="true"
+          :external="false"
         >
           Get Started with Restify
-        </HeroButton>
-        <HeroButton
-          type="secondary"
+        </AppButton>
+        <AppButton
+          variant="secondary"
           href="https://www.binarcode.com/recent-work"
           :icon="BriefcaseIcon"
+          :show-external-icon="true"
         >
           Recent Projects
-        </HeroButton>
+        </AppButton>
       </div>
     </div>
   </div>
@@ -36,5 +38,5 @@
 
 <script setup lang="ts">
 import { BookOpenIcon, BriefcaseIcon } from '@heroicons/vue/24/outline'
-import HeroButton from '~/components/website/HeroButton.vue'
+import AppButton from '~/components/ui/AppButton.vue'
 </script>
