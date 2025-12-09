@@ -110,17 +110,15 @@
             Explore a complete example of Laravel Restify in action with our demo repository. 
             See real-world implementation and get inspired for your own projects.
           </p>
-          <a
+          <AppButton
+            variant="primary"
+            size="md"
             href="https://github.com/BinarCode/restify-demo"
-            target="_blank"
-            rel="noopener noreferrer"
-            class="inline-flex items-center text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors"
+            :icon="CodeBracketIcon"
+            :show-external-icon="true"
           >
             View Demo Repository
-            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3" />
-            </svg>
-          </a>
+          </AppButton>
         </div>
       </div>
     </div>
@@ -128,6 +126,8 @@
 </template>
 
 <script setup lang="ts">
+import { CodeBracketIcon } from '@heroicons/vue/24/outline'
+import AppButton from '~/components/ui/AppButton.vue'
 import ContributorsSection from '~/components/website/ContributorsSection.vue'
 
 useHead({

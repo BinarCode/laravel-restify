@@ -20,7 +20,7 @@
           <div class="absolute right-0 top-0 z-10 w-16 h-full bg-gradient-to-l from-white/80 dark:from-gray-900/80 to-transparent pointer-events-none"></div>
           
           <div class="flex animate-scroll-left space-x-4">
-            <div class="flex space-x-4 shrink-0">
+            <div class="flex space-x-4 shrink-0 p-1">
               <ContributorAvatar
                 v-for="contributor in contributors"
                 :key="contributor.username"
@@ -29,7 +29,7 @@
                 :contributions="contributor.contributions"
               />
             </div>
-            <div class="flex space-x-4 shrink-0">
+            <div class="flex space-x-4 shrink-0 p-1">
               <ContributorAvatar
                 v-for="contributor in contributors"
                 :key="`dup-${contributor.username}`"
@@ -46,7 +46,7 @@
             href="https://github.com/BinarCode/laravel-restify/graphs/contributors"
             target="_blank"
             rel="noopener noreferrer"
-            class="inline-flex items-center text-red-500 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 font-medium transition-colors group"
+            class="inline-flex items-center text-primary-500 dark:text-primary-400 hover:text-primary-600 dark:hover:text-primary-300 font-medium transition-colors group"
           >
             View All Contributors
             <ArrowRightIcon class="ml-2 w-4 h-4 group-hover:translate-x-1 transition-transform" />

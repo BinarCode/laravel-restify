@@ -11,14 +11,9 @@
             <Bars3Icon class="h-6 w-6" />
           </button>
           
-          <NuxtLink to="/" class="flex items-center ml-2 lg:ml-0 group">
-            <span class="text-2xl font-bold tracking-tight">
-              <span class="bg-gradient-to-r from-gray-700 via-gray-500 to-gray-700 dark:from-white dark:via-gray-200 dark:to-white bg-clip-text text-transparent drop-shadow-sm">
-                Laravel Restify
-              </span>
-              <span class="inline-block w-2 h-2 ml-0.5 mb-1 rounded-full bg-gradient-to-br from-red-500 to-red-600 shadow-lg shadow-red-500/50 group-hover:shadow-red-500/70 group-hover:scale-110 transition-all duration-300"></span>
-            </span>
-          </NuxtLink>
+          <div class="ml-2 lg:ml-0">
+            <AppLogo :linkable="true" />
+          </div>
         </div>
 
         <div class="hidden lg:flex lg:items-center lg:space-x-8">
@@ -34,6 +29,10 @@
         </div>
 
         <div class="flex items-center space-x-4">
+          <!-- Mobile search icon (docs only) -->
+          <UContentSearchButton v-if="isDocsPage" class="lg:hidden" :collapsed="true" />
+          
+          <!-- Desktop search with label (docs only) -->
           <div v-if="isDocsPage" class="hidden lg:block">
             <UContentSearchButton label="Search..." :collapsed="false" />
           </div>
@@ -43,6 +42,10 @@
             target="_blank"
             rel="noopener noreferrer"
             class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white rounded-md p-2"
+            :class="{
+              'hidden lg:block': isDocsPage,
+              'block': !isDocsPage
+            }"
             aria-label="GitHub Repository"
           >
             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
@@ -56,7 +59,7 @@
     </div>
     
     <div
-      v-if="isMobileMenuOpen"
+      v-if="showWebsiteMobileMenu"
       class="lg:hidden border-t border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900"
     >
       <div class="px-2 pt-2 pb-3 space-y-1">
@@ -83,6 +86,7 @@
 
 <script setup lang="ts">
 import { Bars3Icon } from '@heroicons/vue/24/outline'
+import AppLogo from '../ui/AppLogo.vue'
 
 interface NavLink {
   to: string
@@ -98,24 +102,43 @@ const navLinks: NavLink[] = [
 ]
 
 const route = useRoute()
-const isMobileMenuOpen = ref(false)
+
+const injectedMobileMenuOpen = inject<Ref<boolean> | null>('isMobileMenuOpen', null)
+const injectedToggleMobileMenu = inject<(() => void) | null>('toggleMobileMenu', null)
+
+const localMobileMenuOpen = ref(false)
+const isMobileMenuOpen = injectedMobileMenuOpen ?? localMobileMenuOpen
 
 const isDocsPage = computed(() => route.path.startsWith('/docs'))
+
+const showWebsiteMobileMenu = computed(() => isMobileMenuOpen.value && !isDocsPage.value)
 
 function isActiveRoute(path: string): boolean {
   return route.path.startsWith(path)
 }
 
 function toggleMobileMenu(): void {
-  isMobileMenuOpen.value = !isMobileMenuOpen.value
+  if (injectedToggleMobileMenu) {
+    injectedToggleMobileMenu()
+    return
+  }
+
+  localMobileMenuOpen.value = !localMobileMenuOpen.value
 }
 
 function closeMobileMenu(): void {
-  isMobileMenuOpen.value = false
+  if (injectedMobileMenuOpen) {
+    injectedMobileMenuOpen.value = false
+  }
+  
+  localMobileMenuOpen.value = false
 }
 
 watch(() => route.path, closeMobileMenu)
 
-provide('isMobileMenuOpen', isMobileMenuOpen)
-provide('toggleMobileMenu', toggleMobileMenu)
+// Only provide if we're using local state (not on docs pages)
+if (!injectedMobileMenuOpen) {
+  provide('isMobileMenuOpen', isMobileMenuOpen)
+  provide('toggleMobileMenu', toggleMobileMenu)
+}
 </script>

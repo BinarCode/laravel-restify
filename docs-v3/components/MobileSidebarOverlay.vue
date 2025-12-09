@@ -13,7 +13,7 @@
         @click.stop
         @touchmove.stop
       >
-        <div class="flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+        <div class="sticky top-0 z-10 flex items-center justify-between px-4 py-4 border-b border-gray-200 dark:border-gray-700 flex-shrink-0 bg-white dark:bg-gray-900">
           <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ title }}</h2>
           <button
             @click.stop="$emit('close')"

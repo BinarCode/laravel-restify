@@ -52,22 +52,23 @@
 
         <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center mt-6 md:mt-8 px-2 md:px-0">
-          <HeroButton
-            type="primary"
+          <AppButton
+            variant="primary"
             href="/docs"
             :icon="BoltIcon"
             :is-nuxt-link="true"
+            :external="false"
           >
             Start Building
-          </HeroButton>
+          </AppButton>
 
-          <HeroButton
-            type="secondary"
+          <AppButton
+            variant="secondary"
             href="https://github.com/binaryk/laravel-restify"
             :icon="CodeBracketIcon"
           >
             Explore Code
-          </HeroButton>
+          </AppButton>
         </div>
       </div>
 
@@ -144,7 +145,8 @@ import {
   ClipboardIcon, 
   CheckIcon 
 } from '@heroicons/vue/24/outline'
-import HeroButton from './HeroButton.vue'
+
+import AppButton from '~/components/ui/AppButton.vue'
 import HeroStat from './HeroStat.vue'
 import CodeSection from './CodeSection.vue'
 

@@ -58,29 +58,30 @@
               Explore the source code and contribute
             </p>
             <div class="bg-black/30 rounded-lg p-3 font-mono text-sm">
-              <span class="text-gray-500">$</span> <span class="text-green-400">git clone</span> <span class="text-cyan-400">{{ GIT_COMMAND }}</span>
+              <span class="text-gray-500">$</span> <span class="text-green-400">{{ GIT_COMMAND }}</span>
             </div>
           </div>
         </TerminalWindow>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-4 justify-center px-4 md:px-0">
-        <HeroButton
-          type="primary"
+        <AppButton
+          variant="primary"
           href="/docs"
           :icon="BoltIcon"
           :is-nuxt-link="true"
+          :external="false"
         >
           Start Building
-        </HeroButton>
+        </AppButton>
 
-        <HeroButton
+        <AppButton
+          variant="secondary"
           href="https://github.com/binaryk/laravel-restify"
-          type="secondary"
           :icon="CodeBracketIcon"
         >
           Explore Code
-        </HeroButton>
+        </AppButton>
       </div>
     </div>
   </section>
@@ -92,7 +93,7 @@ import {
   CloudArrowDownIcon, 
   CodeBracketIcon
 } from '@heroicons/vue/24/outline'
-import HeroButton from './HeroButton.vue'
+import AppButton from '~/components/ui/AppButton.vue'
 import TerminalWindow from './TerminalWindow.vue'
 
 const COMPOSER_COMMAND = 'composer require binaryk/laravel-restify'

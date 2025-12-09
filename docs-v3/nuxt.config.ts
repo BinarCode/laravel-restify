@@ -7,6 +7,31 @@ export default defineNuxtConfig({
     '@vueuse/nuxt'
   ],
 
+  // Nuxt Content configuration
+  content: {
+    build: {
+      markdown: {
+        highlight: {
+          langs: [
+            'php',
+            'javascript',
+            'typescript',
+            'json',
+            'bash',
+            'shell',
+            'yaml',
+            'vue',
+            'html',
+            'css',
+            'graphql',
+            'sql',
+            'diff'
+          ]
+        }
+      }
+    }
+  },
+
   // Nuxt UI configuration for content
   ui: {
     content: true,

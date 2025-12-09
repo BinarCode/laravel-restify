@@ -39,7 +39,7 @@
           <div class="flex space-x-2">
             <button
               @click="switchToHttp"
-              :class="activeTab === 'http' ? 'bg-red-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'"
+              :class="activeTab === 'http' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'"
               class="flex-1 px-6 py-4 rounded-lg font-medium transition-all duration-200"
             >
               <div class="flex items-center justify-center space-x-2">
@@ -52,7 +52,7 @@
             </button>
             <button
               @click="switchToMcp"
-              :class="activeTab === 'mcp' ? 'bg-red-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'"
+              :class="activeTab === 'mcp' ? 'bg-primary-500 text-white shadow-md' : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'"
               class="flex-1 px-6 py-4 rounded-lg font-medium transition-all duration-200"
             >
               <div class="flex items-center justify-center space-x-2">
@@ -194,7 +194,7 @@
             <button
               @click="sendRequest"
               :disabled="isLoading"
-              class="w-full bg-red-500 hover:bg-red-600 disabled:bg-red-500/50 disabled:cursor-not-allowed text-white font-medium py-4 px-6 rounded-lg transition-colors text-lg"
+              class="w-full bg-primary-500 hover:bg-primary-600 disabled:bg-primary-500/50 disabled:cursor-not-allowed text-white font-medium py-4 px-6 rounded-lg transition-colors text-lg"
             >
               {{ isLoading ? 'Sending...' : 'Send Request' }}
             </button>
@@ -293,7 +293,7 @@
           <div class="flex flex-col sm:flex-row gap-4 justify-center">
             <NuxtLink
               to="/docs/quickstart"
-              class="inline-flex items-center px-6 py-3 bg-red-500 hover:bg-red-600 text-white font-medium rounded-lg transition-colors"
+              class="inline-flex items-center px-6 py-3 bg-primary-500 hover:bg-primary-600 text-white font-medium rounded-lg transition-colors"
             >
               Get Started Now
             </NuxtLink>
