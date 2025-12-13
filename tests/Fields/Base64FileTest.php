@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Fields;
 
 use Binaryk\LaravelRestify\Fields\Base64File;
-use Binaryk\LaravelRestify\Fields\Image;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
