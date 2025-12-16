@@ -29,6 +29,10 @@
         </div>
 
         <div class="flex items-center space-x-4">
+          <!-- Mobile search icon (docs only) -->
+          <UContentSearchButton v-if="isDocsPage" class="lg:hidden" :collapsed="true" />
+          
+          <!-- Desktop search with label (docs only) -->
           <div v-if="isDocsPage" class="hidden lg:block">
             <UContentSearchButton label="Search..." :collapsed="false" />
           </div>
@@ -38,6 +42,10 @@
             target="_blank"
             rel="noopener noreferrer"
             class="text-gray-600 hover:text-gray-900 dark:text-gray-300 dark:hover:text-white rounded-md p-2"
+            :class="{
+              'hidden lg:block': isDocsPage,
+              'block': !isDocsPage
+            }"
             aria-label="GitHub Repository"
           >
             <svg class="h-5 w-5" fill="currentColor" viewBox="0 0 24 24">
