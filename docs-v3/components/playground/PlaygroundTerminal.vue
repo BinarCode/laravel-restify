@@ -130,11 +130,11 @@ async function handleCopy() {
   }
 }
 
-// Auto-scroll to bottom when content changes
+// Keep scroll at top when content changes
 watch(() => props.content, () => {
   nextTick(() => {
     if (terminalContent.value) {
-      terminalContent.value.scrollTop = terminalContent.value.scrollHeight
+      terminalContent.value.scrollTop = 0
     }
   })
 })
