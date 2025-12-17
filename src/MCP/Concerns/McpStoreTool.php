@@ -6,7 +6,7 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
 use Illuminate\Http\UploadedFile;
-use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
 
 /**
  * @mixin \Binaryk\LaravelRestify\Repositories\Repository

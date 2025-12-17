@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\Validation;
 
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
-use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Validation\Validator as BaseValidator;
 
 class Validator extends BaseValidator

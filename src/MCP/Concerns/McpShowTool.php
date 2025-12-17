@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
-use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
 
 /**
  * @mixin \Binaryk\LaravelRestify\Repositories\Repository

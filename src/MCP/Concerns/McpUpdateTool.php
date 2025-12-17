@@ -4,7 +4,7 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
-use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Illuminate\Validation\ValidationException;
 
 /**
