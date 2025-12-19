@@ -1,5 +1,10 @@
 <template>
-  <div class="bg-gray-900 backdrop-blur-lg border border-gray-700/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-full">
+  <div 
+    class="bg-gray-900 backdrop-blur-lg border border-gray-700/50 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-full"
+    :class="[
+      tilted ? 'transform rotate-2 hover:rotate-0 transition-transform duration-500' : ''
+    ]"
+  >
     <!-- Terminal Header -->
     <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-700/50 bg-gray-800/80">
       <div class="flex items-center space-x-3">
@@ -39,11 +44,13 @@ interface Props {
   title?: string
   command?: string
   copyable?: boolean
+  tilted?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
   title: 'terminal',
-  copyable: false
+  copyable: false,
+  tilted: false
 })
 
 const copied = ref(false)
