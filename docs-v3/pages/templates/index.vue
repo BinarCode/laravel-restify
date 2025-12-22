@@ -154,8 +154,7 @@ const templates: Template[] = [
     ],
     primaryAction: {
       label: 'Get Early Access Today 🚀',
-      href: '#',
-      disabled: true
+      href: 'https://restifytemplates.com/checkout/premium',
     },
     docsHref: 'https://restifytemplates.com/documentation/premium'
   }
