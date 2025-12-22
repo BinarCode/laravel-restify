@@ -12,7 +12,11 @@
           />
         </div>
 
-        <TemplatesCustomCta />
+        <!-- Custom Template CTA -->
+        <CustomTemplateCTA />
+
+        <!-- FAQ Section -->
+        <TemplatesFAQ />
       </div>
     </div>
   </NuxtLayout>
@@ -21,7 +25,8 @@
 <script setup lang="ts">
 import TemplatesHeader from '~/components/templates/TemplatesHeader.vue'
 import TemplateCard from '~/components/templates/TemplateCard.vue'
-import TemplatesCustomCta from '~/components/templates/TemplatesCustomCta.vue'
+import CustomTemplateCTA from '~/components/templates/CustomTemplateCTA.vue'
+import TemplatesFAQ from '~/components/templates/TemplatesFAQ.vue'
 
 useHead({
   title: 'Templates - Laravel Restify',
@@ -149,8 +154,7 @@ const templates: Template[] = [
     ],
     primaryAction: {
       label: 'Get Early Access Today 🚀',
-      href: '#',
-      disabled: true
+      href: 'https://restifytemplates.com/checkout/premium',
     },
     docsHref: 'https://restifytemplates.com/documentation/premium'
   }
