@@ -196,7 +196,7 @@ class GenerateRepositoriesCommand extends Command
     protected function getModelNamespace(string $className): string
     {
         $parts = explode('\\', $className);
-        array_pop(); // Remove class name
+        array_pop($parts); // Remove class name
 
         return implode('\\', $parts);
     }
