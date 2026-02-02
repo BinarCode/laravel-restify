@@ -562,7 +562,7 @@ PHP;
         $namespace = $this->getRepositoryNamespace($modelData);
         $className = $modelData['name'].'Repository';
 
-        return str_replace('App\\', 'app/', str_replace('\\', '/', $namespace)).'/'.$className.'.php';
+        return str_replace('\\', '/', str_replace('App\\', 'app/', $namespace)).'/'.$className.'.php';
     }
 
     protected function getRepositoryFilePath(array $modelData): string
