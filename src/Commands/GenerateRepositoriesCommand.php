@@ -196,7 +196,7 @@ class GenerateRepositoriesCommand extends Command
     protected function getModelNamespace(string $className): string
     {
         $parts = explode('\\', $className);
-        array_pop(); // Remove class name
+        array_pop($parts); // Remove class name
 
         return implode('\\', $parts);
     }
@@ -562,7 +562,7 @@ PHP;
         $namespace = $this->getRepositoryNamespace($modelData);
         $className = $modelData['name'].'Repository';
 
-        return str_replace('App\\', 'app/', str_replace('\\', '/', $namespace)).'/'.$className.'.php';
+        return str_replace('\\', '/', str_replace('App\\', 'app/', $namespace)).'/'.$className.'.php';
     }
 
     protected function getRepositoryFilePath(array $modelData): string
