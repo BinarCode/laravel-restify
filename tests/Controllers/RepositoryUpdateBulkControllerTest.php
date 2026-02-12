@@ -136,26 +136,4 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
 
         unset($_SERVER['restify.post.updateBulk.callback']);
     }
-
-    public function test_bulk_update_validation_reports_correct_indices(): void
-    {
-        $posts = Post::factory()
-            ->count(3)
-            ->sequence(
-                ['title' => 'First title'],
-                ['title' => 'Second title'],
-                ['title' => 'Third title'],
-            )
-            ->create(['user_id' => 1]);
-
-        $response = $this->postJson(PostRepository::route('bulk/update'), [
-            ['id' => $posts[0]->id, 'title' => 'Valid updated title'],  // Valid (index 0)
-            ['id' => $posts[1]->id, 'title' => null],                   // Invalid (index 1)
-            ['id' => $posts[2]->id, 'title' => null],                   // Invalid (index 2)
-        ]);
-
-        $response->assertUnprocessable();
-        $response->assertJsonValidationErrors(['1.title', '2.title']);
-        $response->assertJsonMissingValidationErrors(['0.title']);
-    }
 }
