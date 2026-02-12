@@ -10,6 +10,8 @@ class RepositoryUpdateBulkController extends RepositoryController
 {
     public function __invoke(RepositoryUpdateBulkRequest $request)
     {
+        $request->repository()->allowToUpdateBulk($request);
+
         $collection = DB::transaction(function () use ($request) {
             return $request->collectInput()
                 ->each(function (array $item, int $row) use ($request) {
@@ -20,13 +22,7 @@ class RepositoryUpdateBulkController extends RepositoryController
                     /** * @var Repository $repository */
                     $repository = $request->repositoryWith($model);
 
-                    return $repository
-                        ->allowToUpdateBulk($request, $item)
-                        ->updateBulk(
-                            $request,
-                            $id,
-                            $row
-                        );
+                    return $repository->updateBulk($request, $id, $row);
                 });
         });
 

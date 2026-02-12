@@ -176,7 +176,7 @@ trait ValidatingTrait
         })->toArray();
 
         return Validator::make(
-            [$plainPayload] ?? $request->all(),
+            $plainPayload ?? $request->all(),
             $on->getUpdatingBulkRules($request),
             $messages
         )->after(function ($validator) use ($request) {
