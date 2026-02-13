@@ -1086,7 +1086,7 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $this->authorizeToUpdateBulk($request);
 
-        $validator = static::validatorForUpdateBulk($request, $this, $payload);
+        $validator = static::validatorForUpdateBulk($request, $this, $payload ? [$payload] : null);
 
         $validator->validate();
 

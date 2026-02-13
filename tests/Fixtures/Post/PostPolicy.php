@@ -29,8 +29,12 @@ class PostPolicy
         return $_SERVER['restify.post.update'] ?? true;
     }
 
-    public function updateBulk($user): bool
+    public function updateBulk($user, $post = null): bool
     {
+        if (isset($_SERVER['restify.post.updateBulk.callback']) && $post) {
+            return call_user_func($_SERVER['restify.post.updateBulk.callback'], $user, $post);
+        }
+
         return $_SERVER['restify.post.updateBulk'] ?? true;
     }
 

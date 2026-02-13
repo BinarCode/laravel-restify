@@ -10,7 +10,8 @@ class RepositoryUpdateBulkController extends RepositoryController
 {
     public function __invoke(RepositoryUpdateBulkRequest $request)
     {
-        $request->repository()->allowToUpdateBulk($request);
+        // Validate ALL items upfront with correct indices
+        $request->repository()::validatorForUpdateBulk($request)->validate();
 
         $collection = DB::transaction(function () use ($request) {
             return $request->collectInput()
@@ -19,8 +20,11 @@ class RepositoryUpdateBulkController extends RepositoryController
                         $id = $item['id']
                     )->lockForUpdate()->firstOrFail();
 
-                    /** * @var Repository $repository */
+                    /** @var Repository $repository */
                     $repository = $request->repositoryWith($model);
+
+                    // Authorization only (validation done upfront)
+                    $repository->authorizeToUpdateBulk($request);
 
                     return $repository->updateBulk($request, $id, $row);
                 });
