@@ -154,10 +154,12 @@ class BootMcpTools
         $tools = ToolsCollection::make();
 
         if ($repository::uriKey() === 'users') {
-            $tools->pushTool(
-                new ProfileTool($repositoryClass),
-                $repository::uriKey()
-            );
+            if (! method_exists($repository, 'canUseForProfile') || call_user_func([$repository, 'canUseForProfile'], request())) {
+                $tools->pushTool(
+                    new ProfileTool($repositoryClass),
+                    $repository::uriKey()
+                );
+            }
         }
 
         if (method_exists($repository, 'mcpAllowsIndex') && $repository->mcpAllowsIndex()) {
