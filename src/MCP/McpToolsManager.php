@@ -326,7 +326,7 @@ class McpToolsManager
         // Find the tool
         $tool = $this->repository($repositoryKey)
             ->where('type', $operationTypeEnum)
-            ->when($operationName && in_array($operationType, [OperationTypeEnum::action, OperationTypeEnum::getter]), function ($collection) use ($operationName) {
+            ->when($operationName && in_array($operationTypeEnum, [OperationTypeEnum::action, OperationTypeEnum::getter]), function ($collection) use ($operationName) {
                 return $collection->filter(function ($tool) use ($operationName) {
                     if ($tool['type'] === OperationTypeEnum::action) {
                         return $tool['action']->uriKey() === $operationName;
@@ -378,7 +378,7 @@ class McpToolsManager
         // Find the tool
         $tool = $this->repository($repositoryKey)
             ->where('type', $operationTypeEnum)
-            ->when($operationName && in_array($operationType, [OperationTypeEnum::action, OperationTypeEnum::getter]), function ($collection) use ($operationName) {
+            ->when($operationName && in_array($operationTypeEnum, [OperationTypeEnum::action, OperationTypeEnum::getter]), function ($collection) use ($operationName) {
                 return $collection->filter(function ($tool) use ($operationName) {
                     if ($tool['type'] === OperationTypeEnum::action) {
                         return $tool['action']->uriKey() === $operationName;
