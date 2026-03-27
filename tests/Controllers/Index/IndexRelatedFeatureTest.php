@@ -176,6 +176,37 @@ class IndexRelatedFeatureTest extends IntegrationTestCase
         );
     }
 
+    #[Test]
+    public function test_nested_relations_load_for_all_records_sharing_same_child(): void
+    {
+        CommentRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                BelongsTo::make('post'),
+            ]);
+
+        PostRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                BelongsTo::make('user'),
+            ]);
+
+        $post = Post::factory()->create();
+        Comment::factory()->for($post)->count(3)->create();
+
+        $this->withoutExceptionHandling()
+            ->getJson(CommentRepository::route(query: [
+                'related' => 'post.user',
+            ]))
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->has('data.0.relationships.post.relationships.user')
+                    ->has('data.1.relationships.post.relationships.user')
+                    ->has('data.2.relationships.post.relationships.user')
+                    ->etc()
+            );
+    }
+
     public function test_repository_can_resolve_related_using_callables(): void
     {
         PostRepository::$related = [
