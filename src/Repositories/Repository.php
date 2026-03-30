@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
+use Binaryk\LaravelRestify\Eager\ScopedRelatedItem;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -714,7 +715,9 @@ class Repository implements JsonSerializable, RestifySearchable
             return $repository->authorizedToShow($request);
         })->values();
 
-        $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
+        $data = $items->map(fn (self $repository) => new ScopedRelatedItem(
+            $repository->serializeForIndex($request)
+        ))->all();
 
         return $this->filter([
             'meta' => $this->when(
