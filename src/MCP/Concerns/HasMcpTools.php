@@ -2,8 +2,10 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
+
 /**
- * @mixin \Binaryk\LaravelRestify\Repositories\Repository
+ * @mixin Repository
  */
 trait HasMcpTools
 {

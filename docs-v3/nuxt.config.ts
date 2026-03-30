@@ -86,10 +86,10 @@ export default defineNuxtConfig({
     typeCheck: false
   },
 
-  // Static site generation for Vercel
+  // Static site generation for Netlify
   ssr: true,
   nitro: {
-    preset: 'vercel-static',
+    preset: 'netlify-static',
     prerender: {
       failOnError: false,
       crawlLinks: true,

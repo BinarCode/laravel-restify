@@ -4,11 +4,13 @@ namespace Binaryk\LaravelRestify\Commands;
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 
 class GraphqlGenerateCommand extends Command
@@ -152,7 +154,7 @@ class GraphqlGenerateCommand extends Command
             try {
                 if (class_exists($repositoryClass)) {
                     $repository = new $repositoryClass;
-                    $request = app(\Binaryk\LaravelRestify\Http\Requests\RestifyRequest::class);
+                    $request = app(RestifyRequest::class);
                     $fieldCollection = $repository->collectFields($request);
 
                     $sampleFields = collect($fieldCollection)->take(4);
@@ -270,7 +272,7 @@ class GraphqlGenerateCommand extends Command
         }
 
         $repository = new $repositoryClass;
-        $request = app(\Binaryk\LaravelRestify\Http\Requests\RestifyRequest::class);
+        $request = app(RestifyRequest::class);
 
         $fields = ['    id: ID!'];
 
@@ -306,7 +308,7 @@ class GraphqlGenerateCommand extends Command
         }
 
         $repository = new $repositoryClass;
-        $request = app(\Binaryk\LaravelRestify\Http\Requests\RestifyRequest::class);
+        $request = app(RestifyRequest::class);
 
         $fields = [];
 
@@ -644,13 +646,13 @@ GRAPHQL;
         };
 
         // Mock Auth facade
-        \Illuminate\Support\Facades\Auth::shouldReceive('user')
+        Auth::shouldReceive('user')
             ->andReturn($mockUser);
 
-        \Illuminate\Support\Facades\Auth::shouldReceive('check')
+        Auth::shouldReceive('check')
             ->andReturn(true);
 
-        \Illuminate\Support\Facades\Auth::shouldReceive('id')
+        Auth::shouldReceive('id')
             ->andReturn(1);
 
         request()->setUserResolver(function () use ($mockUser) {
@@ -663,11 +665,11 @@ GRAPHQL;
         });
 
         // Extend RestifyRequest to return our mock user
-        $originalMakeMethod = \Binaryk\LaravelRestify\Http\Requests\RestifyRequest::class.'::createFrom';
+        $originalMakeMethod = RestifyRequest::class.'::createFrom';
 
         // Create a custom request instance that returns our mock user
-        app()->bind(\Binaryk\LaravelRestify\Http\Requests\RestifyRequest::class, function ($app) use ($mockUser) {
-            $request = new \Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+        app()->bind(RestifyRequest::class, function ($app) use ($mockUser) {
+            $request = new RestifyRequest;
 
             // Override the user method to return our mock
             $reflection = new \ReflectionClass($request);

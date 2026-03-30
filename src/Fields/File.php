@@ -256,7 +256,7 @@ class File extends Field implements DeletableContract, StorableContract
     /**
      * Merge the specified extra file information columns into the storable attributes.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      */
     protected function mergeExtraStorageColumns($request, array $attributes): array
     {

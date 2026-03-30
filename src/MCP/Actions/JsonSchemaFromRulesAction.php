@@ -29,7 +29,7 @@ class JsonSchemaFromRulesAction
      * Convert Laravel validation rules to JSON Schema types.
      *
      * @param  JsonSchema  $schema  The JSON Schema factory instance
-     * @param  array<string, array<int, string|\Illuminate\Contracts\Validation\Rule>>  $allRules  Associative array where keys are attribute names and values are arrays of validation rules
+     * @param  array<string, array<int, string|Rule>>  $allRules  Associative array where keys are attribute names and values are arrays of validation rules
      * @return array<string, Type> Array of JSON Schema types keyed by attribute name
      */
     public function __invoke(JsonSchema $schema, array $allRules): array

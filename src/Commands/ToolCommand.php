@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Commands;
 
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\GeneratorCommand;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
 
 class ToolCommand extends GeneratorCommand
@@ -30,7 +31,7 @@ class ToolCommand extends GeneratorCommand
      * @param  string  $name
      * @return string
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     protected function buildClass($name)
     {

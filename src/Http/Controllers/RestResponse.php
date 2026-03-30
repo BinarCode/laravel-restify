@@ -10,9 +10,11 @@ use Illuminate\Contracts\Support\Arrayable;
 use Illuminate\Contracts\Support\Responsable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\AbstractPaginator;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\App;
+use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
 /**
@@ -431,8 +433,8 @@ class RestResponse extends JsonResponse implements Responsable
     }
 
     /**
-     * @param  \Illuminate\Http\Request  $request
-     * @return JsonResponse|\Symfony\Component\HttpFoundation\Response
+     * @param  Request  $request
+     * @return JsonResponse|Response
      */
     public function toResponse($request = null)
     {

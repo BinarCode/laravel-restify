@@ -4,7 +4,10 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Wrapper;
 
 use Binaryk\LaravelRestify\MCP\Concerns\WrapperToolHelpers;
 use Binaryk\LaravelRestify\MCP\McpTools;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\ValidationException;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
@@ -84,18 +87,18 @@ class ExecuteOperationTool extends Tool
             return $result;
         } catch (\InvalidArgumentException $e) {
             return Response::json($this->buildErrorResponse($e->getMessage(), 'INVALID_OPERATION'));
-        } catch (\Illuminate\Validation\ValidationException $e) {
+        } catch (ValidationException $e) {
             return Response::json([
                 'error' => 'Validation failed',
                 'code' => 'VALIDATION_ERROR',
                 'errors' => $e->errors(),
             ]);
-        } catch (\Illuminate\Auth\Access\AuthorizationException $e) {
+        } catch (AuthorizationException $e) {
             return Response::json($this->buildErrorResponse(
                 'Not authorized to perform this operation',
                 'AUTHORIZATION_ERROR'
             ));
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+        } catch (ModelNotFoundException $e) {
             return Response::json($this->buildErrorResponse(
                 'Record not found',
                 'NOT_FOUND'

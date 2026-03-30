@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Tests\Feature;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Cache;
 
@@ -107,7 +108,7 @@ class CacheIntegrationTest extends IntegrationTestCase
         Cache::flush();
 
         // Make request as different user
-        $this->authenticate(\Binaryk\LaravelRestify\Tests\Fixtures\User\User::factory()->create());
+        $this->authenticate(User::factory()->create());
         $this->getJson('/api/restify/posts');
         $keys2 = $this->getCacheKeys();
 

@@ -106,7 +106,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     /**
      * Closure be used to resolve the field's value.
      *
-     * @var \Closure
+     * @var Closure
      */
     public $resolveCallback;
 

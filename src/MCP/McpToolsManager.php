@@ -2,15 +2,19 @@
 
 namespace Binaryk\LaravelRestify\MCP;
 
+use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
 use Binaryk\LaravelRestify\MCP\Collections\ToolsCollection;
 use Binaryk\LaravelRestify\MCP\Enums\OperationTypeEnum;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\Server\Tool;
 
 /**
  * Manager class for MCP tools discovery and management.
@@ -27,11 +31,11 @@ class McpToolsManager
      *     title: string,
      *     description: string,
      *     class: string,
-     *     instance: \Laravel\Mcp\Server\Tool,
+     *     instance: Tool,
      *     repository?: string,
      *     category: string,
-     *     action?: \Binaryk\LaravelRestify\Actions\Action,
-     *     getter?: \Binaryk\LaravelRestify\Getters\Getter
+     *     action?: Action,
+     *     getter?: Getter
      * }>
      */
     protected array $discoveredTools = [];
@@ -346,7 +350,7 @@ class McpToolsManager
 
         // Check permission
         if (! $this->canUse($tool['instance'])) {
-            throw new \Illuminate\Auth\Access\AuthorizationException('Not authorized to access this operation');
+            throw new AuthorizationException('Not authorized to access this operation');
         }
 
         // Get schema from the tool instance
@@ -398,7 +402,7 @@ class McpToolsManager
 
         // Check permission before executing
         if (! $this->canUse($tool['instance'])) {
-            throw new \Illuminate\Auth\Access\AuthorizationException('Not authorized to execute this operation');
+            throw new AuthorizationException('Not authorized to execute this operation');
         }
 
         // Execute based on operation type

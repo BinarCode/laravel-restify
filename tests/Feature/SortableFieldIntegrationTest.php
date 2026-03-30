@@ -50,7 +50,7 @@ class SortableFieldIntegrationTest extends IntegrationTestCase
         // Test that field sorts have proper attributes
         $nameSort = $fieldSorts->firstWhere(fn ($sort) => $sort->column === 'name');
         $this->assertNotNull($nameSort);
-        $this->assertInstanceOf(\Binaryk\LaravelRestify\Filters\SortableFilter::class, $nameSort);
+        $this->assertInstanceOf(SortableFilter::class, $nameSort);
     }
 
     public function test_repository_static_sorts_take_precedence_over_field_sorts(): void

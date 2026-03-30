@@ -25,7 +25,7 @@ use Illuminate\Support\Facades\Facade;
  * @method static array getOperationDetails(string $repositoryKey, string $operationType, ?string $operationName = null)
  * @method static \Laravel\Mcp\Response executeOperation(string $repositoryKey, string $operationType, ?string $operationName, array $parameters)
  *
- * @see \Binaryk\LaravelRestify\MCP\McpToolsManager
+ * @see McpToolsManager
  */
 class McpTools extends Facade
 {
