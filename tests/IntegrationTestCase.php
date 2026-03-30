@@ -30,6 +30,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
@@ -218,7 +219,7 @@ abstract class IntegrationTestCase extends TestCase
      */
     protected function clearRepositoryCache(): self
     {
-        \Illuminate\Support\Facades\Cache::flush();
+        Cache::flush();
 
         return $this;
     }

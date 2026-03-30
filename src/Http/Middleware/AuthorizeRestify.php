@@ -4,15 +4,17 @@ namespace Binaryk\LaravelRestify\Http\Middleware;
 
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 
 class AuthorizeRestify
 {
     /**
      * Handle the incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @param  \Closure  $next
-     * @return \Illuminate\Http\Response
+     * @return Response
      *
      * @throws UnauthorizedException
      */

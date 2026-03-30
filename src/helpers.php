@@ -1,12 +1,14 @@
 <?php
 
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
 use Binaryk\LaravelRestify\Repositories\Serializer;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 
 if (! function_exists('field')) {
     function field(...$args): Field
@@ -153,8 +155,8 @@ if (! function_exists('mcpSchema')) {
      */
     function mcpSchema(array $rules): array
     {
-        $converter = new \Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
-        $schema = new \Illuminate\JsonSchema\JsonSchemaTypeFactory;
+        $converter = new JsonSchemaFromRulesAction;
+        $schema = new JsonSchemaTypeFactory;
 
         return $converter($schema, $rules);
     }

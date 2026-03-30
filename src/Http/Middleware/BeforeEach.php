@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Http\Middleware;
 
 use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Closure;
+use Illuminate\Http\Request;
 
 /**
  * @author Eduard Lupacescu <eduard.lupacescu@binarcode.com>
@@ -13,7 +14,7 @@ class BeforeEach
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return mixed
      */
     public function handle($request, Closure $next)

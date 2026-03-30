@@ -5,11 +5,12 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\UploadedFile;
 use Illuminate\JsonSchema\JsonSchema;
 
 /**
- * @mixin \Binaryk\LaravelRestify\Repositories\Repository
+ * @mixin Repository
  */
 trait McpStoreTool
 {

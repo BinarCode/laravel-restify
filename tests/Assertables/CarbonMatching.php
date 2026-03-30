@@ -12,7 +12,7 @@ trait CarbonMatching
     /**
      * Asserts that the property matches the Carbon date.
      *
-     * @param  mixed|\Closure  $expected
+     * @param  mixed|Closure  $expected
      * @return $this
      */
     public function whereDate(string $key, CarbonInterface $expected): self

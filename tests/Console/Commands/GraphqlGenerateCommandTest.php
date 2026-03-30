@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Console\Commands;
 
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Filesystem\Filesystem;
 
@@ -93,8 +94,8 @@ class GraphqlGenerateCommandTest extends IntegrationTestCase
     public function test_fails_gracefully_when_no_repositories_found(): void
     {
         // Temporarily modify the repositories array to simulate no repositories
-        $originalRepositories = \Binaryk\LaravelRestify\Restify::$repositories;
-        \Binaryk\LaravelRestify\Restify::$repositories = [];
+        $originalRepositories = Restify::$repositories;
+        Restify::$repositories = [];
 
         $outputPath = base_path('tests/temp/GraphQL');
 
@@ -109,7 +110,7 @@ class GraphqlGenerateCommandTest extends IntegrationTestCase
             ->assertExitCode(1);
 
         // Restore original repositories
-        \Binaryk\LaravelRestify\Restify::$repositories = $originalRepositories;
+        Restify::$repositories = $originalRepositories;
     }
 
     public function test_can_use_custom_schema_file_name(): void

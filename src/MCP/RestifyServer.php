@@ -133,7 +133,7 @@ class RestifyServer extends Server
     /**
      * The resources registered with this MCP server.
      *
-     * @var array<int, class-string<\Laravel\Mcp\Server\Resource>>
+     * @var array<int, class-string<Server\Resource>>
      */
     protected array $resources = [
         ApplicationInfo::class,
@@ -199,7 +199,7 @@ class RestifyServer extends Server
     }
 
     /**
-     * @return array<int, class-string<\Laravel\Mcp\Server\Resource>>
+     * @return array<int, class-string<Server\Resource>>
      */
     protected function discoverResources(): array
     {

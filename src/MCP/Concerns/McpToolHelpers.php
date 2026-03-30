@@ -6,7 +6,7 @@ use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
 /**
- * @mixin \Binaryk\LaravelRestify\Repositories\Repository
+ * @mixin Repository
  */
 trait McpToolHelpers
 {

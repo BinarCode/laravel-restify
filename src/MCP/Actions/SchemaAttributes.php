@@ -6,8 +6,13 @@ use DateTime;
 use DateTimeInterface;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\JsonSchema\Types\ArrayType;
+use Illuminate\JsonSchema\Types\BooleanType;
+use Illuminate\JsonSchema\Types\IntegerType;
+use Illuminate\JsonSchema\Types\NumberType;
 use Illuminate\JsonSchema\Types\StringType;
+use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Exceptions\MathException;
 use Illuminate\Support\Facades\Date;
@@ -24,8 +29,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute was "accepted".
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateAccepted(string $attribute, $schema, array $parameters)
     {
@@ -49,8 +54,8 @@ trait SchemaAttributes
      *
      * This validation rule implies the attribute is "required".
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDeclined(string $attribute, $schema, array $parameters)
     {
@@ -60,8 +65,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute was "declined" when another attribute has a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDeclinedIf(string $attribute, $schema, array $parameters)
     {
@@ -71,8 +76,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is an active URL.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateActiveUrl(string $attribute, $schema, array $parameters)
     {
@@ -94,8 +99,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is 7 bit ASCII.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateAscii(string $attribute, $schema, array $parameters)
     {
@@ -107,8 +112,8 @@ trait SchemaAttributes
      *
      * Always returns true, just lets us put "bail" in rules.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateBail(string $attribute, $schema, array $parameters)
     {
@@ -118,8 +123,8 @@ trait SchemaAttributes
     /**
      * Validate the date is before a given date.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateBefore(string $attribute, $schema, array $parameters)
     {
@@ -135,8 +140,8 @@ trait SchemaAttributes
     /**
      * Validate the date is before or equal a given date.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateBeforeOrEqual(string $attribute, $schema, array $parameters)
     {
@@ -152,8 +157,8 @@ trait SchemaAttributes
     /**
      * Validate the date is after a given date.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateAfter(string $attribute, $schema, array $parameters)
     {
@@ -169,8 +174,8 @@ trait SchemaAttributes
     /**
      * Validate the date is equal or after a given date.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateAfterOrEqual(string $attribute, $schema, array $parameters)
     {
@@ -266,7 +271,7 @@ trait SchemaAttributes
      *
      * @param  string  $format
      * @param  string  $value
-     * @return \DateTime|null
+     * @return DateTime|null
      */
     protected function getDateTimeWithOptionalFormat($format, $value)
     {
@@ -281,7 +286,7 @@ trait SchemaAttributes
      * Get a DateTime instance from a string with no format.
      *
      * @param  string  $value
-     * @return \DateTime|null
+     * @return DateTime|null
      */
     protected function getDateTime($value)
     {
@@ -295,8 +300,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute contains only alphabetic characters.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateAlpha(string $attribute, $schema, array $parameters)
     {
@@ -312,8 +317,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute contains only alpha-numeric characters, dashes, and underscores.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateAlphaDash(string $attribute, $schema, array $parameters)
     {
@@ -329,8 +334,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute contains only alpha-numeric characters.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateAlphaNum(string $attribute, $schema, array $parameters)
     {
@@ -346,8 +351,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is an array.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateArray(string $attribute, $schema, array $parameters)
     {
@@ -363,8 +368,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a list.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateList(string $attribute, $schema, array $parameters)
     {
@@ -374,8 +379,8 @@ trait SchemaAttributes
     /**
      * Validate that an array has all of the given keys.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequiredArrayKeys(string $attribute, $schema, array $parameters)
     {
@@ -385,8 +390,8 @@ trait SchemaAttributes
     /**
      * Validate the size of an attribute is between a set of values.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateBetween(string $attribute, $schema, array $parameters)
     {
@@ -404,14 +409,14 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a boolean.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateBoolean(string $attribute, $schema, array $parameters)
     {
         $existing = $this->rulesSchema[$attribute] ?? null;
 
-        if ($existing instanceof \Illuminate\JsonSchema\Types\BooleanType) {
+        if ($existing instanceof BooleanType) {
             return $existing;
         }
 
@@ -421,8 +426,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute has a matching confirmation.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateConfirmed(string $attribute, $schema, array $parameters)
     {
@@ -432,8 +437,8 @@ trait SchemaAttributes
     /**
      * Validate an attribute contains a list of values.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateContains(string $attribute, $schema, array $parameters)
     {
@@ -451,8 +456,8 @@ trait SchemaAttributes
     /**
      * Validate an attribute does not contain a list of values.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDoesntContain(string $attribute, $schema, array $parameters)
     {
@@ -492,8 +497,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid date.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDate(string $attribute, $schema, array $parameters)
     {
@@ -509,8 +514,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute matches a date format.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDateFormat(string $attribute, $schema, array $parameters)
     {
@@ -531,8 +536,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is equal to another date.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDateEquals(string $attribute, $schema, array $parameters)
     {
@@ -548,8 +553,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute has a given number of decimal places.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDecimal(string $attribute, $schema, array $parameters)
     {
@@ -559,8 +564,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is different from another attribute.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDifferent(string $attribute, $schema, array $parameters)
     {
@@ -570,8 +575,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute has a given number of digits.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDigits(string $attribute, $schema, array $parameters)
     {
@@ -581,8 +586,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is between a given number of digits.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDigitsBetween(string $attribute, $schema, array $parameters)
     {
@@ -592,8 +597,8 @@ trait SchemaAttributes
     /**
      * Validate the dimensions of an image matches the given values.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDimensions(string $attribute, $schema, array $parameters)
     {
@@ -686,8 +691,8 @@ trait SchemaAttributes
     /**
      * Validate an attribute is unique among other values.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDistinct(string $attribute, $schema, array $parameters)
     {
@@ -737,8 +742,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid e-mail address.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateEmail(string $attribute, $schema, array $parameters)
     {
@@ -754,8 +759,8 @@ trait SchemaAttributes
     /**
      * Validate the existence of an attribute value in a database table.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateExists(string $attribute, $schema, array $parameters)
     {
@@ -794,8 +799,8 @@ trait SchemaAttributes
     /**
      * Validate the uniqueness of an attribute value on a given database table.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateUnique(string $attribute, $schema, array $parameters)
     {
@@ -933,8 +938,8 @@ trait SchemaAttributes
     /**
      * Validate the extension of a file upload attribute is in a set of defined extensions.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateExtensions(string $attribute, $schema, array $parameters)
     {
@@ -944,8 +949,8 @@ trait SchemaAttributes
     /**
      * Validate the given value is a valid file.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateFile(string $attribute, $schema, array $parameters)
     {
@@ -961,8 +966,8 @@ trait SchemaAttributes
     /**
      * Validate the given attribute is filled if it is present.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateFilled(string $attribute, $schema, array $parameters)
     {
@@ -972,8 +977,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is greater than another attribute.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateGt(string $attribute, $schema, array $parameters)
     {
@@ -983,8 +988,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is less than another attribute.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateLt(string $attribute, $schema, array $parameters)
     {
@@ -994,8 +999,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is greater than or equal another attribute.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateGte(string $attribute, $schema, array $parameters)
     {
@@ -1005,8 +1010,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is less than or equal another attribute.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateLte(string $attribute, $schema, array $parameters)
     {
@@ -1016,8 +1021,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is lowercase.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateLowercase(string $attribute, $schema, array $parameters)
     {
@@ -1027,8 +1032,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is uppercase.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateUppercase(string $attribute, $schema, array $parameters)
     {
@@ -1038,8 +1043,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid HEX color.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateHexColor(string $attribute, $schema, array $parameters)
     {
@@ -1049,8 +1054,8 @@ trait SchemaAttributes
     /**
      * Validate the MIME type of a file is an image MIME type.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateImage(string $attribute, $schema, array $parameters)
     {
@@ -1066,8 +1071,8 @@ trait SchemaAttributes
     /**
      * Validate an attribute is contained within a list of values.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateIn(string $attribute, $schema, array $parameters)
     {
@@ -1085,8 +1090,8 @@ trait SchemaAttributes
     /**
      * Validate that the values of an attribute are in another attribute.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateInArray(string $attribute, $schema, array $parameters)
     {
@@ -1102,8 +1107,8 @@ trait SchemaAttributes
     /**
      * Validate that an array has at least one of the given keys.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateInArrayKeys(string $attribute, $schema, array $parameters)
     {
@@ -1113,14 +1118,14 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is an integer.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateInteger(string $attribute, $schema, array $parameters)
     {
         $existing = $this->rulesSchema[$attribute] ?? null;
 
-        if ($existing instanceof \Illuminate\JsonSchema\Types\IntegerType) {
+        if ($existing instanceof IntegerType) {
             return $existing;
         }
 
@@ -1130,8 +1135,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid IP.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateIp(string $attribute, $schema, array $parameters)
     {
@@ -1147,8 +1152,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid IPv4.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateIpv4(string $attribute, $schema, array $parameters)
     {
@@ -1164,8 +1169,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid IPv6.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateIpv6(string $attribute, $schema, array $parameters)
     {
@@ -1181,8 +1186,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid MAC address.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMacAddress(string $attribute, $schema, array $parameters)
     {
@@ -1198,8 +1203,8 @@ trait SchemaAttributes
     /**
      * Validate the attribute is a valid JSON string.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateJson(string $attribute, $schema, array $parameters)
     {
@@ -1215,8 +1220,8 @@ trait SchemaAttributes
     /**
      * Validate the size of an attribute is less than or equal to a maximum value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMax(string $attribute, $schema, array $parameters)
     {
@@ -1238,8 +1243,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute has a maximum number of digits.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMaxDigits(string $attribute, $schema, array $parameters)
     {
@@ -1249,8 +1254,8 @@ trait SchemaAttributes
     /**
      * Validate the guessed extension of a file upload is in a set of file extensions.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMimes(string $attribute, $schema, array $parameters)
     {
@@ -1272,8 +1277,8 @@ trait SchemaAttributes
     /**
      * Validate the MIME type of a file upload attribute is in a set of MIME types.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMimetypes(string $attribute, $schema, array $parameters)
     {
@@ -1317,8 +1322,8 @@ trait SchemaAttributes
     /**
      * Validate the size of an attribute is greater than or equal to a minimum value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMin(string $attribute, $schema, array $parameters)
     {
@@ -1340,8 +1345,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute has a minimum number of digits.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMinDigits(string $attribute, $schema, array $parameters)
     {
@@ -1351,8 +1356,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is missing.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMissing(string $attribute, $schema, array $parameters)
     {
@@ -1362,8 +1367,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is missing when another attribute has a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMissingIf(string $attribute, $schema, array $parameters)
     {
@@ -1373,8 +1378,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is missing unless another attribute has a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMissingUnless(string $attribute, $schema, array $parameters)
     {
@@ -1384,8 +1389,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is missing when any given attribute is present.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMissingWith(string $attribute, $schema, array $parameters)
     {
@@ -1395,8 +1400,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is missing when all given attributes are present.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMissingWithAll(string $attribute, $schema, array $parameters)
     {
@@ -1406,8 +1411,8 @@ trait SchemaAttributes
     /**
      * Validate the value of an attribute is a multiple of a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateMultipleOf(string $attribute, $schema, array $parameters)
     {
@@ -1417,8 +1422,8 @@ trait SchemaAttributes
     /**
      * "Indicate" validation should pass if value is null.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateNullable(string $attribute, $schema, array $parameters)
     {
@@ -1430,8 +1435,8 @@ trait SchemaAttributes
     /**
      * Validate an attribute is not contained within a list of values.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateNotIn(string $attribute, $schema, array $parameters)
     {
@@ -1441,14 +1446,14 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is numeric.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateNumeric(string $attribute, $schema, array $parameters)
     {
         $existing = $this->rulesSchema[$attribute] ?? null;
 
-        if ($existing instanceof \Illuminate\JsonSchema\Types\NumberType) {
+        if ($existing instanceof NumberType) {
             return $existing;
         }
 
@@ -1464,8 +1469,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists even if not filled.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validatePresent(string $attribute, $schema, array $parameters)
     {
@@ -1475,8 +1480,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is present when another attribute has a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validatePresentIf(string $attribute, $schema, array $parameters)
     {
@@ -1486,8 +1491,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is present unless another attribute has a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validatePresentUnless(string $attribute, $schema, array $parameters)
     {
@@ -1497,8 +1502,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is present when any given attribute is present.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validatePresentWith(string $attribute, $schema, array $parameters)
     {
@@ -1508,8 +1513,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is present when all given attributes are present.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validatePresentWithAll(string $attribute, $schema, array $parameters)
     {
@@ -1519,8 +1524,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute passes a regular expression check.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRegex(string $attribute, $schema, array $parameters)
     {
@@ -1530,8 +1535,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute does not pass a regular expression check.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateNotRegex(string $attribute, $schema, array $parameters)
     {
@@ -1541,8 +1546,8 @@ trait SchemaAttributes
     /**
      * Validate that a required attribute exists.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequired(string $attribute, $schema, array $parameters)
     {
@@ -1556,8 +1561,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when another attribute has a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequiredIf(string $attribute, $schema, array $parameters)
     {
@@ -1567,8 +1572,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when another attribute was "accepted".
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequiredIfAccepted(string $attribute, $schema, array $parameters)
     {
@@ -1578,8 +1583,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when another attribute was "declined".
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequiredIfDeclined(string $attribute, $schema, array $parameters)
     {
@@ -1589,8 +1594,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute does not exist or is an empty string.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateProhibited(string $attribute, $schema, array $parameters)
     {
@@ -1600,8 +1605,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute does not exist when another attribute has a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateProhibitedIf(string $attribute, $schema, array $parameters)
     {
@@ -1611,8 +1616,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute does not exist when another attribute was "accepted".
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateProhibitedIfAccepted(string $attribute, $schema, array $parameters)
     {
@@ -1622,8 +1627,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute does not exist when another attribute was "declined".
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateProhibitedIfDeclined(string $attribute, $schema, array $parameters)
     {
@@ -1633,8 +1638,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute does not exist unless another attribute has a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateProhibitedUnless(string $attribute, $schema, array $parameters)
     {
@@ -1644,8 +1649,8 @@ trait SchemaAttributes
     /**
      * Validate that other attributes do not exist when this attribute exists.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateProhibits(string $attribute, $schema, array $parameters)
     {
@@ -1655,8 +1660,8 @@ trait SchemaAttributes
     /**
      * Indicate that an attribute is excluded.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateExclude(string $attribute, $schema, array $parameters)
     {
@@ -1666,8 +1671,8 @@ trait SchemaAttributes
     /**
      * Indicate that an attribute should be excluded when another attribute has a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateExcludeIf(string $attribute, $schema, array $parameters)
     {
@@ -1677,8 +1682,8 @@ trait SchemaAttributes
     /**
      * Indicate that an attribute should be excluded when another attribute does not have a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateExcludeUnless(string $attribute, $schema, array $parameters)
     {
@@ -1688,8 +1693,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when another attribute does not have a given value.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequiredUnless(string $attribute, $schema, array $parameters)
     {
@@ -1699,8 +1704,8 @@ trait SchemaAttributes
     /**
      * Indicate that an attribute should be excluded when another attribute presents.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateExcludeWith(string $attribute, $schema, array $parameters)
     {
@@ -1710,8 +1715,8 @@ trait SchemaAttributes
     /**
      * Indicate that an attribute should be excluded when another attribute is missing.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateExcludeWithout(string $attribute, $schema, array $parameters)
     {
@@ -1787,8 +1792,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when any other attribute exists.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequiredWith(string $attribute, $schema, array $parameters)
     {
@@ -1798,8 +1803,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when all other attributes exist.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequiredWithAll(string $attribute, $schema, array $parameters)
     {
@@ -1809,8 +1814,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when another attribute does not.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequiredWithout(string $attribute, $schema, array $parameters)
     {
@@ -1820,8 +1825,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute exists when all other attributes do not.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateRequiredWithoutAll(string $attribute, $schema, array $parameters)
     {
@@ -1863,8 +1868,8 @@ trait SchemaAttributes
     /**
      * Validate that two attributes match.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateSame(string $attribute, $schema, array $parameters)
     {
@@ -1880,8 +1885,8 @@ trait SchemaAttributes
     /**
      * Validate the size of an attribute.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateSize(string $attribute, $schema, array $parameters)
     {
@@ -1899,8 +1904,8 @@ trait SchemaAttributes
     /**
      * "Validate" optional attributes.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateSometimes(string $attribute, $schema, array $parameters)
     {
@@ -1910,8 +1915,8 @@ trait SchemaAttributes
     /**
      * Validate the attribute starts with a given substring (schema version).
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateStartsWith(string $attribute, $schema, array $parameters)
     {
@@ -1929,8 +1934,8 @@ trait SchemaAttributes
     /**
      * Validate the attribute does not start with a given substring (schema version).
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDoesntStartWith(string $attribute, $schema, array $parameters)
     {
@@ -1948,8 +1953,8 @@ trait SchemaAttributes
     /**
      * Validate the attribute ends with a given substring (schema version).
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateEndsWith(string $attribute, $schema, array $parameters)
     {
@@ -1967,8 +1972,8 @@ trait SchemaAttributes
     /**
      * Validate the attribute does not end with a given substring (schema version).
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateDoesntEndWith(string $attribute, $schema, array $parameters)
     {
@@ -1986,8 +1991,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a string.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateString(string $attribute, $schema, array $parameters)
     {
@@ -2009,8 +2014,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid timezone.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateTimezone(string $attribute, $schema, array $parameters)
     {
@@ -2026,8 +2031,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid URL.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateUrl(string $attribute, $schema, array $parameters)
     {
@@ -2043,8 +2048,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid ULID.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateUlid(string $attribute, $schema, array $parameters)
     {
@@ -2060,8 +2065,8 @@ trait SchemaAttributes
     /**
      * Validate that an attribute is a valid UUID.
      *
-     * @param  \Illuminate\JsonSchema\JsonSchema  $schema
-     * @return \Illuminate\JsonSchema\Types\Type
+     * @param  JsonSchema  $schema
+     * @return Type
      */
     public function validateUuid(string $attribute, $schema, array $parameters)
     {
@@ -2123,7 +2128,7 @@ trait SchemaAttributes
      * @param  string  $operator
      * @return bool
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     protected function compare($first, $second, $operator)
     {
@@ -2162,7 +2167,7 @@ trait SchemaAttributes
      * @param  string  $rule
      * @return void
      *
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      */
     public function requireParameterCount($count, $parameters, $rule)
     {
@@ -2215,7 +2220,7 @@ trait SchemaAttributes
      * @param  mixed  $value
      * @return mixed
      *
-     * @throws \Illuminate\Support\Exceptions\MathException
+     * @throws MathException
      */
     protected function ensureExponentWithinAllowedRange($attribute, $value)
     {

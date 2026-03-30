@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Repositories\Concerns;
 
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Contracts\Foundation\Application;
 use Mockery;
 use Mockery\MockInterface;
 use RuntimeException;
@@ -12,7 +13,7 @@ trait Mockable
     /**
      * The application instance being repository.
      *
-     * @var \Illuminate\Contracts\Foundation\Application
+     * @var Application
      */
     protected static $app;
 
@@ -26,7 +27,7 @@ trait Mockable
     /**
      * Initiate a partial mock on the facade.
      *
-     * @return \Mockery\MockInterface
+     * @return MockInterface
      */
     public static function partialMock()
     {
@@ -42,7 +43,7 @@ trait Mockable
     /**
      * Create a fresh mock instance for the given class.
      *
-     * @return \Mockery\MockInterface
+     * @return MockInterface
      */
     protected static function createFreshMockInstance()
     {
@@ -73,7 +74,7 @@ trait Mockable
     /**
      * Create a fresh mock instance for the given class.
      *
-     * @return \Mockery\MockInterface
+     * @return MockInterface
      */
     protected static function createMock()
     {
@@ -106,7 +107,7 @@ trait Mockable
     /**
      * Set the application instance.
      *
-     * @param  \Illuminate\Contracts\Foundation\Application  $app
+     * @param  Application  $app
      * @return void
      */
     public static function setApplication($app)

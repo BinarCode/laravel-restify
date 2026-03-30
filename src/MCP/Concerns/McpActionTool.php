@@ -4,10 +4,11 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\JsonSchema\JsonSchema;
 
 /**
- * @mixin \Binaryk\LaravelRestify\Repositories\Repository
+ * @mixin Repository
  */
 trait McpActionTool
 {

@@ -5,17 +5,18 @@ namespace Binaryk\LaravelRestify\Http\Middleware;
 use Closure;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Middleware\Authenticate as BaseAuthenticationMiddleware;
+use Illuminate\Http\Request;
 
 class RestifySanctumAuthenticate extends BaseAuthenticationMiddleware
 {
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @param  string[]  ...$guards
      * @return mixed
      *
-     * @throws \Illuminate\Auth\AuthenticationException
+     * @throws AuthenticationException
      */
     public function handle($request, Closure $next, ...$guards)
     {
