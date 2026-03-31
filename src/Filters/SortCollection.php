@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
@@ -107,6 +108,15 @@ class SortCollection extends Collection
         return $this
             ->each(fn (SortableFilter $filter) => $filter->syncDirection())
             ->map(fn (SortableFilter $filter) => $filter->resolveFrontendColumn());
+    }
+
+    public function qualifyColumns(Model $model): self
+    {
+        return $this->each(function (SortableFilter $filter) use ($model) {
+            if ($filter->column() && ! str_contains($filter->column(), '.')) {
+                $filter->setColumn($model->qualifyColumn($filter->column()));
+            }
+        });
     }
 
     public function apply(RestifyRequest $request, Builder $builder): self

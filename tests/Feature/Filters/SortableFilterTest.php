@@ -2,13 +2,17 @@
 
 namespace Binaryk\LaravelRestify\Tests\Feature\Filters;
 
+use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Filters\Sorts\NaturalSortFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
 
 class SortableFilterTest extends IntegrationTestCase
 {
@@ -108,5 +112,48 @@ class SortableFilterTest extends IntegrationTestCase
 
         $this->assertSame('Ana', $this->getJson(UserRepository::route(query: ['sort' => 'name']))
             ->json('data.0.attributes.name'));
+    }
+
+    public function test_sort_qualifies_column_when_searchable_belongs_to_joins_exist(): void
+    {
+        PostRepository::$related = [
+            'user' => BelongsTo::make('user', UserRepository::class)->searchable([
+                'users.name',
+            ]),
+        ];
+
+        PostRepository::$sort = [
+            'id',
+        ];
+
+        $user = User::factory()->create(['name' => 'John']);
+
+        Post::factory()
+            ->count(2)
+            ->sequence(
+                ['title' => 'First Post'],
+                ['title' => 'Second Post'],
+            )
+            ->create(['user_id' => $user->id]);
+
+        DB::enableQueryLog();
+
+        $this->getJson(PostRepository::route(query: [
+            'sort' => 'id',
+            'search' => 'John',
+        ]))->assertOk();
+
+        $queries = DB::getQueryLog();
+
+        $orderQuery = collect($queries)->first(
+            static fn (array $query) => str_contains($query['query'], 'order by')
+        );
+
+        $this->assertNotNull($orderQuery, 'Expected a query with ORDER BY clause');
+        $this->assertStringContainsString(
+            'order by "posts"."id"',
+            $orderQuery['query'],
+            'Sort column should be qualified with table name to prevent ambiguity when joins are present'
+        );
     }
 }
