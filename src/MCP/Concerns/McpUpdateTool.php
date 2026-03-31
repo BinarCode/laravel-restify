@@ -4,11 +4,12 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\MCP\Requests\McpUpdateRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Validation\ValidationException;
 
 /**
- * @mixin \Binaryk\LaravelRestify\Repositories\Repository
+ * @mixin Repository
  */
 trait McpUpdateTool
 {

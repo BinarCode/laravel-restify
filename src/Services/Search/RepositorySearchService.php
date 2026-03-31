@@ -105,7 +105,20 @@ class RepositorySearchService
             true,
         ))->filter(function ($relation) use ($query) {
             try {
-                return $query->getRelation($relation) instanceof Relation;
+                $segments = explode('.', $relation);
+                $currentQuery = $query;
+
+                foreach ($segments as $segment) {
+                    $rel = $currentQuery->getRelation($segment);
+
+                    if (! $rel instanceof Relation) {
+                        return false;
+                    }
+
+                    $currentQuery = $rel->getRelated()->newQuery();
+                }
+
+                return true;
             } catch (Throwable) {
                 return false;
             }

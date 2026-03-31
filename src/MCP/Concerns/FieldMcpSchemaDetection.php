@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\File;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
@@ -13,7 +14,7 @@ use Illuminate\JsonSchema\Types\NumberType;
 use Illuminate\JsonSchema\Types\Type;
 
 /**
- * @mixin \Binaryk\LaravelRestify\Fields\Field
+ * @mixin Field
  */
 trait FieldMcpSchemaDetection
 {

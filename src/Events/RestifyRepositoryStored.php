@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Events;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Queue\SerializesModels;
 
 class RestifyRepositoryStored
@@ -9,7 +10,7 @@ class RestifyRepositoryStored
     use SerializesModels;
 
     /**
-     * @var \Illuminate\Database\Eloquent\Model
+     * @var Model
      */
     public $model;
 

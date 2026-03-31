@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
+use Binaryk\LaravelRestify\Eager\ScopedRelatedItem;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
@@ -30,6 +31,7 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
+use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
@@ -714,7 +716,9 @@ class Repository implements JsonSerializable, RestifySearchable
             return $repository->authorizedToShow($request);
         })->values();
 
-        $data = $items->map(fn (self $repository) => $repository->serializeForIndex($request));
+        $data = $items->map(fn (self $repository) => new ScopedRelatedItem(
+            $repository->serializeForIndex($request)
+        ))->all();
 
         return $this->filter([
             'meta' => $this->when(
@@ -1086,7 +1090,7 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $this->authorizeToUpdateBulk($request);
 
-        $validator = static::validatorForUpdateBulk($request, $this, $payload);
+        $validator = static::validatorForUpdateBulk($request, $this, $payload ? [$payload] : null);
 
         $validator->validate();
 
@@ -1132,7 +1136,7 @@ class Repository implements JsonSerializable, RestifySearchable
     /**
      * @return $this
      *
-     * @throws \Illuminate\Auth\Access\AuthorizationException
+     * @throws AuthorizationException
      */
     public function allowToShow($request): self
     {

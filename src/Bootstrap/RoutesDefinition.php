@@ -2,9 +2,32 @@
 
 namespace Binaryk\LaravelRestify\Bootstrap;
 
+use Binaryk\LaravelRestify\Http\Controllers\FieldDestroyController;
 use Binaryk\LaravelRestify\Http\Controllers\GlobalSearchController;
+use Binaryk\LaravelRestify\Http\Controllers\ListActionsController;
+use Binaryk\LaravelRestify\Http\Controllers\ListGettersController;
+use Binaryk\LaravelRestify\Http\Controllers\ListRepositoryActionsController;
+use Binaryk\LaravelRestify\Http\Controllers\ListRepositoryGettersController;
+use Binaryk\LaravelRestify\Http\Controllers\PerformActionController;
+use Binaryk\LaravelRestify\Http\Controllers\PerformGetterController;
+use Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController;
+use Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryGetterController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryApplyFiltersController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryAttachController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyBulkController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryDetachController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryFilterController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryPatchController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreBulkController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositorySyncController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController;
 use Binaryk\LaravelRestify\Http\Controllers\RestifyJsSetupController;
 use Illuminate\Support\Facades\Route;
 
@@ -19,98 +42,98 @@ class RoutesDefinition
         // Filters
         Route::get(
             $prefix.'/filters',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryFilterController::class
+            RepositoryFilterController::class
         )->name('filters.index');
 
         Route::post(
             $prefix.'/apply-restify-advanced-filters',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryApplyFiltersController::class
+            RepositoryApplyFiltersController::class
         )->name('filters.apply');
 
         // Actions
         Route::get(
             $prefix.'/actions',
-            \Binaryk\LaravelRestify\Http\Controllers\ListActionsController::class
+            ListActionsController::class
         )->name('actions.index');
         Route::get(
             $prefix.'/{repositoryId}/actions',
-            \Binaryk\LaravelRestify\Http\Controllers\ListRepositoryActionsController::class
+            ListRepositoryActionsController::class
         )->name('actions.repository.index');
         Route::post(
             $prefix.'/action',
-            \Binaryk\LaravelRestify\Http\Controllers\PerformActionController::class
+            PerformActionController::class
         )->name('actions.perform');
         Route::post(
             $prefix.'/actions',
-            \Binaryk\LaravelRestify\Http\Controllers\PerformActionController::class
+            PerformActionController::class
         )->name('actions.performs'); // alias to the previous route
         Route::post(
             $prefix.'/{repositoryId}/action',
-            \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController::class
+            PerformRepositoryActionController::class
         )->name('actions.repository.perform');
         Route::post(
             $prefix.'/{repositoryId}/actions',
-            \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController::class
+            PerformRepositoryActionController::class
         )->name('actions.repository.performs'); // alias to the previous route
 
         // Getters
         Route::get(
             $prefix.'/getters',
-            \Binaryk\LaravelRestify\Http\Controllers\ListGettersController::class
+            ListGettersController::class
         )->name('getters.index')->withoutMiddleware($this->excludedMiddleware);
         Route::get(
             $prefix.'/{repositoryId}/getters',
-            \Binaryk\LaravelRestify\Http\Controllers\ListRepositoryGettersController::class
+            ListRepositoryGettersController::class
         )->name('getters.repository.index')->withoutMiddleware($this->excludedMiddleware);
         Route::get(
             $prefix.'/getters/{getter}',
-            \Binaryk\LaravelRestify\Http\Controllers\PerformGetterController::class
+            PerformGetterController::class
         )->name('getters.perform')->withoutMiddleware($this->excludedMiddleware);
         Route::get(
             $prefix.'/{repositoryId}/getters/{getter}',
-            \Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryGetterController::class
+            PerformRepositoryGetterController::class
         )->name('getters.repository.perform')->withoutMiddleware($this->excludedMiddleware);
 
         // API CRUD
         Route::get(
             $prefix.'',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class
+            RepositoryIndexController::class
         )->name('index')->withoutMiddleware($this->excludedMiddleware);
         Route::post(
             $prefix.'',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class
+            RepositoryStoreController::class
         )->name('store');
         Route::post(
             $prefix.'/bulk',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreBulkController::class
+            RepositoryStoreBulkController::class
         )->name('store.bulk');
         Route::post(
             $prefix.'/bulk/update',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateBulkController::class
+            RepositoryUpdateBulkController::class
         )->name('update.bulk');
         Route::delete(
             $prefix.'/bulk/delete',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyBulkController::class
+            RepositoryDestroyBulkController::class
         )->name('destroy.bulk');
         Route::get(
             $prefix.'/{repositoryId}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class
+            RepositoryShowController::class
         )->name('show')->withoutMiddleware($this->excludedMiddleware);
         Route::patch(
             $prefix.'/{repositoryId}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryPatchController::class
+            RepositoryPatchController::class
         )->name('patch');
         Route::put(
             $prefix.'/{repositoryId}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class
+            RepositoryUpdateController::class
         )->name('put');
         Route::post(
             $prefix.'/{repositoryId}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class
+            RepositoryUpdateController::class
         )->name('update');
         Route::delete(
             $prefix.'/{repositoryId}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController::class
+            RepositoryDestroyController::class
         )->name('destroy');
 
         if ($uriKey) {
@@ -120,47 +143,47 @@ class RoutesDefinition
         // Fields
         Route::delete(
             $prefix.'/{repositoryId}/field/{field}',
-            \Binaryk\LaravelRestify\Http\Controllers\FieldDestroyController::class
+            FieldDestroyController::class
         )->name('field.destroy');
 
         // Attach related repository id
         Route::post(
             $prefix.'/{repositoryId}/attach/{relatedRepository}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryAttachController::class
+            RepositoryAttachController::class
         )->name('attach');
         Route::post(
             $prefix.'/{repositoryId}/detach/{relatedRepository}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryDetachController::class
+            RepositoryDetachController::class
         )->name('detach');
         Route::post(
             $prefix.'/{repositoryId}/sync/{relatedRepository}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositorySyncController::class
+            RepositorySyncController::class
         )->name('sync');
 
         // Relatable
         Route::get(
             '/{parentRepository}/{parentRepositoryId}/{repository}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryIndexController::class
+            RepositoryIndexController::class
         )->name('relatable.index');
         Route::post(
             '/{parentRepository}/{parentRepositoryId}/{repository}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryStoreController::class
+            RepositoryStoreController::class
         )->name('relatable.store');
         Route::get(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryShowController::class
+            RepositoryShowController::class
         )->name('relatable.show');
         Route::post(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class
+            RepositoryUpdateController::class
         )->name('relatable.update');
         Route::put(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryUpdateController::class
+            RepositoryUpdateController::class
         )->name('relatable.updatePut');
         Route::delete(
             '/{parentRepository}/{parentRepositoryId}/{repository}/{repositoryId}',
-            \Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyController::class
+            RepositoryDestroyController::class
         )->name('relatable.destroy');
     }
 

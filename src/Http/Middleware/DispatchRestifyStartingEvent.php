@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Http\Middleware;
 
 use Binaryk\LaravelRestify\Events\RestifyStarting;
 use Closure;
+use Illuminate\Http\Request;
 
 /**
  * One of the most important middleware, because at the RestifyServing
@@ -18,7 +19,7 @@ class DispatchRestifyStartingEvent
     /**
      * Handle an incoming request.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return mixed
      */
     public function handle($request, Closure $next)

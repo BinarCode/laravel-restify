@@ -13,3 +13,5 @@ docs/.vuepress/dist
 .php-cs-fixer.cache
 phpstan.neon
 .github/instructions
+# Local Netlify folder
+.netlify

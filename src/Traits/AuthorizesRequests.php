@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Illuminate\Http\Request;
+
 trait AuthorizesRequests
 {
     /**
@@ -27,7 +29,7 @@ trait AuthorizesRequests
     /**
      * Determine if the given request can access the Restify dashboard.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  Request  $request
      * @return bool
      */
     public static function check($request)

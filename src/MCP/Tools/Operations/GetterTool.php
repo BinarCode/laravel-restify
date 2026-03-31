@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Foundation\Application;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Tool;
@@ -14,7 +15,7 @@ use Laravel\Mcp\Server\Tool;
 class GetterTool extends Tool
 {
     /**
-     * @var Repository|\Illuminate\Foundation\Application|mixed|object|string
+     * @var Repository|Application|mixed|object|string
      */
     protected Repository $repository;
 

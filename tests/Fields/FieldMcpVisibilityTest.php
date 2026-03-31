@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fields;
 
+use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -161,7 +162,7 @@ class FieldMcpVisibilityTest extends IntegrationTestCase
             Field::make('normal_field'),
             Field::make('readonly_field')->readonly(),
             Field::make('mcp_hidden')->hideFromMcp(),
-            new \Binaryk\LaravelRestify\Fields\EagerField('eager_field', 'relation'),
+            new EagerField('eager_field', 'relation'),
         ]);
 
         $mcpRequest = new McpRequest;

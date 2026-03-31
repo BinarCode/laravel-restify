@@ -5,6 +5,9 @@ namespace Binaryk\LaravelRestify\Tests\Feature;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class DatabaseCacheStoreIntegrationTest extends IntegrationTestCase
 {
@@ -16,8 +19,8 @@ class DatabaseCacheStoreIntegrationTest extends IntegrationTestCase
         config(['cache.default' => 'database']);
 
         // Create cache table
-        if (! \Illuminate\Support\Facades\Schema::hasTable('cache')) {
-            \Illuminate\Support\Facades\Schema::create('cache', function ($table) {
+        if (! Schema::hasTable('cache')) {
+            Schema::create('cache', function ($table) {
                 $table->string('key')->unique();
                 $table->mediumText('value');
                 $table->integer('expiration');
@@ -31,7 +34,7 @@ class DatabaseCacheStoreIntegrationTest extends IntegrationTestCase
     protected function tearDown(): void
     {
         // Drop cache table
-        \Illuminate\Support\Facades\Schema::dropIfExists('cache');
+        Schema::dropIfExists('cache');
 
         parent::tearDown();
     }
@@ -65,13 +68,13 @@ class DatabaseCacheStoreIntegrationTest extends IntegrationTestCase
             // Cache key should exist but we can't predict the exact key due to timestamps/hashing
         ]);
 
-        $cacheCount = \Illuminate\Support\Facades\DB::table('cache')->count();
+        $cacheCount = DB::table('cache')->count();
         $this->assertGreaterThan(0, $cacheCount, 'Cache entries should exist in database');
     }
 
     public function test_database_store_does_not_support_tagging()
     {
-        $store = \Illuminate\Support\Facades\Cache::store('database');
+        $store = Cache::store('database');
 
         // Should return false for database store
         $this->assertFalse(PostRepository::cacheStoreSupportsTagging($store));
@@ -86,7 +89,7 @@ class DatabaseCacheStoreIntegrationTest extends IntegrationTestCase
         $this->getJson('/api/restify/posts');
 
         // Verify cache exists
-        $cacheCount = \Illuminate\Support\Facades\DB::table('cache')->count();
+        $cacheCount = DB::table('cache')->count();
         $this->assertGreaterThan(0, $cacheCount);
 
         // Clear cache - should not throw errors even with tags
@@ -94,7 +97,7 @@ class DatabaseCacheStoreIntegrationTest extends IntegrationTestCase
         PostRepository::clearCache();
 
         // Cache should be cleared
-        $cacheCountAfter = \Illuminate\Support\Facades\DB::table('cache')->count();
+        $cacheCountAfter = DB::table('cache')->count();
         $this->assertEquals(0, $cacheCountAfter, 'Cache should be cleared after clearCache()');
     }
 }
