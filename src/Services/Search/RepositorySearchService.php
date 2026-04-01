@@ -76,6 +76,7 @@ class RepositorySearchService
                 : $query;
         }
 
+        $collection->qualifyColumns($query->getModel());
         $collection->apply($request, $query);
 
         return $query;
