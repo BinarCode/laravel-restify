@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Illuminate\Foundation\Http\FormRequest;
+use JsonException;
 use Throwable;
 
 class RestifyRequest extends FormRequest
@@ -71,11 +72,22 @@ class RestifyRequest extends FormRequest
         }
     }
 
+    /**
+     * @throws JsonException
+     */
     public function filters(): array
     {
-        return $this instanceof RepositoryApplyFiltersRequest
-            ? $this->input('filters', [])
-            : (json_decode(base64_decode($this->input('filters')), true) ?? []);
+        $filters = $this->input('filters');
+
+        if ($this instanceof RepositoryApplyFiltersRequest) {
+            return $filters ?? [];
+        }
+
+        if ($filters === null) {
+            return [];
+        }
+
+        return json_decode(base64_decode($filters), true, 512, JSON_THROW_ON_ERROR) ?? [];
     }
 
     public function groupBy(): ?string
