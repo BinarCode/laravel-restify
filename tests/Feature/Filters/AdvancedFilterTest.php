@@ -14,6 +14,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\ValueFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use JsonException;
 
 class AdvancedFilterTest extends IntegrationTestCase
 {
@@ -287,5 +288,18 @@ class AdvancedFilterTest extends IntegrationTestCase
         ]))
             ->assertOk()
             ->assertJsonCount(3, 'data');
+    }
+
+    public function test_index_with_invalid_json_filters_throws_json_exception(): void
+    {
+        $this->withoutExceptionHandling();
+
+        $this->expectException(JsonException::class);
+
+        $filters = base64_encode('invalid-json{');
+
+        $this->getJson(PostRepository::route(query: [
+            'filters' => $filters,
+        ]));
     }
 }
