@@ -268,4 +268,24 @@ class AdvancedFilterTest extends IntegrationTestCase
             'filters' => $filters,
         ])->assertJsonCount(1, 'data');
     }
+
+    public function test_index_without_filters_query_param_returns_all_results(): void
+    {
+        Post::factory(3)->create();
+
+        $this->getJson(PostRepository::route())
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
+    }
+
+    public function test_index_with_null_filters_query_param_returns_all_results(): void
+    {
+        Post::factory(3)->create();
+
+        $this->getJson(PostRepository::route(query: [
+            'filters' => null,
+        ]))
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
+    }
 }
