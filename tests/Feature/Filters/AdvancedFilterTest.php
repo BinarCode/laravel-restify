@@ -14,6 +14,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\ValueFilter;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use JsonException;
 
 class AdvancedFilterTest extends IntegrationTestCase
 {
@@ -267,5 +268,38 @@ class AdvancedFilterTest extends IntegrationTestCase
         $this->post(PostRepository::route('apply-restify-advanced-filters'), [
             'filters' => $filters,
         ])->assertJsonCount(1, 'data');
+    }
+
+    public function test_index_without_filters_query_param_returns_all_results(): void
+    {
+        Post::factory(3)->create();
+
+        $this->getJson(PostRepository::route())
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
+    }
+
+    public function test_index_with_null_filters_query_param_returns_all_results(): void
+    {
+        Post::factory(3)->create();
+
+        $this->getJson(PostRepository::route(query: [
+            'filters' => null,
+        ]))
+            ->assertOk()
+            ->assertJsonCount(3, 'data');
+    }
+
+    public function test_index_with_invalid_json_filters_throws_json_exception(): void
+    {
+        $this->withoutExceptionHandling();
+
+        $this->expectException(JsonException::class);
+
+        $filters = base64_encode('invalid-json{');
+
+        $this->getJson(PostRepository::route(query: [
+            'filters' => $filters,
+        ]));
     }
 }
