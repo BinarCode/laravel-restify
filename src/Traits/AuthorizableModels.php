@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
+use ReflectionMethod;
 
 /**
  * Could be used as a trait in a model class and in a repository class.
@@ -31,8 +32,10 @@ trait AuthorizableModels
         }
 
         $resolver = function () {
-            return method_exists(Gate::getPolicyFor(static::newModel()), 'allowRestify')
-                ? Gate::check('allowRestify', get_class(static::newModel()))
+            $policy = Gate::getPolicyFor(static::newModel());
+
+            return method_exists($policy, 'allowRestify')
+                ? static::checkPolicyMethod($policy, 'allowRestify', get_class(static::newModel()))
                 : false;
         };
 
@@ -75,7 +78,11 @@ trait AuthorizableModels
     public static function authorizedToStore(Request $request): bool
     {
         if (static::authorizable()) {
-            return Gate::check('store', static::guessModelClassName());
+            $policy = Gate::getPolicyFor(static::newModel());
+
+            return method_exists($policy, 'store')
+                ? static::checkPolicyMethod($policy, 'store', static::guessModelClassName())
+                : false;
         }
 
         return false;
@@ -84,7 +91,11 @@ trait AuthorizableModels
     public static function authorizedToStoreBulk(Request $request): bool
     {
         if (static::authorizable()) {
-            return Gate::check('storeBulk', static::guessModelClassName());
+            $policy = Gate::getPolicyFor(static::newModel());
+
+            return method_exists($policy, 'storeBulk')
+                ? static::checkPolicyMethod($policy, 'storeBulk', static::guessModelClassName())
+                : false;
         }
 
         return false;
@@ -206,7 +217,15 @@ trait AuthorizableModels
 
         return PolicyCache::resolve(
             PolicyCache::keyForPolicyMethods(static::uriKey(), $ability, $this->resource->getKey()),
-            fn () => Gate::check($ability, $this->resource),
+            function () use ($ability) {
+                $policy = Gate::getPolicyFor($this->model());
+
+                if ($policy && is_string($ability) && method_exists($policy, $ability)) {
+                    return static::checkPolicyMethod($policy, $ability, $this->resource);
+                }
+
+                return Gate::check($ability, $this->resource);
+            },
             $this->model(),
         );
     }
@@ -214,5 +233,24 @@ trait AuthorizableModels
     public static function isRepositoryContext(): bool
     {
         return new static instanceof Repository;
+    }
+
+    /**
+     * Check a policy method, calling it directly when it has no parameters.
+     *
+     * Laravel's Gate requires a nullable $user first parameter to allow guest
+     * access.  When the policy method has zero parameters Gate denies guests
+     * automatically.  This helper detects that case and calls the method
+     * directly so policies stay clean.
+     */
+    protected static function checkPolicyMethod(object $policy, string $method, mixed ...$arguments): bool
+    {
+        $reflection = new ReflectionMethod($policy, $method);
+
+        if ($reflection->getNumberOfParameters() === 0) {
+            return $policy->{$method}();
+        }
+
+        return Gate::check($method, $arguments);
     }
 }
