@@ -1,6 +1,7 @@
 <template>
   <NuxtLayout name="website">
     <HeroSection />
+    <VideoOverviewSection />
     <InstallWithAI />
     <FeaturesSection />
     <CommunitySection />
@@ -11,6 +12,7 @@
 
 <script setup>
 import HeroSection from '~/components/website/HeroSection.vue'
+import VideoOverviewSection from '~/components/website/VideoOverviewSection.vue'
 import InstallWithAI from '~/components/website/InstallWithAI.vue'
 import FeaturesSection from '~/components/website/FeaturesSection.vue'
 import CommunitySection from '~/components/website/CommunitySection.vue'
