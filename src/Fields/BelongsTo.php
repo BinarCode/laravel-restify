@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
+use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
@@ -51,10 +52,11 @@ class BelongsTo extends EagerField implements Sortable
     {
         // Handle case where a single array is passed (legacy behavior)
         if (count($attributes) === 1 && is_array($attributes[0])) {
-            $this->searchablesAttributes = collect($attributes[0])->flatten()->all();
+            $this->searchablesAttributes = collect($attributes[0])->flatten(1)->all();
             // Also call parent with the first attribute for consistency
             if (! empty($this->searchablesAttributes)) {
-                parent::searchable($this->searchablesAttributes[0]);
+                $first = $this->searchablesAttributes[0];
+                parent::searchable($first instanceof SearchableFilter ? ($first->column() ?? '') : $first);
             }
 
             return $this;
@@ -69,6 +71,14 @@ class BelongsTo extends EagerField implements Sortable
             return $this;
         }
 
+        if (count($attributes) === 1 && $attributes[0] instanceof SearchableFilter) {
+            $this->searchablesAttributes = [$attributes[0]];
+
+            parent::searchable($attributes[0]->column() ?? '');
+
+            return $this;
+        }
+
         if (count($attributes) === 1 && is_callable($attributes[0])) {
             $this->searchableCallback = $attributes[0];
 
@@ -76,10 +86,11 @@ class BelongsTo extends EagerField implements Sortable
         }
 
         // If it's relationship-specific multiple attributes (all strings), use BelongsTo behavior
-        if (count($attributes) > 1 && collect($attributes)->every(fn ($attr) => is_string($attr))) {
-            $this->searchablesAttributes = collect($attributes)->flatten()->all();
+        if (count($attributes) > 1 && collect($attributes)->every(fn ($attr) => is_string($attr) || $attr instanceof SearchableFilter)) {
+            $this->searchablesAttributes = collect($attributes)->flatten(1)->all();
+            $first = $this->searchablesAttributes[0];
             // Also call parent to maintain consistency with CanSearch trait
-            parent::searchable($attributes[0]);
+            parent::searchable($first instanceof SearchableFilter ? ($first->column() ?? '') : $first);
 
             return $this;
         }

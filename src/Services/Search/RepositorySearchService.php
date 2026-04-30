@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Services\Search;
 use Binaryk\LaravelRestify\Events\AdvancedFiltersApplied;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
+use Binaryk\LaravelRestify\Filters\Concerns\AppliesRelationJoin;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -17,6 +18,8 @@ use Throwable;
 
 class RepositorySearchService
 {
+    use AppliesRelationJoin;
+
     /** * @var Repository */
     protected $repository;
 
@@ -299,32 +302,20 @@ class RepositorySearchService
                     // Get relationship details with error handling
                     $relatedModel = $belongsToField->getRelatedModel($this->repository);
                     $relatedTable = $relatedModel->getTable();
+                    $mainTable = $this->repository->model()->getTable();
 
                     $relation = $belongsToField->getRelation($this->repository);
                     $foreignKey = $relation->getForeignKeyName();
                     $ownerKey = $relation->getOwnerKeyName();
 
                     // Build fully qualified column names
-                    $localTableForeignKey = $this->repository->model()->getTable().'.'.$foreignKey;
-                    $relatedTableOwnerKey = $relatedTable.'.'.$ownerKey;
-
-                    // Add JOIN only if it hasn't been added already
-                    $joinAlreadyExists = collect($query->toBase()->joins ?? [])->contains(function ($join) use (
-                        $relatedTable
-                    ) {
-                        return $join->table === $relatedTable;
-                    });
-
-                    if (! $joinAlreadyExists) {
-                        $query->leftJoin($relatedTable, $localTableForeignKey, '=', $relatedTableOwnerKey);
-
-                        // Ensure we only select columns from the main table to avoid column conflicts
-                        // Only set select if it hasn't been set already
-                        if (empty($query->getQuery()->columns)) {
-                            $mainTable = $this->repository->model()->getTable();
-                            $query->select([$mainTable.'.*']);
-                        }
-                    }
+                    $this->ensureLeftJoin(
+                        $query,
+                        $relatedTable,
+                        $mainTable.'.'.$foreignKey,
+                        $relatedTable.'.'.$ownerKey,
+                        $mainTable,
+                    );
                 } catch (\Exception $e) {
                     // Skip this JOIN if the relationship doesn't exist or has issues
                     // This allows the code to gracefully handle missing relationships

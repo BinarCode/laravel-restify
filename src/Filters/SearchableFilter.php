@@ -4,16 +4,82 @@ namespace Binaryk\LaravelRestify\Filters;
 
 use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Closure;
 
 class SearchableFilter extends Filter
 {
     public const TYPE = 'searchable';
+
+    public const COLUMN_RAW = 'raw';
+
+    public const COLUMN_UPPER = 'upper';
+
+    public const COLUMN_LOWER = 'lower';
 
     public array $computedColumns = [];
 
     public BelongsTo $belongsToField;
 
     protected $customClosure = null;
+
+    private ?string $columnWrap = null;
+
+    /** @var (callable(string): string)|null */
+    private $valueTransformer = null;
+
+    public function transform(callable $transformer): self
+    {
+        $this->valueTransformer = $transformer;
+        $this->columnWrap ??= self::COLUMN_RAW;
+
+        return $this;
+    }
+
+    public function caseRaw(): self
+    {
+        $this->valueTransformer = static fn (string $value): string => $value;
+        $this->columnWrap = self::COLUMN_RAW;
+
+        return $this;
+    }
+
+    /**
+     * Silent contract: rows stored in mixed/lower case will not match.
+     */
+    public function upperValue(): self
+    {
+        $this->valueTransformer = strtoupper(...);
+        $this->columnWrap = self::COLUMN_RAW;
+
+        return $this;
+    }
+
+    /**
+     * Silent contract: rows stored in mixed/upper case will not match.
+     */
+    public function lowerValue(): self
+    {
+        $this->valueTransformer = strtolower(...);
+        $this->columnWrap = self::COLUMN_RAW;
+
+        return $this;
+    }
+
+    public function upperBoth(): self
+    {
+        $this->valueTransformer = strtoupper(...);
+        $this->columnWrap = self::COLUMN_UPPER;
+
+        return $this;
+    }
+
+    public function lowerBoth(): self
+    {
+        $this->valueTransformer = strtolower(...);
+        $this->columnWrap = self::COLUMN_LOWER;
+
+        return $this;
+    }
 
     public function filter(RestifyRequest $request, $query, $value)
     {
@@ -24,7 +90,7 @@ class SearchableFilter extends Filter
 
         $connectionType = $this->repository->model()->getConnection()->getDriverName();
 
-        $likeOperator = $connectionType == 'pgsql' ? 'ilike' : 'like';
+        $likeOperator = $connectionType === 'pgsql' ? 'ilike' : 'like';
 
         if (isset($this->belongsToField)) {
             if (! $this->belongsToField->authorize($request)) {
@@ -44,79 +110,30 @@ class SearchableFilter extends Filter
             }
 
             // Check if JOINs are enabled in config
-            if (config('restify.search.use_joins_for_belongs_to', false)) {
-                // JOINs are applied at the service level, so we just need to apply search conditions
-                $relatedModel = $this->belongsToField->getRelatedModel($this->repository);
-                $relatedTable = $relatedModel->getTable();
+            $useJoins = (bool) config('restify.search.use_joins_for_belongs_to', false);
+            $relatedTable = $this->belongsToField->getRelatedModel($this->repository)->getTable();
 
-                // Apply search conditions using qualified column names from the joined table
-                collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value, $relatedTable, $connectionType) {
-                    // Check if the attribute is already qualified (contains a dot)
-                    $qualifiedColumn = str_contains($attribute, '.')
-                        ? $attribute
-                        : $relatedTable.'.'.$attribute;
+            collect($this->belongsToField->getSearchables())->each(
+                function (string|self $entry) use ($query, $value, $likeOperator, $connectionType, $useJoins, $relatedTable) {
+                    [$column, $resolver] = $this->resolveBelongsToEntry($entry, $relatedTable, $useJoins);
 
-                    if (! config('restify.search.case_sensitive')) {
-                        $upper = strtoupper($value);
+                    if ($useJoins) {
+                        // JOINs are applied at the service level, here we only emit search conditions
+                        $this->applyValueAndColumn($query, $column, $value, $likeOperator, $connectionType, $resolver);
 
-                        $columnExpression = $connectionType === 'pgsql'
-                            ? "UPPER({$qualifiedColumn}::text)"
-                            : "UPPER({$qualifiedColumn})";
-
-                        $query->orWhereRaw("{$columnExpression} LIKE ?", ['%'.$upper.'%']);
-                    } else {
-                        $query->orWhere($qualifiedColumn, $likeOperator, "%{$value}%");
+                        return;
                     }
-                });
-            } else {
-                // Use the original subquery approach when JOINs are disabled
-                collect($this->belongsToField->getSearchables())->each(function (string $attribute) use ($query, $likeOperator, $value, $connectionType) {
-                    if (! config('restify.search.case_sensitive')) {
-                        $upper = strtoupper($value);
 
-                        $columnExpression = $connectionType === 'pgsql'
-                            ? "UPPER({$attribute}::text)"
-                            : "UPPER({$attribute})";
-
-                        $query->orWhere(
-                            $this->belongsToField->getRelatedModel($this->repository)::selectRaw($columnExpression)
-                                ->whereColumn(
-                                    $this->belongsToField->getQualifiedKey($this->repository),
-                                    $this->belongsToField->getRelatedKey($this->repository)
-                                )
-                                ->take(1),
-                            'like',
-                            "%{$upper}%"
-                        );
-                    } else {
-                        $query->orWhere(
-                            $this->belongsToField->getRelatedModel($this->repository)::select($attribute)
-                                ->whereColumn(
-                                    $this->belongsToField->getQualifiedKey($this->repository),
-                                    $this->belongsToField->getRelatedKey($this->repository)
-                                )
-                                ->take(1),
-                            $likeOperator,
-                            "%{$value}%"
-                        );
-                    }
-                });
-            }
+                    $this->applyBelongsToSubquery($query, $column, $value, $likeOperator, $connectionType, $resolver);
+                }
+            );
 
             return $query;
         }
 
-        if (! config('restify.search.case_sensitive')) {
-            $upper = strtoupper($value);
+        $this->applyValueAndColumn($query, $this->column, $value, $likeOperator, $connectionType, $this);
 
-            $columnExpression = $connectionType === 'pgsql'
-                ? "UPPER({$this->column}::text)"
-                : "UPPER({$this->column})";
-
-            return $query->orWhereRaw("{$columnExpression} LIKE ?", ['%'.$upper.'%']);
-        }
-
-        return $query->orWhere($this->column, $likeOperator, "%{$value}%");
+        return $query;
     }
 
     public function usingBelongsTo(BelongsTo $field): self
@@ -148,5 +165,122 @@ class SearchableFilter extends Filter
     public function hasBelongsTo(): bool
     {
         return isset($this->belongsToField);
+    }
+
+    public function resolvedTransformer(): Closure
+    {
+        if (is_callable($this->valueTransformer)) {
+            return Closure::fromCallable($this->valueTransformer);
+        }
+
+        return config('restify.search.case_sensitive')
+            ? static fn (string $value): string => $value
+            : strtoupper(...);
+    }
+
+    public function resolvedColumnWrap(): string
+    {
+        if ($this->columnWrap !== null) {
+            return $this->columnWrap;
+        }
+
+        return config('restify.search.case_sensitive')
+            ? self::COLUMN_RAW
+            : self::COLUMN_UPPER;
+    }
+
+    private function applyValueAndColumn(
+        $query,
+        string $column,
+        string $value,
+        string $likeOperator,
+        string $connectionType,
+        self $resolver,
+    ): void {
+        $transformedValue = ($resolver->resolvedTransformer())($value);
+        $wrap = $resolver->resolvedColumnWrap();
+
+        if ($wrap === self::COLUMN_RAW) {
+            $query->orWhere($column, $likeOperator, '%'.$transformedValue.'%');
+
+            return;
+        }
+
+        $columnExpression = $this->wrapColumn($column, $wrap, $connectionType);
+
+        $query->orWhereRaw("{$columnExpression} LIKE ?", ['%'.$transformedValue.'%']);
+    }
+
+    private function applyBelongsToSubquery(
+        $query,
+        string $column,
+        string $value,
+        string $likeOperator,
+        string $connectionType,
+        self $resolver,
+    ): void {
+        $transformedValue = ($resolver->resolvedTransformer())($value);
+        $wrap = $resolver->resolvedColumnWrap();
+
+        $relatedModel = $this->belongsToField->getRelatedModel($this->repository);
+
+        if ($wrap === self::COLUMN_RAW) {
+            $query->orWhere(
+                $relatedModel::select($column)
+                    ->whereColumn(
+                        $this->belongsToField->getQualifiedKey($this->repository),
+                        $this->belongsToField->getRelatedKey($this->repository)
+                    )
+                    ->take(1),
+                $likeOperator,
+                '%'.$transformedValue.'%'
+            );
+
+            return;
+        }
+
+        $columnExpression = $this->wrapColumn($column, $wrap, $connectionType);
+
+        $query->orWhere(
+            $relatedModel::selectRaw($columnExpression)
+                ->whereColumn(
+                    $this->belongsToField->getQualifiedKey($this->repository),
+                    $this->belongsToField->getRelatedKey($this->repository)
+                )
+                ->take(1),
+            'like',
+            '%'.$transformedValue.'%'
+        );
+    }
+
+    private function wrapColumn(string $column, string $wrap, string $connectionType): string
+    {
+        $function = $wrap === self::COLUMN_LOWER ? 'LOWER' : 'UPPER';
+
+        return $connectionType === 'pgsql'
+            ? "{$function}({$column}::text)"
+            : "{$function}({$column})";
+    }
+
+    /**
+     * @return array{0: string, 1: self}
+     */
+    private function resolveBelongsToEntry(string|self $entry, string $relatedTable, bool $useJoins): array
+    {
+        if ($entry instanceof self) {
+            $column = $entry->column() ?? '';
+
+            if ($useJoins && ! str_contains($column, '.')) {
+                $column = $relatedTable.'.'.$column;
+            }
+
+            return [$column, $entry];
+        }
+
+        $column = $useJoins
+            ? (str_contains($entry, '.') ? $entry : $relatedTable.'.'.$entry)
+            : $entry;
+
+        return [$column, $this];
     }
 }

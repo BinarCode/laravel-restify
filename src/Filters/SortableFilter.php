@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Fields\Contracts\Sortable;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\HasOne;
+use Binaryk\LaravelRestify\Filters\Concerns\AppliesRelationJoin;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
@@ -14,11 +15,15 @@ use Illuminate\Support\Str;
 
 class SortableFilter extends Filter
 {
+    use AppliesRelationJoin;
+
     public static $uriKey = 'sortables';
 
     public string $direction = 'asc';
 
     private HasOne|BelongsTo $relation;
+
+    private ?bool $useJoin = null;
 
     /**
      * @var callable|Closure
@@ -43,7 +48,10 @@ class SortableFilter extends Filter
                 return $query;
             }
 
-            // This approach could be rewritten using join.
+            if ($this->shouldUseJoin()) {
+                return $this->applyJoinSort($query, $value);
+            }
+
             $query->orderBy(
                 $this->relation->getRelatedModel($this->repository)::select($this->qualifyColumn())
                     ->whereColumn(
@@ -66,6 +74,44 @@ class SortableFilter extends Filter
         $this->relation = $field;
 
         return $this;
+    }
+
+    public function useJoin(): self
+    {
+        $this->useJoin = true;
+
+        return $this;
+    }
+
+    public function useSubquery(): self
+    {
+        $this->useJoin = false;
+
+        return $this;
+    }
+
+    private function shouldUseJoin(): bool
+    {
+        return $this->useJoin ?? (bool) config('restify.sort.use_joins_for_belongs_to', false);
+    }
+
+    private function applyJoinSort(Builder|Relation $query, string $value): Builder|Relation
+    {
+        $relatedModel = $this->relation->getRelatedModel($this->repository);
+        $relatedTable = $relatedModel->getTable();
+        $mainTable = $this->repository->model()->getTable();
+
+        $this->ensureLeftJoin(
+            $query,
+            $relatedTable,
+            $this->relationForeignColumn(),
+            $this->relationRelatedColumn(),
+            $mainTable,
+        );
+
+        $query->orderBy($this->qualifyColumn(), $value);
+
+        return $query;
     }
 
     public function getSortableEager(): ?Sortable
