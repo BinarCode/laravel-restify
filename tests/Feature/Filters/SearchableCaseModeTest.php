@@ -22,6 +22,9 @@ class SearchableCaseModeTest extends IntegrationTestCase
             'restify.search.use_joins_for_belongs_to' => false,
         ]);
 
+        PostRepository::$search = ['id', 'title'];
+        PostRepository::$related = [];
+
         parent::tearDown();
     }
 
