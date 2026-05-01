@@ -105,7 +105,7 @@ GET /api/restify/users?perPage=10&page=1
 
 To make your API accessible to AI agents like Claude Desktop:
 
-1. Add the MCP server to your \`config/ai.php\` file:
+1. Add the MCP server to your \`routes/ai.php\` file:
 
 \`\`\`php
 use Binaryk\\LaravelRestify\\MCP\\RestifyServer;

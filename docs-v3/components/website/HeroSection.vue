@@ -64,7 +64,7 @@
 
           <AppButton
             variant="secondary"
-            href="https://github.com/binaryk/laravel-restify"
+            href="https://github.com/BinarCode/laravel-restify"
             :icon="CodeBracketIcon"
           >
             Explore Code

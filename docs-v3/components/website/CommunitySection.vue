@@ -139,25 +139,25 @@
         <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
           <div class="group">
             <div class="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform duration-300">
-              1K+
+              670+
             </div>
             <div class="text-gray-600 dark:text-gray-400 text-sm">GitHub Stars</div>
           </div>
           <div class="group">
             <div class="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform duration-300">
-              50K+
+              60+
             </div>
-            <div class="text-gray-600 dark:text-gray-400 text-sm">Downloads</div>
+            <div class="text-gray-600 dark:text-gray-400 text-sm">Forks</div>
           </div>
           <div class="group">
             <div class="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform duration-300">
-              100+
+              15+
             </div>
             <div class="text-gray-600 dark:text-gray-400 text-sm">Contributors</div>
           </div>
           <div class="group">
             <div class="text-4xl md:text-5xl font-black bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent mb-2 group-hover:scale-110 transition-transform duration-300">
-              5+
+              6+
             </div>
             <div class="text-gray-600 dark:text-gray-400 text-sm">Years Active</div>
           </div>
