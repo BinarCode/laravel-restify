@@ -27,6 +27,17 @@ class SearchableFilter extends Filter
     /** @var (callable(string): string)|null */
     private $valueTransformer = null;
 
+    public static function make(...$arguments): static
+    {
+        $filter = new static;
+
+        if (isset($arguments[0]) && is_string($arguments[0])) {
+            $filter->setColumn($arguments[0]);
+        }
+
+        return $filter;
+    }
+
     public function transform(callable $transformer): self
     {
         $this->valueTransformer = $transformer;
