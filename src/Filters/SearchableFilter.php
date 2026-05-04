@@ -29,8 +29,6 @@ class SearchableFilter extends Filter
 
     public static function make(...$arguments): static
     {
-        // Forward all args to the constructor (matches the parent Make trait behavior),
-        // additionally setting the column when the first arg is a string column name.
         $filter = new static(...$arguments);
 
         if (isset($arguments[0]) && is_string($arguments[0])) {
