@@ -212,6 +212,68 @@ class SearchableCaseModeTest extends IntegrationTestCase
         $this->assertStringContainsStringIgnoringCase("\"users\".\"email\" like '%JOHN%'", $sql);
     }
 
+    public function test_belongs_to_searchable_supports_lower_value_per_entry(): void
+    {
+        config([
+            'restify.search.case_sensitive' => true,
+            'restify.search.use_joins_for_belongs_to' => true,
+        ]);
+
+        PostRepository::$search = [];
+        PostRepository::$related = [
+            'user' => BelongsTo::make('user', UserRepository::class)->searchable([
+                SearchableFilter::make()->setColumn('users.name')->lowerValue(),
+            ]),
+        ];
+
+        $alice = User::factory()->create(['name' => 'alice']);
+        Post::factory(2)->create(['user_id' => $alice->id]);
+        Post::factory(1)->create(['user_id' => User::factory()->create(['name' => 'BOB'])->id]);
+
+        DB::enableQueryLog();
+
+        $this->getJson(PostRepository::route(query: ['search' => 'ALICE']))
+            ->assertOk()
+            ->assertJsonCount(2, 'data');
+
+        $sql = $this->lastSearchQuery();
+
+        $this->assertStringNotContainsStringIgnoringCase('lower(', $sql);
+        $this->assertStringContainsStringIgnoringCase("like '%alice%'", $sql);
+    }
+
+    public function test_searchable_filter_short_form_make_with_column_argument(): void
+    {
+        config(['restify.search.case_sensitive' => true]);
+
+        PostRepository::$search = [
+            SearchableFilter::make('title')->upperValue(),
+        ];
+
+        Post::factory()->create(['title' => 'ACME01']);
+
+        DB::enableQueryLog();
+
+        $this->getJson(PostRepository::route(query: ['search' => 'acme']))
+            ->assertOk()
+            ->assertJsonCount(1, 'data');
+
+        $sql = $this->lastSearchQuery();
+
+        $this->assertStringNotContainsStringIgnoringCase('upper(', $sql);
+        $this->assertStringContainsStringIgnoringCase("like '%ACME%'", $sql);
+    }
+
+    public function test_belongs_to_searchable_throws_when_filter_has_no_column(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessage('SearchableFilter passed to BelongsTo::searchable() has no column.');
+
+        BelongsTo::make('user', UserRepository::class)->searchable([
+            SearchableFilter::make()->upperValue(),
+        ]);
+    }
+
     private function lastSearchQuery(): string
     {
         $log = collect(DB::getQueryLog())

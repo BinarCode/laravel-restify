@@ -16,9 +16,11 @@ trait AppliesRelationJoin
         string $relatedQualifiedKey,
         string $mainTable,
     ): void {
-        // Add JOIN only if it hasn't been added already
+        // Add LEFT JOIN only if a left join on the same table hasn't been added already.
+        // Match join type so an upstream INNER JOIN doesn't suppress our LEFT JOIN — the two
+        // have different semantics (INNER drops rows with no match; LEFT keeps them).
         $exists = collect($query->toBase()->joins ?? [])
-            ->contains(static fn ($join): bool => $join->table === $relatedTable);
+            ->contains(static fn ($join): bool => $join->table === $relatedTable && $join->type === 'left');
 
         if ($exists) {
             return;

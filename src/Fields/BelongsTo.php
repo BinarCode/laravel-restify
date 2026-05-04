@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
+use InvalidArgumentException;
 
 class BelongsTo extends EagerField implements Sortable
 {
@@ -50,13 +51,14 @@ class BelongsTo extends EagerField implements Sortable
      */
     public function searchable(...$attributes): self
     {
-        // Handle case where a single array is passed (legacy behavior)
+        // Handle case where a single array is passed (legacy behavior).
+        // flatten(1) preserves SearchableFilter instances inside the array; deeper flattening
+        // would dissolve them into their internal arrays.
         if (count($attributes) === 1 && is_array($attributes[0])) {
             $this->searchablesAttributes = collect($attributes[0])->flatten(1)->all();
             // Also call parent with the first attribute for consistency
             if (! empty($this->searchablesAttributes)) {
-                $first = $this->searchablesAttributes[0];
-                parent::searchable($first instanceof SearchableFilter ? ($first->column() ?? '') : $first);
+                parent::searchable($this->extractColumn($this->searchablesAttributes[0]));
             }
 
             return $this;
@@ -74,7 +76,7 @@ class BelongsTo extends EagerField implements Sortable
         if (count($attributes) === 1 && $attributes[0] instanceof SearchableFilter) {
             $this->searchablesAttributes = [$attributes[0]];
 
-            parent::searchable($attributes[0]->column() ?? '');
+            parent::searchable($this->extractColumn($attributes[0]));
 
             return $this;
         }
@@ -88,9 +90,8 @@ class BelongsTo extends EagerField implements Sortable
         // If it's relationship-specific multiple attributes (all strings), use BelongsTo behavior
         if (count($attributes) > 1 && collect($attributes)->every(fn ($attr) => is_string($attr) || $attr instanceof SearchableFilter)) {
             $this->searchablesAttributes = collect($attributes)->flatten(1)->all();
-            $first = $this->searchablesAttributes[0];
             // Also call parent to maintain consistency with CanSearch trait
-            parent::searchable($first instanceof SearchableFilter ? ($first->column() ?? '') : $first);
+            parent::searchable($this->extractColumn($this->searchablesAttributes[0]));
 
             return $this;
         }
@@ -99,6 +100,24 @@ class BelongsTo extends EagerField implements Sortable
         parent::searchable(...$attributes);
 
         return $this;
+    }
+
+    private function extractColumn(string|SearchableFilter $entry): string
+    {
+        if (is_string($entry)) {
+            return $entry;
+        }
+
+        $column = $entry->column();
+
+        if ($column === null || $column === '') {
+            throw new InvalidArgumentException(
+                'SearchableFilter passed to BelongsTo::searchable() has no column. '
+                .'Pass it as SearchableFilter::make(\'column\') or call setColumn() before passing.'
+            );
+        }
+
+        return $column;
     }
 
     /**

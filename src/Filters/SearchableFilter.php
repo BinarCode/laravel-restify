@@ -29,7 +29,9 @@ class SearchableFilter extends Filter
 
     public static function make(...$arguments): static
     {
-        $filter = new static;
+        // Forward all args to the constructor (matches the parent Make trait behavior),
+        // additionally setting the column when the first arg is a string column name.
+        $filter = new static(...$arguments);
 
         if (isset($arguments[0]) && is_string($arguments[0])) {
             $filter->setColumn($arguments[0]);
@@ -252,6 +254,10 @@ class SearchableFilter extends Filter
 
         $columnExpression = $this->wrapColumn($column, $wrap, $connectionType);
 
+        // Pre-existing legacy: wrapped branch hardcodes 'like' (not $likeOperator).
+        // Case-insensitivity comes from the UPPER/LOWER wrap, so on pgsql we don't need ILIKE here.
+        // Note: on pgsql, the RAW branch above uses $likeOperator (= 'ilike'), so caseRaw()/upperValue()/
+        // lowerValue() effectively match case-insensitively on pgsql via ILIKE on the raw column.
         $query->orWhere(
             $relatedModel::selectRaw($columnExpression)
                 ->whereColumn(
@@ -279,7 +285,14 @@ class SearchableFilter extends Filter
     private function resolveBelongsToEntry(string|self $entry, string $relatedTable, bool $useJoins): array
     {
         if ($entry instanceof self) {
-            $column = $entry->column() ?? '';
+            $column = $entry->column();
+
+            if ($column === null || $column === '') {
+                throw new \InvalidArgumentException(
+                    'SearchableFilter inside BelongsTo::searchable() has no column. '
+                    .'Pass it as SearchableFilter::make(\'column\') or call setColumn() before passing.'
+                );
+            }
 
             if ($useJoins && ! str_contains($column, '.')) {
                 $column = $relatedTable.'.'.$column;
