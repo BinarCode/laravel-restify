@@ -181,6 +181,29 @@ return [
         'use_joins_for_belongs_to' => env('RESTIFY_USE_JOINS_FOR_BELONGS_TO', false),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Restify Sort
+    |--------------------------------------------------------------------------
+    */
+    'sort' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Use JOINs for BelongsTo/HasOne Relationship Sorts
+        |--------------------------------------------------------------------------
+        |
+        | When enabled, sortables that target a related column will emit a LEFT JOIN
+        | + ORDER BY <related_table>.<column> instead of an ORDER BY (SELECT ... LIMIT 1)
+        | correlated subquery. Optimizer-friendly; mirrors restify.search.use_joins_for_belongs_to.
+        |
+        | A SortableFilter can override this globally with ->useJoin() or ->useSubquery().
+        |
+        | Default: false (legacy subquery behavior preserved for backward compatibility).
+        |
+        */
+        'use_joins_for_belongs_to' => env('RESTIFY_SORT_USE_JOINS_FOR_BELONGS_TO', false),
+    ],
+
     'repositories' => [
 
         /*
