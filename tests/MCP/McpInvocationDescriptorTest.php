@@ -3,9 +3,9 @@
 namespace Binaryk\LaravelRestify\Tests\MCP;
 
 use Binaryk\LaravelRestify\MCP\McpInvocationDescriptor;
-use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use PHPUnit\Framework\TestCase;
 
-class McpInvocationDescriptorTest extends IntegrationTestCase
+class McpInvocationDescriptorTest extends TestCase
 {
     public function test_to_array_returns_expected_shape(): void
     {
@@ -16,7 +16,7 @@ class McpInvocationDescriptorTest extends IntegrationTestCase
             description: 'Generate a personalized message.',
             route: 'POST /api/restify/leads/{lead}/actions?action=generate-message-for-lead',
             schema: ['campaign_id' => ['type' => 'string']],
-            examplePayload: ['campaign_id' => '01k…'],
+            examplePayload: ['campaign_id' => '01j9999999999999999999999a'],
         );
 
         $this->assertSame([
@@ -26,7 +26,7 @@ class McpInvocationDescriptorTest extends IntegrationTestCase
             'description' => 'Generate a personalized message.',
             'route' => 'POST /api/restify/leads/{lead}/actions?action=generate-message-for-lead',
             'schema' => ['campaign_id' => ['type' => 'string']],
-            'example_payload' => ['campaign_id' => '01k…'],
+            'example_payload' => ['campaign_id' => '01j9999999999999999999999a'],
         ], $descriptor->toArray());
     }
 }

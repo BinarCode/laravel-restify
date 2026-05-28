@@ -4,6 +4,10 @@ namespace Binaryk\LaravelRestify\MCP;
 
 final readonly class McpInvocationDescriptor
 {
+    /**
+     * @param array<string, mixed> $schema
+     * @param array<string, mixed> $examplePayload
+     */
     public function __construct(
         public string $toolName,
         public string $repositoryUriKey,
