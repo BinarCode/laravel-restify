@@ -33,9 +33,19 @@ class BuildMcpExamplePayloadAction
         $serialized = $type->toArray();
         $jsonType = $serialized['type'] ?? 'string';
 
-        $ref = new \ReflectionProperty($type, 'required');
-        $required = $ref->getValue($type) === true ? 'required' : 'optional';
+        if (is_array($jsonType)) {
+            $jsonType = implode('|', $jsonType);
+        }
+
+        $required = $this->isRequired($type) ? 'required' : 'optional';
 
         return "<{$jsonType}, {$required}>";
+    }
+
+    private function isRequired(Type $type): bool
+    {
+        $attributes = (fn () => get_object_vars($this))->call($type);
+
+        return ($attributes['required'] ?? null) === true;
     }
 }

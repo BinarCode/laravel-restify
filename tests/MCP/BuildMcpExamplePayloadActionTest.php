@@ -25,4 +25,18 @@ class BuildMcpExamplePayloadActionTest extends TestCase
             'context' => '<string, optional>',
         ], $payload);
     }
+
+    public function test_nullable_type_renders_union_placeholder(): void
+    {
+        $factory = new JsonSchemaTypeFactory;
+        $schema = [
+            'notes' => $factory->string()->nullable(),
+        ];
+
+        $payload = (new BuildMcpExamplePayloadAction)($schema, bind: []);
+
+        $this->assertSame([
+            'notes' => '<string|null, optional>',
+        ], $payload);
+    }
 }
