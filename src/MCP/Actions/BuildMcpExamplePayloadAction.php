@@ -13,19 +13,25 @@ class BuildMcpExamplePayloadAction
      */
     public function __invoke(array $schema, array $bind): array
     {
-        $payload = [];
+        $nested = [];
 
         foreach ($schema as $key => $type) {
-            if (array_key_exists($key, $bind)) {
-                $payload[$key] = $bind[$key];
+            $value = array_key_exists($key, $bind) ? $bind[$key] : $this->placeholder($type);
+
+            if (! str_contains($key, '.')) {
+                // Only set parent if no child key has already turned it into an array.
+                if (! isset($nested[$key]) || is_array($value)) {
+                    data_set($nested, $key, $value);
+                }
 
                 continue;
             }
 
-            $payload[$key] = $this->placeholder($type);
+            // Dotted key: let data_set nest it, which also converts the parent to an array.
+            data_set($nested, $key, $value);
         }
 
-        return $payload;
+        return $nested;
     }
 
     private function placeholder(Type $type): string

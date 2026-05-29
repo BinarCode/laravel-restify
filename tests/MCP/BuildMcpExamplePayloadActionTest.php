@@ -60,4 +60,25 @@ class BuildMcpExamplePayloadActionTest extends TestCase
             'context' => '<string, optional>',
         ], $payload);
     }
+
+    public function test_nests_dotted_keys_under_their_parent(): void
+    {
+        $factory = new JsonSchemaTypeFactory;
+        $schema = [
+            'campaign_id' => $factory->string()->required(),
+            'length' => $factory->array(),
+            'length.subject_max' => $factory->integer(),
+            'length.body_max' => $factory->integer(),
+        ];
+
+        $payload = (new BuildMcpExamplePayloadAction)($schema, bind: []);
+
+        $this->assertSame([
+            'campaign_id' => '<string, required>',
+            'length' => [
+                'subject_max' => '<integer, optional>',
+                'body_max' => '<integer, optional>',
+            ],
+        ], $payload);
+    }
 }
