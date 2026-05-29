@@ -39,4 +39,25 @@ class BuildMcpExamplePayloadActionTest extends TestCase
             'notes' => '<string|null, optional>',
         ], $payload);
     }
+
+    public function test_bind_values_override_placeholders(): void
+    {
+        $factory = new JsonSchemaTypeFactory;
+        $schema = [
+            'campaign_id' => $factory->string()->required(),
+            'lead_stage_id' => $factory->integer()->required(),
+            'context' => $factory->string(),
+        ];
+
+        $payload = (new BuildMcpExamplePayloadAction)($schema, bind: [
+            'campaign_id' => '01krb179j1ncmjpbggah5gcwvb',
+            'lead_stage_id' => 2,
+        ]);
+
+        $this->assertSame([
+            'campaign_id' => '01krb179j1ncmjpbggah5gcwvb',
+            'lead_stage_id' => 2,
+            'context' => '<string, optional>',
+        ], $payload);
+    }
 }
