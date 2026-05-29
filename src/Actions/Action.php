@@ -19,10 +19,10 @@ use Binaryk\LaravelRestify\Transaction;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\JsonSchema\JsonSchema;
-use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
@@ -215,6 +215,11 @@ abstract class Action implements JsonSerializable
         return app(JsonSchemaFromRulesAction::class)($schema, $this->rules());
     }
 
+    /**
+     * Build a UI-agnostic MCP invocation descriptor for this action within the given repository.
+     *
+     * @param  array<string, mixed>  $bind  Known field values to inject into the example payload.
+     */
     public function toMcpInvocationDescriptor(Repository $repository, array $bind = []): McpInvocationDescriptor
     {
         $schemaFactory = new JsonSchemaTypeFactory;
@@ -242,10 +247,10 @@ abstract class Action implements JsonSerializable
         $actionUriKey = $this->uriKey();
 
         if ($this->isStandalone()) {
-            return "POST /api/restify/{$repoUriKey}/actions?action={$actionUriKey}";
+            return sprintf('POST /api/restify/%s/actions?action=%s', $repoUriKey, $actionUriKey);
         }
 
-        return "POST /api/restify/{$repoUriKey}/{{$repoUriKey}}/actions?action={$actionUriKey}";
+        return sprintf('POST /api/restify/%s/{%s}/actions?action=%s', $repoUriKey, $repoUriKey, $actionUriKey);
     }
 
     #[ReturnTypeWillChange]

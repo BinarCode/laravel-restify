@@ -90,5 +90,16 @@ class ActionToMcpInvocationDescriptorTest extends IntegrationTestCase
         $this->assertSame('01krb179j1ncmjpbggah5gcwvb', $descriptor->examplePayload['campaign_id']);
         $this->assertSame('<integer, required>', $descriptor->examplePayload['lead_stage_id']);
         $this->assertSame('<string, optional>', $descriptor->examplePayload['context']);
+        $this->assertSame(
+            'POST /api/restify/samples/{samples}/actions?action=sample-action',
+            $descriptor->route,
+        );
+
+        $standaloneDescriptor = $action->standalone()->toMcpInvocationDescriptor($repository);
+
+        $this->assertSame(
+            'POST /api/restify/samples/actions?action=sample-action',
+            $standaloneDescriptor->route,
+        );
     }
 }
