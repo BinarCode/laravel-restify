@@ -7,8 +7,8 @@ use Illuminate\JsonSchema\Types\Type;
 class BuildMcpExamplePayloadAction
 {
     /**
-     * @param array<string, Type> $schema  ActionTool::schema() output.
-     * @param array<string, mixed> $bind   Known values to inject.
+     * @param  array<string, Type>  $schema  ActionTool::schema() output.
+     * @param  array<string, mixed>  $bind  Known values to inject.
      * @return array<string, mixed>
      */
     public function __invoke(array $schema, array $bind): array
