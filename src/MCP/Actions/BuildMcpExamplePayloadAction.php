@@ -19,7 +19,8 @@ class BuildMcpExamplePayloadAction
             $value = array_key_exists($key, $bind) ? $bind[$key] : $this->placeholder($type);
 
             if (! str_contains($key, '.')) {
-                // Only set parent if no child key has already turned it into an array.
+                // A bare parent entry (e.g. 'length' => array()) is only a schema hint;
+                // drop its placeholder string once dotted children have nested under it.
                 if (! isset($nested[$key]) || is_array($value)) {
                     data_set($nested, $key, $value);
                 }
@@ -27,7 +28,6 @@ class BuildMcpExamplePayloadAction
                 continue;
             }
 
-            // Dotted key: let data_set nest it, which also converts the parent to an array.
             data_set($nested, $key, $value);
         }
 
