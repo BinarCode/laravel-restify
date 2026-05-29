@@ -5,7 +5,11 @@ namespace Binaryk\LaravelRestify\Actions;
 use Binaryk\LaravelRestify\Actions\Concerns\HasSchemaResolver;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\MCP\Actions\BuildMcpExamplePayloadAction;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
+use Binaryk\LaravelRestify\MCP\McpInvocationDescriptor;
+use Binaryk\LaravelRestify\MCP\Tools\Operations\ActionTool;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Traits\Make;
@@ -15,9 +19,11 @@ use Binaryk\LaravelRestify\Transaction;
 use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
@@ -207,6 +213,39 @@ abstract class Action implements JsonSerializable
     public function toolSchema(JsonSchema $schema): array
     {
         return app(JsonSchemaFromRulesAction::class)($schema, $this->rules());
+    }
+
+    public function toMcpInvocationDescriptor(Repository $repository, array $bind = []): McpInvocationDescriptor
+    {
+        $schemaFactory = new JsonSchemaTypeFactory;
+        $actionTool = new ActionTool($repository::class, $this);
+
+        $schemaTypes = $actionTool->schema($schemaFactory);
+        $serializedSchema = collect($schemaTypes)->map(fn (Type $type) => $type->toArray())->all();
+
+        $examplePayload = (new BuildMcpExamplePayloadAction)($schemaTypes, $bind);
+
+        return new McpInvocationDescriptor(
+            toolName: $actionTool->name(),
+            repositoryUriKey: $repository::uriKey(),
+            actionUriKey: $this->uriKey(),
+            description: $this->description(app(RestifyRequest::class)),
+            route: $this->buildRoute($repository),
+            schema: $serializedSchema,
+            examplePayload: $examplePayload,
+        );
+    }
+
+    private function buildRoute(Repository $repository): string
+    {
+        $repoUriKey = $repository::uriKey();
+        $actionUriKey = $this->uriKey();
+
+        if ($this->isStandalone()) {
+            return "POST /api/restify/{$repoUriKey}/actions?action={$actionUriKey}";
+        }
+
+        return "POST /api/restify/{$repoUriKey}/{{$repoUriKey}}/actions?action={$actionUriKey}";
     }
 
     #[ReturnTypeWillChange]
