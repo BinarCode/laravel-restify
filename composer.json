@@ -80,6 +80,9 @@
             "aliases": {
                 "Restify": "Binaryk\\LaravelRestify\\RestifyFacade"
             }
+        },
+        "branch-alias": {
+            "dev-feat/mcp-invocation-descriptor": "10.4.x-dev"
         }
     },
     "minimum-stability": "dev",
