@@ -84,7 +84,7 @@ class RepositoryAiInstructionsTest extends IntegrationTestCase
 
         Restify::repositories([$repository::class]);
 
-        $response = $this->getJson('/'.trim(\Binaryk\LaravelRestify\Restify::path('ai-posts/ai-instructions'), '/'));
+        $response = $this->getJson('/'.trim(Restify::path('ai-posts/ai-instructions'), '/'));
 
         $response->assertOk();
 
@@ -127,7 +127,7 @@ class RepositoryAiInstructionsTest extends IntegrationTestCase
 
         Restify::repositories([$repository::class]);
 
-        $this->getJson('/'.trim(\Binaryk\LaravelRestify\Restify::path('no-mcp-posts/ai-instructions'), '/'))
+        $this->getJson('/'.trim(Restify::path('no-mcp-posts/ai-instructions'), '/'))
             ->assertNotFound();
     }
 }
