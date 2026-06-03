@@ -114,6 +114,36 @@ class SortableFilterTest extends IntegrationTestCase
             ->json('data.0.attributes.name'));
     }
 
+    public function test_can_sort_by_belongs_to_relation_column_absent_on_main_table(): void
+    {
+        // `posts` has no `name` column; `users` does. The related column must be
+        // qualified against the related table, not the main one (regression: the
+        // sort column was being qualified to `posts.name`, producing invalid SQL).
+        PostRepository::$related = [
+            'user' => BelongsTo::make('user', UserRepository::class),
+        ];
+
+        PostRepository::$sort = [
+            'user' => SortableFilter::make()
+                ->setColumn('name')
+                ->usingRelation(BelongsTo::make('user', UserRepository::class)),
+        ];
+
+        $zoro = User::factory()->create(['name' => 'Zoro']);
+        $alisa = User::factory()->create(['name' => 'Alisa']);
+
+        Post::factory()->create(['title' => 'Z', 'user_id' => $zoro->id]);
+        Post::factory()->create(['title' => 'A', 'user_id' => $alisa->id]);
+
+        $this->getJson(PostRepository::route(query: ['related' => 'user', 'sort' => 'user']))
+            ->assertOk()
+            ->assertJsonPath('data.0.relationships.user.attributes.name', 'Alisa');
+
+        $this->getJson(PostRepository::route(query: ['related' => 'user', 'sort' => '-user']))
+            ->assertOk()
+            ->assertJsonPath('data.0.relationships.user.attributes.name', 'Zoro');
+    }
+
     public function test_sort_qualifies_column_when_searchable_belongs_to_joins_exist(): void
     {
         PostRepository::$related = [
