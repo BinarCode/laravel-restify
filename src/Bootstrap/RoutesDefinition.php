@@ -14,6 +14,7 @@ use Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryActionController;
 use Binaryk\LaravelRestify\Http\Controllers\PerformRepositoryGetterController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileController;
 use Binaryk\LaravelRestify\Http\Controllers\ProfileUpdateController;
+use Binaryk\LaravelRestify\Http\Controllers\RepositoryAiInstructionsController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryApplyFiltersController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryAttachController;
 use Binaryk\LaravelRestify\Http\Controllers\RepositoryDestroyBulkController;
@@ -93,6 +94,12 @@ class RoutesDefinition
             $prefix.'/{repositoryId}/getters/{getter}',
             PerformRepositoryGetterController::class
         )->name('getters.repository.perform')->withoutMiddleware($this->excludedMiddleware);
+
+        // AI instructions
+        Route::get(
+            $prefix.'/ai-instructions',
+            RepositoryAiInstructionsController::class
+        )->name('ai-instructions');
 
         // API CRUD
         Route::get(
