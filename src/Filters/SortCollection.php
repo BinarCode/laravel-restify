@@ -113,6 +113,13 @@ class SortCollection extends Collection
     public function qualifyColumns(Model $model): self
     {
         return $this->each(function (SortableFilter $filter) use ($model) {
+            // Relation sorts qualify their column against the related model (in the
+            // subquery/join inside SortableFilter::filter), so qualifying them to the
+            // main table here would point at the wrong table.
+            if ($filter->hasEager()) {
+                return;
+            }
+
             if ($filter->column() && ! str_contains($filter->column(), '.')) {
                 $filter->setColumn($model->qualifyColumn($filter->column()));
             }
