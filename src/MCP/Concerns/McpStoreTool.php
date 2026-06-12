@@ -16,6 +16,8 @@ trait McpStoreTool
 {
     public function storeTool(McpStoreRequest $request): array
     {
+        $this->withResource(static::newModel());
+
         $this->collectFields($request)
             ->forStore($request, $this)
             ->areFiles()

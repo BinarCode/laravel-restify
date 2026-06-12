@@ -288,4 +288,94 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
         $this->assertContains('description', $requiredFields);
         $this->assertContains('user_id', $requiredFields);
     }
+
+    /**
+     * The McpToolsManager singleton caches tool instances (and their repositories), so consecutive
+     * store calls reuse the same repository. Each call must create a fresh record instead of
+     * updating the previously stored one.
+     */
+    public function test_mcp_http_store_tool_creates_distinct_records_on_consecutive_calls(): void
+    {
+        $mcpRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'test-consecutive-posts';
+
+            public function fields(RestifyRequest $request): array
+            {
+                return [
+                    Field::make('title'),
+                    Field::make('user_id'),
+                ];
+            }
+
+            public function mcpAllowsStore(): bool
+            {
+                return true;
+            }
+        };
+
+        Restify::repositories([
+            $mcpRepository::class,
+        ]);
+
+        Mcp::web('test-consecutive-restify', RestifyServer::class);
+
+        $toolsResponse = $this->postJson('/test-consecutive-restify', [
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'tools/list',
+            'params' => [],
+        ]);
+        $toolsResponse->assertOk();
+
+        $availableTools = collect($toolsResponse->json('result.tools'))->pluck('name')->toArray();
+        $storeToolName = collect($availableTools)->filter(fn ($name) => str_contains($name,
+            'test-consecutive-posts') && str_contains($name, 'store'))->first();
+
+        $this->assertNotNull($storeToolName,
+            'Expected test-consecutive-posts store tool not found. Available tools: '.implode(', ', $availableTools));
+
+        $createdIds = [];
+
+        foreach (['First Department', 'Second Department', 'Third Department'] as $index => $title) {
+            $response = $this->postJson('/test-consecutive-restify', [
+                'jsonrpc' => '2.0',
+                'id' => $index + 2,
+                'method' => 'tools/call',
+                'params' => [
+                    'name' => $storeToolName,
+                    'arguments' => [
+                        'title' => $title,
+                        'user_id' => 1,
+                    ],
+                ],
+            ]);
+
+            $response->assertOk();
+
+            $responseData = $response->json();
+
+            if (isset($responseData['error'])) {
+                $this->fail('MCP Error: '.$responseData['error']['message']);
+            }
+
+            $resultContent = json_decode($responseData['result']['content'][0]['text'], true);
+
+            $this->assertEquals($title, $resultContent['data']['attributes']['title']);
+
+            $createdIds[] = $resultContent['data']['id'];
+        }
+
+        $this->assertCount(3, array_unique($createdIds), 'Each store call must create a new record, not update the previous one.');
+
+        $this->assertDatabaseCount('posts', 3);
+
+        foreach (['First Department', 'Second Department', 'Third Department'] as $title) {
+            $this->assertDatabaseHas('posts', ['title' => $title]);
+        }
+    }
 }
