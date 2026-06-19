@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://laravel-restify.com/sitemap.xml

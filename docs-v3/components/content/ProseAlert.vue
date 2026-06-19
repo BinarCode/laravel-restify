@@ -19,11 +19,20 @@ import { InformationCircleIcon, ExclamationTriangleIcon, CheckCircleIcon, XCircl
 type AlertType = 'info' | 'warning' | 'success' | 'error'
 
 interface Props {
-  type?: AlertType
+  type?: AlertType | 'danger' | string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'info'
+})
+
+// Normalize incoming type: alias "danger" -> "error" and fall back to "info"
+// for any unknown value so the component never reads an undefined style.
+const ALIASES: Record<string, AlertType> = { danger: 'error' }
+const normalizedType = computed<AlertType>(() => {
+  const raw = props.type || 'info'
+  const mapped = ALIASES[raw] || raw
+  return (mapped in ALERT_STYLES ? mapped : 'info') as AlertType
 })
 
 const ALERT_STYLES: Record<AlertType, { alert: string; icon: string; text: string }> = {
@@ -56,5 +65,5 @@ const ALERT_ICONS: Record<AlertType, typeof InformationCircleIcon> = {
   error: XCircleIcon
 }
 
-const styleConfig = computed(() => ALERT_STYLES[props.type])
-const iconComponent = computed(() => ALERT_ICONS[props.type])</script>
+const styleConfig = computed(() => ALERT_STYLES[normalizedType.value])
+const iconComponent = computed(() => ALERT_ICONS[normalizedType.value])</script>

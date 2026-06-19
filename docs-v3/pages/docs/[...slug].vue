@@ -43,12 +43,12 @@ const { data: post } = await useAsyncData(`docs-${contentPath}`, function fetchD
   return queryCollection('content').path(contentPath).first()
 })
 
-if (post.value) {
-  useHead({
-    title: post.value.title || 'Documentation',
-    meta: [
-      { name: 'description', content: post.value.description || 'Laravel Restify Documentation' }
-    ]
-  })
+if (!post.value) {
+  throw createError({ statusCode: 404, statusMessage: 'Documentation page not found', fatal: true })
 }
+
+useSeoMeta({
+  title: post.value.title || 'Documentation',
+  description: post.value.description || 'Laravel Restify Documentation - Build amazing REST APIs with Laravel'
+})
 </script>

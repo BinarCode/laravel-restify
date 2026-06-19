@@ -1,0 +1,4 @@
+# Forced 301s for legacy docs-v2 bare paths (override any static file / SPA fallback)
+/quickstart      /docs/getting-started/quickstart  301!
+/repositories    /docs/api/repositories            301!
+/search          /docs/search/basic-filters        301!
