@@ -1,0 +1,90 @@
+<?php
+
+namespace {{namespace}};
+
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
+use Laravel\Socialite\Contracts\User as SocialiteUser;
+
+/**
+ * Your application's strategy for turning a provider (Socialite) user into an
+ * application user and linking the provider account. This was published from
+ * Laravel Restify — edit it freely, then point `restify.auth.social.resolver`
+ * at this class.
+ */
+class SocialUserResolver
+{
+    public function resolve(string $provider, SocialiteUser $socialiteUser): Authenticatable
+    {
+        $accountModel = config('restify.auth.social.model');
+
+        $account = $accountModel::query()
+            ->where('provider', $provider)
+            ->where('provider_id', (string) $socialiteUser->getId())
+            ->first();
+
+        if ($account && $user = $account->user) {
+            $this->linkAccount($provider, $socialiteUser, $user);
+
+            return $user;
+        }
+
+        $user = $this->findUser($socialiteUser) ?? $this->createUser($provider, $socialiteUser);
+
+        $this->linkAccount($provider, $socialiteUser, $user);
+
+        return $user;
+    }
+
+    protected function findUser(SocialiteUser $socialiteUser): ?Authenticatable
+    {
+        if (! $email = $socialiteUser->getEmail()) {
+            return null;
+        }
+
+        $userModel = config('restify.auth.user_model');
+
+        return $userModel::query()->where('email', $email)->first();
+    }
+
+    protected function createUser(string $provider, SocialiteUser $socialiteUser): Authenticatable
+    {
+        $userModel = config('restify.auth.user_model');
+
+        $user = new $userModel;
+
+        $user->forceFill([
+            'name' => $socialiteUser->getName() ?: $socialiteUser->getNickname() ?: 'User',
+            'email' => $socialiteUser->getEmail(),
+            'password' => Hash::make(Str::random(40)),
+            'email_verified_at' => $socialiteUser->getEmail() ? now() : null,
+        ])->save();
+
+        return $user;
+    }
+
+    protected function linkAccount(string $provider, SocialiteUser $socialiteUser, Authenticatable $user): void
+    {
+        $accountModel = config('restify.auth.social.model');
+
+        $accountModel::query()->updateOrCreate(
+            [
+                'provider' => $provider,
+                'provider_id' => (string) $socialiteUser->getId(),
+            ],
+            [
+                'user_id' => $user->getAuthIdentifier(),
+                'nickname' => $socialiteUser->getNickname(),
+                'name' => $socialiteUser->getName(),
+                'email' => $socialiteUser->getEmail(),
+                'avatar' => $socialiteUser->getAvatar(),
+                'access_token' => $socialiteUser->token ?? null,
+                'refresh_token' => $socialiteUser->refreshToken ?? null,
+                'expires_at' => isset($socialiteUser->expiresIn) && $socialiteUser->expiresIn
+                    ? now()->addSeconds($socialiteUser->expiresIn)
+                    : null,
+            ]
+        );
+    }
+}

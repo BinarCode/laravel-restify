@@ -1,0 +1,48 @@
+<?php
+
+namespace {{namespace}};
+
+use Binaryk\LaravelRestify\Restify;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
+use Laravel\Socialite\Facades\Socialite;
+
+class SocialCallbackController extends Controller
+{
+    public function __invoke(Request $request, string $provider)
+    {
+        $driver = Socialite::driver($provider);
+
+        if (config('restify.auth.social.stateless', true) && method_exists($driver, 'stateless')) {
+            $driver = $driver->stateless();
+        }
+
+        try {
+            $socialiteUser = $driver->user();
+        } catch (\Throwable $e) {
+            abort(401, 'Unable to authenticate with '.$provider.'.');
+        }
+
+        // Customize user resolution here, or globally via Restify::resolveSocialUserUsing().
+        $user = Restify::resolveSocialUser($provider, $socialiteUser, $request);
+
+        Auth::login($user);
+
+        $tokenTtl = config('restify.auth.token_ttl');
+        $expiresAt = $tokenTtl ? now()->addMinutes($tokenTtl) : null;
+
+        $token = $user->createToken(
+            config('restify.auth.social.token_name', 'social'),
+            ['*'],
+            $expiresAt
+        );
+
+        return rest($user)->indexMeta([
+            'token' => $token->plainTextToken,
+            'expires_in' => $tokenTtl ? $tokenTtl * 60 : null,
+            'provider' => $provider,
+        ]);
+    }
+}

@@ -30,6 +30,7 @@
     "require-dev": {
         "brianium/paratest": "^7.0.6",
         "doctrine/dbal": "^3.0|^4.0",
+        "laravel/socialite": "^5.0",
         "nunomaduro/collision": "^8.1",
         "openai-php/laravel": "^0.8.1|^0.11|^0.19",
         "orchestra/testbench": "^9.0|^10.0|^11.0",
@@ -41,6 +42,7 @@
         "vimeo/psalm": "^6.0"
     },
     "suggest": {
+        "laravel/socialite": "For social / OAuth authentication via Route::restifySocialAuth() and restify:social (^5.0)",
         "nuwave/lighthouse": "For GraphQL schema generation and resolvers (^6.0)",
         "pusher/pusher-php-server": "For real-time broadcasting features (^7.0)"
     },
