@@ -18,6 +18,7 @@ use Binaryk\LaravelRestify\Commands\RepositoryCommand;
 use Binaryk\LaravelRestify\Commands\RestifyRouteListCommand;
 use Binaryk\LaravelRestify\Commands\SetupAuthCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
+use Binaryk\LaravelRestify\Commands\SocialAuthCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Commands\ToolCommand;
@@ -54,6 +55,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
                 ToolCommand::class,
                 McpResourceCommand::class,
                 GraphqlGenerateCommand::class,
+                SocialAuthCommand::class,
             ]);
     }
 
@@ -83,5 +85,11 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         $this->publishes([
             __DIR__.'/../resources/views' => resource_path('views/vendor/restify'),
         ], 'restify-views');
+
+        $this->publishes([
+            __DIR__.'/../database/migrations/create_social_accounts_table.php.stub' => database_path(
+                'migrations/'.date('Y_m_d_His').'_create_social_accounts_table.php'
+            ),
+        ], 'restify-social-migrations');
     }
 }

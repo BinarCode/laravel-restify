@@ -1,8 +1,12 @@
 <?php
 
+use Binaryk\LaravelRestify\Auth\Social\SocialUserResolver;
+use Binaryk\LaravelRestify\Http\Controllers\Auth\Social\SocialCallbackController;
+use Binaryk\LaravelRestify\Http\Controllers\Auth\Social\SocialRedirectController;
 use Binaryk\LaravelRestify\Http\Middleware\AuthorizeRestify;
 use Binaryk\LaravelRestify\Http\Middleware\DispatchRestifyStartingEvent;
 use Binaryk\LaravelRestify\MCP\Tools\GlobalSearchTool;
+use Binaryk\LaravelRestify\Models\SocialAccount;
 use Binaryk\LaravelRestify\Repositories\ActionLogRepository;
 
 return [
@@ -81,6 +85,70 @@ return [
         |
         */
         'token_ttl' => env('RESTIFY_TOKEN_TTL', null),
+
+        /*
+        |--------------------------------------------------------------------------
+        | Social / OAuth authentication
+        |--------------------------------------------------------------------------
+        |
+        | Configuration for the social authentication routes registered by the
+        | `Route::restifySocialAuth()` macro. This is powered by Laravel Socialite,
+        | so the actual client id / secret / redirect for each provider live in
+        | `config/services.php` (the Socialite convention). Below you only declare
+        | which providers are exposed, their scopes, and how Restify behaves once
+        | the user comes back from the provider.
+        |
+        | Run `php artisan restify:social` to scaffold everything (it prints the
+        | exact env keys and `config/services.php` block you need per provider).
+        |
+        */
+        'social' => [
+            // Master switch for the social auth routes.
+            'enabled' => env('RESTIFY_SOCIAL_AUTH', true),
+
+            // The Eloquent model used to store linked provider accounts. Publish
+            // it with `restify:social --publish` and point this at your own copy
+            // to fully customize columns / behaviour.
+            'model' => SocialAccount::class,
+
+            // The class responsible for turning a Socialite user into one of your
+            // application users (find-or-create + link). Swap it here, or override
+            // the whole flow at runtime with `Restify::resolveSocialUserUsing(...)`.
+            'resolver' => SocialUserResolver::class,
+
+            // The invokable controllers backing the redirect / callback endpoints.
+            // `restify:social --publish` drops editable copies into your app — point
+            // these at them to take full control of the HTTP layer.
+            'controllers' => [
+                'redirect' => SocialRedirectController::class,
+                'callback' => SocialCallbackController::class,
+            ],
+
+            // Name used for the Sanctum token issued on a successful callback.
+            'token_name' => 'social',
+
+            // Stateless OAuth has no session dependency — recommended for the
+            // SPA / API-token flow. Set to false for classic web session flows.
+            'stateless' => true,
+
+            // When set, the callback responds with a redirect to this URL instead
+            // of JSON. Available placeholders: {token}, {provider}, {error}.
+            // e.g. env('FRONTEND_APP_URL').'/auth/social?token={token}'
+            'redirect_url' => env('RESTIFY_SOCIAL_REDIRECT_URL'),
+
+            // The providers you support. Keys are Socialite driver names; core
+            // drivers (github, google, facebook, gitlab, bitbucket, ...) ship with
+            // Socialite, others (atlassian, jira, ...) come from socialiteproviders.com.
+            'providers' => [
+                'github' => [
+                    'scopes' => ['read:user', 'user:email'],
+                ],
+                // 'google' => ['scopes' => ['openid', 'profile', 'email']],
+                // 'gitlab' => ['scopes' => ['read_user']],
+                // 'bitbucket' => ['scopes' => ['account', 'email']],
+                // 'atlassian' => ['scopes' => ['read:me', 'read:jira-user']], // socialiteproviders/atlassian
+            ],
+        ],
     ],
 
     /*

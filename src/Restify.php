@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify;
 
+use Binaryk\LaravelRestify\Auth\Social\SocialUserResolver;
 use Binaryk\LaravelRestify\Bootstrap\BootRepository;
 use Binaryk\LaravelRestify\Events\RestifyBeforeEach;
 use Binaryk\LaravelRestify\Events\RestifyStarting;
@@ -10,10 +11,12 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Traits\AuthorizesRequests;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Str;
+use Laravel\Socialite\Contracts\User;
 use ReflectionClass;
 use ReflectionException;
 use Symfony\Component\Finder\Finder;
@@ -42,6 +45,45 @@ class Restify
      * @var \Closure
      */
     public static $renderCallback;
+
+    /**
+     * The callback used to resolve an application user from a social provider
+     * (Socialite) user. When null, the configured resolver class is used.
+     *
+     * @var \Closure|null
+     */
+    public static $socialUserResolver;
+
+    /**
+     * Override how a social (OAuth) provider user is turned into an application
+     * user. The callback receives the provider name, the Socialite user, and the
+     * current request, and must return an Authenticatable.
+     *
+     *     Restify::resolveSocialUserUsing(function (string $provider, $socialiteUser, $request) {
+     *         return User::firstOrCreate(['email' => $socialiteUser->getEmail()], [...]);
+     *     });
+     */
+    public static function resolveSocialUserUsing(\Closure $callback): void
+    {
+        static::$socialUserResolver = $callback;
+    }
+
+    /**
+     * Resolve the application user for an authenticated social provider user.
+     *
+     * @param  User  $socialiteUser
+     * @return Authenticatable
+     */
+    public static function resolveSocialUser(string $provider, $socialiteUser, ?Request $request = null)
+    {
+        if (static::$socialUserResolver) {
+            return call_user_func(static::$socialUserResolver, $provider, $socialiteUser, $request);
+        }
+
+        $resolver = config('restify.auth.social.resolver', SocialUserResolver::class);
+
+        return app($resolver)->resolve($provider, $socialiteUser);
+    }
 
     /**
      * Get the repository class name for a given key.

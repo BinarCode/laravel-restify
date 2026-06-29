@@ -9,6 +9,8 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\LoginController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\LogoutController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\RegisterController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
+use Binaryk\LaravelRestify\Http\Controllers\Auth\Social\SocialCallbackController;
+use Binaryk\LaravelRestify\Http\Controllers\Auth\Social\SocialRedirectController;
 use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
@@ -30,6 +32,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         $this->authorization();
         $this->repositories();
         $this->authRoutes();
+        $this->socialAuthRoutes();
         $this->routes();
         $this->singleton();
     }
@@ -120,6 +123,33 @@ class RestifyApplicationServiceProvider extends ServiceProvider
                         ->middleware('throttle:6,1')
                         ->name('restify.resetPassword');
                 }
+            });
+        });
+    }
+
+    protected function socialAuthRoutes(): void
+    {
+        Route::macro('restifySocialAuth', function ($prefix = 'auth/social', ?array $providers = null) {
+            $providers = $providers ?? array_keys((array) config('restify.auth.social.providers', []));
+
+            if (empty($providers)) {
+                return;
+            }
+
+            $redirectController = config('restify.auth.social.controllers.redirect', SocialRedirectController::class);
+            $callbackController = config('restify.auth.social.controllers.callback', SocialCallbackController::class);
+
+            Route::group([
+                'prefix' => $prefix,
+                'middleware' => ['api'],
+            ], function () use ($providers, $redirectController, $callbackController) {
+                Route::get('{provider}/redirect', $redirectController)
+                    ->whereIn('provider', $providers)
+                    ->name('restify.social.redirect');
+
+                Route::match(['get', 'post'], '{provider}/callback', $callbackController)
+                    ->whereIn('provider', $providers)
+                    ->name('restify.social.callback');
             });
         });
     }
