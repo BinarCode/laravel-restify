@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use Laravel\Socialite\SocialiteServiceProvider;
 
@@ -14,9 +15,12 @@ class SocialAuthCommand extends Command
     protected $signature = 'restify:social
         {--providers= : Comma-separated list of providers to scaffold (e.g. github,google,atlassian)}
         {--publish : Publish the controllers, resolver and model into the app for full customization}
-        {--no-routes : Skip appending Route::restifySocialAuth() to routes/api.php}';
+        {--install : Run composer require for community providers (socialiteproviders/*)}
+        {--no-routes : Skip appending Route::restifySocialAuth() to routes/api.php}
+        {--no-env : Skip writing keys into .env / .env.example}
+        {--no-services : Skip writing the provider blocks into config/services.php}';
 
-    protected $description = 'Scaffold social (OAuth) authentication: migration, routes, env keys and (optionally) publishable controllers.';
+    protected $description = 'Scaffold social (OAuth) authentication: migration, routes, env keys, services config and (optionally) publishable controllers.';
 
     /**
      * Drivers that ship with Laravel Socialite out of the box vs. community ones.
@@ -46,10 +50,18 @@ class SocialAuthCommand extends Command
             $this->registerRoute();
         }
 
-        $this->printProviderInstructions($providers);
+        if (! $this->option('no-env')) {
+            $this->writeEnv($providers);
+        }
+
+        if (! $this->option('no-services')) {
+            $this->writeServices($providers);
+        }
+
+        $this->installCommunityProviders($providers);
 
         $this->newLine();
-        $this->components->info('Social auth scaffolded. Run `php artisan migrate` once your env is set.');
+        $this->components->info('Social auth scaffolded. Fill in the credentials in .env, then run `php artisan migrate`.');
 
         return self::SUCCESS;
     }
@@ -159,32 +171,181 @@ class SocialAuthCommand extends Command
         $this->components->twoColumnDetail('routes/api.php', '<fg=green>Route::restifySocialAuth() appended</>');
     }
 
-    protected function printProviderInstructions(array $providers): void
+    protected function writeEnv(array $providers): void
     {
-        $this->newLine();
-        $this->components->info('Add these to your .env:');
+        $filesystem = new Filesystem;
 
-        foreach ($providers as $provider) {
-            $const = Str::of($provider)->upper()->replace('-', '_')->toString();
-            $this->line("  <fg=cyan>{$const}_CLIENT_ID</>=");
-            $this->line("  <fg=cyan>{$const}_CLIENT_SECRET</>=");
-            $this->line("  <fg=cyan>{$const}_REDIRECT_URI</>=\${APP_URL}/api/auth/social/{$provider}/callback");
-        }
+        foreach (['.env', '.env.example'] as $file) {
+            $path = base_path($file);
 
-        $this->newLine();
-        $this->components->info('Add these to config/services.php:');
-
-        foreach ($providers as $provider) {
-            $const = Str::of($provider)->upper()->replace('-', '_')->toString();
-            $this->line("  '{$provider}' => [");
-            $this->line("      'client_id' => env('{$const}_CLIENT_ID'),");
-            $this->line("      'client_secret' => env('{$const}_CLIENT_SECRET'),");
-            $this->line("      'redirect' => env('{$const}_REDIRECT_URI'),");
-            $this->line('  ],');
-
-            if (in_array($provider, $this->communityProviders, true)) {
-                $this->line("  <fg=yellow># {$provider} needs: composer require socialiteproviders/{$provider} (see socialiteproviders.com)</>");
+            if (! $filesystem->exists($path)) {
+                continue;
             }
+
+            $updated = static::appendMissingEnv($filesystem->get($path), $providers);
+
+            if ($updated === null) {
+                $this->components->twoColumnDetail($file, '<fg=yellow>keys already present</>');
+
+                continue;
+            }
+
+            $filesystem->put($path, $updated);
+            $this->components->twoColumnDetail($file, '<fg=green>keys appended</>');
         }
+    }
+
+    protected function writeServices(array $providers): void
+    {
+        $filesystem = new Filesystem;
+        $path = config_path('services.php');
+
+        if (! $filesystem->exists($path)) {
+            $this->components->twoColumnDetail('config/services.php', '<fg=yellow>missing — add the blocks shown above manually</>');
+            $this->printServicesBlocks($providers);
+
+            return;
+        }
+
+        $updated = static::injectServices($filesystem->get($path), $providers);
+
+        if ($updated === null) {
+            $this->components->twoColumnDetail('config/services.php', '<fg=yellow>providers already present</>');
+
+            return;
+        }
+
+        $filesystem->put($path, $updated);
+        $this->components->twoColumnDetail('config/services.php', '<fg=green>provider blocks added</>');
+    }
+
+    protected function installCommunityProviders(array $providers): void
+    {
+        $community = array_values(array_intersect($providers, $this->communityProviders));
+
+        if (empty($community)) {
+            return;
+        }
+
+        if (! $this->option('install')) {
+            foreach ($community as $provider) {
+                $this->components->warn("{$provider} needs a community driver: composer require socialiteproviders/{$provider} (see socialiteproviders.com)");
+            }
+
+            return;
+        }
+
+        foreach ($community as $provider) {
+            $package = "socialiteproviders/{$provider}";
+            $this->components->task("Installing {$package}", function () use ($package) {
+                return Process::path(base_path())
+                    ->timeout(300)
+                    ->run("composer require {$package}")
+                    ->successful();
+            });
+        }
+
+        $this->components->warn('Register the community provider(s) per socialiteproviders.com (Event listener + service provider).');
+    }
+
+    protected function printServicesBlocks(array $providers): void
+    {
+        foreach ($providers as $provider) {
+            $this->line('  '.str_replace("\n", "\n  ", trim(static::servicesBlockFor($provider))));
+        }
+    }
+
+    /**
+     * The UPPER_SNAKE env prefix for a provider (e.g. "linkedin-openid" -> "LINKEDIN_OPENID").
+     */
+    public static function envPrefix(string $provider): string
+    {
+        return Str::of($provider)->upper()->replace('-', '_')->toString();
+    }
+
+    /**
+     * The env keys a provider needs.
+     */
+    public static function envKeysFor(string $provider): array
+    {
+        $prefix = static::envPrefix($provider);
+
+        return ["{$prefix}_CLIENT_ID", "{$prefix}_CLIENT_SECRET", "{$prefix}_REDIRECT_URI"];
+    }
+
+    /**
+     * Append any missing provider env keys to the given .env contents.
+     * Returns null when nothing changed (every key already present).
+     */
+    public static function appendMissingEnv(string $contents, array $providers): ?string
+    {
+        $additions = [];
+
+        foreach ($providers as $provider) {
+            [$id, $secret, $redirect] = static::envKeysFor($provider);
+
+            // Skip providers whose keys are already declared.
+            if (preg_match('/^\s*'.preg_quote($id, '/').'=/m', $contents)) {
+                continue;
+            }
+
+            $additions[] = "{$id}=";
+            $additions[] = "{$secret}=";
+            $additions[] = "{$redirect}=\${APP_URL}/api/auth/social/{$provider}/callback";
+        }
+
+        if (empty($additions)) {
+            return null;
+        }
+
+        return rtrim($contents)."\n\n# Restify social auth\n".implode("\n", $additions)."\n";
+    }
+
+    /**
+     * The config/services.php array block for a single provider.
+     */
+    public static function servicesBlockFor(string $provider): string
+    {
+        $prefix = static::envPrefix($provider);
+
+        return <<<PHP
+        '{$provider}' => [
+            'client_id' => env('{$prefix}_CLIENT_ID'),
+            'client_secret' => env('{$prefix}_CLIENT_SECRET'),
+            'redirect' => env('{$prefix}_REDIRECT_URI'),
+        ],
+    PHP;
+    }
+
+    /**
+     * Inject any missing provider blocks before the final "];" of a services.php file.
+     * Returns null when nothing changed (every provider already present).
+     */
+    public static function injectServices(string $contents, array $providers): ?string
+    {
+        $blocks = [];
+
+        foreach ($providers as $provider) {
+            if (preg_match("/['\"]".preg_quote($provider, '/')."['\"]\s*=>/", $contents)) {
+                continue;
+            }
+
+            $blocks[] = static::servicesBlockFor($provider);
+        }
+
+        if (empty($blocks)) {
+            return null;
+        }
+
+        $injection = "\n".implode("\n", $blocks)."\n";
+
+        // Insert just before the array's closing "];" (the last one in the file).
+        $position = strrpos($contents, '];');
+
+        if ($position === false) {
+            return rtrim($contents)."\n".$injection;
+        }
+
+        return substr($contents, 0, $position).$injection.substr($contents, $position);
     }
 }
