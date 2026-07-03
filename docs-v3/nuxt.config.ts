@@ -127,32 +127,23 @@ export default defineNuxtConfig({
     }
   },
 
-  // 301 redirects from the legacy docs-v2 URL structure to the new /docs/* paths.
-  // Removes the duplicate soft-404 pages Ahrefs flagged and preserves old backlinks.
-  // Note: bare exact-match legacy paths (/quickstart, /repositories, /search) are
-  // handled via public/_redirects with forced (301!) rules. Exact-match redirect
-  // routeRules get prerendered as meta-refresh stub HTML files, which Netlify then
-  // serves with a 200 (shadowing the redirect) — so they must NOT live here.
-  routeRules: {
-    '/api/**': { redirect: { to: '/docs/api/**', statusCode: 301 } },
-    '/auth/**': { redirect: { to: '/docs/auth/**', statusCode: 301 } },
-    '/search/**': { redirect: { to: '/docs/search/**', statusCode: 301 } },
-    '/graphql/**': { redirect: { to: '/docs/graphql/**', statusCode: 301 } },
-    '/mcp/**': { redirect: { to: '/docs/mcp/**', statusCode: 301 } },
-    '/performance/**': { redirect: { to: '/docs/performance/**', statusCode: 301 } },
-    '/boost/**': { redirect: { to: '/docs/boost/**', statusCode: 301 } },
-    '/testing/**': { redirect: { to: '/docs/testing/**', statusCode: 301 } }
-  },
+  // 301 redirects from the legacy docs-v2 URL structure to the new /docs/* paths
+  // (preserves old backlinks and removes the duplicate soft-404 pages Ahrefs flagged)
+  // live in public/_redirects, authored in Cloudflare Pages' native syntax (:splat,
+  // no forced-'!' suffix). They are intentionally NOT expressed as Nuxt routeRules:
+  // Nitro emits routeRule redirects into _redirects using '**' placeholders, which
+  // Cloudflare Pages does not understand, and exact-match rules would additionally be
+  // prerendered as meta-refresh stub HTML that shadows the redirect with a 200.
 
   // TypeScript configuration
   typescript: {
     typeCheck: false
   },
 
-  // Static site generation for Netlify
+  // Static site generation for Cloudflare Pages
   ssr: true,
   nitro: {
-    preset: 'netlify-static',
+    preset: 'cloudflare_pages',
     prerender: {
       failOnError: false,
       crawlLinks: true,

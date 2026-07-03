@@ -1,4 +1,18 @@
-# Forced 301s for legacy docs-v2 bare paths (override any static file / SPA fallback)
-/quickstart      /docs/getting-started/quickstart  301!
-/repositories    /docs/api/repositories            301!
-/search          /docs/search/basic-filters        301!
+# Legacy docs-v2 URL structure -> new /docs/* paths. 301 to preserve backlinks/SEO.
+# Cloudflare Pages _redirects: '*' greedily captures the tail, placed back via ':splat'.
+# First matching rule wins, so exact-match rules must precede their wildcard counterparts.
+
+# Bare exact-match legacy paths
+/quickstart      /docs/getting-started/quickstart  301
+/repositories    /docs/api/repositories            301
+/search          /docs/search/basic-filters        301
+
+# Wildcard section redirects
+/api/*           /docs/api/:splat          301
+/auth/*          /docs/auth/:splat         301
+/search/*        /docs/search/:splat       301
+/graphql/*       /docs/graphql/:splat      301
+/mcp/*           /docs/mcp/:splat          301
+/performance/*   /docs/performance/:splat  301
+/boost/*         /docs/boost/:splat        301
+/testing/*       /docs/testing/:splat      301

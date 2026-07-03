@@ -1,0 +1,10 @@
+# Long-lived immutable caching for hashed build assets.
+# Ported from the previous Netlify config; Cloudflare Pages uses the same _headers format.
+/_nuxt/builds/meta/*
+  cache-control: public, max-age=31536000, immutable
+/_nuxt/builds/*
+  cache-control: public, max-age=1, immutable
+/_fonts/*
+  cache-control: public, max-age=31536000, immutable
+/_nuxt/*
+  cache-control: public, max-age=31536000, immutable
