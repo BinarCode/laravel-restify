@@ -8,40 +8,41 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
 
 class StoreTool extends Tool
 {
-    /**
-     * @var Repository|HasMcpTools
-     */
-    protected Repository $repository;
+    public function __construct(protected string $repositoryClass) {}
 
-    public function __construct(string $repositoryClass)
+    /**
+     * @return Repository|HasMcpTools
+     */
+    public function repository(): Repository
     {
-        $this->repository = app($repositoryClass);
+        return app($this->repositoryClass);
     }
 
     public function title(): string
     {
-        return $this->repository::label().' Create';
+        return $this->repositoryClass::label().' Create';
     }
 
     public function name(): string
     {
-        $uriKey = $this->repository->uriKey();
+        $uriKey = $this->repositoryClass::uriKey();
 
         return "{$uriKey}-store-tool";
     }
 
     public function description(): string
     {
-        return $this->repository::description(app(McpStoreRequest::class));
+        return $this->repositoryClass::description(app(McpStoreRequest::class));
     }
 
     public function schema(JsonSchema $schema): array
     {
-        $repositoryClass = get_class($this->repository);
+        $repositoryClass = $this->repositoryClass;
 
         // Use repository's schema method if it has MCP tools
         if (method_exists($repositoryClass, 'storeToolSchema')) {
@@ -56,13 +57,13 @@ class StoreTool extends Tool
         return $fields;
     }
 
-    public function handle(Request $request): Response
+    public function handle(Request $request): Response|ResponseFactory
     {
         $mcpRequest = app(McpStoreRequest::class);
         $mcpRequest->replace($request->all());
 
-        $result = $this->repository->storeTool($mcpRequest);
+        $result = $this->repository()->storeTool($mcpRequest);
 
-        return Response::json($result);
+        return Response::structured($result);
     }
 }

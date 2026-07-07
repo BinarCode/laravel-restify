@@ -326,7 +326,47 @@ return [
         | regardless of this setting.
         |
         */
-        'mode' => env('RESTIFY_MCP_MODE', 'direct'),
+        'mode' => env('RESTIFY_MCP_MODE', 'wrapper'),
+
+        /*
+        |--------------------------------------------------------------------------
+        | Read-Only Mode
+        |--------------------------------------------------------------------------
+        |
+        | When enabled, the MCP server refuses every write operation (store,
+        | update, delete, action). In 'direct' mode only read tools (index, show,
+        | getter, profile) are registered; in 'wrapper' mode write operations are
+        | hidden from discovery and rejected by execute-operation.
+        |
+        */
+        'read_only' => env('RESTIFY_MCP_READ_ONLY', false),
+
+        /*
+        |--------------------------------------------------------------------------
+        | File Ingestion
+        |--------------------------------------------------------------------------
+        |
+        | Controls how AI-supplied file fields are resolved into uploads.
+        |
+        */
+        'files' => [
+            /*
+            | Allow AI-supplied values to reference local filesystem paths. Disabled
+            | by default: enabling it lets an MCP client read arbitrary server files.
+            */
+            'allow_local_paths' => env('RESTIFY_MCP_FILES_ALLOW_LOCAL_PATHS', false),
+
+            /*
+            | Maximum number of bytes fetched from a remote file URL. Downloads
+            | larger than this are rejected. Defaults to 10MB.
+            */
+            'max_bytes' => env('RESTIFY_MCP_FILES_MAX_BYTES', 10 * 1024 * 1024),
+
+            /*
+            | Timeout in seconds applied when fetching a remote file URL.
+            */
+            'timeout' => env('RESTIFY_MCP_FILES_TIMEOUT', 10),
+        ],
 
         'tools' => [
             'exclude' => [

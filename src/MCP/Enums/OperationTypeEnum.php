@@ -29,6 +29,31 @@ enum OperationTypeEnum
     case custom;
     case wrapper;
 
+    /**
+     * MCP safety-hint annotations for this operation, mirroring the class attributes
+     * on the per-operation tools so wrapper-mode agents get the same signal.
+     *
+     * @return array<string, bool>
+     */
+    public function annotations(): array
+    {
+        return match ($this) {
+            self::index, self::show, self::profile, self::getter => ['readOnlyHint' => true],
+            self::update => ['idempotentHint' => true],
+            self::delete => ['destructiveHint' => true, 'idempotentHint' => true],
+            self::action => ['openWorldHint' => true],
+            default => [],
+        };
+    }
+
+    public function isWrite(): bool
+    {
+        return match ($this) {
+            self::store, self::update, self::delete, self::action => true,
+            default => false,
+        };
+    }
+
     public static function fromTool(Tool $tool): self
     {
         return match (true) {

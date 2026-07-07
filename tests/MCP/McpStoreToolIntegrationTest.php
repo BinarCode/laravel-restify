@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\RestifyServer;
+use Binaryk\LaravelRestify\MCP\Tools\Operations\StoreTool;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Database\Factories\PostFactory;
@@ -24,6 +25,7 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
         parent::setUp();
 
         config(['app.debug' => true]);
+        config(['restify.mcp.mode' => 'direct']);
     }
 
     protected function getPackageProviders($app): array
@@ -377,5 +379,226 @@ class McpStoreToolIntegrationTest extends IntegrationTestCase
         foreach (['First Department', 'Second Department', 'Third Department'] as $title) {
             $this->assertDatabaseHas('posts', ['title' => $title]);
         }
+    }
+
+    public function test_mcp_update_after_store_targets_the_created_record(): void
+    {
+        $mcpRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'articles';
+
+            public function fields(RestifyRequest $request): array
+            {
+                return [
+                    Field::make('title'),
+                    Field::make('user_id'),
+                ];
+            }
+
+            public function mcpAllowsStore(): bool
+            {
+                return true;
+            }
+
+            public function mcpAllowsUpdate(): bool
+            {
+                return true;
+            }
+        };
+
+        Restify::repositories([
+            $mcpRepository::class,
+        ]);
+
+        Mcp::web('test-store-then-update-restify', RestifyServer::class);
+
+        $toolsResponse = $this->postJson('/test-store-then-update-restify', [
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'tools/list',
+            'params' => [],
+        ]);
+        $toolsResponse->assertOk();
+
+        $availableTools = collect($toolsResponse->json('result.tools'))->pluck('name')->toArray();
+        $storeToolName = collect($availableTools)->first(fn ($name) => str_ends_with($name, 'articles-store-tool'));
+        $updateToolName = collect($availableTools)->first(fn ($name) => str_ends_with($name, 'articles-update-tool'));
+
+        $this->assertNotNull($storeToolName);
+        $this->assertNotNull($updateToolName);
+
+        $storeResponse = $this->postJson('/test-store-then-update-restify', [
+            'jsonrpc' => '2.0',
+            'id' => 2,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => $storeToolName,
+                'arguments' => [
+                    'title' => 'Original Title',
+                    'user_id' => 1,
+                ],
+            ],
+        ]);
+        $storeResponse->assertOk();
+
+        $storedId = json_decode($storeResponse->json('result.content.0.text'), true)['data']['id'];
+
+        $updateResponse = $this->postJson('/test-store-then-update-restify', [
+            'jsonrpc' => '2.0',
+            'id' => 3,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => $updateToolName,
+                'arguments' => [
+                    'id' => $storedId,
+                    'title' => 'Updated Title',
+                ],
+            ],
+        ]);
+        $updateResponse->assertOk();
+
+        $updated = json_decode($updateResponse->json('result.content.0.text'), true);
+
+        $this->assertEquals($storedId, $updated['data']['id']);
+        $this->assertEquals('Updated Title', $updated['data']['attributes']['title']);
+
+        $this->assertDatabaseCount('posts', 1);
+        $this->assertDatabaseHas('posts', ['id' => $storedId, 'title' => 'Updated Title']);
+    }
+
+    public function test_mcp_store_tools_from_different_repositories_do_not_pollute_each_other(): void
+    {
+        $firstRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'alpha';
+
+            public function fields(RestifyRequest $request): array
+            {
+                return [
+                    Field::make('title'),
+                    Field::make('user_id'),
+                ];
+            }
+
+            public function mcpAllowsStore(): bool
+            {
+                return true;
+            }
+        };
+
+        $secondRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'beta';
+
+            public function fields(RestifyRequest $request): array
+            {
+                return [
+                    Field::make('title'),
+                    Field::make('user_id'),
+                ];
+            }
+
+            public function mcpAllowsStore(): bool
+            {
+                return true;
+            }
+        };
+
+        Restify::repositories([
+            $firstRepository::class,
+            $secondRepository::class,
+        ]);
+
+        Mcp::web('test-multi-store-restify', RestifyServer::class);
+
+        $availableTools = collect($this->postJson('/test-multi-store-restify', [
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'tools/list',
+            'params' => [],
+        ])->json('result.tools'))->pluck('name')->toArray();
+
+        $firstStoreTool = collect($availableTools)->first(fn ($name) => str_ends_with($name, 'alpha-store-tool'));
+        $secondStoreTool = collect($availableTools)->first(fn ($name) => str_ends_with($name, 'beta-store-tool'));
+
+        $this->assertNotNull($firstStoreTool);
+        $this->assertNotNull($secondStoreTool);
+
+        $callStore = function (string $toolName, string $title, int $id): array {
+            $response = $this->postJson('/test-multi-store-restify', [
+                'jsonrpc' => '2.0',
+                'id' => $id,
+                'method' => 'tools/call',
+                'params' => [
+                    'name' => $toolName,
+                    'arguments' => [
+                        'title' => $title,
+                        'user_id' => 1,
+                    ],
+                ],
+            ]);
+            $response->assertOk();
+
+            return json_decode($response->json('result.content.0.text'), true);
+        };
+
+        $first = $callStore($firstStoreTool, 'From First Repository', 2);
+        $second = $callStore($secondStoreTool, 'From Second Repository', 3);
+
+        $this->assertEquals('From First Repository', $first['data']['attributes']['title']);
+        $this->assertEquals('From Second Repository', $second['data']['attributes']['title']);
+        $this->assertNotEquals($first['data']['id'], $second['data']['id']);
+
+        $this->assertDatabaseCount('posts', 2);
+        $this->assertDatabaseHas('posts', ['title' => 'From First Repository']);
+        $this->assertDatabaseHas('posts', ['title' => 'From Second Repository']);
+    }
+
+    public function test_operation_tool_resolves_a_fresh_repository_instance_per_call(): void
+    {
+        $mcpRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'fresh-instance-posts';
+
+            public function fields(RestifyRequest $request): array
+            {
+                return [
+                    Field::make('title'),
+                ];
+            }
+
+            public function mcpAllowsStore(): bool
+            {
+                return true;
+            }
+        };
+
+        Restify::repositories([
+            $mcpRepository::class,
+        ]);
+
+        $tool = new StoreTool($mcpRepository::class);
+
+        $this->assertNotSame(
+            $tool->repository(),
+            $tool->repository(),
+            'Each call must resolve a fresh repository instance so state cannot leak between MCP tool invocations.'
+        );
     }
 }

@@ -25,6 +25,13 @@ class McpActionsIntegrationTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        config(['restify.mcp.mode' => 'direct']);
+    }
+
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [

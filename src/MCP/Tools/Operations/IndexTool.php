@@ -8,40 +8,43 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 class IndexTool extends Tool
 {
-    /**
-     * @var Repository|HasMcpTools
-     */
-    protected Repository $repository;
+    public function __construct(protected string $repositoryClass) {}
 
-    public function __construct(string $repositoryClass)
+    /**
+     * @return Repository|HasMcpTools
+     */
+    public function repository(): Repository
     {
-        $this->repository = app($repositoryClass);
+        return app($this->repositoryClass);
     }
 
     public function title(): string
     {
-        return $this->repository::label().' Index';
+        return $this->repositoryClass::label().' Index';
     }
 
     public function name(): string
     {
-        $uriKey = $this->repository->uriKey();
+        $uriKey = $this->repositoryClass::uriKey();
 
         return "{$uriKey}-index-tool";
     }
 
     public function description(): string
     {
-        return $this->repository::description(app(McpIndexRequest::class));
+        return $this->repositoryClass::description(app(McpIndexRequest::class));
     }
 
     public function schema(JsonSchema $schema): array
     {
-        $repositoryClass = get_class($this->repository);
+        $repositoryClass = $this->repositoryClass;
 
         // Use repository's schema method if it has MCP tools
         if (method_exists($repositoryClass, 'indexToolSchema')) {
@@ -56,13 +59,13 @@ class IndexTool extends Tool
         ];
     }
 
-    public function handle(Request $request): Response
+    public function handle(Request $request): Response|ResponseFactory
     {
         $mcpRequest = app(McpIndexRequest::class);
         $mcpRequest->replace($request->all());
 
-        $result = $this->repository->indexTool($mcpRequest);
+        $result = $this->repository()->indexTool($mcpRequest);
 
-        return Response::json($result);
+        return Response::structured($result);
     }
 }

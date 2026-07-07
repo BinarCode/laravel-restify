@@ -7,8 +7,11 @@ use Binaryk\LaravelRestify\MCP\McpTools;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 class GetOperationDetailsTool extends Tool
 {
     use WrapperToolHelpers;
@@ -39,7 +42,31 @@ class GetOperationDetailsTool extends Tool
         ];
     }
 
-    public function handle(Request $request): Response
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return [
+            'success' => $schema->boolean()
+                ->description('Whether the lookup succeeded.'),
+            'operation' => $schema->string()
+                ->description('The resolved tool name for the operation.'),
+            'type' => $schema->string()
+                ->description('The operation type (index, show, store, update, delete, profile, action, getter).'),
+            'title' => $schema->string()
+                ->description('Human-readable operation title.'),
+            'description' => $schema->string()
+                ->description('Operation description.'),
+            'annotations' => $schema->object()
+                ->description('Safety hints for the operation.'),
+            'schema' => $schema->object()
+                ->description('JSON schema describing the operation parameters.'),
+            'examples' => $schema->array()
+                ->description('Example parameter payloads for the operation.'),
+            'next_steps' => $schema->array()
+                ->description('Suggested follow-up tool calls.'),
+        ];
+    }
+
+    public function handle(Request $request): Response|ResponseFactory
     {
         try {
             $repositoryKey = $request->get('repository');
@@ -47,24 +74,24 @@ class GetOperationDetailsTool extends Tool
             $operationName = $request->get('operation_name');
 
             if (! $repositoryKey) {
-                return Response::json($this->buildErrorResponse(
+                return $this->errorResponse(
                     'Repository parameter is required',
                     'MISSING_PARAMETER'
-                ));
+                );
             }
 
             if (! $operationType) {
-                return Response::json($this->buildErrorResponse(
+                return $this->errorResponse(
                     'Operation type parameter is required',
                     'MISSING_PARAMETER'
-                ));
+                );
             }
 
             if (in_array($operationType, ['action', 'getter']) && ! $operationName) {
-                return Response::json($this->buildErrorResponse(
+                return $this->errorResponse(
                     "Operation name is required for {$operationType} operation type",
                     'MISSING_PARAMETER'
-                ));
+                );
             }
 
             $details = McpTools::getOperationDetails($repositoryKey, $operationType, $operationName);
@@ -75,12 +102,13 @@ class GetOperationDetailsTool extends Tool
             // Generate examples
             $examples = $this->generateExamplesFromSchema($formattedSchema, $operationType);
 
-            return Response::json([
+            return Response::structured([
                 'success' => true,
                 'operation' => $details['operation'],
                 'type' => $details['type'],
                 'title' => $details['title'],
                 'description' => $details['description'],
+                'annotations' => $details['annotations'],
                 'schema' => $formattedSchema,
                 'examples' => $examples,
                 'next_steps' => [
@@ -90,9 +118,13 @@ class GetOperationDetailsTool extends Tool
                 ],
             ]);
         } catch (\InvalidArgumentException $e) {
-            return Response::json($this->buildErrorResponse($e->getMessage(), 'INVALID_OPERATION'));
+            return $this->errorResponse($e->getMessage(), 'INVALID_OPERATION');
         } catch (\Exception $e) {
-            return Response::json($this->buildErrorResponse($e->getMessage(), 'OPERATION_DETAILS_ERROR'));
+            return $this->errorResponse(
+                'An error occurred while retrieving operation details',
+                'OPERATION_DETAILS_ERROR',
+                detail: config('app.debug') ? $e->getMessage() : null,
+            );
         }
     }
 }

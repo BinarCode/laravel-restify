@@ -7,8 +7,11 @@ use Binaryk\LaravelRestify\MCP\McpTools;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 class GetRepositoryOperationsTool extends Tool
 {
     use WrapperToolHelpers;
@@ -32,16 +35,40 @@ class GetRepositoryOperationsTool extends Tool
         ];
     }
 
-    public function handle(Request $request): Response
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return [
+            'success' => $schema->boolean()
+                ->description('Whether the lookup succeeded.'),
+            'repository' => $schema->string()
+                ->description('The repository URI key.'),
+            'label' => $schema->string()
+                ->description('Human-readable repository label.'),
+            'description' => $schema->string()
+                ->description('Repository description.'),
+            'operations' => $schema->array()
+                ->description('Available CRUD operations for the repository.'),
+            'actions' => $schema->array()
+                ->description('Available custom actions for the repository.'),
+            'getters' => $schema->array()
+                ->description('Available custom getters for the repository.'),
+            'summary' => $schema->object()
+                ->description('Counts of operations, actions, and getters.'),
+            'next_steps' => $schema->array()
+                ->description('Suggested follow-up tool calls.'),
+        ];
+    }
+
+    public function handle(Request $request): Response|ResponseFactory
     {
         try {
             $repositoryKey = $request->get('repository');
 
             if (! $repositoryKey) {
-                return Response::json($this->buildErrorResponse(
+                return $this->errorResponse(
                     'Repository parameter is required',
                     'MISSING_PARAMETER'
-                ));
+                );
             }
 
             $operations = McpTools::getRepositoryOperations($repositoryKey);
@@ -62,7 +89,7 @@ class GetRepositoryOperationsTool extends Tool
                 $nextSteps[] = 'For getter details, use "get-operation-details" with operation_type="getter" and operation_name';
             }
 
-            return Response::json([
+            return Response::structured([
                 'success' => true,
                 'repository' => $operations['repository'],
                 'label' => $operations['label'],
@@ -78,9 +105,13 @@ class GetRepositoryOperationsTool extends Tool
                 'next_steps' => $nextSteps,
             ]);
         } catch (\InvalidArgumentException $e) {
-            return Response::json($this->buildErrorResponse($e->getMessage(), 'INVALID_REPOSITORY'));
+            return $this->errorResponse($e->getMessage(), 'INVALID_REPOSITORY');
         } catch (\Exception $e) {
-            return Response::json($this->buildErrorResponse($e->getMessage(), 'OPERATION_LISTING_ERROR'));
+            return $this->errorResponse(
+                'An error occurred while listing repository operations',
+                'OPERATION_LISTING_ERROR',
+                detail: config('app.debug') ? $e->getMessage() : null,
+            );
         }
     }
 }
