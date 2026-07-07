@@ -211,15 +211,20 @@ class McpServerHardeningTest extends IntegrationTestCase
             }
         };
 
-        $this->assertNull($repository->resolveUploadedFileFromInput('/etc/hosts'));
-        $this->assertFalse($repository::isSafePublicUrl('/etc/hosts'));
+        $localFile = tempnam(sys_get_temp_dir(), 'restify-mcp');
+        file_put_contents($localFile, 'local file content');
+
+        $this->assertNull($repository->resolveUploadedFileFromInput($localFile));
+        $this->assertFalse($repository::isSafePublicUrl($localFile));
 
         config(['restify.mcp.files.allow_local_paths' => true]);
 
         $this->assertInstanceOf(
             UploadedFile::class,
-            $repository->resolveUploadedFileFromInput('/etc/hosts')
+            $repository->resolveUploadedFileFromInput($localFile)
         );
+
+        unlink($localFile);
     }
 
     public function test_private_and_reserved_ip_urls_are_rejected(): void
