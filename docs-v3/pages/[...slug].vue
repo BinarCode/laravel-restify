@@ -2,6 +2,10 @@
   <NuxtLayout>
     <div v-if="post">
       <article>
+        <div v-if="isDocsPage" class="flex justify-end mb-4">
+          <CopyPageDropdown />
+        </div>
+
         <header class="mb-8">
           <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             {{ post.title }}
@@ -41,6 +45,8 @@ const route = useRoute()
 
 const pathSegments = Array.isArray(route.params.slug) ? route.params.slug : [route.params.slug || '']
 const contentPath = `/${pathSegments.join('/')}`
+
+const isDocsPage = computed(() => contentPath === '/docs' || contentPath.startsWith('/docs/'))
 
 const { data: post } = await useAsyncData(`content-${contentPath}`, function fetchContent() {
   return queryCollection('content').path(contentPath).first()

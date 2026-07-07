@@ -1,3 +1,5 @@
+import { fileURLToPath } from 'node:url'
+
 const docsRoutes = [
   '/',
   '/docs',
@@ -135,6 +137,20 @@ export default defineNuxtConfig({
   // Cloudflare Pages does not understand, and exact-match rules would additionally be
   // prerendered as meta-refresh stub HTML that shadows the redirect with a 200.
 
+  // Emit Forge-style raw markdown twins and llms.txt indexes into the static
+  // output at build time. Runs after Nitro has staged public assets, so the files
+  // land in the final publicDir (dist/) alongside the prerendered pages.
+  hooks: {
+    async 'nitro:build:public-assets'(nitro) {
+      const { generateLlms } = await import('./scripts/generate-llms.mjs')
+      await generateLlms({
+        contentDir: fileURLToPath(new URL('./content/docs', import.meta.url)),
+        outputDir: nitro.options.output.publicDir,
+        siteUrl: 'https://laravel-restify.com'
+      })
+    }
+  },
+
   // TypeScript configuration
   typescript: {
     typeCheck: false
@@ -144,6 +160,22 @@ export default defineNuxtConfig({
   ssr: true,
   nitro: {
     preset: 'cloudflare_pages',
+    // Collapse the per-file static excludes into a handful of wildcards so the
+    // generated dist/_routes.json stays well under Cloudflare Pages' hard limit
+    // of 100 rules. Nitro seeds `exclude` from this config first, converts each
+    // trailing `/*` into a `/**` glob to skip matching files during its own
+    // asset walk, then appends the remaining root assets. Without this, every
+    // prerendered /docs page plus its raw `.md` twin and the llms.txt indexes
+    // were emitted as individual excludes, pinning the file at exactly 100 rules
+    // (one content page away from a rejected deploy). `/docs/*` covers all docs
+    // HTML pages, their `.md` twins, and /docs/llms{,-full}.txt in one rule.
+    cloudflare: {
+      pages: {
+        routes: {
+          exclude: ['/docs/*', '/docs.md', '/llms.txt']
+        }
+      }
+    },
     prerender: {
       failOnError: false,
       crawlLinks: true,

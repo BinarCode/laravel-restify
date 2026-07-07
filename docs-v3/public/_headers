@@ -8,3 +8,21 @@
   cache-control: public, max-age=31536000, immutable
 /_nuxt/*
   cache-control: public, max-age=31536000, immutable
+
+# Serve the Forge-style raw markdown twins and llms.txt indexes as UTF-8 markdown
+# so AI agents and browsers render them as text rather than downloading them.
+/docs/*.md
+  content-type: text/markdown; charset=utf-8
+  cache-control: public, max-age=3600
+/docs.md
+  content-type: text/markdown; charset=utf-8
+  cache-control: public, max-age=3600
+/llms.txt
+  content-type: text/plain; charset=utf-8
+  cache-control: public, max-age=3600
+/docs/llms.txt
+  content-type: text/plain; charset=utf-8
+  cache-control: public, max-age=3600
+/docs/llms-full.txt
+  content-type: text/plain; charset=utf-8
+  cache-control: public, max-age=3600

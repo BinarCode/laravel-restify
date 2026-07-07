@@ -21,9 +21,11 @@
 
         <div class="flex items-center space-x-4">
           <div class="hidden lg:block">
-            <UContentSearchButton 
+            <UContentSearchButton
               :collapsed="false"
-              placeholder="Search documentation..."
+              :kbds="['meta', 'K']"
+              label="Search documentation…"
+              class="w-64 justify-start text-gray-500 dark:text-gray-400"
             />
           </div>
           
@@ -58,9 +60,11 @@
     
     <div class="lg:hidden px-4 pb-4 bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700 w-full">
       <div class="pt-4 w-full">
-        <UContentSearchButton 
-          :collapsed="false" 
-          placeholder="Search documentation..."
+        <UContentSearchButton
+          :collapsed="false"
+          :kbds="[]"
+          label="Search documentation…"
+          class="w-full justify-start text-gray-500 dark:text-gray-400"
         />
       </div>
     </div>
