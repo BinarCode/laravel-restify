@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Mcp\Facades\Mcp;
 use Laravel\Mcp\Server\McpServiceProvider;
@@ -216,7 +217,7 @@ class McpServerHardeningTest extends IntegrationTestCase
         config(['restify.mcp.files.allow_local_paths' => true]);
 
         $this->assertInstanceOf(
-            \Illuminate\Http\UploadedFile::class,
+            UploadedFile::class,
             $repository->resolveUploadedFileFromInput('/etc/hosts')
         );
     }
