@@ -14,6 +14,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
 
 /**
@@ -188,13 +189,27 @@ class McpToolsManager
     }
 
     /**
+     * Whether the MCP server is running in read-only mode.
+     */
+    public function isReadOnly(): bool
+    {
+        return (bool) config('restify.mcp.read_only', false);
+    }
+
+    /**
      * Get all available repositories with their MCP-enabled operations.
      */
     public function getAvailableRepositories(?string $search = null): ToolsCollection
     {
         // Get all repository tools from authorized tools
-        $repositories = $this->authorized()
-            ->filter(fn (array $tool): bool => isset($tool['repository']))
+        $tools = $this->authorized()
+            ->filter(fn (array $tool): bool => isset($tool['repository']));
+
+        if ($this->isReadOnly()) {
+            $tools = $tools->reject(fn (array $tool): bool => $tool['type']->isWrite());
+        }
+
+        $repositories = $tools
             ->groupBy('repository')
             ->map(function (Collection $tools, string $repositoryKey): array {
                 $firstTool = $tools->first();
@@ -212,10 +227,14 @@ class McpToolsManager
                 $gettersCount = $tools->where('type', OperationTypeEnum::getter)->count();
 
                 // Get repository metadata from the first tool instance
+                $firstInstance = $firstTool['instance'];
+
                 /**
                  * @var Repository $repository
                  */
-                $repository = app($firstTool['instance']->repository ?? Repository::class);
+                $repository = method_exists($firstInstance, 'repository')
+                    ? $firstInstance->repository()
+                    : app(Repository::class);
 
                 return [
                     'name' => $repositoryKey,
@@ -256,6 +275,10 @@ class McpToolsManager
         // Filter by permissions
         $tools = $tools->filter(fn (array $tool): bool => $this->canUse($tool['instance']));
 
+        if ($this->isReadOnly()) {
+            $tools = $tools->reject(fn (array $tool): bool => $tool['type']->isWrite());
+        }
+
         if ($tools->isEmpty()) {
             throw new \InvalidArgumentException("Repository '{$repositoryKey}' found, but you don't have permission to access any of its operations");
         }
@@ -276,6 +299,7 @@ class McpToolsManager
                 'name' => $tool['name'],
                 'title' => $tool['title'],
                 'description' => $tool['description'],
+                'annotations' => $tool['type']->annotations(),
             ])
             ->values()
             ->toArray();
@@ -288,6 +312,7 @@ class McpToolsManager
                 'tool_name' => $tool['name'],
                 'title' => $tool['title'],
                 'description' => $tool['description'],
+                'annotations' => OperationTypeEnum::action->annotations(),
             ])
             ->values()
             ->toArray();
@@ -300,6 +325,7 @@ class McpToolsManager
                 'tool_name' => $tool['name'],
                 'title' => $tool['title'],
                 'description' => $tool['description'],
+                'annotations' => OperationTypeEnum::getter->annotations(),
             ])
             ->values()
             ->toArray();
@@ -353,6 +379,10 @@ class McpToolsManager
             throw new AuthorizationException('Not authorized to access this operation');
         }
 
+        if ($this->isReadOnly() && $tool['type']->isWrite()) {
+            throw new AuthorizationException('This operation is disabled while the MCP server is in read-only mode');
+        }
+
         // Get schema from the tool instance
         $schema = new JsonSchemaTypeFactory;
         $toolSchema = $tool['instance']->schema($schema);
@@ -362,6 +392,7 @@ class McpToolsManager
             'type' => $tool['type']->name,
             'title' => $tool['title'],
             'description' => $tool['description'],
+            'annotations' => $tool['type']->annotations(),
             'schema' => $toolSchema,
         ];
     }
@@ -369,7 +400,7 @@ class McpToolsManager
     /**
      * Execute an operation with the provided parameters.
      */
-    public function executeOperation(string $repositoryKey, string $operationType, ?string $operationName, array $parameters): Response
+    public function executeOperation(string $repositoryKey, string $operationType, ?string $operationName, array $parameters): Response|ResponseFactory
     {
         // Convert string operation type to enum
         $operationTypeEnum = OperationTypeEnum::{$operationType};
@@ -405,73 +436,23 @@ class McpToolsManager
             throw new AuthorizationException('Not authorized to execute this operation');
         }
 
-        // Execute based on operation type
-        return match ($operationTypeEnum) {
-            OperationTypeEnum::index => $this->executeIndexOperation($tool, $parameters),
-            OperationTypeEnum::show => $this->executeShowOperation($tool, $parameters),
-            OperationTypeEnum::store => $this->executeStoreOperation($tool, $parameters),
-            OperationTypeEnum::update => $this->executeUpdateOperation($tool, $parameters),
-            OperationTypeEnum::delete => $this->executeDeleteOperation($tool, $parameters),
-            OperationTypeEnum::profile => $this->executeProfileOperation($tool, $parameters),
-            OperationTypeEnum::action => $this->executeActionOperation($tool, $parameters),
-            OperationTypeEnum::getter => $this->executeGetterOperation($tool, $parameters),
-            default => throw new \InvalidArgumentException("Invalid operation type: {$operationType}"),
-        };
-    }
+        if ($this->isReadOnly() && $operationTypeEnum->isWrite()) {
+            throw new AuthorizationException('This operation is disabled while the MCP server is in read-only mode');
+        }
 
-    protected function executeIndexOperation(array $tool, array $parameters): Response
-    {
-        $request = new Request($parameters);
+        if (! in_array($operationTypeEnum, [
+            OperationTypeEnum::index,
+            OperationTypeEnum::show,
+            OperationTypeEnum::store,
+            OperationTypeEnum::update,
+            OperationTypeEnum::delete,
+            OperationTypeEnum::profile,
+            OperationTypeEnum::action,
+            OperationTypeEnum::getter,
+        ], true)) {
+            throw new \InvalidArgumentException("Invalid operation type: {$operationType}");
+        }
 
-        return $tool['instance']->handle($request);
-    }
-
-    protected function executeShowOperation(array $tool, array $parameters): Response
-    {
-        $request = new Request($parameters);
-
-        return $tool['instance']->handle($request);
-    }
-
-    protected function executeStoreOperation(array $tool, array $parameters): Response
-    {
-        $request = new Request($parameters);
-
-        return $tool['instance']->handle($request);
-    }
-
-    protected function executeUpdateOperation(array $tool, array $parameters): Response
-    {
-        $request = new Request($parameters);
-
-        return $tool['instance']->handle($request);
-    }
-
-    protected function executeDeleteOperation(array $tool, array $parameters): Response
-    {
-        $request = new Request($parameters);
-
-        return $tool['instance']->handle($request);
-    }
-
-    protected function executeProfileOperation(array $tool, array $parameters): Response
-    {
-        $request = new Request($parameters);
-
-        return $tool['instance']->handle($request);
-    }
-
-    protected function executeActionOperation(array $tool, array $parameters): Response
-    {
-        $request = new Request($parameters);
-
-        return $tool['instance']->handle($request);
-    }
-
-    protected function executeGetterOperation(array $tool, array $parameters): Response
-    {
-        $request = new Request($parameters);
-
-        return $tool['instance']->handle($request);
+        return $tool['instance']->handle(new Request($parameters));
     }
 }

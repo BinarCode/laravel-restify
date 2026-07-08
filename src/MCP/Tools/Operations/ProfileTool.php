@@ -7,15 +7,18 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 class ProfileTool extends Tool
 {
-    protected Repository $repository;
+    public function __construct(protected string $repositoryClass) {}
 
-    public function __construct(string $repositoryClass)
+    public function repository(): Repository
     {
-        $this->repository = app($repositoryClass);
+        return app($this->repositoryClass);
     }
 
     public function title(): string
@@ -25,21 +28,21 @@ class ProfileTool extends Tool
 
     public function name(): string
     {
-        $uriKey = $this->repository->uriKey();
+        $uriKey = $this->repositoryClass::uriKey();
 
         return "{$uriKey}-profile-tool";
     }
 
     public function description(): string
     {
-        $modelName = class_basename($this->repository::guessModelClassName());
+        $modelName = class_basename($this->repositoryClass::guessModelClassName());
 
         return "Get the current authenticated user profile including {$modelName} and relationship information.";
     }
 
     public function schema(JsonSchema $schema): array
     {
-        $relatedOptions = $this->repository::collectRelated()
+        $relatedOptions = $this->repositoryClass::collectRelated()
             ->intoAssoc()
             ->keys()
             ->toArray();
@@ -50,14 +53,15 @@ class ProfileTool extends Tool
         ];
     }
 
-    public function handle(Request $request): Response
+    public function handle(Request $request): Response|ResponseFactory
     {
         $user = auth()->user();
 
         if (! $user) {
-            return Response::json([
+            return Response::error(json_encode([
                 'error' => 'No authenticated user found',
-            ]);
+                'code' => 'UNAUTHENTICATED',
+            ], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
         }
 
         $mcpRequest = app(McpIndexRequest::class);
@@ -65,10 +69,11 @@ class ProfileTool extends Tool
         $requestData['id'] = $user->getKey();
         $mcpRequest->replace($requestData);
 
-        $this->repository->request = $mcpRequest;
+        $repository = $this->repository();
+        $repository->request = $mcpRequest;
 
-        $result = $this->repository->indexTool($mcpRequest);
+        $result = $repository->indexTool($mcpRequest);
 
-        return Response::json($result);
+        return Response::structured($result);
     }
 }

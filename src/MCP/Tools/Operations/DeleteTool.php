@@ -8,43 +8,48 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsDestructive;
+use Laravel\Mcp\Server\Tools\Annotations\IsIdempotent;
 
+#[IsDestructive]
+#[IsIdempotent]
 class DeleteTool extends Tool
 {
-    /**
-     * @var Repository|HasMcpTools
-     */
-    protected Repository $repository;
+    public function __construct(protected string $repositoryClass) {}
 
-    public function __construct(string $repositoryClass)
+    /**
+     * @return Repository|HasMcpTools
+     */
+    public function repository(): Repository
     {
-        $this->repository = app($repositoryClass);
+        return app($this->repositoryClass);
     }
 
     public function title(): string
     {
-        return $this->repository::label().' Delete';
+        return $this->repositoryClass::label().' Delete';
     }
 
     public function name(): string
     {
-        $uriKey = $this->repository->uriKey();
+        $uriKey = $this->repositoryClass::uriKey();
 
         return "{$uriKey}-delete-tool";
     }
 
     public function description(): string
     {
-        $uriKey = $this->repository->uriKey();
-        $modelName = class_basename($this->repository::guessModelClassName());
+        $uriKey = $this->repositoryClass::uriKey();
+        $modelName = class_basename($this->repositoryClass::guessModelClassName());
 
         return "Delete an existing {$modelName} record by ID from the {$uriKey} repository.";
     }
 
     public function schema(JsonSchema $schema): array
     {
-        $repositoryClass = get_class($this->repository);
+        $repositoryClass = $this->repositoryClass;
         $modelName = class_basename($repositoryClass::guessModelClassName());
 
         return [
@@ -52,13 +57,13 @@ class DeleteTool extends Tool
         ];
     }
 
-    public function handle(Request $request): Response
+    public function handle(Request $request): Response|ResponseFactory
     {
         $mcpRequest = app(McpDestroyRequest::class);
         $mcpRequest->merge($request->all());
 
-        $result = $this->repository->deleteTool($mcpRequest);
+        $result = $this->repository()->deleteTool($mcpRequest);
 
-        return Response::json($result);
+        return Response::structured($result);
     }
 }

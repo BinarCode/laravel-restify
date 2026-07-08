@@ -24,25 +24,17 @@ trait McpGetterTool
             }
         }
 
-        try {
-            $result = $getter->handleRequest($getterRequest);
+        $result = $getter->handleRequest($getterRequest);
 
-            // Handle different response types
-            $responseData = $result instanceof JsonResponse
-                ? $result->getData()
-                : $result->getContent();
+        $responseData = $result instanceof JsonResponse
+            ? $result->getData()
+            : $result->getContent();
 
-            return [
-                'success' => true,
-                'getter' => $getter->uriKey(),
-                'result' => $responseData,
-            ];
-        } catch (\Exception $e) {
-            return [
-                'error' => $e->getMessage(),
-                'getter' => $getter->uriKey(),
-            ];
-        }
+        return [
+            'success' => true,
+            'getter' => $getter->uriKey(),
+            'result' => $responseData,
+        ];
     }
 
     public static function getterToolSchema(Getter $getter, JsonSchema $schema, McpGetterRequest $mcpRequest): array

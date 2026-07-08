@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
+use Laravel\Mcp\Response;
 
 trait WrapperToolHelpers
 {
@@ -215,19 +216,29 @@ trait WrapperToolHelpers
     }
 
     /**
-     * Build error response.
+     * Build a real MCP error response (isError=true) with a stable JSON payload.
+     *
+     * The shape keys (error/code/errors/detail) are parsed by agents, so keep them stable.
      */
-    protected function buildErrorResponse(string $message, ?string $code = null): array
+    protected function errorResponse(string $message, ?string $code = null, ?array $errors = null, ?string $detail = null): Response
     {
-        $response = [
+        $payload = [
             'error' => $message,
         ];
 
-        if ($code) {
-            $response['code'] = $code;
+        if ($code !== null) {
+            $payload['code'] = $code;
         }
 
-        return $response;
+        if ($errors !== null) {
+            $payload['errors'] = $errors;
+        }
+
+        if ($detail !== null) {
+            $payload['detail'] = $detail;
+        }
+
+        return Response::error(json_encode($payload, JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
     }
 
     /**

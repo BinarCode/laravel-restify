@@ -354,6 +354,68 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
         $this->assertEquals(3, $resultContent['summary']['crud_operations_count']);
     }
 
+    public function test_get_repository_operations_includes_safety_annotations_per_operation(): void
+    {
+        $mcpRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'test-annotations-posts';
+
+            public function fields(RestifyRequest $request): array
+            {
+                return [Field::make('title')];
+            }
+
+            public function mcpAllowsIndex(): bool
+            {
+                return true;
+            }
+
+            public function mcpAllowsUpdate(): bool
+            {
+                return true;
+            }
+
+            public function mcpAllowsDelete(): bool
+            {
+                return true;
+            }
+        };
+
+        Restify::repositories([$mcpRepository::class]);
+        Mcp::web('test-annotations-restify', RestifyServer::class);
+
+        $mcpPayload = [
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'get-repository-operations',
+                'arguments' => [
+                    'repository' => 'test-annotations-posts',
+                ],
+            ],
+        ];
+
+        $response = $this->postJson('/test-annotations-restify', $mcpPayload);
+        $response->assertOk();
+
+        $resultContent = json_decode($response->json()['result']['content'][0]['text'], true);
+        $operations = collect($resultContent['operations']);
+
+        $index = $operations->firstWhere('type', 'index');
+        $this->assertSame(['readOnlyHint' => true], $index['annotations']);
+
+        $update = $operations->firstWhere('type', 'update');
+        $this->assertSame(['idempotentHint' => true], $update['annotations']);
+
+        $delete = $operations->firstWhere('type', 'delete');
+        $this->assertSame(['destructiveHint' => true, 'idempotentHint' => true], $delete['annotations']);
+    }
+
     public function test_get_repository_operations_rejects_non_mcp_repositories(): void
     {
         $nonMcpRepository = new class extends Repository
@@ -642,6 +704,119 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
         // Should return error about operation not found (because it's not discovered when mcpAllowsStore is false)
         $this->assertArrayHasKey('error', $resultContent);
         $this->assertStringContainsString("Operation 'store' not found", $resultContent['error']);
+    }
+
+    public function test_discover_repositories_returns_structured_content_matching_text(): void
+    {
+        $mcpRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'structured-discover-posts';
+
+            public function fields(RestifyRequest $request): array
+            {
+                return [Field::make('title')];
+            }
+
+            public function mcpAllowsIndex(): bool
+            {
+                return true;
+            }
+        };
+
+        Restify::repositories([$mcpRepository::class]);
+        Mcp::web('test-structured-discover-restify', RestifyServer::class);
+
+        $mcpPayload = [
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'discover-repositories',
+                'arguments' => [],
+            ],
+        ];
+
+        $response = $this->postJson('/test-structured-discover-restify', $mcpPayload);
+        $response->assertOk();
+
+        $result = $response->json()['result'];
+
+        $this->assertArrayHasKey('structuredContent', $result);
+
+        $textPayload = json_decode($result['content'][0]['text'], true);
+
+        $this->assertSame($textPayload, $result['structuredContent']);
+        $this->assertTrue($result['structuredContent']['success']);
+        $this->assertSame(
+            'structured-discover-posts',
+            $result['structuredContent']['repositories'][0]['name']
+        );
+    }
+
+    public function test_execute_operation_index_returns_structured_content_matching_text(): void
+    {
+        $mcpRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'structured-index-posts';
+
+            public function fields(RestifyRequest $request): array
+            {
+                return [
+                    Field::make('title'),
+                    Field::make('description'),
+                ];
+            }
+
+            public function mcpAllowsIndex(): bool
+            {
+                return true;
+            }
+        };
+
+        Restify::repositories([$mcpRepository::class]);
+        Mcp::web('test-structured-index-restify', RestifyServer::class);
+
+        PostFactory::many(2);
+
+        $mcpPayload = [
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => 'execute-operation',
+                'arguments' => [
+                    'repository' => 'structured-index-posts',
+                    'operation_type' => 'index',
+                    'parameters' => [
+                        'page' => 1,
+                        'perPage' => 10,
+                    ],
+                ],
+            ],
+        ];
+
+        $response = $this->postJson('/test-structured-index-restify', $mcpPayload);
+        $response->assertOk();
+
+        $result = $response->json()['result'];
+
+        $this->assertArrayHasKey('structuredContent', $result);
+
+        $textPayload = json_decode($result['content'][0]['text'], true);
+
+        $this->assertSame($textPayload, $result['structuredContent']);
+        $this->assertArrayHasKey('data', $result['structuredContent']);
+        $this->assertArrayHasKey('meta', $result['structuredContent']);
+        $this->assertCount(2, $result['structuredContent']['data']);
+        $this->assertSame(2, $result['structuredContent']['meta']['total']);
     }
 
     public function test_wrapper_mode_complete_workflow(): void

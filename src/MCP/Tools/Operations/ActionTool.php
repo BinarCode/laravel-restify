@@ -10,21 +10,21 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsOpenWorld;
 
+#[IsOpenWorld]
 class ActionTool extends Tool
 {
+    public function __construct(protected string $repositoryClass, protected Action $action) {}
+
     /**
-     * @var Repository|HasMcpTools
+     * @return Repository|HasMcpTools
      */
-    protected Repository $repository;
-
-    protected Action $action;
-
-    public function __construct(string $repositoryClass, Action $action)
+    public function repository(): Repository
     {
-        $this->repository = app($repositoryClass);
-        $this->action = $action;
+        return app($this->repositoryClass);
     }
 
     public function title(): string
@@ -34,7 +34,7 @@ class ActionTool extends Tool
 
     public function name(): string
     {
-        $repositoryUriKey = $this->repository->uriKey();
+        $repositoryUriKey = $this->repositoryClass::uriKey();
         $actionUriKey = $this->action->uriKey();
 
         return "{$repositoryUriKey}-{$actionUriKey}-action-tool";
@@ -46,10 +46,11 @@ class ActionTool extends Tool
             return $description;
         }
 
-        $repositoryUriKey = $this->repository->uriKey();
+        $repository = $this->repository();
+        $repositoryUriKey = $this->repositoryClass::uriKey();
         $actionName = $this->action->name();
 
-        $modelName = class_basename($this->repository::guessModelClassName());
+        $modelName = class_basename($this->repositoryClass::guessModelClassName());
 
         if ($this->action->isStandalone()) {
             return "Execute {$actionName} action (standalone - no models required) in the {$repositoryUriKey} repository.";
@@ -58,8 +59,8 @@ class ActionTool extends Tool
         // Check if it's primarily a show action or index action
         $mcpRequest = app(McpActionRequest::class);
 
-        $shownOnShow = $this->action->isShownOnShow($mcpRequest, $this->repository);
-        $shownOnIndex = $this->action->isShownOnIndex($mcpRequest, $this->repository);
+        $shownOnShow = $this->action->isShownOnShow($mcpRequest, $repository);
+        $shownOnIndex = $this->action->isShownOnIndex($mcpRequest, $repository);
 
         if ($shownOnShow && ! $shownOnIndex) {
             return "Execute {$actionName} action on a specific {$modelName} record in the {$repositoryUriKey} repository.";
@@ -72,10 +73,11 @@ class ActionTool extends Tool
     {
         $validationSchema = [];
 
-        $modelName = class_basename($this->repository::guessModelClassName());
+        $repository = $this->repository();
+        $modelName = class_basename($this->repositoryClass::guessModelClassName());
 
         if (! $this->action->isStandalone()) {
-            if ($this->action->isShownOnIndex(app(RestifyRequest::class), $this->repository)) {
+            if ($this->action->isShownOnIndex(app(RestifyRequest::class), $repository)) {
                 $validationSchema['resources'] = $schema->array()
                     ->items(
                         $schema->string()
@@ -84,7 +86,7 @@ class ActionTool extends Tool
                     ->title('resources')
                     ->description("The ids of the resources {$modelName} to perform the action on. Use string 'all' to select all resources.")
                     ->required();
-            } elseif ($this->action->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+            } elseif ($this->action->isShownOnShow(app(RestifyRequest::class), $repository)) {
                 $validationSchema['id'] = $schema->string()
                     ->title('id')
                     ->description('The ID of the resource to perform the action on.')
@@ -97,12 +99,12 @@ class ActionTool extends Tool
         return array_merge($rulesSchema, $validationSchema);
     }
 
-    public function handle(Request $request): Response
+    public function handle(Request $request): Response|ResponseFactory
     {
         $mcpRequest = app(McpActionRequest::class);
         $mcpRequest->replace($request->all());
         $mcpRequest->merge([
-            'mcp_repository_key' => $this->repository->uriKey(),
+            'mcp_repository_key' => $this->repositoryClass::uriKey(),
         ]);
 
         // Parse repositories string to array if provided
@@ -126,8 +128,8 @@ class ActionTool extends Tool
             });
         }
 
-        $result = $this->repository->actionTool($this->action, $mcpRequest);
+        $result = $this->repository()->actionTool($this->action, $mcpRequest);
 
-        return Response::json($result);
+        return Response::structured($result);
     }
 }

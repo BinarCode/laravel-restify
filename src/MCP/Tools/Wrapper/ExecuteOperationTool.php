@@ -10,8 +10,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Validation\ValidationException;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsOpenWorld;
 
+#[IsOpenWorld]
 class ExecuteOperationTool extends Tool
 {
     use WrapperToolHelpers;
@@ -45,7 +48,7 @@ class ExecuteOperationTool extends Tool
         ];
     }
 
-    public function handle(Request $request): Response
+    public function handle(Request $request): Response|ResponseFactory
     {
         try {
             $repositoryKey = $request->get('repository');
@@ -54,61 +57,51 @@ class ExecuteOperationTool extends Tool
             $parameters = $request->get('parameters', []);
 
             if (! $repositoryKey) {
-                return Response::json($this->buildErrorResponse(
+                return $this->errorResponse(
                     'Repository parameter is required',
                     'MISSING_PARAMETER'
-                ));
+                );
             }
 
             if (! $operationType) {
-                return Response::json($this->buildErrorResponse(
+                return $this->errorResponse(
                     'Operation type parameter is required',
                     'MISSING_PARAMETER'
-                ));
+                );
             }
 
             if (in_array($operationType, ['action', 'getter']) && ! $operationName) {
-                return Response::json($this->buildErrorResponse(
+                return $this->errorResponse(
                     "Operation name is required for {$operationType} operation type",
                     'MISSING_PARAMETER'
-                ));
+                );
             }
 
             if (! is_array($parameters)) {
-                return Response::json($this->buildErrorResponse(
+                return $this->errorResponse(
                     'Parameters must be an object/array',
                     'INVALID_PARAMETERS'
-                ));
+                );
             }
 
-            // Execute the operation through the registry
-            $result = McpTools::executeOperation($repositoryKey, $operationType, $operationName, $parameters);
-
-            return $result;
+            return McpTools::executeOperation($repositoryKey, $operationType, $operationName, $parameters);
         } catch (\InvalidArgumentException $e) {
-            return Response::json($this->buildErrorResponse($e->getMessage(), 'INVALID_OPERATION'));
+            return $this->errorResponse($e->getMessage(), 'INVALID_OPERATION');
         } catch (ValidationException $e) {
-            return Response::json([
-                'error' => 'Validation failed',
-                'code' => 'VALIDATION_ERROR',
-                'errors' => $e->errors(),
-            ]);
+            return $this->errorResponse('Validation failed', 'VALIDATION_ERROR', $e->errors());
         } catch (AuthorizationException $e) {
-            return Response::json($this->buildErrorResponse(
+            return $this->errorResponse(
                 'Not authorized to perform this operation',
                 'AUTHORIZATION_ERROR'
-            ));
+            );
         } catch (ModelNotFoundException $e) {
-            return Response::json($this->buildErrorResponse(
-                'Record not found',
-                'NOT_FOUND'
-            ));
+            return $this->errorResponse('Record not found', 'NOT_FOUND');
         } catch (\Exception $e) {
-            return Response::json([
-                'error' => $e->getMessage(),
-                'code' => 'EXECUTION_ERROR',
-                'type' => get_class($e),
-            ]);
+            return $this->errorResponse(
+                'An error occurred while executing the operation',
+                'EXECUTION_ERROR',
+                detail: config('app.debug') ? $e->getMessage() : null,
+            );
         }
     }
 }

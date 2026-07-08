@@ -7,24 +7,20 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
-use Illuminate\Foundation\Application;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 class GetterTool extends Tool
 {
-    /**
-     * @var Repository|Application|mixed|object|string
-     */
-    protected Repository $repository;
+    public function __construct(protected string $repositoryClass, protected Getter $getter) {}
 
-    protected Getter $getter;
-
-    public function __construct(string $repositoryClass, Getter $getter)
+    public function repository(): Repository
     {
-        $this->repository = app($repositoryClass);
-        $this->getter = $getter;
+        return app($this->repositoryClass);
     }
 
     public function title(): string
@@ -34,7 +30,7 @@ class GetterTool extends Tool
 
     public function name(): string
     {
-        $repositoryUriKey = $this->repository->uriKey();
+        $repositoryUriKey = $this->repositoryClass::uriKey();
         $getterUriKey = $this->getter->uriKey();
 
         return "{$repositoryUriKey}-{$getterUriKey}-getter-tool";
@@ -46,15 +42,16 @@ class GetterTool extends Tool
             return $description;
         }
 
-        $repositoryUriKey = $this->repository->uriKey();
+        $repository = $this->repository();
+        $repositoryUriKey = $this->repositoryClass::uriKey();
         $getterName = $this->getter->name();
-        $modelName = class_basename($this->repository::guessModelClassName());
+        $modelName = class_basename($this->repositoryClass::guessModelClassName());
 
         // Check if it's primarily a show getter or index getter
         $mcpRequest = app(McpGetterRequest::class);
 
-        $shownOnShow = $this->getter->isShownOnShow($mcpRequest, $this->repository);
-        $shownOnIndex = $this->getter->isShownOnIndex($mcpRequest, $this->repository);
+        $shownOnShow = $this->getter->isShownOnShow($mcpRequest, $repository);
+        $shownOnIndex = $this->getter->isShownOnIndex($mcpRequest, $repository);
 
         if ($shownOnShow && ! $shownOnIndex) {
             return "Execute {$getterName} getter to retrieve data for a specific {$modelName} record in the {$repositoryUriKey} repository.";
@@ -67,10 +64,11 @@ class GetterTool extends Tool
     {
         $validationSchema = [];
 
-        $modelName = class_basename($this->repository::guessModelClassName());
+        $repository = $this->repository();
+        $modelName = class_basename($this->repositoryClass::guessModelClassName());
 
-        if (! $this->getter->isShownOnIndex(app(RestifyRequest::class), $this->repository)) {
-            if ($this->getter->isShownOnShow(app(RestifyRequest::class), $this->repository)) {
+        if (! $this->getter->isShownOnIndex(app(RestifyRequest::class), $repository)) {
+            if ($this->getter->isShownOnShow(app(RestifyRequest::class), $repository)) {
                 $validationSchema['id'] = $schema->string()
                     ->title('id')
                     ->required()
@@ -83,12 +81,12 @@ class GetterTool extends Tool
         return array_merge($rulesSchema, $validationSchema);
     }
 
-    public function handle(Request $request): Response
+    public function handle(Request $request): Response|ResponseFactory
     {
         $mcpRequest = app(McpGetterRequest::class);
         $mcpRequest->replace($request->all());
         $mcpRequest->merge([
-            'mcp_repository_key' => $this->repository->uriKey(),
+            'mcp_repository_key' => $this->repositoryClass::uriKey(),
         ]);
 
         // Parse repositories string to array if provided
@@ -112,8 +110,8 @@ class GetterTool extends Tool
             });
         }
 
-        $result = $this->repository->getterTool($this->getter, $mcpRequest);
+        $result = $this->repository()->getterTool($this->getter, $mcpRequest);
 
-        return Response::json($result);
+        return Response::structured($result);
     }
 }

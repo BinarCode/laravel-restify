@@ -18,12 +18,11 @@ trait McpActionTool
             if (! $action->authorizedToRun($actionRequest, $actionRequest->findModelOrFail($id, static::uriKey()))) {
                 return [
                     'error' => 'Not authorized to run this action',
-                    'getter' => $action->uriKey(),
+                    'action' => $action->uriKey(),
                 ];
             }
         }
 
-        // Check authorization
         if (! $action->authorizedToSee($actionRequest)) {
             return [
                 'error' => 'Not authorized to see this action',
@@ -31,20 +30,13 @@ trait McpActionTool
             ];
         }
 
-        try {
-            $result = $action->handleRequest($actionRequest);
+        $result = $action->handleRequest($actionRequest);
 
-            return [
-                'success' => true,
-                'action' => $action->uriKey(),
-                'result' => $result->getData(),
-            ];
-        } catch (\Exception $e) {
-            return [
-                'error' => $e->getMessage(),
-                'action' => $action->uriKey(),
-            ];
-        }
+        return [
+            'success' => true,
+            'action' => $action->uriKey(),
+            'result' => $result->getData(),
+        ];
     }
 
     public static function actionToolSchema(Action $action, JsonSchema $schema, McpActionRequest $mcpRequest): array

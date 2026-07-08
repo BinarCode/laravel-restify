@@ -7,8 +7,11 @@ use Binaryk\LaravelRestify\MCP\McpTools;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 class DiscoverRepositoriesTool extends Tool
 {
     use WrapperToolHelpers;
@@ -31,14 +34,28 @@ class DiscoverRepositoriesTool extends Tool
         ];
     }
 
-    public function handle(Request $request): Response
+    public function outputSchema(JsonSchema $schema): array
+    {
+        return [
+            'success' => $schema->boolean()
+                ->description('Whether the discovery succeeded.'),
+            'total' => $schema->integer()
+                ->description('Number of repositories returned.'),
+            'repositories' => $schema->array()
+                ->description('The MCP-enabled repositories with their operation metadata.'),
+            'next_steps' => $schema->array()
+                ->description('Suggested follow-up tool calls.'),
+        ];
+    }
+
+    public function handle(Request $request): Response|ResponseFactory
     {
         try {
             $search = $request->get('search');
 
             $repositories = McpTools::getAvailableRepositories($search);
 
-            return Response::json([
+            return Response::structured([
                 'success' => true,
                 'total' => $repositories->count(),
                 'repositories' => $repositories->toArray(),
@@ -48,7 +65,11 @@ class DiscoverRepositoriesTool extends Tool
                 ],
             ]);
         } catch (\Exception $e) {
-            return Response::json($this->buildErrorResponse($e->getMessage(), 'DISCOVERY_ERROR'));
+            return $this->errorResponse(
+                'An error occurred while discovering repositories',
+                'DISCOVERY_ERROR',
+                detail: config('app.debug') ? $e->getMessage() : null,
+            );
         }
     }
 }

@@ -171,13 +171,13 @@ class RestifyServer extends Server
 
     protected function registerRepositoryTools(): void
     {
-        $mode = request()->get('mode', config('restify.mcp.mode'));
-
-        if ($mode === 'wrapper') {
+        if (config('restify.mcp.mode') === 'wrapper') {
             $this->registerWrapperTools();
 
             return;
         }
+
+        $readOnly = (bool) config('restify.mcp.read_only', false);
 
         McpTools::all()
             ->whereIn('category', [
@@ -187,6 +187,7 @@ class RestifyServer extends Server
                 ToolsCategoryEnum::PROFILE->value,
             ])
             ->filter(fn (array $tool): bool => $this->canUseTool($tool['instance']))
+            ->reject(fn (array $tool): bool => $readOnly && $tool['type']->isWrite())
             ->each(fn (array $tool) => $this->tools[] = $tool['instance']);
     }
 

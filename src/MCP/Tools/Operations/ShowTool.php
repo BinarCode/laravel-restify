@@ -8,43 +8,46 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
+use Laravel\Mcp\ResponseFactory;
 use Laravel\Mcp\Server\Tool;
+use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 
+#[IsReadOnly]
 class ShowTool extends Tool
 {
-    /**
-     * @var Repository|HasMcpTools
-     */
-    protected Repository $repository;
+    public function __construct(protected string $repositoryClass) {}
 
-    public function __construct(string $repositoryClass)
+    /**
+     * @return Repository|HasMcpTools
+     */
+    public function repository(): Repository
     {
-        $this->repository = app($repositoryClass);
+        return app($this->repositoryClass);
     }
 
     public function title(): string
     {
-        return $this->repository::label().' Show';
+        return $this->repositoryClass::label().' Show';
     }
 
     public function name(): string
     {
-        $uriKey = $this->repository->uriKey();
+        $uriKey = $this->repositoryClass::uriKey();
 
         return "{$uriKey}-show-tool";
     }
 
     public function description(): string
     {
-        $uriKey = $this->repository->uriKey();
-        $modelName = class_basename($this->repository::guessModelClassName());
+        $uriKey = $this->repositoryClass::uriKey();
+        $modelName = class_basename($this->repositoryClass::guessModelClassName());
 
         return "Retrieve a single {$modelName} record by ID from the {$uriKey} repository with optional relationship loading.";
     }
 
     public function schema(JsonSchema $schema): array
     {
-        $repositoryClass = get_class($this->repository);
+        $repositoryClass = $this->repositoryClass;
 
         // Use repository's schema method if it has MCP tools
         if (method_exists($repositoryClass, 'showToolSchema')) {
@@ -60,13 +63,13 @@ class ShowTool extends Tool
         ];
     }
 
-    public function handle(Request $request): Response
+    public function handle(Request $request): Response|ResponseFactory
     {
         $mcpRequest = app(McpShowRequest::class);
         $mcpRequest->replace($request->all());
 
-        $result = $this->repository->showTool($mcpRequest);
+        $result = $this->repository()->showTool($mcpRequest);
 
-        return Response::json($result);
+        return Response::structured($result);
     }
 }
