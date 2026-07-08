@@ -34,7 +34,12 @@
           
           <!-- Desktop search with label (docs only) -->
           <div v-if="isDocsPage" class="hidden lg:block">
-            <UContentSearchButton label="Search..." :collapsed="false" />
+            <UContentSearchButton
+              label="Search documentation…"
+              :kbds="['meta', 'K']"
+              :collapsed="false"
+              class="w-64 justify-start text-gray-500 dark:text-gray-400"
+            />
           </div>
           
           <a
