@@ -55,10 +55,17 @@ class SearchablesCollection extends Collection
      */
     public function fieldNames(): array
     {
-        return $this->filter(fn ($item) => is_string($item) && ! empty($item))
-            ->unique()
-            ->values()
-            ->toArray();
+        $columns = [];
+
+        foreach ($this->all() as $item) {
+            $column = $item instanceof Filter ? $item->column() : (is_string($item) ? $item : null);
+
+            if (is_string($column) && $column !== '' && $column !== 'unknown') {
+                $columns[] = $column;
+            }
+        }
+
+        return array_values(array_unique($columns));
     }
 
     /**

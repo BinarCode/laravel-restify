@@ -36,10 +36,12 @@ trait McpIndexTool
                 ->description(static::formatRelationshipDocumentation(app(McpIndexRequest::class))),
         ];
 
-        $searchableFields = (new SearchablesCollection(static::searchables()))->formatForDocumentation();
+        $searchableFields = (new SearchablesCollection(static::searchables()))->fieldNames();
 
-        $properties['search'] = $schema->string()
-            ->description("Search term to filter $key by name or description. Available searchable fields: {$searchableFields} (e.g., search=term)");
+        if (! empty($searchableFields)) {
+            $properties['search'] = $schema->string()
+                ->description('Full-text search across: '.implode(', ', $searchableFields).' (search=term).');
+        }
 
         $sortOptions = collect(static::sorts())
             ->map(function ($value, $key) {
@@ -52,26 +54,29 @@ trait McpIndexTool
 
                 return $key;
             })
+            ->filter(fn ($option) => is_string($option) && $option !== '')
             ->values()
             ->toArray();
 
-        $properties['sort'] = $schema->string()
-            ->description("Sorting criteria for the $key. Available options: ".implode(', ',
-                $sortOptions).' (e.g., sort=field or sort=-field for descending)');
+        if (! empty($sortOptions)) {
+            $properties['sort'] = $schema->string()
+                ->description("Sort $key by one of: ".implode(', ', $sortOptions).". Prefix with '-' for descending (sort=field or sort=-field).");
+        }
 
         MatchesCollection::make(static::matches())
             ->normalize()
             ->authorized(app(McpRequest::class))
-            ->each(function (MatchFilter $matchFilter) use ($schema, $key, &$properties) {
+            ->each(function (MatchFilter $matchFilter) use ($schema, &$properties) {
                 $filterKey = $matchFilter->column();
+                $description = $matchFilter->description();
 
                 $properties[$filterKey] = match ($matchFilter->getType()) {
                     RestifySearchable::MATCH_INTEGER, 'integer' => $schema->integer()
-                        ->description("Filter $key resource. Description: ".$matchFilter->description()),
+                        ->description($description),
                     RestifySearchable::MATCH_BOOL, 'boolean' => $schema->boolean()
-                        ->description("Filter $key resource. Description: ".$matchFilter->description()),
+                        ->description($description),
                     default => $schema->string()
-                        ->description("Filter $key resource. Description: ".$matchFilter->description())
+                        ->description($description)
                 };
             });
 

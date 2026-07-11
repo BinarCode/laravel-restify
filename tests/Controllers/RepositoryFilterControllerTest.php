@@ -79,7 +79,7 @@ class RepositoryFilterControllerTest extends IntegrationTestCase
     {
         PostRepository::$match = [
             'title' => MatchFilter::make()
-                ->setDescription('Sort by title')
+                ->setDescription('Filter posts by their title.')
                 ->setPlaceholder('-title')
                 ->setType('string'),
         ];
@@ -90,8 +90,25 @@ class RepositoryFilterControllerTest extends IntegrationTestCase
             ->assertJson(function (AssertableJson $json) {
                 $json
                     ->where('data.0.placeholder', '-title')
-                    ->where('data.0.description', 'This is a exact match for title (e.g., title=some_value). It accepts negation by prefixing the column with a hyphen (e.g., -title=some_value). The filter type is string.')
+                    ->where('data.0.description', 'Filter posts by their title.')
                     ->where('data.0.type', 'string')
+                    ->where('data.0.column', 'title')
+                    ->etc();
+            });
+    }
+
+    public function test_match_filter_renders_default_description_when_not_customized(): void
+    {
+        PostRepository::$match = [
+            'title' => MatchFilter::make()->setType('string'),
+        ];
+
+        $this->getJson(PostRepository::route('filters', query: [
+            'only' => 'matches',
+        ]))
+            ->assertJson(function (AssertableJson $json) {
+                $json
+                    ->where('data.0.description', "Exact match on title (title=value). Prefix with '-' to negate (-title=value).")
                     ->where('data.0.column', 'title')
                     ->etc();
             });
