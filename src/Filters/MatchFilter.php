@@ -132,24 +132,22 @@ class MatchFilter extends Filter
 
     public function description(): string
     {
-        $description = "This is a exact match for $this->column (e.g., $this->column=some_value). It accepts negation by prefixing the column with a hyphen (e.g., -$this->column=some_value). The filter type is string.";
-
-        if ($this->getType() === RestifySearchable::MATCH_BETWEEN) {
-            $description = "This is a range match for $this->column (e.g., $this->column=value1,value2). It accepts negation by prefixing the column with a hyphen (e.g., -$this->column=value1,value2). Accepted values can be any.";
+        if ($this->description !== '') {
+            return $this->description;
         }
 
-        if ($this->getType() === RestifySearchable::MATCH_DATETIME) {
-            $description = "This is a date match for $this->column (e.g., $this->column=YYYY-MM-DD or $this->column=value1,value2 for range). It accepts negation by prefixing the column with a hyphen (e.g., -$this->column=YYYY-MM-DD or -$this->column=value1,value2 for range). Accepted values are date.";
-        }
+        return $this->defaultDescription();
+    }
 
-        if ($this->getType() === RestifySearchable::MATCH_BOOL) {
-            $description = "This is a boolean match for $this->column (e.g., $this->column=true or $this->column=false). It accepts negation by prefixing the column with a hyphen (e.g., -$this->column=true or -$this->column=false). Accepted values are boolean.";
-        }
-
-        if ($this->getType() === RestifySearchable::MATCH_ARRAY) {
-            $description = "This is an array match for $this->column (e.g., $this->column=value1,value2). It accepts negation by prefixing the column with a hyphen (e.g., -$this->column=value1,value2). The values acccepted can be any.";
-        }
-
-        return $description;
+    protected function defaultDescription(): string
+    {
+        return match ($this->getType()) {
+            RestifySearchable::MATCH_BETWEEN => "Range match on $this->column ($this->column=min,max). Prefix with '-' to negate (-$this->column=min,max).",
+            RestifySearchable::MATCH_DATETIME => "Date match on $this->column ($this->column=YYYY-MM-DD, or $this->column=start,end for a range). Prefix with '-' to negate (-$this->column=YYYY-MM-DD).",
+            RestifySearchable::MATCH_BOOL, 'boolean' => "Boolean match on $this->column ($this->column=true or $this->column=false). Prefix with '-' to negate (-$this->column=true).",
+            RestifySearchable::MATCH_ARRAY => "Array match on $this->column ($this->column=value1,value2 matches any listed value). Prefix with '-' to negate (-$this->column=value1,value2).",
+            RestifySearchable::MATCH_INTEGER, 'number', 'int' => "Exact match on $this->column ($this->column=value). Prefix with '-' to negate (-$this->column=value).",
+            default => "Exact match on $this->column ($this->column=value). Prefix with '-' to negate (-$this->column=value).",
+        };
     }
 }
