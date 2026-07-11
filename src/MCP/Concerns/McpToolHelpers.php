@@ -52,7 +52,8 @@ trait McpToolHelpers
             if ($repositoryClass) {
                 $fields = static::getRelationshipFields($repositoryClass, $request);
                 $fieldsList = implode(', ', $fields);
-                $documentation .= "- {$relationName} (fields: {$fieldsList})\n";
+                $purpose = static::getRelationshipPurpose($repositoryClass);
+                $documentation .= "- {$relationName} (fields: {$fieldsList}){$purpose}\n";
                 $relationshipClasses[$relationName] = $repositoryClass;
             } else {
                 $documentation .= "- {$relationName}\n";
@@ -100,6 +101,23 @@ trait McpToolHelpers
         }
 
         return $documentation;
+    }
+
+    protected static function getRelationshipPurpose(string $repositoryClass): string
+    {
+        if (! is_subclass_of($repositoryClass, Repository::class)) {
+            return '';
+        }
+
+        $custom = $repositoryClass::$description ?? '';
+
+        if (! is_string($custom) || $custom === '') {
+            return '';
+        }
+
+        $firstSentence = trim(strtok($custom, '.'));
+
+        return $firstSentence === '' ? '' : " - {$firstSentence}.";
     }
 
     protected static function extractRepositoryClass($relationConfig): ?string

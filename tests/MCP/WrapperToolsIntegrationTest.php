@@ -514,7 +514,7 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
         $this->assertArrayHasKey('properties', $schema);
         $this->assertArrayHasKey('page', $schema['properties']);
         $this->assertArrayHasKey('perPage', $schema['properties']);
-        $this->assertArrayHasKey('search', $schema['properties']);
+        $this->assertArrayNotHasKey('search', $schema['properties']);
         $this->assertArrayHasKey('include', $schema['properties']);
 
         // Assert examples are provided
