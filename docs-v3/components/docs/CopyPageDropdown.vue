@@ -30,12 +30,7 @@
       </button>
 
       <template #item-label="{ item }">
-        <div class="flex flex-col text-left">
-          <span class="text-sm font-medium text-gray-900 dark:text-white">{{ item.label }}</span>
-          <span v-if="item.description" class="text-xs text-gray-500 dark:text-gray-400">
-            {{ item.description }}
-          </span>
-        </div>
+        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ item.label }}</span>
       </template>
     </UDropdownMenu>
   </div>

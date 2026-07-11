@@ -1,17 +1,16 @@
 <template>
   <NuxtLayout name="docs">
     <div v-if="post">
-      <article>
-        <header class="mb-8">
+      <header class="mb-8">
+        <div class="flex flex-col-reverse sm:flex-row sm:items-start sm:justify-between gap-4">
           <h1 class="text-4xl font-bold text-gray-900 dark:text-white mb-4">
             {{ post.title }}
           </h1>
-        </header>
-        
-        <div class="prose-docs">
-          <ContentRenderer :value="post" />
+          <DocsCopyPageDropdown class="shrink-0 sm:mt-2" />
         </div>
-      </article>
+      </header>
+
+      <ContentRenderer :value="post" />
     </div>
     
     <div v-else>
