@@ -18,6 +18,10 @@
             </article>
             
             <DocsPagination />
+
+            <footer class="mt-12 pt-8 border-t border-gray-200 dark:border-gray-700">
+              <BuiltByCredit />
+            </footer>
           </div>
         </main>
         
@@ -30,6 +34,8 @@
 </template>
 
 <script setup lang="ts">
+import BuiltByCredit from '~/components/shared/BuiltByCredit.vue'
+
 const isMobileMenuOpen = ref(false)
 
 function toggleMobileMenu(): void {

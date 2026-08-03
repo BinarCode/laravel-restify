@@ -244,6 +244,8 @@ If you discover any security related issues, please email eduard.lupacescu@binar
 - [Koen Koenster](https://github.com/Koenster)
 - [All Contributors](../../contributors)
 
+Built by [BinarCode](https://www.binarcode.com) - makers of [Routines](https://getroutines.ai/?ref=restify), an AI assistant for your Mac.
+
 ## License
 
 The MIT License (MIT). Please see [License File](LICENSE.md) for more information.

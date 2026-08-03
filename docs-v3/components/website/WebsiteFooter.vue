@@ -86,6 +86,8 @@
             </p>
           </div>
         </div>
+
+        <BuiltByCredit class="mt-4" />
       </div>
     </div>
   </footer>
@@ -94,6 +96,7 @@
 <script setup lang="ts">
 import { ArrowTopRightOnSquareIcon } from '@heroicons/vue/24/outline'
 import AppLogo from '../ui/AppLogo.vue'
+import BuiltByCredit from '../shared/BuiltByCredit.vue'
 
 const currentYear = new Date().getFullYear()
 
