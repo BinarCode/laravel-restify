@@ -12,6 +12,8 @@ class PolicyCommand extends GeneratorCommand
 
     protected $description = 'Create a new policy for a specific model.';
 
+    protected $type = 'Policy';
+
     public function handle()
     {
         if (parent::handle() === false && ! $this->option('force')) {
