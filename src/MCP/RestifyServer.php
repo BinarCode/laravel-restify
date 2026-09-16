@@ -126,7 +126,7 @@ class RestifyServer extends Server
     /**
      * The tools registered with this MCP server.
      *
-     * @var array<int, class-string<Tool>>
+     * @var array<int|string, Tool|class-string<Tool>|array<int, Tool|class-string<Tool>>>
      */
     protected array $tools = [];
 
