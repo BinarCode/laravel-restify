@@ -21,11 +21,12 @@ class RepositoryDetachController extends RepositoryController
             return call_user_func($method, $request, $repository, $model);
         }
 
+        $repository->allowToDetach($request, $request->detachRelatedModels());
+
         return $repository->detach(
             $request,
             $request->repositoryId,
             collect(Arr::wrap($request->input($request->relatedRepository)))
-                ->filter(fn ($relatedRepositoryId) => $request->repository()->allowToDetach($request, $request->detachRelatedModels()))
                 ->map(fn ($relatedRepositoryId) => $this->belongsToManyField($request)
                     ->initializePivot(
                         $request,

@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
@@ -15,10 +16,15 @@ class RepositoryDetachRequest extends RestifyRequest
         );
 
         if (is_null($relatedRepository)) {
-            abort(400, "Missing repository for the [$table] table");
+            abort(400, "Missing repository for the [{$table}] table");
         }
 
-        return collect(Arr::wrap($this->input($this->relatedRepository)))
-            ->map(fn ($id) => $relatedRepository->model()->newModelQuery()->whereKey($id)->first());
+        $ids = Arr::wrap($this->input($this->relatedRepository));
+
+        $models = $relatedRepository->model()->newModelQuery()->whereKey($ids)->get();
+
+        return collect($ids)->map(
+            fn ($id) => $models->first(static fn (Model $model): bool => $model->getKey() == $id)
+        );
     }
 }

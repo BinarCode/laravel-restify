@@ -21,17 +21,14 @@ class RepositorySyncController extends RepositoryController
             return call_user_func($method, $request, $repository, $model);
         }
 
+        $attachers = collect(Arr::wrap($request->input($request->relatedRepository)));
+
+        $request->repositoryWith($model)->allowToSync($request, attachers: $attachers);
+
         return $repository->sync(
             $request,
             $request->repositoryId,
-            collect(Arr::wrap($request->input($request->relatedRepository)))
-                ->flatten()
-                ->filter(fn ($relatedRepositoryId) => $request
-                    ->repositoryWith(
-                        $request->modelQuery()->firstOrFail()
-                    )
-                    ->allowToSync($request, attachers: collect(Arr::wrap($request->input($request->relatedRepository))))
-                )
+            $attachers->flatten()
         );
     }
 }
