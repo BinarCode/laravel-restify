@@ -13,7 +13,6 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Stringable;
 use Throwable;
 
 class RepositorySearchService
@@ -102,9 +101,19 @@ class RepositorySearchService
             return $query;
         }
 
+        // A repository may declare a relation with dot notation (`posts.comments`).
+        // Compare only the root segment on both sides, otherwise a dotted
+        // declaration never matches the requested tree and nothing gets eager
+        // loaded - every row then falls back to `loadMissing()` (N+1).
+        $eagerRoots = collect($eager)
+            ->filter(fn ($relation) => is_string($relation))
+            ->map(fn (string $relation) => str($relation)->before('.')->toString())
+            ->unique()
+            ->all();
+
         $filtered = collect($request->related()->makeTree())->filter(fn (string $relationships) => in_array(
-            str($relationships)->whenContains('.', fn (Stringable $string) => $string->before('.'))->toString(),
-            $eager,
+            str($relationships)->before('.')->toString(),
+            $eagerRoots,
             true,
         ))->filter(function ($relation) use ($query) {
             try {
