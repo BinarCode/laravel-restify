@@ -7,24 +7,24 @@ namespace Binaryk\LaravelRestify\Http\Controllers\Concerns;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Support\Collection;
 
 trait ResolvesBulkModels
 {
     /**
-     * @param  Collection<int, int|string>  $keys
-     * @return Collection<int|string, Model>
+     * @param  list<int|string>  $keys
+     * @return array<int|string, Model>
      */
-    protected function resolveBulkModels(RestifyRequest $request, Collection $keys): Collection
+    protected function resolveBulkModels(RestifyRequest $request, array $keys): array
     {
         $model = $request->model();
 
-        $models = $request->modelsQuery($keys->all())
+        $models = $request->modelsQuery($keys)
             ->lockForUpdate()
             ->get()
-            ->keyBy($model->getRouteKeyName());
+            ->keyBy($model->getRouteKeyName())
+            ->all();
 
-        $missing = array_values(array_diff($keys->all(), $models->keys()->all()));
+        $missing = array_values(array_diff($keys, array_keys($models)));
 
         if ($missing !== []) {
             throw (new ModelNotFoundException)->setModel($model::class, $missing);

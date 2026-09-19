@@ -4,7 +4,6 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Controllers\Concerns\ResolvesBulkModels;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyBulkRequest;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Facades\DB;
 
 class RepositoryDestroyBulkController
@@ -13,34 +12,24 @@ class RepositoryDestroyBulkController
 
     public function __invoke(RepositoryDestroyBulkRequest $request)
     {
-        $repositories = collect();
+        $keys = $request->collect()->all();
+        $deleted = [];
 
-        DB::transaction(function () use ($request, $repositories) {
-            $keys = $request->collect();
-
+        DB::transaction(function () use ($request, $keys, &$deleted): void {
             $models = $this->resolveBulkModels($request, $keys);
 
-            return $keys->each(function (int|string $key, int $row) use ($request, $repositories, $models) {
-                $model = $models->get($key);
+            foreach ($keys as $row => $key) {
+                $model = $models[$key];
 
-                $repositories->push($model->attributesToArray());
+                $deleted[] = $model->attributesToArray();
 
-                /**
-                 * @var Repository $repository
-                 */
-                $repository = $request->repositoryWith($model);
-
-                return $repository
+                $request->repositoryWith($model)
                     ->allowToDestroyBulk($request)
-                    ->deleteBulk(
-                        $request,
-                        $key,
-                        $row
-                    );
-            });
+                    ->deleteBulk($request, $key, $row);
+            }
         });
 
-        $request->repository()::deletedBulk($repositories, $request);
+        $request->repository()::deletedBulk(collect($deleted), $request);
 
         return ok();
     }
