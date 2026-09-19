@@ -2,32 +2,34 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Http\Controllers\Concerns\ResolvesBulkModels;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateBulkRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Facades\DB;
 
 class RepositoryUpdateBulkController extends RepositoryController
 {
+    use ResolvesBulkModels;
+
     public function __invoke(RepositoryUpdateBulkRequest $request)
     {
         // Validate ALL items upfront with correct indices
         $request->repository()::validatorForUpdateBulk($request)->validate();
 
         $collection = DB::transaction(function () use ($request) {
-            return $request->collectInput()
-                ->each(function (array $item, int $row) use ($request) {
-                    $model = $request->modelQuery(
-                        $id = $item['id']
-                    )->lockForUpdate()->firstOrFail();
+            $input = $request->collectInput();
 
-                    /** @var Repository $repository */
-                    $repository = $request->repositoryWith($model);
+            $models = $this->resolveBulkModels($request, $input->pluck('id'));
 
-                    // Authorization only (validation done upfront)
-                    $repository->authorizeToUpdateBulk($request);
+            return $input->each(function (array $item, int $row) use ($request, $models) {
+                /** @var Repository $repository */
+                $repository = $request->repositoryWith($models->get($id = $item['id']));
 
-                    return $repository->updateBulk($request, $id, $row);
-                });
+                // Authorization only (validation done upfront)
+                $repository->authorizeToUpdateBulk($request);
+
+                return $repository->updateBulk($request, $id, $row);
+            });
         });
 
         $request->repository()::savedBulk($collection, $request);

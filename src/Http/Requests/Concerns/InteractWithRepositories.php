@@ -97,6 +97,17 @@ trait InteractWithRepositories
         );
     }
 
+    /**
+     * @param  list<int|string>  $repositoryIds
+     */
+    public function modelsQuery(array $repositoryIds, ?string $uriKey = null): Builder|Relation
+    {
+        return $this->newQuery($uriKey)->whereIn(
+            $this->model($uriKey)->getRouteKeyName(),
+            $repositoryIds
+        );
+    }
+
     public function findModelOrFail($id = null, ?string $uriKey = null): Model
     {
         return $id
