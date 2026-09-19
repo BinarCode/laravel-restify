@@ -12,7 +12,7 @@ class RepositoryDestroyBulkController
 
     public function __invoke(RepositoryDestroyBulkRequest $request)
     {
-        $keys = $request->collect()->all();
+        $keys = $request->input();
         $deleted = [];
 
         DB::transaction(function () use ($request, $keys, &$deleted): void {
