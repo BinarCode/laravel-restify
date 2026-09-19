@@ -22,13 +22,19 @@ class RepositoryUpdateBulkController extends RepositoryController
 
             $models = $this->resolveBulkModels($request, array_column($input, 'id'));
 
+            $authorized = [];
+
+            // Authorization only (validation done upfront)
             foreach ($input as $row => $item) {
                 $repository = $request->repositoryWith($models[$item['id']]);
 
-                // Authorization only (validation done upfront)
                 $repository->authorizeToUpdateBulk($request);
 
-                $repository->updateBulk($request, $item['id'], $row);
+                $authorized[] = [$item['id'], $row, $repository];
+            }
+
+            foreach ($authorized as [$id, $row, $repository]) {
+                $repository->updateBulk($request, $id, $row);
             }
         });
 

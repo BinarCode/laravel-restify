@@ -18,14 +18,20 @@ class RepositoryDestroyBulkController
         DB::transaction(function () use ($request, $keys, &$deleted): void {
             $models = $this->resolveBulkModels($request, $keys);
 
+            $authorized = [];
+
             foreach ($keys as $row => $key) {
-                $model = $models[$key];
+                $authorized[] = [
+                    $key,
+                    $row,
+                    $request->repositoryWith($models[$key])->allowToDestroyBulk($request),
+                ];
+            }
 
-                $deleted[] = $model->attributesToArray();
+            foreach ($authorized as [$key, $row, $repository]) {
+                $deleted[] = $repository->resource->attributesToArray();
 
-                $request->repositoryWith($model)
-                    ->allowToDestroyBulk($request)
-                    ->deleteBulk($request, $key, $row);
+                $repository->deleteBulk($request, $key, $row);
             }
         });
 

@@ -21,6 +21,13 @@ class BulkModelLoadingTest extends IntegrationTestCase
         $this->authenticate();
     }
 
+    protected function tearDown(): void
+    {
+        unset($_SERVER['restify.post.deleteBulk.callback']);
+
+        parent::tearDown();
+    }
+
     #[Test]
     public function bulk_delete_loads_every_model_in_one_query(): void
     {
@@ -80,6 +87,39 @@ class BulkModelLoadingTest extends IntegrationTestCase
         ])->assertNotFound();
 
         $this->assertSame('Original title', $post->fresh()->title);
+    }
+
+    #[Test]
+    public function bulk_delete_authorizes_every_model_before_deleting_any(): void
+    {
+        Gate::policy(Post::class, PostPolicy::class);
+
+        $posts = Post::factory(3)->create();
+        $denied = $posts->last();
+
+        $_SERVER['restify.post.deleteBulk.callback'] = fn (
+            $user,
+            Post $post
+        ): bool => $post->getKey() !== $denied->getKey();
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $this->deleteJson(PostRepository::route('bulk/delete'), $posts->modelKeys())->assertForbidden();
+
+        $this->assertSame([], $this->writes());
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function writes(): array
+    {
+        return array_values(array_filter(
+            array_column(DB::getQueryLog(), 'query'),
+            fn (string $query): bool => str_starts_with($query, 'delete ')
+                || str_starts_with($query, 'insert '),
+        ));
     }
 
     /**
