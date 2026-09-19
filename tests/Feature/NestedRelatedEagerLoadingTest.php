@@ -29,11 +29,6 @@ class NestedRelatedEagerLoadingTest extends IntegrationTestCase
         parent::tearDown();
     }
 
-    /**
-     * Seed 5 users, each with 2 posts, each post with 2 comments.
-     * A correctly eager loaded request must not scale its query count with the
-     * number of parent rows.
-     */
     protected function seedTree(int $users = 5): void
     {
         User::factory()->count($users)->create()->each(function (User $user) {

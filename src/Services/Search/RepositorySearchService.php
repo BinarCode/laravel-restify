@@ -101,10 +101,6 @@ class RepositorySearchService
             return $query;
         }
 
-        // A repository may declare a relation with dot notation (`posts.comments`).
-        // Compare only the root segment on both sides, otherwise a dotted
-        // declaration never matches the requested tree and nothing gets eager
-        // loaded - every row then falls back to `loadMissing()` (N+1).
         $eagerRoots = collect($eager)
             ->filter(fn ($relation) => is_string($relation))
             ->map(fn (string $relation) => str($relation)->before('.')->toString())
