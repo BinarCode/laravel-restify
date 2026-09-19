@@ -12,7 +12,7 @@ class RepositoryDestroyBulkController
 
     public function __invoke(RepositoryDestroyBulkRequest $request)
     {
-        $keys = $request->input();
+        $keys = $request->json()->all();
         $deleted = [];
 
         DB::transaction(function () use ($request, $keys, &$deleted): void {
@@ -20,11 +20,11 @@ class RepositoryDestroyBulkController
 
             $authorized = [];
 
-            foreach ($keys as $row => $key) {
-                $authorized[] = [
-                    $key,
+            foreach ($models as $row => $model) {
+                $authorized[$model->getKey()] ??= [
+                    $keys[$row],
                     $row,
-                    $request->repositoryWith($models[$key])->allowToDestroyBulk($request),
+                    $request->repositoryWith($model)->allowToDestroyBulk($request),
                 ];
             }
 

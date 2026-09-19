@@ -20,17 +20,23 @@ class RepositoryUpdateBulkController extends RepositoryController
         DB::transaction(function () use ($request, $collection): void {
             $input = $collection->all();
 
-            $models = $this->resolveBulkModels($request, array_column($input, 'id'));
+            $ids = [];
+
+            foreach ($input as $row => $item) {
+                $ids[$row] = $item['id'] ?? null;
+            }
+
+            $models = $this->resolveBulkModels($request, $ids);
 
             $authorized = [];
 
             // Authorization only (validation done upfront)
-            foreach ($input as $row => $item) {
-                $repository = $request->repositoryWith($models[$item['id']]);
+            foreach ($models as $row => $model) {
+                $repository = $request->repositoryWith($model);
 
                 $repository->authorizeToUpdateBulk($request);
 
-                $authorized[] = [$item['id'], $row, $repository];
+                $authorized[] = [$ids[$row], $row, $repository];
             }
 
             foreach ($authorized as [$id, $row, $repository]) {

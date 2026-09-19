@@ -5,11 +5,9 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Gate;
 use PHPUnit\Framework\Attributes\Test;
 
 class BulkModelLoadingTest extends IntegrationTestCase
@@ -31,8 +29,6 @@ class BulkModelLoadingTest extends IntegrationTestCase
     #[Test]
     public function bulk_delete_loads_every_model_in_one_query(): void
     {
-        Gate::policy(Post::class, PostPolicy::class);
-
         $posts = Post::factory(5)->create();
 
         DB::flushQueryLog();
@@ -64,8 +60,6 @@ class BulkModelLoadingTest extends IntegrationTestCase
     #[Test]
     public function bulk_delete_with_an_unknown_key_changes_nothing(): void
     {
-        Gate::policy(Post::class, PostPolicy::class);
-
         $posts = Post::factory(2)->create();
 
         $this->deleteJson(PostRepository::route('bulk/delete'), [
@@ -92,8 +86,6 @@ class BulkModelLoadingTest extends IntegrationTestCase
     #[Test]
     public function bulk_delete_authorizes_every_model_before_deleting_any(): void
     {
-        Gate::policy(Post::class, PostPolicy::class);
-
         $posts = Post::factory(3)->create();
         $denied = $posts->last();
 
@@ -108,6 +100,48 @@ class BulkModelLoadingTest extends IntegrationTestCase
         $this->deleteJson(PostRepository::route('bulk/delete'), $posts->modelKeys())->assertForbidden();
 
         $this->assertSame([], $this->writes());
+    }
+
+    #[Test]
+    public function bulk_delete_handles_a_repeated_key_once(): void
+    {
+        $post = Post::factory()->create();
+
+        DB::flushQueryLog();
+        DB::enableQueryLog();
+
+        $this->deleteJson(PostRepository::route('bulk/delete'), [
+            $post->getKey(),
+            $post->getKey(),
+        ])->assertOk();
+
+        $this->assertModelMissing($post);
+        $this->assertSame(1, DB::table('action_logs')->count());
+    }
+
+    #[Test]
+    public function bulk_delete_accepts_a_key_the_database_matches(): void
+    {
+        $post = Post::factory()->create();
+
+        $this->deleteJson(PostRepository::route('bulk/delete'), [
+            '0'.$post->getKey(),
+        ])->assertOk();
+
+        $this->assertModelMissing($post);
+    }
+
+    #[Test]
+    public function bulk_delete_ignores_the_query_string(): void
+    {
+        $post = Post::factory()->create();
+
+        $this->deleteJson(
+            PostRepository::route('bulk/delete', ['foo' => 'bar']),
+            [$post->getKey()],
+        )->assertOk();
+
+        $this->assertModelMissing($post);
     }
 
     /**

@@ -11,25 +11,39 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 trait ResolvesBulkModels
 {
     /**
-     * @param  list<int|string>  $keys
+     * @param  array<int|string, int|string|null>  $keys
      * @return array<int|string, Model>
      */
     protected function resolveBulkModels(RestifyRequest $request, array $keys): array
     {
         $model = $request->model();
+        $routeKeyName = $model->getRouteKeyName();
 
-        $models = $request->modelsQuery($keys)
+        $loaded = $request->modelsQuery(array_values(array_unique($keys)))
             ->lockForUpdate()
-            ->get()
-            ->keyBy($model->getRouteKeyName())
-            ->all();
+            ->get();
 
-        $missing = array_values(array_diff($keys, array_keys($models)));
+        $resolved = [];
+        $missing = [];
+
+        foreach ($keys as $row => $key) {
+            $match = $loaded->first(
+                static fn (Model $candidate): bool => $candidate->getAttribute($routeKeyName) == $key
+            );
+
+            if ($match instanceof Model) {
+                $resolved[$row] = $match;
+
+                continue;
+            }
+
+            $missing[] = $key;
+        }
 
         if ($missing !== []) {
             throw (new ModelNotFoundException)->setModel($model::class, $missing);
         }
 
-        return $models;
+        return $resolved;
     }
 }
