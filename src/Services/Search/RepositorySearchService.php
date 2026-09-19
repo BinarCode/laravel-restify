@@ -84,7 +84,7 @@ class RepositorySearchService
         return $query;
     }
 
-    public function prepareRelations(RestifyRequest $request, Builder|Relation $query)
+    public function prepareRelations(RestifyRequest $request, Builder|Relation $query): Builder|Relation
     {
         $eager = ($this->repository)::collectRelated()
             ->forRequest($request, $this->repository)
@@ -101,40 +101,47 @@ class RepositorySearchService
             return $query;
         }
 
-        $eagerRoots = collect($eager)
-            ->filter(fn ($relation) => is_string($relation))
-            ->map(fn (string $relation) => str($relation)->before('.')->toString())
-            ->unique()
-            ->all();
+        $eagerRoots = [];
 
-        $filtered = collect($request->related()->makeTree())->filter(fn (string $relationships) => in_array(
-            str($relationships)->before('.')->toString(),
-            $eagerRoots,
-            true,
-        ))->filter(function ($relation) use ($query) {
-            try {
-                $segments = explode('.', $relation);
-                $currentQuery = $query;
-
-                foreach ($segments as $segment) {
-                    $rel = $currentQuery->getRelation($segment);
-
-                    if (! $rel instanceof Relation) {
-                        return false;
-                    }
-
-                    $currentQuery = $rel->getRelated()->newQuery();
-                }
-
-                return true;
-            } catch (Throwable) {
-                return false;
+        foreach ($eager as $relationPath) {
+            if (is_string($relationPath)) {
+                $eagerRoots[$this->rootSegment($relationPath)] = true;
             }
-        })->all();
+        }
+
+        $filtered = array_filter(
+            $request->related()->makeTree(),
+            fn (string $relationPath): bool => isset($eagerRoots[$this->rootSegment($relationPath)])
+                && $this->relationExists($query, $relationPath),
+        );
 
         return $query->with(
             array_merge($filtered, ($this->repository)::collectWiths($request, $this->repository)->all()),
         );
+    }
+
+    private function rootSegment(string $relationPath): string
+    {
+        return strstr($relationPath, '.', true) ?: $relationPath;
+    }
+
+    private function relationExists(Builder|Relation $query, string $relationPath): bool
+    {
+        try {
+            foreach (explode('.', $relationPath) as $segment) {
+                $relation = $query->getRelation($segment);
+
+                if (! $relation instanceof Relation) {
+                    return false;
+                }
+
+                $query = $relation->getRelated()->newQuery();
+            }
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     public function prepareSearchFields(RestifyRequest $request, $query)
