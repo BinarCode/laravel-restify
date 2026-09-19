@@ -135,7 +135,7 @@ class RepositorySearchService
                     return false;
                 }
 
-                $query = $relation->getRelated()->newQuery();
+                $query = $relation->getRelated()->newModelQuery();
             }
 
             return true;
