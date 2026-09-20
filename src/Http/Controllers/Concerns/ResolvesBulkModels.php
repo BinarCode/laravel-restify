@@ -23,11 +23,13 @@ trait ResolvesBulkModels
             ->lockForUpdate()
             ->get();
 
+        $byRouteKey = $loaded->keyBy($routeKeyName);
+
         $resolved = [];
         $missing = [];
 
         foreach ($keys as $row => $key) {
-            $match = $loaded->first(
+            $match = $byRouteKey->get($key) ?? $loaded->first(
                 static fn (Model $candidate): bool => $candidate->getAttribute($routeKeyName) == $key
             );
 
