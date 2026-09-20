@@ -20,7 +20,9 @@ trait ResolvesBulkModels
         $model = $request->model();
         $routeKeyName = $model->getRouteKeyName();
 
-        $lookup = array_unique(array_filter($keys, static fn (int|string|null $key): bool => $key !== null));
+        $lookup = array_values(
+            array_unique(array_filter($keys, static fn (int|string|null $key): bool => $key !== null))
+        );
 
         /** @var Collection<int, Model> $loaded */
         $loaded = $request->modelsQuery($lookup)

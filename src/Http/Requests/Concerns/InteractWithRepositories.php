@@ -98,7 +98,7 @@ trait InteractWithRepositories
     }
 
     /**
-     * @param  array<int|string, int|string|null>  $repositoryIds
+     * @param  list<int|string>  $repositoryIds
      */
     public function modelsQuery(array $repositoryIds, ?string $uriKey = null): Builder|Relation
     {
