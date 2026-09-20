@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -27,8 +28,8 @@ class AttachSyncParentLoadingTest extends IntegrationTestCase
             'is_admin' => true,
         ])->assertCreated();
 
-        $this->assertCount(1, $this->selectsAgainst('companies'));
-        $this->assertCount(1, $this->selectsAgainst('users'));
+        $this->assertCount(1, $this->selectsAgainst(Company::class));
+        $this->assertCount(1, $this->selectsAgainst(User::class));
 
         // CompanyUserPivot::getTable() reports company_user_pivot; a pivot takes
         // its table from the relation, so the real one has to be named here.
@@ -53,7 +54,7 @@ class AttachSyncParentLoadingTest extends IntegrationTestCase
             'is_admin' => true,
         ])->assertOk();
 
-        $this->assertCount(1, $this->selectsAgainst('companies'));
+        $this->assertCount(1, $this->selectsAgainst(Company::class));
 
         $this->assertDatabaseCount('company_user', 5);
     }
@@ -76,14 +77,15 @@ class AttachSyncParentLoadingTest extends IntegrationTestCase
     }
 
     /**
+     * @param  class-string<Model>  $model
      * @return list<string>
      */
-    private function selectsAgainst(string $table): array
+    private function selectsAgainst(string $model): array
     {
-        $executed = array_column(DB::getQueryLog(), 'query');
+        $table = $this->getTable($model);
 
         return array_values(array_filter(
-            $executed,
+            array_column(DB::getQueryLog(), 'query'),
             fn (string $query): bool => str_starts_with($query, 'select ')
                 && str_contains($query, 'from "'.$table.'"'),
         ));
