@@ -8,8 +8,6 @@ class RepositoryUpdateBulkRequest extends RestifyRequest
 {
     public function collectInput(): Collection
     {
-        return collect(
-            $this->all(),
-        );
+        return Collection::make($this->payload());
     }
 }

@@ -21,6 +21,16 @@ class RestifyRequest extends FormRequest
         return [];
     }
 
+    /**
+     * The request body, without the query string or uploaded files merged in.
+     *
+     * @return array<array-key, mixed>
+     */
+    public function payload(): array
+    {
+        return $this->isJson() ? $this->json()->all() : $this->post();
+    }
+
     public function relatedEagerField(): EagerField
     {
         $parentRepository = $this->repository(
