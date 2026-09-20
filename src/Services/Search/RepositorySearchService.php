@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Throwable;
 
@@ -252,7 +253,7 @@ class RepositorySearchService
 
         foreach ($groupByColumns as $column) {
             if (! in_array($column, $repository::$groupBy)) {
-                abort(422, sprintf(
+                abort(JsonResponse::HTTP_UNPROCESSABLE_ENTITY, sprintf(
                     'The column [%s] is not allowed for grouping. Allowed columns are: %s',
                     $column,
                     implode(', ', $repository::$groupBy)
