@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\JsonResponse;
 use JsonException;
 use Throwable;
 
@@ -49,7 +50,7 @@ class RestifyRequest extends FormRequest
             ->first(fn (EagerField $field, $key) => $field->getAttribute() === $this->route('repository'));
 
         if (is_null($eagerField)) {
-            abort(403, 'Eager field missing from the parent ['.$this->route('parentRepository').'] related fields.');
+            abort(JsonResponse::HTTP_FORBIDDEN, 'Eager field missing from the parent ['.$this->route('parentRepository').'] related fields.');
         }
 
         $eagerField->setParentRepository($parentRepository);
