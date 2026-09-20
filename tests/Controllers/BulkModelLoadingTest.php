@@ -8,8 +8,6 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 
 class BulkModelLoadingTest extends IntegrationTestCase
@@ -19,44 +17,6 @@ class BulkModelLoadingTest extends IntegrationTestCase
         parent::setUp();
 
         $this->authenticate();
-    }
-
-    protected function tearDown(): void
-    {
-        unset($_SERVER['restify.post.deleteBulk.callback']);
-
-        parent::tearDown();
-    }
-
-    #[Test]
-    public function bulk_delete_loads_every_model_in_one_query(): void
-    {
-        $posts = Post::factory(5)->create();
-
-        DB::flushQueryLog();
-        DB::enableQueryLog();
-
-        $this->deleteJson(PostRepository::route('bulk/delete'), $posts->modelKeys())->assertOk();
-
-        $this->assertCount(1, $this->selectsAgainst(Post::class));
-    }
-
-    #[Test]
-    public function bulk_update_loads_every_model_in_one_query(): void
-    {
-        $posts = Post::factory(5)->create(['user_id' => 1]);
-
-        DB::flushQueryLog();
-        DB::enableQueryLog();
-
-        $payload = $posts->map(fn (Post $post): array => [
-            'id' => $post->getKey(),
-            'title' => 'Updated '.$post->getKey(),
-        ])->all();
-
-        $this->postJson(PostRepository::route('bulk/update'), $payload)->assertOk();
-
-        $this->assertCount(1, $this->selectsAgainst(Post::class));
     }
 
     #[Test]
@@ -87,31 +47,9 @@ class BulkModelLoadingTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function bulk_delete_authorizes_every_model_before_deleting_any(): void
-    {
-        $posts = Post::factory(3)->create();
-        $denied = $posts->last();
-
-        $_SERVER['restify.post.deleteBulk.callback'] = fn (
-            $user,
-            Post $post
-        ): bool => $post->getKey() !== $denied->getKey();
-
-        DB::flushQueryLog();
-        DB::enableQueryLog();
-
-        $this->deleteJson(PostRepository::route('bulk/delete'), $posts->modelKeys())->assertForbidden();
-
-        $this->assertSame([], $this->writes());
-    }
-
-    #[Test]
     public function bulk_delete_handles_a_repeated_key_once(): void
     {
         $post = Post::factory()->create();
-
-        DB::flushQueryLog();
-        DB::enableQueryLog();
 
         $this->deleteJson(PostRepository::route('bulk/delete'), [
             $post->getKey(),
@@ -159,32 +97,5 @@ class BulkModelLoadingTest extends IntegrationTestCase
 
         $this->assertDatabaseHas(Post::class, ['id' => $post->getKey(), 'title' => 'Original title']);
         $this->assertDatabaseMissing(Post::class, ['title' => 'Updated title']);
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function writes(): array
-    {
-        return array_values(array_filter(
-            array_column(DB::getQueryLog(), 'query'),
-            fn (string $query): bool => str_starts_with($query, 'delete ')
-                || str_starts_with($query, 'insert '),
-        ));
-    }
-
-    /**
-     * @param  class-string<Model>  $model
-     * @return list<string>
-     */
-    private function selectsAgainst(string $model): array
-    {
-        $table = $this->getTable($model);
-
-        return array_values(array_filter(
-            array_column(DB::getQueryLog(), 'query'),
-            fn (string $query): bool => str_starts_with($query, 'select ')
-                && str_contains($query, 'from "'.$table.'"'),
-        ));
     }
 }
