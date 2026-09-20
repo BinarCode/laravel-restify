@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Repositories\Concerns;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 
 trait InteractsWithCache
@@ -81,9 +82,10 @@ trait InteractsWithCache
         // Add model version/timestamp for automatic invalidation
         if (method_exists($this->model(), 'getUpdatedAtColumn')) {
             try {
-                $latest = $this->model()::latest($this->model()->getUpdatedAtColumn())->first();
+                $latest = $this->model()->newQuery()->max($this->model()->getUpdatedAtColumn());
+
                 if ($latest) {
-                    $keyParts[] = 'v_'.$latest->{$this->model()->getUpdatedAtColumn()}->timestamp;
+                    $keyParts[] = 'v_'.Carbon::parse($latest)->timestamp;
                 }
             } catch (\Exception $e) {
                 // Fallback to current timestamp if query fails
