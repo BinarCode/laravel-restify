@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Actions;
 
-use Binaryk\LaravelRestify\Actions\Concerns\HasSchemaResolver;
 use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
@@ -31,7 +30,6 @@ use ReturnTypeWillChange;
 abstract class Action implements JsonSerializable
 {
     use AuthorizedToSee;
-    use HasSchemaResolver;
     use Make;
     use ProxiesCanSeeToGate;
     use Visibility;
