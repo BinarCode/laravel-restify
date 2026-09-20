@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryAttachRequest;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 class RepositoryAttachController extends RepositoryController
 {
@@ -26,7 +27,7 @@ class RepositoryAttachController extends RepositoryController
         return $repository->attach(
             $request,
             $request->repositoryId,
-            collect(Arr::wrap($request->input($request->relatedRepository)))
+            Collection::make(Arr::wrap($request->input($request->relatedRepository)))
                 ->map(fn ($relatedRepositoryId) => $this->belongsToManyField($request)
                     ->initializePivot(
                         $request,

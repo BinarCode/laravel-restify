@@ -28,7 +28,7 @@ class RepositoryAttachRequest extends RestifyRequest
         /** @var EloquentCollection<int, Model> $models */
         $models = $relatedRepository->model()->newModelQuery()->whereKey($ids)->get();
 
-        return collect($ids)->map(
+        return Collection::make($ids)->map(
             fn ($id) => $models->first(static fn (Model $model): bool => $model->getKey() == $id)
         );
     }
