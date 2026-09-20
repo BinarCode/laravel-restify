@@ -25,7 +25,8 @@ class BulkQueryStringTest extends IntegrationTestCase
             ['title' => 'Created one', 'user_id' => 1],
         ])->assertOk();
 
-        $this->assertSame(1, Post::count());
+        $this->assertDatabaseCount('posts', 1);
+        $this->assertDatabaseHas('posts', ['title' => 'Created one']);
     }
 
     #[Test]
@@ -37,6 +38,7 @@ class BulkQueryStringTest extends IntegrationTestCase
             ['id' => $post->getKey(), 'title' => 'Updated'],
         ])->assertOk();
 
-        $this->assertSame('Updated', $post->fresh()->title);
+        $this->assertDatabaseHas('posts', ['id' => $post->getKey(), 'title' => 'Updated']);
+        $this->assertDatabaseMissing('posts', ['title' => 'Original']);
     }
 }
