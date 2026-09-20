@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Http\Requests;
 
 use Binaryk\LaravelRestify\Restify;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
@@ -25,7 +24,6 @@ class RepositoryAttachRequest extends RestifyRequest
 
         $ids = Arr::wrap($this->input($this->relatedRepository));
 
-        /** @var EloquentCollection<int, Model> $models */
         $models = $relatedRepository->model()->newModelQuery()->whereKey($ids)->get();
 
         return Collection::make($ids)->map(
