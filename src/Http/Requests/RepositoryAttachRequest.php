@@ -24,6 +24,7 @@ class RepositoryAttachRequest extends RestifyRequest
 
         $ids = Arr::wrap($this->input($this->relatedRepository));
 
+        /** @var Collection<int, Model> $models */
         $models = $relatedRepository->model()->newModelQuery()->whereKey($ids)->get();
 
         return Collection::make($ids)->map(
