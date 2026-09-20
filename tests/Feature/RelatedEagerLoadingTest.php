@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Model;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
@@ -26,12 +27,12 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
 
     /**
      * @param  list<string>  $declared
-     * @param  list<string>  $tables
+     * @param  list<class-string<Model>>  $tables
      */
     #[Test]
-    #[TestWith([['posts'], 'posts', ['posts']], 'single level')]
-    #[TestWith([['posts'], 'posts.comments', ['posts', 'comments']], 'nested requested with dot notation')]
-    #[TestWith([['posts.comments'], 'posts.comments', ['posts', 'comments']], 'nested declared with dot notation')]
+    #[TestWith([['posts'], 'posts', [Post::class]], 'single level')]
+    #[TestWith([['posts'], 'posts.comments', [Post::class, Comment::class]], 'nested requested with dot notation')]
+    #[TestWith([['posts.comments'], 'posts.comments', [Post::class, Comment::class]], 'nested declared with dot notation')]
     public function related_is_eager_loaded(array $declared, string $requested, array $tables): void
     {
         UserRepository::$related = $declared;
@@ -42,8 +43,8 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
 
         $this->getJson(UserRepository::route(query: ['related' => $requested]))->assertOk();
 
-        foreach ($tables as $table) {
-            $this->assertQueryCountAgainst(1, $table);
+        foreach ($tables as $model) {
+            $this->assertQueryCountAgainst(1, $model);
         }
     }
 
