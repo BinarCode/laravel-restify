@@ -42,8 +42,8 @@ class BulkLifecycleHooksTest extends IntegrationTestCase
 
         $this->postJson(PostRepository::route('bulk/update'), $payload)->assertOk();
 
-        $this->assertDatabaseHas('posts', ['id' => 1, 'title' => 'Updated 1']);
-        $this->assertDatabaseHas('posts', ['id' => 2, 'title' => 'Updated 2']);
+        $this->assertDatabaseHas(Post::class, ['id' => 1, 'title' => 'Updated 1']);
+        $this->assertDatabaseHas(Post::class, ['id' => 2, 'title' => 'Updated 2']);
 
         foreach (['savedBulk', 'updatedBulk'] as $name) {
             $received = $this->hook($name);
@@ -64,7 +64,7 @@ class BulkLifecycleHooksTest extends IntegrationTestCase
 
         $this->deleteJson(PostRepository::route('bulk/delete'), $posts->modelKeys())->assertOk();
 
-        $this->assertDatabaseCount('posts', 0);
+        $this->assertDatabaseCount(Post::class, 0);
 
         $deleted = $this->hook('deletedBulk');
 

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
@@ -67,7 +68,7 @@ class BulkModelLoadingTest extends IntegrationTestCase
             9999,
         ])->assertNotFound();
 
-        $this->assertDatabaseCount('posts', 2);
+        $this->assertDatabaseCount(Post::class, 2);
     }
 
     #[Test]
@@ -80,8 +81,8 @@ class BulkModelLoadingTest extends IntegrationTestCase
             ['id' => 9999, 'title' => 'Updated missing title'],
         ])->assertNotFound();
 
-        $this->assertDatabaseHas('posts', ['id' => $post->getKey(), 'title' => 'Original title']);
-        $this->assertDatabaseMissing('posts', ['title' => 'Updated title']);
+        $this->assertDatabaseHas(Post::class, ['id' => $post->getKey(), 'title' => 'Original title']);
+        $this->assertDatabaseMissing(Post::class, ['title' => 'Updated title']);
     }
 
     #[Test]
@@ -116,8 +117,8 @@ class BulkModelLoadingTest extends IntegrationTestCase
             $post->getKey(),
         ])->assertOk();
 
-        $this->assertDatabaseMissing('posts', ['id' => $post->getKey()]);
-        $this->assertDatabaseCount('action_logs', 1);
+        $this->assertDatabaseMissing(Post::class, ['id' => $post->getKey()]);
+        $this->assertDatabaseCount(ActionLog::class, 1);
     }
 
     #[Test]
@@ -129,7 +130,7 @@ class BulkModelLoadingTest extends IntegrationTestCase
             '0'.$post->getKey(),
         ])->assertOk();
 
-        $this->assertDatabaseMissing('posts', ['id' => $post->getKey()]);
+        $this->assertDatabaseMissing(Post::class, ['id' => $post->getKey()]);
     }
 
     #[Test]
@@ -142,7 +143,7 @@ class BulkModelLoadingTest extends IntegrationTestCase
             [$post->getKey()],
         )->assertOk();
 
-        $this->assertDatabaseMissing('posts', ['id' => $post->getKey()]);
+        $this->assertDatabaseMissing(Post::class, ['id' => $post->getKey()]);
     }
 
     #[Test]
@@ -155,8 +156,8 @@ class BulkModelLoadingTest extends IntegrationTestCase
             ['title' => 'No id here'],
         ])->assertNotFound();
 
-        $this->assertDatabaseHas('posts', ['id' => $post->getKey(), 'title' => 'Original title']);
-        $this->assertDatabaseMissing('posts', ['title' => 'Updated title']);
+        $this->assertDatabaseHas(Post::class, ['id' => $post->getKey(), 'title' => 'Original title']);
+        $this->assertDatabaseMissing(Post::class, ['title' => 'Updated title']);
     }
 
     /**
