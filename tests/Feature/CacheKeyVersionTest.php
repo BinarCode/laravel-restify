@@ -16,10 +16,17 @@ class CacheKeyVersionTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        config([
-            'restify.repositories.cache.enabled' => true,
-            'restify.repositories.cache.enable_in_tests' => true,
-        ]);
+        // Array cache avoids the database cache table CI does not migrate.
+        config(['cache.default' => 'array']);
+
+        $this->enableRepositoryCache();
+    }
+
+    protected function tearDown(): void
+    {
+        $this->clearRepositoryCache();
+
+        parent::tearDown();
     }
 
     #[Test]

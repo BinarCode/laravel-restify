@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\Repositories\Concerns;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Illuminate\Support\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 
 trait InteractsWithCache
@@ -85,7 +85,7 @@ trait InteractsWithCache
                 $latest = $this->model()->newQuery()->max($this->model()->getUpdatedAtColumn());
 
                 if ($latest) {
-                    $keyParts[] = 'v_'.Carbon::parse($latest)->timestamp;
+                    $keyParts[] = 'v_'.CarbonImmutable::parse($latest)->timestamp;
                 }
             } catch (\Exception $e) {
                 // Fallback to current timestamp if query fails
