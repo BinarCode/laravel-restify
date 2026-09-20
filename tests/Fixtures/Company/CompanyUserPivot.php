@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class CompanyUserPivot extends Pivot
 {
+    protected $table = 'company_user';
+
     protected $casts = [
         'is_admin' => 'bool',
     ];

@@ -6,6 +6,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Model;
@@ -31,10 +32,8 @@ class AttachSyncParentLoadingTest extends IntegrationTestCase
         $this->assertCount(1, $this->selectsAgainst(Company::class));
         $this->assertCount(1, $this->selectsAgainst(User::class));
 
-        // CompanyUserPivot::getTable() reports company_user_pivot; a pivot takes
-        // its table from the relation, so the real one has to be named here.
-        $this->assertDatabaseCount('company_user', 5);
-        $this->assertDatabaseHas('company_user', [
+        $this->assertDatabaseCount(CompanyUserPivot::class, 5);
+        $this->assertDatabaseHas(CompanyUserPivot::class, [
             'company_id' => $company->getKey(),
             'user_id' => $users->first()->getKey(),
         ]);
@@ -56,7 +55,7 @@ class AttachSyncParentLoadingTest extends IntegrationTestCase
 
         $this->assertCount(1, $this->selectsAgainst(Company::class));
 
-        $this->assertDatabaseCount('company_user', 5);
+        $this->assertDatabaseCount(CompanyUserPivot::class, 5);
     }
 
     #[Test]
@@ -70,7 +69,7 @@ class AttachSyncParentLoadingTest extends IntegrationTestCase
             'is_admin' => true,
         ])->assertCreated();
 
-        $this->assertDatabaseHas('company_user', [
+        $this->assertDatabaseHas(CompanyUserPivot::class, [
             'company_id' => $company->getKey(),
             'user_id' => $user->getKey(),
         ]);
