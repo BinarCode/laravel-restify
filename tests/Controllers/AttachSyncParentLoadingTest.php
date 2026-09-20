@@ -29,6 +29,14 @@ class AttachSyncParentLoadingTest extends IntegrationTestCase
 
         $this->assertCount(1, $this->selectsAgainst('companies'));
         $this->assertCount(1, $this->selectsAgainst('users'));
+
+        // CompanyUserPivot::getTable() reports company_user_pivot; a pivot takes
+        // its table from the relation, so the real one has to be named here.
+        $this->assertDatabaseCount('company_user', 5);
+        $this->assertDatabaseHas('company_user', [
+            'company_id' => $company->getKey(),
+            'user_id' => $users->first()->getKey(),
+        ]);
     }
 
     #[Test]
@@ -46,6 +54,8 @@ class AttachSyncParentLoadingTest extends IntegrationTestCase
         ])->assertOk();
 
         $this->assertCount(1, $this->selectsAgainst('companies'));
+
+        $this->assertDatabaseCount('company_user', 5);
     }
 
     /**
