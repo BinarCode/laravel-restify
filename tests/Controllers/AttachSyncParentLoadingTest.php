@@ -58,6 +58,23 @@ class AttachSyncParentLoadingTest extends IntegrationTestCase
         $this->assertDatabaseCount('company_user', 5);
     }
 
+    #[Test]
+    public function attaching_accepts_a_related_id_the_database_matches(): void
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->id}/attach/users"), [
+            'users' => ['0'.$user->getKey()],
+            'is_admin' => true,
+        ])->assertCreated();
+
+        $this->assertDatabaseHas('company_user', [
+            'company_id' => $company->getKey(),
+            'user_id' => $user->getKey(),
+        ]);
+    }
+
     /**
      * @return list<string>
      */
