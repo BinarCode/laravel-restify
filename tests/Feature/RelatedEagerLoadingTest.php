@@ -18,6 +18,15 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
 {
     use InteractsWithQueryLog;
 
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->seedUsersWithPostsAndComments();
+
+        $this->recordQueries();
+    }
+
     protected function tearDown(): void
     {
         UserRepository::$related = ['posts'];
@@ -37,14 +46,10 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
     {
         UserRepository::$related = $declared;
 
-        $this->seedUsersWithPostsAndComments();
-
-        $this->recordQueries();
-
         $this->getJson(UserRepository::route(query: ['related' => $requested]))->assertOk();
 
         foreach ($tables as $model) {
-            $this->assertQueryCountAgainst(1, $model);
+            $this->assertSelectCount(1, $model);
         }
     }
 

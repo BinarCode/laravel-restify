@@ -13,10 +13,23 @@ use Orchestra\Testbench\TestCase;
  */
 trait InteractsWithQueryLog
 {
+    protected function setUpInteractsWithQueryLog(): void
+    {
+        DB::enableQueryLog();
+    }
+
+    protected function tearDownInteractsWithQueryLog(): void
+    {
+        DB::disableQueryLog();
+        DB::flushQueryLog();
+    }
+
+    /**
+     * Start counting here, once the fixtures are in place.
+     */
     protected function recordQueries(): void
     {
         DB::flushQueryLog();
-        DB::enableQueryLog();
     }
 
     /**
@@ -31,25 +44,39 @@ trait InteractsWithQueryLog
      * @param  class-string<Model>  $model
      * @return list<string>
      */
-    protected function queriesAgainst(string $model): array
+    protected function selectsAgainst(string $model): array
     {
         $table = $this->getTable($model);
 
         return array_values(array_filter(
             $this->executedQueries(),
-            fn (string $query): bool => str_contains($query, 'from "'.$table.'"'),
+            fn (string $query): bool => str_starts_with($query, 'select ')
+                && str_contains($query, 'from "'.$table.'"'),
+        ));
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected function executedWrites(): array
+    {
+        return array_values(array_filter(
+            $this->executedQueries(),
+            fn (string $query): bool => str_starts_with($query, 'insert ')
+                || str_starts_with($query, 'update ')
+                || str_starts_with($query, 'delete '),
         ));
     }
 
     /**
      * @param  class-string<Model>  $model
      */
-    protected function assertQueryCountAgainst(int $expected, string $model): void
+    protected function assertSelectCount(int $expected, string $model): void
     {
         $this->assertCount(
             $expected,
-            $this->queriesAgainst($model),
-            'unexpected number of queries against ['.$model.']. executed: '
+            $this->selectsAgainst($model),
+            'unexpected selects against ['.$model.']: '
                 .json_encode($this->executedQueries(), JSON_PRETTY_PRINT),
         );
     }
