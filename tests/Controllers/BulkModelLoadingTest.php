@@ -144,6 +144,19 @@ class BulkModelLoadingTest extends IntegrationTestCase
         $this->assertModelMissing($post);
     }
 
+    #[Test]
+    public function bulk_update_with_an_item_missing_its_id_changes_nothing(): void
+    {
+        $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original title']);
+
+        $this->postJson(PostRepository::route('bulk/update'), [
+            ['id' => $post->getKey(), 'title' => 'Updated title'],
+            ['title' => 'No id here'],
+        ])->assertNotFound();
+
+        $this->assertSame('Original title', $post->fresh()->title);
+    }
+
     /**
      * @return list<string>
      */

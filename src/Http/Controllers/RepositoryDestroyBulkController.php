@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Controllers\Concerns\ResolvesBulkModels;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyBulkRequest;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class RepositoryDestroyBulkController
@@ -35,7 +36,7 @@ class RepositoryDestroyBulkController
             }
         });
 
-        $request->repository()::deletedBulk(collect($deleted), $request);
+        $request->repository()::deletedBulk(Collection::make($deleted), $request);
 
         return ok();
     }

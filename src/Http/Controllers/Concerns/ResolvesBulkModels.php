@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Http\Controllers\Concerns;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Illuminate\Database\Eloquent\Collection as EloquentCollection;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -20,12 +20,14 @@ trait ResolvesBulkModels
         $model = $request->model();
         $routeKeyName = $model->getRouteKeyName();
 
-        /** @var EloquentCollection<int, Model> $loaded */
-        $loaded = $request->modelsQuery(array_values(array_unique($keys)))
+        $lookup = array_unique(array_filter($keys, static fn (int|string|null $key): bool => $key !== null));
+
+        /** @var Collection<int, Model> $loaded */
+        $loaded = $request->modelsQuery($lookup)
             ->lockForUpdate()
             ->get();
 
-        /** @var EloquentCollection<array-key, Model> $byRouteKey */
+        /** @var Collection<array-key, Model> $byRouteKey */
         $byRouteKey = $loaded->keyBy($routeKeyName);
 
         $integerRouteKey = $routeKeyName === $model->getKeyName() && $model->getKeyType() === 'int';
