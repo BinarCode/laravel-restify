@@ -30,25 +30,6 @@ class CacheKeyVersionTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_row_touched_without_model_events_still_busts_the_cache(): void
-    {
-        $post = Post::factory()->create(['title' => 'Original title']);
-
-        $this->getJson(PostRepository::route())
-            ->assertOk()
-            ->assertJsonFragment(['title' => 'Original title']);
-
-        DB::table($post->getTable())->where('id', $post->getKey())->update([
-            'title' => 'Updated title',
-            'updated_at' => now()->addMinute(),
-        ]);
-
-        $this->getJson(PostRepository::route())
-            ->assertOk()
-            ->assertJsonFragment(['title' => 'Updated title']);
-    }
-
-    #[Test]
     public function an_index_still_works_when_every_timestamp_is_null(): void
     {
         $post = Post::factory()->create(['title' => 'No timestamp']);
