@@ -17,6 +17,21 @@ use Illuminate\Support\Collection;
 
 class PostRepository extends Repository
 {
+    public static function savedBulk(Collection $repositories, $request)
+    {
+        $_SERVER['restify.post.savedBulk'] = $repositories;
+    }
+
+    public static function updatedBulk(Collection $repositories, $request)
+    {
+        $_SERVER['restify.post.updatedBulk'] = $repositories;
+    }
+
+    public static function deletedBulk(Collection $repositories, $request)
+    {
+        $_SERVER['restify.post.deletedBulk'] = $repositories;
+    }
+
     public static $model = Post::class;
 
     public static string $title = 'title';
