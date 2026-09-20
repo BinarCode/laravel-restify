@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Mockery;
@@ -55,7 +56,7 @@ class ResolvesBulkModelsTest extends IntegrationTestCase
     {
         $query = Mockery::mock(Builder::class);
         $query->shouldReceive('lockForUpdate')->andReturnSelf();
-        $query->shouldReceive('get')->andReturn(collect($loaded));
+        $query->shouldReceive('get')->andReturn(Collection::make($loaded));
 
         $request = Mockery::mock(RestifyRequest::class);
         $request->shouldReceive('model')->andReturn($model);
