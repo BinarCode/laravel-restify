@@ -67,7 +67,7 @@ class BulkModelLoadingTest extends IntegrationTestCase
             9999,
         ])->assertNotFound();
 
-        $posts->each(fn (Post $post) => $this->assertModelExists($post));
+        $this->assertDatabaseCount('posts', 2);
     }
 
     #[Test]
@@ -80,7 +80,8 @@ class BulkModelLoadingTest extends IntegrationTestCase
             ['id' => 9999, 'title' => 'Updated missing title'],
         ])->assertNotFound();
 
-        $this->assertSame('Original title', $post->fresh()->title);
+        $this->assertDatabaseHas('posts', ['id' => $post->getKey(), 'title' => 'Original title']);
+        $this->assertDatabaseMissing('posts', ['title' => 'Updated title']);
     }
 
     #[Test]
@@ -115,8 +116,8 @@ class BulkModelLoadingTest extends IntegrationTestCase
             $post->getKey(),
         ])->assertOk();
 
-        $this->assertModelMissing($post);
-        $this->assertSame(1, DB::table('action_logs')->count());
+        $this->assertDatabaseMissing('posts', ['id' => $post->getKey()]);
+        $this->assertDatabaseCount('action_logs', 1);
     }
 
     #[Test]
@@ -128,7 +129,7 @@ class BulkModelLoadingTest extends IntegrationTestCase
             '0'.$post->getKey(),
         ])->assertOk();
 
-        $this->assertModelMissing($post);
+        $this->assertDatabaseMissing('posts', ['id' => $post->getKey()]);
     }
 
     #[Test]
@@ -141,7 +142,7 @@ class BulkModelLoadingTest extends IntegrationTestCase
             [$post->getKey()],
         )->assertOk();
 
-        $this->assertModelMissing($post);
+        $this->assertDatabaseMissing('posts', ['id' => $post->getKey()]);
     }
 
     #[Test]
@@ -154,7 +155,8 @@ class BulkModelLoadingTest extends IntegrationTestCase
             ['title' => 'No id here'],
         ])->assertNotFound();
 
-        $this->assertSame('Original title', $post->fresh()->title);
+        $this->assertDatabaseHas('posts', ['id' => $post->getKey(), 'title' => 'Original title']);
+        $this->assertDatabaseMissing('posts', ['title' => 'Updated title']);
     }
 
     /**
