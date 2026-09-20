@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -37,7 +38,7 @@ class BulkModelLoadingTest extends IntegrationTestCase
 
         $this->deleteJson(PostRepository::route('bulk/delete'), $posts->modelKeys())->assertOk();
 
-        $this->assertCount(1, $this->selectsAgainst('posts'));
+        $this->assertCount(1, $this->selectsAgainst(Post::class));
     }
 
     #[Test]
@@ -55,7 +56,7 @@ class BulkModelLoadingTest extends IntegrationTestCase
 
         $this->postJson(PostRepository::route('bulk/update'), $payload)->assertOk();
 
-        $this->assertCount(1, $this->selectsAgainst('posts'));
+        $this->assertCount(1, $this->selectsAgainst(Post::class));
     }
 
     #[Test]
@@ -173,14 +174,15 @@ class BulkModelLoadingTest extends IntegrationTestCase
     }
 
     /**
+     * @param  class-string<Model>  $model
      * @return list<string>
      */
-    private function selectsAgainst(string $table): array
+    private function selectsAgainst(string $model): array
     {
-        $executed = array_column(DB::getQueryLog(), 'query');
+        $table = $this->getTable($model);
 
         return array_values(array_filter(
-            $executed,
+            array_column(DB::getQueryLog(), 'query'),
             fn (string $query): bool => str_starts_with($query, 'select ')
                 && str_contains($query, 'from "'.$table.'"'),
         ));
