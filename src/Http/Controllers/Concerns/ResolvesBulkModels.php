@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Http\Controllers\Concerns;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
-use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Collection;
 
 trait ResolvesBulkModels
 {
