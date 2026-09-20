@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 use Binaryk\LaravelRestify\Http\Requests\RepositorySyncRequest;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 
 class RepositorySyncController extends RepositoryController
 {
@@ -21,6 +22,7 @@ class RepositorySyncController extends RepositoryController
             return call_user_func($method, $request, $repository, $model);
         }
 
+        /** @var Collection<int, mixed> $attachers */
         $attachers = collect(Arr::wrap($request->input($request->relatedRepository)));
 
         $request->repositoryWith($model)->allowToSync($request, attachers: $attachers);
