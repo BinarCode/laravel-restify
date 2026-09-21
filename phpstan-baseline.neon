@@ -2890,12 +2890,6 @@ parameters:
 			path: src/Exceptions/Solutions/OpenAiSolution.php
 
 		-
-			message: '#^Possibly invalid array key type int\|null\.$#'
-			identifier: offsetAccess.invalidOffset
-			count: 1
-			path: src/Exceptions/Solutions/OpenAiSolution.php
-
-		-
 			message: '#^Property Binaryk\\LaravelRestify\\Exceptions\\Solutions\\OpenAiSolution\:\:\$solution \(string\) does not accept string\|null\.$#'
 			identifier: assign.propertyType
 			count: 1
@@ -3598,12 +3592,6 @@ parameters:
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$request \(Binaryk\\LaravelRestify\\Http\\Requests\\RestifyRequest\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 3
-			path: src/Fields/Contracts/Matchable.php
-
-		-
 			message: '#^Binary operation "\." between mixed and ''\.attributes\.'' results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 2
@@ -3841,18 +3829,6 @@ parameters:
 			message: '#^Cannot call method hideFromShow\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$relationshipName \(string\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Deprecated in PHP 8\.4\: Parameter \#1 \$request \(Binaryk\\LaravelRestify\\Http\\Requests\\RestifyRequest\) is implicitly nullable via default value null\.$#'
-			identifier: parameter.implicitlyNullable
-			count: 4
 			path: src/Fields/Field.php
 
 		-
@@ -13415,12 +13391,6 @@ parameters:
 				use collectSortables instead$#
 			'''
 			identifier: staticMethod.deprecated
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Call to deprecated method setAccessible\(\) of class ReflectionProperty\.$#'
-			identifier: method.deprecated
 			count: 1
 			path: src/Repositories/Repository.php
 
