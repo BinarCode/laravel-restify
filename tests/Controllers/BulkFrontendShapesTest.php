@@ -167,7 +167,7 @@ class BulkFrontendShapesTest extends IntegrationTestCase
     #[Test]
     public function a_batch_larger_than_the_lookup_chunk_still_resolves_every_row(): void
     {
-        $keys = $this->seedPosts(601);
+        $keys = $this->serializedKeys(Post::factory(601)->create(['user_id' => 1]));
 
         $this->recordQueries();
 
@@ -184,13 +184,5 @@ class BulkFrontendShapesTest extends IntegrationTestCase
     private function serializedKeys(Collection $posts): array
     {
         return $posts->map(static fn (Post $post): string => (string) $post->getKey())->values()->all();
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function seedPosts(int $count): array
-    {
-        return $this->serializedKeys(Post::factory($count)->create(['user_id' => 1]));
     }
 }
