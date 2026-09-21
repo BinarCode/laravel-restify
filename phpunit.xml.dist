@@ -13,6 +13,11 @@
       <directory>tests</directory>
     </testsuite>
   </testsuites>
+  <source>
+    <include>
+      <directory>src</directory>
+    </include>
+  </source>
   <php>
     <env name="APP_KEY" value="base64:la8jDWcqBHfGO6PR+OA9FAZqdi0XQKuhnzqc5tUATZs="/>
     <env name="MAIL_DRIVER" value="log"/>

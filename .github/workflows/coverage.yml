@@ -1,0 +1,43 @@
+name: coverage
+
+on: [push, pull_request]
+
+jobs:
+    coverage:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: 8.3
+                  extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, fileinfo
+                  coverage: pcov
+
+            - name: Install dependencies
+              run: composer update --prefer-stable --prefer-dist --no-interaction
+
+            - name: Run the suite with coverage
+              run: ./vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+
+            - name: Enforce the coverage floor
+              run: |
+                  php -r '
+                      $metrics = simplexml_load_file("build/logs/clover.xml")->project->metrics;
+
+                      $lines = 100 * (int) $metrics["coveredstatements"] / (int) $metrics["statements"];
+                      $methods = 100 * (int) $metrics["coveredmethods"] / (int) $metrics["methods"];
+
+                      [$lineFloor, $methodFloor] = [60.0, 50.0];
+
+                      printf("lines   %.2f%% (floor %.1f%%)\nmethods %.2f%% (floor %.1f%%)\n", $lines, $lineFloor, $methods, $methodFloor);
+
+                      if ($lines < $lineFloor || $methods < $methodFloor) {
+                          fwrite(STDERR, "\nCoverage fell below the floor. Raise coverage, do not lower the floor.\n");
+                          exit(1);
+                      }
+                  '
