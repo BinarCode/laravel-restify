@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
@@ -93,6 +94,7 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
         $this->assertSelectCount(1, Post::class);
         $this->assertSelectCount(1, Comment::class);
         $this->assertSame(['posts.comments'], array_keys($response->json('data.0.relationships')));
+        $this->assertArrayNotHasKey('user', $this->firstDeclaredPost($response));
     }
 
     #[Test]
@@ -108,6 +110,17 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_dotted_key_on_an_eager_field_does_not_constrain_its_siblings(): void
+    {
+        UserRepository::$related = ['posts.comments' => HasMany::make('posts', PostRepository::class)];
+
+        $response = $this->getJson(UserRepository::route(query: ['related' => 'posts.comments,posts.user']))
+            ->assertOk();
+
+        $this->assertArrayHasKey('user', $this->firstDeclaredPost($response));
+    }
+
+    #[Test]
     public function a_path_whose_relation_does_not_exist_is_ignored(): void
     {
         UserRepository::$related = ['posts.comments'];
@@ -116,6 +129,14 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
 
         $this->assertSelectCount(0, Post::class);
         $this->assertSame([], array_keys($response->json('data.0.relationships') ?? []));
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function firstDeclaredPost(TestResponse $response): array
+    {
+        return $response->json('data.0.relationships')['posts.comments'][0];
     }
 
     private function seedThreeUsersWithPostsAndNestedComments(): void
