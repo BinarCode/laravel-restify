@@ -1,0 +1,48 @@
+#!/bin/sh
+# Run the test suite under code coverage and enforce a minimum.
+#
+# Coverage-driver resolution, in order:
+#   1. pcov or xdebug already loaded into the CLI PHP -> use as-is.
+#   2. Yerd's `phpcover` shim (loads pcov for the matching PHP version).
+#   3. brew PCOV (shivammathur/extensions/pcov@<ver>) via its opt path.
+#   4. Herd's bundled Xdebug .so (path derived from the running PHP's
+#      major.minor version + CPU arch).
+# Paths in 3/4 are derived from the running PHP version, so they survive
+# PHP upgrades.
+#
+# The floor rises as coverage does; the target is 100. Override for a single
+# run with COVERAGE_MIN=70 bin/coverage. Extra args are forwarded to phpunit.
+set -e
+
+CLOVER="build/logs/clover.xml"
+MIN="${COVERAGE_MIN:-59}"
+mkdir -p build/logs
+
+PHP_BIN="php"
+EXT_FLAGS=""
+if ! php -m | grep -qiE 'pcov|xdebug'; then
+    DOTTED=$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')
+    VER=$(php -r 'echo PHP_MAJOR_VERSION.PHP_MINOR_VERSION;')
+    case "$(uname -m)" in
+        arm64) ARCH=arm64 ;;
+        *) ARCH=x86 ;;
+    esac
+    PCOV="/opt/homebrew/opt/pcov@${DOTTED}/pcov.so"
+    XDEBUG="/Applications/Herd.app/Contents/Resources/xdebug/xdebug-${VER}-${ARCH}.so"
+    if command -v "php${DOTTED}cover" >/dev/null 2>&1; then
+        PHP_BIN="php${DOTTED}cover"
+    elif command -v phpcover >/dev/null 2>&1; then
+        PHP_BIN="phpcover"
+    elif [ -f "$PCOV" ]; then
+        EXT_FLAGS="-d extension=$PCOV -d pcov.enabled=1"
+    elif [ -f "$XDEBUG" ]; then
+        EXT_FLAGS="-d zend_extension=$XDEBUG -d xdebug.mode=coverage"
+    else
+        echo "No coverage driver: pcov/xdebug not loaded, no phpcover shim, and neither $PCOV nor $XDEBUG found." >&2
+        echo "Install PCOV/Xdebug, or adjust bin/coverage for your environment." >&2
+        exit 1
+    fi
+fi
+
+"$PHP_BIN" $EXT_FLAGS vendor/bin/phpunit --coverage-clover="$CLOVER" "$@"
+php bin/check-coverage.php "$CLOVER" "$MIN"

@@ -2,7 +2,7 @@
 build
 composer.lock
 vendor
-coverage
+/coverage
 .idea
 .claude
 html
