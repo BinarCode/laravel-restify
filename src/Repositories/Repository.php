@@ -1063,7 +1063,9 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
 
-        $attachers->each(fn ($model) => $this->authorizeToAttach($request, $methodGuesser, $model));
+        foreach ($attachers as $model) {
+            $this->authorizeToAttach($request, $methodGuesser, $model);
+        }
 
         return $this;
     }
@@ -1081,7 +1083,9 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $methodGuesser = 'detach'.Str::studly($request->relatedRepository);
 
-        $attachers->each(fn ($model) => $this->authorizeToDetach($request, $methodGuesser, $model));
+        foreach ($attachers as $model) {
+            $this->authorizeToDetach($request, $methodGuesser, $model);
+        }
 
         return $this;
     }
