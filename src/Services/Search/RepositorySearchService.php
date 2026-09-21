@@ -12,8 +12,8 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Stringable;
 use Throwable;
 
 class RepositorySearchService
@@ -85,7 +85,7 @@ class RepositorySearchService
         return $query;
     }
 
-    public function prepareRelations(RestifyRequest $request, Builder|Relation $query)
+    public function prepareRelations(RestifyRequest $request, Builder|Relation $query): Builder|Relation
     {
         $eager = ($this->repository)::collectRelated()
             ->forRequest($request, $this->repository)
@@ -102,34 +102,50 @@ class RepositorySearchService
             return $query;
         }
 
-        $filtered = collect($request->related()->makeTree())->filter(fn (string $relationships) => in_array(
-            str($relationships)->whenContains('.', fn (Stringable $string) => $string->before('.'))->toString(),
-            $eager,
-            true,
-        ))->filter(function ($relation) use ($query) {
-            try {
-                $segments = explode('.', $relation);
-                $currentQuery = $query;
+        $declared = array_values(array_filter($eager, 'is_string'));
 
-                foreach ($segments as $segment) {
-                    $rel = $currentQuery->getRelation($segment);
-
-                    if (! $rel instanceof Relation) {
-                        return false;
-                    }
-
-                    $currentQuery = $rel->getRelated()->newQuery();
-                }
-
-                return true;
-            } catch (Throwable) {
-                return false;
-            }
-        })->all();
+        $filtered = array_filter(
+            $request->related()->makeTree(),
+            fn (string $relationPath): bool => $this->isDeclared($relationPath, $declared)
+                && $this->relationExists($query, $relationPath),
+        );
 
         return $query->with(
             array_merge($filtered, ($this->repository)::collectWiths($request, $this->repository)->all()),
         );
+    }
+
+    /**
+     * @param  list<string>  $declared
+     */
+    private function isDeclared(string $relationPath, array $declared): bool
+    {
+        foreach ($declared as $declaredPath) {
+            if ($relationPath === $declaredPath || str_starts_with($relationPath, $declaredPath.'.')) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function relationExists(Builder|Relation $query, string $relationPath): bool
+    {
+        try {
+            foreach (explode('.', $relationPath) as $segment) {
+                $relation = $query->getRelation($segment);
+
+                if (! $relation instanceof Relation) {
+                    return false;
+                }
+
+                $query = $relation->getRelated()->newModelQuery();
+            }
+
+            return true;
+        } catch (Throwable) {
+            return false;
+        }
     }
 
     public function prepareSearchFields(RestifyRequest $request, $query)
@@ -240,7 +256,7 @@ class RepositorySearchService
 
         foreach ($groupByColumns as $column) {
             if (! in_array($column, $repository::$groupBy)) {
-                abort(422, sprintf(
+                abort(JsonResponse::HTTP_UNPROCESSABLE_ENTITY, sprintf(
                     'The column [%s] is not allowed for grouping. Allowed columns are: %s',
                     $column,
                     implode(', ', $repository::$groupBy)
