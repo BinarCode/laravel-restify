@@ -19,6 +19,13 @@ use function PHPUnit\Framework\assertInstanceOf;
 
 class RepositoryAttachControllerTest extends IntegrationTestCase
 {
+    protected function tearDown(): void
+    {
+        CompanyRepository::$attachers = [];
+
+        parent::tearDown();
+    }
+
     public function test_can_attach_repositories(): void
     {
         $user = $this->mockUsers()->first();
