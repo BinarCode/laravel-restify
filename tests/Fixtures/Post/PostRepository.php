@@ -17,6 +17,39 @@ use Illuminate\Support\Collection;
 
 class PostRepository extends Repository
 {
+    public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
+    {
+        if (isset($_SERVER['restify.post.updateBulk.spy'])) {
+            call_user_func($_SERVER['restify.post.updateBulk.spy'], $repositoryId, $row, $this->resource);
+        }
+
+        return parent::updateBulk($request, $repositoryId, $row);
+    }
+
+    public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)
+    {
+        if (isset($_SERVER['restify.post.deleteBulk.spy'])) {
+            call_user_func($_SERVER['restify.post.deleteBulk.spy'], $repositoryId, $row, $this->resource);
+        }
+
+        return parent::deleteBulk($request, $repositoryId, $row);
+    }
+
+    public static function savedBulk(Collection $repositories, $request)
+    {
+        $_SERVER['restify.post.savedBulk'] = $repositories;
+    }
+
+    public static function updatedBulk(Collection $repositories, $request)
+    {
+        $_SERVER['restify.post.updatedBulk'] = $repositories;
+    }
+
+    public static function deletedBulk(Collection $repositories, $request)
+    {
+        $_SERVER['restify.post.deletedBulk'] = $repositories;
+    }
+
     public static $model = Post::class;
 
     public static string $title = 'title';

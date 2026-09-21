@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Pipeline\Pipeline;
 use Throwable;
 
@@ -57,7 +58,7 @@ trait InteractWithRepositories
 
             return $repository;
         } catch (RepositoryException $e) {
-            abort($e->getCode() ?: 400, $e->getMessage());
+            abort($e->getCode() ?: JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
     }
 
@@ -94,6 +95,17 @@ trait InteractWithRepositories
         return $this->newQuery($uriKey)->where(
             $this->model($uriKey)->getRouteKeyName(),
             $repositoryId ?? $this->route('repositoryId')
+        );
+    }
+
+    /**
+     * @param  list<int|string>  $repositoryIds
+     */
+    public function modelsQuery(array $repositoryIds, ?string $uriKey = null): Builder|Relation
+    {
+        return $this->newQuery($uriKey)->whereIn(
+            $this->model($uriKey)->getRouteKeyName(),
+            $repositoryIds
         );
     }
 

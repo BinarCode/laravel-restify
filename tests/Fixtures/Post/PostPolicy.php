@@ -40,6 +40,10 @@ class PostPolicy
 
     public function deleteBulk($user, $post)
     {
+        if (isset($_SERVER['restify.post.deleteBulk.callback']) && $post) {
+            return call_user_func($_SERVER['restify.post.deleteBulk.callback'], $user, $post);
+        }
+
         return $_SERVER['restify.post.deleteBulk'] ?? true;
     }
 

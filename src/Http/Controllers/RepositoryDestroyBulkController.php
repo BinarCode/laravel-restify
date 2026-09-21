@@ -2,39 +2,41 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Http\Controllers\Concerns\ResolvesBulkModels;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyBulkRequest;
-use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 class RepositoryDestroyBulkController
 {
+    use ResolvesBulkModels;
+
     public function __invoke(RepositoryDestroyBulkRequest $request)
     {
-        $repositories = collect();
+        $keys = $request->isJson() ? $request->json()->all() : $request->post();
+        $deleted = [];
 
-        DB::transaction(function () use ($request, $repositories) {
-            return $request->collect()
-                ->each(function (int|string $key, int $row) use ($request, $repositories) {
-                    $model = $request->modelQuery($key)->lockForUpdate()->firstOrFail();
+        DB::transaction(function () use ($request, $keys, &$deleted): void {
+            $models = $this->resolveBulkModels($request, $keys);
 
-                    $repositories->push($model->attributesToArray());
+            $authorized = [];
 
-                    /**
-                     * @var Repository $repository
-                     */
-                    $repository = $request->repositoryWith($model);
+            foreach ($models as $row => $model) {
+                $authorized[$model->getKey()] ??= [
+                    $keys[$row],
+                    $row,
+                    $request->repositoryWith($model)->allowToDestroyBulk($request),
+                ];
+            }
 
-                    return $repository
-                        ->allowToDestroyBulk($request)
-                        ->deleteBulk(
-                            $request,
-                            $key,
-                            $row
-                        );
-                });
+            foreach ($authorized as [$key, $row, $repository]) {
+                $deleted[] = $repository->resource->attributesToArray();
+
+                $repository->deleteBulk($request, $key, $row);
+            }
         });
 
-        $request->repository()::deletedBulk($repositories, $request);
+        $request->repository()::deletedBulk(Collection::make($deleted), $request);
 
         return ok();
     }
