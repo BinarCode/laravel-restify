@@ -86,6 +86,17 @@ class BulkModelLoadingTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function bulk_delete_reads_a_form_encoded_body(): void
+    {
+        $post = Post::factory()->create();
+
+        $this->delete(PostRepository::route('bulk/delete'), [$post->getKey()])
+            ->assertOk();
+
+        $this->assertDatabaseMissing(Post::class, ['id' => $post->getKey()]);
+    }
+
+    #[Test]
     public function bulk_update_with_an_item_missing_its_id_changes_nothing(): void
     {
         $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original title']);

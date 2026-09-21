@@ -13,7 +13,7 @@ class RepositoryDestroyBulkController
 
     public function __invoke(RepositoryDestroyBulkRequest $request)
     {
-        $keys = $request->json()->all();
+        $keys = $request->isJson() ? $request->json()->all() : $request->post();
         $deleted = [];
 
         DB::transaction(function () use ($request, $keys, &$deleted): void {

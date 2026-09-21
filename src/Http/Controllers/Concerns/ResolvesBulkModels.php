@@ -11,6 +11,8 @@ use Illuminate\Support\Collection;
 
 trait ResolvesBulkModels
 {
+    private const LOOKUP_CHUNK = 500;
+
     /**
      * @param  array<int|string, int|string|null>  $keys
      * @return array<int|string, Model>
@@ -25,9 +27,12 @@ trait ResolvesBulkModels
         );
 
         /** @var Collection<int, Model> $loaded */
-        $loaded = $request->modelsQuery($lookup)
-            ->lockForUpdate()
-            ->get();
+        $loaded = Collection::make($lookup)
+            ->chunk(self::LOOKUP_CHUNK)
+            ->flatMap(static fn (Collection $chunk): Collection => $request
+                ->modelsQuery($chunk->values()->all())
+                ->lockForUpdate()
+                ->get());
 
         /** @var Collection<array-key, Model> $byRouteKey */
         $byRouteKey = $loaded->keyBy($routeKeyName);
