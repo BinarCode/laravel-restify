@@ -59,14 +59,7 @@ trait WithRoutePrefix
             return true;
         }
 
-        if ($request->isIndexRequest()) {
-            if (static::prefix()) {
-                return $request->is(static::prefix().'/*');
-            }
-        } else {
-            // the rest
-            return $request->is(static::prefix().'/*');
-        }
+        return $request->is(static::prefix().'/*');
     }
 
     protected static function shouldAuthorizeRouteUsage(): bool
