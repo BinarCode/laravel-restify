@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithCustomDateFormat;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostWithoutTimestamps;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -56,6 +57,23 @@ class CacheKeyVersionTest extends IntegrationTestCase
         ]);
 
         $key = PostRepository::resolveWith(new PostWithCustomDateFormat)
+            ->generateIndexCacheKey(app(RestifyRequest::class));
+
+        $this->assertStringContainsString('v_'.$updatedAt->getTimestamp(), $key);
+    }
+
+    #[Test]
+    public function the_version_reads_a_column_the_model_does_not_cast_to_a_date(): void
+    {
+        $post = PostWithoutTimestamps::query()->create(['title' => 'No timestamps']);
+
+        $updatedAt = CarbonImmutable::now()->subYear();
+
+        DB::table($post->getTable())->update([
+            'updated_at' => $updatedAt->format('Y-m-d H:i:s'),
+        ]);
+
+        $key = PostRepository::resolveWith(new PostWithoutTimestamps)
             ->generateIndexCacheKey(app(RestifyRequest::class));
 
         $this->assertStringContainsString('v_'.$updatedAt->getTimestamp(), $key);
