@@ -53,6 +53,16 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
         }
     }
 
+    #[Test]
+    public function a_sibling_of_a_nested_declaration_is_not_eager_loaded(): void
+    {
+        UserRepository::$related = ['posts.comments'];
+
+        $this->getJson(UserRepository::route(query: ['related' => 'posts.user']))->assertOk();
+
+        $this->assertSelectCount(0, Post::class);
+    }
+
     private function seedUsersWithPostsAndComments(): void
     {
         foreach (User::factory(3)->create() as $user) {

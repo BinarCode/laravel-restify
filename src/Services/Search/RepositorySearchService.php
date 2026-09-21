@@ -102,17 +102,11 @@ class RepositorySearchService
             return $query;
         }
 
-        $eagerRoots = [];
-
-        foreach ($eager as $relationPath) {
-            if (is_string($relationPath)) {
-                $eagerRoots[$this->rootSegment($relationPath)] = true;
-            }
-        }
+        $declared = array_values(array_filter($eager, 'is_string'));
 
         $filtered = array_filter(
             $request->related()->makeTree(),
-            fn (string $relationPath): bool => isset($eagerRoots[$this->rootSegment($relationPath)])
+            fn (string $relationPath): bool => $this->isDeclared($relationPath, $declared)
                 && $this->relationExists($query, $relationPath),
         );
 
@@ -121,9 +115,18 @@ class RepositorySearchService
         );
     }
 
-    private function rootSegment(string $relationPath): string
+    /**
+     * @param  list<string>  $declared
+     */
+    private function isDeclared(string $relationPath, array $declared): bool
     {
-        return strstr($relationPath, '.', true) ?: $relationPath;
+        foreach ($declared as $declaredPath) {
+            if ($relationPath === $declaredPath || str_starts_with($relationPath, $declaredPath.'.')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function relationExists(Builder|Relation $query, string $relationPath): bool
