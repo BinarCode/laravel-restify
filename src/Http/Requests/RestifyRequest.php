@@ -29,7 +29,11 @@ class RestifyRequest extends FormRequest
      */
     public function payload(): array
     {
-        return $this->isJson() ? $this->json()->all() : $this->post();
+        if ($this->isJson()) {
+            return $this->json()->all();
+        }
+
+        return array_replace_recursive($this->post(), $this->allFiles());
     }
 
     public function relatedEagerField(): EagerField
