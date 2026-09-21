@@ -181,7 +181,7 @@ class BulkFrontendShapesTest extends IntegrationTestCase
      * @param  Collection<int, Post>  $posts
      * @return list<string>
      */
-    private function serializedKeys($posts): array
+    private function serializedKeys(Collection $posts): array
     {
         return $posts->map(static fn (Post $post): string => (string) $post->getKey())->values()->all();
     }
@@ -191,16 +191,6 @@ class BulkFrontendShapesTest extends IntegrationTestCase
      */
     private function seedPosts(int $count): array
     {
-        $now = now()->toDateTimeString();
-
-        Post::query()->insert(array_map(static fn (int $index): array => [
-            'user_id' => 1,
-            'title' => "Post {$index}",
-            'description' => 'seeded',
-            'created_at' => $now,
-            'updated_at' => $now,
-        ], range(1, $count)));
-
-        return Post::query()->pluck('id')->map(static fn ($id): string => (string) $id)->all();
+        return $this->serializedKeys(Post::factory($count)->create(['user_id' => 1]));
     }
 }
