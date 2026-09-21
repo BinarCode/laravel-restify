@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class BulkQueryStringTest extends IntegrationTestCase
 {
@@ -19,9 +20,11 @@ class BulkQueryStringTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function bulk_store_ignores_the_query_string(): void
+    #[TestWith(['postJson'], 'json body')]
+    #[TestWith(['post'], 'form encoded body')]
+    public function bulk_store_ignores_the_query_string(string $method): void
     {
-        $this->postJson(PostRepository::route('bulk', ['foo' => 'bar']), [
+        $this->{$method}(PostRepository::route('bulk', ['foo' => 'bar']), [
             ['title' => 'Created one', 'user_id' => 1],
         ])->assertOk();
 
@@ -30,11 +33,13 @@ class BulkQueryStringTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function bulk_update_ignores_the_query_string(): void
+    #[TestWith(['postJson'], 'json body')]
+    #[TestWith(['post'], 'form encoded body')]
+    public function bulk_update_ignores_the_query_string(string $method): void
     {
         $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
 
-        $this->postJson(PostRepository::route('bulk/update', ['foo' => 'bar']), [
+        $this->{$method}(PostRepository::route('bulk/update', ['foo' => 'bar']), [
             ['id' => $post->getKey(), 'title' => 'Updated'],
         ])->assertOk();
 
