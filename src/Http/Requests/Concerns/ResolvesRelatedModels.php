@@ -22,29 +22,24 @@ trait ResolvesRelatedModels
     {
         $table = $this->relatedRepository;
 
-        $relatedRepository = $this->repository(
-            Restify::repositoryForTable($table)::uriKey()
-        );
+        $relatedRepositoryClass = Restify::repositoryForTable($table);
 
-        if (is_null($relatedRepository)) {
+        if (is_null($relatedRepositoryClass)) {
             abort(JsonResponse::HTTP_BAD_REQUEST, "Missing repository for the [{$table}] table");
         }
 
         $ids = Arr::wrap($this->input($table));
 
-        $model = $relatedRepository->model();
-        $keyName = $model->getKeyName();
-        $integerKey = $model->getKeyType() === 'int';
+        $model = $this->repository($relatedRepositoryClass::uriKey())->model();
 
         /** @var Collection<int, Model> $models */
         $models = $model->newModelQuery()->whereKey($ids)->get();
 
-        $byKey = $models->keyBy($keyName);
+        $byKey = $models->keyBy($model->getKeyName());
 
         return Collection::make($ids)->map(
-            static fn (mixed $id): ?Model => $byKey->get($id) ?? ($integerKey
-                ? $models->first(static fn (Model $candidate): bool => $candidate->getAttribute($keyName) == $id)
-                : null)
+            static fn (mixed $id): ?Model => $byKey->get($id)
+                ?? $model->newModelQuery()->whereKey($id)->first()
         );
     }
 }
