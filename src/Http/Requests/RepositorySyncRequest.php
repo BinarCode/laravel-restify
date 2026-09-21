@@ -2,23 +2,19 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests;
 
-use Binaryk\LaravelRestify\Restify;
-use Illuminate\Support\Arr;
+use Binaryk\LaravelRestify\Http\Requests\Concerns\ResolvesRelatedModels;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
 class RepositorySyncRequest extends RestifyRequest
 {
+    use ResolvesRelatedModels;
+
+    /**
+     * @return Collection<int, Model|null>
+     */
     public function syncRelatedModels(): Collection
     {
-        $relatedRepository = $this->repository(
-            Restify::repositoryForTable($table = $this->relatedRepository)::uriKey()
-        );
-
-        if (is_null($relatedRepository)) {
-            abort(400, "Missing repository for the [$table] table");
-        }
-
-        return collect(Arr::wrap($this->input($this->relatedRepository)))
-            ->map(fn ($id) => $relatedRepository->model()->newModelQuery()->whereKey($id)->first());
+        return $this->relatedModels();
     }
 }

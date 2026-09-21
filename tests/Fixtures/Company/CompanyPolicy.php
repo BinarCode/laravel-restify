@@ -103,7 +103,9 @@ class CompanyPolicy
 
     public function attachUsers(User $user, Company $model, User $userToBeAttached)
     {
-        return $_SERVER['allow_attach_users'] ?? true;
+        $allowed = $_SERVER['allow_attach_users'] ?? true;
+
+        return is_callable($allowed) ? $allowed($userToBeAttached) : $allowed;
     }
 
     public function syncUsers(User $user, Company $model, Collection $keys)
@@ -113,6 +115,8 @@ class CompanyPolicy
 
     public function detachUsers(User $user, Company $model, User $userToBeDetached)
     {
-        return $_SERVER['allow_detach_users'] ?? true;
+        $allowed = $_SERVER['allow_detach_users'] ?? true;
+
+        return is_callable($allowed) ? $allowed($userToBeDetached) : $allowed;
     }
 }
