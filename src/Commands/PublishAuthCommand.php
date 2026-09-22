@@ -66,19 +66,18 @@ class PublishAuthCommand extends Command
         return $this;
     }
 
+    /**
+     * @param  list<string>|null  $actions
+     */
     protected function copyDirectory(string $path, string $stubDirectory, string $format, ?array $actions = []): self
     {
         $filesystem = new Filesystem;
 
         collect($filesystem->allFiles(__DIR__.$stubDirectory))
             ->filter(function (SplFileInfo $file) use ($actions) {
-                if (empty($actions)) {
-                    return true;
-                }
-
                 $actionName = Str::before($file->getFilename(), 'Controller.stub');
 
-                return in_array($actionName, $actions, true) || in_array(Str::lower($actionName), $actions, true);
+                return $this->actionSelected($actionName, $actions);
             })
             ->each(function (SplFileInfo $file) use ($filesystem, $path, $format, $stubDirectory) {
                 $filesystem->copy(
@@ -131,9 +130,7 @@ class PublishAuthCommand extends Command
             'login' => 'loginRoute.stub',
             'register' => 'registerRoute.stub',
             'forgotPassword' => 'forgotPasswordRoute.stub',
-            'ForgotPassword' => 'forgotPasswordRoute.stub',
-            'resetPassword' => 'forgotPasswordRoute.stub',
-            'ResetPassword' => 'resetPasswordRoute.stub',
+            'resetPassword' => 'resetPasswordRoute.stub',
             'verifyEmail' => 'verifyRoute.stub',
             'verify' => 'verifyRoute.stub',
         ];
@@ -141,7 +138,7 @@ class PublishAuthCommand extends Command
         $routeStubs = '';
 
         foreach ($routes as $action => $routeStub) {
-            if (! $actions || in_array($action, $actions, true) || in_array(Str::lower($action), $actions, true)) {
+            if ($this->actionSelected($action, $actions)) {
                 $routeStubs .= file_get_contents($stubDirectory.$routeStub);
             }
         }
@@ -164,5 +161,24 @@ class PublishAuthCommand extends Command
         }
 
         return 'Route::restifyAuth(actions: '.json_encode(array_values($remainingActions)).');';
+    }
+
+    /**
+     * Determine if an action was requested, regardless of the casing it was typed with.
+     *
+     * @param  list<string>|null  $actions
+     */
+    private function actionSelected(string $action, ?array $actions): bool
+    {
+        if (! $actions) {
+            return true;
+        }
+
+        $normalizedActions = array_map(
+            fn (string $requestedAction): string => Str::lower($requestedAction),
+            $actions
+        );
+
+        return in_array(Str::lower($action), $normalizedActions, true);
     }
 }
