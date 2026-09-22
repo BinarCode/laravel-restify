@@ -700,6 +700,13 @@ public function syncPermissions(User $authenticatedUser, Company $company, Colle
 }
 ```
 
+Another way to authorize this is by using the `canSync` method to the Eager field directly. It receives the same arguments as `canAttach`, and it is called for each individual key being synced. When `canSync` is not defined, Restify falls back to `canAttach`:
+
+```php
+'permissions' => BelongsToMany::make('permissions', PermissionRepository::class)
+            ->canSync(fn ($request, $pivot) => $request->user()->isAdmin()),
+```
+
 ### Detach related
 
 As soon we declared the `BelongsToMany` relationship, Restify automatically registers the `detach` endpoint:

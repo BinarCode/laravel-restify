@@ -24,12 +24,12 @@ trait Attachable
     private $canSyncCallback;
 
     /**
-     * @var Closure
+     * @var callable|null
      */
     private $validationCallback;
 
     /**
-     * @var Closure
+     * @var callable|null
      */
     private $canDetachCallback;
 

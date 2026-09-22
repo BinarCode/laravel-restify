@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class CompanyRepository extends Repository
 {
@@ -18,7 +19,7 @@ class CompanyRepository extends Repository
             'users' => BelongsToMany::make('users', UserRepository::class)->withPivot(
                 Field::make('is_admin')->rules('required')
             )->canDetach(fn ($request, $pivot) => isset($_SERVER['roles.canDetach.users']) && $_SERVER['roles.canDetach.users'])
-                ->canSync(fn ($request, $pivot) => $_SERVER['companies.canSync.users'] ?? true),
+                ->canSync(fn (RestifyRequest $request, Pivot $pivot): bool => $_SERVER['companies.canSync.users'] ?? true),
         ];
     }
 
