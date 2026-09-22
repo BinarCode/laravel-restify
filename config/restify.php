@@ -204,6 +204,27 @@ return [
         'use_joins_for_belongs_to' => env('RESTIFY_SORT_USE_JOINS_FOR_BELONGS_TO', false),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Restify Pagination
+    |--------------------------------------------------------------------------
+    */
+    'pagination' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Maximum Per Page
+        |--------------------------------------------------------------------------
+        |
+        | The largest `perPage` (or `page[size]`) a client may request on an
+        | index endpoint. A requested value above this is clamped down to it -
+        | never rejected - so existing clients are never broken by lowering it.
+        |
+        | Default: null (no cap, the requested perPage is always honoured).
+        |
+        */
+        'max_per_page' => env('RESTIFY_MAX_PER_PAGE'),
+    ],
+
     'repositories' => [
 
         /*

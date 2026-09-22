@@ -64,7 +64,7 @@ class RestifyRequest extends FormRequest
 
     public function pagination(): PaginationDataObject
     {
-        $perPage = ($this->input('page.size') ?? $this->input('perPage'));
+        $perPage = $this->input('page.size') ?? $this->input('perPage');
 
         if (is_array($this->input('page'))) {
             $pageNumber = $this->input('page.number');
@@ -73,8 +73,8 @@ class RestifyRequest extends FormRequest
         }
 
         return new PaginationDataObject(
-            perPage: $perPage,
-            page: $pageNumber,
+            perPage: is_int($perPage) || is_string($perPage) ? $perPage : null,
+            page: is_int($pageNumber) || is_string($pageNumber) ? $pageNumber : null,
         );
     }
 

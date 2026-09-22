@@ -3,7 +3,7 @@ parameters:
 		-
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
 			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 22
+			count: 23
 			path: config/restify.php
 
 		-
@@ -8937,18 +8937,6 @@ parameters:
 			path: src/Http/Requests/RestifyRequest.php
 
 		-
-			message: '#^Parameter \$page of class Binaryk\\LaravelRestify\\Filters\\PaginationDataObject constructor expects int\|string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RestifyRequest.php
-
-		-
-			message: '#^Parameter \$perPage of class Binaryk\\LaravelRestify\\Filters\\PaginationDataObject constructor expects int\|string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RestifyRequest.php
-
-		-
 			message: '#^Variable \$class in PHPDoc tag @var does not exist\.$#'
 			identifier: varTag.variableNotFound
 			count: 1
@@ -14391,18 +14379,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:indexCollection\(\) has parameter \$items with generic class Illuminate\\Support\\Collection but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:indexCollection\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:indexQuery\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -15069,12 +15045,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^PHPDoc tag @var for variable \$paginator contains generic class Illuminate\\Pagination\\LengthAwarePaginator but does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Parameter \#1 \$abilities of static method Illuminate\\Support\\Facades\\Gate\:\:check\(\) expects iterable\|string\|UnitEnum, mixed given\.$#'
 			identifier: argument.type
 			count: 3
@@ -15219,12 +15189,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Parameter \#1 \$condition of method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:when\(\) expects bool, array\|null given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Parameter \#1 \$condition of method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:when\(\) expects bool, mixed given\.$#'
 			identifier: argument.type
 			count: 2
@@ -15267,12 +15231,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Parameter \#1 \$model of static method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:resolveWith\(\) expects Illuminate\\Database\\Eloquent\\Model, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Parameter \#1 \$object of function get_class expects object, class\-string\|object given\.$#'
 			identifier: argument.type
 			count: 1
@@ -15304,12 +15262,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$path of static method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:route\(\) expects Illuminate\\Database\\Eloquent\\Model\|string\|null, int\|string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Parameter \#1 \$perPage of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:paginate\(\) expects int\|null, int\|string given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Repositories/Repository.php
@@ -15496,12 +15448,6 @@ parameters:
 
 		-
 			message: '#^Parameter \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:map\(\) expects callable\(mixed, int\|string\)\: Binaryk\\LaravelRestify\\Filters\\MatchFilter, Closure\(Binaryk\\LaravelRestify\\Fields\\Field\)\: Binaryk\\LaravelRestify\\Filters\\MatchFilter given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Parameter \$page of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:paginate\(\) expects int\|null, int\|string\|null given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Repositories/Repository.php
