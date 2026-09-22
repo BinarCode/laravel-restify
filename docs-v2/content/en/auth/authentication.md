@@ -291,6 +291,17 @@ After making a POST request to this endpoint, an email will be sent to the provi
 
 This configuration can be found in the `config/restify.php` file. The FRONTEND_APP_URL should be set to the URL of your frontend app, where the user lands when they click the action button in the email. The "token" is a variable that will be used to reset the password later on.
 
+You can override this template per request by sending a `url` field alongside the email:
+
+```json
+{
+    "email": "demo@restify.com",
+    "url": "https://app.example.com/password/reset?token={token}&email={email}"
+}
+```
+
+For security, `url` is only accepted when its host matches the host of the configured `password_reset_url` or of `config('app.url')` - any other host is rejected with a `422` validation error. This stops the endpoint from being used to mail a victim a valid reset link pointing at an attacker-controlled domain.
+
 To view the email content during development, you can change the following configuration in your .env file:
 
 ```dotenv

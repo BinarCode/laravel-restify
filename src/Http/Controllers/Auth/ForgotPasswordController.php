@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
 use Binaryk\LaravelRestify\Notifications\ForgotPasswordNotification;
+use Binaryk\LaravelRestify\Validation\Rules\AllowedResetUrlHost;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -17,7 +18,7 @@ class ForgotPasswordController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email'],
-            'url' => ['sometimes', 'string'],
+            'url' => ['sometimes', 'string', new AllowedResetUrlHost($this->allowedResetUrlHosts())],
         ]);
 
         /** @var class-string<Model&CanResetPassword> $userModel */
@@ -46,5 +47,22 @@ class ForgotPasswordController extends Controller
         );
 
         (new AnonymousNotifiable)->route('mail', $user->getEmailForPasswordReset())->notify(new ForgotPasswordNotification($url));
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function allowedResetUrlHosts(): array
+    {
+        /** @var string|null $passwordResetUrl */
+        $passwordResetUrl = config('restify.auth.password_reset_url');
+
+        /** @var string|null $appUrl */
+        $appUrl = config('app.url');
+
+        return array_values(array_unique(array_filter([
+            AllowedResetUrlHost::hostOf($passwordResetUrl),
+            AllowedResetUrlHost::hostOf($appUrl),
+        ])));
     }
 }
