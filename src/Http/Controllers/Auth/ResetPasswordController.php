@@ -15,24 +15,27 @@ class ResetPasswordController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
-            'email' => 'required|email',
-            'token' => 'required|string',
-            'password' => 'required|string|confirmed',
+            'email' => ['required', 'email'],
+            'token' => ['required', 'string'],
+            'password' => ['required', 'string', 'confirmed'],
         ]);
+
+        $token = $request->string('token')->toString();
+        $password = $request->string('password')->toString();
 
         /** @var class-string<Model&CanResetPassword> $userModel */
         $userModel = config('restify.auth.user_model');
 
         $user = $userModel::query()->where($request->only('email'))->first();
 
-        if ($user === null || ! Password::getRepository()->exists($user, $request->input('token'))) {
-            abort(JsonResponse::HTTP_BAD_REQUEST, 'Provided invalid token.');
+        if ($user === null || ! Password::getRepository()->exists($user, $token)) {
+            abort(JsonResponse::HTTP_BAD_REQUEST, __('Provided invalid token.'));
         }
 
-        $user->forceFill(['password' => Hash::make($request->input('password'))])->save();
+        $user->forceFill(['password' => Hash::make($password)])->save();
 
         Password::deleteToken($user);
 
-        return ok('Your password has been successfully reset.');
+        return ok(__('Your password has been successfully reset.'));
     }
 }

@@ -7350,18 +7350,6 @@ parameters:
 			path: src/Http/Controllers/Auth/RegisterController.php
 
 		-
-			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Facades\\Hash\:\:make\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
-			message: '#^Parameter \#2 \$token of method Illuminate\\Auth\\Passwords\\TokenRepositoryInterface\:\:exists\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
 			message: '#^Cannot call method findOrFail\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1

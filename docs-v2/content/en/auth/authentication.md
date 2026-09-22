@@ -26,7 +26,7 @@ This command will:
 
 ## Prerequisites
 
-Migrate the `users`, `password_resets` table (they already exist into a fresh Laravel app).
+Migrate the `users`, `password_reset_tokens` table (they already exist into a fresh Laravel app).
 
 <alert type="success">
 

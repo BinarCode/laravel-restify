@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Password;
+use Throwable;
 
 class ForgotPasswordController extends Controller
 {
@@ -26,7 +27,11 @@ class ForgotPasswordController extends Controller
         $user = $userModel::query()->where($request->only('email'))->first();
 
         if ($user !== null) {
-            $this->sendResetLinkTo($user, $request);
+            try {
+                $this->sendResetLinkTo($user, $request);
+            } catch (Throwable $e) {
+                report($e);
+            }
         }
 
         return ok(__('Reset password link sent to your email.'));
