@@ -2,13 +2,18 @@ includes:
     - phpstan-baseline.neon
 
 parameters:
-    level: 1
+    level: max
+    phpVersion:
+        min: 80300
+        max: 80500
     paths:
         - src
         - config
         - database
     tmpDir: build/phpstan
-    checkMissingIterableValueType: false
+    reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         - '#Unsafe usage of new static#'
-
+        -
+            message: '#^Call to function is_callable\(\) with Closure will always evaluate to true\.$#'
+            path: src/Fields/BelongsTo.php

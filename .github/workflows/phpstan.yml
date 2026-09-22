@@ -1,0 +1,25 @@
+name: phpstan
+
+on: [push, pull_request]
+
+jobs:
+    phpstan:
+        runs-on: ubuntu-latest
+        timeout-minutes: 10
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v6
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: 8.3
+                  extensions: dom, curl, libxml, mbstring, zip, pcntl, pdo, sqlite, pdo_sqlite, bcmath, soap, intl, gd, exif, iconv, fileinfo
+                  coverage: none
+
+            - name: Install dependencies
+              run: composer update --prefer-stable --prefer-dist --no-interaction
+
+            - name: Run PHPStan
+              run: composer analyse -- --error-format=github
