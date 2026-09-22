@@ -460,18 +460,6 @@ parameters:
 			path: src/Cache/PolicyCache.php
 
 		-
-			message: '#^Parameter \#1 \$object_or_class of function method_exists expects object\|string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Cache/PolicyCache.php
-
-		-
-			message: '#^Parameter \#3 \$ttl of static method Illuminate\\Cache\\Repository\:\:put\(\) expects DateInterval\|DateTimeInterface\|int\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Cache/PolicyCache.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Cache\\RestifyCache\:\:enabled\(\) should return bool but returns mixed\.$#'
 			identifier: return.type
 			count: 1

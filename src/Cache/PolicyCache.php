@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
+use stdClass;
 
 class PolicyCache
 {
@@ -38,22 +39,30 @@ class PolicyCache
             return $data();
         }
 
-        if (Cache::has($key)) {
-            return Cache::get($key);
+        $notCached = new stdClass;
+
+        $cached = Cache::get($key, $notCached);
+
+        if ($cached !== $notCached) {
+            return $cached;
         }
 
         $policy = Gate::getPolicyFor($model);
 
-        $ttl = (method_exists($policy, 'cache') && $policy instanceof Cacheable)
+        $configuredTtl = config('restify.cache.policies.ttl', 60);
+
+        $ttl = $policy instanceof Cacheable
             ? $policy->cache()
-            : config('restify.cache.policies.ttl', 60);
+            : (is_int($configuredTtl) ? $configuredTtl : null);
+
+        $result = $data();
 
         if (is_null($ttl)) {
-            return $data;
+            return $result;
         }
 
-        Cache::put($key, $data = $data(), $ttl);
+        Cache::put($key, $result, $ttl);
 
-        return $data;
+        return $result;
     }
 }
