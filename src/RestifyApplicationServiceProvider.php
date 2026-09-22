@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
 use Binaryk\LaravelRestify\MCP\McpToolsManager;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
@@ -72,10 +73,13 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function gate(): void
     {
-        Gate::define('viewRestify', function ($user = null) {
-            return in_array($user->email, [
+        Gate::define('viewRestify', function (Authenticatable $user) {
+            /** @var list<string> $allowedEmails */
+            $allowedEmails = [
                 //
-            ], true);
+            ];
+
+            return in_array(data_get($user, 'email'), $allowedEmails, true);
         });
     }
 

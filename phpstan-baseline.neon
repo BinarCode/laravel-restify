@@ -16155,18 +16155,6 @@ parameters:
 			path: src/Restify.php
 
 		-
-			message: '#^Call to function in_array\(\) with arguments mixed, array\{\} and true will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: src/RestifyApplicationServiceProvider.php
-
-		-
-			message: '#^Cannot access property \$email on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/RestifyApplicationServiceProvider.php
-
-		-
 			message: '#^Cannot call method make\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
