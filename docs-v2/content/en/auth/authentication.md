@@ -235,7 +235,7 @@ And send this payload:
 }
 ```
 
-Note: Email and password fields are required.
+Note: Email and password fields are required. The `password` must be confirmed (a matching `password_confirmation`) and at least 6 characters. The `email` uniqueness check runs against the table configured in `restify.auth.table` (`config/restify.php`), which defaults to `users`.
 
 Now, you can send a POST request with Curl:
 
