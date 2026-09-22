@@ -1,4 +1,4 @@
-name: Fix PHP code style issues
+name: Pint
 
 on: [push]
 
