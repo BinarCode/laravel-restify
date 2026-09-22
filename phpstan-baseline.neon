@@ -7212,48 +7212,6 @@ parameters:
 			path: src/Getters/Getter.php
 
 		-
-			message: '#^Access to an undefined property Binaryk\\LaravelRestify\\Tests\\Fixtures\\User\\User\:\:\$email\.$#'
-			identifier: property.notFound
-			count: 2
-			path: src/Http/Controllers/Auth/ForgotPasswordController.php
-
-		-
-			message: '#^Cannot call method firstOrFail\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/ForgotPasswordController.php
-
-		-
-			message: '#^Cannot call method where\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/ForgotPasswordController.php
-
-		-
-			message: '#^Cannot call static method query\(\) on mixed\.$#'
-			identifier: staticMethod.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/ForgotPasswordController.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\Auth\\ForgotPasswordController\:\:__invoke\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Controllers/Auth/ForgotPasswordController.php
-
-		-
-			message: '#^Parameter \#2 \$replace of function str_replace expects array\<string\>\|string, array\<int, mixed\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/ForgotPasswordController.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/ForgotPasswordController.php
-
-		-
 			message: '#^Binary operation "\*" between mixed and 60 results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 1
@@ -7390,54 +7348,6 @@ parameters:
 			identifier: argument.type
 			count: 1
 			path: src/Http/Controllers/Auth/RegisterController.php
-
-		-
-			message: '#^Cannot access property \$password on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
-			message: '#^Cannot call method firstOrFail\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
-			message: '#^Cannot call method save\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
-			message: '#^Cannot call method where\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
-			message: '#^Cannot call static method query\(\) on mixed\.$#'
-			identifier: staticMethod.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\Auth\\ResetPasswordController\:\:__invoke\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
-			message: '#^Parameter \#1 \$user of method Illuminate\\Auth\\Passwords\\TokenRepositoryInterface\:\:exists\(\) expects Illuminate\\Contracts\\Auth\\CanResetPassword, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
-			message: '#^Parameter \#1 \$user of static method Illuminate\\Support\\Facades\\Password\:\:deleteToken\(\) expects Illuminate\\Contracts\\Auth\\CanResetPassword, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
 
 		-
 			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Facades\\Hash\:\:make\(\) expects string, mixed given\.$#'
@@ -16925,12 +16835,6 @@ parameters:
 		-
 			message: '#^Function mcpSchema\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: src/helpers.php
-
-		-
-			message: '#^Function ok\(\) has no return type specified\.$#'
-			identifier: missingType.return
 			count: 1
 			path: src/helpers.php
 

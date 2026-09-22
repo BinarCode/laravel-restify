@@ -2,7 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
-use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -10,7 +12,7 @@ use Illuminate\Support\Facades\Password;
 
 class ResetPasswordController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
             'email' => 'required|email',
@@ -18,15 +20,16 @@ class ResetPasswordController extends Controller
             'password' => 'required|string|confirmed',
         ]);
 
-        /** * @var User $user */
-        $user = config('restify.auth.user_model')::query()->where($request->only('email'))->firstOrFail();
+        /** @var class-string<Model&CanResetPassword> $userModel */
+        $userModel = config('restify.auth.user_model');
 
-        if (! Password::getRepository()->exists($user, $request->input('token'))) {
-            abort(400, 'Provided invalid token.');
+        $user = $userModel::query()->where($request->only('email'))->first();
+
+        if ($user === null || ! Password::getRepository()->exists($user, $request->input('token'))) {
+            abort(JsonResponse::HTTP_BAD_REQUEST, 'Provided invalid token.');
         }
 
-        $user->password = Hash::make($request->input('password'));
-        $user->save();
+        $user->forceFill(['password' => Hash::make($request->input('password'))])->save();
 
         Password::deleteToken($user);
 
