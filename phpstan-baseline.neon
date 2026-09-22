@@ -2146,12 +2146,6 @@ parameters:
 			path: src/Commands/RepositoryCommand.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\RestifyAuthMacroCommand\:\:handle\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Commands/RestifyAuthMacroCommand.php
-
-		-
 			message: '#^Call to an undefined static method Illuminate\\Foundation\\Console\\RouteListCommand\:\:configureOptions\(\)\.$#'
 			identifier: staticMethod.notFound
 			count: 1

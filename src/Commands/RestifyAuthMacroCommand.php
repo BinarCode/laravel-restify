@@ -11,7 +11,7 @@ class RestifyAuthMacroCommand extends Command
 
     protected $description = 'Adding Restify Auth routes to routes/api.php';
 
-    public function handle()
+    public function handle(): int
     {
         $routesPath = base_path('routes/api.php');
 
