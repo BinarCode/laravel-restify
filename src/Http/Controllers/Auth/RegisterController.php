@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Notifications\VerifyEmail;
 use Binaryk\LaravelRestify\Repositories\Serializer;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
@@ -15,10 +14,8 @@ use Illuminate\Support\Facades\Notification;
 
 class RegisterController extends Controller
 {
-    public function __invoke(Request $request): Serializer
+    public function __invoke(RestifyRegisterRequest $request): Serializer
     {
-        $request->validate((new RestifyRegisterRequest)->rules());
-
         /** @var class-string<Model> $modelClass */
         $modelClass = Config::string('restify.auth.user_model');
 
@@ -28,9 +25,9 @@ class RegisterController extends Controller
             'password' => Hash::make($request->string('password')->toString()),
         ]);
 
-        /** @var int|null $tokenTtl */
+        /** @var int|numeric-string|null $tokenTtl */
         $tokenTtl = config('restify.auth.token_ttl');
-        $expiresAt = $tokenTtl ? now()->addMinutes($tokenTtl) : null;
+        $expiresAt = $tokenTtl ? now()->addMinutes((int) $tokenTtl) : null;
 
         $token = $user->createToken('login', ['*'], $expiresAt);
 
