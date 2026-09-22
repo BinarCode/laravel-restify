@@ -5,11 +5,33 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Unit\Commands;
 
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use ParseError;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
 class AuthStubsTest extends IntegrationTestCase
 {
+    #[Test]
+    #[TestWith(['ForgotPasswordController.stub'])]
+    #[TestWith(['ResetPasswordController.stub'])]
+    public function the_published_auth_stub_is_syntactically_valid_php(string $stub): void
+    {
+        $source = str_replace('{{namespace}}', 'App\\Http\\Controllers\\Restify\\Auth', $this->stubContents($stub));
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'restify-stub-');
+        file_put_contents($tempFile, $source);
+
+        try {
+            token_get_all((string) file_get_contents($tempFile), TOKEN_PARSE);
+        } catch (ParseError $e) {
+            $this->fail("Stub {$stub} does not compile as PHP: {$e->getMessage()}");
+        } finally {
+            unlink($tempFile);
+        }
+
+        $this->addToAssertionCount(1);
+    }
+
     #[Test]
     #[TestWith(['ForgotPasswordController.stub'])]
     #[TestWith(['ResetPasswordController.stub'])]
