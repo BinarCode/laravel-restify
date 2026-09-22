@@ -22,16 +22,13 @@ class Refresh extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): int
     {
-        $this->call('route:cache');
-        $this->call('cache:clear');
-        $this->call('config:cache');
-        $this->call('view:clear');
         $this->call('route:clear');
+        $this->call('cache:clear');
+        $this->call('config:clear');
+        $this->call('view:clear');
 
         return 0;
     }
