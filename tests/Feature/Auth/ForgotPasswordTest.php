@@ -8,11 +8,14 @@ use Binaryk\LaravelRestify\Notifications\ForgotPasswordNotification;
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
+use RuntimeException;
 
 class ForgotPasswordTest extends IntegrationTestCase
 {
@@ -60,11 +63,26 @@ class ForgotPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_failure_while_notifying_a_known_account_still_returns_the_generic_success_response(): void
+    {
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        Password::shouldReceive('createToken')->once()->andThrow(new RuntimeException('mail transport is down'));
+
+        $this->postJson('auth/forgotPassword', ['email' => $user->email])
+            ->assertOk()
+            ->assertExactJson(['message' => 'Reset password link sent to your email.']);
+    }
+
+    /**
+     * @param  array<string, mixed>  $payload
+     */
+    #[Test]
     #[TestWith([[]], 'email missing')]
     #[TestWith([['email' => 'not-an-email']], 'email malformed')]
     #[TestWith([['email' => 'known@example.com', 'url' => 12345]], 'url not a string')]
     public function invalid_input_is_rejected(array $payload): void
     {
-        $this->postJson('auth/forgotPassword', $payload)->assertStatus(422);
+        $this->postJson('auth/forgotPassword', $payload)->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
     }
 }

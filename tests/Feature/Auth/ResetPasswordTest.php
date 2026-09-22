@@ -8,6 +8,8 @@ use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
@@ -26,9 +28,9 @@ class ResetPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_valid_token_resets_the_password(): void
+    public function a_valid_token_resets_the_password_and_burns_the_token(): void
     {
-        $user = UserFactory::one(['email' => 'known@example.com']);
+        $user = UserFactory::one(['email' => 'known@example.com', 'password' => $originalPassword = Hash::make('original-password')]);
         $token = Password::createToken($user);
 
         $this->postJson('auth/resetPassword', [
@@ -38,9 +40,21 @@ class ResetPasswordTest extends IntegrationTestCase
             'password_confirmation' => 'new-password',
         ])->assertOk()->assertExactJson(['message' => 'Your password has been successfully reset.']);
 
-        $fresh = User::query()->findOrFail($user->id);
+        $this->assertDatabaseMissing(User::class, [
+            'id' => $user->id,
+            'password' => $originalPassword,
+        ]);
 
-        $this->assertTrue(Hash::check('new-password', $fresh->password));
+        $currentPassword = DB::table($this->getTable(User::class))->where('id', $user->id)->value('password');
+
+        $this->assertTrue(Hash::check('new-password', $currentPassword));
+
+        $this->postJson('auth/resetPassword', [
+            'email' => $user->email,
+            'token' => $token,
+            'password' => 'replayed-password',
+            'password_confirmation' => 'replayed-password',
+        ])->assertStatus(JsonResponse::HTTP_BAD_REQUEST);
     }
 
     #[Test]
@@ -63,20 +77,25 @@ class ResetPasswordTest extends IntegrationTestCase
             'password_confirmation' => 'new-password',
         ]);
 
-        $invalidTokenResponse->assertStatus($unknownEmailResponse->status());
+        $invalidTokenResponse->assertStatus(JsonResponse::HTTP_BAD_REQUEST);
+        $unknownEmailResponse->assertStatus(JsonResponse::HTTP_BAD_REQUEST);
         $this->assertSame($invalidTokenResponse->json('message'), $unknownEmailResponse->json('message'));
 
-        $fresh = User::query()->findOrFail($user->id);
-
-        $this->assertSame($originalPassword, $fresh->password);
+        $this->assertDatabaseHas(User::class, [
+            'id' => $user->id,
+            'password' => $originalPassword,
+        ]);
     }
 
+    /**
+     * @param  array<string, mixed>  $payload
+     */
     #[Test]
     #[TestWith([[]], 'all fields missing')]
     #[TestWith([['email' => 'not-an-email', 'token' => 'a-token', 'password' => 'secret', 'password_confirmation' => 'secret']], 'email malformed')]
     #[TestWith([['email' => 'known@example.com', 'token' => 'a-token', 'password' => 'secret', 'password_confirmation' => 'different']], 'password confirmation mismatch')]
     public function invalid_input_is_rejected(array $payload): void
     {
-        $this->postJson('auth/resetPassword', $payload)->assertStatus(422);
+        $this->postJson('auth/resetPassword', $payload)->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
     }
 }
