@@ -69,7 +69,7 @@ class User extends Authenticatable implements MustVerifyEmail, Sanctumable
     {
         return new class
         {
-            public $accessToken = 'token';
+            public string $plainTextToken = 'token';
         };
     }
 
