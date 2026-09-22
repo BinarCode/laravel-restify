@@ -299,6 +299,16 @@ class PolicyCacheTest extends IntegrationTestCase
         $this->assertSame('restify.policy.allowRestify.repository-posts.user-', $key);
     }
 
+    #[Test]
+    public function an_authenticated_user_with_a_null_auth_identifier_throws(): void
+    {
+        app(Request::class)->setUserResolver(fn () => $this->userWithAuthIdentifier(null));
+
+        $this->expectException(UnexpectedValueException::class);
+
+        PolicyCache::keyForAllowRestify('posts');
+    }
+
     private function userWithAuthIdentifier(mixed $id): Authenticatable
     {
         return new class($id) implements Authenticatable

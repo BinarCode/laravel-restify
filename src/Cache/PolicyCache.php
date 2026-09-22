@@ -78,7 +78,6 @@ class PolicyCache
     private static function identifierKey(mixed $id): string
     {
         return match (true) {
-            is_null($id) => '',
             is_scalar($id) => (string) $id,
             $id instanceof Stringable => (string) $id,
             default => throw new UnexpectedValueException(
