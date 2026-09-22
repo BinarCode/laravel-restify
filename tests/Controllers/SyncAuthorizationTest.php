@@ -15,7 +15,7 @@ class SyncAuthorizationTest extends IntegrationTestCase
 {
     protected function tearDown(): void
     {
-        unset($_SERVER['allow_sync_users']);
+        unset($_SERVER['allow_sync_users'], $_SERVER['companies.canSync.users']);
 
         parent::tearDown();
     }
@@ -51,5 +51,21 @@ class SyncAuthorizationTest extends IntegrationTestCase
             'company_id' => $company->getKey(),
             'user_id' => $user->getKey(),
         ]);
+    }
+
+    #[Test]
+    public function a_denied_can_sync_callback_writes_nothing(): void
+    {
+        $_SERVER['allow_sync_users'] = true;
+        $_SERVER['companies.canSync.users'] = false;
+
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->getKey()}/sync/users"), [
+            'users' => [$user->getKey()],
+        ])->assertForbidden();
+
+        $this->assertDatabaseCount(CompanyUserPivot::class, 0);
     }
 }
