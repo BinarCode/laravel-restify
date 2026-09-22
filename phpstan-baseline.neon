@@ -448,18 +448,6 @@ parameters:
 			path: src/Bootstrap/RoutesDefinition.php
 
 		-
-			message: '#^Binary operation "\." between non\-falsy\-string and mixed results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 2
-			path: src/Cache/PolicyCache.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Cache\\PolicyCache\:\:enabled\(\) should return bool but returns mixed\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Cache/PolicyCache.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Cache\\RestifyCache\:\:enabled\(\) should return bool but returns mixed\.$#'
 			identifier: return.type
 			count: 1

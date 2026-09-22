@@ -14,23 +14,19 @@ class PolicyCache
 {
     public static function enabled(): bool
     {
-        return config('restify.cache.policies.enabled', false);
+        return (bool) config('restify.cache.policies.enabled', false);
     }
 
     public static function keyForAllowRestify(string $repositoryKey): string
     {
-        $user = app(Request::class)->user();
-
-        return "restify.policy.allowRestify.repository-$repositoryKey.user-".$user?->getKey();
+        return "restify.policy.allowRestify.repository-$repositoryKey.user-".self::currentUserKey();
     }
 
     public static function keyForPolicyMethods(string $repositoryKey, string $policyMethod, string|int|null $modelKey): string
     {
         $modelKey = $modelKey ?? Str::random();
 
-        $user = app(Request::class)->user();
-
-        return "restify.policy.$policyMethod.repository-$repositoryKey.resource-$modelKey.user-".$user?->getKey();
+        return "restify.policy.$policyMethod.repository-$repositoryKey.resource-$modelKey.user-".self::currentUserKey();
     }
 
     public static function resolve(string $key, callable|Closure $data, Model $model): mixed
@@ -53,7 +49,7 @@ class PolicyCache
 
         $ttl = $policy instanceof Cacheable
             ? $policy->cache()
-            : (is_int($configuredTtl) ? $configuredTtl : null);
+            : (is_numeric($configuredTtl) ? (int) $configuredTtl : null);
 
         $result = $data();
 
@@ -64,5 +60,18 @@ class PolicyCache
         Cache::put($key, $result, $ttl);
 
         return $result;
+    }
+
+    private static function currentUserKey(): string
+    {
+        $user = app(Request::class)->user();
+
+        if (is_null($user)) {
+            return '';
+        }
+
+        $id = $user->getAuthIdentifier();
+
+        return $user::class.'#'.(is_scalar($id) ? (string) $id : '');
     }
 }

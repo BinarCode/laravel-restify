@@ -9,12 +9,16 @@ use Binaryk\LaravelRestify\Cache\PolicyCache;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Carbon\CarbonInterface;
+use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
 use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class PolicyCacheTest extends IntegrationTestCase
 {
@@ -33,7 +37,7 @@ class PolicyCacheTest extends IntegrationTestCase
     {
         $model = new Post;
 
-        Gate::shouldReceive('getPolicyFor')->andReturn(new class {});
+        Gate::shouldReceive('getPolicyFor')->once()->andReturn(new class {});
 
         $key = 'restify.policy.test.hit-once';
         $calls = 0;
@@ -60,7 +64,7 @@ class PolicyCacheTest extends IntegrationTestCase
     {
         $model = new Post;
 
-        Gate::shouldReceive('getPolicyFor')->andReturn(new class {});
+        Gate::shouldReceive('getPolicyFor')->once()->andReturn(new class {});
 
         $key = 'restify.policy.test.cached-false';
         $calls = 0;
@@ -133,5 +137,70 @@ class PolicyCacheTest extends IntegrationTestCase
         PolicyCache::resolve($key, $data, $model);
 
         $this->assertSame(3, $calls);
+    }
+
+    #[Test]
+    #[TestWith([300], 'integer ttl')]
+    #[TestWith(['300'], 'numeric-string ttl, as env() returns it')]
+    public function a_configured_global_ttl_caches_the_result(int|string $configuredTtl): void
+    {
+        config()->set('restify.cache.policies.ttl', $configuredTtl);
+
+        $model = new Post;
+
+        Gate::shouldReceive('getPolicyFor')->once()->andReturn(new class {});
+
+        $key = 'restify.policy.test.configured-ttl';
+        $calls = 0;
+        $data = function () use (&$calls) {
+            $calls++;
+
+            return true;
+        };
+
+        $first = PolicyCache::resolve($key, $data, $model);
+        $second = PolicyCache::resolve($key, $data, $model);
+
+        $this->assertTrue($first);
+        $this->assertTrue($second);
+        $this->assertSame(1, $calls);
+        $this->assertTrue(Cache::has($key));
+    }
+
+    #[Test]
+    public function different_user_classes_with_the_same_auth_id_get_different_cache_keys(): void
+    {
+        $userA = new class implements Authenticatable
+        {
+            use AuthenticatableTrait;
+
+            public function getAuthIdentifier(): int
+            {
+                return 1;
+            }
+        };
+
+        $userB = new class implements Authenticatable
+        {
+            use AuthenticatableTrait;
+
+            public function getAuthIdentifier(): int
+            {
+                return 1;
+            }
+        };
+
+        app(Request::class)->setUserResolver(fn () => $userA);
+        $keyForA = PolicyCache::keyForAllowRestify('posts');
+
+        app(Request::class)->setUserResolver(fn () => $userB);
+        $keyForB = PolicyCache::keyForAllowRestify('posts');
+
+        $this->assertNotSame($keyForA, $keyForB);
+
+        Cache::put($keyForA, 'cached-for-a', 60);
+
+        $this->assertTrue(Cache::has($keyForA));
+        $this->assertFalse(Cache::has($keyForB));
     }
 }
