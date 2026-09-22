@@ -10,11 +10,12 @@ class SetupAuthCommand extends Command
 
     protected $description = 'Configure Sanctum and add auth routes';
 
-    public function handle()
+    public function handle(): int
     {
         $this->info('Configure Sanctum and add auth routes');
 
         $this->call(PrepareSanctumCommand::class);
-        $this->call(RestifyAuthMacroCommand::class);
+
+        return $this->call(RestifyAuthMacroCommand::class);
     }
 }

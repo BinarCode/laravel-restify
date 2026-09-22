@@ -2212,12 +2212,6 @@ parameters:
 			path: src/Commands/RestifyRouteListCommand.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\SetupAuthCommand\:\:handle\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Commands/SetupAuthCommand.php
-
-		-
 			message: '#^Binary operation "\." between string and array\<string\>\|string results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 1
