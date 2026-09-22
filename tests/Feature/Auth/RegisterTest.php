@@ -21,7 +21,7 @@ class RegisterTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        Route::restifyAuth('auth', ['register', 'verifyEmail']);
+        Route::restifyAuth('auth', ['register']);
 
         Notification::fake();
     }
