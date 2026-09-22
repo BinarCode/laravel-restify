@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use stdClass;
+use Stringable;
+use UnexpectedValueException;
 
 class PolicyCache
 {
@@ -70,8 +72,18 @@ class PolicyCache
             return '';
         }
 
-        $id = $user->getAuthIdentifier();
+        return $user::class.'#'.self::identifierKey($user->getAuthIdentifier());
+    }
 
-        return $user::class.'#'.(is_scalar($id) ? (string) $id : '');
+    private static function identifierKey(mixed $id): string
+    {
+        return match (true) {
+            is_null($id) => '',
+            is_scalar($id) => (string) $id,
+            $id instanceof Stringable => (string) $id,
+            default => throw new UnexpectedValueException(
+                'PolicyCache cannot build a cache key for a non-stringable auth identifier of type ['.get_debug_type($id).'].'
+            ),
+        };
     }
 }

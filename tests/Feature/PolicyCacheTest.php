@@ -7,6 +7,8 @@ namespace Binaryk\LaravelRestify\Tests\Feature;
 use Binaryk\LaravelRestify\Cache\Cacheable;
 use Binaryk\LaravelRestify\Cache\PolicyCache;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Carbon\CarbonInterface;
 use Illuminate\Auth\Authenticatable as AuthenticatableTrait;
@@ -19,6 +21,8 @@ use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
+use Stringable;
+use UnexpectedValueException;
 
 class PolicyCacheTest extends IntegrationTestCase
 {
@@ -178,6 +182,11 @@ class PolicyCacheTest extends IntegrationTestCase
             {
                 return 1;
             }
+
+            public function getKey(): int
+            {
+                return 1;
+            }
         };
 
         $userB = new class implements Authenticatable
@@ -185,6 +194,11 @@ class PolicyCacheTest extends IntegrationTestCase
             use AuthenticatableTrait;
 
             public function getAuthIdentifier(): int
+            {
+                return 1;
+            }
+
+            public function getKey(): int
             {
                 return 1;
             }
@@ -202,5 +216,101 @@ class PolicyCacheTest extends IntegrationTestCase
 
         $this->assertTrue(Cache::has($keyForA));
         $this->assertFalse(Cache::has($keyForB));
+    }
+
+    #[Test]
+    public function an_authenticated_user_pins_the_user_class_and_id_key_format(): void
+    {
+        $user = (new User)->forceFill(['id' => 777]);
+
+        $this->authenticate($user);
+
+        $this->getJson(PostRepository::route())->assertOk();
+
+        $this->assertTrue(
+            Cache::has('restify.policy.allowRestify.repository-posts.user-'.User::class.'#777')
+        );
+    }
+
+    #[Test]
+    #[TestWith([777, '777'], 'integer id')]
+    #[TestWith(['user-uuid-1', 'user-uuid-1'], 'string id')]
+    public function the_user_key_stringifies_a_scalar_auth_identifier(int|string $id, string $expectedIdSegment): void
+    {
+        $user = $this->userWithAuthIdentifier($id);
+
+        app(Request::class)->setUserResolver(fn () => $user);
+
+        $key = PolicyCache::keyForAllowRestify('posts');
+
+        $this->assertSame(
+            'restify.policy.allowRestify.repository-posts.user-'.$user::class.'#'.$expectedIdSegment,
+            $key
+        );
+    }
+
+    #[Test]
+    public function two_users_with_different_stringable_auth_identifiers_get_different_cache_keys(): void
+    {
+        $identifierA = new class implements Stringable
+        {
+            public function __toString(): string
+            {
+                return 'uuid-aaaa';
+            }
+        };
+
+        $identifierB = new class implements Stringable
+        {
+            public function __toString(): string
+            {
+                return 'uuid-bbbb';
+            }
+        };
+
+        app(Request::class)->setUserResolver(fn () => $this->userWithAuthIdentifier($identifierA));
+        $keyForA = PolicyCache::keyForAllowRestify('posts');
+
+        app(Request::class)->setUserResolver(fn () => $this->userWithAuthIdentifier($identifierB));
+        $keyForB = PolicyCache::keyForAllowRestify('posts');
+
+        $this->assertNotSame($keyForA, $keyForB);
+        $this->assertStringEndsWith('#uuid-aaaa', $keyForA);
+        $this->assertStringEndsWith('#uuid-bbbb', $keyForB);
+    }
+
+    #[Test]
+    public function a_non_stringable_auth_identifier_throws(): void
+    {
+        app(Request::class)->setUserResolver(fn () => $this->userWithAuthIdentifier(new class {}));
+
+        $this->expectException(UnexpectedValueException::class);
+
+        PolicyCache::keyForAllowRestify('posts');
+    }
+
+    #[Test]
+    public function a_guest_request_produces_the_same_empty_user_segment_as_before(): void
+    {
+        app(Request::class)->setUserResolver(fn () => null);
+
+        $key = PolicyCache::keyForAllowRestify('posts');
+
+        $this->assertSame('restify.policy.allowRestify.repository-posts.user-', $key);
+    }
+
+    private function userWithAuthIdentifier(mixed $id): Authenticatable
+    {
+        return new class($id) implements Authenticatable
+        {
+            use AuthenticatableTrait;
+
+            public function __construct(private readonly mixed $id) {}
+
+            public function getAuthIdentifier(): mixed
+            {
+                return $this->id;
+            }
+        };
     }
 }
