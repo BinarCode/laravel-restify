@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Notifications\AnonymousNotifiable;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
@@ -65,13 +66,17 @@ class ForgotPasswordTest extends IntegrationTestCase
     #[Test]
     public function a_failure_while_notifying_a_known_account_still_returns_the_generic_success_response(): void
     {
+        Exceptions::fake();
+
         $user = UserFactory::one(['email' => 'known@example.com']);
 
-        Password::shouldReceive('createToken')->once()->andThrow(new RuntimeException('mail transport is down'));
+        Password::shouldReceive('createToken')->once()->andThrow(new RuntimeException('reset pipeline failed'));
 
         $this->postJson('auth/forgotPassword', ['email' => $user->email])
             ->assertOk()
             ->assertExactJson(['message' => 'Reset password link sent to your email.']);
+
+        Exceptions::assertReported(RuntimeException::class);
     }
 
     /**
