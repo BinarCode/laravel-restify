@@ -2,30 +2,33 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
+use Binaryk\LaravelRestify\Http\Requests\RestifyRegisterRequest;
 use Binaryk\LaravelRestify\Notifications\VerifyEmail;
+use Binaryk\LaravelRestify\Repositories\Serializer;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 
 class RegisterController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): Serializer
     {
-        $request->validate([
-            'email' => ['required', 'email', 'max:255', 'unique:'.Config::get('config.auth.table', 'users')],
-            'password' => ['required', 'confirmed'],
-        ]);
+        $request->validate((new RestifyRegisterRequest)->rules());
 
-        $model = config('restify.auth.user_model');
+        /** @var class-string<Model> $modelClass */
+        $modelClass = Config::string('restify.auth.user_model');
 
-        $user = $model::forceCreate([
+        $user = $modelClass::forceCreate([
             'name' => $request->input('name'),
             'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password')),
+            'password' => Hash::make($request->string('password')->toString()),
         ]);
 
+        /** @var int|null $tokenTtl */
         $tokenTtl = config('restify.auth.token_ttl');
         $expiresAt = $tokenTtl ? now()->addMinutes($tokenTtl) : null;
 
@@ -37,7 +40,7 @@ class RegisterController extends Controller
         ];
 
         if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {
-            $user->notify(new VerifyEmail);
+            Notification::send($user, new VerifyEmail);
             $meta['email_verification_sent'] = true;
             $meta['message'] = 'Registration successful. Please check your email to verify your account.';
         }
