@@ -32,6 +32,14 @@ class AuthStubsTest extends IntegrationTestCase
         $this->assertStringContainsString('forceFill', $contents);
     }
 
+    #[Test]
+    public function the_forgot_password_stub_restricts_the_client_supplied_url_host(): void
+    {
+        $contents = $this->stubContents('ForgotPasswordController.stub');
+
+        $this->assertStringContainsString('AllowedResetUrlHost', $contents);
+    }
+
     private function stubContents(string $stub): string
     {
         return (string) file_get_contents(dirname(__DIR__, 3).'/src/Commands/stubs/Auth/'.$stub);
