@@ -7,6 +7,7 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -79,13 +80,16 @@ class RestifyApplicationServiceProviderTest extends IntegrationTestCase
     #[Test]
     public function a_user_policys_view_restify_method_does_not_hijack_the_gate(): void
     {
-        Gate::policy(User::class, new class
+        $policy = new class extends UserPolicy
         {
             public function viewRestify(User $user): bool
             {
                 return true;
             }
-        });
+        };
+
+        $this->app->instance($policy::class, $policy);
+        Gate::policy(User::class, $policy::class);
 
         Gate::define('viewRestify', fn (Authenticatable $user) => false);
 
