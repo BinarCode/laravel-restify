@@ -503,11 +503,14 @@ class Repository implements JsonSerializable, RestifySearchable
             ->all();
 
         if ($this instanceof Mergeable) {
+            /** @var Collection<string, Field> $fieldsByAttribute */
+            $fieldsByAttribute = $this->collectFields($request)->keyBy('attribute');
+
             // Hidden and authorized index fields
             $fields = $this->modelAttributes($request)
-                ->filter(function ($value, $attribute) use ($request) {
-                    /** * @var Field $field */
-                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
+                ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute) {
+                    /** * @var Field|null $field */
+                    $field = $fieldsByAttribute->get($attribute);
 
                     if (is_null($field)) {
                         return true;
@@ -537,11 +540,14 @@ class Repository implements JsonSerializable, RestifySearchable
     public function resolveIndexAttributes($request)
     {
         if ($this instanceof Mergeable) {
+            /** @var Collection<string, Field> $fieldsByAttribute */
+            $fieldsByAttribute = $this->collectFields($request)->keyBy('attribute');
+
             // Hidden and authorized index fields
             return $this->modelAttributes($request)
-                ->filter(function ($value, $attribute) use ($request) {
-                    /** @var Field $field */
-                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
+                ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute) {
+                    /** @var Field|null $field */
+                    $field = $fieldsByAttribute->get($attribute);
 
                     if (is_null($field)) {
                         return true;
