@@ -177,7 +177,7 @@ trait InteractsWithCache
             return;
         }
 
-        $store = Cache::store(static::$cacheStore);
+        $store = Cache::store(static::resolveCacheStoreName());
 
         // If cache tags are used and supported, flush by tags
         if (! empty(static::$cacheTags) && static::cacheStoreSupportsTagging($store)) {
@@ -240,7 +240,24 @@ trait InteractsWithCache
      */
     protected function getCacheStore()
     {
-        return Cache::store(static::$cacheStore);
+        return Cache::store(static::resolveCacheStoreName());
+    }
+
+    /**
+     * Resolve the named cache store this repository's caching should use:
+     * its own $cacheStore when set, otherwise the configured
+     * restify.repositories.cache.store when it's a non-empty string,
+     * otherwise null for the application's default cache store.
+     */
+    protected static function resolveCacheStoreName(): ?string
+    {
+        if (static::$cacheStore !== null) {
+            return static::$cacheStore;
+        }
+
+        $configuredStore = config('restify.repositories.cache.store');
+
+        return is_string($configuredStore) && $configuredStore !== '' ? $configuredStore : null;
     }
 
     /**
