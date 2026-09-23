@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use PHPUnit\Framework\Attributes\Test;
 
 class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
 {
@@ -14,6 +15,49 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
         parent::setUp();
 
         $this->authenticate();
+    }
+
+    #[Test]
+    public function a_row_missing_id_is_rejected_and_nothing_is_written(): void
+    {
+        $post1 = Post::factory()->create(['user_id' => 1, 'title' => 'Original 1']);
+        $post2 = Post::factory()->create(['user_id' => 1, 'title' => 'Original 2']);
+
+        $this->postJson(PostRepository::route('bulk/update'), [
+            ['id' => $post1->id, 'title' => 'Updated 1'],
+            ['title' => 'Updated 2 (no id)'],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('1.id');
+
+        $this->assertDatabaseHas(Post::class, ['id' => $post1->id, 'title' => 'Original 1']);
+        $this->assertDatabaseHas(Post::class, ['id' => $post2->id, 'title' => 'Original 2']);
+    }
+
+    #[Test]
+    public function a_row_with_a_null_id_is_rejected(): void
+    {
+        $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
+
+        $this->postJson(PostRepository::route('bulk/update'), [
+            ['id' => null, 'title' => 'Updated'],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('0.id');
+
+        $this->assertDatabaseHas(Post::class, ['id' => $post->id, 'title' => 'Original']);
+    }
+
+    #[Test]
+    public function duplicate_ids_in_the_same_payload_are_rejected(): void
+    {
+        $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
+
+        $this->postJson(PostRepository::route('bulk/update'), [
+            ['id' => $post->id, 'title' => 'First'],
+            ['id' => $post->id, 'title' => 'Second'],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors(['0.id', '1.id']);
+
+        $this->assertDatabaseHas(Post::class, ['id' => $post->id, 'title' => 'Original']);
     }
 
     public function test_basic_update_validation_works(): void
