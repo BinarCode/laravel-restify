@@ -96,6 +96,27 @@ class FieldTest extends IntegrationTestCase
     #[TestWith(['resolve'], 'resolve')]
     #[TestWith(['resolveForShow'], 'resolveForShow')]
     #[TestWith(['resolveForIndex'], 'resolveForIndex')]
+    public function an_invokable_object_computed_field_serializes_under_the_computed_key(string $resolveMethod): void
+    {
+        $field = Field::make(new class
+        {
+            public function __invoke(): string
+            {
+                return 'Invokable value';
+            }
+        });
+
+        $field->{$resolveMethod}((object) []);
+
+        $this->assertTrue($field->computed());
+        $this->assertSame('Invokable value', $field->value);
+        $this->assertSame(['Computed' => 'Invokable value'], $field->serializeToValue(new RestifyRequest));
+    }
+
+    #[Test]
+    #[TestWith(['resolve'], 'resolve')]
+    #[TestWith(['resolveForShow'], 'resolveForShow')]
+    #[TestWith(['resolveForIndex'], 'resolveForIndex')]
     public function a_field_literally_named_computed_resolves_like_any_other_field(string $resolveMethod): void
     {
         $field = Field::new('Computed', fn () => 'Named value');

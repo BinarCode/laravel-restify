@@ -170,6 +170,72 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
             );
     }
 
+    #[Test]
+    public function index_resolves_a_field_literally_named_computed(): void
+    {
+        PostFactory::one();
+
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
+
+                field('Computed', fn () => 'Named value'),
+            ]);
+
+        $this->getJson(PostRepository::route())
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->where('data.0.attributes.Computed', 'Named value')
+                    ->etc()
+            );
+    }
+
+    #[Test]
+    public function index_hides_a_label_less_computed_field_when_hidden(): void
+    {
+        PostFactory::one();
+
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
+
+                field(fn () => 'Computed value')->hidden(),
+            ]);
+
+        $this->getJson(PostRepository::route())
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->missing('data.0.attributes.Computed')
+                    ->etc()
+            );
+    }
+
+    #[Test]
+    public function index_hides_a_label_less_computed_field_when_not_authorized(): void
+    {
+        PostFactory::one();
+
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
+
+                field(fn () => 'Computed value')->canSee(fn () => false),
+            ]);
+
+        $this->getJson(PostRepository::route())
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->missing('data.0.attributes.Computed')
+                    ->etc()
+            );
+    }
+
     public function test_index_unmergeable_repository_contains_only_explicitly_defined_fields(): void
     {
         PostFactory::one();

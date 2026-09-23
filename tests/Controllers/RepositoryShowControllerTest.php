@@ -147,7 +147,55 @@ class RepositoryShowControllerTest extends IntegrationTestCase
         // no longer crashes the show request.
         $this->getJson(PostMergeableRepository::route(
             $this->mockPost()->id
-        ))->assertOk();
+        ))
+            ->assertOk()
+            ->assertJsonMissingPath('data.attributes.Computed');
+    }
+
+    #[Test]
+    public function show_lets_the_last_unlabeled_computed_field_win(): void
+    {
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
+
+                field(fn () => 'First computed value'),
+
+                field(fn () => 'Last computed value'),
+            ]);
+
+        $this->getJson(PostRepository::route(
+            $this->mockPost()->id
+        ))
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->where('data.attributes.Computed', 'Last computed value')
+                    ->etc()
+            );
+    }
+
+    #[Test]
+    public function show_resolves_a_field_literally_named_computed(): void
+    {
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
+
+                field('Computed', fn () => 'Named value'),
+            ]);
+
+        $this->getJson(PostRepository::route(
+            $this->mockPost()->id
+        ))
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->where('data.attributes.Computed', 'Named value')
+                    ->etc()
+            );
     }
 
     public function test_repository_hidden_fields_are_not_visible(): void
