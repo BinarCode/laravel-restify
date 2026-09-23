@@ -29,10 +29,10 @@ class Company extends Model
             ->withTimestamps();
     }
 
-    public function roles(): BelongsToMany
+    public function deniedRoles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'company_role', 'company_id', 'role_id')
-            ->using(CompanyRolePivot::class)
+        return $this->belongsToMany(Role::class, 'company_denied_role', 'company_id', 'role_id')
+            ->using(CompanyDeniedRolePivot::class)
             ->withTimestamps();
     }
 

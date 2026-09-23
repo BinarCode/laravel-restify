@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCompanyRoleTable extends Migration
+class CreateCompanyDeniedRoleTable extends Migration
 {
     /**
      * Run the migrations.
@@ -15,7 +15,7 @@ class CreateCompanyRoleTable extends Migration
      */
     public function up()
     {
-        Schema::create('company_role', function (Blueprint $table): void {
+        Schema::create('company_denied_role', function (Blueprint $table): void {
             $table->foreignId('company_id')->constrained('companies');
             $table->foreignId('role_id')->constrained('roles');
             $table->timestamps();
@@ -29,6 +29,6 @@ class CreateCompanyRoleTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('company_role');
+        Schema::dropIfExists('company_denied_role');
     }
 }

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyDeniedRolePivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRolePivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -50,8 +50,8 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
         $poisoned = $this->postJson(CompanyRepository::route("{$company2->id}/attach/users"), [
             'users' => [$user2->getKey()],
             'is_admin' => true,
-            'relatedRepository' => 'roles',
-            'roles' => [$role2->getKey()],
+            'relatedRepository' => 'deniedRoles',
+            'deniedRoles' => [$role2->getKey()],
         ]);
 
         $poisoned->assertStatus($clean->getStatusCode());
@@ -63,7 +63,7 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
             'is_admin' => true,
         ]);
 
-        $this->assertDatabaseCount(CompanyRolePivot::class, 0);
+        $this->assertDatabaseCount(CompanyDeniedRolePivot::class, 0);
     }
 
     #[Test]
@@ -82,8 +82,8 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
 
         $poisoned = $this->postJson(CompanyRepository::route("{$company2->id}/sync/users"), [
             'users' => [$user2->getKey()],
-            'relatedRepository' => 'roles',
-            'roles' => [$role2->getKey()],
+            'relatedRepository' => 'deniedRoles',
+            'deniedRoles' => [$role2->getKey()],
         ]);
 
         $poisoned->assertStatus($clean->getStatusCode());
@@ -94,7 +94,7 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
             'user_id' => $user2->getKey(),
         ]);
 
-        $this->assertDatabaseCount(CompanyRolePivot::class, 0);
+        $this->assertDatabaseCount(CompanyDeniedRolePivot::class, 0);
     }
 
     #[Test]
@@ -115,8 +115,8 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
         $poisoned = $this->postJson(CompanyRepository::route("{$company2->id}/attach/users"), [
             'users' => [$user2->getKey()],
             'is_admin' => true,
-            'viaRelationship' => 'roles',
-            'roles' => [$role2->getKey()],
+            'viaRelationship' => 'deniedRoles',
+            'deniedRoles' => [$role2->getKey()],
         ]);
 
         $poisoned->assertStatus($clean->getStatusCode());
@@ -128,7 +128,7 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
             'is_admin' => true,
         ]);
 
-        $this->assertDatabaseCount(CompanyRolePivot::class, 0);
+        $this->assertDatabaseCount(CompanyDeniedRolePivot::class, 0);
     }
 
     #[Test]
@@ -141,11 +141,11 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
         $role = Role::factory()->create();
 
         $company->users()->attach($user->getKey(), ['is_admin' => true]);
-        $company->roles()->attach($role->getKey());
+        $company->deniedRoles()->attach($role->getKey());
 
         $this->postJson(CompanyRepository::route("{$company->id}/detach/users"), [
             'users' => [$user->getKey()],
-            'viaRelationship' => 'roles',
+            'viaRelationship' => 'deniedRoles',
         ])->assertNoContent();
 
         $this->assertDatabaseMissing(CompanyUserPivot::class, [
@@ -153,7 +153,7 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
             'user_id' => $user->getKey(),
         ]);
 
-        $this->assertDatabaseHas(CompanyRolePivot::class, [
+        $this->assertDatabaseHas(CompanyDeniedRolePivot::class, [
             'company_id' => $company->getKey(),
             'role_id' => $role->getKey(),
         ]);
@@ -176,7 +176,7 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
         $poisoned = $this->postJson(CompanyRepository::route("{$company2->id}/attach/users"), [
             'users' => [$user2->getKey()],
             'is_admin' => true,
-            'relatedRepository' => ['roles'],
+            'relatedRepository' => ['deniedRoles'],
         ]);
 
         $poisoned->assertStatus($clean->getStatusCode());
@@ -200,7 +200,7 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
         $poisoned = $this->postJson(CompanyRepository::route("{$company2->id}/attach/users"), [
             'users' => [$user2->getKey()],
             'is_admin' => true,
-            'viaRelationship' => ['roles'],
+            'viaRelationship' => ['deniedRoles'],
         ]);
 
         $poisoned->assertStatus($clean->getStatusCode());
@@ -222,7 +222,7 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
 
         $poisoned = $this->postJson(CompanyRepository::route("{$company2->id}/sync/users"), [
             'users' => [$user2->getKey()],
-            'relatedRepository' => ['roles'],
+            'relatedRepository' => ['deniedRoles'],
         ]);
 
         $poisoned->assertStatus($clean->getStatusCode());
