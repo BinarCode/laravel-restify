@@ -19,11 +19,22 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
 {
     use InteractsWithQueryLog;
 
+    private static int $defaultChunkCount;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->authenticate();
+
+        self::$defaultChunkCount = Action::$chunkCount;
+    }
+
+    protected function tearDown(): void
+    {
+        Action::$chunkCount = self::$defaultChunkCount;
+
+        parent::tearDown();
     }
 
     #[Test]
@@ -31,7 +42,7 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
     {
         $post = $this->mockPost(['is_active' => false]);
 
-        $action = $this->showAction()->canRun(fn () => false);
+        $action = $this->showAction()->canRun(fn (Request $request, ?Post $model): bool => false);
 
         PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
 
@@ -53,7 +64,7 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
         $receivedRequest = null;
         $receivedModel = null;
 
-        $action = $this->showAction()->canRun(function ($request, $model) use (&$receivedRequest, &$receivedModel) {
+        $action = $this->showAction()->canRun(function (Request $request, ?Post $model) use (&$receivedRequest, &$receivedModel): bool {
             $receivedRequest = $request;
             $receivedModel = $model;
 
@@ -96,13 +107,65 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function denied_can_run_wins_over_action_validation(): void
+    {
+        $post = $this->mockPost(['is_active' => false]);
+
+        $handleFlag = new \stdClass;
+        $handleFlag->called = false;
+
+        $action = $this->validatingShowAction($handleFlag)->canRun(fn (Request $request, ?Post $model): bool => false);
+
+        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
+
+        $this
+            ->postJson(PostRepository::route((string) $post->id, action: $action), [
+                // Deliberately omits 'title', which the action's own rules() require.
+            ])
+            ->assertForbidden();
+
+        $this->assertFalse($handleFlag->called);
+
+        $this->assertDatabaseHas(Post::class, [
+            'id' => $post->id,
+            'is_active' => false,
+        ]);
+    }
+
+    #[Test]
+    public function standalone_action_denied_by_can_run_is_forbidden_over_rest(): void
+    {
+        $action = $this->standaloneAction()->canRun(fn (Request $request, ?Post $model): bool => false);
+
+        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
+
+        $this
+            ->postJson(PostRepository::route('actions', query: ['action' => $action->uriKey()]))
+            ->assertForbidden();
+    }
+
+    #[Test]
+    public function standalone_action_allowed_by_can_run_executes_over_rest(): void
+    {
+        $action = $this->standaloneAction()->canRun(fn (Request $request, ?Post $model): bool => true);
+
+        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
+
+        $this
+            ->postJson(PostRepository::route('actions', query: ['action' => $action->uriKey()]))
+            ->assertOk()
+            ->assertJson(['ok' => true]);
+    }
+
+    #[Test]
     public function index_action_invokes_can_run_for_each_model_in_the_batch(): void
     {
         $posts = Post::factory()->count(3)->create(['is_active' => false]);
 
+        /** @var Collection<int, int> $seenIds */
         $seenIds = Collection::make();
 
-        $action = $this->bulkAction()->canRun(function ($request, $model) use (&$seenIds) {
+        $action = $this->bulkAction()->canRun(function (Request $request, ?Post $model) use (&$seenIds): bool {
             $seenIds->push($model->id);
 
             return true;
@@ -132,7 +195,83 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
         $posts = Post::factory()->count(3)->create(['is_active' => false]);
         $deniedId = $posts->first()->id;
 
-        $action = $this->bulkAction()->canRun(fn ($request, $model) => $model->id !== $deniedId);
+        $action = $this->bulkAction()->canRun(fn (Request $request, ?Post $model): bool => $model->id !== $deniedId);
+
+        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
+
+        $this
+            ->postJson(PostRepository::route('actions', query: ['action' => $action->uriKey()]), [
+                'repositories' => $posts->pluck('id')->all(),
+            ])
+            ->assertForbidden();
+
+        foreach ($posts as $post) {
+            $this->assertDatabaseHas(Post::class, [
+                'id' => $post->id,
+                'is_active' => false,
+            ]);
+        }
+    }
+
+    #[Test]
+    public function index_action_with_string_ids_and_a_denied_row_fails_without_side_effects(): void
+    {
+        $posts = Post::factory()->count(3)->create(['is_active' => false]);
+        $deniedId = (string) $posts->first()->id;
+
+        $action = $this->bulkAction()->canRun(fn (Request $request, ?Post $model): bool => (string) $model->id !== $deniedId);
+
+        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
+
+        $this
+            ->postJson(PostRepository::route('actions', query: ['action' => $action->uriKey()]), [
+                'repositories' => $posts->pluck('id')->map(fn (int $id): string => (string) $id)->all(),
+            ])
+            ->assertForbidden();
+
+        foreach ($posts as $post) {
+            $this->assertDatabaseHas(Post::class, [
+                'id' => $post->id,
+                'is_active' => false,
+            ]);
+        }
+    }
+
+    #[Test]
+    public function index_action_with_all_repositories_denied_in_the_last_chunk_rolls_back_earlier_chunks(): void
+    {
+        Action::$chunkCount = 2;
+
+        $posts = Post::factory()->count(4)->create(['is_active' => false]);
+        $deniedId = $posts->sortBy('id')->first()->id;
+
+        $action = $this->bulkAction()->canRun(fn (Request $request, ?Post $model): bool => $model->id !== $deniedId);
+
+        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
+
+        $this
+            ->postJson(PostRepository::route('actions', query: ['action' => $action->uriKey()]), [
+                'repositories' => 'all',
+            ])
+            ->assertForbidden();
+
+        foreach ($posts as $post) {
+            $this->assertDatabaseHas(Post::class, [
+                'id' => $post->id,
+                'is_active' => false,
+            ]);
+        }
+    }
+
+    #[Test]
+    public function index_action_with_explicit_id_list_denied_in_the_last_chunk_rolls_back_earlier_chunks(): void
+    {
+        Action::$chunkCount = 2;
+
+        $posts = Post::factory()->count(4)->create(['is_active' => false]);
+        $deniedId = $posts->sortBy('id')->first()->id;
+
+        $action = $this->bulkAction()->canRun(fn (Request $request, ?Post $model): bool => $model->id !== $deniedId);
 
         PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
 
@@ -171,7 +310,7 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
 
         $posts = $this->mockPosts(null, 3);
 
-        $withCanRun = $this->bulkAction()->canRun(fn () => true);
+        $withCanRun = $this->bulkAction()->canRun(fn (Request $request, ?Post $model): bool => true);
 
         PostRepository::partialMock()->shouldReceive('actions')->andReturn([$withCanRun]);
 
@@ -201,6 +340,45 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
         })->onlyOnShow();
     }
 
+    private function validatingShowAction(\stdClass $handleFlag): Action
+    {
+        return (new class($handleFlag) extends Action
+        {
+            public static $uriKey = 'can-run-validating-show-action';
+
+            public function __construct(private readonly \stdClass $handleFlag) {}
+
+            public function rules(): array
+            {
+                return ['title' => ['required', 'string']];
+            }
+
+            public function handle(ActionRequest $request, Post $post): JsonResponse
+            {
+                $this->handleFlag->called = true;
+
+                $request->validate($this->rules());
+
+                $post->update(['is_active' => true]);
+
+                return response()->json(['ok' => true]);
+            }
+        })->onlyOnShow();
+    }
+
+    private function standaloneAction(): Action
+    {
+        return (new class extends Action
+        {
+            public static $uriKey = 'can-run-standalone-action';
+
+            public function handle(ActionRequest $request): JsonResponse
+            {
+                return response()->json(['ok' => true]);
+            }
+        })->standalone();
+    }
+
     private function bulkAction(): Action
     {
         return new class extends Action
@@ -209,7 +387,9 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
 
             public function handle(ActionRequest $request, Collection $models): JsonResponse
             {
-                $models->each(fn (Post $post) => $post->update(['is_active' => true]));
+                foreach ($models as $post) {
+                    $post->update(['is_active' => true]);
+                }
 
                 return response()->json(['ok' => true]);
             }

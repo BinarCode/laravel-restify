@@ -16,7 +16,7 @@ trait AuthorizedToRun
     /**
      * Determine if the action is executable for the given request.
      *
-     * @param  Model  $model
+     * @param  ?Model  $model
      * @return bool
      */
     public function authorizedToRun(Request $request, $model)

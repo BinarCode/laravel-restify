@@ -12,7 +12,9 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsShowGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Laravel\Mcp\Facades\Mcp;
 use Laravel\Mcp\Server\McpServiceProvider;
@@ -57,7 +59,7 @@ class McpGettersCanRunAuthorizationTest extends IntegrationTestCase
             public function getters(RestifyRequest $request): array
             {
                 return [
-                    PostsShowGetter::new()->onlyOnShow()->canRun(fn ($request, $model) => false),
+                    PostsShowGetter::new()->onlyOnShow()->canRun(fn (Request $request, ?Model $model): bool => false),
                 ];
             }
 
@@ -111,7 +113,7 @@ class McpGettersCanRunAuthorizationTest extends IntegrationTestCase
             public function getters(RestifyRequest $request): array
             {
                 return [
-                    PostsShowGetter::new()->onlyOnShow()->canRun(fn ($request, $model) => true),
+                    PostsShowGetter::new()->onlyOnShow()->canRun(fn (Request $request, ?Model $model): bool => true),
                 ];
             }
 

@@ -100,7 +100,7 @@ abstract class Action implements JsonSerializable
     /**
      * Determine if the action is executable for the given request.
      *
-     * @param  Model  $model
+     * @param  ?Model  $model
      * @return bool
      */
     public function authorizedToRun(Request $request, $model)
@@ -166,29 +166,37 @@ abstract class Action implements JsonSerializable
         }
 
         if ($this->isStandalone()) {
+            abort_unless(
+                $this->authorizedToRun($request, null),
+                JsonResponse::HTTP_FORBIDDEN,
+                'Not authorized to run this action.'
+            );
+
             return Transaction::run(fn () => $this->handle($request));
         }
 
         $response = null;
 
         if (! $request->isForRepositoryRequest()) {
-            $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($request, &$response) {
-                /** @var Collection<int, Model> $models */
-                foreach ($models as $model) {
-                    abort_unless(
-                        $this->authorizedToRun($request, $model),
-                        JsonResponse::HTTP_FORBIDDEN,
-                        'Not authorized to run this action.'
-                    );
-                }
+            Transaction::run(function () use ($request, &$response) {
+                $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($request, &$response) {
+                    /** @var Collection<int, Model> $models */
+                    foreach ($models as $model) {
+                        abort_unless(
+                            $this->authorizedToRun($request, $model),
+                            JsonResponse::HTTP_FORBIDDEN,
+                            'Not authorized to run this action.'
+                        );
+                    }
 
-                Transaction::run(function () use ($models, $request, &$response) {
-                    $response = $this->handle($request, $models);
+                    Transaction::run(function () use ($models, $request, &$response) {
+                        $response = $this->handle($request, $models);
 
-                    $models->each(function (Model $model) {
-                        //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
-                        //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
-                        //                        }
+                        $models->each(function (Model $model) {
+                            //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
+                            //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
+                            //                        }
+                        });
                     });
                 });
             });

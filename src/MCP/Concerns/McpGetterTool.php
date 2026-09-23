@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\JsonResponse;
 use Illuminate\JsonSchema\JsonSchema;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * @mixin Repository
@@ -24,7 +25,18 @@ trait McpGetterTool
             }
         }
 
-        $result = $getter->handleRequest($getterRequest);
+        try {
+            $result = $getter->handleRequest($getterRequest);
+        } catch (HttpException $exception) {
+            if ($exception->getStatusCode() !== JsonResponse::HTTP_FORBIDDEN) {
+                throw $exception;
+            }
+
+            return [
+                'error' => $exception->getMessage() ?: 'Not authorized to run this getter',
+                'getter' => $getter->uriKey(),
+            ];
+        }
 
         $responseData = $result instanceof JsonResponse
             ? $result->getData()

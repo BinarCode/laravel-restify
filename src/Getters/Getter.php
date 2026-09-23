@@ -121,6 +121,12 @@ abstract class Getter implements JsonSerializable
             return $this->handle($request, $model);
         }
 
+        abort_unless(
+            $this->authorizedToRun($request, null),
+            JsonResponse::HTTP_FORBIDDEN,
+            'Not authorized to run this getter.'
+        );
+
         return $this->handle($request);
     }
 
