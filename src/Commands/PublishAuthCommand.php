@@ -7,7 +7,6 @@ use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
 use RuntimeException;
-use Symfony\Component\Finder\SplFileInfo;
 
 class PublishAuthCommand extends Command
 {
@@ -60,15 +59,23 @@ class PublishAuthCommand extends Command
         }
 
         try {
-            $this->registerRoutes($actions, $apiRoutesPath);
+            $actionsToPublish = $this->resolveActionsToPublish($actions, $apiRoutesPath);
         } catch (RuntimeException $exception) {
             $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }
 
-        $this->publishControllers($actions)
-            ->publishNotifications($actions);
+        if ($actionsToPublish === []) {
+            $this->components->warn('Nothing left to publish.');
+
+            return self::SUCCESS;
+        }
+
+        $this->registerRoutes($actionsToPublish, $apiRoutesPath);
+
+        $this->publishControllers($actionsToPublish)
+            ->publishNotifications($actionsToPublish);
 
         $this->info('Auth controllers published.');
 
@@ -128,7 +135,6 @@ class PublishAuthCommand extends Command
     protected function copyDirectory(string $path, string $stubDirectory, string $format, ?array $actions = []): self
     {
         foreach ($this->files->allFiles(__DIR__.$stubDirectory) as $file) {
-            /** @var SplFileInfo $file */
             $action = $this->canonicalizeAction(Str::before($file->getFilename(), 'Controller.stub'));
 
             if (! empty($actions) && ! in_array($action, $actions, true)) {
@@ -146,40 +152,58 @@ class PublishAuthCommand extends Command
     }
 
     /**
-     * @param  list<string>|null  $actions
-     *
-     * @throws RuntimeException
+     * @param  list<string>  $actionsToPublish
      */
-    protected function registerRoutes(?array $actions, ?string $apiRoutesPath = null): self
+    protected function registerRoutes(array $actionsToPublish, ?string $apiRoutesPath = null): self
     {
         $apiRoutesPath ??= base_path('routes/api.php');
-        $actions ??= $this->requestedActions();
 
         $contents = $this->files->get($apiRoutesPath);
 
-        if (! preg_match('/Route::restifyAuth\(\s*(.*?)\s*\);/s', $contents, $matches)) {
-            throw new RuntimeException(
-                'No Route::restifyAuth() call was found in routes/api.php. Add Route::restifyAuth(); and try again.'
-            );
-        }
-
-        $existingRemaining = $this->parseExistingRemainingActions($matches[1]);
-
-        $actionsToPublish = $actions === null
-            ? array_intersect(array_keys(self::ACTIONS), $existingRemaining)
-            : array_intersect($actions, $existingRemaining);
-
-        $actionsToPublish = array_values($actionsToPublish);
+        [$call, $existingRemaining] = $this->parseRestifyAuthCall($contents);
 
         $replacement = $this->getRemainingActionsString($actionsToPublish, $existingRemaining);
 
-        $updated = Str::replaceFirst($matches[0], $replacement, $contents);
+        $updated = Str::replaceFirst($call, $replacement, $contents);
 
         $routeStubs = $this->getRouteStubs($actionsToPublish);
 
         $this->files->put($apiRoutesPath, $updated."\n".$routeStubs);
 
         return $this;
+    }
+
+    /**
+     * @param  list<string>|null  $actions
+     * @return list<string>
+     *
+     * @throws RuntimeException
+     */
+    private function resolveActionsToPublish(?array $actions, string $apiRoutesPath): array
+    {
+        [, $existingRemaining] = $this->parseRestifyAuthCall($this->files->get($apiRoutesPath));
+
+        $actionsToPublish = $actions === null
+            ? array_intersect(array_keys(self::ACTIONS), $existingRemaining)
+            : array_intersect($actions, $existingRemaining);
+
+        return array_values($actionsToPublish);
+    }
+
+    /**
+     * @return array{0: string, 1: list<string>}
+     *
+     * @throws RuntimeException
+     */
+    private function parseRestifyAuthCall(string $contents): array
+    {
+        if (! preg_match('/^[ \t]*\K(?!\/\/)Route::restifyAuth\(\s*(.*?)\s*\);/ms', $contents, $matches)) {
+            throw new RuntimeException(
+                'No Route::restifyAuth() call was found in routes/api.php. Add Route::restifyAuth(); and try again.'
+            );
+        }
+
+        return [$matches[0], $this->parseExistingRemainingActions($matches[1])];
     }
 
     /**
@@ -214,11 +238,12 @@ class PublishAuthCommand extends Command
 
         $remainingActions = array_values(array_diff($baseline, $publishedActions));
 
-        if (empty($remainingActions)) {
-            return '';
-        }
+        $items = implode(', ', array_map(
+            fn (string $action): string => "'".addslashes($action)."'",
+            $remainingActions
+        ));
 
-        return 'Route::restifyAuth(actions: '.json_encode($remainingActions).');';
+        return "Route::restifyAuth(actions: [{$items}]);";
     }
 
     /**
@@ -240,22 +265,57 @@ class PublishAuthCommand extends Command
             );
         }
 
-        $decoded = json_decode($matches[1], true);
+        return $this->parseActionsArray($matches[1]);
+    }
 
-        $decodedActions = is_array($decoded) ? array_filter($decoded, is_string(...)) : [];
+    /**
+     * Parses a PHP array literal of action names, e.g. `['login', 'register']`,
+     * `["login", "register"]`, or the same spread across multiple lines, with or
+     * without a trailing comma before the closing bracket.
+     *
+     * @return list<string>
+     *
+     * @throws RuntimeException
+     */
+    private function parseActionsArray(string $array): array
+    {
+        $parseError = "routes/api.php's Route::restifyAuth(actions: ...) call could not be parsed. Update it manually, or reset it to Route::restifyAuth(); first.";
 
-        if (! is_array($decoded) || count($decodedActions) !== count($decoded)) {
-            throw new RuntimeException(
-                "routes/api.php's Route::restifyAuth(actions: ...) call could not be parsed. Update it manually, or reset it to Route::restifyAuth(); first."
-            );
+        if (! preg_match('/^\[(?<items>.*)\]$/s', trim($array), $matches)) {
+            throw new RuntimeException($parseError);
         }
 
-        return array_values($decodedActions);
+        $items = trim($matches['items']);
+
+        if (str_ends_with($items, ',')) {
+            $items = trim(substr($items, 0, -1));
+        }
+
+        if ($items === '') {
+            return [];
+        }
+
+        $stringToken = '\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*"';
+
+        if (! preg_match_all('/'.$stringToken.'/', $items, $tokenMatches)) {
+            throw new RuntimeException($parseError);
+        }
+
+        $withoutTokens = preg_replace('/'.$stringToken.'/', '', $items) ?? '';
+        $remainder = trim(preg_replace('/[\s,]+/', '', $withoutTokens) ?? '');
+
+        if ($remainder !== '') {
+            throw new RuntimeException($parseError);
+        }
+
+        return array_map(
+            fn (string $token): string => stripcslashes(substr($token, 1, -1)),
+            $tokenMatches[0]
+        );
     }
 
     /**
      * @param  list<string>  $actions
-     * @return string|null a message naming the invalid action, or null when every action is publishable
      */
     private function validateActions(array $actions): ?string
     {
@@ -278,19 +338,24 @@ class PublishAuthCommand extends Command
 
     private function publishStub(string $stubDirectory, string $stubFileName, string $path, string $format): void
     {
-        $this->files->copy(
-            __DIR__.$stubDirectory.'/'.$stubFileName,
-            $fullPath = app_path($path.Str::replaceLast('.stub', $format, $stubFileName))
-        );
+        $fullPath = app_path($path.Str::replaceLast('.stub', $format, $stubFileName));
+
+        if ($this->files->exists($fullPath)) {
+            $this->components->warn(basename($fullPath).' already exists, skipped.');
+
+            return;
+        }
+
+        $this->files->copy(__DIR__.$stubDirectory.'/'.$stubFileName, $fullPath);
 
         $this->setNamespace($stubDirectory, $stubFileName, $path, $fullPath);
     }
 
-    protected function setNamespace(string $stubDirectory, string $fileName, string $path, string $fullPath): void
+    protected function setNamespace(string $stubDirectory, string $fileName, string $path, string $fullPath): string
     {
         $path = substr(str_replace('/', '\\', $path), 0, -1);
 
-        $this->files->put($fullPath, str_replace(
+        return $this->files->put($fullPath, str_replace(
             '{{namespace}}',
             $this->laravel->getNamespace().$path,
             $this->files->get(__DIR__.$stubDirectory.'/'.$fileName)
