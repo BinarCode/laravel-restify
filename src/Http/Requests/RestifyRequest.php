@@ -56,6 +56,25 @@ class RestifyRequest extends FormRequest
         return $relatedRepository;
     }
 
+    /**
+     * The `repositoryId` URL segment.
+     *
+     * Reads the route parameter directly, never the magic `__get`/`input()`
+     * resolution, so a body key of the same name can't shadow it.
+     *
+     * @throws InvalidArgumentException if the route parameter is not a string.
+     */
+    public function repositoryIdFromRoute(): string
+    {
+        $repositoryId = $this->route('repositoryId');
+
+        if (! is_string($repositoryId)) {
+            throw new InvalidArgumentException('The [repositoryId] route parameter must be a string.');
+        }
+
+        return $repositoryId;
+    }
+
     public function relatedEagerField(): EagerField
     {
         $parentRepository = $this->repository(

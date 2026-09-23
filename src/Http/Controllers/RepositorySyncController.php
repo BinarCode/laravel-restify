@@ -29,7 +29,7 @@ class RepositorySyncController extends RepositoryController
 
         return $repository->sync(
             $request,
-            $request->repositoryId,
+            $request->repositoryIdFromRoute(),
             $attachers->flatten()
         );
     }

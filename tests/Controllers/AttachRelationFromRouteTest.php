@@ -27,7 +27,12 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
 {
     protected function tearDown(): void
     {
-        unset($_SERVER['roles.canDetach.users']);
+        unset(
+            $_SERVER['roles.canDetach.users'],
+            $_SERVER['CompanyRepository.attach.repositoryId'],
+            $_SERVER['CompanyRepository.detach.repositoryId'],
+            $_SERVER['CompanyRepository.sync.repositoryId'],
+        );
 
         parent::tearDown();
     }
@@ -249,6 +254,84 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
 
         $this->assertDatabaseMissing(CompanyUserPivot::class, [
             'company_id' => $otherCompany->getKey(),
+            'user_id' => $user->getKey(),
+        ]);
+    }
+
+    #[Test]
+    public function a_body_repository_id_key_cannot_change_the_repository_id_passed_to_the_attach_hook(): void
+    {
+        $company = Company::factory()->create();
+        $otherCompany = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->id}/attach/users"), [
+            'users' => [$user->getKey()],
+            'is_admin' => true,
+            'repositoryId' => $otherCompany->getKey(),
+        ])->assertCreated();
+
+        $this->assertSame((string) $company->getKey(), (string) $_SERVER['CompanyRepository.attach.repositoryId']);
+    }
+
+    #[Test]
+    public function a_body_repository_id_key_cannot_change_the_repository_id_passed_to_the_detach_hook(): void
+    {
+        $_SERVER['roles.canDetach.users'] = true;
+
+        $company = Company::factory()->create();
+        $otherCompany = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $company->users()->attach($user->getKey(), ['is_admin' => true]);
+
+        $this->postJson(CompanyRepository::route("{$company->id}/detach/users"), [
+            'users' => [$user->getKey()],
+            'repositoryId' => $otherCompany->getKey(),
+        ])->assertNoContent();
+
+        $this->assertSame((string) $company->getKey(), (string) $_SERVER['CompanyRepository.detach.repositoryId']);
+    }
+
+    #[Test]
+    public function a_body_repository_id_key_cannot_change_the_repository_id_passed_to_the_sync_hook(): void
+    {
+        $company = Company::factory()->create();
+        $otherCompany = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->id}/sync/users"), [
+            'users' => [$user->getKey()],
+            'repositoryId' => $otherCompany->getKey(),
+        ])->assertOk();
+
+        $this->assertSame((string) $company->getKey(), (string) $_SERVER['CompanyRepository.sync.repositoryId']);
+    }
+
+    #[Test]
+    public function a_body_repository_id_key_cannot_change_which_parent_the_pivot_is_deleted_from(): void
+    {
+        $_SERVER['roles.canDetach.users'] = true;
+
+        $companyA = Company::factory()->create();
+        $companyB = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $companyA->users()->attach($user->getKey(), ['is_admin' => true]);
+        $companyB->users()->attach($user->getKey(), ['is_admin' => true]);
+
+        $this->postJson(CompanyRepository::route("{$companyA->id}/detach/users"), [
+            'users' => [$user->getKey()],
+            'repositoryId' => $companyB->getKey(),
+        ])->assertNoContent();
+
+        $this->assertDatabaseMissing(CompanyUserPivot::class, [
+            'company_id' => $companyA->getKey(),
+            'user_id' => $user->getKey(),
+        ]);
+
+        $this->assertDatabaseHas(CompanyUserPivot::class, [
+            'company_id' => $companyB->getKey(),
             'user_id' => $user->getKey(),
         ]);
     }

@@ -47,7 +47,7 @@ class RepositoryDetachController extends RepositoryController
 
         return $repository->detach(
             $request,
-            $request->repositoryId,
+            $request->repositoryIdFromRoute(),
             $pivots
         );
     }

@@ -47,7 +47,7 @@ class RepositoryAttachController extends RepositoryController
 
         return $repository->attach(
             $request,
-            $request->repositoryId,
+            $request->repositoryIdFromRoute(),
             $pivots
         );
     }
