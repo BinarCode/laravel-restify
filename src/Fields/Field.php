@@ -538,7 +538,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
      *
      * @param  mixed  $repository
      * @param  string|null  $attribute
-     * @return Field|void
+     * @return $this
      */
     public function resolveForShow($repository, $attribute = null)
     {
@@ -547,7 +547,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         if (is_callable($this->computedCallback)) {
             $this->value = call_user_func($this->computedCallback, $repository);
 
-            return;
+            return $this;
         }
 
         if (! $this->showCallback) {
@@ -564,6 +564,11 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         return $this;
     }
 
+    /**
+     * @param  mixed  $repository
+     * @param  string|callable|null  $attribute
+     * @return $this
+     */
     public function resolveForIndex($repository, $attribute = null)
     {
         $this->repository = $repository;
@@ -590,6 +595,11 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         return $this;
     }
 
+    /**
+     * @param  mixed  $repository
+     * @param  string|callable|null  $attribute
+     * @return $this
+     */
     public function resolve($repository, $attribute = null)
     {
         $this->repository = $repository;
@@ -853,9 +863,10 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
             }
         }
 
-        // For MCP tools, we include computed fields that have resolve callbacks
-        // since they represent storable fields in MCP contexts
-        // Only skip truly computed fields without resolve callbacks
+        // A field is only "computed" (see computed()) when it was declared with a
+        // callable in place of its attribute name, so it has no column to write to.
+        // Skip it for MCP tools unless a resolve callback was also given, since that
+        // combination still leaves the field storable.
         if ($this->computed() && ! $this->resolveCallback) {
             return $this;
         }
