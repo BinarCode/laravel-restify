@@ -45,6 +45,7 @@ class LoginTest extends IntegrationTestCase
     #[Test]
     #[TestWith(['0.5', 30], 'a sub-minute ttl is rounded to seconds instead of truncated to zero')]
     #[TestWith(['1.5', 90], 'a fractional ttl is rounded to seconds instead of truncated')]
+    #[TestWith(['60', 3600], 'a whole-minute ttl from env converts to seconds')]
     #[TestWith([null, null], 'no ttl means no expiry')]
     public function the_login_token_ttl_is_computed_in_seconds(?string $tokenTtl, ?int $expectedExpiresIn): void
     {
@@ -119,10 +120,14 @@ class LoginTest extends IntegrationTestCase
         ])->assertOk();
     }
 
+    /**
+     * @param  array<string, string|list<string>>  $payload
+     */
     #[Test]
     #[TestWith([['password' => 'secret']], 'missing email')]
     #[TestWith([['email' => 'not-an-email', 'password' => 'secret']], 'invalid email')]
     #[TestWith([['email' => 'user@restify.test']], 'missing password')]
+    #[TestWith([['email' => 'user@restify.test', 'password' => ['x']]], 'array password')]
     public function invalid_input_is_rejected_with_a_validation_error(array $payload): void
     {
         $this->postJson('auth/login', $payload)
@@ -136,15 +141,10 @@ class LoginTest extends IntegrationTestCase
 
         $source = str_replace('{{namespace}}', 'App\\Http\\Controllers\\Restify\\Auth', $contents);
 
-        $tempFile = tempnam(sys_get_temp_dir(), 'restify-stub-');
-        file_put_contents($tempFile, $source);
-
         try {
             token_get_all($source, TOKEN_PARSE);
         } catch (ParseError $e) {
             $this->fail("LoginController.stub does not compile as PHP: {$e->getMessage()}");
-        } finally {
-            unlink($tempFile);
         }
 
         $this->assertStringNotContainsString('abort(401,', $contents);
@@ -153,8 +153,6 @@ class LoginTest extends IntegrationTestCase
         $this->assertStringContainsString("->where('email',", $contents);
         $this->assertStringNotContainsString('$user->password)', $contents);
         $this->assertStringContainsString('getAuthPassword()', $contents);
-
-        $this->addToAssertionCount(1);
     }
 
     private function loginStubContents(): string

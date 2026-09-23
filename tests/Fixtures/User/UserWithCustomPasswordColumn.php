@@ -18,7 +18,7 @@ class UserWithCustomPasswordColumn extends Authenticatable implements Sanctumabl
         return 'name';
     }
 
-    public function createToken($name, array $scopes = []): object
+    public function createToken(string $name, array $scopes = []): object
     {
         return new class
         {

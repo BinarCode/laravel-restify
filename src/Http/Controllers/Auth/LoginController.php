@@ -19,7 +19,7 @@ class LoginController extends Controller
         /** @var array{email: string, password: string} $credentials */
         $credentials = $request->validate([
             'email' => ['required', 'email'],
-            'password' => ['required'],
+            'password' => ['required', 'string'],
         ]);
 
         /** @var class-string<Model&Authenticatable&Sanctumable> $userModel */
@@ -39,7 +39,7 @@ class LoginController extends Controller
 
         Auth::login($user);
 
-        /** @var int|numeric-string|null $tokenTtl */
+        /** @var int|float|numeric-string|null $tokenTtl */
         $tokenTtl = config('restify.auth.token_ttl');
         $ttlSeconds = is_numeric($tokenTtl) && (float) $tokenTtl > 0
             ? (int) round((float) $tokenTtl * 60)
