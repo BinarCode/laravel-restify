@@ -6,6 +6,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\InputOption;
 
 class StoreCommand extends GeneratorCommand
 {
@@ -63,5 +64,12 @@ class StoreCommand extends GeneratorCommand
     protected function getDefaultNamespace($rootNamespace)
     {
         return $rootNamespace.'\Restify\Stores';
+    }
+
+    protected function getOptions()
+    {
+        return [
+            ['force', null, InputOption::VALUE_NONE, 'Create the class even if the store already exists.'],
+        ];
     }
 }
