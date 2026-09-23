@@ -3220,12 +3220,6 @@ parameters:
 			path: src/Fields/BelongsTo.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Fields/BelongsTo.php
-
-		-
 			message: '#^Parameter \#2 \$model of static method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:fillFields\(\) expects Illuminate\\Database\\Eloquent\\Model, mixed given\.$#'
 			identifier: argument.type
 			count: 1
@@ -3511,12 +3505,6 @@ parameters:
 			message: '#^Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:where\(\) expects array\<int\|string, mixed\>\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: mixed\)\|Illuminate\\Contracts\\Database\\Query\\Expression\|string, mixed given\.$#'
 			identifier: argument.type
 			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 2
 			path: src/Fields/BelongsToMany.php
 
 		-
@@ -7659,12 +7647,6 @@ parameters:
 			path: src/Http/Controllers/RepositoryAttachController.php
 
 		-
-			message: '#^Cannot call method initializePivot\(\) on Binaryk\\LaravelRestify\\Fields\\BelongsToMany\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/RepositoryAttachController.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryAttachController\:\:__invoke\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -7673,18 +7655,6 @@ parameters:
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryAttachController\:\:belongsToManyField\(\) should return Binaryk\\LaravelRestify\\Fields\\BelongsToMany\|null but returns mixed\.$#'
 			identifier: return.type
-			count: 1
-			path: src/Http/Controllers/RepositoryAttachController.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryAttachController.php
-
-		-
-			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
 			count: 1
 			path: src/Http/Controllers/RepositoryAttachController.php
 
@@ -7779,12 +7749,6 @@ parameters:
 			path: src/Http/Controllers/RepositoryDetachController.php
 
 		-
-			message: '#^Cannot call method initializePivot\(\) on Binaryk\\LaravelRestify\\Fields\\BelongsToMany\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/RepositoryDetachController.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryDetachController\:\:__invoke\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -7793,18 +7757,6 @@ parameters:
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryDetachController\:\:belongsToManyField\(\) should return Binaryk\\LaravelRestify\\Fields\\BelongsToMany\|null but returns mixed\.$#'
 			identifier: return.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDetachController.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDetachController.php
-
-		-
-			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
 			count: 1
 			path: src/Http/Controllers/RepositoryDetachController.php
 
@@ -7889,18 +7841,6 @@ parameters:
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositorySyncController\:\:belongsToManyField\(\) should return Binaryk\\LaravelRestify\\Fields\\BelongsToMany\|null but returns mixed\.$#'
 			identifier: return.type
-			count: 1
-			path: src/Http/Controllers/RepositorySyncController.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositorySyncController.php
-
-		-
-			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
 			count: 1
 			path: src/Http/Controllers/RepositorySyncController.php
 
@@ -8679,7 +8619,7 @@ parameters:
 			path: src/Http/Requests/GetterRequest.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
+			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:get\(\) expects int\|string\|null, mixed given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Http/Requests/RepositoryAttachRequest.php
@@ -8687,42 +8627,6 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:get\(\) expects int\|string\|null, mixed given\.$#'
 			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Binaryk\\LaravelRestify\\Restify\:\:repositoryForTable\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Part \$table \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:get\(\) expects int\|string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Binaryk\\LaravelRestify\\Restify\:\:repositoryForTable\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
-			message: '#^Part \$table \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
 			count: 1
 			path: src/Http/Requests/RepositoryDetachRequest.php
 
@@ -8733,26 +8637,8 @@ parameters:
 			path: src/Http/Requests/RepositoryStoreBulkRequest.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
-
-		-
 			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:get\(\) expects int\|string\|null, mixed given\.$#'
 			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Binaryk\\LaravelRestify\\Restify\:\:repositoryForTable\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
-
-		-
-			message: '#^Part \$table \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
 			count: 1
 			path: src/Http/Requests/RepositorySyncRequest.php
 
@@ -15381,12 +15267,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Str\:\:studly\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 3
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Parameter \#2 \$column of method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:castToTimestamp\(\) expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -15516,12 +15396,6 @@ parameters:
 			message: '#^Part \$method \(mixed\) of encapsed string cannot be cast to string\.$#'
 			identifier: encapsedStringPart.nonString
 			count: 2
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
 			path: src/Repositories/Repository.php
 
 		-

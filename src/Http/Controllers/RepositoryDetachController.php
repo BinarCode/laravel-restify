@@ -24,16 +24,21 @@ class RepositoryDetachController extends RepositoryController
 
         $repository->allowToDetach($request, $request->detachRelatedModels());
 
+        $field = $this->belongsToManyField($request);
+
+        if (is_null($field)) {
+            abort(400);
+        }
+
         return $repository->detach(
             $request,
             $request->repositoryId,
-            Collection::make(Arr::wrap($request->input($request->relatedRepository)))
-                ->map(fn ($relatedRepositoryId) => $this->belongsToManyField($request)
-                    ->initializePivot(
-                        $request,
-                        $model->{$request->viaRelationship ?? $request->relatedRepository}(),
-                        $relatedRepositoryId
-                    ))
+            Collection::make(Arr::wrap($request->input($request->relatedRepositoryKey())))
+                ->map(fn ($relatedRepositoryId) => $field->initializePivot(
+                    $request,
+                    $model->{$field->relation}(),
+                    $relatedRepositoryId
+                ))
         );
     }
 }

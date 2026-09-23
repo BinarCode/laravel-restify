@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
+use InvalidArgumentException;
 use JsonException;
 use Throwable;
 
@@ -34,6 +35,25 @@ class RestifyRequest extends FormRequest
         }
 
         return array_replace_recursive($this->post(), $this->allFiles());
+    }
+
+    /**
+     * The `relatedRepository` URL segment (e.g. `users` in `attach/users`).
+     *
+     * Reads the route parameter directly, never the magic `__get`/`input()`
+     * resolution, so a body key of the same name can't shadow it.
+     *
+     * @throws InvalidArgumentException if the route parameter is not a string.
+     */
+    public function relatedRepositoryKey(): string
+    {
+        $relatedRepository = $this->route('relatedRepository');
+
+        if (! is_string($relatedRepository)) {
+            throw new InvalidArgumentException('The [relatedRepository] route parameter must be a string.');
+        }
+
+        return $relatedRepository;
     }
 
     public function relatedEagerField(): EagerField

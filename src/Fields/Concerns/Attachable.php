@@ -81,10 +81,10 @@ trait Attachable
 
     public function authorizeToAttach(RestifyRequest $request)
     {
-        collect(Arr::wrap($request->input($request->relatedRepository)))->each(function ($relatedRepositoryId) use ($request) {
+        collect(Arr::wrap($request->input($request->relatedRepositoryKey())))->each(function ($relatedRepositoryId) use ($request) {
             $pivot = $this->initializePivot(
                 $request,
-                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(),
+                $request->findModelOrFail()->{$this->relation}(),
                 $relatedRepositoryId
             );
 
@@ -98,10 +98,10 @@ trait Attachable
 
     public function authorizeToSync(RestifyRequest $request)
     {
-        collect(Arr::wrap($request->input($request->relatedRepository)))->each(function ($relatedRepositoryId) use ($request) {
+        collect(Arr::wrap($request->input($request->relatedRepositoryKey())))->each(function ($relatedRepositoryId) use ($request) {
             $pivot = $this->initializePivot(
                 $request,
-                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(),
+                $request->findModelOrFail()->{$this->relation}(),
                 $relatedRepositoryId
             );
 
@@ -131,7 +131,7 @@ trait Attachable
 
     public function initializePivot(RestifyRequest $request, $relationship, $relatedKey)
     {
-        $parentKey = $request->repositoryId;
+        $parentKey = $request->route('repositoryId');
 
         $parentKeyName = $relationship->getParentKeyName();
         $relatedKeyName = $relationship->getRelatedKeyName();
