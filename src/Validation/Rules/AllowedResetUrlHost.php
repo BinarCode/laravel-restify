@@ -17,6 +17,24 @@ class AllowedResetUrlHost implements ValidationRule
      */
     private const FORBIDDEN_CHARACTERS = '/[\\\\\s\x00-\x1f\x7f]/';
 
+    /**
+     * RFC 3986 unreserved and reserved characters allowed in a path, query,
+     * or fragment - deliberately narrower than RFC 3986 itself, since it
+     * excludes characters ("(" ")" "'" "<" ">" "\"" "`" "{" "}" "[" "]")
+     * that also double as Markdown or HTML syntax. The mailed reset link is
+     * rendered through a Markdown template (`[url]($actionUrl)`), and any of
+     * those characters in the url could close that link early and open a
+     * second, attacker-controlled one carrying the real token.
+     */
+    private const ALLOWED_PATH_CHARACTERS = '/^[A-Za-z0-9\-._~!$&*+,;=:@\/?#%]*$/';
+
+    /**
+     * Literal placeholders the caller may still use in the path, query, or
+     * fragment despite the curly braces the character allow-list otherwise
+     * rejects - they are substituted with rawurlencode()-d values afterward.
+     */
+    private const PLACEHOLDERS = ['{token}', '{email}'];
+
     private const DEFAULT_PORTS = [
         'http' => 80,
         'https' => 443,
@@ -78,6 +96,10 @@ class AllowedResetUrlHost implements ValidationRule
             return null;
         }
 
+        if (! self::pathQueryAndFragmentAreSafe($parts)) {
+            return null;
+        }
+
         $origin = $scheme.'://'.strtolower($parts['host']);
 
         if (isset($parts['port']) && $parts['port'] !== self::DEFAULT_PORTS[$scheme]) {
@@ -85,5 +107,19 @@ class AllowedResetUrlHost implements ValidationRule
         }
 
         return $origin;
+    }
+
+    /**
+     * @param  array<string, int|string>  $parts  A parse_url() result.
+     */
+    private static function pathQueryAndFragmentAreSafe(array $parts): bool
+    {
+        $remainder = ($parts['path'] ?? '')
+            .(isset($parts['query']) ? '?'.$parts['query'] : '')
+            .(isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
+
+        $remainder = str_replace(self::PLACEHOLDERS, '', (string) $remainder);
+
+        return preg_match(self::ALLOWED_PATH_CHARACTERS, $remainder) === 1;
     }
 }

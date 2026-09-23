@@ -53,6 +53,8 @@ class ForgotPasswordUrlHostTest extends IntegrationTestCase
     #[TestWith(["https://app.restify.test\t@attacker.test/reset?token={token}&email={email}"], 'a raw tab character in the authority')]
     #[TestWith(['http://app.restify.test/reset?token={token}&email={email}'], 'a scheme downgrade from the configured https')]
     #[TestWith(['https://app.restify.test:8443/reset?token={token}&email={email}'], 'a port not present in the configured origin')]
+    #[TestWith(['https://app.restify.test/?](https://attacker.test/?t={token})[&email={email}'], 'a markdown link injection in the query breaks out of the mailed [url](url) fallback')]
+    #[TestWith(['https://app.restify.test/{tenant}/reset?token={token}&email={email}'], 'a curly-brace segment that is not the literal {token}/{email} placeholder')]
     public function malicious_url_shapes_are_rejected(string $url): void
     {
         Notification::fake();
@@ -95,6 +97,30 @@ class ForgotPasswordUrlHostTest extends IntegrationTestCase
         Notification::assertSentOnDemand(
             ForgotPasswordNotification::class,
             fn (ForgotPasswordNotification $notification): bool => str_starts_with($notification->url, 'HTTPS://APP.RESTIFY.TEST/custom/reset')
+        );
+    }
+
+    #[Test]
+    public function the_mailed_notification_renders_only_the_accepted_link_with_nothing_injected(): void
+    {
+        Notification::fake();
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        $this->postJson('auth/forgotPassword', [
+            'email' => $user->email,
+            'url' => 'https://app.restify.test/custom/reset?token={token}&email={email}',
+        ])->assertOk();
+
+        Notification::assertSentOnDemand(
+            ForgotPasswordNotification::class,
+            function (ForgotPasswordNotification $notification) use ($user): bool {
+                $html = $notification->toMail($user)->render()->toHtml();
+
+                return str_contains($html, 'app.restify.test/custom/reset')
+                    && ! str_contains($html, 'attacker.test')
+                    && ! str_contains($html, 'evil');
+            }
         );
     }
 
