@@ -17,6 +17,15 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        // $defaultPerPage is inherited from Repository, so every repository
+        // that does not declare its own copy shares this static with PostRepository.
+        PostRepository::$defaultPerPage = 15;
+
+        parent::tearDown();
+    }
+
     #[Test]
     public function it_can_paginate(): void
     {
