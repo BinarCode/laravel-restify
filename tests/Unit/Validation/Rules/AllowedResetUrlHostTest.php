@@ -30,6 +30,15 @@ class AllowedResetUrlHostTest extends IntegrationTestCase
     #[TestWith(['https://evil.com\@good.com/', ['https://good.com'], false], 'a backslash before @ is rejected (browsers navigate to evil.com)')]
     #[TestWith(['https://evil.com\x@good.com/', ['https://good.com'], false], 'a backslash anywhere in the authority is rejected')]
     #[TestWith(["https://good.com\t@evil.com/", ['https://good.com'], false], 'a raw tab character in the authority is rejected')]
+    #[TestWith(['https://good.com:443/reset', ['https://good.com'], true], 'an explicit default port for https (443) is normalized away')]
+    #[TestWith(['http://good.com:80/reset', ['http://good.com'], true], 'an explicit default port for http (80) is normalized away')]
+    #[TestWith(['https://good.com:80/reset', ['https://good.com'], false], 'a non-default port for the scheme is not normalized away')]
+    #[TestWith(['https://good.com%5C@evil.com/', ['https://good.com'], false], 'a percent-encoded backslash before @ still forms userinfo and is rejected')]
+    #[TestWith(['https://good.com%40evil.com/', ['https://good.com'], false], 'a percent-encoded @ does not split the authority - the literal hostname does not match')]
+    #[TestWith(['https://good.com/%40evil.com', ['https://good.com'], true], 'a percent-encoded @ in the path does not affect the host')]
+    #[TestWith(['https:///host', ['https://good.com'], false], 'an empty authority (triple slash) fails to parse')]
+    #[TestWith(['https://[::1]/reset', ['https://good.com'], false], 'an IPv6 literal host does not match a configured hostname')]
+    #[TestWith(['https://[::1]/reset', ['https://[::1]'], true], 'an IPv6 literal host matches when explicitly allowed')]
     public function it_validates_the_url_host(string $url, array $allowedOrigins, bool $expectedValid): void
     {
         $rule = new AllowedResetUrlHost($allowedOrigins);
@@ -53,7 +62,7 @@ class AllowedResetUrlHostTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function from_config_skips_frontend_app_url_when_the_config_key_is_absent(): void
+    public function from_config_treats_an_unset_frontend_app_url_as_adding_nothing(): void
     {
         config()->set('restify.auth.password_reset_url', 'https://reset.example.com/password/reset?token={token}&email={email}');
         config()->set('app.url', 'https://api.example.com');
@@ -61,6 +70,8 @@ class AllowedResetUrlHostTest extends IntegrationTestCase
 
         $rule = AllowedResetUrlHost::fromConfig();
 
+        $this->assertTrue($this->passes($rule, 'https://reset.example.com/x'));
+        $this->assertTrue($this->passes($rule, 'https://api.example.com/x'));
         $this->assertFalse($this->passes($rule, 'https://frontend.example.com/x'));
     }
 

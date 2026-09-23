@@ -300,7 +300,7 @@ You can override this template per request by sending a `url` field alongside th
 }
 ```
 
-For security, `url` is only accepted when its scheme, host, and port all match one of: the configured `password_reset_url`, `config('app.url')`, or - if set - `config('restify.auth.frontend_app_url')`. A subdomain of an allowed host does not count as a match, an `http` url is rejected when the matching config entry is `https`, a different port is rejected even on an otherwise matching host, and a url carrying userinfo (`user:pass@host`) is always rejected outright. Anything that doesn't match is rejected with a `422` validation error. This stops the endpoint from being used to mail a victim a valid reset link pointing at an attacker-controlled domain.
+For security, `url` is only accepted when its scheme, host, and port all match one of: the configured `password_reset_url`, `config('app.url')`, or - if set - `config('restify.auth.frontend_app_url')`. A subdomain of an allowed host does not count as a match, an `http` url is rejected when the matching config entry is `https`, a different port is rejected even on an otherwise matching host, and a url carrying userinfo (`user:pass@host`) is always rejected outright. Anything that doesn't match is rejected with a `422` validation error. This stops the endpoint from being used to mail a victim a valid reset link pointing at an attacker-controlled domain. Only the scheme, host, and port are checked - the path and query string are not, so whatever frontend host you allow here must not itself have an open redirect, or an attacker could still send a victim through it to an arbitrary destination.
 
 To view the email content during development, you can change the following configuration in your .env file:
 

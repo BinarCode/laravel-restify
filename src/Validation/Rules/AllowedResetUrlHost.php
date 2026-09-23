@@ -17,6 +17,11 @@ class AllowedResetUrlHost implements ValidationRule
      */
     private const FORBIDDEN_CHARACTERS = '/[\\\\\s\x00-\x1f\x7f]/';
 
+    private const DEFAULT_PORTS = [
+        'http' => 80,
+        'https' => 443,
+    ];
+
     /**
      * @param  list<string>  $allowedOrigins  Lowercased "scheme://host[:port]" values the url is allowed to target.
      */
@@ -32,36 +37,26 @@ class AllowedResetUrlHost implements ValidationRule
         /** @var string|null $appUrl */
         $appUrl = config('app.url');
 
-        $candidates = [
-            self::hostOf($passwordResetUrl),
-            self::hostOf($appUrl),
-        ];
+        /** @var string|null $frontendAppUrl */
+        $frontendAppUrl = config('restify.auth.frontend_app_url');
 
-        if (config()->has('restify.auth.frontend_app_url')) {
-            /** @var string|null $frontendAppUrl */
-            $frontendAppUrl = config('restify.auth.frontend_app_url');
-
-            $candidates[] = self::hostOf($frontendAppUrl);
-        }
-
-        return new self(array_values(array_unique(array_filter($candidates))));
+        return new self(array_values(array_unique(array_filter([
+            self::originOf($passwordResetUrl),
+            self::originOf($appUrl),
+            self::originOf($frontendAppUrl),
+        ]))));
     }
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $origin = is_string($value) ? self::hostOf($value) : null;
+        $origin = is_string($value) ? self::originOf($value) : null;
 
         if ($origin === null || ! in_array($origin, $this->allowedOrigins, true)) {
             $fail('The :attribute host is not allowed.')->translate();
         }
     }
 
-    /**
-     * Extracts a lowercased "scheme://host[:port]" from a url, or null when
-     * the url is malformed, carries userinfo, uses a disallowed scheme, or
-     * contains a forbidden character.
-     */
-    private static function hostOf(?string $url): ?string
+    private static function originOf(?string $url): ?string
     {
         if ($url === null || $url === '') {
             return null;
@@ -85,7 +80,7 @@ class AllowedResetUrlHost implements ValidationRule
 
         $origin = $scheme.'://'.strtolower($parts['host']);
 
-        if (isset($parts['port'])) {
+        if (isset($parts['port']) && $parts['port'] !== self::DEFAULT_PORTS[$scheme]) {
             $origin .= ':'.$parts['port'];
         }
 
