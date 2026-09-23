@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Fields\Concerns;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\PivotsCollection;
+use Binaryk\LaravelRestify\Traits\ValidatesRelatedKeyShape;
 use Closure;
 use DateTime;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -18,6 +19,8 @@ use InvalidArgumentException;
 
 trait Attachable
 {
+    use ValidatesRelatedKeyShape;
+
     /**
      * @var Closure
      */
@@ -146,9 +149,13 @@ trait Attachable
             throw new InvalidArgumentException('The relationship must be a BelongsToMany (or MorphToMany) relation.');
         }
 
-        if (! is_int($relatedKey) && ! is_string($relatedKey)) {
-            throw ValidationException::withMessages([__('Each attached id must be an int or a string.')]);
+        $relatedRepository = $request->relatedRepository;
+
+        if (! is_string($relatedRepository)) {
+            throw new InvalidArgumentException('The [relatedRepository] route parameter must be a string.');
         }
+
+        $relatedKey = $this->assertValidRelatedKeyShape($relatedKey, $relatedRepository);
 
         $parentKeyName = $relationship->getParentKeyName();
         $relatedKeyName = $relationship->getRelatedKeyName();

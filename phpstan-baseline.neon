@@ -8547,64 +8547,10 @@ parameters:
 			path: src/Http/Requests/GetterRequest.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Binaryk\\LaravelRestify\\Restify\:\:repositoryForTable\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Part \$table \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Binaryk\\LaravelRestify\\Restify\:\:repositoryForTable\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
-			message: '#^Part \$table \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Requests\\RepositoryStoreBulkRequest\:\:collectInput\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
 			path: src/Http/Requests/RepositoryStoreBulkRequest.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Binaryk\\LaravelRestify\\Restify\:\:repositoryForTable\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
-
-		-
-			message: '#^Part \$table \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
 
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Requests\\RepositoryUpdateBulkRequest\:\:collectInput\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'

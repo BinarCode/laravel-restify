@@ -29,4 +29,19 @@ class AttachRelatedIdsTest extends IntegrationTestCase
             'user_id' => $user->getKey(),
         ]);
     }
+
+    #[Test]
+    public function attaching_rejects_a_related_id_that_is_neither_an_int_nor_a_string(): void
+    {
+        $company = Company::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->id}/attach/users"), [
+            'users' => [['not-a-valid-id']],
+            'is_admin' => true,
+        ])->assertStatus(422)->assertJsonFragment([
+            'users' => [
+                __('Each attached id must be an int or a string.'),
+            ],
+        ]);
+    }
 }

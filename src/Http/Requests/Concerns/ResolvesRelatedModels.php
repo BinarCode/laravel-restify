@@ -5,15 +5,18 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Traits\ValidatesRelatedKeyShape;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 trait ResolvesRelatedModels
 {
+    use ValidatesRelatedKeyShape;
+
     /**
      * The related models named in the request, in the order they were sent.
      *
@@ -25,19 +28,19 @@ trait ResolvesRelatedModels
     {
         $table = $this->relatedRepository;
 
+        if (! is_string($table)) {
+            throw new InvalidArgumentException('The [relatedRepository] route parameter must be a string.');
+        }
+
         $relatedRepositoryClass = Restify::repositoryForTable($table);
 
         if (is_null($relatedRepositoryClass)) {
             abort(JsonResponse::HTTP_BAD_REQUEST, "Missing repository for the [{$table}] table");
         }
 
-        $ids = Arr::wrap($this->input($table));
-
-        foreach ($ids as $id) {
-            if (! is_int($id) && ! is_string($id)) {
-                throw ValidationException::withMessages([__('Each attached id must be an int or a string.')]);
-            }
-        }
+        $ids = Collection::make(Arr::wrap($this->input($table)))
+            ->map(fn (mixed $id): int|string => $this->assertValidRelatedKeyShape($id, $table))
+            ->all();
 
         $model = $this->repository($relatedRepositoryClass::uriKey())->model();
 
