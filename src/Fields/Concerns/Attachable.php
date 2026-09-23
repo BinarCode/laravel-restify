@@ -19,12 +19,6 @@ use InvalidArgumentException;
 trait Attachable
 {
     /**
-     * Request attribute key under which {@see self::relatedModelsByPrimaryKey()}
-     * memoizes its lookup.
-     */
-    private const RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyAttachableRelatedModels';
-
-    /**
      * @var Closure
      */
     private $canAttachCallback;
@@ -50,6 +44,12 @@ trait Attachable
      * @var array
      */
     public $pivotFields = [];
+
+    /**
+     * Request attribute key under which {@see self::relatedModelsByPrimaryKey()}
+     * memoizes its lookup.
+     */
+    private const RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyAttachableRelatedModels';
 
     public function canAttach(callable|Closure $callback)
     {

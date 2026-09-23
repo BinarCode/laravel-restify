@@ -34,6 +34,7 @@ use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
@@ -1010,8 +1011,7 @@ class Repository implements JsonSerializable, RestifySearchable
         $relationship = $this->model()->{$eagerField->relation}();
 
         if (! $relationship instanceof EloquentBelongsToMany) {
-            $class = class_basename($request->repository());
-            abort(400, "Missing BelongsToMany or MorphToMany related for [{$request->relatedRepository}]. This relationship should be in the related of the [{$class}] class. Or you are not authorized to use that repository (see `allowRestify` policy method).");
+            abort(JsonResponse::HTTP_BAD_REQUEST, "Relation [{$eagerField->relation}] on [".class_basename($this).'] must be a BelongsToMany or MorphToMany.');
         }
 
         $relatedPivotKeyName = $relationship->getRelatedPivotKeyName();

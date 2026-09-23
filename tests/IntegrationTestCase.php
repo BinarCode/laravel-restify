@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Comment\Comment;
 use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyBySlugRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
@@ -109,6 +110,7 @@ abstract class IntegrationTestCase extends TestCase
             UserRepository::class,
             PostRepository::class,
             CompanyRepository::class,
+            CompanyBySlugRepository::class,
             PostWithHiddenFieldRepository::class,
             RoleRepository::class,
             CommentRepository::class,

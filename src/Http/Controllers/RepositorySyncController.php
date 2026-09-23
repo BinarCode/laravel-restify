@@ -22,6 +22,8 @@ class RepositorySyncController extends RepositoryController
             return call_user_func($method, $request, $repository, $model);
         }
 
+        $request->syncRelatedModels();
+
         /** @var Collection<int, mixed> $attachers */
         $attachers = Collection::make(Arr::wrap($request->input($request->relatedRepository)));
 

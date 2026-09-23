@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
-use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyBySlugRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRolePivot;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
@@ -82,8 +83,6 @@ class PivotNonPrimaryRelatedKeyTest extends IntegrationTestCase
     #[Test]
     public function it_resolves_the_parent_by_its_actual_key_when_the_route_key_differs_from_the_primary_key(): void
     {
-        Restify::repositories([CompanyBySlugRepository::class]);
-
         $company = Company::factory()->create(['name' => 'acme-corp']);
         $role = Role::factory()->create(['name' => 'engineering']);
 
@@ -158,6 +157,34 @@ class PivotNonPrimaryRelatedKeyTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function syncing_an_unknown_id_on_the_primary_key_relation_returns_not_found(): void
+    {
+        $company = Company::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->id}/sync/users"), [
+            'users' => [999999],
+        ])->assertNotFound();
+
+        $this->assertDatabaseMissing(CompanyUserPivot::class, [
+            'company_id' => $company->getKey(),
+        ]);
+    }
+
+    #[Test]
+    public function syncing_an_unknown_id_on_the_non_primary_key_relation_returns_not_found(): void
+    {
+        $company = Company::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->id}/sync/roles"), [
+            'roles' => [999999],
+        ])->assertNotFound();
+
+        $this->assertDatabaseMissing(CompanyRolePivot::class, [
+            'company_id' => $company->getKey(),
+        ]);
+    }
+
+    #[Test]
     public function can_attach_intercepts_authorization_for_the_non_primary_key_relation(): void
     {
         $role = Role::factory()->create(['name' => 'engineering']);
@@ -174,21 +201,4 @@ class PivotNonPrimaryRelatedKeyTest extends IntegrationTestCase
             'roles' => $role->getKey(),
         ])->assertForbidden();
     }
-}
-
-class CompanyBySlug extends Company
-{
-    protected $table = 'companies';
-
-    public function getRouteKeyName(): string
-    {
-        return 'name';
-    }
-}
-
-class CompanyBySlugRepository extends CompanyRepository
-{
-    public static $model = CompanyBySlug::class;
-
-    public static $uriKey = 'companies-by-slug';
 }

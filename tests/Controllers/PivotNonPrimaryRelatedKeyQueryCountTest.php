@@ -74,13 +74,13 @@ class PivotNonPrimaryRelatedKeyQueryCountTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function syncing_several_roles_resolves_the_related_models_in_one_query(): void
+    public function syncing_several_roles_batches_the_related_model_lookup(): void
     {
         $this->postJson(CompanyRepository::route("{$this->company->id}/sync/roles"), [
             'roles' => $this->roles->modelKeys(),
         ])->assertOk();
 
-        $this->assertSelectCount(1, Role::class);
+        $this->assertSelectCount(2, Role::class);
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 3);
     }

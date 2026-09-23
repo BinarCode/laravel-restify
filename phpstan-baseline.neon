@@ -15365,7 +15365,7 @@ parameters:
 		-
 			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
 			identifier: encapsedStringPart.nonString
-			count: 2
+			count: 1
 			path: src/Repositories/Repository.php
 
 		-
