@@ -64,15 +64,10 @@ class RestifyRequest extends FormRequest
 
     public function pagination(): PaginationDataObject
     {
-        $perPage = $this->input('page.size') ?? $this->input('perPage');
-
-        if (is_array($this->input('page'))) {
-            $pageNumber = $this->input('page.number');
-        } else {
-            $pageNumber = $this->input('page');
-        }
-
-        return PaginationDataObject::fromInput($perPage, $pageNumber);
+        return PaginationDataObject::fromInput(
+            $this->input('page.size') ?? $this->input('perPage'),
+            is_array($this->input('page')) ? $this->input('page.number') : $this->input('page'),
+        );
     }
 
     public function related(): RelatedDto

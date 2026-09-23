@@ -12,19 +12,19 @@ use PHPUnit\Framework\Attributes\TestWith;
 class PaginationDataObjectTest extends IntegrationTestCase
 {
     #[Test]
-    #[TestWith([20, 15, 20], 'requested value used when under the default')]
-    #[TestWith([null, 15, 15], 'default used when perPage is absent')]
-    #[TestWith(['abc', 15, 15], 'default used when perPage is non-numeric')]
-    #[TestWith([0, 15, 15], 'default used when perPage is zero')]
-    #[TestWith([-5, 15, 15], 'default used when perPage is negative')]
-    #[TestWith(['20', 15, 20], 'numeric string perPage is honoured')]
-    public function it_resolves_per_page_without_a_cap(int|string|null $perPage, int $default, int $expected): void
+    #[TestWith([20, 20], 'requested value is used over the default')]
+    #[TestWith([null, 15], 'default used when perPage is absent')]
+    #[TestWith(['abc', 15], 'default used when perPage is non-numeric')]
+    #[TestWith([0, 15], 'default used when perPage is zero')]
+    #[TestWith([-5, 15], 'default used when perPage is negative')]
+    #[TestWith(['20', 20], 'numeric string perPage is honoured')]
+    public function it_resolves_per_page_without_a_cap(int|string|null $perPage, int $expected): void
     {
         config(['restify.pagination.max_per_page' => null]);
 
         $pagination = new PaginationDataObject(perPage: $perPage, page: null);
 
-        $this->assertSame($expected, $pagination->resolvePerPage($default));
+        $this->assertSame($expected, $pagination->resolvePerPage(15));
     }
 
     #[Test]

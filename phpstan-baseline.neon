@@ -3586,12 +3586,6 @@ parameters:
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Static property Binaryk\\LaravelRestify\\Repositories\\Repository\:\:\$defaultRelatablePerPage \(int\) on left side of \?\? is not nullable\.$#'
-			identifier: nullCoalesce.property
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Binary operation "\." between mixed and ''\.attributes\.'' results in an error\.$#'
 			identifier: binaryOp.invalid
 			count: 2
@@ -5108,18 +5102,6 @@ parameters:
 			identifier: deadCode.unreachable
 			count: 1
 			path: src/Fields/File.php
-
-		-
-			message: '#^Cannot call method allowToShow\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/HasMany.php
-
-		-
-			message: '#^Cannot call method eager\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/HasMany.php
 
 		-
 			message: '#^Cannot call method map\(\) on mixed\.$#'

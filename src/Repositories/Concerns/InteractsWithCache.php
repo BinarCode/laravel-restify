@@ -41,9 +41,9 @@ trait InteractsWithCache
             'index',
         ];
 
-        // Add request parameters that affect the query
         $pagination = $request->pagination();
 
+        // Add request parameters that affect the query
         $queryParams = [
             'search' => $request->input('search'),
             'sort' => $request->input('sort'),

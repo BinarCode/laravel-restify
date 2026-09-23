@@ -28,25 +28,13 @@ class McpIndexMaxPerPageTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function it_clamps_the_requested_per_page_on_the_mcp_index_path(): void
-    {
-        config(['restify.pagination.max_per_page' => 50]);
-
-        CommentFactory::many(55);
-
-        $result = $this->callIndexTool(perPage: 100);
-
-        $this->assertCount(50, $result['data']);
-        $this->assertSame(50, $result['meta']['per_page']);
-    }
-
-    #[Test]
+    #[TestWith([50, 100, 55, 50], 'cap 50: an int perPage above the cap is clamped')]
     #[TestWith([null, 100.0, 3, 100], 'no cap: a float perPage is honoured, not defaulted')]
     #[TestWith([50, 100.0, 55, 50], 'cap 50: a float perPage above the cap is clamped')]
     #[TestWith([50, 20.0, 3, 20], 'cap 50: a float perPage under the cap is untouched')]
     public function it_normalizes_a_float_per_page_on_the_mcp_index_path(
         ?int $maxPerPage,
-        float $requestedPerPage,
+        int|float $requestedPerPage,
         int $seedCount,
         int $expectedMetaPerPage,
     ): void {

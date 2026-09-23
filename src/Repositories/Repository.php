@@ -750,8 +750,8 @@ class Repository implements JsonSerializable, RestifySearchable
         ]);
 
         return $this->filter([
-            'meta' => $this->when($meta !== null, $meta),
-            'links' => $this->when($links !== null, $links),
+            'meta' => $this->when((bool) $meta, $meta),
+            'links' => $this->when((bool) $links, $links),
             'data' => $data,
         ]);
     }

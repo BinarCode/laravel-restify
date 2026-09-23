@@ -17,116 +17,29 @@ class RepositoryIndexMaxPerPageTest extends IntegrationTestCase
     use RefreshDatabase;
 
     #[Test]
-    #[TestWith([500])]
-    #[TestWith([1000])]
-    #[TestWith([3000])]
-    #[TestWith([9999])]
-    public function it_honours_any_requested_per_page_when_no_cap_is_configured(int $requestedPerPage): void
-    {
-        config(['restify.pagination.max_per_page' => null]);
+    #[TestWith([null, 9999, 3, 9999], 'no cap: requested value is honoured')]
+    #[TestWith([50, 100, 55, 50], 'requested value above the cap is clamped')]
+    #[TestWith([50, 20, 3, 20], 'requested value under the cap is untouched')]
+    #[TestWith([null, null, 3, 15], 'no cap, no request: default is untouched')]
+    #[TestWith([10, null, 20, 10], 'cap below the default clamps the default')]
+    #[TestWith([null, 'not-a-number', 3, 15], 'non-numeric request falls back to the default')]
+    #[TestWith([null, -1, 20, 15], 'negative request falls back to the default')]
+    public function it_resolves_the_index_per_page_against_the_configured_cap(
+        ?int $maxPerPage,
+        int|string|null $requestedPerPage,
+        int $seedCount,
+        int $expectedPerPage,
+    ): void {
+        config(['restify.pagination.max_per_page' => $maxPerPage]);
 
-        CommentFactory::many(3);
+        CommentFactory::many($seedCount);
 
-        $this->getJson(CommentRepository::route(query: [
-            'perPage' => $requestedPerPage,
-        ]))->assertJson(
+        $query = $requestedPerPage === null ? [] : ['perPage' => $requestedPerPage];
+
+        $this->getJson(CommentRepository::route(query: $query))->assertJson(
             fn (AssertableJson $json) => $json
-                ->count('data', 3)
-                ->where('meta.per_page', $requestedPerPage)
-                ->etc()
-        );
-    }
-
-    #[Test]
-    public function it_clamps_a_requested_per_page_above_the_configured_cap(): void
-    {
-        config(['restify.pagination.max_per_page' => 50]);
-
-        CommentFactory::many(55);
-
-        $this->getJson(CommentRepository::route(query: [
-            'perPage' => 100,
-        ]))->assertJson(
-            fn (AssertableJson $json) => $json
-                ->count('data', 50)
-                ->where('meta.per_page', 50)
-                ->etc()
-        );
-    }
-
-    #[Test]
-    public function it_leaves_a_requested_per_page_under_the_cap_untouched(): void
-    {
-        config(['restify.pagination.max_per_page' => 50]);
-
-        CommentFactory::many(3);
-
-        $this->getJson(CommentRepository::route(query: [
-            'perPage' => 20,
-        ]))->assertJson(
-            fn (AssertableJson $json) => $json
-                ->count('data', 3)
-                ->where('meta.per_page', 20)
-                ->etc()
-        );
-    }
-
-    #[Test]
-    public function it_leaves_the_default_per_page_unchanged_when_absent_and_no_cap_is_configured(): void
-    {
-        config(['restify.pagination.max_per_page' => null]);
-
-        CommentFactory::many(3);
-
-        $this->getJson(CommentRepository::route())->assertJson(
-            fn (AssertableJson $json) => $json
-                ->count('data', 3)
-                ->where('meta.per_page', 15)
-                ->etc()
-        );
-    }
-
-    #[Test]
-    public function it_clamps_the_repository_default_when_no_per_page_is_requested_and_the_cap_is_below_it(): void
-    {
-        config(['restify.pagination.max_per_page' => 10]);
-
-        CommentFactory::many(20);
-
-        $this->getJson(CommentRepository::route())->assertJson(
-            fn (AssertableJson $json) => $json
-                ->count('data', 10)
-                ->where('meta.per_page', 10)
-                ->etc()
-        );
-    }
-
-    #[Test]
-    public function it_falls_back_to_the_default_per_page_for_a_non_numeric_request(): void
-    {
-        CommentFactory::many(3);
-
-        $this->getJson(CommentRepository::route(query: [
-            'perPage' => 'not-a-number',
-        ]))->assertJson(
-            fn (AssertableJson $json) => $json
-                ->count('data', 3)
-                ->where('meta.per_page', 15)
-                ->etc()
-        );
-    }
-
-    #[Test]
-    public function it_falls_back_to_the_default_per_page_for_a_negative_request(): void
-    {
-        CommentFactory::many(20);
-
-        $this->getJson(CommentRepository::route(query: [
-            'perPage' => -1,
-        ]))->assertJson(
-            fn (AssertableJson $json) => $json
-                ->count('data', 15)
-                ->where('meta.per_page', 15)
+                ->count('data', min($seedCount, $expectedPerPage))
+                ->where('meta.per_page', $expectedPerPage)
                 ->etc()
         );
     }

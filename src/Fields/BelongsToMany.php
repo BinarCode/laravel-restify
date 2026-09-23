@@ -2,9 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
-use Binaryk\LaravelRestify\Filters\PaginationDataObject;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\PivotsCollection;
@@ -47,9 +45,7 @@ class BelongsToMany extends EagerField
         } else {
             $paginator = $repository->{$this->relation}();
 
-            $paginator = $paginator->take(PaginationDataObject::fromInput(request('relatablePerPage'), null)->resolvePerPage(
-                $repository::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE
-            ))->get();
+            $paginator = $paginator->take($this->relatablePerPage($repository::$defaultRelatablePerPage))->get();
         }
 
         $this->value = $paginator->map(function ($item) {
