@@ -39,7 +39,7 @@ trait AuthorizableModels
                 : false;
         };
 
-        return PolicyCache::resolve(PolicyCache::keyForAllowRestify(static::uriKey()), $resolver, static::newModel());
+        return PolicyCache::resolve(fn () => PolicyCache::keyForAllowRestify(static::uriKey()), $resolver, static::newModel());
     }
 
     /**
@@ -216,7 +216,7 @@ trait AuthorizableModels
         }
 
         return PolicyCache::resolve(
-            PolicyCache::keyForPolicyMethods(static::uriKey(), $ability, $this->resource->getKey()),
+            fn () => PolicyCache::keyForPolicyMethods(static::uriKey(), $ability, $this->resource->getKey()),
             function () use ($ability) {
                 $policy = Gate::getPolicyFor($this->model());
 

@@ -36,6 +36,13 @@ class PolicyCacheTest extends IntegrationTestCase
         Cache::flush();
     }
 
+    protected function tearDown(): void
+    {
+        unset($_SERVER['restify.post.allowRestify']);
+
+        parent::tearDown();
+    }
+
     #[Test]
     public function a_cache_hit_reads_the_cache_exactly_once(): void
     {
@@ -307,6 +314,28 @@ class PolicyCacheTest extends IntegrationTestCase
         $this->expectException(UnexpectedValueException::class);
 
         PolicyCache::keyForAllowRestify('posts');
+    }
+
+    #[Test]
+    public function a_disabled_cache_never_builds_a_key_so_a_present_user_with_a_null_auth_identifier_does_not_throw(): void
+    {
+        config()->set('restify.cache.policies.enabled', false);
+
+        $this->authenticate(User::factory()->make());
+
+        $this->getJson(PostRepository::route())->assertOk();
+    }
+
+    #[Test]
+    public function a_present_user_with_a_null_auth_identifier_is_evaluated_but_never_cached(): void
+    {
+        $this->authenticate(User::factory()->make());
+
+        $_SERVER['restify.post.allowRestify'] = true;
+        $this->getJson(PostRepository::route())->assertOk();
+
+        $_SERVER['restify.post.allowRestify'] = false;
+        $this->getJson(PostRepository::route())->assertForbidden();
     }
 
     private function userWithAuthIdentifier(mixed $id): Authenticatable

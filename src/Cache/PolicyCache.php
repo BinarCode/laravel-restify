@@ -31,9 +31,19 @@ class PolicyCache
         return "restify.policy.$policyMethod.repository-$repositoryKey.resource-$modelKey.user-".self::currentUserKey();
     }
 
-    public static function resolve(string $key, callable|Closure $data, Model $model): mixed
+    /**
+     * @param  string|Closure(): string  $key  Built lazily so it's never evaluated (and can never throw)
+     *                                         while caching is disabled - the default.
+     */
+    public static function resolve(string|Closure $key, callable|Closure $data, Model $model): mixed
     {
         if (! static::enabled()) {
+            return $data();
+        }
+
+        try {
+            $key = $key instanceof Closure ? $key() : $key;
+        } catch (UnexpectedValueException) {
             return $data();
         }
 
