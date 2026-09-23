@@ -16161,12 +16161,6 @@ parameters:
 			path: src/RestifyApplicationServiceProvider.php
 
 		-
-			message: '#^Cannot call method user\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/RestifyApplicationServiceProvider.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\RestifyApplicationServiceProvider\:\:boot\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1

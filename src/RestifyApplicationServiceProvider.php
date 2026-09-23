@@ -59,7 +59,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
          */
         Restify::auth(function ($request) {
             return app()->environment('local') ||
-                Gate::check('viewRestify', [$request->user()]);
+                Gate::check('viewRestify');
         });
     }
 
