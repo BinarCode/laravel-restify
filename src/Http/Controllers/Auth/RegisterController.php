@@ -27,14 +27,16 @@ class RegisterController extends Controller
 
         /** @var int|numeric-string|null $tokenTtl */
         $tokenTtl = config('restify.auth.token_ttl');
-        $ttlMinutes = $tokenTtl ? (int) $tokenTtl : null;
-        $expiresAt = $ttlMinutes ? now()->addMinutes($ttlMinutes) : null;
+        $ttlSeconds = is_numeric($tokenTtl) && (float) $tokenTtl > 0
+            ? (int) round((float) $tokenTtl * 60)
+            : null;
+        $expiresAt = $ttlSeconds ? now()->addSeconds($ttlSeconds) : null;
 
         $token = $user->createToken('login', ['*'], $expiresAt);
 
         $meta = [
             'token' => $token->plainTextToken,
-            'expires_in' => $ttlMinutes ? $ttlMinutes * 60 : null,
+            'expires_in' => $ttlSeconds,
         ];
 
         if ($user instanceof MustVerifyEmail && ! $user->hasVerifiedEmail()) {

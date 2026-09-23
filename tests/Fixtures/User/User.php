@@ -15,6 +15,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Carbon;
 use Mockery;
 
 /**
@@ -65,8 +66,12 @@ class User extends Authenticatable implements MustVerifyEmail, Sanctumable
         return $this->email;
     }
 
-    public function createToken($name, array $scopes = []): object
+    public static ?Carbon $lastCreatedTokenExpiresAt = null;
+
+    public function createToken($name, array $scopes = [], ?Carbon $expiresAt = null): object
     {
+        static::$lastCreatedTokenExpiresAt = $expiresAt;
+
         return new class
         {
             public string $plainTextToken = 'token';

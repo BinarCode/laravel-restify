@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Notifications\VerifyEmail;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
@@ -24,6 +25,14 @@ class RegisterTest extends IntegrationTestCase
         Route::restifyAuth('auth', ['register']);
 
         Notification::fake();
+    }
+
+    protected function tearDown(): void
+    {
+        User::$lastCreatedTokenExpiresAt = null;
+        Carbon::setTestNow();
+
+        parent::tearDown();
     }
 
     #[Test]
@@ -88,6 +97,30 @@ class RegisterTest extends IntegrationTestCase
     {
         $this->postJson('/auth/register', $this->validPayload($overrides))
             ->assertUnprocessable();
+    }
+
+    #[Test]
+    #[TestWith(['0.5', 30], 'a sub-minute ttl is rounded to seconds instead of truncated to zero')]
+    #[TestWith(['60', 3600], 'a whole-minute ttl converts to seconds')]
+    #[TestWith([null, null], 'no ttl means no expiry')]
+    public function the_registration_token_ttl_is_computed_in_seconds(?string $tokenTtl, ?int $expectedExpiresIn): void
+    {
+        config(['restify.auth.token_ttl' => $tokenTtl]);
+
+        Carbon::setTestNow(now());
+
+        $this->postJson('/auth/register', $this->validPayload())
+            ->assertOk()
+            ->assertJsonPath('meta.expires_in', $expectedExpiresIn);
+
+        if ($expectedExpiresIn === null) {
+            $this->assertNull(User::$lastCreatedTokenExpiresAt);
+
+            return;
+        }
+
+        $this->assertNotNull(User::$lastCreatedTokenExpiresAt);
+        $this->assertSame($expectedExpiresIn, (int) now()->diffInSeconds(User::$lastCreatedTokenExpiresAt));
     }
 
     #[Test]
