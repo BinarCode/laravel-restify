@@ -148,6 +148,28 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
         );
     }
 
+    #[Test]
+    public function index_does_not_crash_on_an_unlabeled_computed_field(): void
+    {
+        PostFactory::one();
+
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
+
+                field(fn () => 'Computed value'),
+            ]);
+
+        $this->getJson(PostRepository::route())
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->where('data.0.attributes.Computed', 'Computed value')
+                    ->etc()
+            );
+    }
+
     public function test_index_unmergeable_repository_contains_only_explicitly_defined_fields(): void
     {
         PostFactory::one();

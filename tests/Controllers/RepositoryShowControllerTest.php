@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostMergeableRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\Test;
 
 class RepositoryShowControllerTest extends IntegrationTestCase
 {
@@ -102,6 +103,51 @@ class RepositoryShowControllerTest extends IntegrationTestCase
                     ],
                 ],
             ]);
+    }
+
+    #[Test]
+    public function show_does_not_crash_on_an_unlabeled_computed_field(): void
+    {
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
+
+                field(fn () => 'Computed value'),
+            ]);
+
+        $this->getJson(PostRepository::route(
+            $this->mockPost()->id
+        ))
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->where('data.attributes.Computed', 'Computed value')
+                    ->etc()
+            );
+    }
+
+    #[Test]
+    public function show_does_not_crash_on_an_unlabeled_computed_field_for_a_mergeable_repository(): void
+    {
+        Restify::repositories([
+            PostMergeableRepository::class,
+        ]);
+
+        PostMergeableRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                field('title'),
+
+                field(fn () => 'Computed value'),
+            ]);
+
+        // A Mergeable repository serializes its attributes from the model columns, so the
+        // virtual computed field never reaches the response - this only proves resolving it
+        // no longer crashes the show request.
+        $this->getJson(PostMergeableRepository::route(
+            $this->mockPost()->id
+        ))->assertOk();
     }
 
     public function test_repository_hidden_fields_are_not_visible(): void

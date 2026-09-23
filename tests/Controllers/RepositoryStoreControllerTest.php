@@ -62,6 +62,27 @@ class RepositoryStoreControllerTest extends IntegrationTestCase
         $this->assertModelExists($post);
     }
 
+    public function test_store_response_does_not_crash_on_an_unlabeled_computed_field(): void
+    {
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStore')
+            ->andReturn([
+                Field::new('title'),
+
+                field(fn () => 'Computed value'),
+            ]);
+
+        $this->postJson(PostRepository::route(), [
+            'title' => 'Some post title',
+        ])
+            ->assertCreated()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->where('data.attributes.Computed', 'Computed value')
+                    ->etc()
+            );
+    }
+
     public function test_will_store_only_defined_fields_from_fields_for_store(): void
     {
         $user = $this->mockUsers()->first();
