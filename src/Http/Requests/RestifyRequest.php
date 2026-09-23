@@ -72,36 +72,12 @@ class RestifyRequest extends FormRequest
             $pageNumber = $this->input('page');
         }
 
-        return new PaginationDataObject(
-            perPage: $this->normalizePaginationInput($perPage),
-            page: $this->normalizePaginationInput($pageNumber),
-        );
+        return PaginationDataObject::fromInput($perPage, $pageNumber);
     }
 
-    /**
-     * Pagination for a relatable field (`?related=posts&relatablePerPage=...`),
-     * resolved and clamped the same way as the main index pagination.
-     */
     public function relatablePagination(): PaginationDataObject
     {
-        return new PaginationDataObject(
-            perPage: $this->normalizePaginationInput($this->input('relatablePerPage')),
-            page: null,
-        );
-    }
-
-    /**
-     * MCP schemas declare `perPage`/`page` as JSON numbers, which can decode as
-     * float (e.g. `100.0`). Accept int, numeric string and float alike so the
-     * MCP path honours the same values the REST query string does.
-     */
-    private function normalizePaginationInput(mixed $value): int|string|null
-    {
-        return match (true) {
-            is_int($value), is_string($value) => $value,
-            is_float($value) => (int) $value,
-            default => null,
-        };
+        return PaginationDataObject::fromInput($this->input('relatablePerPage'), null);
     }
 
     public function related(): RelatedDto

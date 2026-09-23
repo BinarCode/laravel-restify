@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Fields;
 
 use Binaryk\LaravelRestify\Fields\HasMany;
+use Binaryk\LaravelRestify\Filters\PaginationDataObject;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
@@ -67,6 +68,22 @@ class RelatablePerPageTest extends IntegrationTestCase
             'related' => 'posts',
             'relatablePerPage' => $relatablePerPage,
         ]))->assertJsonCount(15, 'data.relationships.posts');
+    }
+
+    #[Test]
+    public function it_resolves_relatable_per_page_merged_into_the_request_directly(): void
+    {
+        // HasMany/BelongsToMany read relatablePerPage via the request('relatablePerPage')
+        // helper (not a resolved RestifyRequest), so a consumer setting it with
+        // app('request')->merge(...) - rather than the query string - must still work.
+        config(['restify.pagination.max_per_page' => 50]);
+
+        app('request')->merge(['relatablePerPage' => 100]);
+
+        $this->assertSame(
+            50,
+            PaginationDataObject::fromInput(request('relatablePerPage'), null)->resolvePerPage(15)
+        );
     }
 
     #[Test]

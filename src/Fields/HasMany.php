@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Fields;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Filters\PaginationDataObject;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -36,7 +37,7 @@ class HasMany extends EagerField
              */
             $paginator = $repository->{$this->relation}();
             $paginator = $paginator
-                ->take(app(RestifyRequest::class)->relatablePagination()->resolvePerPage(
+                ->take(PaginationDataObject::fromInput(request('relatablePerPage'), null)->resolvePerPage(
                     is_int($defaultRelatablePerPage) ? $defaultRelatablePerPage : RestifySearchable::DEFAULT_RELATABLE_PER_PAGE
                 ))
                 ->select($this->getColumns())
