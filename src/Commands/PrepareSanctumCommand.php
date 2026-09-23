@@ -13,25 +13,35 @@ class PrepareSanctumCommand extends Command
 
     protected $description = 'Uncomment or add if missing the auth:sanctum middleware to the middleware list.';
 
-    public function handle()
+    public function handle(): int
     {
         $this->info('Prepare Sanctum for Restify...');
 
-        $this->ensureSanctumIsInstalled();
+        if (! $this->ensureSanctumIsInstalled()) {
+            return self::FAILURE;
+        }
+
         $this->ensureUserHasApiTokensTrait();
 
-        $this->replaceMiddleware();
-
-        return 0;
+        return $this->replaceMiddleware();
     }
 
-    protected function ensureSanctumIsInstalled()
+    protected function ensureSanctumIsInstalled(): bool
     {
-        $installedPackages = json_decode(File::get(base_path('composer.lock')), true);
+        $composerLockPath = base_path('composer.lock');
+
+        if (! File::exists($composerLockPath)) {
+            $this->error('The composer.lock file does not exist. Run `composer install` first.');
+
+            return false;
+        }
+
+        /** @var array{packages?: array<int, array{name?: string}>} $installedPackages */
+        $installedPackages = json_decode(File::get($composerLockPath), true) ?? [];
 
         $sanctumInstalled = false;
-        foreach ($installedPackages['packages'] as $package) {
-            if ($package['name'] === 'laravel/sanctum') {
+        foreach ($installedPackages['packages'] ?? [] as $package) {
+            if (($package['name'] ?? null) === 'laravel/sanctum') {
                 $sanctumInstalled = true;
                 break;
             }
@@ -46,6 +56,8 @@ class PrepareSanctumCommand extends Command
         } else {
             $this->info('Laravel Sanctum is already installed.');
         }
+
+        return true;
     }
 
     protected function replaceMiddleware(): int
@@ -55,7 +67,7 @@ class PrepareSanctumCommand extends Command
         if (! File::exists($configPath)) {
             $this->error('The config/restify.php file does not exist.');
 
-            return 1;
+            return self::FAILURE;
         }
 
         $content = File::get($configPath);
@@ -63,27 +75,27 @@ class PrepareSanctumCommand extends Command
         $pattern = '/\/\/\s*\'auth:sanctum\',/';
         $replacement = '        \'auth:sanctum\',';
 
-        $updatedContent = preg_replace($pattern, $replacement, $content);
+        $updatedContent = preg_replace($pattern, $replacement, $content) ?? $content;
 
         if ($updatedContent === $content) {
             // Check if 'auth:sanctum' is already present in the middleware list
-            if (strpos($content, '\'auth:sanctum\',') === false) {
+            if (! str_contains($content, '\'auth:sanctum\',')) {
                 $apiMiddlewarePattern = "/'api',/";
                 $replacement = "'api',\n        'auth:sanctum',";
-                $updatedContent = preg_replace($apiMiddlewarePattern, $replacement, $content);
+                $updatedContent = preg_replace($apiMiddlewarePattern, $replacement, $content) ?? $content;
                 File::put($configPath, $updatedContent);
                 $this->info('The auth:sanctum middleware has been added to the middleware list.');
             } else {
                 $this->info('The auth:sanctum middleware is already present in the middleware list.');
             }
 
-            return 0;
+            return self::SUCCESS;
         }
 
         File::put($configPath, $updatedContent);
         $this->info('The auth:sanctum comment has been replaced.');
 
-        return 1;
+        return self::SUCCESS;
     }
 
     protected function runProcess(array $command): void
