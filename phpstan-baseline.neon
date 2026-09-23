@@ -1360,12 +1360,6 @@ parameters:
 			path: src/Commands/PolicyCommand.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\PrepareSanctumCommand\:\:ensureUserHasApiTokensTrait\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Commands/PrepareSanctumCommand.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Commands\\PrepareSanctumCommand\:\:runProcess\(\) has parameter \$command with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1

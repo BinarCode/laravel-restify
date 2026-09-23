@@ -21,7 +21,9 @@ class PrepareSanctumCommand extends Command
             return self::FAILURE;
         }
 
-        $this->ensureUserHasApiTokensTrait();
+        if (! $this->ensureUserHasApiTokensTrait()) {
+            return self::FAILURE;
+        }
 
         return $this->replaceMiddleware();
     }
@@ -112,36 +114,34 @@ class PrepareSanctumCommand extends Command
         }
     }
 
-    protected function ensureUserHasApiTokensTrait()
+    protected function ensureUserHasApiTokensTrait(): bool
     {
         $userModelPath = app_path('Models/User.php');
 
         if (! File::exists($userModelPath)) {
             $this->error('The User model does not exist.');
 
-            return;
+            return false;
         }
 
         $content = File::get($userModelPath);
 
-        // Check if HasApiTokens trait is already used
         if (strpos($content, 'use HasApiTokens;') !== false) {
             $this->info('The User model already uses the HasApiTokens trait.');
 
-            return;
+            return true;
         }
 
-        // Check if HasApiTokens is already imported
         if (strpos($content, 'use Laravel\Sanctum\HasApiTokens;') === false) {
-            // Import HasApiTokens trait
             $useStatements = "use Laravel\Sanctum\HasApiTokens;\nuse Illuminate\Notifications\Notifiable;";
             $content = str_replace('use Illuminate\Notifications\Notifiable;', $useStatements, $content);
         }
 
-        // Add HasApiTokens trait to the User class
         $content = str_replace('use HasFactory, Notifiable;', 'use HasFactory, Notifiable, HasApiTokens;', $content);
 
         File::put($userModelPath, $content);
         $this->info('The HasApiTokens trait has been added to the User model.');
+
+        return true;
     }
 }
