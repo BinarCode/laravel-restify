@@ -98,7 +98,7 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
     #[Test]
     public function index_action_invokes_can_run_for_each_model_in_the_batch(): void
     {
-        $posts = $this->mockPosts(null, 3);
+        $posts = Post::factory()->count(3)->create(['is_active' => false]);
 
         $seenIds = Collection::make();
 
@@ -129,7 +129,7 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
     #[Test]
     public function index_action_with_one_denied_row_fails_the_whole_request_without_side_effects(): void
     {
-        $posts = $this->mockPosts(null, 3);
+        $posts = Post::factory()->count(3)->create(['is_active' => false]);
         $deniedId = $posts->first()->id;
 
         $action = $this->bulkAction()->canRun(fn ($request, $model) => $model->id !== $deniedId);

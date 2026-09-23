@@ -172,7 +172,16 @@ abstract class Action implements JsonSerializable
         $response = null;
 
         if (! $request->isForRepositoryRequest()) {
-            $request->collectRepositories($this, static::$chunkCount, function ($models) use ($request, &$response) {
+            $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($request, &$response) {
+                /** @var Collection<int, Model> $models */
+                foreach ($models as $model) {
+                    abort_unless(
+                        $this->authorizedToRun($request, $model),
+                        JsonResponse::HTTP_FORBIDDEN,
+                        'Not authorized to run this action.'
+                    );
+                }
+
                 Transaction::run(function () use ($models, $request, &$response) {
                     $response = $this->handle($request, $models);
 
@@ -184,13 +193,18 @@ abstract class Action implements JsonSerializable
                 });
             });
         } else {
-            Transaction::run(function () use ($request, &$response) {
-                $response = $this->handle(
-                    $request,
-                    $model = tap($request->modelQuery(), function ($query) use ($request) {
-                        static::indexQuery($request, $query);
-                    })->firstOrFail()
-                );
+            $model = tap($request->modelQuery(), function ($query) use ($request) {
+                static::indexQuery($request, $query);
+            })->firstOrFail();
+
+            abort_unless(
+                $this->authorizedToRun($request, $model),
+                JsonResponse::HTTP_FORBIDDEN,
+                'Not authorized to run this action.'
+            );
+
+            Transaction::run(function () use ($model, $request, &$response) {
+                $response = $this->handle($request, $model);
             });
         }
 
