@@ -27,11 +27,11 @@ class RepositoryDetachController extends RepositoryController
         return $repository->detach(
             $request,
             $request->repositoryId,
-            Collection::make(Arr::wrap($request->input($request->relatedRepositoryKey())))
+            Collection::make(Arr::wrap($request->input($request->relatedRepository)))
                 ->map(fn ($relatedRepositoryId) => $this->belongsToManyField($request)
                     ->initializePivot(
                         $request,
-                        $model->{$request->viaRelationship ?? $request->relatedRepositoryKey()}(),
+                        $model->{$request->viaRelationship ?? $request->relatedRepository}(),
                         $relatedRepositoryId
                     ))
         );

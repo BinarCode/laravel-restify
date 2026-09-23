@@ -141,7 +141,7 @@ trait ValidatingTrait
         /** * @var BelongsToMany $field */
         $field = $on::collectRelated()
             ->forManyToManyRelations($request)
-            ->firstWhere('attribute', $request->relatedRepositoryKey());
+            ->firstWhere('attribute', $request->relatedRepository);
 
         $pivotFields = $field->collectPivotFields();
 

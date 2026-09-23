@@ -3166,6 +3166,12 @@ parameters:
 			path: src/Fields/BelongsTo.php
 
 		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 2
+			path: src/Fields/BelongsTo.php
+
+		-
 			message: '#^Parameter \#2 \$pivot of method Binaryk\\LaravelRestify\\Fields\\BelongsTo\:\:authorizedToAttach\(\) expects Illuminate\\Database\\Eloquent\\Relations\\Pivot, mixed given\.$#'
 			identifier: argument.type
 			count: 1
@@ -3385,6 +3391,12 @@ parameters:
 			message: '#^Parameter \#1 \$column of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:where\(\) expects array\<int\|string, mixed\>\|\(Closure\(Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\)\: mixed\)\|Illuminate\\Contracts\\Database\\Query\\Expression\|string, mixed given\.$#'
 			identifier: argument.type
 			count: 1
+			path: src/Fields/BelongsToMany.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 2
 			path: src/Fields/BelongsToMany.php
 
 		-
@@ -7533,6 +7545,18 @@ parameters:
 			path: src/Http/Controllers/RepositoryAttachController.php
 
 		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/RepositoryAttachController.php
+
+		-
+			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
+			identifier: encapsedStringPart.nonString
+			count: 1
+			path: src/Http/Controllers/RepositoryAttachController.php
+
+		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
 			count: 2
@@ -7641,6 +7665,18 @@ parameters:
 			path: src/Http/Controllers/RepositoryDetachController.php
 
 		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/RepositoryDetachController.php
+
+		-
+			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
+			identifier: encapsedStringPart.nonString
+			count: 1
+			path: src/Http/Controllers/RepositoryDetachController.php
+
+		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
 			count: 2
@@ -7721,6 +7757,18 @@ parameters:
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositorySyncController\:\:belongsToManyField\(\) should return Binaryk\\LaravelRestify\\Fields\\BelongsToMany\|null but returns mixed\.$#'
 			identifier: return.type
+			count: 1
+			path: src/Http/Controllers/RepositorySyncController.php
+
+		-
+			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/RepositorySyncController.php
+
+		-
+			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
+			identifier: encapsedStringPart.nonString
 			count: 1
 			path: src/Http/Controllers/RepositorySyncController.php
 
@@ -15123,6 +15171,12 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
+			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Str\:\:studly\(\) expects string, mixed given\.$#'
+			identifier: argument.type
+			count: 3
+			path: src/Repositories/Repository.php
+
+		-
 			message: '#^Parameter \#2 \$column of method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:castToTimestamp\(\) expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -15252,6 +15306,12 @@ parameters:
 			message: '#^Part \$method \(mixed\) of encapsed string cannot be cast to string\.$#'
 			identifier: encapsedStringPart.nonString
 			count: 2
+			path: src/Repositories/Repository.php
+
+		-
+			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
+			identifier: encapsedStringPart.nonString
+			count: 1
 			path: src/Repositories/Repository.php
 
 		-

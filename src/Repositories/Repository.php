@@ -1030,7 +1030,7 @@ class Repository implements JsonSerializable, RestifySearchable
         /** * @var BelongsToMany $eagerField */
         $eagerField = $request->repository()::collectRelated()
             ->forManyToManyRelations($request)
-            ->firstWhere('attribute', $request->relatedRepositoryKey());
+            ->firstWhere('attribute', $request->relatedRepository);
 
         $deleted = DB::transaction(function () use ($pivots, $eagerField, $request) {
             return $pivots
@@ -1075,7 +1075,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function allowToAttach(RestifyRequest $request, Collection $attachers): self
     {
-        $methodGuesser = 'attach'.Str::studly($request->relatedRepositoryKey());
+        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
 
         foreach ($attachers as $model) {
             $this->authorizeToAttach($request, $methodGuesser, $model);
@@ -1086,7 +1086,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function allowToSync(RestifyRequest $request, Collection $attachers): self
     {
-        $methodGuesser = 'sync'.Str::studly($request->relatedRepositoryKey());
+        $methodGuesser = 'sync'.Str::studly($request->relatedRepository);
 
         $this->authorizeToSync($request, $methodGuesser, $attachers);
 
@@ -1095,7 +1095,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function allowToDetach(RestifyRequest $request, Collection $attachers): self
     {
-        $methodGuesser = 'detach'.Str::studly($request->relatedRepositoryKey());
+        $methodGuesser = 'detach'.Str::studly($request->relatedRepository);
 
         foreach ($attachers as $model) {
             $this->authorizeToDetach($request, $methodGuesser, $model);
