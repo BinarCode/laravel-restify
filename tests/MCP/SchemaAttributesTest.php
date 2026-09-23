@@ -18,7 +18,6 @@ use Illuminate\JsonSchema\Types\Type;
 use Illuminate\Validation\Rules\Password;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
-use ReflectionProperty;
 
 /**
  * The SchemaAttributes trait mirrors Laravel's ValidatesAttributes rule set,
@@ -27,69 +26,73 @@ use ReflectionProperty;
  * can describe a repository field's validation rules. JsonSchemaFromRulesAction
  * is the only entry point that dispatches into it, exactly like it is used by
  * Action::jsonSchema(), Getter::jsonSchema() and FieldMcpSchemaDetection.
+ *
+ * This matrix calls JsonSchemaFromRulesAction directly - it does not go
+ * through Field::guessFieldType() or an MCP tool's built schema. That path is
+ * covered separately by CurrentPasswordSchemaRuleTest and FieldSchemaValidationTest.
  */
 class SchemaAttributesTest extends IntegrationTestCase
 {
     #[Test]
-    #[TestWith(['accepted', null])]
-    #[TestWith(['accepted_if:other,value', 'Must be accepted when another attribute has a given value'])]
-    #[TestWith(['declined', 'Must be declined (no, off, 0, false)'])]
-    #[TestWith(['declined_if:other,value', 'Must be declined when another attribute has a given value'])]
-    #[TestWith(['active_url', 'Must be an active URL with valid DNS records'])]
-    #[TestWith(['ascii', 'Must be 7 bit ASCII'])]
-    #[TestWith(['bail', null])]
-    #[TestWith(['confirmed', 'Must have a matching confirmation field'])]
-    #[TestWith(['decimal:2', 'Must have a specific number of decimal places'])]
-    #[TestWith(['different:other', 'Must be different from another attribute'])]
-    #[TestWith(['digits:4', 'Must have a specific number of digits'])]
-    #[TestWith(['digits_between:1,4', 'Must have digits between a range'])]
-    #[TestWith(['dimensions:min_width=100', 'Image must match specified dimensions'])]
-    #[TestWith(['distinct', 'Must be unique among other values'])]
-    #[TestWith(['extensions:pdf,doc', 'Must be a valid file with allowed extensions'])]
-    #[TestWith(['filled', 'Must be filled when present'])]
-    #[TestWith(['gt:other', 'Must be greater than another attribute'])]
-    #[TestWith(['lt:other', 'Must be less than another attribute'])]
-    #[TestWith(['gte:other', 'Must be greater than or equal to another attribute'])]
-    #[TestWith(['lte:other', 'Must be less than or equal to another attribute'])]
-    #[TestWith(['lowercase', 'Must be lowercase'])]
-    #[TestWith(['uppercase', 'Must be uppercase'])]
-    #[TestWith(['hex_color', 'Must be a valid HEX color'])]
-    #[TestWith(['max_digits:5', 'Must have a maximum number of digits'])]
-    #[TestWith(['min_digits:2', 'Must have a minimum number of digits'])]
-    #[TestWith(['missing', 'Must be missing from the data'])]
-    #[TestWith(['missing_if:other,value', 'Must be missing when another attribute has a given value'])]
-    #[TestWith(['missing_unless:other,value', 'Must be missing unless another attribute has a given value'])]
-    #[TestWith(['missing_with:other', 'Must be missing when any given attribute is present'])]
-    #[TestWith(['missing_with_all:other,another', 'Must be missing when all given attributes are present'])]
-    #[TestWith(['not_in:a,b', 'Must not be one of the specified values'])]
-    #[TestWith(['present', 'Must be present in the data'])]
-    #[TestWith(['present_if:other,value', 'Must be present when another attribute has a given value'])]
-    #[TestWith(['present_unless:other,value', 'Must be present unless another attribute has a given value'])]
-    #[TestWith(['present_with:other', 'Must be present when any given attribute is present'])]
-    #[TestWith(['present_with_all:other,another', 'Must be present when all given attributes are present'])]
-    #[TestWith(['regex:/^[a-z]+$/', 'Must match the specified regular expression'])]
-    #[TestWith(['not_regex:/^[a-z]+$/', 'Must not match the specified regular expression'])]
-    #[TestWith(['required_if_accepted:other', 'Must be present when another attribute is accepted'])]
-    #[TestWith(['required_if_declined:other', 'Must be present when another attribute is declined'])]
-    #[TestWith(['prohibited', 'Must not be present or must be empty'])]
-    #[TestWith(['prohibited_if:other,value', 'Must not be present when another attribute has a given value'])]
-    #[TestWith(['prohibited_if_accepted:other', 'Must not be present when another attribute is accepted'])]
-    #[TestWith(['prohibited_if_declined:other', 'Must not be present when another attribute is declined'])]
-    #[TestWith(['prohibited_unless:other,value', 'Must not be present unless another attribute has a given value'])]
-    #[TestWith(['prohibits:other', 'Prohibits other specified attributes from being present'])]
-    #[TestWith(['exclude', 'This attribute is excluded from validation'])]
-    #[TestWith(['exclude_if:other,value', 'This attribute is excluded when another attribute has a given value'])]
-    #[TestWith(['exclude_unless:other,value', 'This attribute is excluded unless another attribute has a given value'])]
-    #[TestWith(['required_unless:other,value', null])]
-    #[TestWith(['exclude_with:other', 'This attribute is excluded when another attribute is present'])]
-    #[TestWith(['exclude_without:other', 'This attribute is excluded when another attribute is missing'])]
-    #[TestWith(['required_with:other', 'Must be present when any other attribute exists'])]
-    #[TestWith(['required_with_all:other,another', 'Must be present when all other attributes exist'])]
-    #[TestWith(['required_without:other', 'Must be present when another attribute does not exist'])]
-    #[TestWith(['required_without_all:other,another', 'Must be present when all other attributes do not exist'])]
-    #[TestWith(['sometimes', null])]
-    #[TestWith(['required_if:other,value', null])]
-    #[TestWith(['exists:users,id', 'Must exist in the database'])]
+    #[TestWith(['accepted', null], 'accepted')]
+    #[TestWith(['accepted_if:other,value', 'Must be accepted when another attribute has a given value'], 'accepted_if')]
+    #[TestWith(['declined', 'Must be declined (no, off, 0, false)'], 'declined')]
+    #[TestWith(['declined_if:other,value', 'Must be declined when another attribute has a given value'], 'declined_if')]
+    #[TestWith(['active_url', 'Must be an active URL with valid DNS records'], 'active_url')]
+    #[TestWith(['ascii', 'Must be 7 bit ASCII'], 'ascii')]
+    #[TestWith(['bail', null], 'bail')]
+    #[TestWith(['confirmed', 'Must have a matching confirmation field'], 'confirmed')]
+    #[TestWith(['decimal:2', 'Must have a specific number of decimal places'], 'decimal')]
+    #[TestWith(['different:other', 'Must be different from another attribute'], 'different')]
+    #[TestWith(['digits:4', 'Must have a specific number of digits'], 'digits')]
+    #[TestWith(['digits_between:1,4', 'Must have digits between a range'], 'digits_between')]
+    #[TestWith(['dimensions:min_width=100', 'Image must match specified dimensions'], 'dimensions')]
+    #[TestWith(['distinct', 'Must be unique among other values'], 'distinct')]
+    #[TestWith(['extensions:pdf,doc', 'Must be a valid file with allowed extensions'], 'extensions')]
+    #[TestWith(['filled', 'Must be filled when present'], 'filled')]
+    #[TestWith(['gt:other', 'Must be greater than another attribute'], 'gt')]
+    #[TestWith(['lt:other', 'Must be less than another attribute'], 'lt')]
+    #[TestWith(['gte:other', 'Must be greater than or equal to another attribute'], 'gte')]
+    #[TestWith(['lte:other', 'Must be less than or equal to another attribute'], 'lte')]
+    #[TestWith(['lowercase', 'Must be lowercase'], 'lowercase')]
+    #[TestWith(['uppercase', 'Must be uppercase'], 'uppercase')]
+    #[TestWith(['hex_color', 'Must be a valid HEX color'], 'hex_color')]
+    #[TestWith(['max_digits:5', 'Must have a maximum number of digits'], 'max_digits')]
+    #[TestWith(['min_digits:2', 'Must have a minimum number of digits'], 'min_digits')]
+    #[TestWith(['missing', 'Must be missing from the data'], 'missing')]
+    #[TestWith(['missing_if:other,value', 'Must be missing when another attribute has a given value'], 'missing_if')]
+    #[TestWith(['missing_unless:other,value', 'Must be missing unless another attribute has a given value'], 'missing_unless')]
+    #[TestWith(['missing_with:other', 'Must be missing when any given attribute is present'], 'missing_with')]
+    #[TestWith(['missing_with_all:other,another', 'Must be missing when all given attributes are present'], 'missing_with_all')]
+    #[TestWith(['not_in:a,b', 'Must not be one of the specified values'], 'not_in')]
+    #[TestWith(['present', 'Must be present in the data'], 'present')]
+    #[TestWith(['present_if:other,value', 'Must be present when another attribute has a given value'], 'present_if')]
+    #[TestWith(['present_unless:other,value', 'Must be present unless another attribute has a given value'], 'present_unless')]
+    #[TestWith(['present_with:other', 'Must be present when any given attribute is present'], 'present_with')]
+    #[TestWith(['present_with_all:other,another', 'Must be present when all given attributes are present'], 'present_with_all')]
+    #[TestWith(['regex:/^[a-z]+$/', 'Must match the specified regular expression'], 'regex')]
+    #[TestWith(['not_regex:/^[a-z]+$/', 'Must not match the specified regular expression'], 'not_regex')]
+    #[TestWith(['required_if_accepted:other', 'Must be present when another attribute is accepted'], 'required_if_accepted')]
+    #[TestWith(['required_if_declined:other', 'Must be present when another attribute is declined'], 'required_if_declined')]
+    #[TestWith(['prohibited', 'Must not be present or must be empty'], 'prohibited')]
+    #[TestWith(['prohibited_if:other,value', 'Must not be present when another attribute has a given value'], 'prohibited_if')]
+    #[TestWith(['prohibited_if_accepted:other', 'Must not be present when another attribute is accepted'], 'prohibited_if_accepted')]
+    #[TestWith(['prohibited_if_declined:other', 'Must not be present when another attribute is declined'], 'prohibited_if_declined')]
+    #[TestWith(['prohibited_unless:other,value', 'Must not be present unless another attribute has a given value'], 'prohibited_unless')]
+    #[TestWith(['prohibits:other', 'Prohibits other specified attributes from being present'], 'prohibits')]
+    #[TestWith(['exclude', 'This attribute is excluded from validation'], 'exclude')]
+    #[TestWith(['exclude_if:other,value', 'This attribute is excluded when another attribute has a given value'], 'exclude_if')]
+    #[TestWith(['exclude_unless:other,value', 'This attribute is excluded unless another attribute has a given value'], 'exclude_unless')]
+    #[TestWith(['required_unless:other,value', null], 'required_unless')]
+    #[TestWith(['exclude_with:other', 'This attribute is excluded when another attribute is present'], 'exclude_with')]
+    #[TestWith(['exclude_without:other', 'This attribute is excluded when another attribute is missing'], 'exclude_without')]
+    #[TestWith(['required_with:other', 'Must be present when any other attribute exists'], 'required_with')]
+    #[TestWith(['required_with_all:other,another', 'Must be present when all other attributes exist'], 'required_with_all')]
+    #[TestWith(['required_without:other', 'Must be present when another attribute does not exist'], 'required_without')]
+    #[TestWith(['required_without_all:other,another', 'Must be present when all other attributes do not exist'], 'required_without_all')]
+    #[TestWith(['sometimes', null], 'sometimes')]
+    #[TestWith(['required_if:other,value', null], 'required_if')]
+    #[TestWith(['exists:users,id', 'Must exist in the database'], 'exists')]
     public function it_converts_a_rule_with_no_type_detection_into_a_described_string_schema(string $rule, ?string $descriptionContains): void
     {
         $result = $this->convert(['field' => [$rule]]);
@@ -99,27 +102,27 @@ class SchemaAttributesTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['alpha', StringType::class, 'Must contain only alphabetic characters'])]
-    #[TestWith(['alpha_dash', StringType::class, 'Must contain only alpha-numeric characters, dashes, and underscores'])]
-    #[TestWith(['alpha_num', StringType::class, 'Must contain only alpha-numeric characters'])]
-    #[TestWith(['array', ArrayType::class, 'Must be an array'])]
-    #[TestWith(['boolean', BooleanType::class, 'Must be a boolean (true/false)'])]
-    #[TestWith(['date', StringType::class, 'Must be a valid date format.'])]
-    #[TestWith(['email', StringType::class, 'Must be a valid email address.'])]
-    #[TestWith(['file', StringType::class, 'Must be a valid file, or file absolute path'])]
-    #[TestWith(['image', StringType::class, 'Must be a valid image file'])]
-    #[TestWith(['ip', StringType::class, 'Must be a valid IP address'])]
-    #[TestWith(['ipv4', StringType::class, 'Must be a valid IPv4 address'])]
-    #[TestWith(['ipv6', StringType::class, 'Must be a valid IPv6 address'])]
-    #[TestWith(['mac_address', StringType::class, 'Must be a valid MAC address'])]
-    #[TestWith(['json', StringType::class, 'Must be valid JSON'])]
-    #[TestWith(['timezone', StringType::class, 'Must be a valid timezone'])]
-    #[TestWith(['url', StringType::class, 'Must be a valid URL'])]
-    #[TestWith(['ulid', StringType::class, 'Must be a valid ULID'])]
-    #[TestWith(['uuid', StringType::class, 'Must be a valid UUID'])]
-    #[TestWith(['integer', IntegerType::class, 'Must be an integer'])]
-    #[TestWith(['numeric', NumberType::class, 'Must be a numeric value'])]
-    #[TestWith(['string', StringType::class, 'Must be a string'])]
+    #[TestWith(['alpha', StringType::class, 'Must contain only alphabetic characters'], 'alpha')]
+    #[TestWith(['alpha_dash', StringType::class, 'Must contain only alpha-numeric characters, dashes, and underscores'], 'alpha_dash')]
+    #[TestWith(['alpha_num', StringType::class, 'Must contain only alpha-numeric characters'], 'alpha_num')]
+    #[TestWith(['array', ArrayType::class, 'Must be an array'], 'array')]
+    #[TestWith(['boolean', BooleanType::class, 'Must be a boolean (true/false)'], 'boolean')]
+    #[TestWith(['date', StringType::class, 'Must be a valid date format.'], 'date')]
+    #[TestWith(['email', StringType::class, 'Must be a valid email address.'], 'email')]
+    #[TestWith(['file', StringType::class, 'Must be a valid file, or file absolute path'], 'file')]
+    #[TestWith(['image', StringType::class, 'Must be a valid image file'], 'image')]
+    #[TestWith(['ip', StringType::class, 'Must be a valid IP address'], 'ip')]
+    #[TestWith(['ipv4', StringType::class, 'Must be a valid IPv4 address'], 'ipv4')]
+    #[TestWith(['ipv6', StringType::class, 'Must be a valid IPv6 address'], 'ipv6')]
+    #[TestWith(['mac_address', StringType::class, 'Must be a valid MAC address'], 'mac_address')]
+    #[TestWith(['json', StringType::class, 'Must be valid JSON'], 'json')]
+    #[TestWith(['timezone', StringType::class, 'Must be a valid timezone'], 'timezone')]
+    #[TestWith(['url', StringType::class, 'Must be a valid URL'], 'url')]
+    #[TestWith(['ulid', StringType::class, 'Must be a valid ULID'], 'ulid')]
+    #[TestWith(['uuid', StringType::class, 'Must be a valid UUID'], 'uuid')]
+    #[TestWith(['integer', IntegerType::class, 'Must be an integer'], 'integer')]
+    #[TestWith(['numeric', NumberType::class, 'Must be a numeric value'], 'numeric')]
+    #[TestWith(['string', StringType::class, 'Must be a string'], 'string')]
     public function it_builds_the_default_type_when_none_exists_and_reuses_an_existing_type_of_the_same_kind(string $rule, string $expectedType, string $description): void
     {
         $fresh = $this->convert(['field' => [$rule]]);
@@ -162,28 +165,28 @@ class SchemaAttributesTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['before:2025-01-01', 'This is a date attribute. Must be before: 2025-01-01'])]
-    #[TestWith(['before', null])]
-    #[TestWith(['before_or_equal:2025-01-01', 'Must be before or equal to: 2025-01-01'])]
-    #[TestWith(['before_or_equal', null])]
-    #[TestWith(['after:2025-01-01', 'Date attribute, must be after: 2025-01-01'])]
-    #[TestWith(['after', null])]
-    #[TestWith(['after_or_equal:2025-01-01', 'Must be after or equal to: 2025-01-01'])]
-    #[TestWith(['after_or_equal', null])]
-    #[TestWith(['date_equals:2025-01-01', 'Must be equal to date: 2025-01-01'])]
-    #[TestWith(['date_equals', null])]
-    #[TestWith(['same:other', 'Must match: other'])]
-    #[TestWith(['same', null])]
-    #[TestWith(['starts_with:foo,bar', 'Must start with: foo, bar'])]
-    #[TestWith(['starts_with', null])]
-    #[TestWith(['doesnt_start_with:foo,bar', 'Must not start with: foo, bar'])]
-    #[TestWith(['doesnt_start_with', null])]
-    #[TestWith(['ends_with:foo,bar', 'Must end with: foo, bar'])]
-    #[TestWith(['ends_with', null])]
-    #[TestWith(['doesnt_end_with:foo,bar', 'Must not end with: foo, bar'])]
-    #[TestWith(['doesnt_end_with', null])]
-    #[TestWith(['in_array:other.*', 'Must be a value from other.*'])]
-    #[TestWith(['in_array', null])]
+    #[TestWith(['before:2025-01-01', 'This is a date attribute. Must be before: 2025-01-01'], 'before')]
+    #[TestWith(['before', null], 'before_without_value')]
+    #[TestWith(['before_or_equal:2025-01-01', 'Must be before or equal to: 2025-01-01'], 'before_or_equal')]
+    #[TestWith(['before_or_equal', null], 'before_or_equal_without_value')]
+    #[TestWith(['after:2025-01-01', 'Date attribute, must be after: 2025-01-01'], 'after')]
+    #[TestWith(['after', null], 'after_without_value')]
+    #[TestWith(['after_or_equal:2025-01-01', 'Must be after or equal to: 2025-01-01'], 'after_or_equal')]
+    #[TestWith(['after_or_equal', null], 'after_or_equal_without_value')]
+    #[TestWith(['date_equals:2025-01-01', 'Must be equal to date: 2025-01-01'], 'date_equals')]
+    #[TestWith(['date_equals', null], 'date_equals_without_value')]
+    #[TestWith(['same:other', 'Must match: other'], 'same')]
+    #[TestWith(['same', null], 'same_without_value')]
+    #[TestWith(['starts_with:foo,bar', 'Must start with: foo, bar'], 'starts_with')]
+    #[TestWith(['starts_with', null], 'starts_with_without_value')]
+    #[TestWith(['doesnt_start_with:foo,bar', 'Must not start with: foo, bar'], 'doesnt_start_with')]
+    #[TestWith(['doesnt_start_with', null], 'doesnt_start_with_without_value')]
+    #[TestWith(['ends_with:foo,bar', 'Must end with: foo, bar'], 'ends_with')]
+    #[TestWith(['ends_with', null], 'ends_with_without_value')]
+    #[TestWith(['doesnt_end_with:foo,bar', 'Must not end with: foo, bar'], 'doesnt_end_with')]
+    #[TestWith(['doesnt_end_with', null], 'doesnt_end_with_without_value')]
+    #[TestWith(['in_array:other.*', 'Must be a value from other.*'], 'in_array')]
+    #[TestWith(['in_array', null], 'in_array_without_value')]
     public function it_only_describes_a_comparison_rule_when_it_was_given_parameters(string $rule, ?string $descriptionContains): void
     {
         $result = $this->convert(['field' => [$rule]]);
@@ -193,8 +196,8 @@ class SchemaAttributesTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['in:draft,published,archived', 'Must be one of: draft, published, archived'])]
-    #[TestWith(['in', null])]
+    #[TestWith(['in:draft,published,archived', 'Must be one of: draft, published, archived'], 'with_values')]
+    #[TestWith(['in', null], 'without_values')]
     public function in_builds_an_enum_and_only_describes_it_when_values_are_given(string $rule, ?string $descriptionContains): void
     {
         $result = $this->convert(['field' => [$rule]]);
@@ -221,8 +224,8 @@ class SchemaAttributesTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['contains:a,b', 'Must contain: a, b'])]
-    #[TestWith(['contains', null])]
+    #[TestWith(['contains:a,b', 'Must contain: a, b'], 'with_values')]
+    #[TestWith(['contains', null], 'without_values')]
     public function contains_defaults_to_an_array_type_and_only_describes_it_when_values_are_given(string $rule, ?string $descriptionContains): void
     {
         $result = $this->convert(['field' => [$rule]]);
@@ -232,8 +235,8 @@ class SchemaAttributesTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['doesnt_contain:a,b', 'Must not contain: a, b'])]
-    #[TestWith(['doesnt_contain', null])]
+    #[TestWith(['doesnt_contain:a,b', 'Must not contain: a, b'], 'with_values')]
+    #[TestWith(['doesnt_contain', null], 'without_values')]
     public function doesnt_contain_defaults_to_an_array_type_and_only_describes_it_when_values_are_given(string $rule, ?string $descriptionContains): void
     {
         $result = $this->convert(['field' => [$rule]]);
@@ -289,9 +292,9 @@ class SchemaAttributesTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['date_format:Y-m-d', 'Must match date format: Y-m-d'])]
-    #[TestWith(['date_format:Y-m-d,d/m/Y', 'Must match one of date formats: Y-m-d, d/m/Y'])]
-    #[TestWith(['date_format', null])]
+    #[TestWith(['date_format:Y-m-d', 'Must match date format: Y-m-d'], 'single_format')]
+    #[TestWith(['date_format:Y-m-d,d/m/Y', 'Must match one of date formats: Y-m-d, d/m/Y'], 'multiple_formats')]
+    #[TestWith(['date_format', null], 'without_value')]
     public function date_format_only_describes_the_format_when_it_was_given(string $rule, ?string $descriptionContains): void
     {
         $result = $this->convert(['field' => [$rule]]);
@@ -300,10 +303,13 @@ class SchemaAttributesTest extends IntegrationTestCase
         $this->assertDescribed($result['field'], $descriptionContains);
     }
 
+    /**
+     * @param  list<string>  $rules
+     */
     #[Test]
-    #[TestWith([['string', 'between:2,10'], StringType::class, 'Must be between 2 and 10 characters'])]
-    #[TestWith([['array', 'between:1,5'], ArrayType::class, 'Must have between 1 and 5 items'])]
-    #[TestWith([['integer', 'between:1,5'], IntegerType::class, 'Must be between 1 and 5'])]
+    #[TestWith([['string', 'between:2,10'], StringType::class, 'Must be between 2 and 10 characters'], 'string')]
+    #[TestWith([['array', 'between:1,5'], ArrayType::class, 'Must have between 1 and 5 items'], 'array')]
+    #[TestWith([['integer', 'between:1,5'], IntegerType::class, 'Must be between 1 and 5'], 'integer')]
     public function between_describes_the_bounds_according_to_the_attributes_existing_type(array $rules, string $expectedType, string $description): void
     {
         $result = $this->convert(['field' => $rules]);
@@ -324,10 +330,13 @@ class SchemaAttributesTest extends IntegrationTestCase
         $this->assertSame(9.5, $serialized['maximum']);
     }
 
+    /**
+     * @param  list<string>  $rules
+     */
     #[Test]
-    #[TestWith([['string', 'max:10'], StringType::class, 'Maximum length: 10 characters'])]
-    #[TestWith([['array', 'max:5'], ArrayType::class, 'Maximum items: 5'])]
-    #[TestWith([['integer', 'max:100'], IntegerType::class, 'Maximum value: 100'])]
+    #[TestWith([['string', 'max:10'], StringType::class, 'Maximum length: 10 characters'], 'string')]
+    #[TestWith([['array', 'max:5'], ArrayType::class, 'Maximum items: 5'], 'array')]
+    #[TestWith([['integer', 'max:100'], IntegerType::class, 'Maximum value: 100'], 'integer')]
     public function max_describes_the_bound_according_to_the_attributes_existing_type(array $rules, string $expectedType, string $description): void
     {
         $result = $this->convert(['field' => $rules]);
@@ -336,10 +345,13 @@ class SchemaAttributesTest extends IntegrationTestCase
         $this->assertDescribed($result['field'], $description);
     }
 
+    /**
+     * @param  list<string>  $rules
+     */
     #[Test]
-    #[TestWith([['string', 'min:2'], StringType::class, 'Minimum length: 2 characters'])]
-    #[TestWith([['array', 'min:1'], ArrayType::class, 'Minimum items: 1'])]
-    #[TestWith([['integer', 'min:0'], IntegerType::class, 'Minimum value: 0'])]
+    #[TestWith([['string', 'min:2'], StringType::class, 'Minimum length: 2 characters'], 'string')]
+    #[TestWith([['array', 'min:1'], ArrayType::class, 'Minimum items: 1'], 'array')]
+    #[TestWith([['integer', 'min:0'], IntegerType::class, 'Minimum value: 0'], 'integer')]
     public function min_describes_the_bound_according_to_the_attributes_existing_type(array $rules, string $expectedType, string $description): void
     {
         $result = $this->convert(['field' => $rules]);
@@ -348,10 +360,13 @@ class SchemaAttributesTest extends IntegrationTestCase
         $this->assertDescribed($result['field'], $description);
     }
 
+    /**
+     * @param  list<string>  $rules
+     */
     #[Test]
-    #[TestWith([['string', 'size:5'], StringType::class, 'Must be exactly 5 characters'])]
-    #[TestWith([['array', 'size:3'], ArrayType::class, 'Must contain exactly 3 items'])]
-    #[TestWith([['integer', 'size:7'], IntegerType::class, 'Must be exactly 7'])]
+    #[TestWith([['string', 'size:5'], StringType::class, 'Must be exactly 5 characters'], 'string')]
+    #[TestWith([['array', 'size:3'], ArrayType::class, 'Must contain exactly 3 items'], 'array')]
+    #[TestWith([['integer', 'size:7'], IntegerType::class, 'Must be exactly 7'], 'integer')]
     public function size_describes_the_exact_size_according_to_the_attributes_existing_type(array $rules, string $expectedType, string $description): void
     {
         $result = $this->convert(['field' => $rules]);
@@ -412,7 +427,9 @@ class SchemaAttributesTest extends IntegrationTestCase
 
         $this->assertInstanceOf(StringType::class, $result['field']);
         $this->assertDescribed($result['field'], 'This field is required');
-        $this->assertTrue($this->isRequired($result['field']));
+
+        $object = (new JsonSchemaTypeFactory)->object(['field' => $result['field']])->toArray();
+        $this->assertContains('field', $object['required']);
     }
 
     #[Test]
@@ -420,7 +437,8 @@ class SchemaAttributesTest extends IntegrationTestCase
     {
         $result = $this->convert(['field' => ['string']]);
 
-        $this->assertFalse($this->isRequired($result['field']));
+        $object = (new JsonSchemaTypeFactory)->object(['field' => $result['field']])->toArray();
+        $this->assertArrayNotHasKey('required', $object);
     }
 
     #[Test]
@@ -540,12 +558,12 @@ class SchemaAttributesTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith([ArrayType::class, 'array'])]
-    #[TestWith([BooleanType::class, 'boolean'])]
-    #[TestWith([IntegerType::class, 'integer'])]
-    #[TestWith([NumberType::class, 'number'])]
-    #[TestWith([ObjectType::class, 'object'])]
-    #[TestWith([StringType::class, 'string'])]
+    #[TestWith([ArrayType::class, 'array'], 'array')]
+    #[TestWith([BooleanType::class, 'boolean'], 'boolean')]
+    #[TestWith([IntegerType::class, 'integer'], 'integer')]
+    #[TestWith([NumberType::class, 'number'], 'number')]
+    #[TestWith([ObjectType::class, 'object'], 'object')]
+    #[TestWith([StringType::class, 'string'], 'string')]
     public function it_maps_a_schema_type_to_its_primitive_name(string $typeClass, string $primitive): void
     {
         $schema = new JsonSchemaTypeFactory;
@@ -563,7 +581,7 @@ class SchemaAttributesTest extends IntegrationTestCase
     }
 
     /**
-     * @param  array<string, array<int, mixed>>  $rules
+     * @param  array<string, array<int, mixed>|string>  $rules
      * @return array<string, Type>
      */
     private function convert(array $rules): array
@@ -586,13 +604,5 @@ class SchemaAttributesTest extends IntegrationTestCase
 
         $this->assertArrayHasKey('description', $serialized);
         $this->assertStringContainsString($descriptionContains, $serialized['description']);
-    }
-
-    private function isRequired(Type $type): bool
-    {
-        $reflection = new ReflectionProperty($type, 'required');
-        $reflection->setAccessible(true);
-
-        return (bool) $reflection->getValue($type);
     }
 }
