@@ -23,6 +23,8 @@ class MergeableHiddenFieldsTest extends IntegrationTestCase
     protected function tearDown(): void
     {
         Restify::$repositories = [];
+        MergeableDuplicateFieldRepository::$order = 'visible_first';
+        MergeableRowVisibilityRepository::$visibleForId = 0;
 
         parent::tearDown();
     }
@@ -82,11 +84,7 @@ class MergeableHiddenFieldsTest extends IntegrationTestCase
             ->assertOk()
             ->json('data.0.attributes');
 
-        if ($expectVisible) {
-            $this->assertArrayHasKey('title', $attributes);
-        } else {
-            $this->assertArrayNotHasKey('title', $attributes);
-        }
+        $this->assertSame($expectVisible, array_key_exists('title', $attributes));
     }
 
     #[Test]
@@ -106,11 +104,7 @@ class MergeableHiddenFieldsTest extends IntegrationTestCase
             ->assertOk()
             ->json('data.attributes');
 
-        if ($expectVisible) {
-            $this->assertArrayHasKey('title', $attributes);
-        } else {
-            $this->assertArrayNotHasKey('title', $attributes);
-        }
+        $this->assertSame($expectVisible, array_key_exists('title', $attributes));
     }
 
     #[Test]
