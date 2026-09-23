@@ -36,7 +36,7 @@ class AllowedResetUrlHostTest extends IntegrationTestCase
     #[TestWith(['https://good.com/](evil)/reset?token={token}&email={email}', ['https://good.com'], false], 'a markdown link injection in the path')]
     #[TestWith(['https://good.com/<script>alert(1)</script>?token={token}', ['https://good.com'], false], 'angle brackets in the path are rejected')]
     #[TestWith(['https://good.com/reset?token={token}&email={email}&r="onmouseover="x', ['https://good.com'], false], 'a double quote in the query is rejected')]
-    #[TestWith(["https://good.com/reset?token={token}&r=`x`", ['https://good.com'], false], 'a backtick in the query is rejected')]
+    #[TestWith(['https://good.com/reset?token={token}&r=`x`', ['https://good.com'], false], 'a backtick in the query is rejected')]
     #[TestWith(["https://good.com/reset?token={token}&r='x'", ['https://good.com'], false], 'a single quote in the query is rejected')]
     #[TestWith(['https://good.com/{tenant}/reset?token={token}&email={email}', ['https://good.com'], false], 'a curly-brace segment that is not the literal {token}/{email} placeholder is rejected')]
     #[TestWith(['https://good.com:443/reset', ['https://good.com'], true], 'an explicit default port for https (443) is normalized away')]
