@@ -68,7 +68,7 @@ class ToolCommand extends GeneratorCommand
         return $rootNamespace.'\\Restify\\Mcp\\Tools';
     }
 
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['force', null, InputOption::VALUE_NONE, 'Create the class even if the tool already exists.'],

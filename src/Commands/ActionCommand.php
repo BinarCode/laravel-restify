@@ -62,7 +62,7 @@ class ActionCommand extends GeneratorCommand
         return $rootNamespace.'\Restify\Actions';
     }
 
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['force', null, InputOption::VALUE_NONE, 'Create the class even if the action already exists.'],

@@ -62,7 +62,7 @@ class McpResourceCommand extends GeneratorCommand
         return $rootNamespace.'\\Restify\\Mcp\\Resources';
     }
 
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['force', null, InputOption::VALUE_NONE, 'Create the class even if the resource already exists.'],

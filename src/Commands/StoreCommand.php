@@ -66,7 +66,7 @@ class StoreCommand extends GeneratorCommand
         return $rootNamespace.'\Restify\Stores';
     }
 
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['force', null, InputOption::VALUE_NONE, 'Create the class even if the store already exists.'],

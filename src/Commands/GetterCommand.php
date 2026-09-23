@@ -62,7 +62,7 @@ class GetterCommand extends GeneratorCommand
         return $rootNamespace.'\Restify\Getters';
     }
 
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
             ['force', null, InputOption::VALUE_NONE, 'Create the class even if the getter already exists.'],
