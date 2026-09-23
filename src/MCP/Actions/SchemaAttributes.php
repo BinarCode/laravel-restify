@@ -476,11 +476,17 @@ trait SchemaAttributes
      * Validate that the password of the currently authenticated user matches the given value.
      *
      * @param  JsonSchema  $schema
-     * @return Type
+     * @param  array<int, string>  $parameters
      */
-    public function validateCurrentPassword(string $attribute, $schema, array $parameters)
+    public function validateCurrentPassword(string $attribute, $schema, array $parameters): Type
     {
-        return $this->rulesSchema[$attribute] ?? $schema->string()->description("Must match the currently authenticated user's password");
+        $existingType = $this->rulesSchema[$attribute] ?? null;
+
+        if ($existingType instanceof Type) {
+            return $existingType;
+        }
+
+        return $schema->string()->description("Must match the currently authenticated user's password");
     }
 
     /**

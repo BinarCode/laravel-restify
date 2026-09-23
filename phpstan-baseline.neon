@@ -9507,18 +9507,6 @@ parameters:
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateCurrentPassword\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateCurrentPassword\(\) should return Illuminate\\JsonSchema\\Types\\Type but returns mixed\.$#'
-			identifier: return.type
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateDate\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
