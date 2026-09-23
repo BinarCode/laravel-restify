@@ -243,12 +243,6 @@ trait InteractsWithCache
         return Cache::store(static::resolveCacheStoreName());
     }
 
-    /**
-     * Resolve the named cache store this repository's caching should use:
-     * its own $cacheStore when set, otherwise the configured
-     * restify.repositories.cache.store when it's a non-empty string,
-     * otherwise null for the application's default cache store.
-     */
     protected static function resolveCacheStoreName(): ?string
     {
         if (static::$cacheStore !== null) {
