@@ -13,28 +13,24 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 class RestifyAuthMacroCommandTest extends IntegrationTestCase
 {
+    private string $tempBasePath;
+
     private string $routesPath;
-
-    private bool $routesFileExisted;
-
-    private ?string $originalRoutesContent;
 
     protected function setUp(): void
     {
         parent::setUp();
 
+        $this->tempBasePath = sys_get_temp_dir().'/restify-auth-macro-test-'.uniqid('', true);
+        File::ensureDirectoryExists($this->tempBasePath.'/routes');
+        $this->app->setBasePath($this->tempBasePath);
+
         $this->routesPath = base_path('routes/api.php');
-        $this->routesFileExisted = File::exists($this->routesPath);
-        $this->originalRoutesContent = $this->routesFileExisted ? File::get($this->routesPath) : null;
     }
 
     protected function tearDown(): void
     {
-        if ($this->routesFileExisted) {
-            File::put($this->routesPath, $this->originalRoutesContent);
-        } else {
-            File::delete($this->routesPath);
-        }
+        File::deleteDirectory($this->tempBasePath);
 
         parent::tearDown();
     }
@@ -88,7 +84,6 @@ class RestifyAuthMacroCommandTest extends IntegrationTestCase
 
     private function seedRoutesFile(string $content): void
     {
-        File::ensureDirectoryExists(dirname($this->routesPath));
         File::put($this->routesPath, $content);
     }
 }

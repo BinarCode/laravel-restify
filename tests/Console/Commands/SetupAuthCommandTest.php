@@ -11,45 +11,28 @@ use PHPUnit\Framework\Attributes\Test;
 
 class SetupAuthCommandTest extends IntegrationTestCase
 {
-    private string $composerLockPath;
-
-    private ?string $originalComposerLock;
-
-    private string $routesPath;
-
-    private ?string $originalRoutesContent;
+    private string $tempBasePath;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->composerLockPath = base_path('composer.lock');
-        $this->originalComposerLock = File::exists($this->composerLockPath)
-            ? File::get($this->composerLockPath)
-            : null;
+        $this->tempBasePath = sys_get_temp_dir().'/restify-setup-auth-test-'.uniqid('', true);
+        File::ensureDirectoryExists($this->tempBasePath);
+        $this->app->setBasePath($this->tempBasePath);
 
         // Report Sanctum as already installed so PrepareSanctumCommand does
         // not shell out to composer/artisan while this test runs.
-        File::put($this->composerLockPath, json_encode([
+        File::put(base_path('composer.lock'), json_encode([
             'packages' => [['name' => 'laravel/sanctum']],
         ]));
 
-        $this->routesPath = base_path('routes/api.php');
-        $this->originalRoutesContent = File::exists($this->routesPath)
-            ? File::get($this->routesPath)
-            : null;
-        File::delete($this->routesPath);
+        // No routes/api.php in this temp base path, so the auth-macro step fails.
     }
 
     protected function tearDown(): void
     {
-        $this->originalComposerLock === null
-            ? File::delete($this->composerLockPath)
-            : File::put($this->composerLockPath, $this->originalComposerLock);
-
-        $this->originalRoutesContent === null
-            ? File::delete($this->routesPath)
-            : File::put($this->routesPath, $this->originalRoutesContent);
+        File::deleteDirectory($this->tempBasePath);
 
         parent::tearDown();
     }
