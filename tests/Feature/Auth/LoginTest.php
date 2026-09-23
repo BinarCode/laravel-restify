@@ -43,6 +43,27 @@ class LoginTest extends IntegrationTestCase
     }
 
     #[Test]
+    #[TestWith(['0.5', 30], 'a sub-minute ttl is rounded to seconds instead of truncated to zero')]
+    #[TestWith(['1.5', 90], 'a fractional ttl is rounded to seconds instead of truncated')]
+    #[TestWith([null, null], 'no ttl means no expiry')]
+    public function the_login_token_ttl_is_computed_in_seconds(?string $tokenTtl, ?int $expectedExpiresIn): void
+    {
+        config(['restify.auth.token_ttl' => $tokenTtl]);
+
+        UserFactory::one([
+            'email' => 'user@restify.test',
+            'password' => Hash::make('correct-password'),
+        ]);
+
+        $this->postJson('auth/login', [
+            'email' => 'user@restify.test',
+            'password' => 'correct-password',
+        ])
+            ->assertOk()
+            ->assertJsonPath('meta.expires_in', $expectedExpiresIn);
+    }
+
+    #[Test]
     public function wrong_password_is_rejected_with_the_documented_status(): void
     {
         UserFactory::one([
