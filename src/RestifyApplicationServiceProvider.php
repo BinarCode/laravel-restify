@@ -23,6 +23,13 @@ use ReflectionException;
 class RestifyApplicationServiceProvider extends ServiceProvider
 {
     /**
+     * The actions `restify:auth` can publish, in the order `restifyAuth()` registers them.
+     *
+     * @var list<string>
+     */
+    public const AUTH_ACTIONS = ['register', 'login', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword'];
+
+    /**
      * Bootstrap the application services.
      */
     public function boot()
@@ -81,7 +88,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
     protected function authRoutes(): void
     {
-        Route::macro('restifyAuth', function ($prefix = '/', array $actions = ['register', 'login', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword']) {
+        Route::macro('restifyAuth', function ($prefix = '/', array $actions = RestifyApplicationServiceProvider::AUTH_ACTIONS) {
             Route::group([
                 'prefix' => $prefix,
                 'middleware' => ['api'],

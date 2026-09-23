@@ -401,7 +401,7 @@ For example, if you previously published the register route, your `routes/api.ph
 ```php
 // ...
 
-Route::restifyAuth(actions: ["login", "resetPassword", "forgotPassword", "verifyEmail"]);
+Route::restifyAuth(actions: ["login", "logout", "verifyEmail", "forgotPassword", "resetPassword"]);
 
 // ...
 ```

@@ -1414,38 +1414,8 @@ parameters:
 			path: src/Commands/PrepareSanctumCommand.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\PublishAuthCommand\:\:getRemainingActionsString\(\) has parameter \$actions with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\PublishAuthCommand\:\:handle\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\PublishAuthCommand\:\:registerRoutes\(\) has parameter \$actions with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Commands\\PublishAuthCommand\:\:setNamespace\(\) should return string but returns int\<0, max\>\|false\.$#'
 			identifier: return.type
-			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fclose expects resource, resource\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
-			message: '#^Parameter \#1 \$stream of function fwrite expects resource, resource\|false given\.$#'
-			identifier: argument.type
 			count: 1
 			path: src/Commands/PublishAuthCommand.php
 
@@ -1453,18 +1423,6 @@ parameters:
 			message: '#^Parameter \#1 \$string of function str expects string\|null, string\|false given\.$#'
 			identifier: argument.type
 			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
-			message: '#^Parameter \#2 \$arrays of function array_diff expects an array of values castable to string, array given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
-			message: '#^Parameter \#2 \$string of function explode expects string, array\|float\|int\<min, \-1\>\|int\<1, max\>\|string\|true given\.$#'
-			identifier: argument.type
-			count: 4
 			path: src/Commands/PublishAuthCommand.php
 
 		-
