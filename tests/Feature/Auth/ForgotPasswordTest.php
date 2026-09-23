@@ -44,7 +44,7 @@ class ForgotPasswordTest extends IntegrationTestCase
             ForgotPasswordNotification::class,
             function (ForgotPasswordNotification $notification, array $channels, AnonymousNotifiable $notifiable) use ($user): bool {
                 return $notifiable->routes['mail'] === $user->email
-                    && str_contains($notification->url, 'email='.$user->email)
+                    && str_contains($notification->url, 'email='.rawurlencode($user->email))
                     && ! str_contains($notification->url, '{token}')
                     && ! str_contains($notification->url, '{email}');
             }
