@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDetachRequest;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
@@ -27,18 +28,22 @@ class RepositoryDetachController extends RepositoryController
         $field = $this->belongsToManyField($request);
 
         if (is_null($field)) {
-            abort(400);
+            abort(JsonResponse::HTTP_BAD_REQUEST);
         }
+
+        $relatedRepositoryIds = Arr::wrap($request->input($request->relatedRepositoryKey()));
+
+        $pivots = Collection::make($relatedRepositoryIds)
+            ->map(fn ($relatedRepositoryId) => $field->initializePivot(
+                $request,
+                $model->{$field->relation}(),
+                $relatedRepositoryId
+            ));
 
         return $repository->detach(
             $request,
             $request->repositoryId,
-            Collection::make(Arr::wrap($request->input($request->relatedRepositoryKey())))
-                ->map(fn ($relatedRepositoryId) => $field->initializePivot(
-                    $request,
-                    $model->{$field->relation}(),
-                    $relatedRepositoryId
-                ))
+            $pivots
         );
     }
 }

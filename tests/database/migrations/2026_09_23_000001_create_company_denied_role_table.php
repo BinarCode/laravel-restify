@@ -8,11 +8,6 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateCompanyDeniedRoleTable extends Migration
 {
-    /**
-     * Run the migrations.
-     *
-     * @return void
-     */
     public function up()
     {
         Schema::create('company_denied_role', function (Blueprint $table): void {
@@ -22,11 +17,6 @@ class CreateCompanyDeniedRoleTable extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
     public function down()
     {
         Schema::dropIfExists('company_denied_role');

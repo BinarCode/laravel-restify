@@ -81,7 +81,9 @@ trait Attachable
 
     public function authorizeToAttach(RestifyRequest $request)
     {
-        foreach (Arr::wrap($request->input($request->relatedRepositoryKey())) as $relatedRepositoryId) {
+        $relatedRepositoryIds = Arr::wrap($request->input($request->relatedRepositoryKey()));
+
+        foreach ($relatedRepositoryIds as $relatedRepositoryId) {
             $pivot = $this->initializePivot(
                 $request,
                 $request->findModelOrFail()->{$this->relation}(),
@@ -98,7 +100,9 @@ trait Attachable
 
     public function authorizeToSync(RestifyRequest $request)
     {
-        foreach (Arr::wrap($request->input($request->relatedRepositoryKey())) as $relatedRepositoryId) {
+        $relatedRepositoryIds = Arr::wrap($request->input($request->relatedRepositoryKey()));
+
+        foreach ($relatedRepositoryIds as $relatedRepositoryId) {
             $pivot = $this->initializePivot(
                 $request,
                 $request->findModelOrFail()->{$this->relation}(),
