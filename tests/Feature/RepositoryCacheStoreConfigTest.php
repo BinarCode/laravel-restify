@@ -40,9 +40,6 @@ class RepositoryCacheStoreConfigTest extends IntegrationTestCase
 
         PostRepository::$cacheStore = null;
 
-        Cache::store('array')->flush();
-        Cache::store('secondary')->flush();
-
         parent::tearDown();
     }
 
@@ -115,6 +112,8 @@ class RepositoryCacheStoreConfigTest extends IntegrationTestCase
         config(['restify.repositories.cache.store' => 'secondary']);
 
         $this->getJson('/api/restify/posts')->assertOk();
+
+        Cache::store('array')->flush();
 
         $this->recordQueries();
 
