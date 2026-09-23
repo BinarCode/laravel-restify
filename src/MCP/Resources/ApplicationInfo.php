@@ -88,7 +88,7 @@ EOT;
     protected function getRepositoryMetadata(): array
     {
         return collect(Restify::$repositories)
-            ->map(function (string $repositoryClass) {
+            ->map(function (string $repositoryClass): array {
                 /** @var Repository $instance */
                 $instance = app($repositoryClass);
 

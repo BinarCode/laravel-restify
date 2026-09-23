@@ -554,8 +554,8 @@ GRAPHQL;
 
     protected function getRepositoryClass(string $repositoryName): string
     {
-        $repositoryClass = collect(Restify::$repositories)
-            ->first(fn ($repo) => class_basename($repo) === $repositoryName);
+        $repositoryClass = Collection::make(Restify::$repositories)
+            ->first(fn (string $repository): bool => class_basename($repository) === $repositoryName);
 
         if (is_null($repositoryClass)) {
             throw new RuntimeException("Unable to resolve a registered repository for [{$repositoryName}].");

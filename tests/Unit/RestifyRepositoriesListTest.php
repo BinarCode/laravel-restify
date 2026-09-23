@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -13,6 +14,7 @@ use PHPUnit\Framework\Attributes\Test;
 
 class RestifyRepositoriesListTest extends IntegrationTestCase
 {
+    /** @var list<class-string<Repository>> */
     private array $originalRepositories;
 
     protected function setUp(): void

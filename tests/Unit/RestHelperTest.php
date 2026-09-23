@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class RestHelperTest extends IntegrationTestCase
 {
@@ -25,13 +27,25 @@ class RestHelperTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_non_model_value_ahead_of_real_models_no_longer_crashes_the_batch(): void
-    {
-        $userA = UserFactory::one();
-        $userB = UserFactory::one();
+    #[TestWith(['not-a-model', 2, 'first'], 'junk string ahead of two models')]
+    #[TestWith(['not-a-model', 1, 'first'], 'junk string ahead of one model')]
+    #[TestWith([null, 2, 'first'], 'null ahead of two models')]
+    #[TestWith(['not-a-model', 2, 'last'], 'junk string after two models')]
+    public function a_non_model_value_mixed_with_real_models_does_not_change_the_resolved_repository(
+        mixed $junk,
+        int $modelCount,
+        string $position,
+    ): void {
+        $models = array_map(fn (): User => UserFactory::one(), range(1, $modelCount));
 
-        $serialized = rest('not-a-model', $userA, $userB)->jsonSerialize();
+        $arguments = $position === 'first'
+            ? [$junk, ...$models]
+            : [...$models, $junk];
 
-        $this->assertCount(2, $serialized['data']);
+        $expected = rest(...$models)->jsonSerialize();
+
+        $serialized = rest(...$arguments)->jsonSerialize();
+
+        $this->assertEquals($expected, $serialized);
     }
 }

@@ -57,18 +57,16 @@ if (! function_exists('id')) {
 if (! function_exists('rest')) {
     function rest(...$models): Serializer
     {
-        $models = collect($models)->flatten();
+        $models = collect($models)->flatten()->filter(fn (mixed $model): bool => $model instanceof Model);
 
         $firstModel = $models->first();
 
-        if ($firstModel instanceof Model) {
-            $repository = Restify::repositoryForModel(get_class($firstModel)) ?? Repository::class;
-        } else {
-            $repository = Repository::class;
-        }
+        $repository = $firstModel instanceof Model
+            ? Restify::repositoryForModel(get_class($firstModel)) ?? Repository::class
+            : Repository::class;
 
         return (new Serializer(app($repository)))
-            ->models(collect($models));
+            ->models($models);
     }
 }
 

@@ -165,9 +165,9 @@ class Restify
             }
         }
 
-        static::repositories(
-            array_values(collect($repositories)->sort()->all())
-        );
+        sort($repositories);
+
+        static::repositories($repositories);
     }
 
     /**
@@ -271,7 +271,7 @@ class Restify
             $request->is(trim($path.'/*', '/')) ||
             $request->is('restify-api/*') ||
             collect(static::$repositories)
-                ->filter(fn (string $repository): bool => $repository::prefix() !== null)
+                ->filter(fn (string $repository): bool => ! in_array($repository::prefix(), [null, ''], true))
                 ->some(fn (string $repository) => $request->is($repository::prefix().'/*'));
     }
 
