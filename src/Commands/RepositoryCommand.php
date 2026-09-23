@@ -150,7 +150,7 @@ class RepositoryCommand extends GeneratorCommand
         }
 
         $model = Str::singular(class_basename(Str::before($this->getNameInput(), 'Repository')));
-        $defaultModelClass = str_replace('/', '\\', $this->rootNamespace().'/Models/'.$model);
+        $defaultModelClass = $this->rootNamespaceWithoutTrailingSeparator().'\\Models\\'.$model;
 
         // If default model exists, use it
         if (class_exists($defaultModelClass)) {
@@ -265,7 +265,7 @@ class RepositoryCommand extends GeneratorCommand
             $namespaceParts = [];
             $baseNamespace = str_replace($this->rootNamespace().'\\', '', $existingRepositoryPath['namespace']);
             if ($baseNamespace) {
-                $namespaceParts[] = $baseNamespace;
+                $namespaceParts[] = str_replace('\\', '/', $baseNamespace);
             }
 
             if ($patternPath && ! empty($patternPath)) {
@@ -505,7 +505,7 @@ class RepositoryCommand extends GeneratorCommand
                 ->notPath('Providers');
 
             foreach ($finder as $file) {
-                $relativePath = str_replace(app_path().DIRECTORY_SEPARATOR, '', $file->getRealPath());
+                $relativePath = str_replace(realpath(app_path()).DIRECTORY_SEPARATOR, '', $file->getRealPath());
                 $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
                 $className = 'App\\'.str_replace(['/', '.php'], ['\\', ''], $relativePath);
 
@@ -605,8 +605,8 @@ class RepositoryCommand extends GeneratorCommand
 
         // First, check common locations
         $commonLocations = [
-            $this->rootNamespace().'\\Models\\'.$modelName,
-            $this->rootNamespace().'\\'.$modelName,
+            $this->rootNamespaceWithoutTrailingSeparator().'\\Models\\'.$modelName,
+            $this->rootNamespaceWithoutTrailingSeparator().'\\'.$modelName,
             'App\\Models\\'.$modelName,
             'App\\'.$modelName,
         ];
@@ -716,14 +716,9 @@ class RepositoryCommand extends GeneratorCommand
         $pluralName = Str::plural(Str::snake($modelBaseName));
 
         // Get all tables in the database
-        $tables = Schema::getAllTables();
+        $tables = Schema::getTableListing(schemaQualified: false);
 
-        foreach ($tables as $tableObj) {
-            // Get the table name (varies by database driver)
-            $otherTable = is_object($tableObj) ?
-                ($tableObj->name ?? $tableObj->tablename ?? $tableObj->Tables_in_database ?? reset($tableObj)) :
-                $tableObj;
-
+        foreach ($tables as $otherTable) {
             if ($otherTable === $tableName) {
                 continue;
             }
@@ -769,8 +764,8 @@ class RepositoryCommand extends GeneratorCommand
     {
         // Common locations to check
         $possibleClasses = [
-            $this->rootNamespace().'\\Models\\'.$modelName,
-            $this->rootNamespace().'\\'.$modelName,
+            $this->rootNamespaceWithoutTrailingSeparator().'\\Models\\'.$modelName,
+            $this->rootNamespaceWithoutTrailingSeparator().'\\'.$modelName,
             'App\\Models\\'.$modelName,
             'App\\'.$modelName,
         ];
@@ -831,9 +826,9 @@ class RepositoryCommand extends GeneratorCommand
 
         // Fallback to common repository locations
         $commonRepositories = [
-            $this->rootNamespace().'\\Restify\\'.$repositoryName,
+            $this->rootNamespaceWithoutTrailingSeparator().'\\Restify\\'.$repositoryName,
             'App\\Restify\\'.$repositoryName,
-            $this->rootNamespace().'\\Http\\Restify\\'.$repositoryName,
+            $this->rootNamespaceWithoutTrailingSeparator().'\\Http\\Restify\\'.$repositoryName,
             'App\\Http\\Restify\\'.$repositoryName,
         ];
 
@@ -851,11 +846,11 @@ class RepositoryCommand extends GeneratorCommand
                 ->name($repositoryName.'.php');
 
             foreach ($finder as $file) {
-                $relativePath = str_replace(app_path().DIRECTORY_SEPARATOR, '', $file->getRealPath());
+                $relativePath = str_replace(realpath(app_path()).DIRECTORY_SEPARATOR, '', $file->getRealPath());
                 $relativePath = str_replace(DIRECTORY_SEPARATOR, '/', $relativePath);
                 $relativePath = str_replace('.php', '', $relativePath);
 
-                $possibleClass = $this->rootNamespace().'\\'.str_replace('/', '\\', $relativePath);
+                $possibleClass = $this->rootNamespaceWithoutTrailingSeparator().'\\'.str_replace('/', '\\', $relativePath);
                 if (class_exists($possibleClass)) {
                     return $possibleClass;
                 }
@@ -915,7 +910,7 @@ class RepositoryCommand extends GeneratorCommand
                 ->notPath('tests');
 
             foreach ($finder as $file) {
-                $fullPath = str_replace(app_path().DIRECTORY_SEPARATOR, '', $file->getRealPath());
+                $fullPath = str_replace(realpath(app_path()).DIRECTORY_SEPARATOR, '', $file->getRealPath());
                 $fullPath = str_replace(DIRECTORY_SEPARATOR, '/', $fullPath);
 
                 // Skip if it's a base repository class at root level
@@ -1009,6 +1004,16 @@ class RepositoryCommand extends GeneratorCommand
                 // No additional path
                 return '';
         }
+    }
+
+    /**
+     * `rootNamespace()` already ends with a trailing separator (e.g. "App\"), so
+     * appending another leading "\" when building a class name doubles it up and
+     * makes `class_exists()` always return false for that candidate.
+     */
+    protected function rootNamespaceWithoutTrailingSeparator(): string
+    {
+        return rtrim($this->rootNamespace(), '\\');
     }
 
     protected function getOptions()
