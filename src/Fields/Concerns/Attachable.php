@@ -48,10 +48,6 @@ trait Attachable
      */
     public $pivotFields = [];
 
-    /**
-     * Request attribute key under which {@see self::relatedModelsByPrimaryKey()}
-     * memoizes its lookup.
-     */
     private const RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyAttachableRelatedModels';
 
     public function canAttach(callable|Closure $callback)
@@ -95,10 +91,10 @@ trait Attachable
 
     public function authorizeToAttach(RestifyRequest $request)
     {
-        collect(Arr::wrap($request->input($request->relatedRepository)))->each(function ($relatedRepositoryId) use ($request) {
+        collect(Arr::wrap($request->input($request->relatedRepositoryKey())))->each(function ($relatedRepositoryId) use ($request) {
             $pivot = $this->initializePivot(
                 $request,
-                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(),
+                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepositoryKey()}(),
                 $relatedRepositoryId
             );
 
@@ -112,10 +108,10 @@ trait Attachable
 
     public function authorizeToSync(RestifyRequest $request)
     {
-        collect(Arr::wrap($request->input($request->relatedRepository)))->each(function ($relatedRepositoryId) use ($request) {
+        collect(Arr::wrap($request->input($request->relatedRepositoryKey())))->each(function ($relatedRepositoryId) use ($request) {
             $pivot = $this->initializePivot(
                 $request,
-                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(),
+                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepositoryKey()}(),
                 $relatedRepositoryId
             );
 
@@ -149,11 +145,7 @@ trait Attachable
             throw new InvalidArgumentException('The relationship must be a BelongsToMany (or MorphToMany) relation.');
         }
 
-        $relatedRepository = $request->relatedRepository;
-
-        if (! is_string($relatedRepository)) {
-            throw new InvalidArgumentException('The [relatedRepository] route parameter must be a string.');
-        }
+        $relatedRepository = $request->relatedRepositoryKey();
 
         $relatedKey = $this->assertValidRelatedKeyShape($relatedKey, $relatedRepository);
 
@@ -162,7 +154,7 @@ trait Attachable
 
         $parentKey = $request->findModelOrFail()->{$parentKeyName};
 
-        $relatedRepositoryModel = $request->repository($request->route('relatedRepository'))::newModel();
+        $relatedRepositoryModel = $request->repository($relatedRepository)::newModel();
 
         if ($relatedKeyName !== $relatedRepositoryModel->getKeyName()) {
             $relatedKey = $this->resolveNonPrimaryRelatedKey($request, $relatedRepositoryModel, $relatedKeyName, $relatedKey);
@@ -215,11 +207,7 @@ trait Attachable
             return $cached;
         }
 
-        $relatedRepository = $request->relatedRepository;
-
-        if (! is_string($relatedRepository)) {
-            throw new InvalidArgumentException('The [relatedRepository] route parameter must be a string.');
-        }
+        $relatedRepository = $request->relatedRepositoryKey();
 
         $primaryKeyName = $relatedRepositoryModel->getKeyName();
 

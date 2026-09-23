@@ -11,7 +11,6 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use InvalidArgumentException;
 
 trait ResolvesRelatedModels
 {
@@ -26,11 +25,7 @@ trait ResolvesRelatedModels
      */
     protected function relatedModels(): Collection
     {
-        $table = $this->relatedRepository;
-
-        if (! is_string($table)) {
-            throw new InvalidArgumentException('The [relatedRepository] route parameter must be a string.');
-        }
+        $table = $this->relatedRepositoryKey();
 
         $relatedRepositoryClass = Restify::repositoryForTable($table);
 

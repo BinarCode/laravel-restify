@@ -9,8 +9,6 @@ use Illuminate\Validation\ValidationException;
 trait ValidatesRelatedKeyShape
 {
     /**
-     * @return int|string the given id, unchanged.
-     *
      * @throws ValidationException if the given id is neither an int nor a string.
      */
     private function assertValidRelatedKeyShape(mixed $id, string $inputName): int|string

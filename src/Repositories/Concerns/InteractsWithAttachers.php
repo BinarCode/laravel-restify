@@ -12,14 +12,14 @@ trait InteractsWithAttachers
     {
         return $request->repository()::collectRelated()
             ->forManyToManyRelations($request)
-            ->firstWhere('attribute', $request->route('relatedRepository'));
+            ->firstWhere('attribute', $request->relatedRepositoryKey());
     }
 
     public function authorizeBelongsToMany(RestifyRequest $request): self
     {
         if (is_null($field = $this->belongsToManyField($request))) {
             $class = class_basename($request->repository());
-            abort(400, "Missing BelongsToMany or MorphToMany related for [{$request->relatedRepository}]. This relationship should be in the related of the [{$class}] class. Or you are not authorized to use that repository (see `allowRestify` policy method).");
+            abort(400, "Missing BelongsToMany or MorphToMany related for [{$request->relatedRepositoryKey()}]. This relationship should be in the related of the [{$class}] class. Or you are not authorized to use that repository (see `allowRestify` policy method).");
         }
 
         return $this;
@@ -33,13 +33,13 @@ trait InteractsWithAttachers
 
         $repository = $request->repository();
 
-        $key = $request->relatedRepository;
+        $key = $request->relatedRepositoryKey();
 
         if (array_key_exists($key, $repository::getAttachers()) && is_callable($cb = $repository::getAttachers()[$key])) {
             return $cb;
         }
 
-        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'attach'.Str::studly($key);
 
         if (method_exists($repository, $methodGuesser)) {
             return [$repository, $methodGuesser];
@@ -56,13 +56,13 @@ trait InteractsWithAttachers
 
         $repository = $request->repository();
 
-        $key = $request->relatedRepository;
+        $key = $request->relatedRepositoryKey();
 
         if (array_key_exists($key, $repository::getDetachers()) && is_callable($cb = $repository::getDetachers()[$key])) {
             return $cb;
         }
 
-        $methodGuesser = 'detach'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'detach'.Str::studly($key);
 
         if (method_exists($repository, $methodGuesser)) {
             return [$repository, $methodGuesser];
