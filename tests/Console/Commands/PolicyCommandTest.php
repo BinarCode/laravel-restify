@@ -66,14 +66,27 @@ class PolicyCommandTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function the_model_option_is_documented_but_has_no_effect_on_the_generated_policy(): void
+    public function the_model_option_overrides_the_model_guessed_from_the_name(): void
     {
         $this->artisan('restify:policy', ['name' => 'Post', '--model' => 'SomethingElse'])
             ->assertExitCode(0);
 
         $content = File::get($this->generatedAppPath.'/Policies/PostPolicy.php');
-        $this->assertStringContainsString('use App\Models\Post;', $content);
-        $this->assertStringNotContainsString('SomethingElse', $content);
+        $this->assertStringNotContainsString('use App\Models\Post;', $content);
+        $this->assertStringContainsString('use App\SomethingElse;', $content);
+        $this->assertStringContainsString('SomethingElse $model', $content);
+    }
+
+    #[Test]
+    public function the_model_option_accepts_a_model_outside_the_default_models_namespace(): void
+    {
+        $this->artisan('restify:policy', ['name' => 'Post', '--model' => 'Domain/Blog/Post'])
+            ->assertExitCode(0);
+
+        $content = File::get($this->generatedAppPath.'/Policies/PostPolicy.php');
+        $this->assertStringNotContainsString('use App\Models\Post;', $content);
+        $this->assertStringContainsString('use App\Domain\Blog\Post;', $content);
+        $this->assertStringContainsString('Post $model', $content);
     }
 
     #[Test]
