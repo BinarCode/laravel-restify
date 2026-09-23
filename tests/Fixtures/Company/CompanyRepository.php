@@ -23,7 +23,7 @@ class CompanyRepository extends Repository
             // Deliberately never attachable, so tests can prove a request routed to
             // this relation (instead of the one named by the URL) never writes to it.
             'deniedRoles' => BelongsToMany::make('deniedRoles', RoleRepository::class)
-                ->canAttach(fn () => false),
+                ->canAttach(fn (): bool => false),
         ];
     }
 
