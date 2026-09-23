@@ -55,4 +55,36 @@ class SetupAuthCommandTest extends IntegrationTestCase
 
         $this->artisan('restify:setup-auth')->assertExitCode(Command::FAILURE);
     }
+
+    #[Test]
+    public function it_succeeds_when_both_steps_succeed(): void
+    {
+        File::ensureDirectoryExists(base_path('routes'));
+        File::put(base_path('routes/api.php'), "<?php\n");
+
+        $this->seedValidUserModel();
+
+        $this->artisan('restify:setup-auth')->assertExitCode(Command::SUCCESS);
+    }
+
+    private function seedValidUserModel(): void
+    {
+        File::ensureDirectoryExists(app_path('Models'));
+
+        File::put(app_path('Models/User.php'), <<<'PHP'
+            <?php
+
+            namespace App\Models;
+
+            use Illuminate\Database\Eloquent\Factories\HasFactory;
+            use Illuminate\Foundation\Auth\User as Authenticatable;
+            use Illuminate\Notifications\Notifiable;
+
+            class User extends Authenticatable
+            {
+                use HasFactory, Notifiable;
+            }
+
+            PHP);
+    }
 }

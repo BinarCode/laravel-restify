@@ -63,4 +63,39 @@ class PrepareSanctumCommandTest extends IntegrationTestCase
         $this->assertStringContainsString("        'auth:sanctum',", $updatedContent);
         $this->assertStringNotContainsString("// 'auth:sanctum',", $updatedContent);
     }
+
+    #[Test]
+    public function it_fails_when_the_restify_config_is_missing(): void
+    {
+        File::put(base_path('composer.lock'), json_encode([
+            'packages' => [['name' => 'laravel/sanctum']],
+        ]));
+
+        $this->seedValidUserModel();
+
+        $this->assertFileDoesNotExist(config_path('restify.php'));
+
+        $this->artisan('restify:sanctum')->assertExitCode(Command::FAILURE);
+    }
+
+    private function seedValidUserModel(): void
+    {
+        File::ensureDirectoryExists(app_path('Models'));
+
+        File::put(app_path('Models/User.php'), <<<'PHP'
+            <?php
+
+            namespace App\Models;
+
+            use Illuminate\Database\Eloquent\Factories\HasFactory;
+            use Illuminate\Foundation\Auth\User as Authenticatable;
+            use Illuminate\Notifications\Notifiable;
+
+            class User extends Authenticatable
+            {
+                use HasFactory, Notifiable;
+            }
+
+            PHP);
+    }
 }
