@@ -2,10 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers;
 
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryAttachRequest;
 use Binaryk\LaravelRestify\Repositories\Concerns\InteractsWithAttachers;
 use Illuminate\Database\Eloquent\Relations\Pivot;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
@@ -18,19 +18,16 @@ class RepositoryAttachController extends RepositoryController
         $model = $request->findModelOrFail();
         $repository = $request->repository();
 
-        if (is_callable(
-            $method = $this->authorizeBelongsToMany($request)->guessAttachMethod($request)
-        )) {
+        $this->authorizeBelongsToMany($request);
+
+        /** @var BelongsToMany $field */
+        $field = $this->belongsToManyField($request);
+
+        if (is_callable($method = $this->guessAttachMethod($request))) {
             return call_user_func($method, $request, $repository, $model);
         }
 
         $request->repositoryWith($model)->allowToAttach($request, $request->attachRelatedModels());
-
-        $field = $this->belongsToManyField($request);
-
-        if (is_null($field)) {
-            abort(JsonResponse::HTTP_BAD_REQUEST);
-        }
 
         /** @var list<int|string> $relatedRepositoryIds */
         $relatedRepositoryIds = Arr::wrap($request->input($request->relatedRepositoryKey()));
