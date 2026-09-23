@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Schema;
 
 class CreateCompanyDeniedRoleTable extends Migration
 {
-    public function up()
+    public function up(): void
     {
         Schema::create('company_denied_role', function (Blueprint $table): void {
             $table->foreignId('company_id')->constrained('companies');
@@ -17,7 +17,7 @@ class CreateCompanyDeniedRoleTable extends Migration
         });
     }
 
-    public function down()
+    public function down(): void
     {
         Schema::dropIfExists('company_denied_role');
     }
