@@ -47,7 +47,12 @@ class LoginTest extends IntegrationTestCase
     #[TestWith(['1.5', 90], 'a fractional ttl is rounded to seconds instead of truncated')]
     #[TestWith(['60', 3600], 'a whole-minute ttl from env converts to seconds')]
     #[TestWith([null, null], 'no ttl means no expiry')]
-    public function the_login_token_ttl_is_computed_in_seconds(?string $tokenTtl, ?int $expectedExpiresIn): void
+    #[TestWith([0, null], 'a zero int ttl means no expiry')]
+    #[TestWith(['0', null], 'a zero string ttl means no expiry')]
+    #[TestWith([-5, null], 'a negative ttl means no expiry')]
+    #[TestWith(['abc', null], 'a non-numeric ttl means no expiry')]
+    #[TestWith([60, 3600], 'a whole-minute int ttl converts to seconds')]
+    public function the_login_token_ttl_is_computed_in_seconds(int|string|null $tokenTtl, ?int $expectedExpiresIn): void
     {
         config(['restify.auth.token_ttl' => $tokenTtl]);
 
@@ -62,6 +67,22 @@ class LoginTest extends IntegrationTestCase
         ])
             ->assertOk()
             ->assertJsonPath('meta.expires_in', $expectedExpiresIn);
+    }
+
+    #[Test]
+    public function a_numeric_json_password_is_accepted(): void
+    {
+        UserFactory::one([
+            'email' => 'user@restify.test',
+            'password' => Hash::make('123456'),
+        ]);
+
+        $this->postJson('auth/login', [
+            'email' => 'user@restify.test',
+            'password' => 123456,
+        ])
+            ->assertOk()
+            ->assertJsonPath('meta.token', 'token');
     }
 
     #[Test]
@@ -153,6 +174,7 @@ class LoginTest extends IntegrationTestCase
         $this->assertStringContainsString("->where('email',", $contents);
         $this->assertStringNotContainsString('$user->password)', $contents);
         $this->assertStringContainsString('getAuthPassword()', $contents);
+        $this->assertStringContainsString('self::scalarPasswordRule()', $contents);
     }
 
     private function loginStubContents(): string

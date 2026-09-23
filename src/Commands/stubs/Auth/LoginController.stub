@@ -2,6 +2,7 @@
 namespace {{namespace}};
 
 use App\Models\User;
+use Closure;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
@@ -13,7 +14,7 @@ class LoginController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email'],
-            'password' => ['required', 'string'],
+            'password' => ['required', self::scalarPasswordRule()],
         ]);
 
         /** * @var User $user */
@@ -23,12 +24,25 @@ class LoginController extends Controller
             abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }
 
-        if (! Hash::check($request->input('password'), $user->getAuthPassword())) {
+        if (! Hash::check((string) $request->input('password'), $user->getAuthPassword())) {
             abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }
 
         return rest($user)->indexMeta([
             'token' => $user->createToken('login')->plainTextToken,
         ]);
+    }
+
+    /**
+     * A non-scalar password (array/object) can't be hashed - reject it with
+     * a validation error instead of reaching Hash::check() and crashing.
+     */
+    protected static function scalarPasswordRule(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            if (! is_scalar($value)) {
+                $fail(__('The :attribute must be a string.'));
+            }
+        };
     }
 }
