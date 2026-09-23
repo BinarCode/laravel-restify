@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Controllers\Concerns\ResolvesBulkModels;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateBulkRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -22,7 +23,7 @@ class RepositoryUpdateBulkController extends RepositoryController
             $ids = [];
 
             foreach ($input as $row => $item) {
-                $ids[$row] = $item['id'] ?? null;
+                $ids[$row] = $item[Repository::BULK_ID_FIELD] ?? null;
             }
 
             $models = $this->resolveBulkModels($request, $ids);

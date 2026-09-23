@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Http\Controllers\Concerns\ResolvesBulkModels;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyBulkRequest;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class RepositoryDestroyBulkController
 {
@@ -14,6 +15,11 @@ class RepositoryDestroyBulkController
     public function __invoke(RepositoryDestroyBulkRequest $request)
     {
         $keys = $request->isJson() ? $request->json()->all() : $request->post();
+
+        // A missing/null key would otherwise be silently dropped before the
+        // lookup and 404 the whole request instead of naming the bad row.
+        Validator::make(['keys' => $keys], ['keys.*' => ['required']])->validate();
+
         $deleted = [];
 
         DB::transaction(function () use ($request, $keys, &$deleted): void {

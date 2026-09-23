@@ -236,10 +236,17 @@ trait ValidatingTrait
 
     public function getUpdatingBulkRules(RestifyRequest $request)
     {
-        return $this->collectFields($request)->mapWithKeys(function (Field $k) {
+        $rules = $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
                 "*.{$k->attribute}" => $k->getUpdatingBulkRules(),
             ];
         })->toArray();
+
+        // Every row must identify the model it targets, and no two rows in
+        // the same payload may target the same one - a row silently missing
+        // this would otherwise resolve to null and 404 the whole request.
+        $rules['*.'.Repository::BULK_ID_FIELD] = ['required', 'distinct'];
+
+        return $rules;
     }
 }
