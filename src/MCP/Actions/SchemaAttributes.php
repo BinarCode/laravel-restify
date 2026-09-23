@@ -388,14 +388,58 @@ trait SchemaAttributes
     }
 
     /**
+     * $rulesSchema is untyped (bare array), so `$this->rulesSchema[$attribute]
+     * ?? $default` resolves to `mixed` for static analysis even though it is
+     * always a Type at runtime. Narrow it explicitly instead of widening the
+     * property itself, which would affect every other validateXxx() method.
+     */
+    private function existingTypeOr(string $attribute, Type $default): Type
+    {
+        $existing = $this->rulesSchema[$attribute] ?? null;
+
+        return $existing instanceof Type ? $existing : $default;
+    }
+
+    /**
+     * Apply a minimum bound to a schema type, only when the type actually
+     * supports bounds (String, Array, Integer, Number). Any other type
+     * (e.g. Boolean) is returned unchanged instead of crashing on an
+     * undefined ->min() method.
+     */
+    private function applyMinBound(Type $type, string $value): Type
+    {
+        if (! ($type instanceof StringType || $type instanceof ArrayType || $type instanceof IntegerType || $type instanceof NumberType)) {
+            return $type;
+        }
+
+        return $type->min((int) $value);
+    }
+
+    /**
+     * Apply a maximum bound to a schema type, only when the type actually
+     * supports bounds (String, Array, Integer, Number). Any other type
+     * (e.g. Boolean) is returned unchanged instead of crashing on an
+     * undefined ->max() method.
+     */
+    private function applyMaxBound(Type $type, string $value): Type
+    {
+        if (! ($type instanceof StringType || $type instanceof ArrayType || $type instanceof IntegerType || $type instanceof NumberType)) {
+            return $type;
+        }
+
+        return $type->max((int) $value);
+    }
+
+    /**
      * Validate the size of an attribute is between a set of values.
      *
      * @param  JsonSchema  $schema
+     * @param  array<int, string>  $parameters
      * @return Type
      */
     public function validateBetween(string $attribute, $schema, array $parameters)
     {
-        $type = $this->rulesSchema[$attribute] ?? $schema->string();
+        $type = $this->existingTypeOr($attribute, $schema->string());
 
         $description = match (true) {
             $type instanceof StringType => "Must be between {$parameters[0]} and {$parameters[1]} characters",
@@ -403,7 +447,10 @@ trait SchemaAttributes
             default => "Must be between {$parameters[0]} and {$parameters[1]}",
         };
 
-        return $type->min((int) $parameters[0])->max((int) $parameters[1])->description($description);
+        $type = $this->applyMinBound($type, $parameters[0]);
+        $type = $this->applyMaxBound($type, $parameters[1]);
+
+        return $type->description($description);
     }
 
     /**
@@ -1216,23 +1263,20 @@ trait SchemaAttributes
      * Validate the size of an attribute is less than or equal to a maximum value.
      *
      * @param  JsonSchema  $schema
+     * @param  array<int, string>  $parameters
      * @return Type
      */
     public function validateMax(string $attribute, $schema, array $parameters)
     {
-        $type = $this->rulesSchema[$attribute] ?? $schema->string();
+        $type = $this->existingTypeOr($attribute, $schema->string());
 
-        if (! empty($parameters)) {
-            $description = match (true) {
-                $type instanceof StringType => "Maximum length: {$parameters[0]} characters",
-                $type instanceof ArrayType => "Maximum items: {$parameters[0]}",
-                default => "Maximum value: {$parameters[0]}",
-            };
+        $description = match (true) {
+            $type instanceof StringType => "Maximum length: {$parameters[0]} characters",
+            $type instanceof ArrayType => "Maximum items: {$parameters[0]}",
+            default => "Maximum value: {$parameters[0]}",
+        };
 
-            return $type->max((int) $parameters[0])->description($description);
-        }
-
-        return $type->max((int) $parameters[0]);
+        return $this->applyMaxBound($type, $parameters[0])->description($description);
     }
 
     /**
@@ -1318,23 +1362,20 @@ trait SchemaAttributes
      * Validate the size of an attribute is greater than or equal to a minimum value.
      *
      * @param  JsonSchema  $schema
+     * @param  array<int, string>  $parameters
      * @return Type
      */
     public function validateMin(string $attribute, $schema, array $parameters)
     {
-        $type = $this->rulesSchema[$attribute] ?? $schema->string();
+        $type = $this->existingTypeOr($attribute, $schema->string());
 
-        if (! empty($parameters)) {
-            $description = match (true) {
-                $type instanceof StringType => "Minimum length: {$parameters[0]} characters",
-                $type instanceof ArrayType => "Minimum items: {$parameters[0]}",
-                default => "Minimum value: {$parameters[0]}",
-            };
+        $description = match (true) {
+            $type instanceof StringType => "Minimum length: {$parameters[0]} characters",
+            $type instanceof ArrayType => "Minimum items: {$parameters[0]}",
+            default => "Minimum value: {$parameters[0]}",
+        };
 
-            return $type->min((int) $parameters[0])->description($description);
-        }
-
-        return $type->min((int) $parameters[0]);
+        return $this->applyMinBound($type, $parameters[0])->description($description);
     }
 
     /**
@@ -1881,11 +1922,12 @@ trait SchemaAttributes
      * Validate the size of an attribute.
      *
      * @param  JsonSchema  $schema
+     * @param  array<int, string>  $parameters
      * @return Type
      */
     public function validateSize(string $attribute, $schema, array $parameters)
     {
-        $type = $this->rulesSchema[$attribute] ?? $schema->string();
+        $type = $this->existingTypeOr($attribute, $schema->string());
 
         $description = match (true) {
             $type instanceof StringType => "Must be exactly {$parameters[0]} characters",
@@ -1893,7 +1935,10 @@ trait SchemaAttributes
             default => "Must be exactly {$parameters[0]}",
         };
 
-        return $type->min((int) $parameters[0])->max((int) $parameters[0])->description($description);
+        $type = $this->applyMinBound($type, $parameters[0]);
+        $type = $this->applyMaxBound($type, $parameters[0]);
+
+        return $type->description($description);
     }
 
     /**

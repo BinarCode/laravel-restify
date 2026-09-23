@@ -8981,7 +8981,7 @@ parameters:
 		-
 			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
 			identifier: foreach.nonIterable
-			count: 2
+			count: 1
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
@@ -9071,7 +9071,7 @@ parameters:
 		-
 			message: '#^Cannot call method description\(\) on mixed\.$#'
 			identifier: method.nonObject
-			count: 24
+			count: 20
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
@@ -9099,18 +9099,6 @@ parameters:
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
-			message: '#^Cannot call method max\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 4
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Cannot call method min\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 4
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
 			message: '#^Cannot call method required\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -9125,7 +9113,7 @@ parameters:
 		-
 			message: '#^Cannot cast mixed to int\.$#'
 			identifier: cast.int
-			count: 9
+			count: 1
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
@@ -9462,18 +9450,6 @@ parameters:
 			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateBeforeOrEqual\(\) should return Illuminate\\JsonSchema\\Types\\Type but returns mixed\.$#'
 			identifier: return.type
 			count: 2
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateBetween\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateBetween\(\) should return Illuminate\\JsonSchema\\Types\\Type but returns mixed\.$#'
-			identifier: return.type
-			count: 1
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
@@ -9951,18 +9927,6 @@ parameters:
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateMax\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateMax\(\) should return Illuminate\\JsonSchema\\Types\\Type but returns mixed\.$#'
-			identifier: return.type
-			count: 2
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateMaxDigits\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -9984,18 +9948,6 @@ parameters:
 			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateMimetypes\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateMin\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateMin\(\) should return Illuminate\\JsonSchema\\Types\\Type but returns mixed\.$#'
-			identifier: return.type
-			count: 2
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
@@ -10407,18 +10359,6 @@ parameters:
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateSize\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateSize\(\) should return Illuminate\\JsonSchema\\Types\\Type but returns mixed\.$#'
-			identifier: return.type
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateSometimes\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -10494,12 +10434,6 @@ parameters:
 			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateUuid\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Offset 0 does not exist on array\{\}\.$#'
-			identifier: offsetAccess.notFound
-			count: 2
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
@@ -10700,13 +10634,7 @@ parameters:
 		-
 			message: '#^Part \$parameters\[0\] \(mixed\) of encapsed string cannot be cast to string\.$#'
 			identifier: encapsedStringPart.nonString
-			count: 19
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Part \$parameters\[1\] \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 3
+			count: 7
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-

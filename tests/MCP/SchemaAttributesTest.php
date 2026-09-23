@@ -290,6 +290,32 @@ class SchemaAttributesTest extends IntegrationTestCase
         $this->assertDescribed($result['field'], $description);
     }
 
+    /**
+     * validateMax()/validateMin()/validateSize()/validateBetween() called
+     * ->min()/->max() straight on whatever type was already built for the
+     * attribute. A boolean field combined with a bound rule (e.g.
+     * ['boolean', 'max:1']) crashed with "Call to undefined method
+     * BooleanType::max()" instead of just describing the rule.
+     *
+     * @param  list<string>  $rules
+     */
+    #[Test]
+    #[TestWith([['boolean', 'max:1']], 'max')]
+    #[TestWith([['boolean', 'min:1']], 'min')]
+    #[TestWith([['boolean', 'size:1']], 'size')]
+    #[TestWith([['boolean', 'between:1,5']], 'between')]
+    public function a_bound_rule_on_a_boolean_type_is_described_instead_of_crashing(array $rules): void
+    {
+        $result = $this->convert(['field' => $rules]);
+
+        $this->assertInstanceOf(BooleanType::class, $result['field']);
+
+        $serialized = $result['field']->toArray();
+        $this->assertArrayHasKey('description', $serialized);
+        $this->assertArrayNotHasKey('minimum', $serialized);
+        $this->assertArrayNotHasKey('maximum', $serialized);
+    }
+
     #[Test]
     public function required_marks_the_attribute_as_required_and_describes_it(): void
     {
@@ -332,6 +358,29 @@ class SchemaAttributesTest extends IntegrationTestCase
         ]);
 
         $this->assertArrayNotHasKey('tags', $result);
+    }
+
+    /**
+     * processWildcardRules() used to foreach() the raw rules for a wildcard
+     * attribute directly, without normalising a pipe-delimited rule string
+     * into an array first - "foreach() argument must be of type array|object,
+     * string given" for any 'field.*' => 'string|max:5' shaped rule set.
+     */
+    #[Test]
+    #[TestWith(['string|max:5'], 'pipe_string')]
+    #[TestWith([['string', 'max:5']], 'array')]
+    public function a_wildcard_rule_given_as_a_pipe_string_does_not_crash(array|string $rules): void
+    {
+        $result = $this->convert([
+            'tags' => ['array'],
+            'tags.*' => $rules,
+        ]);
+
+        $this->assertInstanceOf(ArrayType::class, $result['tags']);
+
+        $serialized = $result['tags']->toArray();
+        $this->assertArrayHasKey('items', $serialized);
+        $this->assertSame('string', $serialized['items']['type']);
     }
 
     #[Test]
