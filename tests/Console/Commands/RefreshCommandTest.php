@@ -16,6 +16,8 @@ class RefreshCommandTest extends IntegrationTestCase
 {
     private ?string $originalPostRepositoryCacheStore;
 
+    private array $originalPostRepositoryCacheTags;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -28,6 +30,7 @@ class RefreshCommandTest extends IntegrationTestCase
         }
 
         $this->originalPostRepositoryCacheStore = PostRepository::$cacheStore;
+        $this->originalPostRepositoryCacheTags = PostRepository::$cacheTags;
     }
 
     protected function tearDown(): void
@@ -35,6 +38,7 @@ class RefreshCommandTest extends IntegrationTestCase
         RecordingCommand::$calls = [];
         RecordingCommand::$exitCodes = [];
         PostRepository::$cacheStore = $this->originalPostRepositoryCacheStore;
+        PostRepository::$cacheTags = $this->originalPostRepositoryCacheTags;
 
         parent::tearDown();
     }
@@ -70,17 +74,17 @@ class RefreshCommandTest extends IntegrationTestCase
         $this->enableRepositoryCache();
         PostRepository::$cacheStore = 'restify_repositories';
 
-        // Boots the repository's default cache tags, which only happens the
-        // first time it is instantiated.
-        new PostRepository;
+        // The default tags a repository's clearCache() resolves, whether or
+        // not it has ever been instantiated (see InteractsWithCache::resolvedCacheTags()).
+        $tags = ['restify', 'repositories', PostRepository::uriKey()];
 
-        Cache::store('restify_repositories')->tags(PostRepository::$cacheTags)->put('restify:repository:posts:index:test', 'cached-value', 60);
+        Cache::store('restify_repositories')->tags($tags)->put('restify:repository:posts:index:test', 'cached-value', 60);
         Cache::store('restify_repositories')->put('unrelated-key', 'unrelated-value', 60);
 
         $this->artisan('restify:refresh')->assertExitCode(Command::SUCCESS);
 
         $this->assertFalse(
-            Cache::store('restify_repositories')->tags(PostRepository::$cacheTags)->has('restify:repository:posts:index:test'),
+            Cache::store('restify_repositories')->tags($tags)->has('restify:repository:posts:index:test'),
         );
         $this->assertTrue(Cache::store('restify_repositories')->has('unrelated-key'));
     }

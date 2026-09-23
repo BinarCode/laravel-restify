@@ -26,6 +26,8 @@ trait InteractsWithCache
 
     /**
      * Cache tags for this repository.
+     *
+     * @var array<int, string>
      */
     public static array $cacheTags = [];
 
@@ -178,10 +180,11 @@ trait InteractsWithCache
         }
 
         $store = Cache::store(static::$cacheStore);
+        $cacheTags = self::resolvedCacheTags();
 
         // If cache tags are used and supported, flush by tags
-        if (! empty(static::$cacheTags) && static::cacheStoreSupportsTagging($store)) {
-            $store->tags(static::$cacheTags)->flush();
+        if (! empty($cacheTags) && static::cacheStoreSupportsTagging($store)) {
+            $store->tags($cacheTags)->flush();
 
             return;
         }
@@ -233,6 +236,24 @@ trait InteractsWithCache
             // Silently fail if cache flushing fails (e.g., cache table doesn't exist)
             // This prevents cache operations from breaking the application
         }
+    }
+
+    /**
+     * The cache tags for this repository, including its default tags.
+     *
+     * `bootInteractsWithCache()` only merges the default tags in on first
+     * construction, so a repository that was never instantiated (e.g. from
+     * an artisan command that only calls `clearCache()`) would otherwise
+     * see an empty `$cacheTags` here.
+     *
+     * @return array<int, string>
+     */
+    private static function resolvedCacheTags(): array
+    {
+        return array_values(array_unique(array_merge(
+            ['restify', 'repositories', static::uriKey()],
+            static::$cacheTags,
+        )));
     }
 
     /**
@@ -303,6 +324,8 @@ trait InteractsWithCache
 
     /**
      * Add cache tags for this repository.
+     *
+     * @param  array<int, string>  $tags
      */
     public static function cacheTags(array $tags): void
     {

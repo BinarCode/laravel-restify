@@ -14037,12 +14037,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:cacheTags\(\) has parameter \$tags with no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:checkPolicyMethod\(\) should return bool but returns mixed\.$#'
 			identifier: return.type
 			count: 1
@@ -15556,12 +15550,6 @@ parameters:
 
 		-
 			message: '#^Property Binaryk\\LaravelRestify\\Repositories\\Repository\:\:\$booted type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Property Binaryk\\LaravelRestify\\Repositories\\Repository\:\:\$cacheTags type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Repositories/Repository.php
