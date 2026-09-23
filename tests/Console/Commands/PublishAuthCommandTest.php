@@ -322,4 +322,115 @@ class PublishAuthCommandTest extends IntegrationTestCase
 
         $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
     }
+
+    #[Test]
+    public function it_rewrites_the_real_call_and_leaves_an_identical_looking_comment_above_it_untouched(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\n// Route::restifyAuth();\nRoute::restifyAuth();\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertStringContainsString("// Route::restifyAuth();\n", $routes);
+        $this->assertSame(1, substr_count($routes, "Route::post('login'"));
+        $this->assertStringContainsString(
+            "Route::restifyAuth(actions: ['register', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword']);",
+            $routes
+        );
+    }
+
+    #[Test]
+    public function a_restify_auth_call_written_inside_a_block_comment_is_not_treated_as_the_real_one(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\n/*\nRoute::restifyAuth();\n*/\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+    }
+
+    #[Test]
+    public function it_refuses_to_merge_routes_when_two_real_restify_auth_calls_exist(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\nRoute::restifyAuth(actions: ['login']);\nRoute::restifyAuth(actions: ['register']);\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertSame(
+            "<?php\n\nRoute::restifyAuth(actions: ['login']);\nRoute::restifyAuth(actions: ['register']);\n",
+            $this->files->get($this->apiRoutesPath)
+        );
+    }
+
+    #[Test]
+    public function it_accepts_a_trailing_comma_after_the_actions_argument_itself(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\nRoute::restifyAuth(\n    actions: ['login', 'register'],\n);\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertStringContainsString("Route::post('login'", $routes);
+        $this->assertStringNotContainsString("Route::post('register'", $routes);
+        $this->assertStringContainsString("Route::restifyAuth(actions: ['register']);", $routes);
+    }
+
+    #[Test]
+    public function a_leading_backslash_on_the_macro_call_is_accepted(): void
+    {
+        $this->files->put($this->apiRoutesPath, "<?php\n\n\\Route::restifyAuth();\n");
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertStringContainsString("Route::post('login'", $routes);
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+    }
+
+    #[Test]
+    public function re_requesting_an_already_published_action_warns_and_restores_a_deleted_controller(): void
+    {
+        $this->artisan('restify:auth', ['--actions' => 'login'])->assertExitCode(0)->run();
+
+        $controllerPath = app_path('Http/Controllers/Restify/Auth/LoginController.php');
+
+        $this->files->delete($controllerPath);
+        $this->assertFileDoesNotExist($controllerPath);
+
+        $routesBeforeSecondRun = $this->files->get($this->apiRoutesPath);
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->expectsOutputToContain('login is already published, skipped.')
+            ->assertExitCode(0)
+            ->run();
+
+        $this->assertFileExists($controllerPath);
+        $this->assertSame($routesBeforeSecondRun, $this->files->get($this->apiRoutesPath));
+    }
 }

@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Str;
+use PhpToken;
 use RuntimeException;
 
 class PublishAuthCommand extends Command
@@ -66,16 +67,24 @@ class PublishAuthCommand extends Command
             return self::FAILURE;
         }
 
+        if ($actions !== null) {
+            foreach (array_diff($actions, $actionsToPublish) as $alreadyPublished) {
+                $this->components->warn("{$alreadyPublished} is already published, skipped.");
+            }
+        }
+
         if ($actionsToPublish === []) {
             $this->components->warn('Nothing left to publish.');
 
-            return self::SUCCESS;
+            if ($actions === null) {
+                return self::SUCCESS;
+            }
+        } else {
+            $this->registerRoutes($actionsToPublish, $apiRoutesPath);
         }
 
-        $this->registerRoutes($actionsToPublish, $apiRoutesPath);
-
-        $this->publishControllers($actionsToPublish)
-            ->publishNotifications($actionsToPublish);
+        $this->publishControllers($actions)
+            ->publishNotifications($actions);
 
         $this->info('Auth controllers published.');
 
@@ -164,7 +173,7 @@ class PublishAuthCommand extends Command
 
         $replacement = $this->getRemainingActionsString($actionsToPublish, $existingRemaining);
 
-        $updated = Str::replaceFirst($call, $replacement, $contents);
+        $updated = substr_replace($contents, $replacement, $call['offset'], $call['length']);
 
         $routeStubs = $this->getRouteStubs($actionsToPublish);
 
@@ -191,19 +200,57 @@ class PublishAuthCommand extends Command
     }
 
     /**
-     * @return array{0: string, 1: list<string>}
+     * @return array{0: array{offset: int, length: int}, 1: list<string>}
      *
      * @throws RuntimeException
      */
     private function parseRestifyAuthCall(string $contents): array
     {
-        if (! preg_match('/^[ \t]*\K(?!\/\/)Route::restifyAuth\(\s*(.*?)\s*\);/ms', $contents, $matches)) {
+        [$offset, $length, $arguments] = $this->locateRestifyAuthCall($contents);
+
+        return [['offset' => $offset, 'length' => $length], $this->parseExistingRemainingActions($arguments)];
+    }
+
+    /**
+     * Finds the real `Route::restifyAuth(...)` call by tokenizing the file and masking out
+     * every comment first, so a call that only appears inside a `//` or `/* *\/` comment is
+     * never mistaken for the real one, and a `Str::replaceFirst()`-style text search (which
+     * would rewrite the first textual match, comment or not) is never needed.
+     *
+     * @return array{0: int, 1: int, 2: string}
+     *
+     * @throws RuntimeException
+     */
+    private function locateRestifyAuthCall(string $contents): array
+    {
+        $masked = $contents;
+
+        foreach (PhpToken::tokenize($contents) as $token) {
+            if ($token->is([T_COMMENT, T_DOC_COMMENT])) {
+                $masked = substr_replace(
+                    $masked,
+                    preg_replace('/[^\r\n]/', ' ', $token->text) ?? str_repeat(' ', strlen($token->text)),
+                    $token->pos,
+                    strlen($token->text)
+                );
+            }
+        }
+
+        if (! preg_match_all('/^[ \t]*\K\\\\?Route::restifyAuth\(\s*(.*?)\s*\);/ms', $masked, $matches, PREG_OFFSET_CAPTURE)) {
             throw new RuntimeException(
                 'No Route::restifyAuth() call was found in routes/api.php. Add Route::restifyAuth(); and try again.'
             );
         }
 
-        return [$matches[0], $this->parseExistingRemainingActions($matches[1])];
+        if (count($matches[0]) > 1) {
+            throw new RuntimeException(
+                'Multiple Route::restifyAuth() calls were found in routes/api.php. This command can only merge into a single call. Combine them manually and try again.'
+            );
+        }
+
+        [$text, $offset] = $matches[0][0];
+
+        return [$offset, strlen($text), $matches[1][0][0]];
     }
 
     /**
@@ -259,7 +306,7 @@ class PublishAuthCommand extends Command
             return RestifyApplicationServiceProvider::AUTH_ACTIONS;
         }
 
-        if (! preg_match('/^actions:\s*(\[.*\])$/s', $arguments, $matches)) {
+        if (! preg_match('/^actions:\s*(\[.*\])\s*,?$/s', $arguments, $matches)) {
             throw new RuntimeException(
                 "routes/api.php's Route::restifyAuth() call has a prefix or an argument this command cannot safely merge new routes with. Update it manually, or reset it to Route::restifyAuth(); first."
             );
@@ -270,8 +317,12 @@ class PublishAuthCommand extends Command
 
     /**
      * Parses a PHP array literal of action names, e.g. `['login', 'register']`,
-     * `["login", "register"]`, or the same spread across multiple lines, with or
-     * without a trailing comma before the closing bracket.
+     * `["login", "register"]`, or the same spread across multiple lines (CRLF or LF),
+     * with or without a trailing comma before the closing bracket. Tokenizes the
+     * literal itself rather than pattern-matching it, so it only ever accepts a flat
+     * list of quoted strings. An action name containing a backslash is rejected
+     * outright instead of being unescaped: a stub action is a plain identifier, and
+     * there is no legitimate reason for one to contain one.
      *
      * @return list<string>
      *
@@ -281,37 +332,66 @@ class PublishAuthCommand extends Command
     {
         $parseError = "routes/api.php's Route::restifyAuth(actions: ...) call could not be parsed. Update it manually, or reset it to Route::restifyAuth(); first.";
 
-        if (! preg_match('/^\[(?<items>.*)\]$/s', trim($array), $matches)) {
+        $tokens = array_values(array_filter(
+            token_get_all('<?php '.trim($array).';'),
+            fn (array|string $token): bool => ! is_array($token) || ! in_array($token[0], [T_WHITESPACE, T_OPEN_TAG], true)
+        ));
+
+        if (($tokens[0] ?? null) !== '[') {
             throw new RuntimeException($parseError);
         }
 
-        $items = trim($matches['items']);
+        $actions = [];
+        $expectingValue = true;
+        $closed = false;
+        $count = count($tokens);
+        $i = 1;
 
-        if (str_ends_with($items, ',')) {
-            $items = trim(substr($items, 0, -1));
+        for (; $i < $count; $i++) {
+            $token = $tokens[$i];
+
+            if ($token === ']') {
+                $closed = true;
+                $i++;
+
+                break;
+            }
+
+            if ($expectingValue) {
+                if (! is_array($token) || $token[0] !== T_CONSTANT_ENCAPSED_STRING) {
+                    throw new RuntimeException($parseError);
+                }
+
+                $action = substr($token[1], 1, -1);
+
+                if (str_contains($action, '\\')) {
+                    throw new RuntimeException($parseError);
+                }
+
+                $actions[] = $action;
+                $expectingValue = false;
+
+                continue;
+            }
+
+            if ($token !== ',') {
+                throw new RuntimeException($parseError);
+            }
+
+            $expectingValue = true;
         }
 
-        if ($items === '') {
-            return [];
-        }
-
-        $stringToken = '\'(?:[^\'\\\\]|\\\\.)*\'|"(?:[^"\\\\]|\\\\.)*"';
-
-        if (! preg_match_all('/'.$stringToken.'/', $items, $tokenMatches)) {
+        if (! $closed) {
             throw new RuntimeException($parseError);
         }
 
-        $withoutTokens = preg_replace('/'.$stringToken.'/', '', $items) ?? '';
-        $remainder = trim(preg_replace('/[\s,]+/', '', $withoutTokens) ?? '');
-
-        if ($remainder !== '') {
-            throw new RuntimeException($parseError);
+        for (; $i < $count; $i++) {
+            if ($tokens[$i] !== ';') {
+                throw new RuntimeException($parseError);
+            }
         }
 
-        return array_map(
-            fn (string $token): string => stripcslashes(substr($token, 1, -1)),
-            $tokenMatches[0]
-        );
+        return $actions;
     }
 
     /**
