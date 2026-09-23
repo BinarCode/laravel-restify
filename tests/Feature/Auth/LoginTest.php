@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Feature\Auth;
 
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserWithCustomPasswordColumn;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use ParseError;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
@@ -17,8 +19,6 @@ class LoginTest extends IntegrationTestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        $this->app['auth']->forgetGuards();
 
         config(['app.debug' => false]);
 
@@ -33,21 +33,13 @@ class LoginTest extends IntegrationTestCase
             'password' => Hash::make('correct-password'),
         ]);
 
-        $response = $this->postJson('auth/login', [
+        $this->postJson('auth/login', [
             'email' => 'user@restify.test',
             'password' => 'correct-password',
-        ]);
-
-        if ($response->getStatusCode() === JsonResponse::HTTP_INTERNAL_SERVER_ERROR) {
-            $this->markTestIncomplete(
-                'Blocked on 10.x by the shared test fixture: Tests\Fixtures\User\User::createToken() '
-                .'returns an object with $accessToken, while LoginController reads $token->plainTextToken. '
-                .'PR #762 renames the fixture property to plainTextToken; once it merges this should assert '
-                .'a 200 response with a token.',
-            );
-        }
-
-        $response->assertOk()->assertJsonStructure(['token', 'expires_in']);
+        ])
+            ->assertOk()
+            ->assertJsonPath('meta.token', 'token')
+            ->assertJsonPath('meta.expires_in', null);
     }
 
     #[Test]
@@ -90,6 +82,23 @@ class LoginTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function it_checks_the_password_against_the_configured_auth_password_column(): void
+    {
+        config(['restify.auth.user_model' => UserWithCustomPasswordColumn::class]);
+
+        UserWithCustomPasswordColumn::query()->create([
+            'name' => Hash::make('correct-password'),
+            'email' => 'custom-column@restify.test',
+            'password' => Hash::make('a-different-hash'),
+        ]);
+
+        $this->postJson('auth/login', [
+            'email' => 'custom-column@restify.test',
+            'password' => 'correct-password',
+        ])->assertOk();
+    }
+
+    #[Test]
     #[TestWith([['password' => 'secret']], 'missing email')]
     #[TestWith([['email' => 'not-an-email', 'password' => 'secret']], 'invalid email')]
     #[TestWith([['email' => 'user@restify.test']], 'missing password')]
@@ -97,5 +106,38 @@ class LoginTest extends IntegrationTestCase
     {
         $this->postJson('auth/login', $payload)
             ->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    #[Test]
+    public function the_published_login_stub_is_syntactically_valid_and_carries_the_same_fixes(): void
+    {
+        $contents = $this->loginStubContents();
+
+        $source = str_replace('{{namespace}}', 'App\\Http\\Controllers\\Restify\\Auth', $contents);
+
+        $tempFile = tempnam(sys_get_temp_dir(), 'restify-stub-');
+        file_put_contents($tempFile, $source);
+
+        try {
+            token_get_all($source, TOKEN_PARSE);
+        } catch (ParseError $e) {
+            $this->fail("LoginController.stub does not compile as PHP: {$e->getMessage()}");
+        } finally {
+            unlink($tempFile);
+        }
+
+        $this->assertStringNotContainsString('abort(401,', $contents);
+        $this->assertStringContainsString('JsonResponse::HTTP_UNAUTHORIZED', $contents);
+        $this->assertStringNotContainsString('whereEmail(', $contents);
+        $this->assertStringContainsString("->where('email',", $contents);
+        $this->assertStringNotContainsString('$user->password)', $contents);
+        $this->assertStringContainsString('getAuthPassword()', $contents);
+
+        $this->addToAssertionCount(1);
+    }
+
+    private function loginStubContents(): string
+    {
+        return (string) file_get_contents(dirname(__DIR__, 3).'/src/Commands/stubs/Auth/LoginController.stub');
     }
 }

@@ -2,6 +2,7 @@
 namespace {{namespace}};
 
 use App\Models\User;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -17,13 +18,13 @@ class LoginController extends Controller
 
         /** * @var User $user */
         if (! $user = config('restify.auth.user_model')::query()
-            ->whereEmail($request->input('email'))
+            ->where('email', $request->input('email'))
             ->first()) {
-            abort(401, 'Invalid credentials.');
+            abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }
 
-        if (! Hash::check($request->input('password'), $user->password)) {
-            abort(401, 'Invalid credentials.');
+        if (! Hash::check($request->input('password'), $user->getAuthPassword())) {
+            abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }
 
         return rest($user)->indexMeta([
