@@ -58,6 +58,60 @@ class PublishAuthCommandTest extends IntegrationTestCase
     }
 
     #[Test]
+    #[TestWith(['loginn', 'Unknown action [loginn].'], 'an unknown action')]
+    #[TestWith(['logout', "The 'logout' action is registered by the macro; there is nothing to publish for it."], "'logout' has no stub")]
+    #[TestWith([',', 'No valid actions were found in --actions.'], 'only a comma')]
+    public function it_fails_before_touching_any_file_for_an_unpublishable_action(string $actionsOption, string $expectedMessage): void
+    {
+        $this->artisan('restify:auth', ['--actions' => $actionsOption])
+            ->expectsOutputToContain($expectedMessage)
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertSame("<?php\n\nRoute::restifyAuth();\n", $this->files->get($this->apiRoutesPath));
+    }
+
+    #[Test]
+    public function it_refuses_to_merge_routes_when_the_macro_call_has_a_prefix(): void
+    {
+        $this->files->put($this->apiRoutesPath, "<?php\n\nRoute::restifyAuth('/auth');\n");
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+    }
+
+    #[Test]
+    public function it_fails_when_no_restify_auth_macro_call_exists(): void
+    {
+        $this->files->put($this->apiRoutesPath, "<?php\n\n// no restifyAuth() call here\n");
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+    }
+
+    #[Test]
+    public function running_the_command_twice_does_not_duplicate_routes(): void
+    {
+        $this->artisan('restify:auth', ['--actions' => 'login'])->assertExitCode(0)->run();
+        $this->artisan('restify:auth', ['--actions' => 'login'])->assertExitCode(0)->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(1, substr_count($routes, "Route::post('login'"));
+        $this->assertStringContainsString(
+            'Route::restifyAuth(actions: ["register","logout","verifyEmail","forgotPassword","resetPassword"]);',
+            $routes
+        );
+    }
+
+    #[Test]
     public function reset_password_publishes_its_own_route_and_controller_not_a_duplicate_forgot_password_route(): void
     {
         $this->artisan('restify:auth', ['--actions' => 'forgotPassword,resetPassword'])
@@ -106,12 +160,16 @@ class PublishAuthCommandTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function it_publishes_the_forgot_password_notification_only_when_requested(): void
+    public function it_does_not_publish_the_forgot_password_notification_when_not_requested(): void
     {
         $this->artisan('restify:auth', ['--actions' => 'login'])->run();
 
         $this->assertFileDoesNotExist(app_path('Notifications/Restify/ForgotPasswordNotification.php'));
+    }
 
+    #[Test]
+    public function it_publishes_the_forgot_password_notification_when_requested(): void
+    {
         $this->artisan('restify:auth', ['--actions' => 'forgotPassword'])->run();
 
         $this->assertFileExists(app_path('Notifications/Restify/ForgotPasswordNotification.php'));
@@ -150,6 +208,10 @@ class PublishAuthCommandTest extends IntegrationTestCase
 
         $this->assertSame(1, substr_count($routes, "Route::post('verify/{id}/{hash}'"));
         $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/VerifyController.php'));
+        $this->assertStringContainsString(
+            'Route::restifyAuth(actions: ["register","login","logout","forgotPassword","resetPassword"]);',
+            $routes
+        );
     }
 
     #[Test]

@@ -1414,24 +1414,6 @@ parameters:
 			path: src/Commands/PrepareSanctumCommand.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\PublishAuthCommand\:\:setNamespace\(\) should return string but returns int\<0, max\>\|false\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
-			message: '#^Parameter \#1 \$string of function str expects string\|null, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
-			message: '#^Parameter \#3 \$subject of function str_replace expects array\<string\>\|string, string\|false given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Commands/PublishAuthCommand.php
-
-		-
 			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
 			identifier: foreach.nonIterable
 			count: 4

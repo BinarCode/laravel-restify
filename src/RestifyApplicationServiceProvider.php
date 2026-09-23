@@ -23,11 +23,9 @@ use ReflectionException;
 class RestifyApplicationServiceProvider extends ServiceProvider
 {
     /**
-     * The actions `restify:auth` can publish, in the order `restifyAuth()` registers them.
-     *
      * @var list<string>
      */
-    public const AUTH_ACTIONS = ['register', 'login', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword'];
+    final public const AUTH_ACTIONS = ['register', 'login', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword'];
 
     /**
      * Bootstrap the application services.
