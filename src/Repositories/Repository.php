@@ -976,6 +976,8 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $eagerField = $this->authorizeBelongsToMany($request)->belongsToManyField($request);
 
+        $eagerField->authorizeToAttach($request);
+
         DB::transaction(function () use ($request, $pivots, $eagerField) {
             $fields = $eagerField->collectPivotFields()->filter(fn (
                 $pivotField
@@ -987,8 +989,6 @@ class Repository implements JsonSerializable, RestifySearchable
                 static::validatorForAttach($request)->validate();
 
                 static::fillFields($request, $pivot, $fields);
-
-                $eagerField->authorizeToAttach($request);
 
                 return $pivot;
             })->each->save();
@@ -1010,7 +1010,8 @@ class Repository implements JsonSerializable, RestifySearchable
         $relationship = $this->model()->{$eagerField->relation}();
 
         if (! $relationship instanceof EloquentBelongsToMany) {
-            throw new NotFoundHttpException('Belongs to many field not found.');
+            $class = class_basename($request->repository());
+            abort(400, "Missing BelongsToMany or MorphToMany related for [{$request->relatedRepository}]. This relationship should be in the related of the [{$class}] class. Or you are not authorized to use that repository (see `allowRestify` policy method).");
         }
 
         $relatedPivotKeyName = $relationship->getRelatedPivotKeyName();

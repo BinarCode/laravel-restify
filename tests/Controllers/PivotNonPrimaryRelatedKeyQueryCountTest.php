@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Tests\Concerns\InteractsWithQueryLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRolePivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
+use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Collection;
 use PHPUnit\Framework\Attributes\Test;
@@ -43,12 +45,32 @@ class PivotNonPrimaryRelatedKeyQueryCountTest extends IntegrationTestCase
             'roles' => $this->roles->modelKeys(),
         ])->assertCreated();
 
-        // 1 select to authorize the attach (whereKey, already batched) + 1 select
-        // to translate the primary keys into `name` values - neither grows with
-        // the number of roles attached.
         $this->assertSelectCount(2, Role::class);
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 3);
+    }
+
+    #[Test]
+    public function attaching_several_roles_invokes_can_attach_exactly_once_per_id(): void
+    {
+        $calls = 0;
+
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'roles' => BelongsToMany::make('roles', RoleRepository::class)
+                    ->canAttach(function () use (&$calls) {
+                        $calls++;
+
+                        return true;
+                    }),
+            ]);
+
+        $this->postJson(CompanyRepository::route("{$this->company->id}/attach/roles"), [
+            'roles' => $this->roles->modelKeys(),
+        ])->assertCreated();
+
+        $this->assertSame(3, $calls);
     }
 
     #[Test]

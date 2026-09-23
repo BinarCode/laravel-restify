@@ -6,17 +6,20 @@ namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
+use Illuminate\Validation\ValidationException;
 
 trait ResolvesRelatedModels
 {
     /**
-     * The related models named in the request, in the order they were sent, with a
-     * null wherever the database held no such row.
+     * The related models named in the request, in the order they were sent.
      *
-     * @return Collection<int, Model|null>
+     * @return Collection<int, Model>
+     *
+     * @throws ModelNotFoundException if any of the requested ids does not exist.
      */
     protected function relatedModels(): Collection
     {
@@ -30,6 +33,12 @@ trait ResolvesRelatedModels
 
         $ids = Arr::wrap($this->input($table));
 
+        foreach ($ids as $id) {
+            if (! is_int($id) && ! is_string($id)) {
+                throw ValidationException::withMessages([__('Each attached id must be an int or a string.')]);
+            }
+        }
+
         $model = $this->repository($relatedRepositoryClass::uriKey())->model();
 
         /** @var Collection<int, Model> $models */
@@ -37,9 +46,25 @@ trait ResolvesRelatedModels
 
         $byKey = $models->keyBy($model->getKeyName());
 
-        return Collection::make($ids)->map(
-            static fn (mixed $id): ?Model => $byKey->get($id)
-                ?? $model->newModelQuery()->whereKey($id)->first()
-        );
+        $resolved = [];
+        $missing = [];
+
+        foreach ($ids as $id) {
+            $match = $byKey->get($id) ?? $model->newModelQuery()->whereKey($id)->first();
+
+            if (is_null($match)) {
+                $missing[] = $id;
+
+                continue;
+            }
+
+            $resolved[] = $match;
+        }
+
+        if ($missing !== []) {
+            throw (new ModelNotFoundException)->setModel($model::class, $missing);
+        }
+
+        return Collection::make($resolved);
     }
 }

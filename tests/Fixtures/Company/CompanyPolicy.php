@@ -123,16 +123,20 @@ class CompanyPolicy
 
     public function attachRoles(User $user, Company $model, Role $roleToBeAttached)
     {
-        return true;
+        $allowed = $_SERVER['allow_attach_roles'] ?? true;
+
+        return is_callable($allowed) ? $allowed($roleToBeAttached) : $allowed;
     }
 
     public function syncRoles(User $user, Company $model, Collection $keys)
     {
-        return true;
+        return $_SERVER['allow_sync_roles'] ?? true;
     }
 
     public function detachRoles(User $user, Company $model, Role $roleToBeDetached)
     {
-        return true;
+        $allowed = $_SERVER['allow_detach_roles'] ?? true;
+
+        return is_callable($allowed) ? $allowed($roleToBeDetached) : $allowed;
     }
 }

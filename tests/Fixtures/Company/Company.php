@@ -29,10 +29,6 @@ class Company extends Model
             ->withTimestamps();
     }
 
-    /**
-     * A relation whose related key is the related model's `name` column, not its
-     * primary key - fixture for the non-primary-key related key attach/detach/sync tests.
-     */
     public function roles(): BelongsToMany
     {
         return $this->belongsToMany(Role::class, 'company_role', 'company_id', 'role_name', 'id', 'name')

@@ -19,6 +19,12 @@ use InvalidArgumentException;
 trait Attachable
 {
     /**
+     * Request attribute key under which {@see self::relatedModelsByPrimaryKey()}
+     * memoizes its lookup.
+     */
+    private const RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyAttachableRelatedModels';
+
+    /**
      * @var Closure
      */
     private $canAttachCallback;
@@ -134,13 +140,6 @@ trait Attachable
         return $this;
     }
 
-    /**
-     * Key under which {@see self::relatedModelsByPrimaryKey()} memoizes its
-     * lookup on the request's attribute bag - a request only ever targets one
-     * relation, so one cached collection per request suffices.
-     */
-    private const RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyAttachableRelatedModels';
-
     public function initializePivot(RestifyRequest $request, $relationship, $relatedKey)
     {
         if (! $relationship instanceof BelongsToMany) {
@@ -148,17 +147,13 @@ trait Attachable
         }
 
         if (! is_int($relatedKey) && ! is_string($relatedKey)) {
-            throw new InvalidArgumentException('The related key must be an int or a string.');
+            throw ValidationException::withMessages([__('Each attached id must be an int or a string.')]);
         }
-
-        $parentKey = $request->repositoryId;
 
         $parentKeyName = $relationship->getParentKeyName();
         $relatedKeyName = $relationship->getRelatedKeyName();
 
-        if ($parentKeyName !== $request->model()->getKeyName()) {
-            $parentKey = $request->findModelOrFail()->{$parentKeyName};
-        }
+        $parentKey = $request->findModelOrFail()->{$parentKeyName};
 
         $relatedRepositoryModel = $request->repository($request->route('relatedRepository'))::newModel();
 
@@ -187,11 +182,6 @@ trait Attachable
         return $pivot;
     }
 
-    /**
-     * Translate the related model's primary key (sent by the client) into the
-     * value stored in the pivot's related column, for a relation whose related
-     * key is not the related model's primary key.
-     */
     private function resolveNonPrimaryRelatedKey(RestifyRequest $request, Model $relatedRepositoryModel, string $relatedKeyName, int|string $primaryKey): mixed
     {
         $relatedModel = $this->relatedModelsByPrimaryKey($request, $relatedRepositoryModel)->get($primaryKey);
@@ -204,11 +194,9 @@ trait Attachable
     }
 
     /**
-     * Load every related model targeted by the current attach/detach/sync request
-     * in a single query, memoized on the request. `initializePivot()` is called
-     * once per id from several places (controllers, authorizeToAttach/Sync), so
-     * without this every call would re-query for a single model. A request only
-     * ever targets one relation, so one cached collection per request suffices.
+     * `initializePivot()` is called once per id from several places (controllers,
+     * authorizeToAttach/Sync), so this memoizes the lookup per request instead of
+     * re-querying for each one.
      *
      * @return Collection<int|string, Model>
      */
@@ -228,14 +216,10 @@ trait Attachable
 
         $primaryKeyName = $relatedRepositoryModel->getKeyName();
 
-        $ids = Collection::make(Arr::wrap($request->input($relatedRepository)));
-
-        $relatedModels = Collection::make(
-            $relatedRepositoryModel->newQuery()
-                ->whereIn($primaryKeyName, $ids)
-                ->get()
-                ->keyBy($primaryKeyName)
-        );
+        $relatedModels = $relatedRepositoryModel->newQuery()
+            ->whereIn($primaryKeyName, Arr::wrap($request->input($relatedRepository)))
+            ->get()
+            ->keyBy($primaryKeyName);
 
         $request->attributes->set(self::RELATED_MODELS_CACHE_ATTRIBUTE, $relatedModels);
 

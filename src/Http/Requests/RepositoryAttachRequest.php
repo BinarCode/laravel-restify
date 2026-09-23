@@ -11,7 +11,7 @@ class RepositoryAttachRequest extends RestifyRequest
     use ResolvesRelatedModels;
 
     /**
-     * @return Collection<int, Model|null>
+     * @return Collection<int, Model>
      */
     public function attachRelatedModels(): Collection
     {
