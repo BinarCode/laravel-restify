@@ -18,15 +18,10 @@ class AuthStubsTest extends IntegrationTestCase
     {
         $source = str_replace('{{namespace}}', 'App\\Http\\Controllers\\Restify\\Auth', $this->stubContents($stub));
 
-        $tempFile = tempnam(sys_get_temp_dir(), 'restify-stub-');
-        file_put_contents($tempFile, $source);
-
         try {
-            token_get_all((string) file_get_contents($tempFile), TOKEN_PARSE);
+            token_get_all($source, TOKEN_PARSE);
         } catch (ParseError $e) {
             $this->fail("Stub {$stub} does not compile as PHP: {$e->getMessage()}");
-        } finally {
-            unlink($tempFile);
         }
 
         $this->addToAssertionCount(1);
