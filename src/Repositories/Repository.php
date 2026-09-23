@@ -490,7 +490,7 @@ class Repository implements JsonSerializable, RestifySearchable
      * Resolve all model fields through showCallback methods and exclude from the final response if
      * that is required by method
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function resolveShowAttributes(RestifyRequest $request)
     {
@@ -504,12 +504,12 @@ class Repository implements JsonSerializable, RestifySearchable
 
         if ($this instanceof Mergeable) {
             /** @var Collection<string, Field> $fieldsByAttribute */
-            $fieldsByAttribute = $this->collectFields($request)->keyBy('attribute');
+            $fieldsByAttribute = $this->collectFields($request)->unique('attribute')->keyBy('attribute');
 
-            // Hidden and authorized index fields
+            // Hidden and authorized show fields
             $fields = $this->modelAttributes($request)
                 ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute) {
-                    /** * @var Field|null $field */
+                    /** @var Field|null $field */
                     $field = $fieldsByAttribute->get($attribute);
 
                     if (is_null($field)) {
@@ -535,13 +535,13 @@ class Repository implements JsonSerializable, RestifySearchable
      * Return the attributes list.
      *
      * @param  RestifyRequest  $request
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function resolveIndexAttributes($request)
     {
         if ($this instanceof Mergeable) {
             /** @var Collection<string, Field> $fieldsByAttribute */
-            $fieldsByAttribute = $this->collectFields($request)->keyBy('attribute');
+            $fieldsByAttribute = $this->collectFields($request)->unique('attribute')->keyBy('attribute');
 
             // Hidden and authorized index fields
             return $this->modelAttributes($request)
@@ -1247,6 +1247,9 @@ class Repository implements JsonSerializable, RestifySearchable
         );
     }
 
+    /**
+     * @return Collection<string, mixed>
+     */
     private function modelAttributes(?Request $request = null): Collection
     {
         return collect(method_exists($this->resource, 'toArray') ? $this->resource->toArray() : []);

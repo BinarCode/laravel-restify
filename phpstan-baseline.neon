@@ -13395,12 +13395,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Call to function is_null\(\) with Binaryk\\LaravelRestify\\Fields\\Field will always evaluate to false\.$#'
-			identifier: function.impossibleType
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Call to function method_exists\(\) with \$this\(Binaryk\\LaravelRestify\\Repositories\\Repository\) and ''fieldsForIndex'' will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
 			count: 1
@@ -13470,12 +13464,6 @@ parameters:
 			message: '#^Cannot call method all\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 3
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Cannot call method authorize\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
 			path: src/Repositories/Repository.php
 
 		-
@@ -13582,12 +13570,6 @@ parameters:
 
 		-
 			message: '#^Cannot call method intersectByKeys\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Cannot call method isHiddenOnShow\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Repositories/Repository.php
@@ -14457,12 +14439,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:modelAttributes\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
-			identifier: missingType.generics
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:newModel\(\) should return Illuminate\\Database\\Eloquent\\Model but returns mixed\.$#'
 			identifier: return.type
 			count: 1
@@ -14531,12 +14507,6 @@ parameters:
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:resolveIndexActions\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:resolveIndexAttributes\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: src/Repositories/Repository.php
 
@@ -14645,12 +14615,6 @@ parameters:
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:resolveShowActions\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:resolveShowAttributes\(\) return type has no value type specified in iterable type array\.$#'
-			identifier: missingType.iterableValue
 			count: 1
 			path: src/Repositories/Repository.php
 

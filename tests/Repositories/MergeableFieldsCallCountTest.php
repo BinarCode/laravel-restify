@@ -19,16 +19,10 @@ class MergeableFieldsCallCountTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $_SERVER['restify.mergeable_count.fields_calls'] = 0;
-    }
-
     protected function tearDown(): void
     {
-        unset($_SERVER['restify.mergeable_count.fields_calls']);
+        MergeableFieldsCallCountRepository::$fieldsCalls = 0;
+        NonMergeableFieldsCallCountRepository::$fieldsCalls = 0;
 
         Restify::$repositories = [];
 
@@ -36,38 +30,56 @@ class MergeableFieldsCallCountTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function it_calls_fields_a_constant_number_of_times_per_row_on_index(): void
+    public function it_calls_fields_exactly_once_per_extra_row_on_a_mergeable_index(): void
     {
         Restify::repositories([
             MergeableFieldsCallCountRepository::class,
         ]);
 
-        PostFactory::many(3);
+        PostFactory::one();
 
         $this->getJson(MergeableFieldsCallCountRepository::route())->assertOk();
 
-        // 3 one-time, per-request calls (match/sort/with field collection, unrelated to
-        // this fix) + 1 collectFields() call per row for a Mergeable index - not one per
-        // model attribute (Post has ~10). Before the fix this was 3 + 3 rows * 10 columns = 33.
-        $this->assertSame(6, $_SERVER['restify.mergeable_count.fields_calls']);
+        $callsForOneRow = MergeableFieldsCallCountRepository::$fieldsCalls;
+
+        MergeableFieldsCallCountRepository::$fieldsCalls = 0;
+
+        Post::query()->delete();
+
+        PostFactory::many(4);
+
+        $this->getJson(MergeableFieldsCallCountRepository::route())->assertOk();
+
+        $callsForFourRows = MergeableFieldsCallCountRepository::$fieldsCalls;
+
+        // Going from 1 to 4 rows must add exactly 3 extra fields() calls (one per extra
+        // row) - not one per model attribute (Post has ~10 columns), which would add
+        // roughly 3 * 10 = 30 extra calls on unfixed 10.x code.
+        $this->assertSame(3, $callsForFourRows - $callsForOneRow);
     }
 
     #[Test]
-    public function it_calls_fields_a_constant_number_of_times_per_row_on_show(): void
+    public function it_adds_a_single_constant_call_for_the_mergeable_branch_on_show(): void
     {
         Restify::repositories([
             MergeableFieldsCallCountRepository::class,
+            NonMergeableFieldsCallCountRepository::class,
         ]);
 
         $post = PostFactory::one();
 
-        $this->getJson(MergeableFieldsCallCountRepository::route($post))->assertOk();
+        $this->getJson(NonMergeableFieldsCallCountRepository::route($post))->assertOk();
+        $baselineCalls = NonMergeableFieldsCallCountRepository::$fieldsCalls;
 
-        // 2 one-time calls (eager "with" field collection, unrelated to this fix) +
-        // 2 calls from resolveShowAttributes() itself: once for the explicit fields,
-        // once more for the Mergeable model-attribute merge - not one per model
-        // attribute (Post has ~10). Before the fix this was 2 + 1 + 10 = 13.
-        $this->assertSame(4, $_SERVER['restify.mergeable_count.fields_calls']);
+        $this->getJson(MergeableFieldsCallCountRepository::route($post))->assertOk();
+        $mergeableCalls = MergeableFieldsCallCountRepository::$fieldsCalls;
+
+        // The Mergeable branch of resolveShowAttributes() must add exactly one extra
+        // collectFields() call (to build the attribute => field map) on top of the
+        // baseline a plain, non-Mergeable repository already makes - not one call per
+        // model attribute (Post has ~10 columns), which would add roughly 10 extra calls
+        // on unfixed 10.x code.
+        $this->assertSame(1, $mergeableCalls - $baselineCalls);
     }
 }
 
@@ -75,9 +87,27 @@ class MergeableFieldsCallCountRepository extends Repository implements Mergeable
 {
     public static $model = Post::class;
 
+    public static int $fieldsCalls = 0;
+
     public function fields(RestifyRequest $request): array
     {
-        $_SERVER['restify.mergeable_count.fields_calls']++;
+        self::$fieldsCalls++;
+
+        return [
+            Field::new('title'),
+        ];
+    }
+}
+
+class NonMergeableFieldsCallCountRepository extends Repository
+{
+    public static $model = Post::class;
+
+    public static int $fieldsCalls = 0;
+
+    public function fields(RestifyRequest $request): array
+    {
+        self::$fieldsCalls++;
 
         return [
             Field::new('title'),
