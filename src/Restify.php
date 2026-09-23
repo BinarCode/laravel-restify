@@ -25,7 +25,7 @@ class Restify
     /**
      * The registered repository names.
      *
-     * @var array
+     * @var list<class-string<Repository>>
      */
     public static $repositories = [];
 
@@ -90,8 +90,8 @@ class Restify
     /**
      * Get the repository class name for a given model.
      *
-     * @param  string  $model
-     * @return string
+     * @param  Model|string  $model
+     * @return class-string<Repository>|null
      */
     public static function repositoryForModel($model)
     {
@@ -108,7 +108,7 @@ class Restify
      * Get the repository class name for a given table name.
      *
      * @param  string  $table
-     * @return string
+     * @return class-string<Repository>|null
      */
     public static function repositoryForTable($table)
     {
@@ -120,13 +120,14 @@ class Restify
     /**
      * Register the given repositories.
      *
+     * @param  list<class-string<Repository>>  $repositories
      * @return static
      */
     public static function repositories(array $repositories)
     {
-        static::$repositories = array_unique(
+        static::$repositories = array_values(array_unique(
             array_merge(static::$repositories, $repositories)
-        );
+        ));
 
         collect($repositories)->each(function (string $repository) {
             (new BootRepository($repository))->boot();
@@ -165,7 +166,7 @@ class Restify
         }
 
         static::repositories(
-            collect($repositories)->sort()->all()
+            array_values(collect($repositories)->sort()->all())
         );
     }
 
@@ -221,12 +222,15 @@ class Restify
     public static function globallySearchableRepositories(RestifyRequest $request): array
     {
         return collect(static::$repositories)
-            ->filter(fn ($repository) => $repository::authorizedToUseRepository($request))
-            ->filter(fn ($repository) => $repository::$globallySearchable)
+            ->filter(fn (string $repository) => $repository::authorizedToUseRepository($request))
+            ->filter(fn (string $repository) => $repository::$globallySearchable)
             ->sortBy(static::sortResourcesWith())
             ->all();
     }
 
+    /**
+     * @return \Closure(class-string<Repository>): mixed
+     */
     public static function sortResourcesWith()
     {
         return function ($resource) {
@@ -267,8 +271,8 @@ class Restify
             $request->is(trim($path.'/*', '/')) ||
             $request->is('restify-api/*') ||
             collect(static::$repositories)
-                ->filter(fn ($repository) => $repository::prefix())
-                ->some(fn ($repository) => $request->is($repository::prefix().'/*'));
+                ->filter(fn (string $repository): bool => $repository::prefix() !== null)
+                ->some(fn (string $repository) => $request->is($repository::prefix().'/*'));
     }
 
     /**

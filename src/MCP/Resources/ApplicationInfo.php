@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\MCP\Resources;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\Server\Resource;
@@ -87,11 +88,12 @@ EOT;
     protected function getRepositoryMetadata(): array
     {
         return collect(Restify::$repositories)
-            ->map(function (string $repository) {
-                $instance = app($repository);
+            ->map(function (string $repositoryClass) {
+                /** @var Repository $instance */
+                $instance = app($repositoryClass);
 
                 return [
-                    'name' => $repository,
+                    'name' => $repositoryClass,
                     'uri_key' => $instance->uriKey(),
                     'label' => $instance::label(),
                     'model' => $instance::guessModelClassName(),

@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
 use Binaryk\LaravelRestify\Repositories\Serializer;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
@@ -58,8 +59,10 @@ if (! function_exists('rest')) {
     {
         $models = collect($models)->flatten();
 
-        if ($models->first()) {
-            $repository = Restify::repositoryForModel(get_class($models->first())) ?? Repository::class;
+        $firstModel = $models->first();
+
+        if ($firstModel instanceof Model) {
+            $repository = Restify::repositoryForModel(get_class($firstModel)) ?? Repository::class;
         } else {
             $repository = Repository::class;
         }

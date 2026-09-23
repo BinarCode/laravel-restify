@@ -12,6 +12,7 @@ use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
+use RuntimeException;
 
 class GraphqlGenerateCommand extends Command
 {
@@ -553,8 +554,14 @@ GRAPHQL;
 
     protected function getRepositoryClass(string $repositoryName): string
     {
-        return collect(Restify::$repositories)
+        $repositoryClass = collect(Restify::$repositories)
             ->first(fn ($repo) => class_basename($repo) === $repositoryName);
+
+        if (is_null($repositoryClass)) {
+            throw new RuntimeException("Unable to resolve a registered repository for [{$repositoryName}].");
+        }
+
+        return $repositoryClass;
     }
 
     protected function getGraphQLTypeName(string $repositoryName): string
