@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Console\Commands;
 
 use Binaryk\LaravelRestify\Tests\Fixtures\Console\RecordingCommand;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
@@ -13,6 +14,8 @@ use PHPUnit\Framework\Attributes\Test;
 
 class RefreshCommandTest extends IntegrationTestCase
 {
+    private ?string $originalPostRepositoryCacheStore;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -23,12 +26,15 @@ class RefreshCommandTest extends IntegrationTestCase
         foreach (['route:cache', 'route:clear', 'cache:clear', 'config:cache', 'config:clear', 'view:clear'] as $name) {
             Artisan::registerCommand(new RecordingCommand($name));
         }
+
+        $this->originalPostRepositoryCacheStore = PostRepository::$cacheStore;
     }
 
     protected function tearDown(): void
     {
         RecordingCommand::$calls = [];
         RecordingCommand::$exitCodes = [];
+        PostRepository::$cacheStore = $this->originalPostRepositoryCacheStore;
 
         parent::tearDown();
     }
@@ -58,32 +64,24 @@ class RefreshCommandTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function it_flushes_the_configured_repository_cache_store_when_it_differs_from_the_default(): void
+    public function it_clears_a_repositorys_cache_on_its_own_store_without_touching_unrelated_keys(): void
     {
-        config(['cache.default' => 'array']);
         config(['cache.stores.restify_repositories' => ['driver' => 'array']]);
-        config(['restify.repositories.cache.enabled' => true]);
-        config(['restify.repositories.cache.store' => 'restify_repositories']);
+        $this->enableRepositoryCache();
+        PostRepository::$cacheStore = 'restify_repositories';
 
-        Cache::store('restify_repositories')->put('restify-store-key', 'value', 60);
+        // Boots the repository's default cache tags, which only happens the
+        // first time it is instantiated.
+        new PostRepository;
+
+        Cache::store('restify_repositories')->tags(PostRepository::$cacheTags)->put('restify:repository:posts:index:test', 'cached-value', 60);
+        Cache::store('restify_repositories')->put('unrelated-key', 'unrelated-value', 60);
 
         $this->artisan('restify:refresh')->assertExitCode(Command::SUCCESS);
 
-        $this->assertFalse(Cache::store('restify_repositories')->has('restify-store-key'));
-    }
-
-    #[Test]
-    public function it_does_not_touch_the_repository_cache_store_when_repository_caching_is_disabled(): void
-    {
-        config(['cache.default' => 'array']);
-        config(['cache.stores.restify_repositories' => ['driver' => 'array']]);
-        config(['restify.repositories.cache.enabled' => false]);
-        config(['restify.repositories.cache.store' => 'restify_repositories']);
-
-        Cache::store('restify_repositories')->put('restify-store-key', 'value', 60);
-
-        $this->artisan('restify:refresh')->assertExitCode(Command::SUCCESS);
-
-        $this->assertTrue(Cache::store('restify_repositories')->has('restify-store-key'));
+        $this->assertFalse(
+            Cache::store('restify_repositories')->tags(PostRepository::$cacheTags)->has('restify:repository:posts:index:test'),
+        );
+        $this->assertTrue(Cache::store('restify_repositories')->has('unrelated-key'));
     }
 }
