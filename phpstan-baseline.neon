@@ -8955,12 +8955,6 @@ parameters:
 			path: src/Http/Requests/RestifyRequest.php
 
 		-
-			message: '#^Access to an undefined property Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:\$container\.$#'
-			identifier: property.notFound
-			count: 2
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
 			message: '#^Access to an undefined property Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:\$currentRule\.$#'
 			identifier: property.notFound
 			count: 1
@@ -9075,12 +9069,6 @@ parameters:
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
-			message: '#^Cannot call method check\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
 			message: '#^Cannot call method description\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 24
@@ -9090,12 +9078,6 @@ parameters:
 			message: '#^Cannot call method enum\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 2
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Cannot call method getAuthPassword\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
@@ -9114,24 +9096,6 @@ parameters:
 			message: '#^Cannot call method getMultiCount\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Cannot call method guard\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Cannot call method guest\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Cannot call method make\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 2
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
@@ -9154,12 +9118,6 @@ parameters:
 
 		-
 			message: '#^Cannot call method string\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
-
-		-
-			message: '#^Cannot call method user\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
@@ -9549,7 +9507,13 @@ parameters:
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateCurrentPassword\(\) should return bool but returns mixed\.$#'
+			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateCurrentPassword\(\) has parameter \$parameters with no value type specified in iterable type array\.$#'
+			identifier: missingType.iterableValue
+			count: 1
+			path: src/MCP/Actions/JsonSchemaFromRulesAction.php
+
+		-
+			message: '#^Method Binaryk\\LaravelRestify\\MCP\\Actions\\JsonSchemaFromRulesAction\:\:validateCurrentPassword\(\) should return Illuminate\\JsonSchema\\Types\\Type but returns mixed\.$#'
 			identifier: return.type
 			count: 1
 			path: src/MCP/Actions/JsonSchemaFromRulesAction.php

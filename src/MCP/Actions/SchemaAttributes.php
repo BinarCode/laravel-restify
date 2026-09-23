@@ -475,23 +475,12 @@ trait SchemaAttributes
     /**
      * Validate that the password of the currently authenticated user matches the given value.
      *
-     * @param  string  $attribute
-     * @param  mixed  $value
-     * @param  array<int, int|string>  $parameters
-     * @return bool
+     * @param  JsonSchema  $schema
+     * @return Type
      */
-    protected function validateCurrentPassword($attribute, $value, $parameters)
+    public function validateCurrentPassword(string $attribute, $schema, array $parameters)
     {
-        $auth = $this->container->make('auth');
-        $hasher = $this->container->make('hash');
-
-        $guard = $auth->guard(Arr::first($parameters));
-
-        if ($guard->guest()) {
-            return false;
-        }
-
-        return $hasher->check($value, $guard->user()->getAuthPassword());
+        return $this->rulesSchema[$attribute] ?? $schema->string()->description("Must match the currently authenticated user's password");
     }
 
     /**
