@@ -9,6 +9,7 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Validator as ConcreteValidator;
 
 trait ValidatingTrait
 {
@@ -197,7 +198,7 @@ trait ValidatingTrait
         return Validator::make(
             $keys,
             ['keys.*' => ['required', static::scalarIdRule()]],
-        )->after(function (\Illuminate\Validation\Validator $validator) use ($request) {
+        )->after(function (ConcreteValidator $validator) use ($request): void {
             static::afterValidation($request, $validator);
         });
     }
@@ -211,7 +212,7 @@ trait ValidatingTrait
     {
         return function (string $attribute, mixed $value, Closure $fail): void {
             if (! is_int($value) && ! is_string($value)) {
-                $fail('The :attribute must be an integer or a string.');
+                $fail(__('The :attribute must be an integer or a string.'));
             }
         };
     }
@@ -219,7 +220,7 @@ trait ValidatingTrait
     /**
      * Handle any post-validation processing.
      *
-     * @param  \Illuminate\Validation\Validator  $validator
+     * @param  ConcreteValidator  $validator
      * @return void
      */
     protected static function afterValidation(RestifyRequest $request, $validator)
@@ -275,20 +276,16 @@ trait ValidatingTrait
 
         $idAttribute = '*.'.Repository::BULK_ID_FIELD;
 
+        /** @var array<int, mixed> $existingIdRules */
         $existingIdRules = $rules[$idAttribute] ?? [];
-        $existingIdRules = is_array($existingIdRules) ? $existingIdRules : [$existingIdRules];
 
-        $idRules = [];
-
-        foreach (array_merge(['required', 'distinct'], $existingIdRules) as $rule) {
-            if (! in_array($rule, $idRules, true)) {
-                $idRules[] = $rule;
-            }
-        }
-
-        $idRules[] = static::scalarIdRule();
-
-        $rules[$idAttribute] = $idRules;
+        // The scalar check runs first, with `bail`, so a repository's own id
+        // rules (e.g. a DB `exists` check) never run against a non-scalar id.
+        $rules[$idAttribute] = Collection::make([static::scalarIdRule(), 'bail', 'required', 'distinct'])
+            ->merge($existingIdRules)
+            ->unique(strict: true)
+            ->values()
+            ->all();
 
         return $rules;
     }

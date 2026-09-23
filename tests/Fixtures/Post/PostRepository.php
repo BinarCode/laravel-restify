@@ -50,6 +50,15 @@ class PostRepository extends Repository
         $_SERVER['restify.post.deletedBulk'] = $repositories;
     }
 
+    protected static function afterValidation(RestifyRequest $request, $validator)
+    {
+        if (isset($_SERVER['restify.post.afterValidation.spy'])) {
+            call_user_func($_SERVER['restify.post.afterValidation.spy'], $validator);
+        }
+
+        parent::afterValidation($request, $validator);
+    }
+
     public static $model = Post::class;
 
     public static string $title = 'title';

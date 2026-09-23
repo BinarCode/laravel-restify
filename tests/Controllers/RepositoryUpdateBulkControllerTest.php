@@ -68,6 +68,7 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
     #[Test]
     #[TestWith([[1]], 'array id')]
     #[TestWith([['id' => 1]], 'nested object id')]
+    #[TestWith([true], 'boolean')]
     public function a_non_scalar_id_is_rejected_instead_of_erroring(mixed $id): void
     {
         $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
@@ -81,6 +82,18 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_numeric_string_id_is_accepted_and_the_row_is_updated(): void
+    {
+        $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
+
+        $this->postJson(PostRepository::route('bulk/update'), [
+            ['id' => (string) $post->id, 'title' => 'Updated via string id'],
+        ])->assertOk();
+
+        $this->assertDatabaseHas(Post::class, ['id' => $post->id, 'title' => 'Updated via string id']);
+    }
+
+    #[Test]
     public function a_repositorys_own_id_rules_are_kept_alongside_the_required_and_distinct_guard(): void
     {
         $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
@@ -89,9 +102,10 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
 
         try {
             $this->postJson(PostRepository::route('bulk/update'), [
-                ['id' => $post->id, 'title' => 'Updated'],
+                ['id' => $post->id, 'title' => 'n'],
+                ['title' => 'x'],
             ])->assertUnprocessable()
-                ->assertJsonValidationErrors('0.id');
+                ->assertJsonValidationErrors(['0.id', '1.id']);
 
             $this->assertDatabaseHas(Post::class, ['id' => $post->id, 'title' => 'Original']);
         } finally {

@@ -15,14 +15,12 @@ class RepositoryDestroyBulkController
 
     public function __invoke(RepositoryDestroyBulkRequest $request): JsonResponse
     {
-        $rawKeys = $request->isJson() ? $request->json()->all() : $request->post();
-
         /** @var ValidatorContract $validator */
-        $validator = $request->repository()::validatorForDestroyBulk($request, ['keys' => $rawKeys]);
+        $validator = $request->repository()::validatorForDestroyBulk($request);
         $validator->validate();
 
         /** @var array<int, int|string> $keys */
-        $keys = $rawKeys;
+        $keys = $validator->validated()['keys'];
 
         $deleted = [];
 

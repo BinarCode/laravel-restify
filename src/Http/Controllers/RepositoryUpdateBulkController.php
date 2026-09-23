@@ -25,14 +25,15 @@ class RepositoryUpdateBulkController extends RepositoryController
             /** @var array<int, array<string, mixed>> $input */
             $input = $request->collectInput()->all();
 
+            /** @var array<int, int|string> $ids */
             $ids = [];
 
             foreach ($input as $row => $item) {
-                $ids[$row] = $item[Repository::BULK_ID_FIELD] ?? null;
-            }
+                /** @var int|string $id */
+                $id = $item[Repository::BULK_ID_FIELD];
 
-            /** @var array<int, int|string> $ids */
-            $ids = $ids;
+                $ids[$row] = $id;
+            }
 
             $models = $this->resolveBulkModels($request, $ids);
 

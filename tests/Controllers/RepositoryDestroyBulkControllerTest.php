@@ -58,6 +58,7 @@ class RepositoryDestroyBulkControllerTest extends IntegrationTestCase
     #[Test]
     #[TestWith([[1]], 'array key')]
     #[TestWith([['id' => 1]], 'nested object key')]
+    #[TestWith([true], 'boolean')]
     public function a_non_scalar_key_is_rejected_instead_of_erroring(mixed $key): void
     {
         $post = Post::factory()->create();
@@ -68,5 +69,25 @@ class RepositoryDestroyBulkControllerTest extends IntegrationTestCase
             ->assertJsonValidationErrors('keys.0');
 
         $this->assertDatabaseHas(Post::class, ['id' => $post->id]);
+    }
+
+    #[Test]
+    public function after_validation_runs_on_bulk_delete(): void
+    {
+        $post = Post::factory()->create();
+
+        $_SERVER['restify.post.afterValidation.spy'] = function ($validator): void {
+            $_SERVER['restify.post.afterValidation.keys'] = $validator->validated()['keys'];
+        };
+
+        try {
+            $this->deleteJson(PostRepository::route('bulk/delete'), [
+                $post->getKey(),
+            ])->assertOk();
+
+            $this->assertSame([$post->getKey()], $_SERVER['restify.post.afterValidation.keys']);
+        } finally {
+            unset($_SERVER['restify.post.afterValidation.spy'], $_SERVER['restify.post.afterValidation.keys']);
+        }
     }
 }
