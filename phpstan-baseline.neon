@@ -7695,12 +7695,6 @@ parameters:
 			path: src/Http/Controllers/RepositoryAttachController.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryDestroyBulkController\:\:__invoke\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Controllers/RepositoryDestroyBulkController.php
-
-		-
 			message: '#^Parameter \#1 \$repositoryIds of method Binaryk\\LaravelRestify\\Http\\Requests\\RestifyRequest\:\:modelsQuery\(\) expects list\<int\|string\>, array\<int, int\|string\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -7709,24 +7703,6 @@ parameters:
 		-
 			message: '#^Parameter \#2 \$ids of method Illuminate\\Database\\Eloquent\\ModelNotFoundException\<Illuminate\\Database\\Eloquent\\Model\>\:\:setModel\(\) expects array\<int, int\|string\>\|int\|string, list\<int\|string\|null\> given\.$#'
 			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDestroyBulkController.php
-
-		-
-			message: '#^Parameter \#2 \$keys of method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryDestroyBulkController\:\:resolveBulkModels\(\) expects array\<int\|string, int\|string\|null\>, array given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDestroyBulkController.php
-
-		-
-			message: '#^Parameter \#3 \$row of method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:deleteBulk\(\) expects int, int\|string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDestroyBulkController.php
-
-		-
-			message: '#^Possibly invalid array key type mixed\.$#'
-			identifier: offsetAccess.invalidOffset
 			count: 1
 			path: src/Http/Controllers/RepositoryDestroyBulkController.php
 
@@ -7911,24 +7887,6 @@ parameters:
 			path: src/Http/Controllers/RepositorySyncController.php
 
 		-
-			message: '#^Cannot access offset ''id'' on mixed\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
-
-		-
-			message: '#^Cannot call method validate\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryUpdateBulkController\:\:__invoke\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
-
-		-
 			message: '#^Parameter \#1 \$repositoryIds of method Binaryk\\LaravelRestify\\Http\\Requests\\RestifyRequest\:\:modelsQuery\(\) expects list\<int\|string\>, array\<int, int\|string\> given\.$#'
 			identifier: argument.type
 			count: 1
@@ -7936,18 +7894,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#2 \$ids of method Illuminate\\Database\\Eloquent\\ModelNotFoundException\<Illuminate\\Database\\Eloquent\\Model\>\:\:setModel\(\) expects array\<int, int\|string\>\|int\|string, list\<int\|string\|null\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
-
-		-
-			message: '#^Parameter \#2 \$keys of method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryUpdateBulkController\:\:resolveBulkModels\(\) expects array\<int\|string, int\|string\|null\>, array\<mixed\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
-
-		-
-			message: '#^Parameter \#3 \$row of method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:updateBulk\(\) expects int, int\|string given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Http/Controllers/RepositoryUpdateBulkController.php

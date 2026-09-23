@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
 {
@@ -47,17 +48,55 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function duplicate_ids_in_the_same_payload_are_rejected(): void
+    #[TestWith([false], 'matching integers')]
+    #[TestWith([true], "'3' vs 3")]
+    public function duplicate_ids_in_the_same_payload_are_rejected(bool $secondIdAsString): void
     {
         $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
 
+        $secondId = $secondIdAsString ? (string) $post->id : $post->id;
+
         $this->postJson(PostRepository::route('bulk/update'), [
             ['id' => $post->id, 'title' => 'First'],
-            ['id' => $post->id, 'title' => 'Second'],
+            ['id' => $secondId, 'title' => 'Second'],
         ])->assertUnprocessable()
             ->assertJsonValidationErrors(['0.id', '1.id']);
 
         $this->assertDatabaseHas(Post::class, ['id' => $post->id, 'title' => 'Original']);
+    }
+
+    #[Test]
+    #[TestWith([[1]], 'array id')]
+    #[TestWith([['id' => 1]], 'nested object id')]
+    public function a_non_scalar_id_is_rejected_instead_of_erroring(mixed $id): void
+    {
+        $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
+
+        $this->postJson(PostRepository::route('bulk/update'), [
+            ['id' => $id, 'title' => 'Updated'],
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('0.id');
+
+        $this->assertDatabaseHas(Post::class, ['id' => $post->id, 'title' => 'Original']);
+    }
+
+    #[Test]
+    public function a_repositorys_own_id_rules_are_kept_alongside_the_required_and_distinct_guard(): void
+    {
+        $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
+
+        $_SERVER['restify.post.id.updateBulkRules'] = 'prohibited';
+
+        try {
+            $this->postJson(PostRepository::route('bulk/update'), [
+                ['id' => $post->id, 'title' => 'Updated'],
+            ])->assertUnprocessable()
+                ->assertJsonValidationErrors('0.id');
+
+            $this->assertDatabaseHas(Post::class, ['id' => $post->id, 'title' => 'Original']);
+        } finally {
+            unset($_SERVER['restify.post.id.updateBulkRules']);
+        }
     }
 
     public function test_basic_update_validation_works(): void

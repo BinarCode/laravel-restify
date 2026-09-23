@@ -4,21 +4,25 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Controllers\Concerns\ResolvesBulkModels;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyBulkRequest;
+use Illuminate\Contracts\Validation\Validator as ValidatorContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Validator;
 
 class RepositoryDestroyBulkController
 {
     use ResolvesBulkModels;
 
-    public function __invoke(RepositoryDestroyBulkRequest $request)
+    public function __invoke(RepositoryDestroyBulkRequest $request): JsonResponse
     {
-        $keys = $request->isJson() ? $request->json()->all() : $request->post();
+        $rawKeys = $request->isJson() ? $request->json()->all() : $request->post();
 
-        // A missing/null key would otherwise be silently dropped before the
-        // lookup and 404 the whole request instead of naming the bad row.
-        Validator::make(['keys' => $keys], ['keys.*' => ['required']])->validate();
+        /** @var ValidatorContract $validator */
+        $validator = $request->repository()::validatorForDestroyBulk($request, ['keys' => $rawKeys]);
+        $validator->validate();
+
+        /** @var array<int, int|string> $keys */
+        $keys = $rawKeys;
 
         $deleted = [];
 
@@ -28,9 +32,12 @@ class RepositoryDestroyBulkController
             $authorized = [];
 
             foreach ($models as $row => $model) {
-                $authorized[$model->getKey()] ??= [
+                /** @var int|string $key */
+                $key = $model->getKey();
+
+                $authorized[$key] ??= [
                     $keys[$row],
-                    $row,
+                    (int) $row,
                     $request->repositoryWith($model)->allowToDestroyBulk($request),
                 ];
             }
@@ -44,6 +51,9 @@ class RepositoryDestroyBulkController
 
         $request->repository()::deletedBulk(Collection::make($deleted), $request);
 
-        return ok();
+        /** @var JsonResponse $response */
+        $response = ok();
+
+        return $response;
     }
 }

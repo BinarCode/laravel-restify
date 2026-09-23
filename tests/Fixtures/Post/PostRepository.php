@@ -127,6 +127,10 @@ class PostRepository extends Repository
             ]),
 
             field('user_id'),
+
+            ...(isset($_SERVER['restify.post.id.updateBulkRules'])
+                ? [field('id')->updateBulkRules($_SERVER['restify.post.id.updateBulkRules'])]
+                : []),
         ];
     }
 
