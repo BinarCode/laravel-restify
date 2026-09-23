@@ -11,11 +11,6 @@ class PaginationDataObject extends Data
         public int|string|null $page,
     ) {}
 
-    /**
-     * Resolve the effective per-page value: the requested value when it is a
-     * positive number, otherwise the repository default, clamped to
-     * `restify.pagination.max_per_page` when that config is set.
-     */
     public function resolvePerPage(int $default): int
     {
         $perPage = $this->positiveInt($this->perPage) ?? $default;

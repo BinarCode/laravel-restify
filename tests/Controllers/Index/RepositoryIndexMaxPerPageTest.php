@@ -87,6 +87,21 @@ class RepositoryIndexMaxPerPageTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function it_clamps_the_repository_default_when_no_per_page_is_requested_and_the_cap_is_below_it(): void
+    {
+        config(['restify.pagination.max_per_page' => 10]);
+
+        CommentFactory::many(20);
+
+        $this->getJson(CommentRepository::route())->assertJson(
+            fn (AssertableJson $json) => $json
+                ->count('data', 10)
+                ->where('meta.per_page', 10)
+                ->etc()
+        );
+    }
+
+    #[Test]
     public function it_falls_back_to_the_default_per_page_for_a_non_numeric_request(): void
     {
         CommentFactory::many(3);

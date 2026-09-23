@@ -725,33 +725,33 @@ class Repository implements JsonSerializable, RestifySearchable
             $repository->serializeForIndex($request)
         ))->all();
 
+        $models = $items->map(fn (self $repository) => $repository->resource);
+
+        $meta = $this->resolveIndexMainMeta(
+            $request,
+            $models,
+            [
+                'current_page' => $paginator->currentPage(),
+                'from' => $paginator->firstItem(),
+                'last_page' => $paginator->lastPage(),
+                'path' => $paginator->path(),
+                'per_page' => $paginator->perPage(),
+                'to' => $paginator->lastItem(),
+                'total' => $paginator->total(),
+            ]
+        );
+
+        $links = $this->resolveIndexLinks($request, $models, [
+            'first' => $paginator->url(1),
+            'next' => $paginator->nextPageUrl(),
+            'path' => $paginator->path(),
+            'prev' => $paginator->previousPageUrl(),
+            'filters' => Restify::path(static::uriKey().'/filters'),
+        ]);
+
         return $this->filter([
-            'meta' => $this->when(
-                (bool) ($meta = $this->resolveIndexMainMeta(
-                    $request,
-                    $models = $items->map(fn (self $repository) => $repository->resource),
-                    [
-                        'current_page' => $paginator->currentPage(),
-                        'from' => $paginator->firstItem(),
-                        'last_page' => $paginator->lastPage(),
-                        'path' => $paginator->path(),
-                        'per_page' => $paginator->perPage(),
-                        'to' => $paginator->lastItem(),
-                        'total' => $paginator->total(),
-                    ]
-                )),
-                $meta
-            ),
-            'links' => $this->when(
-                (bool) ($links = $this->resolveIndexLinks($request, $models, [
-                    'first' => $paginator->url(1),
-                    'next' => $paginator->nextPageUrl(),
-                    'path' => $paginator->path(),
-                    'prev' => $paginator->previousPageUrl(),
-                    'filters' => Restify::path(static::uriKey().'/filters'),
-                ])),
-                $links
-            ),
+            'meta' => $this->when($meta !== null, $meta),
+            'links' => $this->when($links !== null, $links),
             'data' => $data,
         ]);
     }

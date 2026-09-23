@@ -29,12 +29,16 @@ class HasMany extends EagerField
         if ($repository->model()->relationLoaded($this->relation)) {
             $paginator = $repository->model()->getRelation($this->relation);
         } else {
+            $defaultRelatablePerPage = $this->repositoryClass::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE;
+
             /**
              * @var Relation $paginator
              */
             $paginator = $repository->{$this->relation}();
             $paginator = $paginator
-                ->take(request('relatablePerPage') ?? ($this->repositoryClass::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))
+                ->take(app(RestifyRequest::class)->relatablePagination()->resolvePerPage(
+                    is_int($defaultRelatablePerPage) ? $defaultRelatablePerPage : RestifySearchable::DEFAULT_RELATABLE_PER_PAGE
+                ))
                 ->select($this->getColumns())
                 ->get();
         }

@@ -5176,12 +5176,6 @@ parameters:
 			path: src/Fields/HasMany.php
 
 		-
-			message: '#^Parameter \#1 \$value of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:take\(\) expects int, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Fields/HasMany.php
-
-		-
 			message: '#^Property Binaryk\\LaravelRestify\\Fields\\Field\:\:\$value \(\(callable\(\)\: mixed\)\|string\|null\) does not accept mixed\.$#'
 			identifier: assign.propertyType
 			count: 1
