@@ -39,6 +39,16 @@ class AuthStubsTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function the_forgot_password_stub_types_the_user_as_can_reset_password(): void
+    {
+        $contents = $this->stubContents('ForgotPasswordController.stub');
+
+        $this->assertStringNotContainsString('App\\Models\\User', $contents);
+        $this->assertStringContainsString('use Illuminate\\Contracts\\Auth\\CanResetPassword;', $contents);
+        $this->assertStringContainsString('sendResetLinkTo(CanResetPassword $user, Request $request): void', $contents);
+    }
+
+    #[Test]
     public function the_reset_password_stub_types_its_http_status_and_uses_force_fill(): void
     {
         $contents = $this->stubContents('ResetPasswordController.stub');
