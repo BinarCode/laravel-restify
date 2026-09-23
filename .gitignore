@@ -10,7 +10,6 @@ output
 docs/node_modules
 docs/.vuepress/dist
 .phpunit.result.cache
-.pint.cache
 phpstan.neon
 .github/instructions
 # Local Netlify folder

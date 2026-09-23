@@ -9,11 +9,11 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v6
-              with:
-                  ref: ${{ github.head_ref }}
 
             - name: Fix PHP code style issues
               uses: aglipanci/laravel-pint-action@v2
+              with:
+                  useComposer: true
 
             - name: Commit changes
               uses: stefanzweifel/git-auto-commit-action@v7
