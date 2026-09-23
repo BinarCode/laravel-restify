@@ -56,6 +56,8 @@ class PrepareSanctumCommandTest extends IntegrationTestCase
 
             PHP);
 
+        $this->seedValidUserModel();
+
         $this->artisan('restify:sanctum')->assertExitCode(Command::SUCCESS);
 
         $updatedContent = File::get(config_path('restify.php'));
@@ -74,6 +76,29 @@ class PrepareSanctumCommandTest extends IntegrationTestCase
         $this->seedValidUserModel();
 
         $this->assertFileDoesNotExist(config_path('restify.php'));
+
+        $this->artisan('restify:sanctum')->assertExitCode(Command::FAILURE);
+    }
+
+    #[Test]
+    public function it_fails_when_the_user_model_is_missing(): void
+    {
+        File::put(base_path('composer.lock'), json_encode([
+            'packages' => [['name' => 'laravel/sanctum']],
+        ]));
+
+        File::put(config_path('restify.php'), <<<'PHP'
+            <?php
+
+            return [
+                'middleware' => [
+                    'api',
+                ],
+            ];
+
+            PHP);
+
+        $this->assertFileDoesNotExist(app_path('Models/User.php'));
 
         $this->artisan('restify:sanctum')->assertExitCode(Command::FAILURE);
     }
