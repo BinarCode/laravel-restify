@@ -180,7 +180,7 @@ trait InteractsWithCache
         }
 
         $store = Cache::store(static::$cacheStore);
-        $cacheTags = self::resolvedCacheTags();
+        $cacheTags = self::resolveCacheTags();
 
         // If cache tags are used and supported, flush by tags
         if (! empty($cacheTags) && static::cacheStoreSupportsTagging($store)) {
@@ -248,7 +248,7 @@ trait InteractsWithCache
      *
      * @return array<int, string>
      */
-    private static function resolvedCacheTags(): array
+    private static function resolveCacheTags(): array
     {
         return array_values(array_unique(array_merge(
             ['restify', 'repositories', static::uriKey()],
