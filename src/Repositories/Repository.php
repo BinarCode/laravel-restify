@@ -33,6 +33,7 @@ use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
@@ -1006,7 +1007,19 @@ class Repository implements JsonSerializable, RestifySearchable
 
         $eagerField->authorizeToSync($request);
 
-        $this->model()->{$eagerField->relation}()->sync($pivots->all());
+        $relationship = $this->model()->{$eagerField->relation}();
+
+        if (! $relationship instanceof EloquentBelongsToMany) {
+            throw new NotFoundHttpException('Belongs to many field not found.');
+        }
+
+        $relatedPivotKeyName = $relationship->getRelatedPivotKeyName();
+
+        $syncValues = $pivots
+            ->map(fn ($relatedKey) => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
+            ->all();
+
+        $relationship->sync($syncValues);
 
         return ok();
     }

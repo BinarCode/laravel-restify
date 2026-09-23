@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 
 class CompanyRepository extends Repository
@@ -18,6 +19,8 @@ class CompanyRepository extends Repository
             'users' => BelongsToMany::make('users', UserRepository::class)->withPivot(
                 Field::make('is_admin')->rules('required')
             )->canDetach(fn ($request, $pivot) => isset($_SERVER['roles.canDetach.users']) && $_SERVER['roles.canDetach.users']),
+
+            'roles' => BelongsToMany::make('roles', RoleRepository::class),
         ];
     }
 

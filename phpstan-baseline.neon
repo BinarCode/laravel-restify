@@ -3004,19 +3004,7 @@ parameters:
 			path: src/Fields/BelongsTo.php
 
 		-
-			message: '#^Cannot access property \$withTimestamps on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
 			message: '#^Cannot call method associate\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method createdAt\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsTo.php
@@ -3028,43 +3016,7 @@ parameters:
 			path: src/Fields/BelongsTo.php
 
 		-
-			message: '#^Cannot call method forceFill\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method getForeignPivotKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
 			message: '#^Cannot call method getModel\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method getParentKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method getRelatedKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method getRelatedPivotKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method newPivot\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsTo.php
@@ -3077,12 +3029,6 @@ parameters:
 
 		-
 			message: '#^Cannot call method toArray\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method updatedAt\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsTo.php
@@ -3226,12 +3172,6 @@ parameters:
 			path: src/Fields/BelongsTo.php
 
 		-
-			message: '#^Parameter \#2 \$model of static method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:fillFields\(\) expects Illuminate\\Database\\Eloquent\\Model, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
 			message: '#^Parameter \#2 \$pivot of method Binaryk\\LaravelRestify\\Fields\\BelongsTo\:\:authorizedToAttach\(\) expects Illuminate\\Database\\Eloquent\\Relations\\Pivot, mixed given\.$#'
 			identifier: argument.type
 			count: 1
@@ -3241,12 +3181,6 @@ parameters:
 			message: '#^Parameter \#2 \$pivot of method Binaryk\\LaravelRestify\\Fields\\BelongsTo\:\:authorizedToSync\(\) expects Illuminate\\Database\\Eloquent\\Relations\\Pivot, mixed given\.$#'
 			identifier: argument.type
 			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Possibly invalid array key type mixed\.$#'
-			identifier: array.invalidKey
-			count: 4
 			path: src/Fields/BelongsTo.php
 
 		-
@@ -3298,61 +3232,13 @@ parameters:
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Cannot access property \$withTimestamps on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method createdAt\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method forceFill\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Cannot call method get\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Cannot call method getForeignPivotKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method getParentKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method getRelatedKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method getRelatedPivotKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Cannot call method map\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method newPivot\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsToMany.php
@@ -3365,12 +3251,6 @@ parameters:
 
 		-
 			message: '#^Cannot call method toArray\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method updatedAt\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsToMany.php
@@ -3526,12 +3406,6 @@ parameters:
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Parameter \#2 \$model of static method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:fillFields\(\) expects Illuminate\\Database\\Eloquent\\Model, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Parameter \#2 \$pivot of method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:authorizedToAttach\(\) expects Illuminate\\Database\\Eloquent\\Relations\\Pivot, mixed given\.$#'
 			identifier: argument.type
 			count: 1
@@ -3541,12 +3415,6 @@ parameters:
 			message: '#^Parameter \#2 \$pivot of method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:authorizedToSync\(\) expects Illuminate\\Database\\Eloquent\\Relations\\Pivot, mixed given\.$#'
 			identifier: argument.type
 			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Possibly invalid array key type mixed\.$#'
-			identifier: array.invalidKey
-			count: 4
 			path: src/Fields/BelongsToMany.php
 
 		-
@@ -13614,12 +13482,6 @@ parameters:
 			message: '#^Cannot call method remember\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 2
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Cannot call method sync\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
 			path: src/Repositories/Repository.php
 
 		-

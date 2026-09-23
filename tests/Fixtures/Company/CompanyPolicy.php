@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Company;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Collection;
@@ -118,5 +119,20 @@ class CompanyPolicy
         $allowed = $_SERVER['allow_detach_users'] ?? true;
 
         return is_callable($allowed) ? $allowed($userToBeDetached) : $allowed;
+    }
+
+    public function attachRoles(User $user, Company $model, Role $roleToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncRoles(User $user, Company $model, Collection $keys)
+    {
+        return true;
+    }
+
+    public function detachRoles(User $user, Company $model, Role $roleToBeDetached)
+    {
+        return true;
     }
 }
