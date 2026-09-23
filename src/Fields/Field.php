@@ -122,7 +122,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     /**
      * Closure be used for computed field.
      *
-     * @var callable
+     * @var callable|null
      */
     protected $computedCallback;
 
@@ -176,8 +176,6 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     {
         $this->attribute = $attribute;
 
-        $this->label = $attribute;
-
         $this->resolveCallback = $resolveCallback;
 
         $this->default(null);
@@ -188,6 +186,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
             $this->readonly();
         } else {
             $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($attribute));
+            $this->label = $attribute;
         }
     }
 
@@ -531,7 +530,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     public function computed()
     {
         return (is_callable($this->attribute) && ! is_string($this->attribute)) ||
-            is_callable($this->computedCallback) || $this->attribute == 'Computed';
+            is_callable($this->computedCallback);
     }
 
     /**
@@ -545,7 +544,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     {
         $attribute = $attribute ?? $this->attribute;
 
-        if ($attribute === 'Computed') {
+        if (is_callable($this->computedCallback)) {
             $this->value = call_user_func($this->computedCallback, $repository);
 
             return;
@@ -571,7 +570,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
 
         $attribute = $attribute ?? $this->attribute;
 
-        if ($attribute === 'Computed') {
+        if (is_callable($this->computedCallback)) {
             $this->value = call_user_func($this->computedCallback, $repository);
 
             return $this;
@@ -597,7 +596,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
 
         $attribute = $attribute ?? $this->attribute;
 
-        if ($attribute === 'Computed') {
+        if (is_callable($this->computedCallback)) {
             $this->value = call_user_func($this->computedCallback, $repository);
 
             return $this;
