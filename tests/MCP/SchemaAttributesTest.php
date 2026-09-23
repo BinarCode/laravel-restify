@@ -38,8 +38,6 @@ class SchemaAttributesTest extends IntegrationTestCase
     #[TestWith(['active_url', 'Must be an active URL with valid DNS records'])]
     #[TestWith(['ascii', 'Must be 7 bit ASCII'])]
     #[TestWith(['bail', null])]
-    #[TestWith(['list', 'Must be a list (sequential array)'])]
-    #[TestWith(['required_array_keys:a,b', 'Array must have all required keys'])]
     #[TestWith(['confirmed', 'Must have a matching confirmation field'])]
     #[TestWith(['decimal:2', 'Must have a specific number of decimal places'])]
     #[TestWith(['different:other', 'Must be different from another attribute'])]
@@ -56,7 +54,6 @@ class SchemaAttributesTest extends IntegrationTestCase
     #[TestWith(['lowercase', 'Must be lowercase'])]
     #[TestWith(['uppercase', 'Must be uppercase'])]
     #[TestWith(['hex_color', 'Must be a valid HEX color'])]
-    #[TestWith(['in_array_keys:a,b', 'Array must have at least one of the specified keys'])]
     #[TestWith(['max_digits:5', 'Must have a maximum number of digits'])]
     #[TestWith(['min_digits:2', 'Must have a minimum number of digits'])]
     #[TestWith(['missing', 'Must be missing from the data'])]
@@ -64,7 +61,6 @@ class SchemaAttributesTest extends IntegrationTestCase
     #[TestWith(['missing_unless:other,value', 'Must be missing unless another attribute has a given value'])]
     #[TestWith(['missing_with:other', 'Must be missing when any given attribute is present'])]
     #[TestWith(['missing_with_all:other,another', 'Must be missing when all given attributes are present'])]
-    #[TestWith(['multiple_of:2', 'Must be a multiple of a given value'])]
     #[TestWith(['not_in:a,b', 'Must not be one of the specified values'])]
     #[TestWith(['present', 'Must be present in the data'])]
     #[TestWith(['present_if:other,value', 'Must be present when another attribute has a given value'])]
@@ -94,7 +90,6 @@ class SchemaAttributesTest extends IntegrationTestCase
     #[TestWith(['sometimes', null])]
     #[TestWith(['required_if:other,value', null])]
     #[TestWith(['exists:users,id', 'Must exist in the database'])]
-    #[TestWith(['nullable', 'This field is optional'])]
     public function it_converts_a_rule_with_no_type_detection_into_a_described_string_schema(string $rule, ?string $descriptionContains): void
     {
         $result = $this->convert(['field' => [$rule]]);
@@ -208,6 +203,23 @@ class SchemaAttributesTest extends IntegrationTestCase
         $this->assertDescribed($result['field'], $descriptionContains);
     }
 
+    /**
+     * @param  list<string>  $rules
+     * @param  list<int|float|bool|string>  $expectedEnum
+     */
+    #[Test]
+    #[TestWith([['integer', 'in:1,2,3'], IntegerType::class, [1, 2, 3]], 'integer')]
+    #[TestWith([['numeric', 'in:1.5,2.5'], NumberType::class, [1.5, 2.5]], 'number')]
+    #[TestWith([['boolean', 'in:1,0'], BooleanType::class, [true, false]], 'boolean')]
+    #[TestWith([['string', 'in:a,b'], StringType::class, ['a', 'b']], 'string')]
+    public function in_casts_the_enum_values_to_the_attributes_existing_type(array $rules, string $expectedType, array $expectedEnum): void
+    {
+        $result = $this->convert(['field' => $rules]);
+
+        $this->assertInstanceOf($expectedType, $result['field']);
+        $this->assertSame($expectedEnum, $result['field']->toArray()['enum']);
+    }
+
     #[Test]
     #[TestWith(['contains:a,b', 'Must contain: a, b'])]
     #[TestWith(['contains', null])]
@@ -228,6 +240,52 @@ class SchemaAttributesTest extends IntegrationTestCase
 
         $this->assertInstanceOf(ArrayType::class, $result['field']);
         $this->assertDescribed($result['field'], $descriptionContains);
+    }
+
+    #[Test]
+    #[TestWith(['list', 'Must be a list (sequential array)'], 'list')]
+    #[TestWith(['required_array_keys:a,b', 'Array must have all required keys'], 'required_array_keys')]
+    #[TestWith(['in_array_keys:a,b', 'Array must have at least one of the specified keys'], 'in_array_keys')]
+    public function array_shaped_rules_default_to_an_array_schema_instead_of_a_string(string $rule, string $descriptionContains): void
+    {
+        $result = $this->convert(['field' => [$rule]]);
+
+        $this->assertInstanceOf(ArrayType::class, $result['field']);
+        $this->assertDescribed($result['field'], $descriptionContains);
+    }
+
+    #[Test]
+    public function nullable_marks_the_type_nullable_instead_of_claiming_it_is_optional(): void
+    {
+        $result = $this->convert(['field' => ['string', 'nullable']]);
+
+        $this->assertInstanceOf(StringType::class, $result['field']);
+
+        $serialized = $result['field']->toArray();
+
+        $this->assertSame(['string', 'null'], $serialized['type']);
+        $this->assertStringNotContainsStringIgnoringCase('optional', $serialized['description']);
+    }
+
+    #[Test]
+    public function multiple_of_without_a_prior_type_builds_a_number_schema(): void
+    {
+        $result = $this->convert(['field' => ['multiple_of:2']]);
+
+        $this->assertInstanceOf(NumberType::class, $result['field']);
+
+        $serialized = $result['field']->toArray();
+        $this->assertSame(2, $serialized['multipleOf']);
+        $this->assertStringContainsString('Must be a multiple of 2', $serialized['description']);
+    }
+
+    #[Test]
+    public function multiple_of_keeps_an_existing_integer_type(): void
+    {
+        $result = $this->convert(['field' => ['integer', 'multiple_of:5']]);
+
+        $this->assertInstanceOf(IntegerType::class, $result['field']);
+        $this->assertSame(5, $result['field']->toArray()['multipleOf']);
     }
 
     #[Test]
@@ -252,6 +310,18 @@ class SchemaAttributesTest extends IntegrationTestCase
 
         $this->assertInstanceOf($expectedType, $result['field']);
         $this->assertDescribed($result['field'], $description);
+    }
+
+    #[Test]
+    public function between_does_not_truncate_a_number_types_decimal_bounds(): void
+    {
+        $result = $this->convert(['field' => ['numeric', 'between:1.5,9.5']]);
+
+        $this->assertInstanceOf(NumberType::class, $result['field']);
+
+        $serialized = $result['field']->toArray();
+        $this->assertSame(1.5, $serialized['minimum']);
+        $this->assertSame(9.5, $serialized['maximum']);
     }
 
     #[Test]
@@ -288,6 +358,25 @@ class SchemaAttributesTest extends IntegrationTestCase
 
         $this->assertInstanceOf($expectedType, $result['field']);
         $this->assertDescribed($result['field'], $description);
+    }
+
+    /**
+     * @param  list<string>  $rules
+     */
+    #[Test]
+    #[TestWith([['numeric', 'max:9.99'], 9.99], 'max')]
+    #[TestWith([['numeric', 'min:0.5'], 0.5], 'min')]
+    #[TestWith([['numeric', 'size:9.99'], 9.99], 'size')]
+    public function bound_rules_do_not_truncate_a_number_types_decimal_value(array $rules, float $expectedBound): void
+    {
+        $result = $this->convert(['field' => $rules]);
+
+        $this->assertInstanceOf(NumberType::class, $result['field']);
+
+        $serialized = $result['field']->toArray();
+        $bound = $serialized['maximum'] ?? $serialized['minimum'];
+
+        $this->assertSame($expectedBound, $bound);
     }
 
     /**
@@ -381,6 +470,25 @@ class SchemaAttributesTest extends IntegrationTestCase
         $serialized = $result['tags']->toArray();
         $this->assertArrayHasKey('items', $serialized);
         $this->assertSame('string', $serialized['items']['type']);
+    }
+
+    /**
+     * Known gap (see "Known, not changed" in the PR body): processWildcardRules()
+     * only matches an attribute that ends in exactly ".*" (a direct array of
+     * scalars). A nested wildcard such as "items.*.name" is never wired onto
+     * the parent's `items` schema - growee's StoreExpensesRestifyAction rules
+     * ('expenses.*.amount') hit exactly this shape.
+     */
+    #[Test]
+    public function a_nested_wildcard_rule_is_not_wired_onto_the_parent_items_schema(): void
+    {
+        $result = $this->convert([
+            'items' => ['array'],
+            'items.*.name' => ['string'],
+        ]);
+
+        $this->assertInstanceOf(ArrayType::class, $result['items']);
+        $this->assertArrayNotHasKey('items', $result['items']->toArray());
     }
 
     #[Test]

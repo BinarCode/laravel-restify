@@ -373,7 +373,7 @@ trait SchemaAttributes
      */
     public function validateList(string $attribute, $schema, array $parameters)
     {
-        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be a list (sequential array)');
+        return $this->rulesSchema[$attribute] ?? $schema->array()->description('Must be a list (sequential array)');
     }
 
     /**
@@ -384,7 +384,7 @@ trait SchemaAttributes
      */
     public function validateRequiredArrayKeys(string $attribute, $schema, array $parameters)
     {
-        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Array must have all required keys');
+        return $this->rulesSchema[$attribute] ?? $schema->array()->description('Array must have all required keys');
     }
 
     /**
@@ -412,7 +412,9 @@ trait SchemaAttributes
             return $type;
         }
 
-        return $type->min((int) $value);
+        return $type instanceof NumberType
+            ? $type->min($this->numericValue($value))
+            : $type->min((int) $value);
     }
 
     /**
@@ -427,7 +429,19 @@ trait SchemaAttributes
             return $type;
         }
 
-        return $type->max((int) $value);
+        return $type instanceof NumberType
+            ? $type->max($this->numericValue($value))
+            : $type->max((int) $value);
+    }
+
+    /**
+     * Cast a rule parameter to an int, unless it carries a decimal point, in
+     * which case a NumberType bound must keep its precision (max:9.99 must
+     * not become 9).
+     */
+    private function numericValue(string $value): int|float
+    {
+        return str_contains($value, '.') ? (float) $value : (int) $value;
     }
 
     /**
@@ -1114,19 +1128,27 @@ trait SchemaAttributes
      * Validate an attribute is contained within a list of values.
      *
      * @param  JsonSchema  $schema
+     * @param  array<int, string>  $parameters
      * @return Type
      */
     public function validateIn(string $attribute, $schema, array $parameters)
     {
-        $type = $this->rulesSchema[$attribute] ?? $schema->string();
+        $type = $this->existingTypeOr($attribute, $schema->string());
+
+        $castedValues = array_map(fn (string $value): int|float|bool|string => match (true) {
+            $type instanceof IntegerType => (int) $value,
+            $type instanceof NumberType => $this->numericValue($value),
+            $type instanceof BooleanType => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+            default => $value,
+        }, $parameters);
 
         if (! empty($parameters)) {
             $values = implode(', ', $parameters);
 
-            return $type->enum($parameters)->description("Must be one of: {$values}");
+            return $type->enum($castedValues)->description("Must be one of: {$values}");
         }
 
-        return $type->enum($parameters);
+        return $type->enum($castedValues);
     }
 
     /**
@@ -1154,7 +1176,7 @@ trait SchemaAttributes
      */
     public function validateInArrayKeys(string $attribute, $schema, array $parameters)
     {
-        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Array must have at least one of the specified keys');
+        return $this->rulesSchema[$attribute] ?? $schema->array()->description('Array must have at least one of the specified keys');
     }
 
     /**
@@ -1448,11 +1470,24 @@ trait SchemaAttributes
      * Validate the value of an attribute is a multiple of a given value.
      *
      * @param  JsonSchema  $schema
+     * @param  array<int, string>  $parameters
      * @return Type
      */
     public function validateMultipleOf(string $attribute, $schema, array $parameters)
     {
-        return $this->rulesSchema[$attribute] ?? $schema->string()->description('Must be a multiple of a given value');
+        $existing = $this->rulesSchema[$attribute] ?? null;
+
+        $type = ($existing instanceof IntegerType || $existing instanceof NumberType)
+            ? $existing
+            : $schema->number();
+
+        if (empty($parameters)) {
+            return $type;
+        }
+
+        $multiple = $type instanceof IntegerType ? (int) $parameters[0] : $this->numericValue($parameters[0]);
+
+        return $type->multipleOf($multiple)->description("Must be a multiple of {$parameters[0]}");
     }
 
     /**
@@ -1463,9 +1498,9 @@ trait SchemaAttributes
      */
     public function validateNullable(string $attribute, $schema, array $parameters)
     {
-        $type = $this->rulesSchema[$attribute] ?? $schema->string();
+        $type = $this->existingTypeOr($attribute, $schema->string());
 
-        return $type->description('This field is optional');
+        return $type->nullable()->description('This field may be null');
     }
 
     /**
