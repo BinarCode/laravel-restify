@@ -75,11 +75,6 @@ class RestifyRequest extends FormRequest
         return PaginationDataObject::fromInput($perPage, $pageNumber);
     }
 
-    public function relatablePagination(): PaginationDataObject
-    {
-        return PaginationDataObject::fromInput($this->input('relatablePerPage'), null);
-    }
-
     public function related(): RelatedDto
     {
         try {

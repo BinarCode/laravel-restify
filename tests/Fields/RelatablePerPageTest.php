@@ -73,9 +73,6 @@ class RelatablePerPageTest extends IntegrationTestCase
     #[Test]
     public function it_resolves_relatable_per_page_merged_into_the_request_directly(): void
     {
-        // HasMany/BelongsToMany read relatablePerPage via the request('relatablePerPage')
-        // helper (not a resolved RestifyRequest), so a consumer setting it with
-        // app('request')->merge(...) - rather than the query string - must still work.
         config(['restify.pagination.max_per_page' => 50]);
 
         app('request')->merge(['relatablePerPage' => 100]);
