@@ -5,6 +5,8 @@ namespace Binaryk\LaravelRestify\Commands;
 use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Schema\Builder;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 use Symfony\Component\Console\Input\InputOption;
@@ -214,6 +216,7 @@ class RepositoryCommand extends GeneratorCommand
     {
         $this->call('restify:policy', [
             'name' => $this->guessBaseModelClass(),
+            '--model' => $this->guessQualifiedModelName(),
         ]);
 
         return $this;
@@ -253,6 +256,12 @@ class RepositoryCommand extends GeneratorCommand
             $name .= 'Repository';
         }
 
+        // An explicit path in the given name always wins over a detected pattern,
+        // otherwise it could land nested inside an unrelated model's folder.
+        if ($this->hasExplicitPath()) {
+            return parent::getPath($name);
+        }
+
         // Try to find existing repositories to determine the pattern
         $existingRepositoryPath = $this->findExistingRepositoryPath();
 
@@ -263,7 +272,7 @@ class RepositoryCommand extends GeneratorCommand
 
             // Build the namespace path, avoiding duplication
             $namespaceParts = [];
-            $baseNamespace = str_replace($this->rootNamespace().'\\', '', $existingRepositoryPath['namespace']);
+            $baseNamespace = str_replace($this->rootNamespaceWithoutTrailingSeparator().'\\', '', $existingRepositoryPath['namespace']);
             if ($baseNamespace) {
                 $namespaceParts[] = str_replace('\\', '/', $baseNamespace);
             }
@@ -282,6 +291,12 @@ class RepositoryCommand extends GeneratorCommand
 
     protected function getDefaultNamespace($rootNamespace)
     {
+        // An explicit path in the given name always wins over a detected pattern,
+        // otherwise it could land nested inside an unrelated model's folder.
+        if ($this->hasExplicitPath()) {
+            return rtrim($rootNamespace, '\\').'\\Restify';
+        }
+
         // Try to find existing repositories to determine the pattern
         $existingRepositoryPath = $this->findExistingRepositoryPath();
 
@@ -362,6 +377,7 @@ class RepositoryCommand extends GeneratorCommand
         }
 
         try {
+            /** @var Model $model */
             $model = new $modelClass;
             $table = $model->getTable();
 
@@ -369,11 +385,13 @@ class RepositoryCommand extends GeneratorCommand
                 return [];
             }
 
-            $columns = Schema::getColumnListing($table);
             $fields = [];
 
-            foreach ($columns as $column) {
-                $field = $this->generateFieldForColumn($table, $column);
+            /** @var Builder $schemaBuilder */
+            $schemaBuilder = Schema::getFacadeRoot();
+
+            foreach ($schemaBuilder->getColumns($table) as $column) {
+                $field = $this->generateFieldForColumn($column['name'], $column['type_name'], $column['nullable']);
                 if ($field !== null) {
                     $fields[] = $field;
                 }
@@ -386,15 +404,12 @@ class RepositoryCommand extends GeneratorCommand
         }
     }
 
-    protected function generateFieldForColumn($table, $column)
+    protected function generateFieldForColumn(string $column, string $columnType, bool $nullable): ?string
     {
         // Skip ID field as it's handled separately
         if ($column === 'id') {
             return '            id(),';
         }
-
-        // Get column type using Schema builder
-        $columnType = Schema::getColumnType($table, $column);
 
         // Skip foreign key columns - they will be handled as relationships
         if (Str::endsWith($column, '_id') && $column !== 'id') {
@@ -453,24 +468,8 @@ class RepositoryCommand extends GeneratorCommand
                 break;
         }
 
-        // Check if column is nullable
-        try {
-            // Use raw PDO to check nullable status
-            $connection = Schema::getConnection();
-            $dbName = $connection->getDatabaseName();
-            $results = $connection->select('
-                SELECT IS_NULLABLE
-                FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_SCHEMA = ?
-                AND TABLE_NAME = ?
-                AND COLUMN_NAME = ?
-            ', [$dbName, $table, $column]);
-
-            if (! empty($results) && $results[0]->IS_NULLABLE === 'YES') {
-                $field .= '->nullable()';
-            }
-        } catch (\Exception $e) {
-            // Ignore if we can't determine nullable status
+        if ($nullable) {
+            $field .= '->nullable()';
         }
 
         // Handle timestamps and other readonly fields
@@ -696,8 +695,10 @@ class RepositoryCommand extends GeneratorCommand
         $repositoryClass = $this->findRepositoryForModel($relatedModel);
 
         if ($repositoryClass) {
+            $repositoryBaseName = class_basename($repositoryClass);
+
             return [
-                'relation' => "            BelongsTo::make('$relationName', $repositoryClass::class),",
+                'relation' => "            BelongsTo::make('$relationName', {$repositoryBaseName}::class),",
                 'imports' => [$repositoryClass],
             ];
         } else {
@@ -715,10 +716,7 @@ class RepositoryCommand extends GeneratorCommand
         $expectedForeignKey = Str::snake($modelBaseName).'_id';
         $pluralName = Str::plural(Str::snake($modelBaseName));
 
-        // Get all tables in the database
-        $tables = Schema::getTableListing(schemaQualified: false);
-
-        foreach ($tables as $otherTable) {
+        foreach ($this->listTableNames() as $otherTable) {
             if ($otherTable === $tableName) {
                 continue;
             }
@@ -739,8 +737,10 @@ class RepositoryCommand extends GeneratorCommand
                         $repositoryClass = $this->findRepositoryForModel($relatedModel);
 
                         if ($repositoryClass) {
+                            $repositoryBaseName = class_basename($repositoryClass);
+
                             $relationships[] = [
-                                'relation' => "            HasMany::make('$relationName', $repositoryClass::class),",
+                                'relation' => "            HasMany::make('$relationName', {$repositoryBaseName}::class),",
                                 'imports' => [$repositoryClass],
                             ];
                         } else {
@@ -785,7 +785,7 @@ class RepositoryCommand extends GeneratorCommand
         return null;
     }
 
-    protected function findRepositoryForModel($modelClass)
+    protected function findRepositoryForModel($modelClass): ?string
     {
         $modelBaseName = class_basename($modelClass);
         $repositoryName = $modelBaseName.'Repository';
@@ -928,7 +928,7 @@ class RepositoryCommand extends GeneratorCommand
                 $pattern = $this->analyzeRepositoryPath($pathParts, $modelName);
 
                 if ($pattern) {
-                    $namespace = $this->rootNamespace().'\\'.str_replace('/', '\\', implode('/', $pathParts));
+                    $namespace = $this->rootNamespaceWithoutTrailingSeparator().'\\'.str_replace('/', '\\', implode('/', $pathParts));
                     $repositoryPaths[] = [
                         'path' => $fullPath,
                         'namespace' => $namespace,
@@ -1014,6 +1014,34 @@ class RepositoryCommand extends GeneratorCommand
     protected function rootNamespaceWithoutTrailingSeparator(): string
     {
         return rtrim($this->rootNamespace(), '\\');
+    }
+
+    protected function hasExplicitPath(): bool
+    {
+        $name = $this->getNameInput();
+
+        return Str::contains($name, '/') || Str::contains($name, '\\');
+    }
+
+    /**
+     * `Schema::getTableListing(schemaQualified: false)` does not exist on Laravel 11.
+     * On Laravel 12+, a null schema lists tables from every database or schema for
+     * mysql and pgsql, so the current schema is passed explicitly where supported.
+     *
+     * @return list<string>
+     */
+    protected function listTableNames(): array
+    {
+        /** @var Builder $schemaBuilder */
+        $schemaBuilder = Schema::getFacadeRoot();
+
+        $currentSchema = method_exists($schemaBuilder, 'getCurrentSchemaListing')
+            ? $schemaBuilder->getCurrentSchemaListing()
+            : null;
+
+        $tableNames = array_column($schemaBuilder->getTables($currentSchema), 'name');
+
+        return array_values(array_unique($tableNames));
     }
 
     protected function getOptions()

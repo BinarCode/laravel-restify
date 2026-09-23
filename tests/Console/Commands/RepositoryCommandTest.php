@@ -132,6 +132,16 @@ class RepositoryCommandTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function it_rejects_a_reserved_php_name_even_with_the_force_flag(): void
+    {
+        $this->artisan('restify:repository', ['name' => 'class', '--force' => true])
+            ->expectsOutputToContain('reserved by PHP')
+            ->assertExitCode(0);
+
+        $this->assertFileDoesNotExist($this->generatedAppPath.'/Restify/ClassRepository.php');
+    }
+
+    #[Test]
     public function it_generates_fields_and_a_belongs_to_relationship_from_the_database_schema(): void
     {
         $this->artisan('restify:repository', ['name' => 'RestifyEmployee'])
@@ -139,16 +149,20 @@ class RepositoryCommandTest extends IntegrationTestCase
 
         $content = File::get($this->generatedAppPath.'/Restify/RestifyEmployeeRepository.php');
 
-        // Plain columns become required fields, typed by their schema column type.
+        // Non-nullable columns become required fields, typed by their schema column type.
         $this->assertStringContainsString("field('name')->required(),", $content);
-        $this->assertStringContainsString("field('email')->email()->required(),", $content);
-        $this->assertStringContainsString("field('bio')->textarea()->required(),", $content);
-        $this->assertStringContainsString("field('age')->number()->required(),", $content);
         $this->assertStringContainsString("field('active')->boolean()->required(),", $content);
-        $this->assertStringContainsString("field('birth_date')->date()->required(),", $content);
-        $this->assertStringContainsString("field('hired_at')->datetime()->required(),", $content);
-        $this->assertStringContainsString("field('created_at')->datetime()->readonly(),", $content);
-        $this->assertStringContainsString("field('updated_at')->datetime()->readonly(),", $content);
+
+        // Nullable columns are detected from the schema and become ->nullable(), not ->required().
+        $this->assertStringContainsString("field('email')->email()->nullable(),", $content);
+        $this->assertStringContainsString("field('bio')->textarea()->nullable(),", $content);
+        $this->assertStringContainsString("field('age')->number()->nullable(),", $content);
+        $this->assertStringContainsString("field('birth_date')->date()->nullable(),", $content);
+        $this->assertStringContainsString("field('hired_at')->datetime()->nullable(),", $content);
+        $this->assertStringContainsString("field('salary')->nullable(),", $content);
+        $this->assertStringContainsString("field('meta')->textarea()->nullable(),", $content);
+        $this->assertStringContainsString("field('created_at')->datetime()->nullable()->readonly(),", $content);
+        $this->assertStringContainsString("field('updated_at')->datetime()->nullable()->readonly(),", $content);
 
         // The FK column is not listed as a plain field...
         $this->assertStringNotContainsString("field('restify_department_id')", $content);
@@ -187,19 +201,61 @@ class RepositoryCommandTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function it_follows_an_existing_grouped_by_model_repository_pattern(): void
+    public function an_explicit_path_in_the_name_wins_over_a_detected_pattern(): void
     {
         $existing = $this->generatedAppPath.'/Restify/Employees/EmployeeRepository.php';
         File::ensureDirectoryExists(dirname($existing));
         File::put($existing, "<?php\n\nnamespace App\\Restify\\Employees;\n\nclass EmployeeRepository {}\n");
 
-        $this->artisan('restify:repository', ['name' => 'RestifyDepartment', '--no-fields' => true])
-            ->expectsOutputToContain('Detected repository pattern: grouped-by-model')
-            ->assertExitCode(0);
+        $this->artisan('restify:repository', [
+            'name' => 'RestifyEmployees/RestifyEmployeesRepository',
+            '--no-fields' => true,
+        ])->assertExitCode(0);
 
-        $path = $this->generatedAppPath.'/Restify/Employees/RestifyDepartments/RestifyDepartmentRepository.php';
+        $path = $this->generatedAppPath.'/Restify/RestifyEmployees/RestifyEmployeesRepository.php';
         $this->assertFileExists($path);
-        $this->assertStringContainsString('namespace App\Restify\Employees\RestifyDepartments;', File::get($path));
+        $this->assertStringContainsString('namespace App\Restify\RestifyEmployees;', File::get($path));
+    }
+
+    #[Test]
+    public function it_does_not_fatal_and_references_an_already_loaded_repository_by_its_class_basename(): void
+    {
+        // A "flat" App\Restify\RestifyDepartmentRepository is already loaded, exactly
+        // as it would be for a repository generated (and autoloaded) earlier.
+        $departmentRepositoryPath = $this->generatedAppPath.'/Restify/RestifyDepartmentRepository.php';
+        File::ensureDirectoryExists(dirname($departmentRepositoryPath));
+        File::put($departmentRepositoryPath, "<?php\n\nnamespace App\\Restify;\n\nclass RestifyDepartmentRepository {}\n");
+        require $departmentRepositoryPath;
+
+        // Mimics the autoloader mapping "App\" has in a real project (composer.json),
+        // where a mangled, doubled-backslash class name still resolves to the same
+        // file on disk because the filesystem collapses the extra separator.
+        $autoloader = function (string $class): void {
+            if (! str_starts_with($class, 'App')) {
+                return;
+            }
+
+            $path = $this->generatedAppPath.'/'.str_replace('\\', '/', substr($class, 3)).'.php';
+
+            if (File::exists($path)) {
+                require $path;
+            }
+        };
+        spl_autoload_register($autoloader);
+
+        try {
+            $this->artisan('restify:repository', ['name' => 'RestifyEmployee'])
+                ->assertExitCode(0);
+        } finally {
+            spl_autoload_unregister($autoloader);
+        }
+
+        $content = File::get($this->generatedAppPath.'/Restify/RestifyEmployeeRepository.php');
+
+        $this->assertStringContainsString('namespace App\Restify;', $content);
+        $this->assertStringContainsString('use App\Restify\RestifyDepartmentRepository;', $content);
+        $this->assertStringContainsString("BelongsTo::make('restifyDepartment', RestifyDepartmentRepository::class),", $content);
+        $this->assertStringNotContainsString('App\Restify\RestifyDepartmentRepository::class', $content);
     }
 
     #[Test]
