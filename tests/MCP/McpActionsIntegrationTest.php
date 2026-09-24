@@ -413,7 +413,7 @@ class McpActionsIntegrationTest extends IntegrationTestCase
         $resultContent = json_decode($responseData['result']['content'][0]['text'], true);
 
         $this->assertArrayHasKey('error', $resultContent);
-        $this->assertEquals('Not authorized to run this action', $resultContent['error']);
+        $this->assertEquals('Not authorized to run this action.', $resultContent['error']);
     }
 
     public function test_action_with_validation_rules(): void

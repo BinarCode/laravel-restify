@@ -34,12 +34,6 @@ parameters:
 			path: src/Actions/Action.php
 
 		-
-			message: '#^Cannot call method each\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Actions/Action.php
-
-		-
 			message: '#^Cannot call method user\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1

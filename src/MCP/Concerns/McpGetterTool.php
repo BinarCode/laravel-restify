@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -15,16 +16,14 @@ trait McpGetterTool
 {
     public function getterTool(Getter $getter, McpGetterRequest $getterRequest): array
     {
-        if ($id = $getterRequest->input('id')) {
-            if (! $getter->authorizedToRun($getterRequest, $getterRequest->findModelOrFail($id, static::uriKey()))) {
-                return [
-                    'error' => 'Not authorized to run this getter',
-                    'getter' => $getter->uriKey(),
-                ];
-            }
+        try {
+            $result = $getter->handleRequest($getterRequest);
+        } catch (UnauthorizedException $exception) {
+            return [
+                'error' => $exception->getMessage(),
+                'getter' => $getter->uriKey(),
+            ];
         }
-
-        $result = $getter->handleRequest($getterRequest);
 
         $responseData = $result instanceof JsonResponse
             ? $result->getData()
