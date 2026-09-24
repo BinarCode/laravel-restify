@@ -115,6 +115,28 @@ class RegisterTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function the_stored_email_is_lowercased(): void
+    {
+        $this->postJson('/auth/register', $this->validPayload(['email' => 'John@Example.com']))
+            ->assertOk();
+
+        $this->assertSame(1, User::query()->where('email', 'john@example.com')->count());
+        $this->assertSame(0, User::query()->where('email', 'John@Example.com')->count());
+    }
+
+    #[Test]
+    public function a_differently_cased_duplicate_email_is_rejected(): void
+    {
+        User::factory()->create(['email' => 'john@example.com']);
+
+        $this->postJson('/auth/register', $this->validPayload(['email' => 'JOHN@example.com']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email');
+
+        $this->assertSame(1, User::query()->where('email', 'john@example.com')->count());
+    }
+
+    #[Test]
     #[TestWith(['secret1'], 'a string password')]
     #[TestWith([123456], 'a numeric password stays scalar and keeps registering')]
     public function a_valid_registration_creates_the_user(string|int $password): void

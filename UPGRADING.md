@@ -111,3 +111,12 @@ already defaults to `env('APP_URL')`, so it still covers your app URL when
 you relied on `app.url` being allowed while also setting `FRONTEND_APP_URL` to a
 different host, add that host to `restify.auth.password_reset_url` or
 `restify.auth.frontend_app_url` instead.
+
+### `POST /api/register` stores the email lowercased
+
+The `email` is now lowercased before the `unique` check runs and before the row is
+saved, so `John@Example.com` registers as `john@example.com` and a later registration
+with any other casing of the same address is rejected as a duplicate. Existing rows
+with mixed-case emails are unchanged. Login is unaffected - it still matches the email
+exactly (case-sensitive on pgsql/sqlite), so a user who registered before this change
+must still log in with the casing their row was stored with.
