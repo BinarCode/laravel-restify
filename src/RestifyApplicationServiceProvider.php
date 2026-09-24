@@ -33,15 +33,8 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     final public const AUTH_ACTIONS = ['register', 'login', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword'];
 
-    /**
-     * Default per-minute limit for each named auth rate limiter.
-     */
     final public const AUTH_ATTEMPTS_PER_MINUTE = 6;
 
-    /**
-     * The additional, IP-wide per-minute limit on `restify.login`, on top of
-     * its per-email `AUTH_ATTEMPTS_PER_MINUTE` limit.
-     */
     final public const LOGIN_ATTEMPTS_PER_IP_PER_MINUTE = 30;
 
     /**
@@ -186,10 +179,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         }
     }
 
-    /**
-     * A non-string `email` (missing, or an array) is treated as empty rather
-     * than crashing, so the limiter still keys on the ip alone.
-     */
     private static function emailAndIpKey(Request $request): string
     {
         $email = $request->input('email');

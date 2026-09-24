@@ -21,10 +21,6 @@ class AuthRouteThrottleTest extends IntegrationTestCase
     {
         parent::getEnvironmentSetUp($app);
 
-        // Set before the app boots: the named auth limiters are registered
-        // during RestifyApplicationServiceProvider::boot(), which resolves
-        // (and pins) the RateLimiter's cache store at that point - a later,
-        // runtime config() change would no longer reach it.
         config(['cache.default' => 'array']);
     }
 
@@ -127,9 +123,6 @@ class AuthRouteThrottleTest extends IntegrationTestCase
     {
         RateLimiter::for('restify.login', fn (): Limit => Limit::perMinute(1));
 
-        // Simulates the package's provider booting again (or after the app's own
-        // provider already defined 'restify.login'): the guard must leave the
-        // app's limiter alone instead of overwriting it with the default.
         $provider = new RestifyApplicationServiceProvider($this->app);
         $method = new ReflectionMethod($provider, 'authRateLimiters');
         $method->setAccessible(true);

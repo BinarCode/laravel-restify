@@ -34,10 +34,6 @@ class ForgotPasswordTest extends IntegrationTestCase
     {
         parent::getEnvironmentSetUp($app);
 
-        // Set before the app boots: the named auth limiters are registered
-        // during RestifyApplicationServiceProvider::boot(), which resolves
-        // (and pins) the RateLimiter's cache store at that point - a later,
-        // runtime config() change would no longer reach it.
         config(['cache.default' => 'array', 'app.debug' => false]);
     }
 

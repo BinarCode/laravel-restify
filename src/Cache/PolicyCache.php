@@ -12,10 +12,6 @@ use Stringable;
 
 class PolicyCache
 {
-    /**
-     * Fallback ttl (seconds) used when `restify.cache.policies.ttl` is missing
-     * from config, matching `config/restify.php`'s own `5 * 60` default.
-     */
     final public const DEFAULT_TTL_SECONDS = 300;
 
     public static function enabled(): bool
