@@ -88,6 +88,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
             ], function () use ($actions) {
                 if (in_array('register', $actions, true)) {
                     Route::post('register', RegisterController::class)
+                        ->middleware('throttle:6,1')
                         ->name('restify.register');
                 }
 

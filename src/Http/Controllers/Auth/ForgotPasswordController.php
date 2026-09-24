@@ -3,34 +3,59 @@
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
 use Binaryk\LaravelRestify\Notifications\ForgotPasswordNotification;
-use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Timebox;
+use Throwable;
 
 class ForgotPasswordController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
             'email' => ['required', 'email'],
             'url' => ['sometimes', 'string'],
         ]);
 
-        /** @var User $user */
-        $user = config('restify.auth.user_model')::query()->where($request->only('email'))->firstOrFail();
+        /** @var int $timeboxDuration */
+        $timeboxDuration = config('restify.auth.password_reset_timebox');
 
+        return app(Timebox::class)->call(function () use ($request): JsonResponse {
+            /** @var class-string<Model&CanResetPassword> $userModel */
+            $userModel = config('restify.auth.user_model');
+
+            $user = $userModel::query()->where($request->only('email'))->first();
+
+            if ($user !== null) {
+                try {
+                    $this->sendResetLinkTo($user, $request);
+                } catch (Throwable $e) {
+                    report($e);
+                }
+            }
+
+            return ok(__('Reset password link sent to your email.'));
+        }, $timeboxDuration);
+    }
+
+    private function sendResetLinkTo(CanResetPassword $user, Request $request): void
+    {
         $token = Password::createToken($user);
+
+        /** @var string $urlTemplate */
+        $urlTemplate = $request->input('url') ?? config('restify.auth.password_reset_url');
 
         $url = str_replace(
             ['{token}', '{email}'],
-            [$token, $user->email],
-            $request->input('url') ?? config('restify.auth.password_reset_url')
+            [$token, $user->getEmailForPasswordReset()],
+            $urlTemplate
         );
 
-        (new AnonymousNotifiable)->route('mail', $user->email)->notify(new ForgotPasswordNotification($url));
-
-        return ok(__('Reset password link sent to your email.'));
+        (new AnonymousNotifiable)->route('mail', $user->getEmailForPasswordReset())->notify(new ForgotPasswordNotification($url));
     }
 }
