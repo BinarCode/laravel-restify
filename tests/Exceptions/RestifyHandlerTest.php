@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Exceptions;
 
-use Binaryk\LaravelRestify\Exceptions\RepositoryNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\RestifyHandler;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
@@ -12,6 +11,7 @@ use Illuminate\Contracts\Debug\ExceptionHandler;
 use OpenAI\Laravel\Facades\OpenAI;
 use OpenAI\Responses\Chat\CreateResponse;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class RestifyHandlerTest extends IntegrationTestCase
 {
@@ -22,53 +22,27 @@ class RestifyHandlerTest extends IntegrationTestCase
         $this->app->singleton(ExceptionHandler::class, RestifyHandler::class);
     }
 
-    protected function tearDown(): void
+    #[Test]
+    #[TestWith([['restify.ai_solutions' => false]], 'ai_solutions is disabled')]
+    #[TestWith([['app.debug' => false]], 'outside of debug mode')]
+    #[TestWith([['openai.api_key' => null]], 'without an openai key')]
+    public function it_does_not_append_a_solution_when_a_guard_blocks_it(array $configOverride): void
     {
-        config([
-            'app.debug' => false,
+        config(array_merge([
+            'cache.default' => 'array',
             'restify.ai_solutions' => ['model' => 'gpt-4.1-mini', 'max_tokens' => 1000],
-            'openai.api_key' => null,
-        ]);
+            'app.debug' => true,
+            'openai.api_key' => 'sk-test',
+        ], $configOverride));
 
-        parent::tearDown();
-    }
-
-    #[Test]
-    public function it_does_not_append_a_solution_when_ai_solutions_is_disabled(): void
-    {
-        config(['restify.ai_solutions' => false, 'app.debug' => true]);
+        OpenAI::fake();
 
         $response = $this->getJson(Restify::path('a-repository-that-does-not-exist'));
 
-        $response->assertJsonMissing(['restify-solution'])
-            ->assertJson([
-                'exception' => RepositoryNotFoundException::class,
-            ]);
-    }
+        $response->assertInternalServerError()
+            ->assertJsonMissingPath('restify-solution');
 
-    #[Test]
-    public function it_does_not_append_a_solution_outside_of_debug_mode(): void
-    {
-        config(['app.debug' => false]);
-
-        $response = $this->getJson(Restify::path('a-repository-that-does-not-exist'));
-
-        $response->assertStatus(500)
-            ->assertJsonMissing(['restify-solution'])
-            ->assertExactJson(['message' => 'Server Error']);
-    }
-
-    #[Test]
-    public function it_does_not_append_a_solution_without_an_openai_key(): void
-    {
-        config(['app.debug' => true, 'openai.api_key' => null]);
-
-        $response = $this->getJson(Restify::path('a-repository-that-does-not-exist'));
-
-        $response->assertJsonMissing(['restify-solution'])
-            ->assertJson([
-                'exception' => RepositoryNotFoundException::class,
-            ]);
+        OpenAI::assertNothingSent();
     }
 
     #[Test]
