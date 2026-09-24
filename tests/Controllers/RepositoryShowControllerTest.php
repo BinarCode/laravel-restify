@@ -153,7 +153,7 @@ class RepositoryShowControllerTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function show_lets_the_last_unlabeled_computed_field_win(): void
+    public function show_gives_each_unlabeled_computed_field_its_own_positional_key(): void
     {
         PostRepository::partialMock()
             ->shouldReceive('fields')
@@ -171,7 +171,8 @@ class RepositoryShowControllerTest extends IntegrationTestCase
             ->assertOk()
             ->assertJson(
                 fn (AssertableJson $json) => $json
-                    ->where('data.attributes.Computed', 'Last computed value')
+                    ->where('data.attributes.Computed', 'First computed value')
+                    ->where('data.attributes.Computed_1', 'Last computed value')
                     ->etc()
             );
     }
