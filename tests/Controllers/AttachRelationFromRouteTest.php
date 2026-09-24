@@ -335,4 +335,63 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
             'user_id' => $user->getKey(),
         ]);
     }
+
+    #[Test]
+    public function a_body_related_repository_key_cannot_redirect_detach_to_a_different_field(): void
+    {
+        $_SERVER['roles.canDetach.users'] = true;
+
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+        $role = Role::factory()->create();
+
+        $company->users()->attach($user->getKey(), ['is_admin' => true]);
+        $company->deniedRoles()->attach($role->getKey());
+
+        $this->postJson(CompanyRepository::route("{$company->id}/detach/users"), [
+            'users' => [$user->getKey()],
+            'relatedRepository' => 'deniedRoles',
+        ])->assertNoContent();
+
+        $this->assertDatabaseMissing(CompanyUserPivot::class, [
+            'company_id' => $company->getKey(),
+            'user_id' => $user->getKey(),
+        ]);
+
+        $this->assertDatabaseHas(CompanyDeniedRolePivot::class, [
+            'company_id' => $company->getKey(),
+            'role_id' => $role->getKey(),
+        ]);
+    }
+
+    #[Test]
+    public function a_body_via_relationship_key_cannot_redirect_sync_to_a_different_relation(): void
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $clean = $this->postJson(CompanyRepository::route("{$company->id}/sync/users"), [
+            'users' => [$user->getKey()],
+        ]);
+
+        $company2 = Company::factory()->create();
+        $user2 = User::factory()->create();
+        $role2 = Role::factory()->create();
+
+        $poisoned = $this->postJson(CompanyRepository::route("{$company2->id}/sync/users"), [
+            'users' => [$user2->getKey()],
+            'viaRelationship' => 'deniedRoles',
+            'deniedRoles' => [$role2->getKey()],
+        ]);
+
+        $poisoned->assertStatus($clean->getStatusCode());
+        $poisoned->assertOk();
+
+        $this->assertDatabaseHas(CompanyUserPivot::class, [
+            'company_id' => $company2->getKey(),
+            'user_id' => $user2->getKey(),
+        ]);
+
+        $this->assertDatabaseCount(CompanyDeniedRolePivot::class, 0);
+    }
 }
