@@ -34,12 +34,6 @@ parameters:
 			path: src/Actions/Action.php
 
 		-
-			message: '#^Cannot call method each\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Actions/Action.php
-
-		-
 			message: '#^Cannot call method user\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -2338,12 +2332,6 @@ parameters:
 			path: src/Eager/Related.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Eager\\Related\:\:resolveField\(\) should return Binaryk\\LaravelRestify\\Fields\\EagerField but returns mixed\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Eager/Related.php
-
-		-
 			message: '#^Property Binaryk\\LaravelRestify\\Eager\\Related\:\:\$columns type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -3046,24 +3034,6 @@ parameters:
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:resolve\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:resolve\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:resolve\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:validate\(\) has parameter \$pivot with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -3214,24 +3184,6 @@ parameters:
 			path: src/Fields/EagerField.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\EagerField\:\:resolve\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/EagerField.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\EagerField\:\:resolve\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/EagerField.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\EagerField\:\:resolve\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/EagerField.php
-
-		-
 			message: '#^Parameter \#1 \$boolean of function abort_unless expects bool, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -3366,7 +3318,7 @@ parameters:
 		-
 			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
-			count: 2
+			count: 1
 			path: src/Fields/Field.php
 
 		-
@@ -3658,42 +3610,6 @@ parameters:
 			path: src/Fields/Field.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolve\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolve\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolve\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveForIndex\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveForIndex\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveForIndex\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Field.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveValueBeforeUpdate\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -3876,13 +3792,7 @@ parameters:
 		-
 			message: '#^Parameter \#2 \$attribute of method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveAttribute\(\) expects string, \(callable\)\|string\|null given\.$#'
 			identifier: argument.type
-			count: 3
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Parameter \#2 \$attribute of method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveAttribute\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 3
+			count: 6
 			path: src/Fields/Field.php
 
 		-
@@ -4074,12 +3984,6 @@ parameters:
 		-
 			message: '#^Result of && is always false\.$#'
 			identifier: booleanAnd.alwaysFalse
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Result of \|\| is always true\.$#'
-			identifier: booleanOr.alwaysTrue
 			count: 1
 			path: src/Fields/Field.php
 
@@ -4690,12 +4594,6 @@ parameters:
 			path: src/Fields/HasMany.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\HasMany\:\:resolve\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/HasMany.php
-
-		-
 			message: '#^PHPDoc tag @var for variable \$paginator contains generic class Illuminate\\Database\\Eloquent\\Relations\\Relation but does not specify its types\: TRelatedModel, TDeclaringModel, TResult$#'
 			identifier: missingType.generics
 			count: 1
@@ -4724,24 +4622,6 @@ parameters:
 			identifier: missingType.parameter
 			count: 1
 			path: src/Fields/HasOne.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Image\:\:resolveForIndex\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/Image.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Image\:\:resolveForIndex\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Image.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Image\:\:resolveForIndex\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Image.php
 
 		-
 			message: '#^Parameter \#1 \$path of method Illuminate\\Filesystem\\FilesystemAdapter\:\:exists\(\) expects string, \(callable\)\|string given\.$#'
@@ -13917,15 +13797,15 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:each\(\) expects callable\(mixed, int\|string\)\: mixed, Closure\(Binaryk\\LaravelRestify\\Fields\\Field\)\: \(Binaryk\\LaravelRestify\\Fields\\Field\|void\) given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:each\(\) expects callable\(mixed, int\|string\)\: mixed, Closure\(Binaryk\\LaravelRestify\\Fields\\Field\)\: Binaryk\\LaravelRestify\\Fields\\Field given\.$#'
 			identifier: argument.type
-			count: 1
+			count: 3
 			path: src/Repositories/Repository.php
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:each\(\) expects callable\(mixed, int\|string\)\: mixed, Closure\(Binaryk\\LaravelRestify\\Fields\\Field\)\: mixed given\.$#'
 			identifier: argument.type
-			count: 7
+			count: 5
 			path: src/Repositories/Repository.php
 
 		-

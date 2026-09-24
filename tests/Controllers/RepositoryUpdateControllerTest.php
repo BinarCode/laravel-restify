@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\Test;
 
 class RepositoryUpdateControllerTest extends IntegrationTestCase
 {
@@ -39,6 +40,38 @@ class RepositoryUpdateControllerTest extends IntegrationTestCase
         ])->assertOk();
 
         $this->assertEquals('Updated title', Post::find($post->id)->title);
+    }
+
+    #[Test]
+    public function update_response_includes_an_unlabeled_computed_field_and_ignores_computed_input(): void
+    {
+        $post = Post::factory()->create([
+            'title' => 'Initial',
+        ]);
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForUpdate')
+            ->andReturn([
+                Field::new('title'),
+
+                field(fn () => 'Computed value'),
+            ]);
+
+        $this->putJson(PostRepository::route($post), [
+            'title' => 'new',
+            'Computed' => 'x',
+        ])
+            ->assertOk()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->where('data.attributes.Computed', 'Computed value')
+                    ->etc()
+            );
+
+        $this->assertDatabaseHas(Post::class, [
+            'id' => $post->id,
+            'title' => 'new',
+        ]);
     }
 
     public function test_unauthorized_to_update(): void

@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Testing\Fluent\AssertableJson;
+use PHPUnit\Framework\Attributes\Test;
 
 class BelongsToManyFieldTest extends IntegrationTestCase
 {
@@ -104,6 +105,31 @@ class BelongsToManyFieldTest extends IntegrationTestCase
             'users',
             $response->json('data.0.type')
         );
+    }
+
+    #[Test]
+    public function belongs_to_many_numbers_unlabeled_computed_pivot_fields_positionally(): void
+    {
+        tap(Company::factory()->create(), function (Company $company) {
+            $company->users()->attach(
+                User::factory()->create()
+            );
+        });
+
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'users' => BelongsToMany::make('users', UserRepository::class)->withPivot(
+                    field(fn () => 'P1'),
+                    field(fn () => 'P2'),
+                ),
+            ]);
+
+        $this->getJson(CompanyRepository::route(query: ['include' => 'users']))
+            ->assertJson(fn (AssertableJson $json) => $json
+                ->where('data.0.relationships.users.0.pivots.Computed', 'P1')
+                ->where('data.0.relationships.users.0.pivots.Computed_1', 'P2')
+                ->etc());
     }
 
     public function test_belongs_to_many_ignored_when_storing(): void

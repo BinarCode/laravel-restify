@@ -122,7 +122,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     /**
      * Closure be used for computed field.
      *
-     * @var callable
+     * @var callable|null
      */
     protected $computedCallback;
 
@@ -176,8 +176,6 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     {
         $this->attribute = $attribute;
 
-        $this->label = $attribute;
-
         $this->resolveCallback = $resolveCallback;
 
         $this->default(null);
@@ -188,6 +186,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
             $this->readonly();
         } else {
             $this->attribute = $attribute ?? str_replace(' ', '_', Str::lower($attribute));
+            $this->label = $attribute;
         }
     }
 
@@ -531,7 +530,7 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
     public function computed()
     {
         return (is_callable($this->attribute) && ! is_string($this->attribute)) ||
-            is_callable($this->computedCallback) || $this->attribute == 'Computed';
+            is_callable($this->computedCallback);
     }
 
     /**
@@ -539,16 +538,16 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
      *
      * @param  mixed  $repository
      * @param  string|null  $attribute
-     * @return Field|void
+     * @return $this
      */
     public function resolveForShow($repository, $attribute = null)
     {
         $attribute = $attribute ?? $this->attribute;
 
-        if ($attribute === 'Computed') {
+        if (is_callable($this->computedCallback)) {
             $this->value = call_user_func($this->computedCallback, $repository);
 
-            return;
+            return $this;
         }
 
         if (! $this->showCallback) {
@@ -565,13 +564,18 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         return $this;
     }
 
+    /**
+     * @param  mixed  $repository
+     * @param  string|callable|null  $attribute
+     * @return $this
+     */
     public function resolveForIndex($repository, $attribute = null)
     {
         $this->repository = $repository;
 
         $attribute = $attribute ?? $this->attribute;
 
-        if ($attribute === 'Computed') {
+        if (is_callable($this->computedCallback)) {
             $this->value = call_user_func($this->computedCallback, $repository);
 
             return $this;
@@ -591,13 +595,18 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
         return $this;
     }
 
+    /**
+     * @param  mixed  $repository
+     * @param  string|callable|null  $attribute
+     * @return $this
+     */
     public function resolve($repository, $attribute = null)
     {
         $this->repository = $repository;
 
         $attribute = $attribute ?? $this->attribute;
 
-        if ($attribute === 'Computed') {
+        if (is_callable($this->computedCallback)) {
             $this->value = call_user_func($this->computedCallback, $repository);
 
             return $this;
@@ -854,9 +863,6 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
             }
         }
 
-        // For MCP tools, we include computed fields that have resolve callbacks
-        // since they represent storable fields in MCP contexts
-        // Only skip truly computed fields without resolve callbacks
         if ($this->computed() && ! $this->resolveCallback) {
             return $this;
         }
