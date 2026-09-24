@@ -82,6 +82,30 @@ class RestifyAuthMacroCommandTest extends IntegrationTestCase
         $this->artisan('restify:auth-macro')->assertExitCode(Command::FAILURE);
     }
 
+    #[Test]
+    public function it_appends_a_real_call_when_only_a_commented_out_call_exists(): void
+    {
+        $this->seedRoutesFile("<?php\n// Route::restifyAuth();\n");
+
+        $this->artisan('restify:auth-macro')->assertExitCode(Command::SUCCESS);
+
+        $updatedContent = File::get($this->routesPath);
+
+        $this->assertStringContainsString("// Route::restifyAuth();\n", $updatedContent);
+        $this->assertMatchesRegularExpression('/^Route::restifyAuth\(\);$/m', $updatedContent);
+    }
+
+    #[Test]
+    public function it_fails_when_the_routes_file_ends_with_a_closing_tag(): void
+    {
+        $originalContent = "<?php\n\$foo = 1;\n?>\n";
+        $this->seedRoutesFile($originalContent);
+
+        $this->artisan('restify:auth-macro')->assertExitCode(Command::FAILURE);
+
+        $this->assertSame($originalContent, File::get($this->routesPath));
+    }
+
     private function seedRoutesFile(string $content): void
     {
         File::put($this->routesPath, $content);
