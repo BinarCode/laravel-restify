@@ -19,7 +19,7 @@ class SampleUser extends LaravelRestifyModel
     {
         return new class
         {
-            public $accessToken = 'token';
+            public string $plainTextToken = 'token';
         };
     }
 

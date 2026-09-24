@@ -2,10 +2,10 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
 
@@ -26,6 +26,9 @@ class HasMany extends EagerField
      */
     public function resolve($repository, $attribute = null)
     {
+        /** @var class-string<Repository> $repositoryClass */
+        $repositoryClass = $this->repositoryClass;
+
         if ($repository->model()->relationLoaded($this->relation)) {
             $paginator = $repository->model()->getRelation($this->relation);
         } else {
@@ -34,14 +37,14 @@ class HasMany extends EagerField
              */
             $paginator = $repository->{$this->relation}();
             $paginator = $paginator
-                ->take(request('relatablePerPage') ?? ($this->repositoryClass::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))
+                ->take($this->relatablePerPage($repositoryClass::$defaultRelatablePerPage))
                 ->select($this->getColumns())
                 ->get();
         }
 
-        $this->value = $paginator->map(function ($item) {
+        $this->value = $paginator->map(function (Model $item) use ($repositoryClass) {
             try {
-                return $this->repositoryClass::resolveWith($item)
+                return $repositoryClass::resolveWith($item)
                     ->allowToShow(app(Request::class))
                     ->eager($this);
             } catch (AuthorizationException) {
