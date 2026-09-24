@@ -179,7 +179,7 @@ trait InteractsWithCache
             return;
         }
 
-        $store = Cache::store(static::$cacheStore);
+        $store = Cache::store(static::resolveCacheStoreName());
 
         // If cache tags are used and supported, flush by tags
         if (! empty(static::$cacheTags) && static::cacheStoreSupportsTagging($store)) {
@@ -242,7 +242,18 @@ trait InteractsWithCache
      */
     protected function getCacheStore()
     {
-        return Cache::store(static::$cacheStore);
+        return Cache::store(static::resolveCacheStoreName());
+    }
+
+    protected static function resolveCacheStoreName(): ?string
+    {
+        if (static::$cacheStore !== null) {
+            return static::$cacheStore;
+        }
+
+        $configuredStore = config('restify.repositories.cache.store');
+
+        return is_string($configuredStore) && $configuredStore !== '' ? $configuredStore : null;
     }
 
     /**
