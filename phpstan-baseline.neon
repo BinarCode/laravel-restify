@@ -15405,12 +15405,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Parameter \#2 \$policyMethod of static method Binaryk\\LaravelRestify\\Cache\\PolicyCache\:\:keyForPolicyMethods\(\) expects string, iterable\|string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Parameter \#2 \$rules of static method Illuminate\\Support\\Facades\\Validator\:\:make\(\) expects array, mixed given\.$#'
 			identifier: argument.type
 			count: 4
@@ -15438,12 +15432,6 @@ parameters:
 			message: '#^Parameter \#3 \$messages of static method Illuminate\\Support\\Facades\\Validator\:\:make\(\) expects array, mixed given\.$#'
 			identifier: argument.type
 			count: 3
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Parameter \#3 \$modelKey of static method Binaryk\\LaravelRestify\\Cache\\PolicyCache\:\:keyForPolicyMethods\(\) expects int\|string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
 			path: src/Repositories/Repository.php
 
 		-

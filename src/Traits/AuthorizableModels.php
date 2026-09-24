@@ -39,7 +39,7 @@ trait AuthorizableModels
                 : false;
         };
 
-        return PolicyCache::resolve(fn () => PolicyCache::keyForAllowRestify(static::uriKey()), $resolver, static::newModel());
+        return PolicyCache::resolve(fn (): ?string => PolicyCache::keyForAllowRestify(static::uriKey()), $resolver, static::newModel());
     }
 
     /**
@@ -215,17 +215,29 @@ trait AuthorizableModels
             return false;
         }
 
+        $evaluate = function () use ($ability): bool {
+            $policy = Gate::getPolicyFor($this->model());
+
+            if ($policy && is_string($ability) && method_exists($policy, $ability)) {
+                return static::checkPolicyMethod($policy, $ability, $this->resource);
+            }
+
+            return Gate::check($ability, $this->resource);
+        };
+
+        if (! is_string($ability)) {
+            return $evaluate();
+        }
+
+        $modelKey = $this->resource->getKey();
+
+        if (! is_int($modelKey) && ! is_string($modelKey) && ! is_null($modelKey)) {
+            return $evaluate();
+        }
+
         return PolicyCache::resolve(
-            fn () => PolicyCache::keyForPolicyMethods(static::uriKey(), $ability, $this->resource->getKey()),
-            function () use ($ability) {
-                $policy = Gate::getPolicyFor($this->model());
-
-                if ($policy && is_string($ability) && method_exists($policy, $ability)) {
-                    return static::checkPolicyMethod($policy, $ability, $this->resource);
-                }
-
-                return Gate::check($ability, $this->resource);
-            },
+            fn (): ?string => PolicyCache::keyForPolicyMethods(static::uriKey(), $ability, $modelKey),
+            $evaluate,
             $this->model(),
         );
     }
