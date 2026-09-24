@@ -1086,6 +1086,7 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $removedPivots = $relationship->newPivotQuery()
             ->whereNotIn($relatedPivotKeyName, $syncValues)
+            ->lockForUpdate()
             ->get();
 
         foreach ($removedPivots as $attributes) {
