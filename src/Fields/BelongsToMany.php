@@ -56,13 +56,17 @@ class BelongsToMany extends EagerField
                  */
                 $repositoryFromClass = $this->repositoryClass::resolveWith($item);
 
+                $pivotFields = PivotsCollection::make($this->pivotFields)
+                    ->map(fn (Field $field) => clone $field);
+
+                FieldCollection::assignComputedLabels($pivotFields->all());
+
                 return $repositoryFromClass
                     ->allowToShow(
                         $this->detectMcpRequest() ? app(McpRequest::class) : app(RestifyRequest::class)
                     )
                     ->withPivots(
-                        PivotsCollection::make($this->pivotFields)
-                            ->map(fn (Field $field) => clone $field)
+                        $pivotFields
                             ->filter(fn (Field $field) => ! $field->isHidden(app(RestifyRequest::class)))
                             ->resolveFromPivot($item->pivot)
                     )

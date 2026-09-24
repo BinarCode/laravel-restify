@@ -181,27 +181,49 @@ class FieldCollection extends Collection
      */
     public function assignComputedFieldLabels(): self
     {
+        self::assignComputedLabels($this->all());
+
+        return $this;
+    }
+
+    /**
+     * The numbering half of {@see self::assignComputedFieldLabels()}, shared with
+     * pivot fields (`BelongsToMany::resolve()`), which bypass `Repository::collectFields()`
+     * and would otherwise let unlabeled computed pivot fields collide under the same key.
+     *
+     * @param  iterable<int|string, mixed>  $fields
+     */
+    public static function assignComputedLabels(iterable $fields): void
+    {
+        $unlabeled = [];
+
+        foreach ($fields as $item) {
+            if ($item instanceof Field && $item->computed() && $item->label === null) {
+                $unlabeled[] = $item;
+            }
+        }
+
+        if ($unlabeled === []) {
+            return;
+        }
+
         $taken = [];
 
-        foreach ($this->all() as $item) {
-            if (! $item instanceof Field) {
+        foreach ($fields as $item) {
+            if (! $item instanceof Field || ($item->computed() && $item->label === null)) {
                 continue;
             }
 
-            $this->reserveComputedKey(is_string($item->label) ? $item->label : null, $taken);
+            self::reserveComputedKey(is_string($item->label) ? $item->label : null, $taken);
 
             if (! $item->computed()) {
-                $this->reserveComputedKey(is_string($item->attribute) ? $item->attribute : null, $taken);
+                self::reserveComputedKey(is_string($item->attribute) ? $item->attribute : null, $taken);
             }
         }
 
         $next = 0;
 
-        foreach ($this->all() as $item) {
-            if (! $item instanceof Field || ! $item->computed() || $item->label !== null) {
-                continue;
-            }
-
+        foreach ($unlabeled as $item) {
             while (isset($taken[$next])) {
                 $next++;
             }
@@ -210,16 +232,14 @@ class FieldCollection extends Collection
             $taken[$next] = true;
             $next++;
         }
-
-        return $this;
     }
 
     /**
      * @param  array<int, true>  $taken
      */
-    private function reserveComputedKey(?string $candidate, array &$taken): void
+    private static function reserveComputedKey(?string $candidate, array &$taken): void
     {
-        if ($candidate === null || preg_match('/^Computed(?:_([1-9]\d*))?$/', $candidate, $matches) !== 1) {
+        if ($candidate === null || ! str_starts_with($candidate, 'Computed') || preg_match('/^Computed(?:_([1-9]\d*))?$/', $candidate, $matches) !== 1) {
             return;
         }
 
