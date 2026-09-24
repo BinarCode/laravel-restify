@@ -7266,19 +7266,7 @@ parameters:
 			path: src/Http/Controllers/Auth/LogoutController.php
 
 		-
-			message: '#^Binary operation "\*" between mixed and 60 results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Http/Controllers/Auth/RegisterController.php
-
-		-
-			message: '#^Binary operation "\." between ''unique\:'' and mixed results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Http/Controllers/Auth/RegisterController.php
-
-		-
-			message: '#^Call to an undefined method Illuminate\\Contracts\\Auth\\MustVerifyEmail\:\:notify\(\)\.$#'
+			message: '#^Call to an undefined method Illuminate\\Database\\Eloquent\\Model\:\:createToken\(\)\.$#'
 			identifier: method.notFound
 			count: 1
 			path: src/Http/Controllers/Auth/RegisterController.php
@@ -7286,36 +7274,6 @@ parameters:
 		-
 			message: '#^Cannot access property \$plainTextToken on mixed\.$#'
 			identifier: property.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/RegisterController.php
-
-		-
-			message: '#^Cannot call method createToken\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/RegisterController.php
-
-		-
-			message: '#^Cannot call static method forceCreate\(\) on mixed\.$#'
-			identifier: staticMethod.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/RegisterController.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\Auth\\RegisterController\:\:__invoke\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Controllers/Auth/RegisterController.php
-
-		-
-			message: '#^Parameter \#1 \$value of method Carbon\\Carbon\:\:addMinutes\(\) expects float\|int, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/RegisterController.php
-
-		-
-			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Facades\\Hash\:\:make\(\) expects string, mixed given\.$#'
-			identifier: argument.type
 			count: 1
 			path: src/Http/Controllers/Auth/RegisterController.php
 
@@ -8647,18 +8605,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Http/Requests/RestifyPasswordEmailRequest.php
-
-		-
-			message: '#^Binary operation "\." between ''required\|email\|max…'' and mixed results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Http/Requests/RestifyRegisterRequest.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Requests\\RestifyRegisterRequest\:\:rules\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Requests/RestifyRegisterRequest.php
 
 		-
 			message: '#^Cannot call method all\(\) on mixed\.$#'
