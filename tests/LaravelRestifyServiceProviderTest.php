@@ -14,10 +14,11 @@ class LaravelRestifyServiceProviderTest extends IntegrationTestCase
     public function it_publishes_the_package_views_to_the_restify_vendor_views_directory(): void
     {
         $paths = ServiceProvider::pathsToPublish(LaravelRestifyServiceProvider::class, 'restify-views');
+        $publishedPath = array_values($paths)[0] ?? '';
 
         $this->assertSame(
-            resource_path('views/vendor/restify'),
-            array_values($paths)[0] ?? null,
+            str_replace('\\', '/', resource_path('views/vendor/restify')),
+            str_replace('\\', '/', $publishedPath),
         );
     }
 }
