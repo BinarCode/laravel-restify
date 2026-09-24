@@ -10,6 +10,3 @@ updates:
           github-official-actions:
               patterns:
                   - "actions/*"
-          docker-actions:
-              patterns:
-                  - "docker/*"
