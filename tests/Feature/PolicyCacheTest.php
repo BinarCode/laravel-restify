@@ -22,7 +22,6 @@ use Illuminate\Support\Facades\Gate;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 use Stringable;
-use UnexpectedValueException;
 
 class PolicyCacheTest extends IntegrationTestCase
 {
@@ -52,7 +51,7 @@ class PolicyCacheTest extends IntegrationTestCase
 
         $key = 'restify.policy.test.hit-once';
         $calls = 0;
-        $data = function () use (&$calls) {
+        $data = function () use (&$calls): bool {
             $calls++;
 
             return true;
@@ -79,7 +78,7 @@ class PolicyCacheTest extends IntegrationTestCase
 
         $key = 'restify.policy.test.cached-false';
         $calls = 0;
-        $data = function () use (&$calls) {
+        $data = function () use (&$calls): bool {
             $calls++;
 
             return false;
@@ -110,7 +109,7 @@ class PolicyCacheTest extends IntegrationTestCase
 
         $key = 'restify.policy.test.null-ttl';
         $calls = 0;
-        $data = function () use (&$calls) {
+        $data = function () use (&$calls): bool {
             $calls++;
 
             return false;
@@ -135,7 +134,7 @@ class PolicyCacheTest extends IntegrationTestCase
         $model = new Post;
 
         $calls = 0;
-        $data = function () use (&$calls) {
+        $data = function () use (&$calls): bool {
             $calls++;
 
             return true;
@@ -163,7 +162,7 @@ class PolicyCacheTest extends IntegrationTestCase
 
         $key = 'restify.policy.test.configured-ttl';
         $calls = 0;
-        $data = function () use (&$calls) {
+        $data = function () use (&$calls): bool {
             $calls++;
 
             return true;
@@ -211,10 +210,10 @@ class PolicyCacheTest extends IntegrationTestCase
             }
         };
 
-        app(Request::class)->setUserResolver(fn () => $userA);
+        app(Request::class)->setUserResolver(fn (): Authenticatable => $userA);
         $keyForA = PolicyCache::keyForAllowRestify('posts');
 
-        app(Request::class)->setUserResolver(fn () => $userB);
+        app(Request::class)->setUserResolver(fn (): Authenticatable => $userB);
         $keyForB = PolicyCache::keyForAllowRestify('posts');
 
         $this->assertNotSame($keyForA, $keyForB);
@@ -246,7 +245,7 @@ class PolicyCacheTest extends IntegrationTestCase
     {
         $user = $this->userWithAuthIdentifier($id);
 
-        app(Request::class)->setUserResolver(fn () => $user);
+        app(Request::class)->setUserResolver(fn (): Authenticatable => $user);
 
         $key = PolicyCache::keyForAllowRestify('posts');
 
@@ -275,10 +274,10 @@ class PolicyCacheTest extends IntegrationTestCase
             }
         };
 
-        app(Request::class)->setUserResolver(fn () => $this->userWithAuthIdentifier($identifierA));
+        app(Request::class)->setUserResolver(fn (): Authenticatable => $this->userWithAuthIdentifier($identifierA));
         $keyForA = PolicyCache::keyForAllowRestify('posts');
 
-        app(Request::class)->setUserResolver(fn () => $this->userWithAuthIdentifier($identifierB));
+        app(Request::class)->setUserResolver(fn (): Authenticatable => $this->userWithAuthIdentifier($identifierB));
         $keyForB = PolicyCache::keyForAllowRestify('posts');
 
         $this->assertNotSame($keyForA, $keyForB);
@@ -287,19 +286,17 @@ class PolicyCacheTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_non_stringable_auth_identifier_throws(): void
+    public function a_non_stringable_auth_identifier_returns_null_instead_of_a_key(): void
     {
-        app(Request::class)->setUserResolver(fn () => $this->userWithAuthIdentifier(new class {}));
+        app(Request::class)->setUserResolver(fn (): Authenticatable => $this->userWithAuthIdentifier(new class {}));
 
-        $this->expectException(UnexpectedValueException::class);
-
-        PolicyCache::keyForAllowRestify('posts');
+        $this->assertNull(PolicyCache::keyForAllowRestify('posts'));
     }
 
     #[Test]
     public function a_guest_request_produces_the_same_empty_user_segment_as_before(): void
     {
-        app(Request::class)->setUserResolver(fn () => null);
+        app(Request::class)->setUserResolver(fn (): ?Authenticatable => null);
 
         $key = PolicyCache::keyForAllowRestify('posts');
 
@@ -307,13 +304,11 @@ class PolicyCacheTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function an_authenticated_user_with_a_null_auth_identifier_throws(): void
+    public function an_authenticated_user_with_a_null_auth_identifier_returns_null_instead_of_a_key(): void
     {
-        app(Request::class)->setUserResolver(fn () => $this->userWithAuthIdentifier(null));
+        app(Request::class)->setUserResolver(fn (): Authenticatable => $this->userWithAuthIdentifier(null));
 
-        $this->expectException(UnexpectedValueException::class);
-
-        PolicyCache::keyForAllowRestify('posts');
+        $this->assertNull(PolicyCache::keyForAllowRestify('posts'));
     }
 
     #[Test]
@@ -336,6 +331,130 @@ class PolicyCacheTest extends IntegrationTestCase
 
         $_SERVER['restify.post.allowRestify'] = false;
         $this->getJson(PostRepository::route())->assertForbidden();
+    }
+
+    #[Test]
+    public function a_null_model_key_is_never_cached(): void
+    {
+        $model = new Post;
+
+        Cache::spy();
+
+        $result = PolicyCache::resolve(
+            fn (): ?string => PolicyCache::keyForPolicyMethods('posts', 'show', null),
+            fn (): bool => true,
+            $model,
+        );
+
+        $this->assertTrue($result);
+        Cache::shouldNotHaveReceived('put');
+        Cache::shouldNotHaveReceived('get');
+    }
+
+    #[Test]
+    #[TestWith([null], 'null ttl')]
+    #[TestWith(['abc'], 'non-numeric string ttl')]
+    #[TestWith([true], 'boolean ttl')]
+    #[TestWith([0], 'zero ttl')]
+    #[TestWith([-5], 'negative ttl')]
+    public function an_invalid_or_non_positive_global_ttl_never_caches_the_result(mixed $configuredTtl): void
+    {
+        config()->set('restify.cache.policies.ttl', $configuredTtl);
+
+        $model = new Post;
+
+        Gate::shouldReceive('getPolicyFor')->andReturn(new class {});
+
+        $key = 'restify.policy.test.invalid-ttl';
+        $calls = 0;
+        $data = function () use (&$calls): bool {
+            $calls++;
+
+            return true;
+        };
+
+        PolicyCache::resolve($key, $data, $model);
+        PolicyCache::resolve($key, $data, $model);
+
+        $this->assertSame(2, $calls, 'an invalid or non-positive ttl must not cache, so the closure runs every time');
+        $this->assertFalse(Cache::has($key));
+    }
+
+    #[Test]
+    #[TestWith([1.9], 'float ttl')]
+    #[TestWith(['1e3'], 'scientific-notation numeric-string ttl')]
+    public function a_fractional_or_scientific_notation_global_ttl_caches_the_result(float|string $configuredTtl): void
+    {
+        config()->set('restify.cache.policies.ttl', $configuredTtl);
+
+        $model = new Post;
+
+        Gate::shouldReceive('getPolicyFor')->once()->andReturn(new class {});
+
+        $key = 'restify.policy.test.fractional-ttl';
+        $calls = 0;
+        $data = function () use (&$calls): bool {
+            $calls++;
+
+            return true;
+        };
+
+        $first = PolicyCache::resolve($key, $data, $model);
+        $second = PolicyCache::resolve($key, $data, $model);
+
+        $this->assertTrue($first);
+        $this->assertTrue($second);
+        $this->assertSame(1, $calls);
+        $this->assertTrue(Cache::has($key));
+    }
+
+    #[Test]
+    public function a_disabled_cache_never_evaluates_the_key_closure(): void
+    {
+        config()->set('restify.cache.policies.enabled', false);
+
+        $model = new Post;
+
+        $keyEvaluations = 0;
+        $key = function () use (&$keyEvaluations): string {
+            $keyEvaluations++;
+
+            return 'restify.policy.test.key-should-not-run';
+        };
+
+        PolicyCache::resolve($key, fn (): bool => true, $model);
+
+        $this->assertSame(0, $keyEvaluations);
+    }
+
+    #[Test]
+    public function a_disabled_cache_never_touches_the_cache_store_over_a_real_request(): void
+    {
+        config()->set('restify.cache.policies.enabled', false);
+
+        $this->authenticate(User::factory()->make());
+
+        Cache::spy();
+
+        $this->getJson(PostRepository::route())->assertOk();
+
+        Cache::shouldNotHaveReceived('get');
+        Cache::shouldNotHaveReceived('put');
+        Cache::shouldNotHaveReceived('has');
+    }
+
+    #[Test]
+    public function an_iterable_ability_with_caching_enabled_bypasses_the_cache_instead_of_erroring(): void
+    {
+        $repository = PostRepository::resolveWith(new Post);
+
+        Cache::spy();
+
+        $authorized = $repository->authorizedTo(app(Request::class), ['show']);
+
+        $this->assertTrue($authorized);
+        Cache::shouldNotHaveReceived('get');
+        Cache::shouldNotHaveReceived('put');
     }
 
     private function userWithAuthIdentifier(mixed $id): Authenticatable
