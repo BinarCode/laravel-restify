@@ -7,8 +7,6 @@ use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 
-use function throw_unless;
-
 trait AuthorizedToRun
 {
     /**
@@ -46,10 +44,9 @@ trait AuthorizedToRun
      */
     protected function authorizeRun(Request $request, ?Model $model): void
     {
-        throw_unless(
-            $this->authorizedToRun($request, $model),
-            UnauthorizedException::make($this->authorizeRunMessage())
-        );
+        if (! $this->authorizedToRun($request, $model)) {
+            throw UnauthorizedException::make($this->authorizeRunMessage());
+        }
     }
 
     /**
