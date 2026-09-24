@@ -1,4 +1,4 @@
-name: Fix PHP code style issues
+name: Pint
 
 on: [push]
 
@@ -9,8 +9,6 @@ jobs:
         steps:
             - name: Checkout code
               uses: actions/checkout@v6
-              with:
-                  ref: ${{ github.head_ref }}
 
             - name: Fix PHP code style issues
               uses: aglipanci/laravel-pint-action@v2
