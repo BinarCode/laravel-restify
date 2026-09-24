@@ -100,3 +100,14 @@ Standalone actions and index-route getters have no single model to check `canRun
 against, so they now receive `null` there too. A closure typed with a non-nullable model
 (`fn (Request $request, Post $post): bool => ...`) TypeErrors when called with `null`.
 Type the parameter nullable: `fn (Request $request, ?Post $post): bool => ...`.
+
+### `forgotPassword`'s `url` no longer allows `config('app.url')`'s host
+
+`AllowedResetUrlHost::fromConfig()` used to also allow a client-supplied `url` to target
+`config('app.url')`'s host. That entry is removed: `restify.auth.frontend_app_url`
+already defaults to `env('APP_URL')`, so it still covers your app URL when
+`FRONTEND_APP_URL` is unset; once `FRONTEND_APP_URL` is set to a different host,
+`app.url` is your API host and a reset link should never be allowed to target it. If
+you relied on `app.url` being allowed while also setting `FRONTEND_APP_URL` to a
+different host, add that host to `restify.auth.password_reset_url` or
+`restify.auth.frontend_app_url` instead.

@@ -167,8 +167,10 @@ class ForgotPasswordUrlHostTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_url_matching_the_app_url_host_is_accepted(): void
+    public function a_url_matching_the_app_url_host_is_rejected_when_frontend_app_url_is_set_to_a_different_host(): void
     {
+        config()->set('restify.auth.frontend_app_url', 'https://app.restify.test');
+
         Notification::fake();
 
         $user = UserFactory::one(['email' => 'known@example.com']);
@@ -176,9 +178,9 @@ class ForgotPasswordUrlHostTest extends IntegrationTestCase
         $this->postJson('auth/forgotPassword', [
             'email' => $user->email,
             'url' => 'https://api.restify.test/reset?token={token}&email={email}',
-        ])->assertOk();
+        ])->assertStatus(422)->assertJsonValidationErrors('url');
 
-        Notification::assertSentOnDemand(ForgotPasswordNotification::class);
+        Notification::assertNothingSent();
     }
 
     #[Test]
