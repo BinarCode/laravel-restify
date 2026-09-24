@@ -22,22 +22,22 @@ trait Attachable
     use ValidatesRelatedKeyShape;
 
     /**
-     * @var Closure
+     * @var callable|null
      */
     private $canAttachCallback;
 
     /**
-     * @var Closure
+     * @var callable|null
      */
     private $canSyncCallback;
 
     /**
-     * @var Closure
+     * @var callable|null
      */
     private $validationCallback;
 
     /**
-     * @var Closure
+     * @var callable|null
      */
     private $canDetachCallback;
 
@@ -88,8 +88,10 @@ trait Attachable
 
     public function authorizedToSync(RestifyRequest $request, Pivot $pivot): bool
     {
-        return is_callable($this->canAttachCallback)
-            ? call_user_func($this->canAttachCallback, $request, $pivot)
+        $callback = $this->canSyncCallback ?? $this->canAttachCallback;
+
+        return is_callable($callback)
+            ? call_user_func($callback, $request, $pivot)
             : true;
     }
 

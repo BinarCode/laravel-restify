@@ -2,34 +2,46 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
-use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Timebox;
 
 class ResetPasswordController extends Controller
 {
-    public function __invoke(Request $request)
+    public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
-            'email' => 'required|email',
-            'token' => 'required|string',
-            'password' => 'required|string|confirmed',
+            'email' => ['required', 'email'],
+            'token' => ['required', 'string'],
+            'password' => ['required', 'string', 'confirmed'],
         ]);
 
-        /** * @var User $user */
-        $user = config('restify.auth.user_model')::query()->where($request->only('email'))->firstOrFail();
+        $token = $request->string('token')->toString();
+        $password = $request->string('password')->toString();
 
-        if (! Password::getRepository()->exists($user, $request->input('token'))) {
-            abort(400, 'Provided invalid token.');
-        }
+        /** @var int $timeboxDuration */
+        $timeboxDuration = config('restify.auth.password_reset_timebox');
 
-        $user->password = Hash::make($request->input('password'));
-        $user->save();
+        return app(Timebox::class)->call(function () use ($request, $token, $password): JsonResponse {
+            /** @var class-string<Model&CanResetPassword> $userModel */
+            $userModel = config('restify.auth.user_model');
 
-        Password::deleteToken($user);
+            $user = $userModel::query()->where($request->only('email'))->first();
 
-        return ok('Your password has been successfully reset.');
+            if ($user === null || ! Password::getRepository()->exists($user, $token)) {
+                abort(JsonResponse::HTTP_BAD_REQUEST, __('Provided invalid token.'));
+            }
+
+            $user->forceFill(['password' => Hash::make($password)])->save();
+
+            Password::deleteToken($user);
+
+            return ok(__('Your password has been successfully reset.'));
+        }, $timeboxDuration);
     }
 }
