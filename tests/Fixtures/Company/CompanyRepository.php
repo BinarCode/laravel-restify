@@ -19,7 +19,15 @@ class CompanyRepository extends Repository
             'users' => BelongsToMany::make('users', UserRepository::class)->withPivot(
                 Field::make('is_admin')->rules('required')
             )->canDetach(fn ($request, $pivot) => isset($_SERVER['roles.canDetach.users']) && $_SERVER['roles.canDetach.users'])
-                ->canSync(fn (RestifyRequest $request, Pivot $pivot): bool => $_SERVER['companies.canSync.users'] ?? true),
+                ->canSync(function (RestifyRequest $request, Pivot $pivot): bool {
+                    $_SERVER['companies.canSync.calls'][] = [$request::class, $pivot->company_id, $pivot->user_id];
+
+                    if (($_SERVER['companies.canSync.users'] ?? true) === false) {
+                        return false;
+                    }
+
+                    return ! in_array($pivot->user_id, $_SERVER['companies.canSync.denied_user_ids'] ?? [], true);
+                }),
         ];
     }
 
