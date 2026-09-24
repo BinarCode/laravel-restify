@@ -176,6 +176,8 @@ class FieldCollection extends Collection
      * `Computed_1`, `Computed_2`, ... - before any visibility or authorization filtering
      * runs, so the same field resolves to the same key on every request. A field already
      * labeled `Computed` or `Computed_N` (computed or not) reserves that key for itself.
+     *
+     * @return $this
      */
     public function assignComputedFieldLabels(): self
     {
