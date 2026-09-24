@@ -60,7 +60,14 @@ class PrepareSanctumCommand extends Command
                 return false;
             }
 
-            $this->runProcess(['php', 'artisan', 'vendor:publish', '--provider=Laravel\Sanctum\SanctumServiceProvider']);
+            try {
+                $this->runProcess(['php', 'artisan', 'vendor:publish', '--provider=Laravel\Sanctum\SanctumServiceProvider']);
+            } catch (ProcessFailedException $exception) {
+                $this->error($exception->getMessage());
+
+                return false;
+            }
+
             $this->runProcess(['php', 'artisan', 'migrate']);
             $this->info('Laravel Sanctum has been installed.');
         } else {
