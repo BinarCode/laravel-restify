@@ -34,7 +34,8 @@ class ResetPasswordTest extends IntegrationTestCase
     #[Test]
     public function a_valid_token_resets_the_password_and_burns_the_token(): void
     {
-        $user = UserFactory::one(['email' => 'known@example.com', 'password' => $originalPassword = Hash::make('original-password')]);
+        $originalPassword = Hash::make('original-password');
+        $user = UserFactory::one(['email' => 'known@example.com', 'password' => $originalPassword]);
         $token = Password::createToken($user);
 
         $this->postJson('auth/resetPassword', [
@@ -64,7 +65,8 @@ class ResetPasswordTest extends IntegrationTestCase
     #[Test]
     public function an_unknown_email_receives_the_identical_response_as_an_invalid_token_and_nothing_changes(): void
     {
-        $user = UserFactory::one(['email' => 'known@example.com', 'password' => $originalPassword = Hash::make('original-password')]);
+        $originalPassword = Hash::make('original-password');
+        $user = UserFactory::one(['email' => 'known@example.com', 'password' => $originalPassword]);
         $token = Password::createToken($user);
 
         $invalidTokenResponse = $this->postJson('auth/resetPassword', [
