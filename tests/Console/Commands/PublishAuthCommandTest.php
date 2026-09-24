@@ -119,6 +119,33 @@ class PublishAuthCommandTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function re_running_against_a_10x_generated_file_does_not_duplicate_an_already_present_route(): void
+    {
+        // 10.x's command never rewrote the actions array, so a file it produced
+        // keeps the bare `Route::restifyAuth();` call - listing every action as
+        // "remaining" - even though `login`'s route stub is already appended
+        // below it. This is also growee's real, hand-published routes/api.php.
+        $original = "<?php\n\nRoute::restifyAuth();\n\n"
+            ."Route::post('login', \\App\\Http\\Controllers\\Restify\\Auth\\LoginController::class)\n"
+            ."    ->middleware('throttle:6,1')\n"
+            ."    ->name('restify.login');\n";
+        $this->files->put($this->apiRoutesPath, $original);
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->expectsOutputToContain('login is already published, skipped.')
+            ->expectsOutputToContain('Nothing left to publish.')
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(1, substr_count($routes, "Route::post('login'"));
+        $this->assertSame(1, substr_count($routes, "->name('restify.login')"));
+        $this->assertStringContainsString('Route::restifyAuth();', $routes);
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
     public function running_the_command_twice_prints_nothing_left_to_publish_and_does_not_touch_the_customised_files(): void
     {
         $this->artisan('restify:auth', ['--actions' => 'login,forgotPassword'])->assertExitCode(0)->run();
@@ -459,6 +486,28 @@ class PublishAuthCommandTest extends IntegrationTestCase
 
         $this->assertSame(
             "<?php\nuse Illuminate\\Support\\Facades\\Route;\n\n".self::REMAINING_AFTER_LOGIN."\n\n",
+            Str::before($routes, "Route::post('login'")
+        );
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function the_facade_import_is_inserted_after_a_leading_declare_strict_types_statement(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\ndeclare(strict_types=1);\n\nRoute::restifyAuth();\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(
+            "<?php\n\ndeclare(strict_types=1);\nuse Illuminate\\Support\\Facades\\Route;\n\n\n".self::REMAINING_AFTER_LOGIN."\n\n",
             Str::before($routes, "Route::post('login'")
         );
         $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));

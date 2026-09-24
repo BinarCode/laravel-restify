@@ -224,10 +224,14 @@ class PublishAuthCommand extends Command
 
     /**
      * Splits the requested actions into three buckets: ready to publish, already
-     * published (a real route or its controller already exists even though the
-     * action is no longer in the `Route::restifyAuth()` actions array), and
-     * missing from that array without proof they were ever published, which
-     * are published now rather than silently skipped.
+     * published (a real route or its controller already exists on disk), and
+     * missing from the `Route::restifyAuth()` actions array without proof they
+     * were ever published, which are published now rather than silently
+     * skipped. The on-disk check runs first and wins even when the action is
+     * still listed as remaining: a file `restify:auth` never wrote - a bare
+     * `Route::restifyAuth();` call that a pre-10.x command left untouched while
+     * still appending the route stub below it - lists every action as
+     * remaining regardless of what's actually already published underneath.
      *
      * @param  list<string>  $requested
      * @param  list<string>  $existingRemaining
@@ -242,14 +246,14 @@ class PublishAuthCommand extends Command
         $notInList = [];
 
         foreach ($requested as $action) {
-            if (in_array($action, $existingRemaining, true)) {
-                $actionsToPublish[] = $action;
+            if ($this->isActionCovered($action, $contents)) {
+                $alreadyPublished[] = $action;
 
                 continue;
             }
 
-            if ($this->isActionCovered($action, $contents)) {
-                $alreadyPublished[] = $action;
+            if (in_array($action, $existingRemaining, true)) {
+                $actionsToPublish[] = $action;
 
                 continue;
             }
@@ -495,9 +499,12 @@ class PublishAuthCommand extends Command
     /**
      * Walks the file's tokens to find where a new top-level `use` import
      * statement belongs (right after the last existing one, or else after
-     * `namespace`, or else right after `<?php`), and collects every top-level
-     * import already declared (`alias => fully-qualified name`) along the way,
-     * so a conflicting one can be detected without a second pass.
+     * `namespace`, or else after a leading `declare(...)` statement - PHP
+     * requires `declare(strict_types=1)` to be the file's very first statement,
+     * so an import can never be inserted above it - or else right after
+     * `<?php`), and collects every top-level import already declared (`alias
+     * => fully-qualified name`) along the way, so a conflicting one can be
+     * detected without a second pass.
      *
      * @return array{0: int, 1: array<string, string>}
      */
@@ -508,6 +515,7 @@ class PublishAuthCommand extends Command
 
         $depth = 0;
         $openTagEnd = 0;
+        $declareEnd = null;
         $namespaceEnd = null;
         $lastUseEnd = null;
         $imports = [];
@@ -537,6 +545,16 @@ class PublishAuthCommand extends Command
                 continue;
             }
 
+            if ($token->is(T_DECLARE)) {
+                $end = $this->findTopLevelStatementEnd($tokens, $count, $i + 1);
+
+                if ($end !== null) {
+                    $declareEnd = $tokens[$end]->pos + 1;
+                }
+
+                continue;
+            }
+
             if ($token->is(T_NAMESPACE)) {
                 $end = $this->findTopLevelStatementEnd($tokens, $count, $i + 1);
 
@@ -562,7 +580,7 @@ class PublishAuthCommand extends Command
             $lastUseEnd = $tokens[$end]->pos + 1;
         }
 
-        return [$lastUseEnd ?? $namespaceEnd ?? $openTagEnd, $imports];
+        return [$lastUseEnd ?? $namespaceEnd ?? $declareEnd ?? $openTagEnd, $imports];
     }
 
     /**
