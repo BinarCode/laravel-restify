@@ -51,8 +51,16 @@ class PrepareSanctumCommand extends Command
 
         if (! $sanctumInstalled) {
             $this->info('Laravel Sanctum is not installed. Installing now...');
-            $this->runProcess(['composer', 'require', 'laravel/sanctum']);
-            $this->runProcess(['php', 'artisan', 'vendor:publish', '--provider="Laravel\Sanctum\SanctumServiceProvider"']);
+
+            try {
+                $this->runProcess(['composer', 'require', 'laravel/sanctum']);
+            } catch (ProcessFailedException $exception) {
+                $this->error($exception->getMessage());
+
+                return false;
+            }
+
+            $this->runProcess(['php', 'artisan', 'vendor:publish', '--provider=Laravel\Sanctum\SanctumServiceProvider']);
             $this->runProcess(['php', 'artisan', 'migrate']);
             $this->info('Laravel Sanctum has been installed.');
         } else {
@@ -74,28 +82,36 @@ class PrepareSanctumCommand extends Command
 
         $content = File::get($configPath);
 
-        $pattern = '/\/\/\s*\'auth:sanctum\',/';
-        $replacement = '        \'auth:sanctum\',';
+        $commentPattern = '/\/\/\s*\'auth:sanctum\',/';
+        $commentReplacement = '        \'auth:sanctum\',';
 
-        $updatedContent = preg_replace($pattern, $replacement, $content) ?? $content;
+        $updatedContent = preg_replace($commentPattern, $commentReplacement, $content) ?? $content;
 
-        if ($updatedContent === $content) {
-            // Check if 'auth:sanctum' is already present in the middleware list
-            if (! str_contains($content, '\'auth:sanctum\',')) {
-                $apiMiddlewarePattern = "/'api',/";
-                $replacement = "'api',\n        'auth:sanctum',";
-                $updatedContent = preg_replace($apiMiddlewarePattern, $replacement, $content) ?? $content;
-                File::put($configPath, $updatedContent);
-                $this->info('The auth:sanctum middleware has been added to the middleware list.');
-            } else {
-                $this->info('The auth:sanctum middleware is already present in the middleware list.');
-            }
+        if ($updatedContent !== $content) {
+            File::put($configPath, $updatedContent);
+            $this->info('The auth:sanctum comment has been replaced.');
 
             return self::SUCCESS;
         }
 
+        if (str_contains($content, '\'auth:sanctum\',')) {
+            $this->info('The auth:sanctum middleware is already present in the middleware list.');
+
+            return self::SUCCESS;
+        }
+
+        $apiMiddlewarePattern = "/'api',/";
+        $apiMiddlewareReplacement = "'api',\n        'auth:sanctum',";
+        $updatedContent = preg_replace($apiMiddlewarePattern, $apiMiddlewareReplacement, $content) ?? $content;
+
+        if ($updatedContent === $content) {
+            $this->error('Could not find \'api\', in the config/restify.php middleware list. Add \'auth:sanctum\', to the middleware array manually.');
+
+            return self::FAILURE;
+        }
+
         File::put($configPath, $updatedContent);
-        $this->info('The auth:sanctum comment has been replaced.');
+        $this->info('The auth:sanctum middleware has been added to the middleware list.');
 
         return self::SUCCESS;
     }
@@ -126,22 +142,59 @@ class PrepareSanctumCommand extends Command
 
         $content = File::get($userModelPath);
 
-        if (strpos($content, 'use HasApiTokens;') !== false) {
+        if ($this->userModelUsesApiTokensTrait($content)) {
             $this->info('The User model already uses the HasApiTokens trait.');
 
             return true;
         }
 
-        if (strpos($content, 'use Laravel\Sanctum\HasApiTokens;') === false) {
+        $updatedContent = $content;
+
+        if (! str_contains($updatedContent, 'use Laravel\Sanctum\HasApiTokens;')) {
             $useStatements = "use Laravel\Sanctum\HasApiTokens;\nuse Illuminate\Notifications\Notifiable;";
-            $content = str_replace('use Illuminate\Notifications\Notifiable;', $useStatements, $content);
+            $updatedContent = str_replace('use Illuminate\Notifications\Notifiable;', $useStatements, $updatedContent);
         }
 
-        $content = str_replace('use HasFactory, Notifiable;', 'use HasFactory, Notifiable, HasApiTokens;', $content);
+        $beforeTraitRewrite = $updatedContent;
+        $updatedContent = str_replace('use HasFactory, Notifiable;', 'use HasFactory, Notifiable, HasApiTokens;', $updatedContent);
 
-        File::put($userModelPath, $content);
+        if ($updatedContent === $beforeTraitRewrite) {
+            $this->error('Could not automatically add the HasApiTokens trait to the User model: the "use HasFactory, Notifiable;" trait statement was not found. Add "use Laravel\Sanctum\HasApiTokens;" to the imports and include HasApiTokens in the class\'s trait use statement manually.');
+
+            return false;
+        }
+
+        File::put($userModelPath, $updatedContent);
         $this->info('The HasApiTokens trait has been added to the User model.');
 
         return true;
+    }
+
+    /**
+     * Detects `HasApiTokens` in the class's own trait `use` list - as opposed
+     * to a `use Laravel\Sanctum\HasApiTokens;` import line, which only brings
+     * the trait into scope without applying it to the class. A class-body
+     * trait list never contains a namespace separator, so that's what tells
+     * the two kinds of `use` statement apart.
+     */
+    private function userModelUsesApiTokensTrait(string $content): bool
+    {
+        if (! preg_match_all('/^\s*use\s+([^;]+);/m', $content, $matches)) {
+            return false;
+        }
+
+        foreach ($matches[1] as $traitList) {
+            if (str_contains($traitList, '\\')) {
+                continue;
+            }
+
+            $traits = array_map('trim', explode(',', $traitList));
+
+            if (in_array('HasApiTokens', $traits, true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
