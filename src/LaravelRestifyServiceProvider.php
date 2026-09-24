@@ -34,6 +34,7 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         $package
             ->name('laravel-restify')
             ->hasConfigFile()
+            ->hasViews('restify')
             ->hasMigration('create_action_logs_table')
             ->runsMigrations()
             ->hasCommands([
@@ -83,9 +84,5 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         $this->publishes([
             __DIR__.'/Commands/stubs/RestifyServiceProvider.stub' => app_path('Providers/RestifyServiceProvider.php'),
         ], 'restify-provider');
-
-        $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/restify'),
-        ], 'restify-views');
     }
 }

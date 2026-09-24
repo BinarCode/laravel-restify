@@ -15,7 +15,7 @@
 set -e
 
 CLOVER="build/logs/clover.xml"
-MIN="${COVERAGE_MIN:-59}"
+MIN="${COVERAGE_MIN:-60}"
 mkdir -p build/logs
 
 PHP_BIN="php"

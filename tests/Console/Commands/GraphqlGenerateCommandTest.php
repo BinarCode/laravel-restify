@@ -2,9 +2,12 @@
 
 namespace Binaryk\LaravelRestify\Tests\Console\Commands;
 
+use Binaryk\LaravelRestify\Commands\GraphqlGenerateCommand;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Filesystem\Filesystem;
+use PHPUnit\Framework\Attributes\Test;
+use RuntimeException;
 
 class GraphqlGenerateCommandTest extends IntegrationTestCase
 {
@@ -213,6 +216,23 @@ class GraphqlGenerateCommandTest extends IntegrationTestCase
             ->expectsOutput('  2. Configure lighthouse to use the generated schema')
             ->expectsOutput('  3. Register the resolvers in your GraphQL setup')
             ->assertExitCode(0);
+    }
+
+    #[Test]
+    public function get_repository_class_throws_when_no_repository_matches_the_given_name(): void
+    {
+        $command = new class($this->files) extends GraphqlGenerateCommand
+        {
+            public function exposeGetRepositoryClass(string $repositoryName): string
+            {
+                return $this->getRepositoryClass($repositoryName);
+            }
+        };
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('Unable to resolve a registered repository for [Missing].');
+
+        $command->exposeGetRepositoryClass('Missing');
     }
 
     protected function cleanupTestFiles(): void

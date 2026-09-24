@@ -6,6 +6,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\InputOption;
 
 class ToolCommand extends GeneratorCommand
 {
@@ -65,5 +66,12 @@ class ToolCommand extends GeneratorCommand
     protected function getDefaultNamespace($rootNamespace)
     {
         return $rootNamespace.'\\Restify\\Mcp\\Tools';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            ['force', null, InputOption::VALUE_NONE, 'Create the class even if the tool already exists.'],
+        ];
     }
 }
