@@ -6894,74 +6894,14 @@ parameters:
 			path: src/Getters/Getter.php
 
 		-
-			message: '#^Binary operation "\*" between mixed and 60 results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Cannot access property \$password on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
 			message: '#^Cannot access property \$plainTextToken on mixed\.$#'
 			identifier: property.nonObject
 			count: 1
 			path: src/Http/Controllers/Auth/LoginController.php
 
 		-
-			message: '#^Cannot call method createToken\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Cannot call method first\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Cannot call method whereEmail\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Cannot call static method query\(\) on mixed\.$#'
-			identifier: staticMethod.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\Auth\\LoginController\:\:__invoke\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#1 \$user of static method Illuminate\\Support\\Facades\\Auth\:\:login\(\) expects Illuminate\\Contracts\\Auth\\Authenticatable, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#1 \$value of method Carbon\\Carbon\:\:addMinutes\(\) expects float\|int, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Facades\\Hash\:\:check\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#2 \$hashedValue of static method Illuminate\\Support\\Facades\\Hash\:\:check\(\) expects string, mixed given\.$#'
-			identifier: argument.type
+			message: '#^Method Binaryk\\LaravelRestify\\Contracts\\Sanctumable\:\:createToken\(\) invoked with 3 parameters, 1\-2 required\.$#'
+			identifier: arguments.count
 			count: 1
 			path: src/Http/Controllers/Auth/LoginController.php
 
