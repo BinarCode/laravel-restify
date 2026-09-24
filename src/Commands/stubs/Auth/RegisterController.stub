@@ -3,6 +3,7 @@
 namespace {{namespace}};
 
 use App\Models\User;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
@@ -13,8 +14,8 @@ class RegisterController extends Controller
     public function __invoke(Request $request)
     {
         $request->validate([
-            'email' => ['required', 'email', 'max:255', 'unique:'.Config::string('restify.auth.table', 'users')],
-            'password' => ['required', 'confirmed', 'min:6'],
+            'email' => ['required', 'email', 'max:255', 'unique:'.(Config::get('restify.auth.table') ?: 'users')],
+            'password' => ['required', 'confirmed', 'min:6', self::scalarPasswordRule()],
         ]);
 
         /**
@@ -31,5 +32,18 @@ class RegisterController extends Controller
         return rest($user)->indexMeta([
             'token' => $user->createToken('login')->plainTextToken,
         ]);
+    }
+
+    /**
+     * A non-scalar password (array/object) can't be hashed - reject it with
+     * a validation error instead of reaching Hash::make() and crashing.
+     */
+    protected static function scalarPasswordRule(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            if (! is_scalar($value)) {
+                $fail(__('The :attribute must be a string.'));
+            }
+        };
     }
 }
