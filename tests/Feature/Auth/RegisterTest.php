@@ -60,6 +60,50 @@ class RegisterTest extends IntegrationTestCase
     }
 
     #[Test]
+    #[TestWith(['sqlite.users'], 'a connection-qualified table')]
+    #[TestWith([User::class], 'a model class configured as the auth table')]
+    public function a_connection_or_model_qualified_auth_table_is_checked_for_uniqueness(string $table): void
+    {
+        User::factory()->create(['email' => 'jane@example.com']);
+
+        config(['restify.auth.table' => $table]);
+
+        $this->postJson('/auth/register', $this->validPayload(['email' => 'jane@example.com']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email');
+
+        $this->assertDatabaseCount(User::class, 1);
+    }
+
+    #[Test]
+    public function an_unset_auth_table_falls_back_to_users(): void
+    {
+        User::factory()->create(['email' => 'jane@example.com']);
+
+        config()->offsetUnset('restify.auth.table');
+
+        $this->postJson('/auth/register', $this->validPayload(['email' => 'jane@example.com']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email');
+
+        $this->assertDatabaseCount(User::class, 1);
+    }
+
+    #[Test]
+    public function an_explicit_null_auth_table_falls_back_to_users(): void
+    {
+        User::factory()->create(['email' => 'jane@example.com']);
+
+        config(['restify.auth.table' => null]);
+
+        $this->postJson('/auth/register', $this->validPayload(['email' => 'jane@example.com']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email');
+
+        $this->assertDatabaseCount(User::class, 1);
+    }
+
+    #[Test]
     public function a_duplicate_email_is_rejected(): void
     {
         User::factory()->create(['email' => 'jane@example.com']);
@@ -70,9 +114,14 @@ class RegisterTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_valid_registration_creates_the_user(): void
+    #[TestWith(['secret1'], 'a string password')]
+    #[TestWith([123456], 'a numeric password stays scalar and keeps registering')]
+    public function a_valid_registration_creates_the_user(string|int $password): void
     {
-        $this->postJson('/auth/register', $this->validPayload())
+        $this->postJson('/auth/register', $this->validPayload([
+            'password' => $password,
+            'password_confirmation' => $password,
+        ]))
             ->assertOk()
             ->assertJsonPath('meta.email_verification_sent', true)
             ->assertJsonPath('meta.token', 'token');
@@ -85,25 +134,34 @@ class RegisterTest extends IntegrationTestCase
     }
 
     /**
-     * @param  array<string, string>  $overrides
+     * @param  array<string, mixed>  $overrides
      */
     #[Test]
-    #[TestWith([['email' => '']], 'missing email')]
-    #[TestWith([['email' => 'not-an-email']], 'invalid email format')]
-    #[TestWith([['password' => '', 'password_confirmation' => '']], 'missing password')]
-    #[TestWith([['password' => 'abc', 'password_confirmation' => 'abc']], 'password shorter than the minimum')]
-    #[TestWith([['password_confirmation' => 'something-else']], 'password confirmation mismatch')]
-    public function invalid_input_is_rejected(array $overrides): void
+    #[TestWith([['email' => ''], 'email'], 'missing email')]
+    #[TestWith([['email' => 'not-an-email'], 'email'], 'invalid email format')]
+    #[TestWith([['password' => '', 'password_confirmation' => ''], 'password'], 'missing password')]
+    #[TestWith([['password' => 'abc', 'password_confirmation' => 'abc'], 'password'], 'password shorter than the minimum')]
+    #[TestWith([['password_confirmation' => 'something-else'], 'password'], 'password confirmation mismatch')]
+    #[TestWith([['password' => [1, 2, 3, 4, 5, 6], 'password_confirmation' => [1, 2, 3, 4, 5, 6]], 'password'], 'array password')]
+    public function invalid_input_is_rejected(array $overrides, string $expectedField): void
     {
         $this->postJson('/auth/register', $this->validPayload($overrides))
-            ->assertUnprocessable();
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors($expectedField);
+
+        $this->assertDatabaseCount(User::class, 0);
     }
 
     #[Test]
     #[TestWith(['0.5', 30], 'a sub-minute ttl is rounded to seconds instead of truncated to zero')]
-    #[TestWith(['60', 3600], 'a whole-minute ttl converts to seconds')]
+    #[TestWith(['60', 3600], 'a whole-minute string ttl converts to seconds')]
+    #[TestWith([60, 3600], 'a whole-minute int ttl converts to seconds')]
     #[TestWith([null, null], 'no ttl means no expiry')]
-    public function the_registration_token_ttl_is_computed_in_seconds(?string $tokenTtl, ?int $expectedExpiresIn): void
+    #[TestWith([0, null], 'a zero ttl never expires')]
+    #[TestWith([-1, null], 'a negative ttl never expires')]
+    #[TestWith(['abc', null], 'a non-numeric ttl never expires')]
+    #[TestWith(['', null], 'an empty ttl never expires')]
+    public function the_registration_token_ttl_is_computed_in_seconds(int|string|null $tokenTtl, ?int $expectedExpiresIn): void
     {
         config(['restify.auth.token_ttl' => $tokenTtl]);
 
@@ -130,13 +188,13 @@ class RegisterTest extends IntegrationTestCase
 
         $this->assertIsString($stub);
         $this->assertStringNotContainsString("Config::get('config.auth.table'", $stub);
-        $this->assertStringContainsString("Config::string('restify.auth.table', 'users')", $stub);
-        $this->assertStringContainsString("'password' => ['required', 'confirmed', 'min:6']", $stub);
+        $this->assertStringContainsString("Config::get('restify.auth.table') ?: 'users'", $stub);
+        $this->assertStringContainsString("'password' => ['required', 'confirmed', 'min:6', self::scalarPasswordRule()]", $stub);
     }
 
     /**
-     * @param  array<string, string>  $overrides
-     * @return array<string, string>
+     * @param  array<string, mixed>  $overrides
+     * @return array<string, mixed>
      */
     private function validPayload(array $overrides = []): array
     {
