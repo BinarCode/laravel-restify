@@ -2,9 +2,9 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\User;
 
-use Binaryk\LaravelRestify\Controllers\RestController;
 use Binaryk\LaravelRestify\Exceptions\Guard\EntityNotFoundException;
 use Binaryk\LaravelRestify\Exceptions\Guard\GatePolicy;
+use Binaryk\LaravelRestify\Http\Controllers\RestController;
 use Illuminate\Contracts\Container\BindingResolutionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;

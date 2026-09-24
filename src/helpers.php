@@ -6,9 +6,11 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Repositories\RepositoryInstance;
 use Binaryk\LaravelRestify\Repositories\Serializer;
 use Binaryk\LaravelRestify\Restify;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
+use Illuminate\Support\Collection;
 
 if (! function_exists('field')) {
     function field(...$args): Field
@@ -34,7 +36,7 @@ if (! function_exists('data')) {
 }
 
 if (! function_exists('ok')) {
-    function ok(?string $message = null, int $code = 200)
+    function ok(?string $message = null, int $code = JsonResponse::HTTP_OK): JsonResponse
     {
         if (! is_null($message)) {
             return response()->json([
@@ -56,16 +58,16 @@ if (! function_exists('id')) {
 if (! function_exists('rest')) {
     function rest(...$models): Serializer
     {
-        $models = collect($models)->flatten();
+        $models = Collection::make($models)->flatten()->filter(fn (mixed $model): bool => $model instanceof Model);
 
-        if ($models->first()) {
-            $repository = Restify::repositoryForModel(get_class($models->first())) ?? Repository::class;
-        } else {
-            $repository = Repository::class;
-        }
+        $firstModel = $models->first();
+
+        $repository = $firstModel instanceof Model
+            ? Restify::repositoryForModel(get_class($firstModel)) ?? Repository::class
+            : Repository::class;
 
         return (new Serializer(app($repository)))
-            ->models(collect($models));
+            ->models($models);
     }
 }
 
