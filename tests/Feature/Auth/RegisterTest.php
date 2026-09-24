@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Notifications\VerifyEmail;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Notification;
@@ -80,7 +81,7 @@ class RegisterTest extends IntegrationTestCase
     {
         User::factory()->create(['email' => 'jane@example.com']);
 
-        config()->offsetUnset('restify.auth.table');
+        config(['restify.auth' => Arr::except(config('restify.auth'), ['table'])]);
 
         $this->postJson('/auth/register', $this->validPayload(['email' => 'jane@example.com']))
             ->assertUnprocessable()
