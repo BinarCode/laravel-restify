@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
+use Illuminate\Support\Collection;
 
 if (! function_exists('field')) {
     function field(...$args): Field
@@ -57,7 +58,7 @@ if (! function_exists('id')) {
 if (! function_exists('rest')) {
     function rest(...$models): Serializer
     {
-        $models = collect($models)->flatten()->filter(fn (mixed $model): bool => $model instanceof Model);
+        $models = Collection::make($models)->flatten()->filter(fn (mixed $model): bool => $model instanceof Model);
 
         $firstModel = $models->first();
 

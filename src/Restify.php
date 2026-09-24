@@ -48,9 +48,13 @@ class Restify
      */
     public static function repositoryClassForKey(string $key): ?string
     {
-        return collect(static::$repositories)->first(function ($value) use ($key) {
-            return $value::uriKey() === $key;
-        });
+        foreach (static::$repositories as $repository) {
+            if ($repository::uriKey() === $key) {
+                return $repository;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -58,13 +62,15 @@ class Restify
      */
     public static function repositoryClassForPrefix(string $prefix): ?string
     {
-        return collect(static::$repositories)->first(function ($value) use ($prefix) {
-            /** @var Repository $value */
-            return str_contains(
-                ltrim($prefix, '/'),
-                ltrim($value::route(), '/')
-            );
-        });
+        $trimmedPrefix = ltrim($prefix, '/');
+
+        foreach (static::$repositories as $repository) {
+            if (str_contains($trimmedPrefix, ltrim($repository::route(), '/'))) {
+                return $repository;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -95,13 +101,15 @@ class Restify
      */
     public static function repositoryForModel($model)
     {
-        return collect(static::$repositories)->first(function ($value) use ($model) {
-            if ($model instanceof Model) {
-                $model = get_class($model);
-            }
+        $modelClass = $model instanceof Model ? get_class($model) : $model;
 
-            return $value::guessModelClassName() === $model;
-        });
+        foreach (static::$repositories as $repository) {
+            if ($repository::guessModelClassName() === $modelClass) {
+                return $repository;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -112,9 +120,13 @@ class Restify
      */
     public static function repositoryForTable($table)
     {
-        return collect(static::$repositories)->first(function ($value) use ($table) {
-            return app($value::guessModelClassName())->getTable() === $table;
-        });
+        foreach (static::$repositories as $repository) {
+            if (app($repository::guessModelClassName())->getTable() === $table) {
+                return $repository;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -129,9 +141,9 @@ class Restify
             array_merge(static::$repositories, $repositories)
         ));
 
-        collect($repositories)->each(function (string $repository) {
+        foreach ($repositories as $repository) {
             (new BootRepository($repository))->boot();
-        });
+        }
 
         return new static;
     }
@@ -221,11 +233,29 @@ class Restify
 
     public static function globallySearchableRepositories(RestifyRequest $request): array
     {
-        return collect(static::$repositories)
-            ->filter(fn (string $repository) => $repository::authorizedToUseRepository($request))
-            ->filter(fn (string $repository) => $repository::$globallySearchable)
-            ->sortBy(static::sortResourcesWith())
-            ->all();
+        $searchableRepositories = array_filter(
+            static::$repositories,
+            fn (string $repository): bool => $repository::authorizedToUseRepository($request)
+                && $repository::$globallySearchable,
+        );
+
+        $sortKey = static::sortResourcesWith();
+
+        // asort() preserves keys, matching Collection::sortBy()'s ordering exactly.
+        $labels = array_map(
+            static fn (string $repository): mixed => $sortKey($repository),
+            $searchableRepositories
+        );
+
+        asort($labels);
+
+        $sortedRepositories = [];
+
+        foreach (array_keys($labels) as $key) {
+            $sortedRepositories[$key] = $searchableRepositories[$key];
+        }
+
+        return $sortedRepositories;
     }
 
     /**
@@ -267,12 +297,23 @@ class Restify
     {
         $path = trim(static::path(), '/') ?: '/';
 
-        return $request->is($path) ||
-            $request->is(trim($path.'/*', '/')) ||
-            $request->is('restify-api/*') ||
-            collect(static::$repositories)
-                ->filter(fn (string $repository): bool => ! in_array($repository::prefix(), [null, ''], true))
-                ->some(fn (string $repository) => $request->is($repository::prefix().'/*'));
+        if ($request->is($path) || $request->is(trim($path.'/*', '/')) || $request->is('restify-api/*')) {
+            return true;
+        }
+
+        foreach (static::$repositories as $repository) {
+            $prefix = $repository::prefix();
+
+            if (in_array($prefix, [null, ''], true)) {
+                continue;
+            }
+
+            if ($request->is($prefix.'/*')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

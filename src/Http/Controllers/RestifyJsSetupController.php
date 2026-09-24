@@ -7,7 +7,6 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Str;
 
@@ -27,14 +26,16 @@ class RestifyJsSetupController extends Controller
 
     private function repositories(RestifyRequest $request): array
     {
-        return Collection::make(Restify::$repositories)
-            ->map(function (string $repositoryClass) use ($request): array {
-                /** @var Repository $repository */
-                $repository = app($repositoryClass);
+        $repositoriesPayload = [];
 
-                return $repository->restifyjsSerialize($request);
-            })
-            ->all();
+        foreach (Restify::$repositories as $repositoryClass) {
+            /** @var Repository $repository */
+            $repository = app($repositoryClass);
+
+            $repositoriesPayload[] = $repository->restifyjsSerialize($request);
+        }
+
+        return $repositoriesPayload;
     }
 
     private function config(): array

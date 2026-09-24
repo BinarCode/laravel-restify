@@ -87,19 +87,20 @@ EOT;
 
     protected function getRepositoryMetadata(): array
     {
-        return collect(Restify::$repositories)
-            ->map(function (string $repositoryClass): array {
-                /** @var Repository $instance */
-                $instance = app($repositoryClass);
+        $repositoriesMetadata = [];
 
-                return [
-                    'name' => $repositoryClass,
-                    'uri_key' => $instance->uriKey(),
-                    'label' => $instance::label(),
-                    'model' => $instance::guessModelClassName(),
-                ];
-            })
-            ->values()
-            ->toArray();
+        foreach (Restify::$repositories as $repositoryClass) {
+            /** @var Repository $instance */
+            $instance = app($repositoryClass);
+
+            $repositoriesMetadata[] = [
+                'name' => $repositoryClass,
+                'uri_key' => $instance->uriKey(),
+                'label' => $instance::label(),
+                'model' => $instance::guessModelClassName(),
+            ];
+        }
+
+        return $repositoriesMetadata;
     }
 }
