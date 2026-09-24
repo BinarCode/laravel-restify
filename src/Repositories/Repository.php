@@ -490,7 +490,7 @@ class Repository implements JsonSerializable, RestifySearchable
      * Resolve all model fields through showCallback methods and exclude from the final response if
      * that is required by method
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function resolveShowAttributes(RestifyRequest $request)
     {
@@ -503,11 +503,14 @@ class Repository implements JsonSerializable, RestifySearchable
             ->all();
 
         if ($this instanceof Mergeable) {
-            // Hidden and authorized index fields
+            /** @var Collection<string, Field> $fieldsByAttribute */
+            $fieldsByAttribute = $this->collectFields($request)->unique('attribute')->keyBy('attribute');
+
+            // Hidden and authorized show fields
             $fields = $this->modelAttributes($request)
-                ->filter(function ($value, $attribute) use ($request) {
-                    /** * @var Field $field */
-                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
+                ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute) {
+                    /** @var Field|null $field */
+                    $field = $fieldsByAttribute->get($attribute);
 
                     if (is_null($field)) {
                         return true;
@@ -532,16 +535,19 @@ class Repository implements JsonSerializable, RestifySearchable
      * Return the attributes list.
      *
      * @param  RestifyRequest  $request
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function resolveIndexAttributes($request)
     {
         if ($this instanceof Mergeable) {
+            /** @var Collection<string, Field> $fieldsByAttribute */
+            $fieldsByAttribute = $this->collectFields($request)->unique('attribute')->keyBy('attribute');
+
             // Hidden and authorized index fields
             return $this->modelAttributes($request)
-                ->filter(function ($value, $attribute) use ($request) {
-                    /** @var Field $field */
-                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
+                ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute) {
+                    /** @var Field|null $field */
+                    $field = $fieldsByAttribute->get($attribute);
 
                     if (is_null($field)) {
                         return true;
@@ -699,15 +705,20 @@ class Repository implements JsonSerializable, RestifySearchable
             InstanceOfException::because(__('Model is not defined in the repository.'))
         );
 
+        $pagination = $request->pagination();
+
         /** *
          * Apply search, match, sort, related.
          *
-         * @var LengthAwarePaginator $paginator
+         * @var LengthAwarePaginator<int, Model> $paginator
          */
         $paginator = RepositorySearchService::make()->search($request, $this)
-            ->paginate($request->pagination()->perPage ?? static::$defaultPerPage, page: $request->pagination()->page);
+            ->paginate(
+                $pagination->resolvePerPage(static::$defaultPerPage),
+                page: $pagination->resolvePage(),
+            );
 
-        $items = $this->indexCollection($request, $paginator->getCollection())->map(function ($value) {
+        $items = $this->indexCollection($request, $paginator->getCollection())->map(function (Model $value) {
             $repository = static::resolveWith($value);
             // Ensure each resolved repository maintains the original request
 
@@ -720,33 +731,33 @@ class Repository implements JsonSerializable, RestifySearchable
             $repository->serializeForIndex($request)
         ))->all();
 
+        $models = $items->map(fn (self $repository) => $repository->resource);
+
+        $meta = $this->resolveIndexMainMeta(
+            $request,
+            $models,
+            [
+                'current_page' => $paginator->currentPage(),
+                'from' => $paginator->firstItem(),
+                'last_page' => $paginator->lastPage(),
+                'path' => $paginator->path(),
+                'per_page' => $paginator->perPage(),
+                'to' => $paginator->lastItem(),
+                'total' => $paginator->total(),
+            ]
+        );
+
+        $links = $this->resolveIndexLinks($request, $models, [
+            'first' => $paginator->url(1),
+            'next' => $paginator->nextPageUrl(),
+            'path' => $paginator->path(),
+            'prev' => $paginator->previousPageUrl(),
+            'filters' => Restify::path(static::uriKey().'/filters'),
+        ]);
+
         return $this->filter([
-            'meta' => $this->when(
-                $meta = $this->resolveIndexMainMeta(
-                    $request,
-                    $models = $items->map(fn (self $repository) => $repository->resource),
-                    [
-                        'current_page' => $paginator->currentPage(),
-                        'from' => $paginator->firstItem(),
-                        'last_page' => $paginator->lastPage(),
-                        'path' => $paginator->path(),
-                        'per_page' => $paginator->perPage(),
-                        'to' => $paginator->lastItem(),
-                        'total' => $paginator->total(),
-                    ]
-                ),
-                $meta
-            ),
-            'links' => $this->when(
-                $links = $this->resolveIndexLinks($request, $models, [
-                    'first' => $paginator->url(1),
-                    'next' => $paginator->nextPageUrl(),
-                    'path' => $paginator->path(),
-                    'prev' => $paginator->previousPageUrl(),
-                    'filters' => Restify::path(static::uriKey().'/filters'),
-                ]),
-                $links
-            ),
+            'meta' => $this->when((bool) $meta, $meta),
+            'links' => $this->when((bool) $links, $links),
             'data' => $data,
         ]);
     }
@@ -758,6 +769,10 @@ class Repository implements JsonSerializable, RestifySearchable
         );
     }
 
+    /**
+     * @param  Collection<int, Model>  $items
+     * @return Collection<int, Model>
+     */
     public function indexCollection(RestifyRequest $request, Collection $items): Collection
     {
         return $items;
@@ -1241,6 +1256,9 @@ class Repository implements JsonSerializable, RestifySearchable
         );
     }
 
+    /**
+     * @return Collection<string, mixed>
+     */
     private function modelAttributes(?Request $request = null): Collection
     {
         return collect(method_exists($this->resource, 'toArray') ? $this->resource->toArray() : []);

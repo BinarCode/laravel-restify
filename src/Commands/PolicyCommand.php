@@ -67,6 +67,12 @@ class PolicyCommand extends GeneratorCommand
 
     protected function guessQualifiedModel(): string
     {
+        $model = $this->option('model');
+
+        if (is_string($model) && $model !== '') {
+            return $this->qualifyModel($model);
+        }
+
         $model = Str::singular(class_basename(Str::beforeLast($this->getNameInput(), 'Policy')));
 
         return str_replace('/', '\\', $this->rootNamespace().'Models/'.$model);

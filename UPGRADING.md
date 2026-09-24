@@ -65,3 +65,14 @@ $repositoryId = $request->repositoryIdFromRoute();
 `relatedRepositoryKey()` throws `InvalidArgumentException` when called outside a
 route that has a `relatedRepository` segment (attach/detach/sync); the same is true
 of `repositoryIdFromRoute()` outside a route that has a `repositoryId` segment.
+
+### Registration validates the password length and `RegisterController::__invoke()` is typed
+
+`POST /api/register` validates `password` with `required|confirmed|min:6` - previously
+only `required|confirmed`. A password under 6 characters that used to register now gets
+a `422`.
+
+`RegisterController::__invoke()` now declares `: Serializer`. A subclass that overrides
+`__invoke()` without also declaring `: Serializer` fatals with `Declaration ... must be
+compatible with RegisterController::__invoke(): Serializer`. Add the return type to any
+override.
