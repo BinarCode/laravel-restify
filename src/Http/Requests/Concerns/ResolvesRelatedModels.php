@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
+use BackedEnum;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\ValidatesRelatedKeyShape;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use InvalidArgumentException;
+use Stringable;
 
 trait ResolvesRelatedModels
 {
@@ -34,49 +36,89 @@ trait ResolvesRelatedModels
             abort(JsonResponse::HTTP_BAD_REQUEST, "Missing repository for the [{$relatedRepositoryKey}] key");
         }
 
-        $ids = Collection::make(Arr::wrap($this->input($relatedRepositoryKey)))
-            ->map(fn (mixed $id): int|string => $this->assertValidRelatedKeyShape($id, $relatedRepositoryKey))
-            ->all();
+        $requestedIds = array_values(Arr::wrap($this->input($relatedRepositoryKey)));
+
+        $ids = array_map(
+            fn (mixed $id): int|string => $this->assertValidRelatedKeyShape($id, $relatedRepositoryKey),
+            $requestedIds,
+        );
 
         $model = $this->repository($relatedRepositoryKey)->model();
 
-        /** @var Collection<int, Model> $models */
         $models = $model->newModelQuery()->whereKey($ids)->get();
 
-        // Normalize both sides of the lookup the same way the database already
-        // normalized $ids to match the model's key (e.g. "05" and 5 are the same
-        // int key): a bare keyBy() would otherwise miss a non-canonical numeric
-        // string id, since PHP does not coerce it to the matching array key.
-        $byKey = $models->keyBy(fn (Model $relatedModel): int|string => $this->normalizeRelatedModelKey($relatedModel->getKey(), $model));
+        $resolved = $this->matchRelatedModels($ids, $models, $model, caseInsensitive: false);
 
-        $resolved = [];
-        $missing = [];
+        $unmatched = array_diff_key($ids, $resolved);
 
-        foreach ($ids as $id) {
-            $match = $byKey->get($this->normalizeRelatedModelKey($id, $model));
+        // A string key the database collation matches but PHP does not (e.g.
+        // "ABC-UUID" against a stored "abc-uuid") gets one batched retry that lets
+        // the database decide. An int key needs none: the cast above already
+        // mirrors how the database coerces it.
+        if ($unmatched !== [] && ! $this->hasIntegerKey($model)) {
+            $retried = $model->newModelQuery()->whereKey(array_values($unmatched))->get();
 
-            if (is_null($match)) {
-                $missing[] = $id;
+            $resolved += $this->matchRelatedModels($unmatched, $retried, $model, caseInsensitive: true);
 
-                continue;
-            }
-
-            $resolved[] = $match;
+            $unmatched = array_diff_key($ids, $resolved);
         }
 
-        if ($missing !== []) {
-            throw (new ModelNotFoundException)->setModel($model::class, $missing);
+        if ($unmatched !== []) {
+            throw (new ModelNotFoundException)->setModel($model::class, array_values($unmatched));
         }
 
-        return Collection::make($resolved);
+        ksort($resolved);
+
+        return Collection::make(array_values($resolved));
     }
 
-    private function normalizeRelatedModelKey(mixed $key, Model $model): int|string
+    /**
+     * @param  array<int, int|string>  $ids
+     * @param  Collection<int, Model>  $models
+     * @return array<int, Model> the matched models, keyed by the position of the id they match.
+     */
+    private function matchRelatedModels(array $ids, Collection $models, Model $model, bool $caseInsensitive): array
     {
+        $modelsByKey = [];
+
+        foreach ($models as $relatedModel) {
+            $modelsByKey[$this->normalizeRelatedModelKey($relatedModel->getKey(), $model, $caseInsensitive)] = $relatedModel;
+        }
+
+        $matched = [];
+
+        foreach ($ids as $position => $id) {
+            $key = $this->normalizeRelatedModelKey($id, $model, $caseInsensitive);
+
+            if (isset($modelsByKey[$key])) {
+                $matched[$position] = $modelsByKey[$key];
+            }
+        }
+
+        return $matched;
+    }
+
+    private function normalizeRelatedModelKey(mixed $key, Model $model, bool $caseInsensitive): int|string
+    {
+        if ($key instanceof BackedEnum) {
+            $key = $key->value;
+        } elseif ($key instanceof Stringable) {
+            $key = (string) $key;
+        }
+
         if (! is_int($key) && ! is_string($key)) {
             throw new InvalidArgumentException('The related model key must be an int or a string.');
         }
 
-        return $model->getKeyType() === 'int' ? (int) $key : (string) $key;
+        if ($this->hasIntegerKey($model)) {
+            return (int) $key;
+        }
+
+        return $caseInsensitive ? mb_strtolower((string) $key) : (string) $key;
+    }
+
+    private function hasIntegerKey(Model $model): bool
+    {
+        return in_array($model->getKeyType(), ['int', 'integer'], true);
     }
 }

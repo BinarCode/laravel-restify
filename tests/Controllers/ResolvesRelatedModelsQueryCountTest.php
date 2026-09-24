@@ -7,6 +7,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Tests\Concerns\InteractsWithQueryLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -28,5 +29,19 @@ class ResolvesRelatedModelsQueryCountTest extends IntegrationTestCase
         ])->assertNotFound();
 
         $this->assertSelectCount(1, User::class);
+    }
+
+    #[Test]
+    public function attaching_several_unknown_string_keys_costs_at_most_one_retry_query(): void
+    {
+        $company = Company::factory()->create();
+
+        $this->recordQueries();
+
+        $this->postJson(CompanyRepository::route("{$company->id}/attach/labels"), [
+            'labels' => ['missing-1', 'missing-2', 'missing-3'],
+        ])->assertNotFound();
+
+        $this->assertSelectCount(2, Label::class);
     }
 }

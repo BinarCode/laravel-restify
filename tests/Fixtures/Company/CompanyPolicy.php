@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Company;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
@@ -151,6 +152,46 @@ class CompanyPolicy
     }
 
     public function detachStaff(User $user, Company $model, User $staffToBeDetached)
+    {
+        return true;
+    }
+
+    public function attachLabels(User $user, Company $model, Label $labelToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncLabels(User $user, Company $model, Collection $keys)
+    {
+        return true;
+    }
+
+    public function attachTiers(User $user, Company $model, Label $tierToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncTiers(User $user, Company $model, Collection $keys)
+    {
+        return true;
+    }
+
+    public function attachBadges(User $user, Company $model, Label $badgeToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncBadges(User $user, Company $model, Collection $keys)
+    {
+        return true;
+    }
+
+    public function attachMembers(User $user, Company $model, User $memberToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncMembers(User $user, Company $model, Collection $keys)
     {
         return true;
     }
