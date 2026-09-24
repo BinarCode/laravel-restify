@@ -25,13 +25,6 @@ class ResetPasswordTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    protected function getEnvironmentSetUp($app): void
-    {
-        parent::getEnvironmentSetUp($app);
-
-        config(['cache.default' => 'array']);
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -180,6 +173,7 @@ class ResetPasswordTest extends IntegrationTestCase
     public function known_and_unknown_emails_share_the_same_rate_limit_and_get_an_identical_429(): void
     {
         $this->freezeTime();
+        config(['cache.default' => 'array']);
         $this->withMiddleware(ThrottleRequests::class);
 
         $payload = fn (string $email): array => [

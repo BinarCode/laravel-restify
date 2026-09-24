@@ -17,16 +17,11 @@ use ReflectionMethod;
 
 class AuthRouteThrottleTest extends IntegrationTestCase
 {
-    protected function getEnvironmentSetUp($app): void
-    {
-        parent::getEnvironmentSetUp($app);
-
-        config(['cache.default' => 'array']);
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
+
+        config(['cache.default' => 'array']);
 
         $this->withMiddleware(ThrottleRequests::class);
 

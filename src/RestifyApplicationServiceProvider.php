@@ -14,13 +14,13 @@ use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
 use Binaryk\LaravelRestify\MCP\McpToolsManager;
 use Closure;
+use Illuminate\Cache\RateLimiter;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Str;
@@ -143,39 +143,46 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
     protected function authRateLimiters(): void
     {
-        $this->registerRateLimiterUnlessDefined(
-            'restify.register',
-            fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
-        );
+        $this->callAfterResolving(RateLimiter::class, function (RateLimiter $limiter): void {
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.register',
+                fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
+            );
 
-        $this->registerRateLimiterUnlessDefined(
-            'restify.login',
-            fn (Request $request): array => [
-                Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by('email:'.self::emailAndIpKey($request)),
-                Limit::perMinute(self::LOGIN_ATTEMPTS_PER_IP_PER_MINUTE)->by('ip:'.$request->ip()),
-            ]
-        );
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.login',
+                fn (Request $request): array => [
+                    Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by('email:'.self::emailAndIpKey($request)),
+                    Limit::perMinute(self::LOGIN_ATTEMPTS_PER_IP_PER_MINUTE)->by('ip:'.$request->ip()),
+                ]
+            );
 
-        $this->registerRateLimiterUnlessDefined(
-            'restify.verify',
-            fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
-        );
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.verify',
+                fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
+            );
 
-        $this->registerRateLimiterUnlessDefined(
-            'restify.forgotPassword',
-            fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
-        );
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.forgotPassword',
+                fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
+            );
 
-        $this->registerRateLimiterUnlessDefined(
-            'restify.resetPassword',
-            fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
-        );
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.resetPassword',
+                fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
+            );
+        });
     }
 
-    protected function registerRateLimiterUnlessDefined(string $name, Closure $callback): void
+    protected function registerRateLimiterUnlessDefined(RateLimiter $limiter, string $name, Closure $callback): void
     {
-        if (RateLimiter::limiter($name) === null) {
-            RateLimiter::for($name, $callback);
+        if ($limiter->limiter($name) === null) {
+            $limiter->for($name, $callback);
         }
     }
 

@@ -30,13 +30,6 @@ class ForgotPasswordTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    protected function getEnvironmentSetUp($app): void
-    {
-        parent::getEnvironmentSetUp($app);
-
-        config(['cache.default' => 'array', 'app.debug' => false]);
-    }
-
     protected function setUp(): void
     {
         parent::setUp();
@@ -140,6 +133,7 @@ class ForgotPasswordTest extends IntegrationTestCase
     public function known_and_unknown_emails_share_the_same_rate_limit_and_get_an_identical_429(): void
     {
         $this->freezeTime();
+        config(['cache.default' => 'array', 'app.debug' => false]);
         $this->withMiddleware(ThrottleRequests::class);
 
         for ($i = 0; $i < 6; $i++) {
