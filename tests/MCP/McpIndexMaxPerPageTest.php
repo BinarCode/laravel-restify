@@ -32,6 +32,8 @@ class McpIndexMaxPerPageTest extends IntegrationTestCase
     #[TestWith([null, 100.0, 3, 100], 'no cap: a float perPage is honoured, not defaulted')]
     #[TestWith([50, 100.0, 55, 50], 'cap 50: a float perPage above the cap is clamped')]
     #[TestWith([50, 20.0, 3, 20], 'cap 50: a float perPage under the cap is untouched')]
+    #[TestWith([50, 1e20, 3, 50], 'cap 50: an unrepresentable-as-int float perPage is clamped, not a crash')]
+    #[TestWith([null, 1e20, 3, PHP_INT_MAX], 'no cap: an unrepresentable-as-int float perPage saturates, not a crash')]
     public function it_normalizes_a_float_per_page_on_the_mcp_index_path(
         ?int $maxPerPage,
         int|float $requestedPerPage,

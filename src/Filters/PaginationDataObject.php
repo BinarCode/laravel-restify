@@ -53,7 +53,10 @@ class PaginationDataObject extends Data
     {
         return match (true) {
             is_int($value), is_string($value) => $value,
-            is_float($value) => (int) $value,
+            // Casting straight to (int) throws on PHP 8.5 when the float is not
+            // representable as an int (e.g. 1e20). Casting to string first lets
+            // positiveInt()'s numeric-string branch saturate it instead.
+            is_float($value) => (string) $value,
             default => null,
         };
     }
