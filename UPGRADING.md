@@ -42,3 +42,14 @@ a `422`.
 `__invoke()` without also declaring `: Serializer` fatals with `Declaration ... must be
 compatible with RegisterController::__invoke(): Serializer`. Add the return type to any
 override.
+
+### `canRun()` is enforced over REST, including standalone actions and index-route getters
+
+`canRun(...)` used to run only for MCP action/getter tools; REST silently ignored it. It
+is now checked for every action/getter shape - show, standalone, and index (batched or a
+single `repositories: 'all'`/id list) - over both REST and MCP.
+
+Standalone actions and index-route getters have no single model to check `canRun`
+against, so they now receive `null` there too. A closure typed with a non-nullable model
+- `fn (Request $request, Post $post): bool => ...` - TypeErrors when called with `null`.
+Type the parameter nullable: `fn (Request $request, ?Post $post): bool => ...`.
