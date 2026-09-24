@@ -17,6 +17,24 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
+    private int $originalDefaultPerPage;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->originalDefaultPerPage = PostRepository::$defaultPerPage;
+    }
+
+    protected function tearDown(): void
+    {
+        // $defaultPerPage is inherited from Repository, so every repository
+        // that does not declare its own copy shares this static with PostRepository.
+        PostRepository::$defaultPerPage = $this->originalDefaultPerPage;
+
+        parent::tearDown();
+    }
+
     #[Test]
     public function it_can_paginate(): void
     {
@@ -292,5 +310,18 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
 
         $this->assertEquals('Custom Meta Value', $response->json('meta.postKey'));
         $this->assertEquals('Post Title', $response->json('meta.first_title'));
+    }
+
+    #[Test]
+    public function it_omits_the_meta_key_when_resolve_index_main_meta_is_overridden_to_return_an_empty_array(): void
+    {
+        PostFactory::one();
+
+        PostRepository::partialMock()
+            ->shouldReceive('resolveIndexMainMeta')
+            ->andReturn([]);
+
+        $this->getJson(PostRepository::route())
+            ->assertJsonMissingPath('meta');
     }
 }

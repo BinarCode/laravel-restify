@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
-use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Fields\Concerns\Attachable;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
@@ -10,6 +9,7 @@ use Binaryk\LaravelRestify\Repositories\PivotsCollection;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 
 class BelongsToMany extends EagerField
 {
@@ -41,20 +41,23 @@ class BelongsToMany extends EagerField
         /**
          * @var Repository $repository
          */
+        /** @var class-string<Repository> $repositoryClass */
+        $repositoryClass = $this->repositoryClass;
+
         if ($repository->model()->relationLoaded($this->relation)) {
             $paginator = $repository->model()->getRelation($this->relation);
         } else {
             $paginator = $repository->{$this->relation}();
 
-            $paginator = $paginator->take(request('relatablePerPage') ?? ($repository::$defaultRelatablePerPage ?? RestifySearchable::DEFAULT_RELATABLE_PER_PAGE))->get();
+            $paginator = $paginator->take($this->relatablePerPage($repository::$defaultRelatablePerPage))->get();
         }
 
-        $this->value = $paginator->map(function ($item) {
+        $this->value = $paginator->map(function (Model $item) use ($repositoryClass) {
             try {
                 /**
                  * @var Repository $repositoryFromClass
                  */
-                $repositoryFromClass = $this->repositoryClass::resolveWith($item);
+                $repositoryFromClass = $repositoryClass::resolveWith($item);
 
                 $pivotFields = PivotsCollection::make($this->pivotFields)
                     ->map(fn (Field $field) => clone $field);
@@ -68,7 +71,7 @@ class BelongsToMany extends EagerField
                     ->withPivots(
                         $pivotFields
                             ->filter(fn (Field $field) => ! $field->isHidden(app(RestifyRequest::class)))
-                            ->resolveFromPivot($item->pivot)
+                            ->resolveFromPivot($item->getRelation('pivot'))
                     )
                     ->eager($this);
             } catch (AuthorizationException) {
