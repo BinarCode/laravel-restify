@@ -80,7 +80,7 @@ class AllowedResetUrlHost implements ValidationRule
             return null;
         }
 
-        if (preg_match(self::FORBIDDEN_CHARACTERS, $url) === 1) {
+        if (preg_match(self::FORBIDDEN_CHARACTERS, $url) !== 0) {
             return null;
         }
 
@@ -110,7 +110,7 @@ class AllowedResetUrlHost implements ValidationRule
     }
 
     /**
-     * @param  array<string, int|string>  $parts  A parse_url() result.
+     * @param  array{scheme?: string, host?: string, port?: int, user?: string, pass?: string, path?: string, query?: string, fragment?: string}  $parts  A parse_url() result.
      */
     private static function pathQueryAndFragmentAreSafe(array $parts): bool
     {
@@ -118,7 +118,7 @@ class AllowedResetUrlHost implements ValidationRule
             .(isset($parts['query']) ? '?'.$parts['query'] : '')
             .(isset($parts['fragment']) ? '#'.$parts['fragment'] : '');
 
-        $remainder = str_replace(self::PLACEHOLDERS, '', (string) $remainder);
+        $remainder = str_replace(self::PLACEHOLDERS, '', $remainder);
 
         return preg_match(self::ALLOWED_PATH_CHARACTERS, $remainder) === 1;
     }
