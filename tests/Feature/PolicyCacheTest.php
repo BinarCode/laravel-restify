@@ -16,6 +16,7 @@ use Illuminate\Cache\Events\CacheHit;
 use Illuminate\Cache\Events\CacheMissed;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -175,6 +176,34 @@ class PolicyCacheTest extends IntegrationTestCase
         $this->assertTrue($second);
         $this->assertSame(1, $calls);
         $this->assertTrue(Cache::has($key));
+    }
+
+    #[Test]
+    public function a_removed_global_ttl_config_key_falls_back_to_300_seconds_not_60(): void
+    {
+        config()->set('restify.cache.policies', Arr::except(config('restify.cache.policies'), ['ttl']));
+
+        $model = new Post;
+
+        Gate::shouldReceive('getPolicyFor')->andReturn(new class {});
+
+        $key = 'restify.policy.test.fallback-ttl';
+        $calls = 0;
+        $data = function () use (&$calls): bool {
+            $calls++;
+
+            return true;
+        };
+
+        PolicyCache::resolve($key, $data, $model);
+
+        $this->travel(299)->seconds();
+        PolicyCache::resolve($key, $data, $model);
+        $this->assertSame(1, $calls, 'still cached at 299s, so the fallback ttl is greater than 60');
+
+        $this->travel(2)->seconds();
+        PolicyCache::resolve($key, $data, $model);
+        $this->assertSame(2, $calls, 'expired just after 300s, so the fallback ttl is 300');
     }
 
     #[Test]

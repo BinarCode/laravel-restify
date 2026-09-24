@@ -120,3 +120,11 @@ with any other casing of the same address is rejected as a duplicate. Existing r
 with mixed-case emails are unchanged. Login is unaffected - it still matches the email
 exactly (case-sensitive on pgsql/sqlite), so a user who registered before this change
 must still log in with the casing their row was stored with.
+
+### Policy cache's fallback ttl is 300 seconds, not 60
+
+`PolicyCache::resolve()` falls back to a 300 second ttl (matching `config/restify.php`'s
+own `5 * 60` default) when `restify.cache.policies.ttl` is missing from config entirely,
+instead of the previous, inconsistent 60 second fallback. This only affects an app that
+enabled `restify.cache.policies.enabled` while publishing a `config/restify.php` that
+omits the `ttl` key - a normal config, where the key keeps its default, is unaffected.
