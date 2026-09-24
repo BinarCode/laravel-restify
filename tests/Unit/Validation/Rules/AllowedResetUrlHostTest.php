@@ -92,6 +92,25 @@ class AllowedResetUrlHostTest extends IntegrationTestCase
         $this->assertFalse($this->passes($rule, 'https://frontend.example.com/x'));
     }
 
+    #[Test]
+    public function from_config_still_yields_the_origin_of_a_configured_url_carrying_an_unrecognised_placeholder(): void
+    {
+        config()->set('restify.auth.password_reset_url', 'https://app.test/{locale}/reset?token={token}&email={email}');
+        config()->set('app.url', '');
+
+        $rule = AllowedResetUrlHost::fromConfig();
+
+        $this->assertTrue($this->passes($rule, 'https://app.test/en/reset?token={token}'));
+    }
+
+    #[Test]
+    public function a_client_url_carrying_an_unrecognised_placeholder_is_still_rejected(): void
+    {
+        $rule = new AllowedResetUrlHost(['https://app.test']);
+
+        $this->assertFalse($this->passes($rule, 'https://app.test/{locale}/reset?token={token}'));
+    }
+
     private function passes(AllowedResetUrlHost $rule, string $url): bool
     {
         $failed = false;

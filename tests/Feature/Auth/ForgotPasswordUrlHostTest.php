@@ -213,6 +213,23 @@ class ForgotPasswordUrlHostTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_configured_password_reset_url_carrying_an_unrecognised_placeholder_still_allows_its_host(): void
+    {
+        config()->set('restify.auth.password_reset_url', 'https://app.restify.test/{locale}/reset?token={token}&email={email}');
+
+        Notification::fake();
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        $this->postJson('auth/forgotPassword', [
+            'email' => $user->email,
+            'url' => 'https://app.restify.test/en/reset?token={token}&email={email}',
+        ])->assertOk();
+
+        Notification::assertSentOnDemand(ForgotPasswordNotification::class);
+    }
+
+    #[Test]
     public function when_no_host_is_configured_any_client_url_is_rejected(): void
     {
         config()->set('restify.auth.password_reset_url', '/password/reset?token={token}&email={email}');

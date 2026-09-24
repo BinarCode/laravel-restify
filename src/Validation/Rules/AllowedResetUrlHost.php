@@ -67,7 +67,11 @@ class AllowedResetUrlHost implements ValidationRule
 
     public function validate(string $attribute, mixed $value, Closure $fail): void
     {
-        $origin = is_string($value) ? self::originOf($value) : null;
+        $parts = is_string($value) ? self::originParts($value) : null;
+
+        $origin = $parts !== null && self::pathQueryAndFragmentAreSafe($parts)
+            ? self::originFromParts($parts)
+            : null;
 
         if ($origin === null || ! in_array($origin, $this->allowedOrigins, true)) {
             $fail('The :attribute host is not allowed.')->translate();
@@ -75,6 +79,22 @@ class AllowedResetUrlHost implements ValidationRule
     }
 
     private static function originOf(?string $url): ?string
+    {
+        $parts = self::originParts($url);
+
+        return $parts === null ? null : self::originFromParts($parts);
+    }
+
+    /**
+     * Parses and validates a url's scheme, host, and port - the part of the
+     * url that determines its origin. Deliberately does not check the path,
+     * query, or fragment: `fromConfig()` calls this on urls the app owner
+     * configured, which may contain placeholders (`{locale}`) that are not
+     * safe in a client-supplied url but are not a security concern here.
+     *
+     * @return array{scheme: string, host: string, port?: int, path?: string, query?: string, fragment?: string}|null
+     */
+    private static function originParts(?string $url): ?array
     {
         if ($url === null || $url === '') {
             return null;
@@ -96,13 +116,19 @@ class AllowedResetUrlHost implements ValidationRule
             return null;
         }
 
-        if (! self::pathQueryAndFragmentAreSafe($parts)) {
-            return null;
-        }
+        $parts['scheme'] = $scheme;
 
-        $origin = $scheme.'://'.strtolower($parts['host']);
+        return $parts;
+    }
 
-        if (isset($parts['port']) && $parts['port'] !== self::DEFAULT_PORTS[$scheme]) {
+    /**
+     * @param  array{scheme: string, host: string, port?: int}  $parts
+     */
+    private static function originFromParts(array $parts): string
+    {
+        $origin = $parts['scheme'].'://'.strtolower($parts['host']);
+
+        if (isset($parts['port']) && $parts['port'] !== self::DEFAULT_PORTS[$parts['scheme']]) {
             $origin .= ':'.$parts['port'];
         }
 
