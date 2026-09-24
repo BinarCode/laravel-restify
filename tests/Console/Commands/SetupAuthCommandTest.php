@@ -42,6 +42,8 @@ class SetupAuthCommandTest extends IntegrationTestCase
     {
         $this->assertFileDoesNotExist(base_path('routes/api.php'));
 
+        $this->seedValidUserModel();
+
         $this->artisan('restify:setup-auth')->assertExitCode(Command::FAILURE);
     }
 
@@ -65,6 +67,10 @@ class SetupAuthCommandTest extends IntegrationTestCase
         $this->seedValidUserModel();
 
         $this->artisan('restify:setup-auth')->assertExitCode(Command::SUCCESS);
+
+        $this->assertStringContainsString('Route::restifyAuth();', File::get(base_path('routes/api.php')));
+        $this->assertStringContainsString("        'auth:sanctum',", File::get(config_path('restify.php')));
+        $this->assertStringContainsString('HasApiTokens', File::get(app_path('Models/User.php')));
     }
 
     private function seedValidUserModel(): void
