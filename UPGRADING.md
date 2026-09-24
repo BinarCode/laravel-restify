@@ -154,11 +154,17 @@ every email attempting `login` shared one bucket per IP.
 
 Each route now has its own named limiter, registered via `RateLimiter::for()` in
 `RestifyApplicationServiceProvider::boot()`: `restify.register`, `restify.login`,
-`restify.verify`, `restify.forgotPassword`, `restify.resetPassword`. `login`,
-`forgotPassword` and `resetPassword` key on the request's `email` input plus the IP
-(`Str::lower($email).'|'.$ip`), so a client exhausting its limit for one email is not
-throttled when it retries with a different email. `register` and `verifyEmail` still
-key on the IP alone. All five keep the same 6/minute default.
+`restify.verify`, `restify.forgotPassword`, `restify.resetPassword`. `register`,
+`verifyEmail`, `forgotPassword` and `resetPassword` are each a 6/minute limit keyed on
+the IP alone - `forgotPassword` and `resetPassword` deliberately stay IP-only (not
+email-keyed) so a known and an unknown email still share one bucket and get an
+identical `429`, preserving the existing account-enumeration protection.
+
+`login` is keyed differently, as two limits enforced together: 6/minute per
+`Str::lower($email).'|'.$ip`, plus 30/minute per IP regardless of email. The email+ip
+limit means exhausting the limit for one email does not throttle a login attempt
+against a different email from the same IP; the IP-wide limit still caps an attacker
+spraying many different emails from one IP at 30 attempts/minute.
 
 Restify only registers a limiter under a name your app hasn't already defined
 (`RateLimiter::limiter($name) === null`), so an app-defined `RateLimiter::for('restify.login', ...)`

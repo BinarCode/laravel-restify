@@ -10,11 +10,13 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Timebox;
+use Illuminate\Testing\TestResponse;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -179,7 +181,7 @@ class ResetPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function the_rate_limit_is_keyed_per_email_so_a_throttled_email_does_not_block_a_different_one(): void
+    public function known_and_unknown_emails_share_the_same_rate_limit_and_get_an_identical_429(): void
     {
         $this->freezeTime();
         $this->withMiddleware(ThrottleRequests::class);
@@ -195,11 +197,14 @@ class ResetPasswordTest extends IntegrationTestCase
             $this->postJson('auth/resetPassword', $payload('known@example.com'));
         }
 
-        $this->postJson('auth/resetPassword', $payload('known@example.com'))
-            ->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
+        $knownThrottled = $this->postJson('auth/resetPassword', $payload('known@example.com'));
+        $unknownThrottled = $this->postJson('auth/resetPassword', $payload('unknown@example.com'));
 
-        $this->postJson('auth/resetPassword', $payload('unknown@example.com'))
-            ->assertStatus(JsonResponse::HTTP_BAD_REQUEST);
+        $knownThrottled->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
+        $unknownThrottled->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
+
+        $this->assertSame($knownThrottled->getContent(), $unknownThrottled->getContent());
+        $this->assertSame($this->headersWithoutDate($knownThrottled), $this->headersWithoutDate($unknownThrottled));
     }
 
     /**
@@ -212,5 +217,13 @@ class ResetPasswordTest extends IntegrationTestCase
     public function invalid_input_is_rejected(array $payload): void
     {
         $this->postJson('auth/resetPassword', $payload)->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function headersWithoutDate(TestResponse $response): array
+    {
+        return Collection::make($response->headers->all())->except('date')->all();
     }
 }

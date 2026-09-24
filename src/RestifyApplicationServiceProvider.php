@@ -137,13 +137,6 @@ class RestifyApplicationServiceProvider extends ServiceProvider
         });
     }
 
-    /**
-     * Registers named rate limiters for each auth action, so every action is
-     * throttled independently instead of sharing Laravel's default `throttle`
-     * bucket - which keys solely on the authenticated user or `domain|ip`,
-     * with no route in the key. Only registers a limiter the app has not
-     * already defined, so an app can override any of these.
-     */
     protected function authRateLimiters(): void
     {
         $this->registerRateLimiterUnlessDefined(
@@ -153,7 +146,10 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
         $this->registerRateLimiterUnlessDefined(
             'restify.login',
-            fn (Request $request): Limit => Limit::perMinute(6)->by(self::emailAndIpKey($request))
+            fn (Request $request): array => [
+                Limit::perMinute(6)->by('email:'.self::emailAndIpKey($request)),
+                Limit::perMinute(30)->by('ip:'.$request->ip()),
+            ]
         );
 
         $this->registerRateLimiterUnlessDefined(
@@ -163,12 +159,12 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
         $this->registerRateLimiterUnlessDefined(
             'restify.forgotPassword',
-            fn (Request $request): Limit => Limit::perMinute(6)->by(self::emailAndIpKey($request))
+            fn (Request $request): Limit => Limit::perMinute(6)->by($request->ip())
         );
 
         $this->registerRateLimiterUnlessDefined(
             'restify.resetPassword',
-            fn (Request $request): Limit => Limit::perMinute(6)->by(self::emailAndIpKey($request))
+            fn (Request $request): Limit => Limit::perMinute(6)->by($request->ip())
         );
     }
 

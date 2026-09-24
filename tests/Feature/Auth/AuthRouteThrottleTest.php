@@ -90,6 +90,22 @@ class AuthRouteThrottleTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function the_thirty_first_login_from_one_ip_across_different_emails_is_throttled(): void
+    {
+        Route::restifyAuth('auth', ['login']);
+
+        foreach (range(1, 30) as $i) {
+            $this->assertNotSame(
+                JsonResponse::HTTP_TOO_MANY_REQUESTS,
+                $this->postJson('auth/login', ['email' => "user{$i}@x.com"])->getStatusCode()
+            );
+        }
+
+        $this->postJson('auth/login', ['email' => 'user31@x.com'])
+            ->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
+    }
+
+    #[Test]
     public function exhausting_the_login_limiter_does_not_throttle_forgot_password(): void
     {
         Route::restifyAuth('auth', ['login', 'forgotPassword']);

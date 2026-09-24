@@ -380,15 +380,19 @@ Now the user's password has been successfully reset, and they can log in with th
 
 Each auth route is throttled by its own named rate limiter, registered in `RestifyApplicationServiceProvider::boot()`, instead of sharing Laravel's default `throttle` bucket:
 
-| Route            | Limiter name              | Default limit                        |
-| ----------------- | -------------------------- | ------------------------------------- |
-| `register`         | `restify.register`         | 6/minute, keyed by IP                 |
-| `login`             | `restify.login`             | 6/minute, keyed by email + IP         |
-| `verifyEmail`       | `restify.verify`            | 6/minute, keyed by IP                 |
-| `forgotPassword`    | `restify.forgotPassword`    | 6/minute, keyed by email + IP         |
-| `resetPassword`     | `restify.resetPassword`     | 6/minute, keyed by email + IP         |
+| Route            | Limiter name              | Default limit                                          |
+| ----------------- | -------------------------- | -------------------------------------------------------- |
+| `register`         | `restify.register`         | 6/minute, keyed by IP                                   |
+| `login`             | `restify.login`             | 6/minute keyed by email + IP, **and** 30/minute keyed by IP alone |
+| `verifyEmail`       | `restify.verify`            | 6/minute, keyed by IP                                   |
+| `forgotPassword`    | `restify.forgotPassword`    | 6/minute, keyed by IP                                   |
+| `resetPassword`     | `restify.resetPassword`     | 6/minute, keyed by IP                                   |
 
-Because the email-keyed limiters key on the request's `email` input, a client that exhausts its limit for one email is not throttled when it retries with a different email - unlike the previous single shared `throttle:6,1` bucket, which throttled every auth route together, per IP.
+`forgotPassword` and `resetPassword` are deliberately keyed by IP alone, not by email: a known and an unknown email share the same bucket and get an identical `429`, so the rate limit itself can't be used to tell which emails have an account.
+
+`login` enforces two limits at once: 6/minute per email+IP, so a client that exhausts its limit for one email is not throttled when it retries with a different email; and 30/minute per IP regardless of email, so one IP still can't spray unlimited distinct accounts. `register` and `verifyEmail` are keyed by IP alone.
+
+This replaces the previous single shared `throttle:6,1` bucket (keyed by `domain|ip`), which throttled every auth route together, per IP.
 
 You can override any of these from your own service provider by calling `RateLimiter::for()` yourself - your call always wins, whether it runs before or after Restify's, since `RateLimiter::for()` simply replaces whatever is registered under that name and Restify only fills in a name that is still unset:
 
