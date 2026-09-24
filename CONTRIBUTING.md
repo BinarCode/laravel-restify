@@ -40,7 +40,7 @@ Before submitting a pull request:
 
 If the project maintainer has any additional requirements, you will find them listed here.
 
-- **[PSR-2 Coding Standard](https://github.com/php-fig/fig-standards/blob/master/accepted/PSR-2-coding-style-guide.md)** - The easiest way to apply the conventions is to install [PHP Code Sniffer](https://pear.php.net/package/PHP_CodeSniffer).
+- **[Laravel Pint](https://laravel.com/docs/pint)** - The easiest way to apply the conventions is to run `composer format`.
 
 - **Add tests!** - Your patch won't be accepted if it doesn't have tests.
 
