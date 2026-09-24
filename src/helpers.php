@@ -34,7 +34,7 @@ if (! function_exists('data')) {
 }
 
 if (! function_exists('ok')) {
-    function ok(?string $message = null, int $code = 200): JsonResponse
+    function ok(?string $message = null, int $code = JsonResponse::HTTP_OK): JsonResponse
     {
         if (! is_null($message)) {
             return response()->json([
