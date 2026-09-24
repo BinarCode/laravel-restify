@@ -3292,12 +3292,6 @@ parameters:
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Cannot access property \$pivot on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Cannot access property \$withTimestamps on mixed\.$#'
 			identifier: property.nonObject
 			count: 1

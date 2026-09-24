@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Repositories\PivotsCollection;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 
 class BelongsToMany extends EagerField
 {
@@ -40,6 +41,9 @@ class BelongsToMany extends EagerField
         /**
          * @var Repository $repository
          */
+        /** @var class-string<Repository> $repositoryClass */
+        $repositoryClass = $this->repositoryClass;
+
         if ($repository->model()->relationLoaded($this->relation)) {
             $paginator = $repository->model()->getRelation($this->relation);
         } else {
@@ -48,12 +52,12 @@ class BelongsToMany extends EagerField
             $paginator = $paginator->take($this->relatablePerPage($repository::$defaultRelatablePerPage))->get();
         }
 
-        $this->value = $paginator->map(function ($item) {
+        $this->value = $paginator->map(function (Model $item) use ($repositoryClass) {
             try {
                 /**
                  * @var Repository $repositoryFromClass
                  */
-                $repositoryFromClass = $this->repositoryClass::resolveWith($item);
+                $repositoryFromClass = $repositoryClass::resolveWith($item);
 
                 return $repositoryFromClass
                     ->allowToShow(
@@ -63,7 +67,7 @@ class BelongsToMany extends EagerField
                         PivotsCollection::make($this->pivotFields)
                             ->map(fn (Field $field) => clone $field)
                             ->filter(fn (Field $field) => ! $field->isHidden(app(RestifyRequest::class)))
-                            ->resolveFromPivot($item->pivot)
+                            ->resolveFromPivot($item->getRelation('pivot'))
                     )
                     ->eager($this);
             } catch (AuthorizationException) {
