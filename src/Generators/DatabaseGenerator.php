@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Generators;
 use Binaryk\LaravelRestify\Traits\Make;
 use Carbon\Carbon;
 use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Faker\Generator as Faker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -22,10 +23,10 @@ class DatabaseGenerator
         $this->faker = app(Faker::class);
     }
 
-    public function fake(Column $columnDefinition)
+    public function fake(Column $columnDefinition): string|int|bool|Carbon|null
     {
-        $column = $columnDefinition->getName();
-        $type = $columnDefinition->getType()->getName();
+        $column = $columnDefinition->getObjectName()->toString();
+        $type = Type::lookupName($columnDefinition->getType());
 
         switch ($type) {
             case 'text':
@@ -41,6 +42,8 @@ class DatabaseGenerator
             case 'integer':
                 return $this->integer($columnDefinition, $column);
         }
+
+        return null;
     }
 
     public function string(string $column): string

@@ -6829,31 +6829,8 @@ parameters:
 			path: src/Filters/Sorts/NaturalSortFilter.php
 
 		-
-			message: '#^Call to an undefined method Doctrine\\DBAL\\Types\\Type\:\:getName\(\)\.$#'
-			identifier: method.notFound
-			count: 1
-			path: src/Generators/DatabaseGenerator.php
-
-		-
-			message: '''
-				#^Call to deprecated method getName\(\) of class Doctrine\\DBAL\\Schema\\AbstractAsset\:
-				Use \{@see NamedObject\:\:getObjectName\(\)\} or \{@see OptionallyQualifiedName\:\:getObjectName\(\)\} instead\.
-				            In SQL context, convert the resulting \{@see Name\} to SQL using \{@see Name\:\:toSQL\(\)\}\. In other
-				            contexts, convert the resulting name to string using \{@see Name\:\:toString\(\)\}\.$#
-			'''
-			identifier: method.deprecated
-			count: 1
-			path: src/Generators/DatabaseGenerator.php
-
-		-
 			message: '#^Cannot access property \$id on mixed\.$#'
 			identifier: property.nonObject
-			count: 1
-			path: src/Generators/DatabaseGenerator.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Generators\\DatabaseGenerator\:\:fake\(\) has no return type specified\.$#'
-			identifier: missingType.return
 			count: 1
 			path: src/Generators/DatabaseGenerator.php
 
