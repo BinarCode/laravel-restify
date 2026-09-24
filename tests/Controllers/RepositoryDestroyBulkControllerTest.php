@@ -7,6 +7,8 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Gate;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class RepositoryDestroyBulkControllerTest extends IntegrationTestCase
 {
@@ -35,5 +37,68 @@ class RepositoryDestroyBulkControllerTest extends IntegrationTestCase
         $this->assertModelMissing($post1);
         $this->assertModelMissing($post2);
         $this->assertModelExists($post3);
+    }
+
+    #[Test]
+    public function a_missing_key_is_rejected_and_nothing_is_deleted(): void
+    {
+        $post1 = Post::factory()->create();
+        $post2 = Post::factory()->create();
+
+        $this->deleteJson(PostRepository::route('bulk/delete'), [
+            $post1->getKey(),
+            null,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('keys.1');
+
+        $this->assertDatabaseHas(Post::class, ['id' => $post1->id]);
+        $this->assertDatabaseHas(Post::class, ['id' => $post2->id]);
+    }
+
+    #[Test]
+    #[TestWith([[1]], 'array key')]
+    #[TestWith([['id' => 1]], 'nested object key')]
+    #[TestWith([true], 'boolean')]
+    public function a_non_scalar_key_is_rejected_instead_of_erroring(mixed $key): void
+    {
+        $post = Post::factory()->create();
+
+        $this->deleteJson(PostRepository::route('bulk/delete'), [
+            $key,
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('keys.0');
+
+        $this->assertDatabaseHas(Post::class, ['id' => $post->id]);
+    }
+
+    #[Test]
+    public function an_empty_bulk_delete_returns_ok_and_deletes_nothing(): void
+    {
+        Post::factory()->create();
+
+        $this->deleteJson(PostRepository::route('bulk/delete'), [])
+            ->assertOk();
+
+        $this->assertDatabaseCount(Post::class, 1);
+    }
+
+    #[Test]
+    public function after_validation_runs_on_bulk_delete(): void
+    {
+        $post = Post::factory()->create();
+
+        $_SERVER['restify.post.afterValidation.spy'] = function ($validator): void {
+            $_SERVER['restify.post.afterValidation.keys'] = $validator->validated()['keys'];
+        };
+
+        try {
+            $this->deleteJson(PostRepository::route('bulk/delete'), [
+                $post->getKey(),
+            ])->assertOk();
+
+            $this->assertSame([$post->getKey()], $_SERVER['restify.post.afterValidation.keys']);
+        } finally {
+            unset($_SERVER['restify.post.afterValidation.spy'], $_SERVER['restify.post.afterValidation.keys']);
+        }
     }
 }

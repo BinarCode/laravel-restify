@@ -110,6 +110,12 @@ class Repository implements JsonSerializable, RestifySearchable
     use WithRoutePrefix;
 
     /**
+     * The field a bulk update/delete row must carry to identify its model.
+     * Always `id`, the wire contract - never the model's key/route key name.
+     */
+    final public const BULK_ID_FIELD = 'id';
+
+    /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
      */
     public Model $resource;

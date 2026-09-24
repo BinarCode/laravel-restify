@@ -5,9 +5,11 @@ namespace Binaryk\LaravelRestify\Repositories;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Validator as ConcreteValidator;
 
 trait ValidatingTrait
 {
@@ -186,9 +188,39 @@ trait ValidatingTrait
     }
 
     /**
+     * @param  array<string, mixed>|null  $plainPayload
+     * @return \Illuminate\Contracts\Validation\Validator
+     */
+    public static function validatorForDestroyBulk(RestifyRequest $request, ?array $plainPayload = null)
+    {
+        $keys = $plainPayload ?? ['keys' => $request->isJson() ? $request->json()->all() : $request->post()];
+
+        return Validator::make(
+            $keys,
+            ['keys.*' => ['required', static::scalarIdRule()]],
+        )->after(function (ConcreteValidator $validator) use ($request): void {
+            static::afterValidation($request, $validator);
+        });
+    }
+
+    /**
+     * Rejects a bulk row/key id that isn't a plain int or string - an array
+     * or object there would otherwise reach the model lookup query and blow
+     * up with a 500 instead of a validation error.
+     */
+    protected static function scalarIdRule(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            if (! is_int($value) && ! is_string($value)) {
+                $fail(__('The :attribute must be an integer or a string.'));
+            }
+        };
+    }
+
+    /**
      * Handle any post-validation processing.
      *
-     * @param  \Illuminate\Validation\Validator  $validator
+     * @param  ConcreteValidator  $validator
      * @return void
      */
     protected static function afterValidation(RestifyRequest $request, $validator)
@@ -236,10 +268,26 @@ trait ValidatingTrait
 
     public function getUpdatingBulkRules(RestifyRequest $request)
     {
-        return $this->collectFields($request)->mapWithKeys(function (Field $k) {
+        $rules = $this->collectFields($request)->mapWithKeys(function (Field $k) {
             return [
                 "*.{$k->attribute}" => $k->getUpdatingBulkRules(),
             ];
         })->toArray();
+
+        $idAttribute = '*.'.Repository::BULK_ID_FIELD;
+
+        /** @var array<int, mixed> $existingIdRules */
+        $existingIdRules = $rules[$idAttribute] ?? [];
+
+        // `required` runs first so a missing/null id fails with the required
+        // message; `bail` then stops the scalar check and the repository's
+        // own id rules (e.g. a DB `exists` check) from running against it.
+        $rules[$idAttribute] = Collection::make(['bail', 'required', static::scalarIdRule(), 'distinct'])
+            ->merge($existingIdRules)
+            ->unique(strict: true)
+            ->values()
+            ->all();
+
+        return $rules;
     }
 }
