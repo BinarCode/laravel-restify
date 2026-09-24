@@ -108,7 +108,9 @@ class EagerField extends Field
 
     protected function relatablePerPage(int $default): int
     {
-        return PaginationDataObject::fromInput(request('relatablePerPage'), null)->resolvePerPage($default);
+        $relatablePerPage = request('relatablePerPage');
+
+        return PaginationDataObject::fromInput($relatablePerPage, null)->resolvePerPage($default);
     }
 
     public function getRelation(
