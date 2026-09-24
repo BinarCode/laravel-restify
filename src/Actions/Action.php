@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Traits\Make;
 use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Binaryk\LaravelRestify\Traits\Visibility;
 use Binaryk\LaravelRestify\Transaction;
+use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -147,20 +148,18 @@ abstract class Action implements JsonSerializable
         $response = null;
 
         if (! $request->isForRepositoryRequest()) {
-            Transaction::run(function () use ($request, &$response) {
-                $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($request, &$response) {
-                    /** @var Collection<int, Model> $models */
-                    foreach ($models as $model) {
-                        $this->authorizeRun($request, $model);
-                    }
+            $this->runIndexAction($request, function (Collection $models) use ($request, &$response) {
+                /** @var Collection<int, Model> $models */
+                foreach ($models as $model) {
+                    $this->authorizeRun($request, $model);
+                }
 
-                    $response = $this->handle($request, $models);
+                $response = $this->handle($request, $models);
 
-                    $models->each(function (Model $model) {
-                        //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
-                        //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
-                        //                        }
-                    });
+                $models->each(function (Model $model) {
+                    //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
+                    //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
+                    //                        }
                 });
             });
         } else {
@@ -176,6 +175,26 @@ abstract class Action implements JsonSerializable
         }
 
         return $response;
+    }
+
+    /**
+     * Run the index/'all' callback, chunk by chunk.
+     *
+     * Without a canRun callback, each chunk commits on its own, matching the pre-canRun
+     * behavior. With a canRun callback, every chunk runs inside a single transaction so
+     * the owner's all-or-nothing decision applies to the whole batch.
+     */
+    private function runIndexAction(ActionRequest $request, Closure $callback): void
+    {
+        if ($this->runCallback) {
+            Transaction::run(fn () => $request->collectRepositories($this, static::$chunkCount, $callback));
+
+            return;
+        }
+
+        $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($callback) {
+            Transaction::run(fn () => $callback($models));
+        });
     }
 
     public function skipFieldFill(RestifyRequest $request): bool

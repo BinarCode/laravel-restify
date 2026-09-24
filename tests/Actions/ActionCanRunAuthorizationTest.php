@@ -15,6 +15,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
+use RuntimeException;
 
 class ActionCanRunAuthorizationTest extends IntegrationTestCase
 {
@@ -223,6 +224,39 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function index_action_without_can_run_commits_each_chunk_independently(): void
+    {
+        Action::$chunkCount = 2;
+
+        $posts = Post::factory()->count(4)->create(['is_active' => false]);
+
+        $action = $this->bulkActionThatFailsOnSecondChunk();
+
+        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
+
+        try {
+            $this
+                ->withoutExceptionHandling()
+                ->postJson(PostRepository::route('actions', query: ['action' => $action->uriKey()]), [
+                    'repositories' => 'all',
+                ]);
+
+            $this->fail('Expected the second chunk to throw.');
+        } catch (RuntimeException) {
+            //
+        }
+
+        $this->assertCount(2, $action->committedIds);
+
+        foreach ($posts as $post) {
+            $this->assertDatabaseHas(Post::class, [
+                'id' => $post->id,
+                'is_active' => in_array($post->id, $action->committedIds, true),
+            ]);
+        }
+    }
+
+    #[Test]
     public function checking_can_run_per_row_does_not_add_extra_queries(): void
     {
         $posts = $this->mockPosts(null, 3);
@@ -296,6 +330,35 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
             {
                 foreach ($models as $post) {
                     $post->update(['is_active' => true]);
+                }
+
+                return response()->json(['ok' => true]);
+            }
+        };
+    }
+
+    private function bulkActionThatFailsOnSecondChunk(): Action
+    {
+        return new class extends Action
+        {
+            public static $uriKey = 'can-run-bulk-failing-second-chunk-action';
+
+            public int $handledChunks = 0;
+
+            /** @var list<int> */
+            public array $committedIds = [];
+
+            public function handle(ActionRequest $request, Collection $models): JsonResponse
+            {
+                $this->handledChunks++;
+
+                if ($this->handledChunks === 2) {
+                    throw new RuntimeException('Second chunk failure.');
+                }
+
+                foreach ($models as $post) {
+                    $post->update(['is_active' => true]);
+                    $this->committedIds[] = $post->id;
                 }
 
                 return response()->json(['ok' => true]);
