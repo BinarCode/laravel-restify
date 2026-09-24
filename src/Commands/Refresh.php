@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
+use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Restify;
 use Illuminate\Console\Command;
 
 class Refresh extends Command
@@ -22,17 +24,32 @@ class Refresh extends Command
 
     /**
      * Execute the console command.
-     *
-     * @return mixed
      */
-    public function handle()
+    public function handle(): int
     {
-        $this->call('route:cache');
-        $this->call('cache:clear');
-        $this->call('config:cache');
-        $this->call('view:clear');
-        $this->call('route:clear');
+        $succeeded = true;
 
-        return 0;
+        foreach (['route:clear', 'cache:clear', 'config:clear', 'view:clear'] as $command) {
+            if ($this->call($command) !== self::SUCCESS) {
+                $succeeded = false;
+            }
+        }
+
+        $this->clearRepositoryCaches();
+
+        return $succeeded ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * `cache:clear` never reaches a repository caching to a store of its own.
+     */
+    private function clearRepositoryCaches(): void
+    {
+        Restify::ensureRepositoriesLoaded();
+
+        /** @var class-string<Repository> $repository */
+        foreach (Restify::$repositories as $repository) {
+            $repository::clearCache();
+        }
     }
 }
