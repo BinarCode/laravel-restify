@@ -492,7 +492,7 @@ class Repository implements JsonSerializable, RestifySearchable
      * Resolve all model fields through showCallback methods and exclude from the final response if
      * that is required by method
      *
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function resolveShowAttributes(RestifyRequest $request)
     {
@@ -505,11 +505,14 @@ class Repository implements JsonSerializable, RestifySearchable
             ->all();
 
         if ($this instanceof Mergeable) {
-            // Hidden and authorized index fields
+            /** @var Collection<string, Field> $fieldsByAttribute */
+            $fieldsByAttribute = $this->collectFields($request)->unique('attribute')->keyBy('attribute');
+
+            // Hidden and authorized show fields
             $fields = $this->modelAttributes($request)
-                ->filter(function ($value, $attribute) use ($request) {
-                    /** * @var Field $field */
-                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
+                ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute) {
+                    /** @var Field|null $field */
+                    $field = $fieldsByAttribute->get($attribute);
 
                     if (is_null($field)) {
                         return true;
@@ -534,16 +537,19 @@ class Repository implements JsonSerializable, RestifySearchable
      * Return the attributes list.
      *
      * @param  RestifyRequest  $request
-     * @return array
+     * @return array<array-key, mixed>
      */
     public function resolveIndexAttributes($request)
     {
         if ($this instanceof Mergeable) {
+            /** @var Collection<string, Field> $fieldsByAttribute */
+            $fieldsByAttribute = $this->collectFields($request)->unique('attribute')->keyBy('attribute');
+
             // Hidden and authorized index fields
             return $this->modelAttributes($request)
-                ->filter(function ($value, $attribute) use ($request) {
-                    /** @var Field $field */
-                    $field = $this->collectFields($request)->firstWhere('attribute', $attribute);
+                ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute) {
+                    /** @var Field|null $field */
+                    $field = $fieldsByAttribute->get($attribute);
 
                     if (is_null($field)) {
                         return true;
@@ -1264,6 +1270,9 @@ class Repository implements JsonSerializable, RestifySearchable
         );
     }
 
+    /**
+     * @return Collection<string, mixed>
+     */
     private function modelAttributes(?Request $request = null): Collection
     {
         return collect(method_exists($this->resource, 'toArray') ? $this->resource->toArray() : []);

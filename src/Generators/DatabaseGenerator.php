@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Generators;
 use Binaryk\LaravelRestify\Traits\Make;
 use Carbon\Carbon;
 use Doctrine\DBAL\Schema\Column;
+use Doctrine\DBAL\Types\Type;
 use Faker\Generator as Faker;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -22,10 +23,13 @@ class DatabaseGenerator
         $this->faker = app(Faker::class);
     }
 
+    /**
+     * @return string|int|bool|Carbon|null
+     */
     public function fake(Column $columnDefinition)
     {
         $column = $columnDefinition->getName();
-        $type = $columnDefinition->getType()->getName();
+        $type = Type::lookupName($columnDefinition->getType());
 
         switch ($type) {
             case 'text':
@@ -41,6 +45,8 @@ class DatabaseGenerator
             case 'integer':
                 return $this->integer($columnDefinition, $column);
         }
+
+        return null;
     }
 
     public function string(string $column): string
@@ -72,7 +78,7 @@ class DatabaseGenerator
         }
 
         if (Str::endsWith($column, '_id')) {
-            $guessTable = Str::pluralStudly(Str::beforeLast($column, '_id'));
+            $guessTable = Str::plural(Str::beforeLast($column, '_id'));
 
             if (Schema::hasTable($guessTable)) {
                 return optional(DB::table($guessTable)->inRandomOrder()->first())->id ?? $this->faker->randomNumber(4);
