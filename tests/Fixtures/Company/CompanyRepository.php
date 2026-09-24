@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class CompanyRepository extends Repository
 {
@@ -17,7 +18,16 @@ class CompanyRepository extends Repository
         return [
             'users' => BelongsToMany::make('users', UserRepository::class)->withPivot(
                 Field::make('is_admin')->rules('required')
-            )->canDetach(fn ($request, $pivot) => isset($_SERVER['roles.canDetach.users']) && $_SERVER['roles.canDetach.users']),
+            )->canDetach(fn ($request, $pivot) => isset($_SERVER['roles.canDetach.users']) && $_SERVER['roles.canDetach.users'])
+                ->canSync(function (RestifyRequest $request, Pivot $pivot): bool {
+                    $_SERVER['companies.canSync.calls'][] = [$request::class, $pivot->company_id, $pivot->user_id];
+
+                    if (($_SERVER['companies.canSync.users'] ?? true) === false) {
+                        return false;
+                    }
+
+                    return ! in_array($pivot->user_id, $_SERVER['companies.canSync.denied_user_ids'] ?? [], true);
+                }),
         ];
     }
 

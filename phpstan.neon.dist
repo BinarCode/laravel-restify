@@ -15,9 +15,6 @@ parameters:
     ignoreErrors:
         - '#Unsafe usage of new static#'
         -
-            message: '#^Call to function is_callable\(\) with Closure will always evaluate to true\.$#'
-            path: src/Fields/BelongsTo.php
-        -
             # getCurrentSchemaListing() does not exist on Laravel 11's Schema\Builder; the
             # installed (newer) version always has it, so this looks redundant here.
             message: '#^Call to function method_exists\(\) with Illuminate\\Database\\Schema\\Builder and .*getCurrentSchemaLis.* will always evaluate to true\.$#'
