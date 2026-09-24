@@ -41,6 +41,21 @@ class PaginationDataObjectTest extends IntegrationTestCase
     }
 
     #[Test]
+    #[TestWith(['50', 100, 50], "string cap '50', as env() provides it, clamps a value above it")]
+    #[TestWith(['0', 100, 100], "string cap '0' means no cap")]
+    #[TestWith(['', 100, 100], 'empty string cap means no cap')]
+    #[TestWith(['abc', 100, 100], 'non-numeric string cap means no cap')]
+    #[TestWith(['-10', 100, 100], 'negative string cap means no cap')]
+    public function it_treats_a_string_config_cap_the_way_env_provides_it(string $maxPerPage, int $perPage, int $expected): void
+    {
+        config(['restify.pagination.max_per_page' => $maxPerPage]);
+
+        $pagination = new PaginationDataObject(perPage: $perPage, page: null);
+
+        $this->assertSame($expected, $pagination->resolvePerPage(15));
+    }
+
+    #[Test]
     #[TestWith(['3', 3], 'numeric string page is cast to int')]
     #[TestWith([2, 2], 'int page is returned as is')]
     #[TestWith([null, null], 'absent page resolves to null')]

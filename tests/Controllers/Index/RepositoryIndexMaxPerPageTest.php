@@ -43,4 +43,37 @@ class RepositoryIndexMaxPerPageTest extends IntegrationTestCase
                 ->etc()
         );
     }
+
+    #[Test]
+    public function it_caps_page_size_and_honours_page_number_on_the_second_page(): void
+    {
+        config(['restify.pagination.max_per_page' => 10]);
+
+        CommentFactory::many(25);
+
+        $this->getJson(CommentRepository::route(query: [
+            'page' => ['size' => 100, 'number' => 2],
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->count('data', 10)
+                ->where('meta.current_page', 2)
+                ->where('meta.per_page', 10)
+                ->etc()
+        );
+    }
+
+    #[Test]
+    public function it_falls_back_to_the_default_when_per_page_is_sent_as_an_array(): void
+    {
+        CommentFactory::many(20);
+
+        $this->getJson(CommentRepository::route(query: [
+            'perPage' => [5],
+        ]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->count('data', 15)
+                ->where('meta.per_page', 15)
+                ->etc()
+        );
+    }
 }

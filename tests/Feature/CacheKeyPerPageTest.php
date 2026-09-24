@@ -34,7 +34,7 @@ class CacheKeyPerPageTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function the_index_cache_key_differs_between_the_repository_default_and_an_explicit_matching_per_page(): void
+    public function the_index_cache_key_matches_an_explicit_per_page_equal_to_the_repository_default_and_differs_from_fifteen(): void
     {
         PostRepository::$defaultPerPage = 50;
 
@@ -54,5 +54,23 @@ class CacheKeyPerPageTest extends IntegrationTestCase
 
         $this->assertSame($withoutPerPage, $withMatchingDefaultPerPage);
         $this->assertNotSame($withoutPerPage, $withFifteenPerPage);
+    }
+
+    #[Test]
+    public function the_index_cache_key_for_a_per_page_capped_down_to_a_value_matches_the_key_for_that_value(): void
+    {
+        config(['restify.pagination.max_per_page' => 100]);
+
+        $repository = PostRepository::resolveWith(new Post);
+
+        $withPerPageCappedTo100 = $repository->generateIndexCacheKey(
+            RestifyRequest::create('/', 'GET', ['perPage' => 500])
+        );
+
+        $withPerPageOf100 = $repository->generateIndexCacheKey(
+            RestifyRequest::create('/', 'GET', ['perPage' => 100])
+        );
+
+        $this->assertSame($withPerPageOf100, $withPerPageCappedTo100);
     }
 }
