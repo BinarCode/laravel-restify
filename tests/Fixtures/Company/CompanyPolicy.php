@@ -2,6 +2,8 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Company;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
+use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Illuminate\Auth\Access\HandlesAuthorization;
 use Illuminate\Support\Collection;
@@ -118,5 +120,79 @@ class CompanyPolicy
         $allowed = $_SERVER['allow_detach_users'] ?? true;
 
         return is_callable($allowed) ? $allowed($userToBeDetached) : $allowed;
+    }
+
+    public function attachRoles(User $user, Company $model, Role $roleToBeAttached)
+    {
+        $allowed = $_SERVER['allow_attach_roles'] ?? true;
+
+        return is_callable($allowed) ? $allowed($roleToBeAttached) : $allowed;
+    }
+
+    public function syncRoles(User $user, Company $model, Collection $keys)
+    {
+        return $_SERVER['allow_sync_roles'] ?? true;
+    }
+
+    public function detachRoles(User $user, Company $model, Role $roleToBeDetached)
+    {
+        $allowed = $_SERVER['allow_detach_roles'] ?? true;
+
+        return is_callable($allowed) ? $allowed($roleToBeDetached) : $allowed;
+    }
+
+    public function attachStaff(User $user, Company $model, User $staffToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncStaff(User $user, Company $model, Collection $keys)
+    {
+        return true;
+    }
+
+    public function detachStaff(User $user, Company $model, User $staffToBeDetached)
+    {
+        return true;
+    }
+
+    public function attachLabels(User $user, Company $model, Label $labelToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncLabels(User $user, Company $model, Collection $keys)
+    {
+        return true;
+    }
+
+    public function attachTiers(User $user, Company $model, Label $tierToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncTiers(User $user, Company $model, Collection $keys)
+    {
+        return true;
+    }
+
+    public function attachBadges(User $user, Company $model, Label $badgeToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncBadges(User $user, Company $model, Collection $keys)
+    {
+        return true;
+    }
+
+    public function attachMembers(User $user, Company $model, User $memberToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncMembers(User $user, Company $model, Collection $keys)
+    {
+        return true;
     }
 }

@@ -13,8 +13,14 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Comment\Comment;
 use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Comment\CommentRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyBySlugRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\EnumKeyedLabelRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\LabelPolicy;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\LabelRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabelRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -23,7 +29,9 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Prototypes;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RolePolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\IntegerKeyedUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\MockUser;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\StaffRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
@@ -109,9 +117,15 @@ abstract class IntegrationTestCase extends TestCase
             UserRepository::class,
             PostRepository::class,
             CompanyRepository::class,
+            CompanyBySlugRepository::class,
             PostWithHiddenFieldRepository::class,
             RoleRepository::class,
             CommentRepository::class,
+            StaffRepository::class,
+            LabelRepository::class,
+            EnumKeyedLabelRepository::class,
+            StringableKeyedLabelRepository::class,
+            IntegerKeyedUserRepository::class,
         ]);
 
         return $this;
@@ -160,6 +174,7 @@ abstract class IntegrationTestCase extends TestCase
         Gate::policy(Role::class, RolePolicy::class);
         Gate::policy(ActionLog::class, ActionLogPolicy::class);
         Gate::policy(Comment::class, CommentPolicy::class);
+        Gate::policy(Label::class, LabelPolicy::class);
 
         return $this;
     }

@@ -6,7 +6,12 @@ use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\EnumKeyedLabelRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\LabelRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabelRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\IntegerKeyedUserRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\StaffRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Collection;
@@ -30,6 +35,18 @@ class CompanyRepository extends Repository
 
                     return ! in_array($pivot->user_id, $_SERVER['companies.canSync.denied_user_ids'] ?? [], true);
                 }),
+
+            'roles' => BelongsToMany::make('roles', RoleRepository::class),
+
+            'staff' => BelongsToMany::make('staff', StaffRepository::class),
+
+            'labels' => BelongsToMany::make('labels', LabelRepository::class),
+
+            'tiers' => BelongsToMany::make('tiers', EnumKeyedLabelRepository::class),
+
+            'badges' => BelongsToMany::make('badges', StringableKeyedLabelRepository::class),
+
+            'members' => BelongsToMany::make('members', IntegerKeyedUserRepository::class),
 
             // Deliberately never attachable, so tests can prove a request routed to
             // this relation (instead of the one named by the URL) never writes to it.

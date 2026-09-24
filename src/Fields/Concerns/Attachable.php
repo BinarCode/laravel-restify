@@ -4,15 +4,23 @@ namespace Binaryk\LaravelRestify\Fields\Concerns;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\PivotsCollection;
+use Binaryk\LaravelRestify\Traits\ValidatesRelatedKeyShape;
 use Closure;
 use DateTime;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Arr;
+use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
+use InvalidArgumentException;
 
 trait Attachable
 {
+    use ValidatesRelatedKeyShape;
+
     /**
      * @var callable|null
      */
@@ -39,6 +47,12 @@ trait Attachable
      * @var array
      */
     public $pivotFields = [];
+
+    /**
+     * Request attribute key under which {@see self::relatedModelsByPrimaryKey()}
+     * memoizes its lookup.
+     */
+    private const RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyAttachableRelatedModels';
 
     public function canAttach(callable|Closure $callback)
     {
@@ -137,22 +151,23 @@ trait Attachable
 
     public function initializePivot(RestifyRequest $request, $relationship, $relatedKey)
     {
-        $parentKey = $request->route('repositoryId');
+        if (! $relationship instanceof BelongsToMany) {
+            throw new InvalidArgumentException('The relationship must be a BelongsToMany (or MorphToMany) relation.');
+        }
+
+        $relatedRepository = $request->relatedRepositoryKey();
+
+        $relatedKey = $this->assertValidRelatedKeyShape($relatedKey, $relatedRepository);
 
         $parentKeyName = $relationship->getParentKeyName();
         $relatedKeyName = $relationship->getRelatedKeyName();
 
-        if ($parentKeyName !== $request->model()->getKeyName()) {
-            $parentKey = $request->findModelOrFail()->{$parentKeyName};
-        }
+        $parentKey = $request->findModelOrFail()->{$parentKeyName};
 
-        if ($relatedKeyName !== ($request->repository($request->route('relatedRepository'))::newModel())->getKeyName()) {
-            $relatedModel = $request->repository($request->route('relatedRepository'))::newModel()
-                ->newQuery()
-                ->whereKey(request('relatedRepositoryId'))
-                ->firstOrFail();
+        $relatedRepositoryModel = $request->repository($relatedRepository)::newModel();
 
-            $relatedKey = $relatedModel->{$relatedKeyName};
+        if ($relatedKeyName !== $relatedRepositoryModel->getKeyName()) {
+            $relatedKey = $this->resolveNonPrimaryRelatedKey($request, $relatedRepositoryModel, $relatedKeyName, $relatedKey);
         }
 
         ($pivot = $relationship->newPivot())->forceFill([
@@ -174,6 +189,46 @@ trait Attachable
         $repository::fillFields($request, $pivot, $fields);
 
         return $pivot;
+    }
+
+    private function resolveNonPrimaryRelatedKey(RestifyRequest $request, Model $relatedRepositoryModel, string $relatedKeyName, int|string $primaryKey): mixed
+    {
+        $relatedModel = $this->relatedModelsByPrimaryKey($request, $relatedRepositoryModel)->get($primaryKey);
+
+        if (is_null($relatedModel)) {
+            throw (new ModelNotFoundException)->setModel($relatedRepositoryModel::class, [$primaryKey]);
+        }
+
+        return $relatedModel->{$relatedKeyName};
+    }
+
+    /**
+     * `initializePivot()` is called once per id from several places (controllers,
+     * authorizeToAttach/Sync), so this memoizes the lookup per request instead of
+     * re-querying for each one.
+     *
+     * @return Collection<int|string, Model>
+     */
+    private function relatedModelsByPrimaryKey(RestifyRequest $request, Model $relatedRepositoryModel): Collection
+    {
+        $cached = $request->attributes->get(self::RELATED_MODELS_CACHE_ATTRIBUTE);
+
+        if ($cached instanceof Collection) {
+            return $cached;
+        }
+
+        $relatedRepository = $request->relatedRepositoryKey();
+
+        $primaryKeyName = $relatedRepositoryModel->getKeyName();
+
+        $relatedModels = $relatedRepositoryModel->newQuery()
+            ->whereIn($primaryKeyName, Arr::wrap($request->input($relatedRepository)))
+            ->get()
+            ->keyBy($primaryKeyName);
+
+        $request->attributes->set(self::RELATED_MODELS_CACHE_ATTRIBUTE, $relatedModels);
+
+        return $relatedModels;
     }
 
     /**
