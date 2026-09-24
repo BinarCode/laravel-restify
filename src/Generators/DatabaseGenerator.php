@@ -78,7 +78,7 @@ class DatabaseGenerator
         }
 
         if (Str::endsWith($column, '_id')) {
-            $guessTable = Str::pluralStudly(Str::beforeLast($column, '_id'));
+            $guessTable = Str::plural(Str::beforeLast($column, '_id'));
 
             if (Schema::hasTable($guessTable)) {
                 return optional(DB::table($guessTable)->inRandomOrder()->first())->id ?? $this->faker->randomNumber(4);
