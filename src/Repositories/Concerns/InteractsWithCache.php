@@ -41,12 +41,14 @@ trait InteractsWithCache
             'index',
         ];
 
+        $pagination = $request->pagination();
+
         // Add request parameters that affect the query
         $queryParams = [
             'search' => $request->input('search'),
             'sort' => $request->input('sort'),
-            'page' => $request->pagination()->page ?? 1,
-            'perPage' => $request->pagination()->perPage ?? 15, // Default per page
+            'page' => $pagination->resolvePage() ?? 1,
+            'perPage' => $pagination->resolvePerPage(static::$defaultPerPage),
             'related' => $request->input('related'),
             'group_by' => $request->input('group_by'),
         ];

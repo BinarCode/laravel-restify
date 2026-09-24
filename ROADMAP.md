@@ -28,7 +28,7 @@
 ### Fixes
 
 - [ ] Adding Larastan support
-- [ ] Drop Psalm
+- [x] Drop Psalm
 - [ ] Adding PestPHP support
 - [ ] Adding support for PHPStan and configure the level 4
 - [ ] Request validations should be rewritten
