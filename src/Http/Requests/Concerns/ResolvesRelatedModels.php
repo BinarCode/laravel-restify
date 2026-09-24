@@ -26,34 +26,38 @@ trait ResolvesRelatedModels
      */
     protected function relatedModels(): Collection
     {
-        $table = $this->relatedRepository;
+        $relatedRepositoryKey = $this->relatedRepository;
 
-        if (! is_string($table)) {
+        if (! is_string($relatedRepositoryKey)) {
             throw new InvalidArgumentException('The [relatedRepository] route parameter must be a string.');
         }
 
-        $relatedRepositoryClass = Restify::repositoryForTable($table);
+        $relatedRepositoryClass = Restify::repositoryClassForKey($relatedRepositoryKey);
 
         if (is_null($relatedRepositoryClass)) {
-            abort(JsonResponse::HTTP_BAD_REQUEST, "Missing repository for the [{$table}] table");
+            abort(JsonResponse::HTTP_BAD_REQUEST, "Missing repository for the [{$relatedRepositoryKey}] key");
         }
 
-        $ids = Collection::make(Arr::wrap($this->input($table)))
-            ->map(fn (mixed $id): int|string => $this->assertValidRelatedKeyShape($id, $table))
+        $ids = Collection::make(Arr::wrap($this->input($relatedRepositoryKey)))
+            ->map(fn (mixed $id): int|string => $this->assertValidRelatedKeyShape($id, $relatedRepositoryKey))
             ->all();
 
-        $model = $this->repository($relatedRepositoryClass::uriKey())->model();
+        $model = $this->repository($relatedRepositoryKey)->model();
 
         /** @var Collection<int, Model> $models */
         $models = $model->newModelQuery()->whereKey($ids)->get();
 
-        $byKey = $models->keyBy($model->getKeyName());
+        // Normalize both sides of the lookup the same way the database already
+        // normalized $ids to match the model's key (e.g. "05" and 5 are the same
+        // int key): a bare keyBy() would otherwise miss a non-canonical numeric
+        // string id, since PHP does not coerce it to the matching array key.
+        $byKey = $models->keyBy(fn (Model $relatedModel): int|string => $this->normalizeRelatedModelKey($relatedModel->getKey(), $model));
 
         $resolved = [];
         $missing = [];
 
         foreach ($ids as $id) {
-            $match = $byKey->get($id) ?? $model->newModelQuery()->whereKey($id)->first();
+            $match = $byKey->get($this->normalizeRelatedModelKey($id, $model));
 
             if (is_null($match)) {
                 $missing[] = $id;
@@ -69,5 +73,14 @@ trait ResolvesRelatedModels
         }
 
         return Collection::make($resolved);
+    }
+
+    private function normalizeRelatedModelKey(mixed $key, Model $model): int|string
+    {
+        if (! is_int($key) && ! is_string($key)) {
+            throw new InvalidArgumentException('The related model key must be an int or a string.');
+        }
+
+        return $model->getKeyType() === 'int' ? (int) $key : (string) $key;
     }
 }

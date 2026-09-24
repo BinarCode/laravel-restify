@@ -36,6 +36,13 @@ class Company extends Model
             ->withTimestamps();
     }
 
+    public function staff(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'company_user', 'company_id', 'user_id')
+            ->using(CompanyUserPivot::class)
+            ->withTimestamps();
+    }
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class);

@@ -139,4 +139,19 @@ class CompanyPolicy
 
         return is_callable($allowed) ? $allowed($roleToBeDetached) : $allowed;
     }
+
+    public function attachStaff(User $user, Company $model, User $staffToBeAttached)
+    {
+        return true;
+    }
+
+    public function syncStaff(User $user, Company $model, Collection $keys)
+    {
+        return true;
+    }
+
+    public function detachStaff(User $user, Company $model, User $staffToBeDetached)
+    {
+        return true;
+    }
 }

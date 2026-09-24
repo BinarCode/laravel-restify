@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\StaffRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
@@ -31,6 +32,8 @@ class CompanyRepository extends Repository
                 }),
 
             'roles' => BelongsToMany::make('roles', RoleRepository::class),
+
+            'staff' => BelongsToMany::make('staff', StaffRepository::class),
         ];
     }
 

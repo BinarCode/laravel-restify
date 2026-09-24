@@ -25,6 +25,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RolePolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\MockUser;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\StaffRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
@@ -114,6 +115,7 @@ abstract class IntegrationTestCase extends TestCase
             PostWithHiddenFieldRepository::class,
             RoleRepository::class,
             CommentRepository::class,
+            StaffRepository::class,
         ]);
 
         return $this;
