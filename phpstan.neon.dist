@@ -14,6 +14,3 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         - '#Unsafe usage of new static#'
-        -
-            message: '#^Call to function is_callable\(\) with Closure will always evaluate to true\.$#'
-            path: src/Fields/BelongsTo.php

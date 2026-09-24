@@ -3250,18 +3250,6 @@ parameters:
 			path: src/Fields/BelongsTo.php
 
 		-
-			message: '#^Property Binaryk\\LaravelRestify\\Fields\\BelongsTo\:\:\$canAttachCallback \(Closure\) does not accept callable\(\)\: mixed\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Property Binaryk\\LaravelRestify\\Fields\\BelongsTo\:\:\$canSyncCallback \(Closure\) does not accept callable\(\)\: mixed\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
 			message: '#^Property Binaryk\\LaravelRestify\\Fields\\BelongsTo\:\:\$pivotFields type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -3278,12 +3266,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Call to function is_callable\(\) with Closure will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 4
-			path: src/Fields/BelongsToMany.php
 
 		-
 			message: '#^Call to protected static method fillFields\(\) of class Binaryk\\LaravelRestify\\Repositories\\Repository\.$#'
@@ -3551,18 +3533,6 @@ parameters:
 
 		-
 			message: '#^Property Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:\$attachCallback \(Closure\) does not accept callable\(\)\: mixed\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Property Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:\$canAttachCallback \(Closure\) does not accept callable\(\)\: mixed\.$#'
-			identifier: assign.propertyType
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Property Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:\$canSyncCallback \(Closure\) does not accept callable\(\)\: mixed\.$#'
 			identifier: assign.propertyType
 			count: 1
 			path: src/Fields/BelongsToMany.php
