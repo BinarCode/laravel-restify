@@ -96,7 +96,7 @@ class McpGettersCanRunAuthorizationTest extends IntegrationTestCase
         $resultContent = json_decode($response->json('result.content.0.text'), true);
 
         $this->assertArrayHasKey('error', $resultContent);
-        $this->assertEquals('Not authorized to run this getter', $resultContent['error']);
+        $this->assertEquals('Not authorized to run this getter.', $resultContent['error']);
     }
 
     #[Test]

@@ -21,10 +21,13 @@ use Illuminate\Support\Collection;
 use Laravel\Mcp\Facades\Mcp;
 use Laravel\Mcp\Server\McpServiceProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class McpActionsCanRunAuthorizationTest extends IntegrationTestCase
 {
     use RefreshDatabase;
+
+    private const ENDPOINT = 'test-can-run-actions';
 
     protected function setUp(): void
     {
@@ -48,51 +51,15 @@ class McpActionsCanRunAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function standalone_action_denied_by_can_run_is_reported_as_a_structured_error_over_mcp(): void
+    #[TestWith([false, 'Not authorized to run this action.'], 'denied')]
+    #[TestWith([true, null], 'allowed')]
+    public function standalone_action_can_run_is_reported_over_mcp(bool $allowed, ?string $expectedError): void
     {
-        $mcpPostRepository = new class extends Repository
-        {
-            use HasMcpTools;
+        $action = $this->standaloneAction()->canRun(fn (Request $request, ?Model $model): bool => $allowed);
 
-            public static $model = Post::class;
+        $actionToolName = $this->mcpRepository($action);
 
-            public static string $uriKey = 'mcp-auth-denied-standalone-posts';
-
-            public function actions(RestifyRequest $request): array
-            {
-                return [
-                    $this->standaloneAction()->canRun(fn (Request $request, ?Model $model): bool => false),
-                ];
-            }
-
-            public function mcpAllowsActions(): bool
-            {
-                return true;
-            }
-
-            private function standaloneAction(): Action
-            {
-                return (new class extends Action
-                {
-                    public static $uriKey = 'can-run-standalone-action';
-
-                    public function handle(ActionRequest $request): JsonResponse
-                    {
-                        return response()->json(['ok' => true]);
-                    }
-                })->standalone();
-            }
-        };
-
-        Restify::repositories([
-            $mcpPostRepository::class,
-        ]);
-
-        Mcp::web('test-auth-denied-standalone', RestifyServer::class);
-
-        $actionToolName = $this->findActionToolName('test-auth-denied-standalone', 'mcp-auth-denied-standalone-posts', 'can-run-standalone-action');
-
-        $response = $this->postJson('/test-auth-denied-standalone', [
+        $response = $this->postJson('/'.self::ENDPOINT, [
             'jsonrpc' => '2.0',
             'id' => 2,
             'method' => 'tools/call',
@@ -105,125 +72,27 @@ class McpActionsCanRunAuthorizationTest extends IntegrationTestCase
         $response->assertOk();
 
         $resultContent = json_decode($response->json('result.content.0.text'), true);
+
+        if ($allowed) {
+            $this->assertTrue($resultContent['success']);
+
+            return;
+        }
 
         $this->assertArrayHasKey('error', $resultContent);
-        $this->assertEquals('Not authorized to run this action', $resultContent['error']);
-    }
-
-    #[Test]
-    public function standalone_action_allowed_by_can_run_executes_over_mcp(): void
-    {
-        $mcpPostRepository = new class extends Repository
-        {
-            use HasMcpTools;
-
-            public static $model = Post::class;
-
-            public static string $uriKey = 'mcp-auth-allowed-standalone-posts';
-
-            public function actions(RestifyRequest $request): array
-            {
-                return [
-                    $this->standaloneAction()->canRun(fn (Request $request, ?Model $model): bool => true),
-                ];
-            }
-
-            public function mcpAllowsActions(): bool
-            {
-                return true;
-            }
-
-            private function standaloneAction(): Action
-            {
-                return (new class extends Action
-                {
-                    public static $uriKey = 'can-run-standalone-action';
-
-                    public function handle(ActionRequest $request): JsonResponse
-                    {
-                        return response()->json(['ok' => true]);
-                    }
-                })->standalone();
-            }
-        };
-
-        Restify::repositories([
-            $mcpPostRepository::class,
-        ]);
-
-        Mcp::web('test-auth-allowed-standalone', RestifyServer::class);
-
-        $actionToolName = $this->findActionToolName('test-auth-allowed-standalone', 'mcp-auth-allowed-standalone-posts', 'can-run-standalone-action');
-
-        $response = $this->postJson('/test-auth-allowed-standalone', [
-            'jsonrpc' => '2.0',
-            'id' => 2,
-            'method' => 'tools/call',
-            'params' => [
-                'name' => $actionToolName,
-                'arguments' => [],
-            ],
-        ]);
-
-        $response->assertOk();
-
-        $resultContent = json_decode($response->json('result.content.0.text'), true);
-
-        $this->assertTrue($resultContent['success']);
+        $this->assertEquals($expectedError, $resultContent['error']);
     }
 
     #[Test]
     public function index_action_with_repositories_and_a_denied_row_is_reported_as_a_structured_error_over_mcp(): void
     {
-        $mcpPostRepository = new class extends Repository
-        {
-            use HasMcpTools;
+        $action = $this->bulkAction()->canRun(fn (Request $request, ?Model $model): bool => false);
 
-            public static $model = Post::class;
-
-            public static string $uriKey = 'mcp-auth-denied-index-posts';
-
-            public function actions(RestifyRequest $request): array
-            {
-                return [
-                    $this->bulkAction()->canRun(fn (Request $request, ?Model $model): bool => false),
-                ];
-            }
-
-            public function mcpAllowsActions(): bool
-            {
-                return true;
-            }
-
-            private function bulkAction(): Action
-            {
-                return new class extends Action
-                {
-                    public static $uriKey = 'can-run-bulk-action';
-
-                    public function handle(ActionRequest $request, Collection $models): JsonResponse
-                    {
-                        foreach ($models as $post) {
-                            $post->update(['is_active' => true]);
-                        }
-
-                        return response()->json(['ok' => true]);
-                    }
-                };
-            }
-        };
-
-        Restify::repositories([
-            $mcpPostRepository::class,
-        ]);
-
-        Mcp::web('test-auth-denied-index', RestifyServer::class);
+        $actionToolName = $this->mcpRepository($action);
 
         $posts = Post::factory()->count(2)->create(['is_active' => false]);
 
-        $actionToolName = $this->findActionToolName('test-auth-denied-index', 'mcp-auth-denied-index-posts', 'can-run-bulk-action');
-
-        $response = $this->postJson('/test-auth-denied-index', [
+        $response = $this->postJson('/'.self::ENDPOINT, [
             'jsonrpc' => '2.0',
             'id' => 2,
             'method' => 'tools/call',
@@ -248,6 +117,120 @@ class McpActionsCanRunAuthorizationTest extends IntegrationTestCase
                 'is_active' => false,
             ]);
         }
+    }
+
+    #[Test]
+    public function show_action_runs_can_run_exactly_once_over_mcp(): void
+    {
+        $callCount = 0;
+
+        $action = $this->showAction()->canRun(function (Request $request, ?Model $model) use (&$callCount): bool {
+            $callCount++;
+
+            return true;
+        });
+
+        $actionToolName = $this->mcpRepository($action);
+
+        $post = $this->mockPost();
+
+        $response = $this->postJson('/'.self::ENDPOINT, [
+            'jsonrpc' => '2.0',
+            'id' => 2,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => $actionToolName,
+                'arguments' => [
+                    'id' => (string) $post->id,
+                ],
+            ],
+        ]);
+
+        $response->assertOk();
+
+        $resultContent = json_decode($response->json('result.content.0.text'), true);
+
+        $this->assertTrue($resultContent['success']);
+        $this->assertSame(1, $callCount);
+    }
+
+    private function mcpRepository(Action $action): string
+    {
+        $repositoryUriKey = 'mcp-can-run-posts';
+
+        $mcpPostRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'mcp-can-run-posts';
+
+            public static Action $providedAction;
+
+            public function actions(RestifyRequest $request): array
+            {
+                return [self::$providedAction];
+            }
+
+            public function mcpAllowsActions(): bool
+            {
+                return true;
+            }
+        };
+
+        $mcpPostRepository::$providedAction = $action;
+
+        Restify::repositories([
+            $mcpPostRepository::class,
+        ]);
+
+        Mcp::web(self::ENDPOINT, RestifyServer::class);
+
+        return $this->findActionToolName(self::ENDPOINT, $repositoryUriKey, $action->uriKey());
+    }
+
+    private function standaloneAction(): Action
+    {
+        return (new class extends Action
+        {
+            public static $uriKey = 'can-run-standalone-action';
+
+            public function handle(ActionRequest $request): JsonResponse
+            {
+                return response()->json(['ok' => true]);
+            }
+        })->standalone();
+    }
+
+    private function showAction(): Action
+    {
+        return (new class extends Action
+        {
+            public static $uriKey = 'can-run-show-action';
+
+            public function handle(ActionRequest $request, Post $post): JsonResponse
+            {
+                return response()->json(['ok' => true]);
+            }
+        })->onlyOnShow();
+    }
+
+    private function bulkAction(): Action
+    {
+        return new class extends Action
+        {
+            public static $uriKey = 'can-run-bulk-action';
+
+            public function handle(ActionRequest $request, Collection $models): JsonResponse
+            {
+                foreach ($models as $post) {
+                    $post->update(['is_active' => true]);
+                }
+
+                return response()->json(['ok' => true]);
+            }
+        };
     }
 
     private function findActionToolName(string $endpoint, string $repositoryUriKey, string $actionUriKey): string
