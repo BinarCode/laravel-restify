@@ -34,6 +34,17 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     final public const AUTH_ACTIONS = ['register', 'login', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword'];
 
     /**
+     * Default per-minute limit for each named auth rate limiter.
+     */
+    final public const AUTH_ATTEMPTS_PER_MINUTE = 6;
+
+    /**
+     * The additional, IP-wide per-minute limit on `restify.login`, on top of
+     * its per-email `AUTH_ATTEMPTS_PER_MINUTE` limit.
+     */
+    final public const LOGIN_ATTEMPTS_PER_IP_PER_MINUTE = 30;
+
+    /**
      * Bootstrap the application services.
      */
     public function boot()
@@ -141,30 +152,30 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     {
         $this->registerRateLimiterUnlessDefined(
             'restify.register',
-            fn (Request $request): Limit => Limit::perMinute(6)->by($request->ip())
+            fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
         );
 
         $this->registerRateLimiterUnlessDefined(
             'restify.login',
             fn (Request $request): array => [
-                Limit::perMinute(6)->by('email:'.self::emailAndIpKey($request)),
-                Limit::perMinute(30)->by('ip:'.$request->ip()),
+                Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by('email:'.self::emailAndIpKey($request)),
+                Limit::perMinute(self::LOGIN_ATTEMPTS_PER_IP_PER_MINUTE)->by('ip:'.$request->ip()),
             ]
         );
 
         $this->registerRateLimiterUnlessDefined(
             'restify.verify',
-            fn (Request $request): Limit => Limit::perMinute(6)->by($request->ip())
+            fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
         );
 
         $this->registerRateLimiterUnlessDefined(
             'restify.forgotPassword',
-            fn (Request $request): Limit => Limit::perMinute(6)->by($request->ip())
+            fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
         );
 
         $this->registerRateLimiterUnlessDefined(
             'restify.resetPassword',
-            fn (Request $request): Limit => Limit::perMinute(6)->by($request->ip())
+            fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
         );
     }
 

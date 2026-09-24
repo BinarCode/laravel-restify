@@ -178,7 +178,7 @@ class ForgotPasswordUrlHostTest extends IntegrationTestCase
         $this->postJson('auth/forgotPassword', [
             'email' => $user->email,
             'url' => 'https://api.restify.test/reset?token={token}&email={email}',
-        ])->assertStatus(422)->assertJsonValidationErrors('url');
+        ])->assertUnprocessable()->assertJsonValidationErrors('url');
 
         Notification::assertNothingSent();
     }

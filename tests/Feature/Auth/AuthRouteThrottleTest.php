@@ -73,7 +73,7 @@ class AuthRouteThrottleTest extends IntegrationTestCase
     {
         Route::restifyAuth('auth', ['login']);
 
-        foreach (range(1, 6) as $attempt) {
+        foreach (range(1, RestifyApplicationServiceProvider::AUTH_ATTEMPTS_PER_MINUTE) as $attempt) {
             $this->assertNotSame(
                 JsonResponse::HTTP_TOO_MANY_REQUESTS,
                 $this->postJson('auth/login', ['email' => 'a@x.com'])->getStatusCode()
@@ -81,7 +81,7 @@ class AuthRouteThrottleTest extends IntegrationTestCase
         }
 
         $this->postJson('auth/login', ['email' => 'a@x.com'])
-            ->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
+            ->assertTooManyRequests();
 
         $this->assertNotSame(
             JsonResponse::HTTP_TOO_MANY_REQUESTS,
@@ -94,15 +94,17 @@ class AuthRouteThrottleTest extends IntegrationTestCase
     {
         Route::restifyAuth('auth', ['login']);
 
-        foreach (range(1, 30) as $i) {
+        foreach (range(1, RestifyApplicationServiceProvider::LOGIN_ATTEMPTS_PER_IP_PER_MINUTE) as $i) {
             $this->assertNotSame(
                 JsonResponse::HTTP_TOO_MANY_REQUESTS,
                 $this->postJson('auth/login', ['email' => "user{$i}@x.com"])->getStatusCode()
             );
         }
 
-        $this->postJson('auth/login', ['email' => 'user31@x.com'])
-            ->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
+        $oneMoreEmail = 'user'.(RestifyApplicationServiceProvider::LOGIN_ATTEMPTS_PER_IP_PER_MINUTE + 1).'@x.com';
+
+        $this->postJson('auth/login', ['email' => $oneMoreEmail])
+            ->assertTooManyRequests();
     }
 
     #[Test]
@@ -110,7 +112,7 @@ class AuthRouteThrottleTest extends IntegrationTestCase
     {
         Route::restifyAuth('auth', ['login', 'forgotPassword']);
 
-        foreach (range(1, 7) as $attempt) {
+        foreach (range(1, RestifyApplicationServiceProvider::AUTH_ATTEMPTS_PER_MINUTE + 1) as $attempt) {
             $this->postJson('auth/login', ['email' => 'a@x.com']);
         }
 
@@ -127,7 +129,7 @@ class AuthRouteThrottleTest extends IntegrationTestCase
 
         // Simulates the package's provider booting again (or after the app's own
         // provider already defined 'restify.login'): the guard must leave the
-        // app's limiter alone instead of overwriting it with the 6/minute default.
+        // app's limiter alone instead of overwriting it with the default.
         $provider = new RestifyApplicationServiceProvider($this->app);
         $method = new ReflectionMethod($provider, 'authRateLimiters');
         $method->setAccessible(true);
@@ -141,6 +143,6 @@ class AuthRouteThrottleTest extends IntegrationTestCase
         );
 
         $this->postJson('auth/login', ['email' => 'a@x.com'])
-            ->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
+            ->assertTooManyRequests();
     }
 }

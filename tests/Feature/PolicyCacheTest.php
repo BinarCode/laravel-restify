@@ -197,13 +197,13 @@ class PolicyCacheTest extends IntegrationTestCase
 
         PolicyCache::resolve($key, $data, $model);
 
-        $this->travel(299)->seconds();
+        $this->travel(PolicyCache::DEFAULT_TTL_SECONDS - 1)->seconds();
         PolicyCache::resolve($key, $data, $model);
-        $this->assertSame(1, $calls, 'still cached at 299s, so the fallback ttl is greater than 60');
+        $this->assertSame(1, $calls, 'still cached just under the fallback ttl, so it is greater than 60');
 
-        $this->travel(2)->seconds();
+        $this->travel(1)->seconds();
         PolicyCache::resolve($key, $data, $model);
-        $this->assertSame(2, $calls, 'expired just after 300s, so the fallback ttl is 300');
+        $this->assertSame(2, $calls, 'expired just after the fallback ttl, so it is exactly '.PolicyCache::DEFAULT_TTL_SECONDS);
     }
 
     #[Test]
