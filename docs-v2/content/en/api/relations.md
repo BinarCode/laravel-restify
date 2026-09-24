@@ -725,6 +725,8 @@ Another way to authorize this is by using the `canSync` method to the Eager fiel
             ->canSync(fn ($request, $pivot) => $request->user()->isAdmin()),
 ```
 
+If the field also declares `canDetach`, `sync` calls it for every currently-attached row that the request's payload would remove (i.e. every id not present in the synced list), the same check `detach` already performs on those rows. A single denial rejects the whole request with a `403` and nothing is synced. A field without `canDetach` keeps syncing removals unchecked, as before.
+
 ### Detach related
 
 As soon we declared the `BelongsToMany` relationship, Restify automatically registers the `detach` endpoint:

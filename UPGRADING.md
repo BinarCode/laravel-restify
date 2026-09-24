@@ -128,3 +128,19 @@ own `5 * 60` default) when `restify.cache.policies.ttl` is missing from config e
 instead of the previous, inconsistent 60 second fallback. This only affects an app that
 enabled `restify.cache.policies.enabled` while publishing a `config/restify.php` that
 omits the `ttl` key - a normal config, where the key keeps its default, is unaffected.
+
+### `sync` now enforces a field's `canDetach` on the rows it removes
+
+`POST .../sync/{field}` calls the underlying relationship's `sync()`, which both
+attaches new rows and detaches rows missing from the payload - but only the attached
+side ever ran the field's authorization; a row `sync` removed skipped `canDetach`
+entirely, unlike `detach`, which always ran it.
+
+If a `BelongsToMany` field declares `canDetach`, `sync` now calls it for every
+currently-attached row the request would remove, before making any change. A denial
+gets a `403` and the sync does not run at all, not even the additions. A `sync` that
+only adds rows is unaffected. A field without `canDetach` behaves exactly as before.
+
+If you rely on `sync` being able to remove rows regardless of `canDetach`, either drop
+`canDetach` from that field or make its callback return `true` for the ids you expect
+`sync` to keep removing.

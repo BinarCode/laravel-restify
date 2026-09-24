@@ -140,6 +140,11 @@ trait Attachable
             : true;
     }
 
+    public function hasCanDetachCallback(): bool
+    {
+        return is_callable($this->canDetachCallback);
+    }
+
     public function authorizeToDetach(RestifyRequest $request, Pivot $pivot)
     {
         if (! $this->authorizedToDetach($request, $pivot)) {

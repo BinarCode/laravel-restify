@@ -1042,9 +1042,30 @@ class Repository implements JsonSerializable, RestifySearchable
             ->map(fn ($relatedKey) => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
             ->all();
 
-        $relationship->sync($syncValues);
+        DB::transaction(function () use ($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues) {
+            if ($eagerField->hasCanDetachCallback()) {
+                $this->authorizeSyncRemovals($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues);
+            }
+
+            $relationship->sync($syncValues);
+        });
 
         return ok();
+    }
+
+    /**
+     * @param  EloquentBelongsToMany<Model, Model>  $relationship
+     * @param  array<array-key, mixed>  $syncValues
+     */
+    private function authorizeSyncRemovals(RestifyRequest $request, BelongsToMany $eagerField, EloquentBelongsToMany $relationship, string $relatedPivotKeyName, array $syncValues): void
+    {
+        $removedPivots = $relationship->newPivotQuery()
+            ->whereNotIn($relatedPivotKeyName, $syncValues)
+            ->get();
+
+        foreach ($removedPivots as $attributes) {
+            $eagerField->authorizeToDetach($request, $relationship->newExistingPivot((array) $attributes));
+        }
     }
 
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)
