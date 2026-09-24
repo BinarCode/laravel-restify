@@ -595,7 +595,9 @@ class PublishAuthCommand extends Command
      * Parses one `use` import statement's tokens - already sliced to exclude
      * the leading `use` keyword and the trailing `;` - into `alias =>
      * fully-qualified name` pairs, resolving both the flat form (`Foo\Bar`,
-     * `Foo\Bar as Baz`) and the grouped form (`Foo\{Bar, Baz as Qux}`).
+     * `Foo\Bar as Baz`) and the grouped form (`Foo\{Bar, Baz as Qux}`), and a
+     * leading `\` on the flat form or the group prefix (`\Foo\Bar`,
+     * `\Foo\{Bar}`), which the tokenizer keeps as part of the name.
      * `use function`/`use const` imports are ignored: neither can ever alias
      * to the `Route` class this command cares about.
      *
@@ -632,6 +634,14 @@ class PublishAuthCommand extends Command
             while ($index < $count && $tokens[$index]->is([T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED, T_NS_SEPARATOR])) {
                 $name .= $tokens[$index]->text;
                 $index++;
+            }
+
+            // A leading `\` is only legal on the first name of a `use` clause
+            // (`use \Foo\Bar;`, `use \Foo\{Bar};`), never on a member inside a
+            // group, so it is only ever stripped here, where $groupPrefix is
+            // still empty.
+            if ($groupPrefix === '' && str_starts_with($name, '\\')) {
+                $name = substr($name, 1);
             }
 
             if ($index < $count && $tokens[$index]->text === '{') {

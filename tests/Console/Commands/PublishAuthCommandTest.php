@@ -529,6 +529,67 @@ class PublishAuthCommandTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_leading_backslash_on_an_existing_flat_route_facade_import_is_recognised_and_not_duplicated(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\nuse \\Illuminate\\Support\\Facades\\Route;\n\nRoute::restifyAuth();\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(1, substr_count($routes, 'use \\Illuminate\\Support\\Facades\\Route;'));
+        $this->assertSame(
+            "<?php\n\nuse \\Illuminate\\Support\\Facades\\Route;\n\n".self::REMAINING_AFTER_LOGIN."\n\n",
+            Str::before($routes, "Route::post('login'")
+        );
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function a_leading_backslash_on_an_existing_grouped_route_facade_import_is_recognised_and_not_duplicated(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\nuse \\Illuminate\\Support\\Facades\\{Auth, Route};\n\nRoute::restifyAuth();\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(0, substr_count($routes, 'use Illuminate\\Support\\Facades\\Route;'));
+        $this->assertSame(
+            "<?php\n\nuse \\Illuminate\\Support\\Facades\\{Auth, Route};\n\n".self::REMAINING_AFTER_LOGIN."\n\n",
+            Str::before($routes, "Route::post('login'")
+        );
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function a_leading_backslash_on_a_conflicting_route_import_is_refused_and_the_file_is_left_unchanged(): void
+    {
+        $original = "<?php\n\nuse \\Foo\\Route;\n\nRoute::restifyAuth();\n";
+        $this->files->put($this->apiRoutesPath, $original);
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->expectsOutputToContain('already imports')
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertSame($original, $this->files->get($this->apiRoutesPath));
+    }
+
+    #[Test]
     public function re_requesting_an_already_published_action_warns_and_restores_a_deleted_controller(): void
     {
         $this->artisan('restify:auth', ['--actions' => 'login'])->assertExitCode(0)->run();
