@@ -172,6 +172,7 @@ class ResetPasswordTest extends IntegrationTestCase
     #[Test]
     public function known_and_unknown_emails_share_the_same_rate_limit_and_get_an_identical_429(): void
     {
+        $this->freezeTime();
         config(['cache.default' => 'array']);
         $this->withMiddleware(ThrottleRequests::class);
 
