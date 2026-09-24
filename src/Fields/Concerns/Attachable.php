@@ -83,34 +83,38 @@ trait Attachable
 
     public function authorizeToAttach(RestifyRequest $request)
     {
-        collect(Arr::wrap($request->input($request->relatedRepository)))->each(function ($relatedRepositoryId) use ($request) {
+        $relatedRepositoryIds = Arr::wrap($request->input($request->relatedRepositoryKey()));
+
+        foreach ($relatedRepositoryIds as $relatedRepositoryId) {
             $pivot = $this->initializePivot(
                 $request,
-                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(),
+                $request->findModelOrFail()->{$this->relation}(),
                 $relatedRepositoryId
             );
 
             if (! $this->authorizedToAttach($request, $pivot)) {
                 throw new AuthorizationException;
             }
-        });
+        }
 
         return $this;
     }
 
     public function authorizeToSync(RestifyRequest $request)
     {
-        collect(Arr::wrap($request->input($request->relatedRepository)))->each(function ($relatedRepositoryId) use ($request) {
+        $relatedRepositoryIds = Arr::wrap($request->input($request->relatedRepositoryKey()));
+
+        foreach ($relatedRepositoryIds as $relatedRepositoryId) {
             $pivot = $this->initializePivot(
                 $request,
-                $request->findModelOrFail()->{$request->viaRelationship ?? $request->relatedRepository}(),
+                $request->findModelOrFail()->{$this->relation}(),
                 $relatedRepositoryId
             );
 
             if (! $this->authorizedToSync($request, $pivot)) {
                 throw new AuthorizationException;
             }
-        });
+        }
 
         return $this;
     }
@@ -133,7 +137,7 @@ trait Attachable
 
     public function initializePivot(RestifyRequest $request, $relationship, $relatedKey)
     {
-        $parentKey = $request->repositoryId;
+        $parentKey = $request->route('repositoryId');
 
         $parentKeyName = $relationship->getParentKeyName();
         $relatedKeyName = $relationship->getRelatedKeyName();

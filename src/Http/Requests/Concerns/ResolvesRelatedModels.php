@@ -20,7 +20,7 @@ trait ResolvesRelatedModels
      */
     protected function relatedModels(): Collection
     {
-        $table = $this->relatedRepository;
+        $table = $this->relatedRepositoryKey();
 
         $relatedRepositoryClass = Restify::repositoryForTable($table);
 

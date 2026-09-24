@@ -14,6 +14,6 @@ class RepositoryPatchController extends RepositoryController
         /** * @var Repository $repository */
         $repository = $request->repositoryWith($model);
 
-        return $repository->allowToPatch($request)->patch($request, request('repositoryId'));
+        return $repository->allowToPatch($request)->patch($request, $request->repositoryIdFromRoute());
     }
 }

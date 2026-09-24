@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Company;
 
+use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -25,6 +26,13 @@ class Company extends Model
             ->withPivot([
                 'is_admin',
             ])
+            ->withTimestamps();
+    }
+
+    public function deniedRoles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'company_denied_role', 'company_id', 'role_id')
+            ->using(CompanyDeniedRolePivot::class)
             ->withTimestamps();
     }
 
