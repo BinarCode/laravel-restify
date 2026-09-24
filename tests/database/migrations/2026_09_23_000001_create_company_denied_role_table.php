@@ -13,6 +13,7 @@ class CreateCompanyDeniedRoleTable extends Migration
         Schema::create('company_denied_role', function (Blueprint $table): void {
             $table->foreignId('company_id')->constrained('companies');
             $table->foreignId('role_id')->constrained('roles');
+            $table->boolean('is_admin')->nullable();
             $table->timestamps();
         });
     }
