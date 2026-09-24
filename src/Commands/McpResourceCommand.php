@@ -6,6 +6,7 @@ use Illuminate\Console\ConfirmableTrait;
 use Illuminate\Console\GeneratorCommand;
 use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Str;
+use Symfony\Component\Console\Input\InputOption;
 
 class McpResourceCommand extends GeneratorCommand
 {
@@ -59,5 +60,12 @@ class McpResourceCommand extends GeneratorCommand
     protected function getDefaultNamespace($rootNamespace)
     {
         return $rootNamespace.'\\Restify\\Mcp\\Resources';
+    }
+
+    protected function getOptions(): array
+    {
+        return [
+            ['force', null, InputOption::VALUE_NONE, 'Create the class even if the resource already exists.'],
+        ];
     }
 }

@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Exceptions\Solutions;
 
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use OpenAI\Laravel\Facades\OpenAI;
 use Spatie\Backtrace\Backtrace;
@@ -63,12 +64,14 @@ class OpenAiSolution
     {
         $applicationFrame = $this->getApplicationFrame($throwable);
 
-        $snippet = $applicationFrame->getSnippet(15);
+        $snippet = $applicationFrame === null
+            ? ''
+            : Collection::make($applicationFrame->getSnippet(15))->map(fn ($line, $number) => $number.' '.$line)->join(PHP_EOL);
 
         return (string) view('restify::prompts.prompt', [
-            'snippet' => collect($snippet)->map(fn ($line, $number) => $number.' '.$line)->join(PHP_EOL),
-            'file' => $applicationFrame->file,
-            'line' => $applicationFrame->lineNumber,
+            'snippet' => $snippet,
+            'file' => $applicationFrame->file ?? $throwable->getFile(),
+            'line' => $applicationFrame->lineNumber ?? $throwable->getLine(),
             'exception' => $throwable->getMessage(),
         ]);
     }
