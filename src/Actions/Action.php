@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Traits\AuthorizedToRun;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Traits\Make;
 use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
@@ -20,6 +21,7 @@ use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
+use ReflectionMethod;
 use ReturnTypeWillChange;
 
 /**
@@ -29,6 +31,7 @@ use ReturnTypeWillChange;
  */
 abstract class Action implements JsonSerializable
 {
+    use AuthorizedToRun;
     use AuthorizedToSee;
     use Make;
     use ProxiesCanSeeToGate;
@@ -53,11 +56,6 @@ abstract class Action implements JsonSerializable
     {
         //
     }
-
-    /**
-     * The callback used to authorize running the action.
-     */
-    public ?Closure $runCallback = null;
 
     /**
      * Action description, usually used in the UI or MCP.
@@ -95,29 +93,6 @@ abstract class Action implements JsonSerializable
         return property_exists($target, 'uriKey')
             ? $target::$uriKey
             : Str::slug(Restify::humanize($target), '-', null);
-    }
-
-    /**
-     * Determine if the action is executable for the given request.
-     *
-     * @param  Model  $model
-     * @return bool
-     */
-    public function authorizedToRun(Request $request, $model)
-    {
-        return $this->runCallback ? call_user_func($this->runCallback, $request, $model) : true;
-    }
-
-    /**
-     * Set the callback to be run to authorize running the action.
-     *
-     * @return $this
-     */
-    public function canRun(Closure $callback)
-    {
-        $this->runCallback = $callback;
-
-        return $this;
     }
 
     /**
@@ -166,35 +141,77 @@ abstract class Action implements JsonSerializable
         }
 
         if ($this->isStandalone()) {
+            $this->authorizeRun($request, null);
+
             return Transaction::run(fn () => $this->handle($request));
         }
 
         $response = null;
 
         if (! $request->isForRepositoryRequest()) {
-            $request->collectRepositories($this, static::$chunkCount, function ($models) use ($request, &$response) {
-                Transaction::run(function () use ($models, $request, &$response) {
-                    $response = $this->handle($request, $models);
+            $this->runIndexAction($request, function (Collection $models) use ($request, &$response) {
+                /** @var Collection<int, Model> $models */
+                foreach ($models as $model) {
+                    $this->authorizeRun($request, $model);
+                }
 
-                    $models->each(function (Model $model) {
-                        //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
-                        //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
-                        //                        }
-                    });
+                $response = $this->handle($request, $models);
+
+                $models->each(function (Model $model) {
+                    //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
+                    //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
+                    //                        }
                 });
             });
         } else {
-            Transaction::run(function () use ($request, &$response) {
-                $response = $this->handle(
-                    $request,
-                    $model = tap($request->modelQuery(), function ($query) use ($request) {
-                        static::indexQuery($request, $query);
-                    })->firstOrFail()
-                );
+            $model = tap($request->modelQuery(), function ($query) use ($request) {
+                static::indexQuery($request, $query);
+            })->firstOrFail();
+
+            $this->authorizeRun($request, $model);
+
+            Transaction::run(function () use ($model, $request, &$response) {
+                $response = $this->handle($request, $model);
             });
         }
 
         return $response;
+    }
+
+    /**
+     * Run the index/'all' callback, chunk by chunk.
+     *
+     * Without run authorization, each chunk commits on its own, matching the pre-canRun
+     * behavior. With run authorization (a canRun callback, or an overridden
+     * authorizedToRun()), every chunk runs inside a single transaction so the owner's
+     * all-or-nothing decision applies to the whole batch.
+     */
+    private function runIndexAction(ActionRequest $request, Closure $callback): void
+    {
+        if ($this->hasRunAuthorization()) {
+            Transaction::run(fn () => $request->collectRepositories($this, static::$chunkCount, $callback));
+
+            return;
+        }
+
+        $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($callback) {
+            Transaction::run(fn () => $callback($models));
+        });
+    }
+
+    /**
+     * Determine if running this action is subject to per-model authorization, either
+     * through a canRun callback or an authorizedToRun() override.
+     */
+    private function hasRunAuthorization(): bool
+    {
+        if ($this->runCallback !== null) {
+            return true;
+        }
+
+        $declaringClass = (new ReflectionMethod($this, 'authorizedToRun'))->getDeclaringClass()->getName();
+
+        return $declaringClass !== self::class;
     }
 
     public function skipFieldFill(RestifyRequest $request): bool

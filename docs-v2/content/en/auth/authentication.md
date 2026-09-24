@@ -293,6 +293,19 @@ After making a POST request to this endpoint, an email will be sent to the provi
 
 This configuration can be found in the `config/restify.php` file. The FRONTEND_APP_URL should be set to the URL of your frontend app, where the user lands when they click the action button in the email. The "token" is a variable that will be used to reset the password later on.
 
+You can override this template per request by sending a `url` field alongside the email:
+
+```json
+{
+    "email": "demo@restify.com",
+    "url": "https://app.example.com/password/reset?token={token}&email={email}"
+}
+```
+
+For security, `url` is only accepted when its scheme, host, and port all match one of: the configured `password_reset_url`, `config('app.url')`, or - if set - `config('restify.auth.frontend_app_url')`. A subdomain of an allowed host does not count as a match, an `http` url is rejected when the matching config entry is `https`, a different port is rejected even on an otherwise matching host, and a url carrying userinfo (`user:pass@host`) is always rejected outright. Anything that doesn't match is rejected with a `422` validation error. This stops the endpoint from being used to mail a victim a valid reset link pointing at an attacker-controlled domain.
+
+The path, query string, and fragment are also checked, but only for their characters, not their destination: they may only contain RFC 3986 unreserved/reserved characters, narrowed to exclude `[`, `]`, `(`, `)`, `<`, `>`, `"`, `'`, `` ` ``, and `{`/`}` (outside the literal `{token}`/`{email}` placeholders), plus whitespace and control characters. This is because the mailed reset link is rendered through a Markdown template, and those characters could otherwise be used to break out of the intended `[text](url)` link and inject a second, attacker-controlled one carrying the real token - so whatever frontend host you allow here must still not itself have an open redirect, or an attacker could send a victim through it to an arbitrary destination.
+
 To view the email content during development, you can change the following configuration in your .env file:
 
 ```dotenv

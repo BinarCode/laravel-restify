@@ -11,6 +11,8 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Route;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 use function PHPUnit\Framework\assertInstanceOf;
 use function PHPUnit\Framework\assertSame;
@@ -63,6 +65,67 @@ class FieldTest extends IntegrationTestCase
         $field->resolveForIndex((object) []);
 
         $this->assertEquals('Computed', $field->value);
+    }
+
+    #[Test]
+    #[TestWith(['resolve'], 'resolve')]
+    #[TestWith(['resolveForShow'], 'resolveForShow')]
+    #[TestWith(['resolveForIndex'], 'resolveForIndex')]
+    public function an_unlabeled_computed_field_serializes_under_the_computed_key(string $resolveMethod): void
+    {
+        $field = Field::make(fn () => 'Computed value');
+
+        $field->{$resolveMethod}((object) []);
+
+        $this->assertSame('Computed value', $field->value);
+        $this->assertSame(['Computed' => 'Computed value'], $field->serializeToValue(new RestifyRequest));
+        $this->assertSame('Computed', $field->jsonSerialize()['attribute']);
+    }
+
+    #[Test]
+    public function a_labeled_computed_field_still_serializes_under_its_label(): void
+    {
+        $field = Field::make(fn () => 'Computed value')->label('custom_label');
+
+        $field->resolveForShow((object) []);
+
+        $this->assertSame(['custom_label' => 'Computed value'], $field->serializeToValue(new RestifyRequest));
+    }
+
+    #[Test]
+    #[TestWith(['resolve'], 'resolve')]
+    #[TestWith(['resolveForShow'], 'resolveForShow')]
+    #[TestWith(['resolveForIndex'], 'resolveForIndex')]
+    public function an_invokable_object_computed_field_serializes_under_the_computed_key(string $resolveMethod): void
+    {
+        $field = Field::make(new class
+        {
+            public function __invoke(): string
+            {
+                return 'Invokable value';
+            }
+        });
+
+        $field->{$resolveMethod}((object) []);
+
+        $this->assertTrue($field->computed());
+        $this->assertSame('Invokable value', $field->value);
+        $this->assertSame(['Computed' => 'Invokable value'], $field->serializeToValue(new RestifyRequest));
+    }
+
+    #[Test]
+    #[TestWith(['resolve'], 'resolve')]
+    #[TestWith(['resolveForShow'], 'resolveForShow')]
+    #[TestWith(['resolveForIndex'], 'resolveForIndex')]
+    public function a_field_literally_named_computed_resolves_like_any_other_field(string $resolveMethod): void
+    {
+        $field = Field::new('Computed', fn () => 'Named value');
+
+        $field->{$resolveMethod}((object) []);
+
+        $this->assertFalse($field->computed());
+        $this->assertSame('Named value', $field->value);
+        $this->assertSame(['Computed' => 'Named value'], $field->serializeToValue(new RestifyRequest));
     }
 
     public function test_fields_may_have_callback_resolver()

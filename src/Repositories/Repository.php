@@ -33,6 +33,8 @@ use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\ConditionallyLoadsAttributes;
 use Illuminate\Http\Resources\DelegatesToResource;
@@ -108,6 +110,12 @@ class Repository implements JsonSerializable, RestifySearchable
     use Testing;
     use ValidatingTrait;
     use WithRoutePrefix;
+
+    /**
+     * The field a bulk update/delete row must carry to identify its model.
+     * Always `id`, the wire contract - never the model's key/route key name.
+     */
+    final public const BULK_ID_FIELD = 'id';
 
     /**
      * This is named `resource` because of the forwarding properties from DelegatesToResource trait.
@@ -394,7 +402,8 @@ class Repository implements JsonSerializable, RestifySearchable
             array_values($this->filter($this->{$method}($request)))
         )->merge(
             $this->extraFields($request)
-        )->setRepository($this);
+        )->setRepository($this)
+            ->assignComputedFieldLabels();
     }
 
     public function extraFields(RestifyRequest $request): array
@@ -990,6 +999,8 @@ class Repository implements JsonSerializable, RestifySearchable
     {
         $eagerField = $this->authorizeBelongsToMany($request)->belongsToManyField($request);
 
+        $eagerField->authorizeToAttach($request);
+
         DB::transaction(function () use ($request, $pivots, $eagerField) {
             $fields = $eagerField->collectPivotFields()->filter(fn (
                 $pivotField
@@ -1001,8 +1012,6 @@ class Repository implements JsonSerializable, RestifySearchable
                 static::validatorForAttach($request)->validate();
 
                 static::fillFields($request, $pivot, $fields);
-
-                $eagerField->authorizeToAttach($request);
 
                 return $pivot;
             })->each->save();
@@ -1021,7 +1030,19 @@ class Repository implements JsonSerializable, RestifySearchable
 
         $eagerField->authorizeToSync($request);
 
-        $this->model()->{$eagerField->relation}()->sync($pivots->all());
+        $relationship = $this->model()->{$eagerField->relation}();
+
+        if (! $relationship instanceof EloquentBelongsToMany) {
+            abort(JsonResponse::HTTP_BAD_REQUEST, "Relation [{$eagerField->relation}] on [".class_basename($this).'] must be a BelongsToMany or MorphToMany.');
+        }
+
+        $relatedPivotKeyName = $relationship->getRelatedPivotKeyName();
+
+        $syncValues = $pivots
+            ->map(fn ($relatedKey) => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
+            ->all();
+
+        $relationship->sync($syncValues);
 
         return ok();
     }
@@ -1031,7 +1052,7 @@ class Repository implements JsonSerializable, RestifySearchable
         /** * @var BelongsToMany $eagerField */
         $eagerField = $request->repository()::collectRelated()
             ->forManyToManyRelations($request)
-            ->firstWhere('attribute', $request->relatedRepository);
+            ->firstWhere('attribute', $request->relatedRepositoryKey());
 
         $deleted = DB::transaction(function () use ($pivots, $eagerField, $request) {
             return $pivots
@@ -1076,7 +1097,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function allowToAttach(RestifyRequest $request, Collection $attachers): self
     {
-        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'attach'.Str::studly($request->relatedRepositoryKey());
 
         foreach ($attachers as $model) {
             $this->authorizeToAttach($request, $methodGuesser, $model);
@@ -1087,7 +1108,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function allowToSync(RestifyRequest $request, Collection $attachers): self
     {
-        $methodGuesser = 'sync'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'sync'.Str::studly($request->relatedRepositoryKey());
 
         $this->authorizeToSync($request, $methodGuesser, $attachers);
 
@@ -1096,7 +1117,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function allowToDetach(RestifyRequest $request, Collection $attachers): self
     {
-        $methodGuesser = 'detach'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'detach'.Str::studly($request->relatedRepositoryKey());
 
         foreach ($attachers as $model) {
             $this->authorizeToDetach($request, $methodGuesser, $model);

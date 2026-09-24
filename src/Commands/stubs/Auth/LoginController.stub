@@ -2,6 +2,8 @@
 namespace {{namespace}};
 
 use App\Models\User;
+use Closure;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
@@ -12,22 +14,35 @@ class LoginController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email'],
-            'password' => ['required'],
+            'password' => ['required', self::scalarPasswordRule()],
         ]);
 
         /** * @var User $user */
         if (! $user = config('restify.auth.user_model')::query()
-            ->whereEmail($request->input('email'))
+            ->where('email', $request->input('email'))
             ->first()) {
-            abort(401, 'Invalid credentials.');
+            abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }
 
-        if (! Hash::check($request->input('password'), $user->password)) {
-            abort(401, 'Invalid credentials.');
+        if (! Hash::check((string) $request->input('password'), $user->getAuthPassword())) {
+            abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }
 
         return rest($user)->indexMeta([
             'token' => $user->createToken('login')->plainTextToken,
         ]);
+    }
+
+    /**
+     * A non-scalar password (array/object) can't be hashed - reject it with
+     * a validation error instead of reaching Hash::check() and crashing.
+     */
+    protected static function scalarPasswordRule(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            if (! is_scalar($value)) {
+                $fail(__('The :attribute must be a string.'));
+            }
+        };
     }
 }

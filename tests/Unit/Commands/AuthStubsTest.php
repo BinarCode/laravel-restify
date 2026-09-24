@@ -60,6 +60,19 @@ class AuthStubsTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function the_forgot_password_stub_restricts_the_client_supplied_url_host(): void
+    {
+        $contents = $this->stubContents('ForgotPasswordController.stub');
+
+        $this->assertStringContainsString(
+            "'url' => ['sometimes', 'string', 'max:2048', AllowedResetUrlHost::fromConfig()],",
+            $contents
+        );
+        $this->assertStringContainsString('rawurlencode($token)', $contents);
+        $this->assertStringContainsString('rawurlencode($user->getEmailForPasswordReset())', $contents);
+    }
+
+    #[Test]
     public function the_reset_password_stub_types_the_user_as_can_reset_password(): void
     {
         $contents = $this->stubContents('ResetPasswordController.stub');

@@ -104,7 +104,8 @@ class BulkModelLoadingTest extends IntegrationTestCase
         $this->postJson(PostRepository::route('bulk/update'), [
             ['id' => $post->getKey(), 'title' => 'Updated title'],
             ['title' => 'No id here'],
-        ])->assertNotFound();
+        ])->assertUnprocessable()
+            ->assertJsonValidationErrors('1.id');
 
         $this->assertDatabaseHas(Post::class, ['id' => $post->getKey(), 'title' => 'Original title']);
         $this->assertDatabaseMissing(Post::class, ['title' => 'Updated title']);

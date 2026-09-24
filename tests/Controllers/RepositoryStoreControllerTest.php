@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Testing\Fluent\AssertableJson;
 use Illuminate\Testing\TestResponse;
+use PHPUnit\Framework\Attributes\Test;
 
 class RepositoryStoreControllerTest extends IntegrationTestCase
 {
@@ -60,6 +61,55 @@ class RepositoryStoreControllerTest extends IntegrationTestCase
             ->model();
 
         $this->assertModelExists($post);
+    }
+
+    #[Test]
+    public function store_response_does_not_crash_on_an_unlabeled_computed_field(): void
+    {
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStore')
+            ->andReturn([
+                Field::new('title'),
+
+                field(fn () => 'Computed value'),
+            ]);
+
+        $this->postJson(PostRepository::route(), [
+            'title' => 'Some post title',
+        ])
+            ->assertCreated()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->where('data.attributes.Computed', 'Computed value')
+                    ->etc()
+            );
+    }
+
+    #[Test]
+    public function store_ignores_a_computed_input_key_for_an_unlabeled_computed_field(): void
+    {
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStore')
+            ->andReturn([
+                Field::new('title'),
+
+                field(fn () => 'Computed value'),
+            ]);
+
+        $this->postJson(PostRepository::route(), [
+            'title' => 'Some post title',
+            'Computed' => 'x',
+        ])
+            ->assertCreated()
+            ->assertJson(
+                fn (AssertableJson $json) => $json
+                    ->where('data.attributes.Computed', 'Computed value')
+                    ->etc()
+            );
+
+        $this->assertDatabaseHas(Post::class, [
+            'title' => 'Some post title',
+        ]);
     }
 
     public function test_will_store_only_defined_fields_from_fields_for_store(): void

@@ -107,16 +107,24 @@ abstract class Getter implements JsonSerializable
         throw_unless(method_exists($this, 'handle'), new Exception('Missing handle method from the getter.'));
 
         if ($request->isForRepositoryRequest()) {
-            return $this->handle(
-                $request,
-                tap(
-                    $request->modelQuery(),
-                    fn (Builder $query) => static::indexQuery($request, $query)
-                )->firstOrFail()
-            );
+            $model = tap(
+                $request->modelQuery(),
+                fn (Builder $query) => static::indexQuery($request, $query)
+            )->firstOrFail();
+
+            $this->authorizeRun($request, $model);
+
+            return $this->handle($request, $model);
         }
 
+        $this->authorizeRun($request, null);
+
         return $this->handle($request);
+    }
+
+    protected function authorizeRunMessage(): string
+    {
+        return 'Not authorized to run this getter.';
     }
 
     public function withoutMiddleware(string|array $middleware): self

@@ -38,7 +38,7 @@ class RepositoryAttachControllerTest extends IntegrationTestCase
             'is_admin' => true,
         ])
             ->assertCreated()->assertJsonFragment([
-                'company_id' => '1',
+                'company_id' => 1,
                 'user_id' => $user->getKey(),
                 'is_admin' => true,
             ]);
@@ -147,7 +147,7 @@ class RepositoryAttachControllerTest extends IntegrationTestCase
             'users' => [1, 2],
             'is_admin' => true,
         ])->assertCreated()->assertJsonFragment([
-            'company_id' => '1',
+            'company_id' => 1,
             'user_id' => $user->getKey(),
             'is_admin' => true,
         ]);

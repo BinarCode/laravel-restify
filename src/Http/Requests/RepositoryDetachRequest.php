@@ -11,7 +11,7 @@ class RepositoryDetachRequest extends RestifyRequest
     use ResolvesRelatedModels;
 
     /**
-     * @return Collection<int, Model|null>
+     * @return Collection<int, Model>
      */
     public function detachRelatedModels(): Collection
     {

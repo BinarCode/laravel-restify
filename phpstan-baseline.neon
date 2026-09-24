@@ -34,12 +34,6 @@ parameters:
 			path: src/Actions/Action.php
 
 		-
-			message: '#^Cannot call method each\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Actions/Action.php
-
-		-
 			message: '#^Cannot call method user\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -434,30 +428,6 @@ parameters:
 			identifier: missingType.iterableValue
 			count: 1
 			path: src/Bootstrap/RoutesDefinition.php
-
-		-
-			message: '#^Binary operation "\." between non\-falsy\-string and mixed results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 2
-			path: src/Cache/PolicyCache.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Cache\\PolicyCache\:\:enabled\(\) should return bool but returns mixed\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Cache/PolicyCache.php
-
-		-
-			message: '#^Parameter \#1 \$object_or_class of function method_exists expects object\|string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Cache/PolicyCache.php
-
-		-
-			message: '#^Parameter \#3 \$ttl of static method Illuminate\\Cache\\Repository\:\:put\(\) expects DateInterval\|DateTimeInterface\|int\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Cache/PolicyCache.php
 
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Cache\\RestifyCache\:\:enabled\(\) should return bool but returns mixed\.$#'
@@ -2362,12 +2332,6 @@ parameters:
 			path: src/Eager/Related.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Eager\\Related\:\:resolveField\(\) should return Binaryk\\LaravelRestify\\Fields\\EagerField but returns mixed\.$#'
-			identifier: return.type
-			count: 1
-			path: src/Eager/Related.php
-
-		-
 			message: '#^Property Binaryk\\LaravelRestify\\Eager\\Related\:\:\$columns type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
@@ -2758,19 +2722,7 @@ parameters:
 			path: src/Fields/BelongsTo.php
 
 		-
-			message: '#^Cannot access property \$withTimestamps on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
 			message: '#^Cannot call method associate\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method createdAt\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsTo.php
@@ -2782,43 +2734,7 @@ parameters:
 			path: src/Fields/BelongsTo.php
 
 		-
-			message: '#^Cannot call method forceFill\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method getForeignPivotKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
 			message: '#^Cannot call method getModel\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method getParentKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method getRelatedKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method getRelatedPivotKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method newPivot\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsTo.php
@@ -2831,12 +2747,6 @@ parameters:
 
 		-
 			message: '#^Cannot call method toArray\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Cannot call method updatedAt\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsTo.php
@@ -2974,18 +2884,6 @@ parameters:
 			path: src/Fields/BelongsTo.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Parameter \#2 \$model of static method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:fillFields\(\) expects Illuminate\\Database\\Eloquent\\Model, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
 			message: '#^Parameter \#2 \$pivot of method Binaryk\\LaravelRestify\\Fields\\BelongsTo\:\:authorizedToAttach\(\) expects Illuminate\\Database\\Eloquent\\Relations\\Pivot, mixed given\.$#'
 			identifier: argument.type
 			count: 1
@@ -2995,12 +2893,6 @@ parameters:
 			message: '#^Parameter \#2 \$pivot of method Binaryk\\LaravelRestify\\Fields\\BelongsTo\:\:authorizedToSync\(\) expects Illuminate\\Database\\Eloquent\\Relations\\Pivot, mixed given\.$#'
 			identifier: argument.type
 			count: 1
-			path: src/Fields/BelongsTo.php
-
-		-
-			message: '#^Possibly invalid array key type mixed\.$#'
-			identifier: array.invalidKey
-			count: 4
 			path: src/Fields/BelongsTo.php
 
 		-
@@ -3028,61 +2920,13 @@ parameters:
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Cannot access property \$withTimestamps on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method createdAt\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method forceFill\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 2
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Cannot call method get\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Cannot call method getForeignPivotKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method getParentKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method getRelatedKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method getRelatedPivotKeyName\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Cannot call method map\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method newPivot\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsToMany.php
@@ -3095,12 +2939,6 @@ parameters:
 
 		-
 			message: '#^Cannot call method toArray\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Cannot call method updatedAt\(\) on mixed\.$#'
 			identifier: method.nonObject
 			count: 1
 			path: src/Fields/BelongsToMany.php
@@ -3196,24 +3034,6 @@ parameters:
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:resolve\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:resolve\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:resolve\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:validate\(\) has parameter \$pivot with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -3244,19 +3064,7 @@ parameters:
 			path: src/Fields/BelongsToMany.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Fields/BelongsToMany.php
-
-		-
 			message: '#^Parameter \#1 \$pivot of method Binaryk\\LaravelRestify\\Repositories\\PivotsCollection\<\(int\|string\),Binaryk\\LaravelRestify\\Fields\\Field\>\:\:resolveFromPivot\(\) expects Illuminate\\Database\\Eloquent\\Relations\\Pivot, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Parameter \#2 \$model of static method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:fillFields\(\) expects Illuminate\\Database\\Eloquent\\Model, mixed given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Fields/BelongsToMany.php
@@ -3271,12 +3079,6 @@ parameters:
 			message: '#^Parameter \#2 \$pivot of method Binaryk\\LaravelRestify\\Fields\\BelongsToMany\:\:authorizedToSync\(\) expects Illuminate\\Database\\Eloquent\\Relations\\Pivot, mixed given\.$#'
 			identifier: argument.type
 			count: 1
-			path: src/Fields/BelongsToMany.php
-
-		-
-			message: '#^Possibly invalid array key type mixed\.$#'
-			identifier: array.invalidKey
-			count: 4
 			path: src/Fields/BelongsToMany.php
 
 		-
@@ -3378,24 +3180,6 @@ parameters:
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Fields\\EagerField\:\:qualifySortable\(\) should return string\|null but returns mixed\.$#'
 			identifier: return.type
-			count: 1
-			path: src/Fields/EagerField.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\EagerField\:\:resolve\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/EagerField.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\EagerField\:\:resolve\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/EagerField.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\EagerField\:\:resolve\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
 			count: 1
 			path: src/Fields/EagerField.php
 
@@ -3534,7 +3318,7 @@ parameters:
 		-
 			message: '#^Call to function is_callable\(\) with callable\(\)\: mixed will always evaluate to true\.$#'
 			identifier: function.alreadyNarrowedType
-			count: 2
+			count: 1
 			path: src/Fields/Field.php
 
 		-
@@ -3826,42 +3610,6 @@ parameters:
 			path: src/Fields/Field.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolve\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolve\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolve\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveForIndex\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveForIndex\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveForIndex\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Field.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveValueBeforeUpdate\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -4044,13 +3792,7 @@ parameters:
 		-
 			message: '#^Parameter \#2 \$attribute of method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveAttribute\(\) expects string, \(callable\)\|string\|null given\.$#'
 			identifier: argument.type
-			count: 3
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Parameter \#2 \$attribute of method Binaryk\\LaravelRestify\\Fields\\Field\:\:resolveAttribute\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 3
+			count: 6
 			path: src/Fields/Field.php
 
 		-
@@ -4242,12 +3984,6 @@ parameters:
 		-
 			message: '#^Result of && is always false\.$#'
 			identifier: booleanAnd.alwaysFalse
-			count: 1
-			path: src/Fields/Field.php
-
-		-
-			message: '#^Result of \|\| is always true\.$#'
-			identifier: booleanOr.alwaysTrue
 			count: 1
 			path: src/Fields/Field.php
 
@@ -4858,12 +4594,6 @@ parameters:
 			path: src/Fields/HasMany.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\HasMany\:\:resolve\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/HasMany.php
-
-		-
 			message: '#^PHPDoc tag @var for variable \$paginator contains generic class Illuminate\\Database\\Eloquent\\Relations\\Relation but does not specify its types\: TRelatedModel, TDeclaringModel, TResult$#'
 			identifier: missingType.generics
 			count: 1
@@ -4892,24 +4622,6 @@ parameters:
 			identifier: missingType.parameter
 			count: 1
 			path: src/Fields/HasOne.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Image\:\:resolveForIndex\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Fields/Image.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Image\:\:resolveForIndex\(\) has parameter \$attribute with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Image.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Fields\\Image\:\:resolveForIndex\(\) has parameter \$repository with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Fields/Image.php
 
 		-
 			message: '#^Parameter \#1 \$path of method Illuminate\\Filesystem\\FilesystemAdapter\:\:exists\(\) expects string, \(callable\)\|string given\.$#'
@@ -6894,74 +6606,14 @@ parameters:
 			path: src/Getters/Getter.php
 
 		-
-			message: '#^Binary operation "\*" between mixed and 60 results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Cannot access property \$password on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
 			message: '#^Cannot access property \$plainTextToken on mixed\.$#'
 			identifier: property.nonObject
 			count: 1
 			path: src/Http/Controllers/Auth/LoginController.php
 
 		-
-			message: '#^Cannot call method createToken\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Cannot call method first\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Cannot call method whereEmail\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Cannot call static method query\(\) on mixed\.$#'
-			identifier: staticMethod.nonObject
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\Auth\\LoginController\:\:__invoke\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#1 \$user of static method Illuminate\\Support\\Facades\\Auth\:\:login\(\) expects Illuminate\\Contracts\\Auth\\Authenticatable, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#1 \$value of method Carbon\\Carbon\:\:addMinutes\(\) expects float\|int, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Facades\\Hash\:\:check\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
-
-		-
-			message: '#^Parameter \#2 \$hashedValue of static method Illuminate\\Support\\Facades\\Hash\:\:check\(\) expects string, mixed given\.$#'
-			identifier: argument.type
+			message: '#^Method Binaryk\\LaravelRestify\\Contracts\\Sanctumable\:\:createToken\(\) invoked with 3 parameters, 1\-2 required\.$#'
+			identifier: arguments.count
 			count: 1
 			path: src/Http/Controllers/Auth/LoginController.php
 
@@ -7197,12 +6849,6 @@ parameters:
 			path: src/Http/Controllers/RepositoryAttachController.php
 
 		-
-			message: '#^Cannot call method initializePivot\(\) on Binaryk\\LaravelRestify\\Fields\\BelongsToMany\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/RepositoryAttachController.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryAttachController\:\:__invoke\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -7215,28 +6861,10 @@ parameters:
 			path: src/Http/Controllers/RepositoryAttachController.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryAttachController.php
-
-		-
-			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/Controllers/RepositoryAttachController.php
-
-		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
 			count: 2
 			path: src/Http/Controllers/RepositoryAttachController.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryDestroyBulkController\:\:__invoke\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Controllers/RepositoryDestroyBulkController.php
 
 		-
 			message: '#^Parameter \#1 \$repositoryIds of method Binaryk\\LaravelRestify\\Http\\Requests\\RestifyRequest\:\:modelsQuery\(\) expects list\<int\|string\>, array\<int, int\|string\> given\.$#'
@@ -7247,24 +6875,6 @@ parameters:
 		-
 			message: '#^Parameter \#2 \$ids of method Illuminate\\Database\\Eloquent\\ModelNotFoundException\<Illuminate\\Database\\Eloquent\\Model\>\:\:setModel\(\) expects array\<int, int\|string\>\|int\|string, list\<int\|string\|null\> given\.$#'
 			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDestroyBulkController.php
-
-		-
-			message: '#^Parameter \#2 \$keys of method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryDestroyBulkController\:\:resolveBulkModels\(\) expects array\<int\|string, int\|string\|null\>, array given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDestroyBulkController.php
-
-		-
-			message: '#^Parameter \#3 \$row of method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:deleteBulk\(\) expects int, int\|string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDestroyBulkController.php
-
-		-
-			message: '#^Possibly invalid array key type mixed\.$#'
-			identifier: offsetAccess.invalidOffset
 			count: 1
 			path: src/Http/Controllers/RepositoryDestroyBulkController.php
 
@@ -7317,12 +6927,6 @@ parameters:
 			path: src/Http/Controllers/RepositoryDetachController.php
 
 		-
-			message: '#^Cannot call method initializePivot\(\) on Binaryk\\LaravelRestify\\Fields\\BelongsToMany\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/RepositoryDetachController.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryDetachController\:\:__invoke\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
@@ -7331,18 +6935,6 @@ parameters:
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryDetachController\:\:belongsToManyField\(\) should return Binaryk\\LaravelRestify\\Fields\\BelongsToMany\|null but returns mixed\.$#'
 			identifier: return.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDetachController.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryDetachController.php
-
-		-
-			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
 			count: 1
 			path: src/Http/Controllers/RepositoryDetachController.php
 
@@ -7431,40 +7023,10 @@ parameters:
 			path: src/Http/Controllers/RepositorySyncController.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositorySyncController.php
-
-		-
-			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/Controllers/RepositorySyncController.php
-
-		-
 			message: '#^Unreachable statement \- code above always terminates\.$#'
 			identifier: deadCode.unreachable
 			count: 2
 			path: src/Http/Controllers/RepositorySyncController.php
-
-		-
-			message: '#^Cannot access offset ''id'' on mixed\.$#'
-			identifier: offsetAccess.nonOffsetAccessible
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
-
-		-
-			message: '#^Cannot call method validate\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryUpdateBulkController\:\:__invoke\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
 
 		-
 			message: '#^Parameter \#1 \$repositoryIds of method Binaryk\\LaravelRestify\\Http\\Requests\\RestifyRequest\:\:modelsQuery\(\) expects list\<int\|string\>, array\<int, int\|string\> given\.$#'
@@ -7474,18 +7036,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#2 \$ids of method Illuminate\\Database\\Eloquent\\ModelNotFoundException\<Illuminate\\Database\\Eloquent\\Model\>\:\:setModel\(\) expects array\<int, int\|string\>\|int\|string, list\<int\|string\|null\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
-
-		-
-			message: '#^Parameter \#2 \$keys of method Binaryk\\LaravelRestify\\Http\\Controllers\\RepositoryUpdateBulkController\:\:resolveBulkModels\(\) expects array\<int\|string, int\|string\|null\>, array\<mixed\> given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/RepositoryUpdateBulkController.php
-
-		-
-			message: '#^Parameter \#3 \$row of method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:updateBulk\(\) expects int, int\|string given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Http/Controllers/RepositoryUpdateBulkController.php
@@ -8199,82 +7749,10 @@ parameters:
 			path: src/Http/Requests/GetterRequest.php
 
 		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:get\(\) expects int\|string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Binaryk\\LaravelRestify\\Restify\:\:repositoryForTable\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Part \$table \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/Requests/RepositoryAttachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:get\(\) expects int\|string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Binaryk\\LaravelRestify\\Restify\:\:repositoryForTable\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
-			message: '#^Part \$table \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/Requests/RepositoryDetachRequest.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Requests\\RepositoryStoreBulkRequest\:\:collectInput\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1
 			path: src/Http/Requests/RepositoryStoreBulkRequest.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Http\\Request\:\:input\(\) expects string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
-
-		-
-			message: '#^Parameter \#1 \$key of method Illuminate\\Support\\Collection\<\(int\|string\),Illuminate\\Database\\Eloquent\\Model\>\:\:get\(\) expects int\|string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Binaryk\\LaravelRestify\\Restify\:\:repositoryForTable\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
-
-		-
-			message: '#^Part \$table \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Http/Requests/RepositorySyncRequest.php
 
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Requests\\RepositoryUpdateBulkRequest\:\:collectInput\(\) return type with generic class Illuminate\\Support\\Collection does not specify its types\: TKey, TValue$#'
@@ -12879,12 +12357,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Cannot call method sync\(\) on mixed\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Cannot call method tags\(\) on class\-string\|object\.$#'
 			identifier: method.nonObject
 			count: 1
@@ -14319,15 +13791,15 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:each\(\) expects callable\(mixed, int\|string\)\: mixed, Closure\(Binaryk\\LaravelRestify\\Fields\\Field\)\: \(Binaryk\\LaravelRestify\\Fields\\Field\|void\) given\.$#'
+			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:each\(\) expects callable\(mixed, int\|string\)\: mixed, Closure\(Binaryk\\LaravelRestify\\Fields\\Field\)\: Binaryk\\LaravelRestify\\Fields\\Field given\.$#'
 			identifier: argument.type
-			count: 1
+			count: 3
 			path: src/Repositories/Repository.php
 
 		-
 			message: '#^Parameter \#1 \$callback of method Illuminate\\Support\\Collection\<\(int\|string\),mixed\>\:\:each\(\) expects callable\(mixed, int\|string\)\: mixed, Closure\(Binaryk\\LaravelRestify\\Fields\\Field\)\: mixed given\.$#'
 			identifier: argument.type
-			count: 7
+			count: 5
 			path: src/Repositories/Repository.php
 
 		-
@@ -14583,12 +14055,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Str\:\:studly\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 3
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Parameter \#2 \$column of method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:castToTimestamp\(\) expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 1
@@ -14631,12 +14097,6 @@ parameters:
 			path: src/Repositories/Repository.php
 
 		-
-			message: '#^Parameter \#2 \$policyMethod of static method Binaryk\\LaravelRestify\\Cache\\PolicyCache\:\:keyForPolicyMethods\(\) expects string, iterable\|string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Repositories/Repository.php
-
-		-
 			message: '#^Parameter \#2 \$rules of static method Illuminate\\Support\\Facades\\Validator\:\:make\(\) expects array, mixed given\.$#'
 			identifier: argument.type
 			count: 4
@@ -14664,12 +14124,6 @@ parameters:
 			message: '#^Parameter \#3 \$messages of static method Illuminate\\Support\\Facades\\Validator\:\:make\(\) expects array, mixed given\.$#'
 			identifier: argument.type
 			count: 3
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Parameter \#3 \$modelKey of static method Binaryk\\LaravelRestify\\Cache\\PolicyCache\:\:keyForPolicyMethods\(\) expects int\|string\|null, mixed given\.$#'
-			identifier: argument.type
-			count: 1
 			path: src/Repositories/Repository.php
 
 		-
@@ -14712,12 +14166,6 @@ parameters:
 			message: '#^Part \$method \(mixed\) of encapsed string cannot be cast to string\.$#'
 			identifier: encapsedStringPart.nonString
 			count: 2
-			path: src/Repositories/Repository.php
-
-		-
-			message: '#^Part \$request\-\>relatedRepository \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
 			path: src/Repositories/Repository.php
 
 		-
