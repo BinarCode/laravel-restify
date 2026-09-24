@@ -48,6 +48,22 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | Password reset timebox (microseconds)
+        |--------------------------------------------------------------------------
+        |
+        | forgotPassword and resetPassword always take at least this many
+        | microseconds to respond, whether the given email/token is valid or
+        | not, so response timing can't be used to tell known accounts from
+        | unknown ones. Raise this if your app sends the reset email
+        | synchronously (e.g. a sync mail queue) and that regularly takes
+        | longer than the default.
+        |
+        */
+
+        'password_reset_timebox' => (int) env('RESTIFY_PASSWORD_RESET_TIMEBOX', 200_000),
+
+        /*
+        |--------------------------------------------------------------------------
         | User Email Verification URL
         |--------------------------------------------------------------------------
         |
@@ -202,6 +218,31 @@ return [
         |
         */
         'use_joins_for_belongs_to' => env('RESTIFY_SORT_USE_JOINS_FOR_BELONGS_TO', false),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restify Pagination
+    |--------------------------------------------------------------------------
+    */
+    'pagination' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Maximum Per Page
+        |--------------------------------------------------------------------------
+        |
+        | The largest `perPage` (or `page[size]`, or `relatablePerPage` on a
+        | related field) a client may request on an index endpoint. A
+        | requested value above this is clamped down to it - never rejected -
+        | so existing clients are never broken by lowering it. This also
+        | clamps a repository's own default per-page when it is set above
+        | the cap and no perPage is requested at all.
+        |
+        | Default: null (no cap, the requested perPage is always honoured).
+        | null, 0, an empty string, or any non-numeric value all mean "no cap".
+        |
+        */
+        'max_per_page' => env('RESTIFY_MAX_PER_PAGE'),
     ],
 
     'repositories' => [

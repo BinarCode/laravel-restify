@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
 use Binaryk\LaravelRestify\MCP\McpToolsManager;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
@@ -56,10 +57,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
          * Adding an auth callback. This callback will be verified in the AuthorizeRestify middleware,
          * which is the last middleware in the middleware list from the configuration.
          */
-        Restify::auth(function ($request) {
-            return app()->environment('local') ||
-                Gate::check('viewRestify', [$request->user()]);
-        });
+        Restify::auth(fn (): bool => app()->environment('local') || Gate::check('viewRestify'));
     }
 
     /**
@@ -72,10 +70,13 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function gate(): void
     {
-        Gate::define('viewRestify', function ($user = null) {
-            return in_array($user->email, [
+        Gate::define('viewRestify', function (Authenticatable $user): bool {
+            /** @var list<string> $allowedEmails */
+            $allowedEmails = [
                 //
-            ], true);
+            ];
+
+            return in_array(data_get($user, 'email'), $allowedEmails, true);
         });
     }
 
@@ -88,6 +89,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
             ], function () use ($actions) {
                 if (in_array('register', $actions, true)) {
                     Route::post('register', RegisterController::class)
+                        ->middleware('throttle:6,1')
                         ->name('restify.register');
                 }
 
