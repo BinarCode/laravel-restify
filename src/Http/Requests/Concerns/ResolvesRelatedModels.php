@@ -26,11 +26,7 @@ trait ResolvesRelatedModels
      */
     protected function relatedModels(): Collection
     {
-        $relatedRepositoryKey = $this->relatedRepository;
-
-        if (! is_string($relatedRepositoryKey)) {
-            throw new InvalidArgumentException('The [relatedRepository] route parameter must be a string.');
-        }
+        $relatedRepositoryKey = $this->relatedRepositoryKey();
 
         $relatedRepositoryClass = Restify::repositoryClassForKey($relatedRepositoryKey);
 

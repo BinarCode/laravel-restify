@@ -18,6 +18,6 @@ class RepositoryDestroyController extends RepositoryController
 
         $this->deleteFields($request, $model);
 
-        return $repository->destroy($request, request('repositoryId'));
+        return $repository->destroy($request, $request->repositoryIdFromRoute());
     }
 }

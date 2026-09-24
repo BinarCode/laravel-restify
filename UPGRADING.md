@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### `afterValidation()` now also fires on bulk delete
+
+`DELETE /api/restify/{repository}/bulk/delete` now runs the repository's
+`afterValidation()` hook, like every other write endpoint already did. The
+validator it receives holds the raw payload as `['keys' => [...]]`.
+
 ### `updatedBulk()` and `savedBulk()` receive models
 
 `POST /api/restify/{repository}/bulk/update` used to hand its lifecycle hooks the raw
@@ -31,6 +37,47 @@ the array it was given.
 `storedBulk()` is unaffected - it already passed models. `deletedBulk()` is unaffected -
 it still passes the deleted rows as attribute arrays, since the models are gone by the
 time it runs.
+
+### `relatedRepository`, `viaRelationship` and `repositoryId` no longer read from the body
+
+`attach`, `detach` and `sync` used to resolve the related repository and the relation
+through `$request->relatedRepository` / `$request->viaRelationship`, and every write
+endpoint resolved the current repository's id through `$request->repositoryId` /
+`request('repositoryId')`. All of these are Laravel's magic request accessors, which
+read the JSON/form body (or the query string) before falling back to the route
+segment - so a request body carrying a same-named key silently redirected which
+relation got written to, or which id a hook received, while authorization kept
+running against the field and id named by the URL.
+
+Body and query values for `relatedRepository`, `viaRelationship` and `repositoryId`
+are now ignored everywhere they used to be read: the relation always comes from the
+resolved field's own relation, and the id always comes from the route's
+`{repositoryId}` segment.
+
+If you override `attach()`, `detach()`, `sync()`, `show()`, `update()`, `patch()` or
+`destroy()` and read one of these off the request yourself, use the hook's
+`$repositoryId` argument for the id, and the route for the related repository:
+
+```php
+// before
+$relatedRepository = $request->relatedRepository;
+$repositoryId = $request->repositoryId; // or request('repositoryId')
+
+// after
+public function update(RestifyRequest $request, $repositoryId)
+{
+    // use $repositoryId, which every caller passes in
+}
+
+$relatedRepository = $request->relatedRepositoryKey();
+```
+
+Prefer `$repositoryId` over `$request->repositoryIdFromRoute()`: the MCP update and
+delete tools call `update()` and `destroy()` without a route, so the route accessor
+has nothing to read there. `relatedRepositoryKey()` throws `InvalidArgumentException`
+when called outside a route that has a `relatedRepository` segment (attach/detach/sync);
+the same is true of `repositoryIdFromRoute()` outside a route that has a `repositoryId`
+segment.
 
 ### Registration validates the password length and `RegisterController::__invoke()` is typed
 

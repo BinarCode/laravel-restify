@@ -25,13 +25,13 @@ class RepositorySyncController extends RepositoryController
         $request->syncRelatedModels();
 
         /** @var Collection<int, mixed> $attachers */
-        $attachers = Collection::make(Arr::wrap($request->input($request->relatedRepository)));
+        $attachers = Collection::make(Arr::wrap($request->input($request->relatedRepositoryKey())));
 
         $request->repositoryWith($model)->allowToSync($request, attachers: $attachers);
 
         return $repository->sync(
             $request,
-            $request->repositoryId,
+            $request->repositoryIdFromRoute(),
             $attachers->flatten()
         );
     }

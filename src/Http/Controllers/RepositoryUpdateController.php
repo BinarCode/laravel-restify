@@ -15,6 +15,6 @@ class RepositoryUpdateController extends RepositoryController
         /** * @var Repository $repository */
         $repository = $request->repositoryWith($model);
 
-        return $repository->allowToUpdate($request)->update($request, request('repositoryId'));
+        return $repository->allowToUpdate($request)->update($request, $request->repositoryIdFromRoute());
     }
 }

@@ -43,6 +43,13 @@ class Company extends Model
             ->withTimestamps();
     }
 
+    public function deniedRoles(): BelongsToMany
+    {
+        return $this->belongsToMany(Role::class, 'company_denied_role', 'company_id', 'role_id')
+            ->using(CompanyDeniedRolePivot::class)
+            ->withTimestamps();
+    }
+
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class);

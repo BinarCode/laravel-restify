@@ -4,6 +4,8 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Controllers\Concerns\ResolvesBulkModels;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyBulkRequest;
+use Illuminate\Contracts\Validation\Validator as ValidatorContract;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -11,9 +13,15 @@ class RepositoryDestroyBulkController
 {
     use ResolvesBulkModels;
 
-    public function __invoke(RepositoryDestroyBulkRequest $request)
+    public function __invoke(RepositoryDestroyBulkRequest $request): JsonResponse
     {
-        $keys = $request->isJson() ? $request->json()->all() : $request->post();
+        /** @var ValidatorContract $validator */
+        $validator = $request->repository()::validatorForDestroyBulk($request);
+        $validator->validate();
+
+        /** @var array<int, int|string> $keys */
+        $keys = $validator->validated()['keys'] ?? [];
+
         $deleted = [];
 
         DB::transaction(function () use ($request, $keys, &$deleted): void {
@@ -22,9 +30,12 @@ class RepositoryDestroyBulkController
             $authorized = [];
 
             foreach ($models as $row => $model) {
-                $authorized[$model->getKey()] ??= [
+                /** @var int|string $key */
+                $key = $model->getKey();
+
+                $authorized[$key] ??= [
                     $keys[$row],
-                    $row,
+                    (int) $row,
                     $request->repositoryWith($model)->allowToDestroyBulk($request),
                 ];
             }
@@ -38,6 +49,9 @@ class RepositoryDestroyBulkController
 
         $request->repository()::deletedBulk(Collection::make($deleted), $request);
 
-        return ok();
+        /** @var JsonResponse $response */
+        $response = ok();
+
+        return $response;
     }
 }

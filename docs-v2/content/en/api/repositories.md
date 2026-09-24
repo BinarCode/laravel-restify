@@ -1453,7 +1453,7 @@ class PostRepository extends Repository
     public function allowToAttach(RestifyRequest $request, Collection $attachers): self
     {
         // Validate attaching related models
-        $methodGuesser = 'attach'.Str::studly($request->relatedRepository);
+        $methodGuesser = 'attach'.Str::studly($request->relatedRepositoryKey());
         
         $attachers->each(function ($model) use ($request, $methodGuesser) {
             $this->authorizeToAttach($request, $methodGuesser, $model);
