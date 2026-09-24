@@ -23,9 +23,12 @@ class DatabaseGenerator
         $this->faker = app(Faker::class);
     }
 
-    public function fake(Column $columnDefinition): string|int|bool|Carbon|null
+    /**
+     * @return string|int|bool|Carbon|null
+     */
+    public function fake(Column $columnDefinition)
     {
-        $column = $columnDefinition->getObjectName()->toString();
+        $column = $columnDefinition->getName();
         $type = Type::lookupName($columnDefinition->getType());
 
         switch ($type) {
