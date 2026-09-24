@@ -191,9 +191,9 @@ class FieldCollection extends Collection
      * pivot fields (`BelongsToMany::resolve()`), which bypass `Repository::collectFields()`
      * and would otherwise let unlabeled computed pivot fields collide under the same key.
      *
-     * @param  iterable<int|string, mixed>  $fields
+     * @param  array<int|string, mixed>  $fields
      */
-    public static function assignComputedLabels(iterable $fields): void
+    public static function assignComputedLabels(array $fields): void
     {
         $unlabeled = [];
 

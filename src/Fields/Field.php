@@ -863,10 +863,6 @@ class Field extends OrganicField implements JsonSerializable, Matchable, Sortabl
             }
         }
 
-        // A field is only "computed" (see computed()) when it was declared with a
-        // callable in place of its attribute name, so it has no column to write to.
-        // Skip it for MCP tools unless a resolve callback was also given, since that
-        // combination still leaves the field storable.
         if ($this->computed() && ! $this->resolveCallback) {
             return $this;
         }
