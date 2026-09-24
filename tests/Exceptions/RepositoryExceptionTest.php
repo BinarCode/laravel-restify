@@ -44,7 +44,7 @@ class RepositoryExceptionTest extends IntegrationTestCase
     public function a_request_that_cannot_resolve_a_repository_key_is_rejected(): void
     {
         $this->getJson('/a-route-with-no-repository-key')
-            ->assertStatus(400)
+            ->assertBadRequest()
             ->assertJsonPath('message', 'Repository key missing.');
     }
 
@@ -54,7 +54,7 @@ class RepositoryExceptionTest extends IntegrationTestCase
         $uriKey = RepositoryWithoutAGatePolicyForRepositoryExceptionTest::uriKey();
 
         $this->getJson(Restify::path($uriKey))
-            ->assertStatus(403)
+            ->assertForbidden()
             ->assertJsonPath('message', "Unauthorized to view repository {$uriKey}. Check \"allowRestify\" policy.");
     }
 
@@ -64,7 +64,7 @@ class RepositoryExceptionTest extends IntegrationTestCase
         PostRepository::setPrefix('api/v1');
 
         $this->getJson(Restify::path(PostRepository::uriKey()))
-            ->assertStatus(403)
+            ->assertForbidden()
             ->assertJsonPath(
                 'message',
                 'Unauthorized to use the route '.Restify::path(PostRepository::uriKey()).'. Check prefix.',

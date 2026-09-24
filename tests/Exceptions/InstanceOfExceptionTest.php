@@ -25,18 +25,11 @@ class InstanceOfExceptionTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        config(['app.debug' => false]);
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function indexing_a_repository_without_a_model_throws_the_real_exception(): void
     {
         $this->getJson(Restify::path(RepositoryWithoutAModelForInstanceOfExceptionTest::uriKey()))
-            ->assertStatus(500)
+            ->assertInternalServerError()
             ->assertJson([
                 'exception' => InstanceOfException::class,
                 'message' => 'Model is not defined in the repository.',

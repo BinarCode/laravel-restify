@@ -20,13 +20,6 @@ class RestControllerGateTest extends IntegrationTestCase
         config(['app.debug' => true]);
     }
 
-    protected function tearDown(): void
-    {
-        config(['app.debug' => false]);
-
-        parent::tearDown();
-    }
-
     protected function defineRoutes($router): void
     {
         $router->get('/gate-test/{id}', [UserController::class, 'show']);
@@ -36,7 +29,7 @@ class RestControllerGateTest extends IntegrationTestCase
     public function guarding_a_missing_model_throws_the_real_exception(): void
     {
         $this->getJson('/gate-test/999999')
-            ->assertStatus(500)
+            ->assertInternalServerError()
             ->assertJson([
                 'exception' => EntityNotFoundException::class,
                 'message' => 'Guard entity with policy [access] not found.',
@@ -49,7 +42,7 @@ class RestControllerGateTest extends IntegrationTestCase
         $user = User::factory()->create();
 
         $this->getJson("/gate-test/{$user->id}")
-            ->assertStatus(500)
+            ->assertInternalServerError()
             ->assertJson([
                 'exception' => GatePolicy::class,
                 'message' => 'messages.no_model_access',
