@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### `afterValidation()` now also fires on bulk delete
+
+`DELETE /api/restify/{repository}/bulk/delete` now runs the repository's
+`afterValidation()` hook, like every other write endpoint already did. It
+receives the validated payload as `['keys' => [...]]`.
+
 ### `updatedBulk()` and `savedBulk()` receive models
 
 `POST /api/restify/{repository}/bulk/update` used to hand its lifecycle hooks the raw
