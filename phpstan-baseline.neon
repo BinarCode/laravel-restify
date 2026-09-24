@@ -2860,24 +2860,6 @@ parameters:
 			path: src/Exceptions/Solutions/OpenAiSolution.php
 
 		-
-			message: '#^Cannot access property \$file on Spatie\\Backtrace\\Frame\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Exceptions/Solutions/OpenAiSolution.php
-
-		-
-			message: '#^Cannot access property \$lineNumber on Spatie\\Backtrace\\Frame\|null\.$#'
-			identifier: property.nonObject
-			count: 1
-			path: src/Exceptions/Solutions/OpenAiSolution.php
-
-		-
-			message: '#^Cannot call method getSnippet\(\) on Spatie\\Backtrace\\Frame\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Exceptions/Solutions/OpenAiSolution.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Exceptions\\Solutions\\OpenAiSolution\:\:getDocumentationLinks\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
 			count: 1
