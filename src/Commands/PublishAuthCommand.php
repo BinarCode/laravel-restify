@@ -101,7 +101,13 @@ class PublishAuthCommand extends Command
         if ($actionsToPublish === []) {
             $this->components->warn('Nothing left to publish.');
         } else {
-            $this->registerRoutes($actionsToPublish, $apiRoutesPath, $call + ['contents' => $contents]);
+            try {
+                $this->registerRoutes($actionsToPublish, $apiRoutesPath, $call + ['contents' => $contents]);
+            } catch (RuntimeException $exception) {
+                $this->components->error($exception->getMessage());
+
+                return self::FAILURE;
+            }
         }
 
         $this->publishControllers($requested)
@@ -187,7 +193,9 @@ class PublishAuthCommand extends Command
 
     /**
      * @param  list<string>  $actionsToPublish
-     * @param  array{offset: int, length: int, prefix: string, existingRemaining: list<string>, contents?: string}|null  $parsedCall
+     * @param  array{offset: int, length: int, existingRemaining: list<string>, contents?: string}|null  $parsedCall
+     *
+     * @throws RuntimeException
      *
      * @phpstan-impure
      */
@@ -199,9 +207,11 @@ class PublishAuthCommand extends Command
 
         $call = $parsedCall ?? $this->parseRestifyAuthCall($contents);
 
-        $replacement = $call['prefix'].$this->getRemainingActionsString($actionsToPublish, $call['existingRemaining']);
+        $replacement = $this->getRemainingActionsString($actionsToPublish, $call['existingRemaining']);
 
         $updated = substr_replace($contents, $replacement, $call['offset'], $call['length']);
+
+        $updated = $this->ensureRouteFacadeImported($updated);
 
         $routeStubs = $this->getRouteStubs($actionsToPublish);
 
@@ -278,7 +288,7 @@ class PublishAuthCommand extends Command
     }
 
     /**
-     * @return array{offset: int, length: int, prefix: string, existingRemaining: list<string>}
+     * @return array{offset: int, length: int, existingRemaining: list<string>}
      *
      * @throws RuntimeException
      *
@@ -286,12 +296,11 @@ class PublishAuthCommand extends Command
      */
     private function parseRestifyAuthCall(string $contents): array
     {
-        [$offset, $length, $arguments, $prefix] = $this->locateRestifyAuthCall($contents);
+        [$offset, $length, $arguments] = $this->locateRestifyAuthCall($contents);
 
         return [
             'offset' => $offset,
             'length' => $length,
-            'prefix' => $prefix,
             'existingRemaining' => $this->parseExistingRemainingActions($arguments),
         ];
     }
@@ -303,9 +312,11 @@ class PublishAuthCommand extends Command
      * built from that exact token sequence, so text sitting inside a comment, a
      * heredoc/nowdoc, a multi-line string, or inline HTML after a `?>` is never
      * mistaken for it, and a call next to other code on the same line is still
-     * found.
+     * found. A fully-qualified `\Route::restifyAuth()` is rewritten to the bare
+     * `Route::` facade call; `ensureRouteFacadeImported()` makes sure the facade
+     * is actually imported when that happens.
      *
-     * @return array{0: int, 1: int, 2: string, 3: string}
+     * @return array{0: int, 1: int, 2: string}
      *
      * @throws RuntimeException
      */
@@ -358,7 +369,7 @@ class PublishAuthCommand extends Command
             );
         }
 
-        return [$match['offset'], $match['length'], $match['arguments'], $match['prefix']];
+        return [$match['offset'], $match['length'], $match['arguments']];
     }
 
     /**
@@ -367,7 +378,7 @@ class PublishAuthCommand extends Command
      * does not form a real call.
      *
      * @param  array<PhpToken>  $tokens
-     * @return array{offset: int, length: int, prefix: string, arguments: string}|null
+     * @return array{offset: int, length: int, arguments: string}|null
      */
     private function matchRestifyAuthCall(array $tokens, int $count, int $routeIndex, string $contents): ?array
     {
@@ -427,7 +438,6 @@ class PublishAuthCommand extends Command
         return [
             'offset' => $routeToken->pos,
             'length' => $endPos - $routeToken->pos,
-            'prefix' => $routeToken->text === '\Route' ? '\\' : '',
             'arguments' => substr($contents, $argumentsStart, $argumentsEnd - $argumentsStart),
         ];
     }
@@ -444,6 +454,219 @@ class PublishAuthCommand extends Command
         }
 
         return null;
+    }
+
+    /**
+     * Ensures the routes file imports the Route facade: every stub route this
+     * command appends calls `Route::` directly, and a namespaced file with no
+     * import would resolve that to a class in its own namespace instead of the
+     * facade. Left alone when the import - flat or grouped - is already there.
+     * Refused when `Route` already resolves to a different class: rewriting an
+     * existing import out from under the developer is not this command's call
+     * to make.
+     *
+     * @throws RuntimeException
+     */
+    private function ensureRouteFacadeImported(string $contents): string
+    {
+        $facade = 'Illuminate\Support\Facades\Route';
+
+        [$insertPos, $imports] = $this->findUseImportInsertPosition($contents);
+
+        if (array_key_exists('Route', $imports)) {
+            if ($imports['Route'] === $facade) {
+                return $contents;
+            }
+
+            throw new RuntimeException(
+                "routes/api.php already imports [{$imports['Route']}] as Route, which conflicts with the [{$facade}] facade the published routes need. Rename that import and try again."
+            );
+        }
+
+        $insertion = "use {$facade};\n";
+
+        if ($insertPos > 0 && $contents[$insertPos - 1] !== "\n") {
+            $insertion = "\n".$insertion;
+        }
+
+        return substr_replace($contents, $insertion, $insertPos, 0);
+    }
+
+    /**
+     * Walks the file's tokens to find where a new top-level `use` import
+     * statement belongs (right after the last existing one, or else after
+     * `namespace`, or else right after `<?php`), and collects every top-level
+     * import already declared (`alias => fully-qualified name`) along the way,
+     * so a conflicting one can be detected without a second pass.
+     *
+     * @return array{0: int, 1: array<string, string>}
+     */
+    private function findUseImportInsertPosition(string $contents): array
+    {
+        $tokens = PhpToken::tokenize($contents);
+        $count = count($tokens);
+
+        $depth = 0;
+        $openTagEnd = 0;
+        $namespaceEnd = null;
+        $lastUseEnd = null;
+        $imports = [];
+
+        for ($i = 0; $i < $count; $i++) {
+            $token = $tokens[$i];
+
+            if ($token->is(T_OPEN_TAG)) {
+                $openTagEnd = $token->pos + strlen($token->text);
+
+                continue;
+            }
+
+            if ($token->text === '{') {
+                $depth++;
+
+                continue;
+            }
+
+            if ($token->text === '}') {
+                $depth--;
+
+                continue;
+            }
+
+            if ($depth !== 0) {
+                continue;
+            }
+
+            if ($token->is(T_NAMESPACE)) {
+                $end = $this->findTopLevelStatementEnd($tokens, $count, $i + 1);
+
+                if ($end !== null) {
+                    $namespaceEnd = $tokens[$end]->pos + 1;
+                }
+
+                continue;
+            }
+
+            if (! $token->is(T_USE)) {
+                continue;
+            }
+
+            $end = $this->findTopLevelStatementEnd($tokens, $count, $i + 1);
+
+            if ($end === null) {
+                continue;
+            }
+
+            $imports += $this->parseUseImports(array_slice($tokens, $i + 1, $end - $i - 1));
+
+            $lastUseEnd = $tokens[$end]->pos + 1;
+        }
+
+        return [$lastUseEnd ?? $namespaceEnd ?? $openTagEnd, $imports];
+    }
+
+    /**
+     * Finds the `;` that ends a top-level statement starting at `$from`,
+     * tracking `{`/`}` locally so a grouped `use` statement's braces
+     * (`use Foo\{Bar, Baz};`) are not mistaken for the end of the statement.
+     *
+     * @param  array<PhpToken>  $tokens
+     */
+    private function findTopLevelStatementEnd(array $tokens, int $count, int $from): ?int
+    {
+        $depth = 0;
+
+        for ($i = $from; $i < $count; $i++) {
+            $text = $tokens[$i]->text;
+
+            if ($text === '{') {
+                $depth++;
+            } elseif ($text === '}') {
+                $depth--;
+            } elseif ($text === ';' && $depth === 0) {
+                return $i;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Parses one `use` import statement's tokens - already sliced to exclude
+     * the leading `use` keyword and the trailing `;` - into `alias =>
+     * fully-qualified name` pairs, resolving both the flat form (`Foo\Bar`,
+     * `Foo\Bar as Baz`) and the grouped form (`Foo\{Bar, Baz as Qux}`).
+     * `use function`/`use const` imports are ignored: neither can ever alias
+     * to the `Route` class this command cares about.
+     *
+     * @param  array<PhpToken>  $tokens
+     * @return array<string, string>
+     */
+    private function parseUseImports(array $tokens): array
+    {
+        $tokens = array_values(array_filter(
+            $tokens,
+            fn (PhpToken $token): bool => ! $token->is([T_WHITESPACE, T_COMMENT, T_DOC_COMMENT])
+        ));
+
+        if (($tokens[0] ?? null)?->is([T_FUNCTION, T_CONST]) === true) {
+            return [];
+        }
+
+        $index = 0;
+
+        return $this->parseUseImportItems($tokens, $index, count($tokens), '');
+    }
+
+    /**
+     * @param  array<PhpToken>  $tokens
+     * @return array<string, string>
+     */
+    private function parseUseImportItems(array $tokens, int &$index, int $count, string $groupPrefix): array
+    {
+        $imports = [];
+
+        while ($index < $count) {
+            $name = $groupPrefix;
+
+            while ($index < $count && $tokens[$index]->is([T_STRING, T_NAME_QUALIFIED, T_NAME_FULLY_QUALIFIED, T_NS_SEPARATOR])) {
+                $name .= $tokens[$index]->text;
+                $index++;
+            }
+
+            if ($index < $count && $tokens[$index]->text === '{') {
+                $index++;
+
+                $imports += $this->parseUseImportItems($tokens, $index, $count, $name);
+
+                if ($index < $count && $tokens[$index]->text === '}') {
+                    $index++;
+                }
+            } elseif ($name !== '') {
+                $alias = Str::afterLast($name, '\\');
+
+                if ($index < $count && $tokens[$index]->is(T_AS)) {
+                    $index++;
+
+                    if ($index < $count && $tokens[$index]->is(T_STRING)) {
+                        $alias = $tokens[$index]->text;
+                        $index++;
+                    }
+                }
+
+                $imports[$alias] = $name;
+            }
+
+            if ($index < $count && $tokens[$index]->text === ',') {
+                $index++;
+
+                continue;
+            }
+
+            break;
+        }
+
+        return $imports;
     }
 
     /**

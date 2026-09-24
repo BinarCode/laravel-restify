@@ -6,6 +6,7 @@ namespace Binaryk\LaravelRestify\Tests\Console\Commands;
 
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\Str;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
@@ -405,7 +406,7 @@ class PublishAuthCommandTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_leading_backslash_on_the_macro_call_is_accepted_and_kept_on_rewrite(): void
+    public function a_leading_backslash_on_the_macro_call_in_a_non_namespaced_file_is_rewritten_to_the_facade_with_the_import_added(): void
     {
         $this->files->put($this->apiRoutesPath, "<?php\n\n\\Route::restifyAuth();\n");
 
@@ -415,13 +416,116 @@ class PublishAuthCommandTest extends IntegrationTestCase
 
         $routes = $this->files->get($this->apiRoutesPath);
 
-        $this->assertStringContainsString("Route::post('login'", $routes);
-        $this->assertStringContainsString(
-            '\\'.self::REMAINING_AFTER_LOGIN,
-            $routes
+        $this->assertSame(
+            "<?php\nuse Illuminate\\Support\\Facades\\Route;\n\n".self::REMAINING_AFTER_LOGIN."\n\n",
+            Str::before($routes, "Route::post('login'")
+        );
+        $this->assertStringNotContainsString('\\Route::restifyAuth(', $routes);
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function a_leading_backslash_on_the_macro_call_in_a_namespaced_file_is_rewritten_and_the_import_is_added_after_the_namespace(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\nnamespace App\\Routes;\n\n\\Route::restifyAuth();\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(
+            "<?php\n\nnamespace App\\Routes;\nuse Illuminate\\Support\\Facades\\Route;\n\n\n".self::REMAINING_AFTER_LOGIN."\n\n",
+            Str::before($routes, "Route::post('login'")
+        );
+        $this->assertStringNotContainsString('\\Route::restifyAuth(', $routes);
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function a_bare_route_call_with_no_existing_import_gets_the_facade_import(): void
+    {
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(
+            "<?php\nuse Illuminate\\Support\\Facades\\Route;\n\n".self::REMAINING_AFTER_LOGIN."\n\n",
+            Str::before($routes, "Route::post('login'")
         );
         $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
         $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function an_existing_route_facade_import_is_not_duplicated(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\nuse Illuminate\\Support\\Facades\\Route;\n\nRoute::restifyAuth();\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(1, substr_count($routes, 'use Illuminate\\Support\\Facades\\Route;'));
+        $this->assertSame(
+            "<?php\n\nuse Illuminate\\Support\\Facades\\Route;\n\n".self::REMAINING_AFTER_LOGIN."\n\n",
+            Str::before($routes, "Route::post('login'")
+        );
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function a_grouped_route_facade_import_is_recognised_and_not_duplicated(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\nuse Illuminate\\Support\\Facades\\{Auth, Route};\n\nRoute::restifyAuth();\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(0, substr_count($routes, 'use Illuminate\\Support\\Facades\\Route;'));
+        $this->assertSame(
+            "<?php\n\nuse Illuminate\\Support\\Facades\\{Auth, Route};\n\n".self::REMAINING_AFTER_LOGIN."\n\n",
+            Str::before($routes, "Route::post('login'")
+        );
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    #[TestWith(['use App\\Providers\\RouteServiceProvider as Route;'], 'aliased import')]
+    #[TestWith(['use App\\Providers\\Route;'], 'a class literally named Route')]
+    public function a_conflicting_route_import_is_refused_and_the_file_is_left_unchanged(string $conflictingImport): void
+    {
+        $original = "<?php\n\n{$conflictingImport}\n\nRoute::restifyAuth();\n";
+        $this->files->put($this->apiRoutesPath, $original);
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->expectsOutputToContain('already imports')
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertSame($original, $this->files->get($this->apiRoutesPath));
     }
 
     #[Test]
