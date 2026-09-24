@@ -11,6 +11,12 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 class PublishAuthCommandTest extends IntegrationTestCase
 {
+    /**
+     * The macro call left behind after publishing only `login` from a fresh
+     * `Route::restifyAuth();` file (default `AUTH_ACTIONS` minus `login`).
+     */
+    private const REMAINING_AFTER_LOGIN = "Route::restifyAuth(actions: ['register', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword']);";
+
     private Filesystem $files;
 
     private string $tempBasePath;
@@ -399,7 +405,7 @@ class PublishAuthCommandTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_leading_backslash_on_the_macro_call_is_accepted(): void
+    public function a_leading_backslash_on_the_macro_call_is_accepted_and_kept_on_rewrite(): void
     {
         $this->files->put($this->apiRoutesPath, "<?php\n\n\\Route::restifyAuth();\n");
 
@@ -410,7 +416,12 @@ class PublishAuthCommandTest extends IntegrationTestCase
         $routes = $this->files->get($this->apiRoutesPath);
 
         $this->assertStringContainsString("Route::post('login'", $routes);
+        $this->assertStringContainsString(
+            '\\'.self::REMAINING_AFTER_LOGIN,
+            $routes
+        );
         $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
     }
 
     #[Test]
@@ -432,5 +443,222 @@ class PublishAuthCommandTest extends IntegrationTestCase
 
         $this->assertFileExists($controllerPath);
         $this->assertSame($routesBeforeSecondRun, $this->files->get($this->apiRoutesPath));
+    }
+
+    #[Test]
+    #[TestWith(["\$fake = <<<EOT\nRoute::restifyAuth();\nEOT;"], 'a heredoc')]
+    #[TestWith(["\$fake = <<<'EOT'\nRoute::restifyAuth();\nEOT;"], 'a nowdoc')]
+    #[TestWith(["\$fake = \"line one\nRoute::restifyAuth();\nline three\";"], 'a multi-line string')]
+    public function text_that_only_looks_like_the_call_inside_a_non_code_context_is_not_treated_as_the_real_one(string $fakeBlock): void
+    {
+        $original = "<?php\n\n{$fakeBlock}\n";
+        $this->files->put($this->apiRoutesPath, $original);
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->expectsOutputToContain('No Route::restifyAuth() call was found in routes/api.php.')
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertSame($original, $this->files->get($this->apiRoutesPath));
+    }
+
+    #[Test]
+    #[TestWith(["\$fake = <<<EOT\nRoute::restifyAuth();\nEOT;"], 'a heredoc')]
+    #[TestWith(["\$fake = <<<'EOT'\nRoute::restifyAuth();\nEOT;"], 'a nowdoc')]
+    #[TestWith(["\$fake = \"line one\nRoute::restifyAuth();\nline three\";"], 'a multi-line string')]
+    public function a_real_call_next_to_text_that_only_looks_like_one_is_found_and_the_fake_text_is_left_untouched(string $fakeBlock): void
+    {
+        $this->files->put($this->apiRoutesPath, "<?php\n\n{$fakeBlock}\n\nRoute::restifyAuth();\n");
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertStringContainsString($fakeBlock, $routes);
+        $this->assertSame(1, substr_count($routes, "Route::post('login'"));
+        $this->assertStringContainsString(self::REMAINING_AFTER_LOGIN, $routes);
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function a_call_on_the_same_line_as_other_code_inside_a_closure_is_found(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\nRoute::group([], function () { Route::restifyAuth(); });\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertStringContainsString(
+            'Route::group([], function () { '.self::REMAINING_AFTER_LOGIN.' });',
+            $routes
+        );
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function restifyauth_text_written_as_inline_html_after_a_closing_tag_is_not_treated_as_the_real_call(): void
+    {
+        $original = "<?php\n?>\nRoute::restifyAuth();\n";
+        $this->files->put($this->apiRoutesPath, $original);
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->expectsOutputToContain('No Route::restifyAuth() call was found in routes/api.php.')
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertSame($original, $this->files->get($this->apiRoutesPath));
+    }
+
+    #[Test]
+    public function a_real_call_after_an_earlier_closing_tag_is_still_found_and_the_html_is_left_untouched(): void
+    {
+        $htmlBlock = "?>\nRoute::restifyAuth();\n<?php";
+
+        $this->files->put($this->apiRoutesPath, "<?php\n{$htmlBlock}\n\nRoute::restifyAuth();\n");
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertStringContainsString($htmlBlock, $routes);
+        $this->assertSame(1, substr_count($routes, "Route::post('login'"));
+        $this->assertStringContainsString(self::REMAINING_AFTER_LOGIN, $routes);
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function a_closing_tag_after_the_real_call_is_refused_instead_of_appending_after_it(): void
+    {
+        $original = "<?php\n\nRoute::restifyAuth();\n?>\n";
+        $this->files->put($this->apiRoutesPath, $original);
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->expectsOutputToContain('routes/api.php has a closing ?> tag after the Route::restifyAuth() call.')
+            ->assertExitCode(1)
+            ->run();
+
+        $this->assertFileDoesNotExist(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertSame($original, $this->files->get($this->apiRoutesPath));
+    }
+
+    #[Test]
+    public function a_multibyte_string_before_the_call_does_not_shift_where_the_call_is_rewritten(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\n\$greeting = 'héllo wörld 日本語';\n\nRoute::restifyAuth();\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertStringContainsString("\$greeting = 'héllo wörld 日本語';", $routes);
+        $this->assertSame(1, substr_count($routes, "Route::post('login'"));
+        $this->assertStringContainsString(self::REMAINING_AFTER_LOGIN, $routes);
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function a_crlf_routes_file_is_rewritten_correctly(): void
+    {
+        $this->files->put($this->apiRoutesPath, "<?php\r\n\r\nRoute::restifyAuth();\r\n");
+
+        $this->artisan('restify:auth', ['--actions' => 'login'])
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertSame(1, substr_count($routes, "Route::post('login'"));
+        $this->assertStringContainsString(self::REMAINING_AFTER_LOGIN, $routes);
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/LoginController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    public function requesting_an_action_missing_from_the_actions_list_publishes_it_instead_of_treating_it_as_already_done(): void
+    {
+        $this->files->put(
+            $this->apiRoutesPath,
+            "<?php\n\nRoute::restifyAuth(actions: ['login', 'register', 'logout']);\n"
+        );
+
+        $this->artisan('restify:auth', ['--actions' => 'resetPassword'])
+            ->expectsOutputToContain('resetPassword is not in the Route::restifyAuth() actions list; publishing it now.')
+            ->doesntExpectOutputToContain('resetPassword is already published, skipped.')
+            ->expectsOutputToContain('Auth controllers published.')
+            ->assertExitCode(0)
+            ->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        $this->assertStringContainsString(
+            "Route::post('resetPassword', \\App\\Http\\Controllers\\Restify\\Auth\\ResetPasswordController::class)",
+            $routes
+        );
+        $this->assertStringContainsString(
+            "Route::restifyAuth(actions: ['login', 'register', 'logout']);",
+            $routes
+        );
+        $this->assertFileExists(app_path('Http/Controllers/Restify/Auth/ResetPasswordController.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    #[Test]
+    #[TestWith([['register', 'logout'], ['login', 'forgotPassword', 'resetPassword', 'verifyEmail']], 'register and logout tracked')]
+    #[TestWith([['logout'], ['login', 'register', 'forgotPassword', 'resetPassword', 'verifyEmail']], 'only logout tracked')]
+    public function omitting_actions_treats_every_publishable_action_as_requested_and_restores_whats_missing(array $existingRemaining, array $expectedNotInList): void
+    {
+        $existing = implode(', ', array_map(fn (string $action): string => "'{$action}'", $existingRemaining));
+        $this->files->put($this->apiRoutesPath, "<?php\n\nRoute::restifyAuth(actions: [{$existing}]);\n");
+
+        $command = $this->artisan('restify:auth');
+
+        foreach ($expectedNotInList as $action) {
+            $command->expectsOutputToContain("{$action} is not in the Route::restifyAuth() actions list; publishing it now.");
+        }
+
+        $command->assertExitCode(0)->run();
+
+        $routes = $this->files->get($this->apiRoutesPath);
+
+        foreach (['login', 'register', 'forgotPassword', 'resetPassword'] as $action) {
+            $this->assertSame(1, substr_count($routes, "Route::post('{$action}'"), "route for [{$action}]");
+        }
+        $this->assertSame(1, substr_count($routes, "Route::post('verify/{id}/{hash}'"));
+
+        $this->assertStringContainsString("Route::restifyAuth(actions: ['logout']);", $routes);
+
+        foreach (['LoginController', 'RegisterController', 'ForgotPasswordController', 'ResetPasswordController', 'VerifyController'] as $controller) {
+            $this->assertFileExists(app_path("Http/Controllers/Restify/Auth/{$controller}.php"));
+        }
+        $this->assertFileExists(app_path('Notifications/Restify/ForgotPasswordNotification.php'));
+        $this->assertPhpFileParses($this->apiRoutesPath);
+    }
+
+    private function assertPhpFileParses(string $path): void
+    {
+        exec('php -l '.escapeshellarg($path).' 2>&1', $output, $exitCode);
+
+        $this->assertSame(0, $exitCode, "php -l failed for [{$path}]:\n".implode("\n", $output));
     }
 }
