@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Timebox;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 use RuntimeException;
@@ -27,6 +29,8 @@ class ForgotPasswordTest extends IntegrationTestCase
         parent::setUp();
 
         Route::restifyAuth('auth', ['forgotPassword']);
+
+        config(['restify.auth.password_reset_timebox' => 0]);
     }
 
     #[Test]
@@ -61,6 +65,23 @@ class ForgotPasswordTest extends IntegrationTestCase
             ->assertExactJson(['message' => 'Reset password link sent to your email.']);
 
         Notification::assertNothingSent();
+    }
+
+    #[Test]
+    public function the_response_is_computed_inside_a_timebox_for_both_known_and_unknown_emails(): void
+    {
+        Notification::fake();
+
+        $this->mock(Timebox::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('call')
+                ->twice()
+                ->andReturnUsing(fn (callable $callback) => $callback());
+        });
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        $this->postJson('auth/forgotPassword', ['email' => $user->email])->assertOk();
+        $this->postJson('auth/forgotPassword', ['email' => 'unknown@example.com'])->assertOk();
     }
 
     #[Test]

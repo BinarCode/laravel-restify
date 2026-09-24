@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Timebox;
+use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
@@ -25,6 +27,8 @@ class ResetPasswordTest extends IntegrationTestCase
         parent::setUp();
 
         Route::restifyAuth('auth', ['resetPassword']);
+
+        config(['restify.auth.password_reset_timebox' => 0]);
     }
 
     #[Test]
@@ -85,6 +89,33 @@ class ResetPasswordTest extends IntegrationTestCase
             'id' => $user->id,
             'password' => $originalPassword,
         ]);
+    }
+
+    #[Test]
+    public function the_response_is_computed_inside_a_timebox_for_both_known_and_unknown_emails(): void
+    {
+        $this->mock(Timebox::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('call')
+                ->twice()
+                ->andReturnUsing(fn (callable $callback) => $callback());
+        });
+
+        $user = UserFactory::one(['email' => 'known@example.com', 'password' => Hash::make('original-password')]);
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', [
+            'email' => $user->email,
+            'token' => $token,
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])->assertOk();
+
+        $this->postJson('auth/resetPassword', [
+            'email' => 'unknown@example.com',
+            'token' => 'not-a-token',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])->assertStatus(JsonResponse::HTTP_BAD_REQUEST);
     }
 
     /**

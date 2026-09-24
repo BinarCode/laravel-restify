@@ -69,6 +69,18 @@ class AuthStubsTest extends IntegrationTestCase
         $this->assertStringContainsString('/** @var CanResetPassword|null $user */', $contents);
     }
 
+    #[Test]
+    #[TestWith(['ForgotPasswordController.stub'])]
+    #[TestWith(['ResetPasswordController.stub'])]
+    public function the_published_auth_stub_computes_its_response_inside_a_timebox(string $stub): void
+    {
+        $contents = $this->stubContents($stub);
+
+        $this->assertStringContainsString('use Illuminate\\Support\\Timebox;', $contents);
+        $this->assertStringContainsString('app(Timebox::class)->call(', $contents);
+        $this->assertStringContainsString("config('restify.auth.password_reset_timebox')", $contents);
+    }
+
     private function stubContents(string $stub): string
     {
         $path = dirname(__DIR__, 3).'/src/Commands/stubs/Auth/'.$stub;

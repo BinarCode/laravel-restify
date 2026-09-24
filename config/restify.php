@@ -48,6 +48,22 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | Password reset timebox (microseconds)
+        |--------------------------------------------------------------------------
+        |
+        | forgotPassword and resetPassword always take at least this many
+        | microseconds to respond, whether the given email/token is valid or
+        | not, so response timing can't be used to tell known accounts from
+        | unknown ones. Raise this if your app sends the reset email
+        | synchronously (e.g. a sync mail queue) and that regularly takes
+        | longer than the default.
+        |
+        */
+
+        'password_reset_timebox' => (int) env('RESTIFY_PASSWORD_RESET_TIMEBOX', 200_000),
+
+        /*
+        |--------------------------------------------------------------------------
         | User Email Verification URL
         |--------------------------------------------------------------------------
         |
