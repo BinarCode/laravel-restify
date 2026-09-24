@@ -1350,7 +1350,7 @@ parameters:
 		-
 			message: '#^Argument of an invalid type mixed supplied for foreach, only iterables are supported\.$#'
 			identifier: foreach.nonIterable
-			count: 4
+			count: 3
 			path: src/Commands/RepositoryCommand.php
 
 		-
@@ -1446,12 +1446,6 @@ parameters:
 		-
 			message: '#^Call to an undefined method object\:\:getTable\(\)\.$#'
 			identifier: method.notFound
-			count: 2
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Call to an undefined static method Illuminate\\Support\\Facades\\Schema\:\:getAllTables\(\)\.$#'
-			identifier: staticMethod.notFound
 			count: 1
 			path: src/Commands/RepositoryCommand.php
 
@@ -1507,12 +1501,6 @@ parameters:
 			message: '#^Cannot access offset 0 on mixed\.$#'
 			identifier: offsetAccess.nonOffsetAccessible
 			count: 6
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Cannot access property \$IS_NULLABLE on mixed\.$#'
-			identifier: property.nonObject
-			count: 1
 			path: src/Commands/RepositoryCommand.php
 
 		-
@@ -1642,12 +1630,6 @@ parameters:
 			path: src/Commands/RepositoryCommand.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\RepositoryCommand\:\:findRepositoryForModel\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Commands/RepositoryCommand.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Commands\\RepositoryCommand\:\:findRepositoryForModel\(\) has parameter \$modelClass with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
@@ -1661,24 +1643,6 @@ parameters:
 
 		-
 			message: '#^Method Binaryk\\LaravelRestify\\Commands\\RepositoryCommand\:\:generateBelongsToRelationship\(\) has parameter \$column with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\RepositoryCommand\:\:generateFieldForColumn\(\) has no return type specified\.$#'
-			identifier: missingType.return
-			count: 1
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\RepositoryCommand\:\:generateFieldForColumn\(\) has parameter \$column with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Method Binaryk\\LaravelRestify\\Commands\\RepositoryCommand\:\:generateFieldForColumn\(\) has parameter \$table with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: src/Commands/RepositoryCommand.php
@@ -1834,15 +1798,9 @@ parameters:
 			path: src/Commands/RepositoryCommand.php
 
 		-
-			message: '#^Parameter \#1 \$haystack of static method Illuminate\\Support\\Str\:\:contains\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Commands/RepositoryCommand.php
-
-		-
 			message: '#^Parameter \#1 \$haystack of static method Illuminate\\Support\\Str\:\:endsWith\(\) expects string, mixed given\.$#'
 			identifier: argument.type
-			count: 3
+			count: 2
 			path: src/Commands/RepositoryCommand.php
 
 		-
@@ -1860,23 +1818,11 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$subject of static method Illuminate\\Support\\Str\:\:beforeLast\(\) expects string, mixed given\.$#'
 			identifier: argument.type
-			count: 3
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Illuminate\\Support\\Facades\\Schema\:\:getColumnListing\(\) expects string, mixed given\.$#'
-			identifier: argument.type
 			count: 2
 			path: src/Commands/RepositoryCommand.php
 
 		-
-			message: '#^Parameter \#1 \$table of static method Illuminate\\Support\\Facades\\Schema\:\:getColumnType\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Parameter \#1 \$table of static method Illuminate\\Support\\Facades\\Schema\:\:hasColumn\(\) expects string, mixed given\.$#'
+			message: '#^Parameter \#1 \$table of static method Illuminate\\Support\\Facades\\Schema\:\:getColumnListing\(\) expects string, mixed given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Commands/RepositoryCommand.php
@@ -1884,19 +1830,13 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$table of static method Illuminate\\Support\\Facades\\Schema\:\:hasTable\(\) expects string, mixed given\.$#'
 			identifier: argument.type
-			count: 2
+			count: 1
 			path: src/Commands/RepositoryCommand.php
 
 		-
 			message: '#^Parameter \#1 \$value of function count expects array\|Countable, mixed given\.$#'
 			identifier: argument.type
 			count: 7
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Str\:\:camel\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
 			path: src/Commands/RepositoryCommand.php
 
 		-
@@ -1908,19 +1848,13 @@ parameters:
 		-
 			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Str\:\:singular\(\) expects string, mixed given\.$#'
 			identifier: argument.type
-			count: 2
+			count: 1
 			path: src/Commands/RepositoryCommand.php
 
 		-
 			message: '#^Parameter \#2 \$array of function implode expects array, mixed given\.$#'
 			identifier: argument.type
 			count: 3
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Parameter \#2 \$column of static method Illuminate\\Support\\Facades\\Schema\:\:getColumnType\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
 			path: src/Commands/RepositoryCommand.php
 
 		-
@@ -1949,12 +1883,6 @@ parameters:
 
 		-
 			message: '#^Part \$class \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 1
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Part \$column \(mixed\) of encapsed string cannot be cast to string\.$#'
 			identifier: encapsedStringPart.nonString
 			count: 1
 			path: src/Commands/RepositoryCommand.php
@@ -1990,20 +1918,8 @@ parameters:
 			path: src/Commands/RepositoryCommand.php
 
 		-
-			message: '#^Part \$repositoryClass \(mixed\) of encapsed string cannot be cast to string\.$#'
-			identifier: encapsedStringPart.nonString
-			count: 2
-			path: src/Commands/RepositoryCommand.php
-
-		-
 			message: '#^Property Binaryk\\LaravelRestify\\Commands\\RepositoryCommand\:\:\$confirmedModelClass has no type specified\.$#'
 			identifier: missingType.property
-			count: 1
-			path: src/Commands/RepositoryCommand.php
-
-		-
-			message: '#^Strict comparison using \!\=\= between mixed~''id'' and ''id'' will always evaluate to true\.$#'
-			identifier: notIdentical.alwaysTrue
 			count: 1
 			path: src/Commands/RepositoryCommand.php
 
