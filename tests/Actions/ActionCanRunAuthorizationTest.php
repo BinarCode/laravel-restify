@@ -203,7 +203,7 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
         Action::$chunkCount = 2;
 
         $posts = Post::factory()->count(4)->create(['is_active' => false]);
-        $idInLastChunk = $posts->sortBy('id')->last()->id;
+        $idInLastChunk = $posts->sortBy('id')->first()->id;
 
         $action = $this->bulkAction()->canRun(fn (Request $request, ?Post $model): bool => $model->id !== $idInLastChunk);
 
@@ -212,6 +212,32 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
         $this
             ->postJson(PostRepository::route('actions', query: ['action' => $action->uriKey()]), [
                 'repositories' => $repositoriesMode === 'all' ? 'all' : $posts->pluck('id')->all(),
+            ])
+            ->assertForbidden();
+
+        foreach ($posts as $post) {
+            $this->assertDatabaseHas(Post::class, [
+                'id' => $post->id,
+                'is_active' => false,
+            ]);
+        }
+    }
+
+    #[Test]
+    public function index_action_overriding_authorized_to_run_rolls_back_earlier_chunks(): void
+    {
+        Action::$chunkCount = 2;
+
+        $posts = Post::factory()->count(4)->create(['is_active' => false]);
+        $deniedId = $posts->sortBy('id')->first()->id;
+
+        $action = $this->bulkActionWithOverriddenAuthorizedToRun($deniedId);
+
+        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
+
+        $this
+            ->postJson(PostRepository::route('actions', query: ['action' => $action->uriKey()]), [
+                'repositories' => 'all',
             ])
             ->assertForbidden();
 
@@ -325,6 +351,30 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
         return new class extends Action
         {
             public static $uriKey = 'can-run-bulk-action';
+
+            public function handle(ActionRequest $request, Collection $models): JsonResponse
+            {
+                foreach ($models as $post) {
+                    $post->update(['is_active' => true]);
+                }
+
+                return response()->json(['ok' => true]);
+            }
+        };
+    }
+
+    private function bulkActionWithOverriddenAuthorizedToRun(int $deniedId): Action
+    {
+        return new class($deniedId) extends Action
+        {
+            public static $uriKey = 'can-run-bulk-overridden-authorized-to-run-action';
+
+            public function __construct(private readonly int $deniedId) {}
+
+            public function authorizedToRun(Request $request, $model)
+            {
+                return $model?->id !== $this->deniedId;
+            }
 
             public function handle(ActionRequest $request, Collection $models): JsonResponse
             {

@@ -21,6 +21,7 @@ use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Str;
 use JsonSerializable;
+use ReflectionMethod;
 use ReturnTypeWillChange;
 
 /**
@@ -180,13 +181,14 @@ abstract class Action implements JsonSerializable
     /**
      * Run the index/'all' callback, chunk by chunk.
      *
-     * Without a canRun callback, each chunk commits on its own, matching the pre-canRun
-     * behavior. With a canRun callback, every chunk runs inside a single transaction so
-     * the owner's all-or-nothing decision applies to the whole batch.
+     * Without run authorization, each chunk commits on its own, matching the pre-canRun
+     * behavior. With run authorization (a canRun callback, or an overridden
+     * authorizedToRun()), every chunk runs inside a single transaction so the owner's
+     * all-or-nothing decision applies to the whole batch.
      */
     private function runIndexAction(ActionRequest $request, Closure $callback): void
     {
-        if ($this->runCallback) {
+        if ($this->hasRunAuthorization()) {
             Transaction::run(fn () => $request->collectRepositories($this, static::$chunkCount, $callback));
 
             return;
@@ -195,6 +197,21 @@ abstract class Action implements JsonSerializable
         $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($callback) {
             Transaction::run(fn () => $callback($models));
         });
+    }
+
+    /**
+     * Determine if running this action is subject to per-model authorization, either
+     * through a canRun callback or an authorizedToRun() override.
+     */
+    private function hasRunAuthorization(): bool
+    {
+        if ($this->runCallback !== null) {
+            return true;
+        }
+
+        $declaringClass = (new ReflectionMethod($this, 'authorizedToRun'))->getDeclaringClass()->getName();
+
+        return $declaringClass !== self::class;
     }
 
     public function skipFieldFill(RestifyRequest $request): bool
