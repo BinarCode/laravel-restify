@@ -19,6 +19,8 @@ trait ResolvesRelatedModels
 {
     use ValidatesRelatedKeyShape;
 
+    private const RESOLVED_RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyResolvedRelatedModels';
+
     /**
      * The related models named in the request, in the order they were sent.
      *
@@ -28,6 +30,12 @@ trait ResolvesRelatedModels
      */
     protected function relatedModels(): Collection
     {
+        $cached = $this->attributes->get(self::RESOLVED_RELATED_MODELS_CACHE_ATTRIBUTE);
+
+        if ($cached instanceof Collection) {
+            return $cached;
+        }
+
         $relatedRepositoryKey = $this->relatedRepositoryKey();
 
         $relatedRepositoryClass = Restify::repositoryClassForKey($relatedRepositoryKey);
@@ -69,7 +77,11 @@ trait ResolvesRelatedModels
 
         ksort($resolved);
 
-        return Collection::make(array_values($resolved));
+        $result = Collection::make(array_values($resolved));
+
+        $this->attributes->set(self::RESOLVED_RELATED_MODELS_CACHE_ATTRIBUTE, $result);
+
+        return $result;
     }
 
     /**

@@ -4,8 +4,12 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
+use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyLabelPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabelRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -101,5 +105,143 @@ class RepositorySyncControllerTest extends IntegrationTestCase
         ])->assertOk();
 
         $this->assertCount(1, $company->fresh()->staff);
+    }
+
+    #[Test]
+    public function sync_denies_a_genuine_removal_even_when_a_kept_id_is_given_as_a_non_canonical_numeric_string(): void
+    {
+        $_SERVER['roles.canDetach.users'] = false;
+
+        $userA = $this->mockUsers()->first();
+        $userB = $this->mockUsers()->first();
+
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company) use ($userA, $userB): void {
+            $company->users()->attach($userA->getKey(), ['is_admin' => true]);
+            $company->users()->attach($userB->getKey(), ['is_admin' => false]);
+        });
+
+        $this->postJson(CompanyRepository::route("$company->id/sync/users"), [
+            'users' => ['0'.$userA->getKey()],
+        ])->assertForbidden();
+
+        $this->assertCount(2, $company->fresh()->users);
+    }
+
+    #[Test]
+    public function sync_does_not_detach_a_kept_row_given_as_a_non_canonical_numeric_string_when_can_detach_allows(): void
+    {
+        $_SERVER['roles.canDetach.users'] = true;
+
+        $userA = $this->mockUsers()->first();
+        $userB = $this->mockUsers()->first();
+
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company) use ($userA, $userB): void {
+            $company->users()->attach($userA->getKey(), ['is_admin' => true]);
+            $company->users()->attach($userB->getKey(), ['is_admin' => false]);
+        });
+
+        $this->postJson(CompanyRepository::route("$company->id/sync/users"), [
+            'users' => ['0'.$userA->getKey(), $userB->getKey()],
+        ])->assertOk();
+
+        $this->assertCount(2, $company->fresh()->users);
+    }
+
+    #[Test]
+    public function sync_does_not_lose_a_kept_row_given_as_a_non_canonical_numeric_string_when_can_detach_denies(): void
+    {
+        $_SERVER['roles.canDetach.users'] = false;
+
+        $userA = $this->mockUsers()->first();
+        $userB = $this->mockUsers()->first();
+
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company) use ($userA, $userB): void {
+            $company->users()->attach($userA->getKey(), ['is_admin' => true]);
+            $company->users()->attach($userB->getKey(), ['is_admin' => false]);
+        });
+
+        $this->postJson(CompanyRepository::route("$company->id/sync/users"), [
+            'users' => ['0'.$userA->getKey(), $userB->getKey()],
+        ])->assertOk();
+
+        $this->assertCount(2, $company->fresh()->users);
+    }
+
+    #[Test]
+    public function sync_denies_a_genuine_removal_even_when_a_kept_id_is_given_in_a_different_case(): void
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'badges' => BelongsToMany::make('badges', StringableKeyedLabelRepository::class)->canDetach(fn (): bool => false),
+            ]);
+
+        Label::query()->create(['code' => 'gold']);
+        Label::query()->create(['code' => 'silver']);
+
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company): void {
+            $company->badges()->attach('gold');
+            $company->badges()->attach('silver');
+        });
+
+        $this->postJson(CompanyRepository::route("$company->id/sync/badges"), [
+            'badges' => ['GOLD'],
+        ])->assertForbidden();
+
+        $this->assertCount(2, $company->fresh()->badges);
+    }
+
+    #[Test]
+    public function sync_does_not_detach_a_kept_row_given_in_a_different_case_when_can_detach_allows(): void
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'badges' => BelongsToMany::make('badges', StringableKeyedLabelRepository::class)->canDetach(fn (): bool => true),
+            ]);
+
+        Label::query()->create(['code' => 'gold']);
+
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company): void {
+            $company->badges()->attach('gold');
+        });
+
+        $this->postJson(CompanyRepository::route("$company->id/sync/badges"), [
+            'badges' => ['GOLD'],
+        ])->assertOk();
+
+        $this->assertCount(1, $company->fresh()->badges);
+
+        $this->assertSame(
+            'gold',
+            CompanyLabelPivot::query()->where('company_id', $company->getKey())->value('label_code')
+        );
+    }
+
+    #[Test]
+    public function sync_does_not_detach_a_kept_row_given_in_a_different_case_when_can_detach_denies(): void
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'badges' => BelongsToMany::make('badges', StringableKeyedLabelRepository::class)->canDetach(fn (): bool => false),
+            ]);
+
+        Label::query()->create(['code' => 'gold']);
+
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company): void {
+            $company->badges()->attach('gold');
+        });
+
+        $this->postJson(CompanyRepository::route("$company->id/sync/badges"), [
+            'badges' => ['GOLD'],
+        ])->assertOk();
+
+        $this->assertCount(1, $company->fresh()->badges);
+
+        $this->assertSame(
+            'gold',
+            CompanyLabelPivot::query()->where('company_id', $company->getKey())->value('label_code')
+        );
     }
 }
