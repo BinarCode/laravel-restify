@@ -112,22 +112,19 @@ abstract class Getter implements JsonSerializable
                 fn (Builder $query) => static::indexQuery($request, $query)
             )->firstOrFail();
 
-            abort_unless(
-                $this->authorizedToRun($request, $model),
-                JsonResponse::HTTP_FORBIDDEN,
-                'Not authorized to run this getter.'
-            );
+            $this->authorizeRun($request, $model);
 
             return $this->handle($request, $model);
         }
 
-        abort_unless(
-            $this->authorizedToRun($request, null),
-            JsonResponse::HTTP_FORBIDDEN,
-            'Not authorized to run this getter.'
-        );
+        $this->authorizeRun($request, null);
 
         return $this->handle($request);
+    }
+
+    protected function authorizeRunMessage(): string
+    {
+        return 'Not authorized to run this getter.';
     }
 
     public function withoutMiddleware(string|array $middleware): self

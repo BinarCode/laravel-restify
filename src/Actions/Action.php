@@ -6,12 +6,12 @@ use Binaryk\LaravelRestify\Http\Requests\ActionRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Actions\JsonSchemaFromRulesAction;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Traits\AuthorizedToRun;
 use Binaryk\LaravelRestify\Traits\AuthorizedToSee;
 use Binaryk\LaravelRestify\Traits\Make;
 use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Binaryk\LaravelRestify\Traits\Visibility;
 use Binaryk\LaravelRestify\Transaction;
-use Closure;
 use Exception;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -29,6 +29,7 @@ use ReturnTypeWillChange;
  */
 abstract class Action implements JsonSerializable
 {
+    use AuthorizedToRun;
     use AuthorizedToSee;
     use Make;
     use ProxiesCanSeeToGate;
@@ -53,11 +54,6 @@ abstract class Action implements JsonSerializable
     {
         //
     }
-
-    /**
-     * The callback used to authorize running the action.
-     */
-    public ?Closure $runCallback = null;
 
     /**
      * Action description, usually used in the UI or MCP.
@@ -95,29 +91,6 @@ abstract class Action implements JsonSerializable
         return property_exists($target, 'uriKey')
             ? $target::$uriKey
             : Str::slug(Restify::humanize($target), '-', null);
-    }
-
-    /**
-     * Determine if the action is executable for the given request.
-     *
-     * @param  ?Model  $model
-     * @return bool
-     */
-    public function authorizedToRun(Request $request, $model)
-    {
-        return $this->runCallback ? call_user_func($this->runCallback, $request, $model) : true;
-    }
-
-    /**
-     * Set the callback to be run to authorize running the action.
-     *
-     * @return $this
-     */
-    public function canRun(Closure $callback)
-    {
-        $this->runCallback = $callback;
-
-        return $this;
     }
 
     /**
@@ -166,11 +139,7 @@ abstract class Action implements JsonSerializable
         }
 
         if ($this->isStandalone()) {
-            abort_unless(
-                $this->authorizedToRun($request, null),
-                JsonResponse::HTTP_FORBIDDEN,
-                'Not authorized to run this action.'
-            );
+            $this->authorizeRun($request, null);
 
             return Transaction::run(fn () => $this->handle($request));
         }
@@ -182,21 +151,15 @@ abstract class Action implements JsonSerializable
                 $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($request, &$response) {
                     /** @var Collection<int, Model> $models */
                     foreach ($models as $model) {
-                        abort_unless(
-                            $this->authorizedToRun($request, $model),
-                            JsonResponse::HTTP_FORBIDDEN,
-                            'Not authorized to run this action.'
-                        );
+                        $this->authorizeRun($request, $model);
                     }
 
-                    Transaction::run(function () use ($models, $request, &$response) {
-                        $response = $this->handle($request, $models);
+                    $response = $this->handle($request, $models);
 
-                        $models->each(function (Model $model) {
-                            //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
-                            //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
-                            //                        }
-                        });
+                    $models->each(function (Model $model) {
+                        //                        if (in_array(HasActionLogs::class, class_uses_recursive($model), true)) {
+                        //                            Restify::actionLog()::forRepositoryAction($this, $model, $request->user())->save();
+                        //                        }
                     });
                 });
             });
@@ -205,11 +168,7 @@ abstract class Action implements JsonSerializable
                 static::indexQuery($request, $query);
             })->firstOrFail();
 
-            abort_unless(
-                $this->authorizedToRun($request, $model),
-                JsonResponse::HTTP_FORBIDDEN,
-                'Not authorized to run this action.'
-            );
+            $this->authorizeRun($request, $model);
 
             Transaction::run(function () use ($model, $request, &$response) {
                 $response = $this->handle($request, $model);

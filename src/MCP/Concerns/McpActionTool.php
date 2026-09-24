@@ -3,11 +3,10 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Illuminate\Http\JsonResponse;
 use Illuminate\JsonSchema\JsonSchema;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * @mixin Repository
@@ -16,20 +15,6 @@ trait McpActionTool
 {
     public function actionTool(Action $action, McpActionRequest $actionRequest): array
     {
-        if ($id = $actionRequest->input('id')) {
-            if (! $action->authorizedToRun($actionRequest, $actionRequest->findModelOrFail($id, static::uriKey()))) {
-                return [
-                    'error' => 'Not authorized to run this action',
-                    'action' => $action->uriKey(),
-                ];
-            }
-        } elseif ($action->isStandalone() && ! $action->authorizedToRun($actionRequest, null)) {
-            return [
-                'error' => 'Not authorized to run this action',
-                'action' => $action->uriKey(),
-            ];
-        }
-
         if (! $action->authorizedToSee($actionRequest)) {
             return [
                 'error' => 'Not authorized to see this action',
@@ -39,13 +24,9 @@ trait McpActionTool
 
         try {
             $result = $action->handleRequest($actionRequest);
-        } catch (HttpException $exception) {
-            if ($exception->getStatusCode() !== JsonResponse::HTTP_FORBIDDEN) {
-                throw $exception;
-            }
-
+        } catch (UnauthorizedException $exception) {
             return [
-                'error' => $exception->getMessage() ?: 'Not authorized to run this action',
+                'error' => $exception->getMessage(),
                 'action' => $action->uriKey(),
             ];
         }

@@ -2,9 +2,12 @@
 
 namespace Binaryk\LaravelRestify\Traits;
 
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
+
+use function throw_unless;
 
 trait AuthorizedToRun
 {
@@ -34,5 +37,26 @@ trait AuthorizedToRun
         $this->runCallback = $callback;
 
         return $this;
+    }
+
+    /**
+     * Authorize running the action, aborting the request when it is denied.
+     *
+     * @throws UnauthorizedException
+     */
+    protected function authorizeRun(Request $request, ?Model $model): void
+    {
+        throw_unless(
+            $this->authorizedToRun($request, $model),
+            UnauthorizedException::make($this->authorizeRunMessage())
+        );
+    }
+
+    /**
+     * The message used when a run authorization check fails.
+     */
+    protected function authorizeRunMessage(): string
+    {
+        return 'Not authorized to run this action.';
     }
 }
