@@ -27,11 +27,22 @@ class PublishAuthCommand extends Command
     ];
 
     /**
+     * The route name each action registers, where it differs from the action itself.
+     *
+     * @var array<string, string>
+     */
+    private const ROUTE_NAMES = [
+        'verifyEmail' => 'verify',
+    ];
+
+    /**
      * @var array<string, string>
      */
     private const ALIASES = [
         'verify' => 'verifyEmail',
     ];
+
+    private bool $wroteAnyFile = false;
 
     public function __construct(
         private readonly Filesystem $files = new Filesystem
@@ -41,6 +52,8 @@ class PublishAuthCommand extends Command
 
     public function handle(): int
     {
+        $this->wroteAnyFile = false;
+
         $apiRoutesPath = base_path('routes/api.php');
 
         if (! $this->files->exists($apiRoutesPath)) {
@@ -59,40 +72,52 @@ class PublishAuthCommand extends Command
             return self::FAILURE;
         }
 
+        $contents = $this->files->get($apiRoutesPath);
+
         try {
-            $actionsToPublish = $this->resolveActionsToPublish($actions, $apiRoutesPath);
+            $call = $this->parseRestifyAuthCall($contents);
         } catch (RuntimeException $exception) {
             $this->components->error($exception->getMessage());
 
             return self::FAILURE;
         }
 
-        if ($actions !== null) {
-            foreach (array_diff($actions, $actionsToPublish) as $alreadyPublished) {
-                $this->components->warn("{$alreadyPublished} is already published, skipped.");
-            }
+        $requested = $actions ?? array_keys(self::ACTIONS);
+
+        [$actionsToPublish, $alreadyPublished, $notInList] = $this->classifyRequestedActions(
+            $requested,
+            $contents,
+            $call['existingRemaining'],
+        );
+
+        foreach ($alreadyPublished as $action) {
+            $this->components->warn("{$action} is already published, skipped.");
+        }
+
+        foreach ($notInList as $action) {
+            $this->components->warn("{$action} is not in the Route::restifyAuth() actions list; publishing it now.");
         }
 
         if ($actionsToPublish === []) {
             $this->components->warn('Nothing left to publish.');
-
-            if ($actions === null) {
-                return self::SUCCESS;
-            }
         } else {
-            $this->registerRoutes($actionsToPublish, $apiRoutesPath);
+            $this->registerRoutes($actionsToPublish, $apiRoutesPath, $call + ['contents' => $contents]);
         }
 
-        $this->publishControllers($actions)
-            ->publishNotifications($actions);
+        $this->publishControllers($requested)
+            ->publishNotifications($requested);
 
-        $this->info('Auth controllers published.');
+        if ($this->wroteAnyFile) {
+            $this->info('Auth controllers published.');
+        }
 
         return self::SUCCESS;
     }
 
     /**
      * @param  list<string>|null  $actions
+     *
+     * @phpstan-impure
      */
     public function publishControllers(?array $actions = null): self
     {
@@ -162,16 +187,19 @@ class PublishAuthCommand extends Command
 
     /**
      * @param  list<string>  $actionsToPublish
+     * @param  array{offset: int, length: int, prefix: string, existingRemaining: list<string>, contents?: string}|null  $parsedCall
+     *
+     * @phpstan-impure
      */
-    protected function registerRoutes(array $actionsToPublish, ?string $apiRoutesPath = null): self
+    protected function registerRoutes(array $actionsToPublish, ?string $apiRoutesPath = null, ?array $parsedCall = null): self
     {
         $apiRoutesPath ??= base_path('routes/api.php');
 
-        $contents = $this->files->get($apiRoutesPath);
+        $contents = $parsedCall['contents'] ?? $this->files->get($apiRoutesPath);
 
-        [$call, $existingRemaining] = $this->parseRestifyAuthCall($contents);
+        $call = $parsedCall ?? $this->parseRestifyAuthCall($contents);
 
-        $replacement = $this->getRemainingActionsString($actionsToPublish, $existingRemaining);
+        $replacement = $call['prefix'].$this->getRemainingActionsString($actionsToPublish, $call['existingRemaining']);
 
         $updated = substr_replace($contents, $replacement, $call['offset'], $call['length']);
 
@@ -179,78 +207,243 @@ class PublishAuthCommand extends Command
 
         $this->files->put($apiRoutesPath, $updated."\n".$routeStubs);
 
+        $this->wroteAnyFile = true;
+
         return $this;
     }
 
     /**
-     * @param  list<string>|null  $actions
-     * @return list<string>
+     * Splits the requested actions into three buckets: ready to publish, already
+     * published (a real route or its controller already exists even though the
+     * action is no longer in the `Route::restifyAuth()` actions array), and
+     * missing from that array without proof they were ever published, which
+     * are published now rather than silently skipped.
      *
-     * @throws RuntimeException
+     * @param  list<string>  $requested
+     * @param  list<string>  $existingRemaining
+     * @return array{0: list<string>, 1: list<string>, 2: list<string>}
+     *
+     * @phpstan-impure
      */
-    private function resolveActionsToPublish(?array $actions, string $apiRoutesPath): array
+    private function classifyRequestedActions(array $requested, string $contents, array $existingRemaining): array
     {
-        [, $existingRemaining] = $this->parseRestifyAuthCall($this->files->get($apiRoutesPath));
+        $actionsToPublish = [];
+        $alreadyPublished = [];
+        $notInList = [];
 
-        $actionsToPublish = $actions === null
-            ? array_intersect(array_keys(self::ACTIONS), $existingRemaining)
-            : array_intersect($actions, $existingRemaining);
+        foreach ($requested as $action) {
+            if (in_array($action, $existingRemaining, true)) {
+                $actionsToPublish[] = $action;
 
-        return array_values($actionsToPublish);
+                continue;
+            }
+
+            if ($this->isActionCovered($action, $contents)) {
+                $alreadyPublished[] = $action;
+
+                continue;
+            }
+
+            $notInList[] = $action;
+            $actionsToPublish[] = $action;
+        }
+
+        return [$actionsToPublish, $alreadyPublished, $notInList];
     }
 
     /**
-     * @return array{0: array{offset: int, length: int}, 1: list<string>}
+     * Whether an action not currently listed in `Route::restifyAuth()`'s actions
+     * array has real, on-disk proof it was already published: its dedicated
+     * route name, or its controller file.
+     */
+    private function isActionCovered(string $action, string $contents): bool
+    {
+        $routeName = self::ROUTE_NAMES[$action] ?? $action;
+
+        if (str_contains($contents, "->name('restify.{$routeName}')")) {
+            return true;
+        }
+
+        $controller = self::ACTIONS[$action]['controller'] ?? null;
+
+        if ($controller === null) {
+            return false;
+        }
+
+        $controllerPath = app_path(
+            'Http/Controllers/Restify/Auth/'.Str::replaceLast('.stub', '.php', $controller)
+        );
+
+        return $this->files->exists($controllerPath);
+    }
+
+    /**
+     * @return array{offset: int, length: int, prefix: string, existingRemaining: list<string>}
      *
      * @throws RuntimeException
+     *
+     * @phpstan-impure
      */
     private function parseRestifyAuthCall(string $contents): array
     {
-        [$offset, $length, $arguments] = $this->locateRestifyAuthCall($contents);
+        [$offset, $length, $arguments, $prefix] = $this->locateRestifyAuthCall($contents);
 
-        return [['offset' => $offset, 'length' => $length], $this->parseExistingRemainingActions($arguments)];
+        return [
+            'offset' => $offset,
+            'length' => $length,
+            'prefix' => $prefix,
+            'existingRemaining' => $this->parseExistingRemainingActions($arguments),
+        ];
     }
 
     /**
-     * Finds the real `Route::restifyAuth(...)` call by tokenizing the file and masking out
-     * every comment first, so a call that only appears inside a `//` or `/* *\/` comment is
-     * never mistaken for the real one, and a `Str::replaceFirst()`-style text search (which
-     * would rewrite the first textual match, comment or not) is never needed.
+     * Finds the real `Route::restifyAuth(...)` call by walking the file's tokens
+     * looking for `Route` (or the fully-qualified `\Route`), `::`, `restifyAuth`,
+     * a balanced pair of parentheses, and a trailing `;`. A call is only ever
+     * built from that exact token sequence, so text sitting inside a comment, a
+     * heredoc/nowdoc, a multi-line string, or inline HTML after a `?>` is never
+     * mistaken for it, and a call next to other code on the same line is still
+     * found.
      *
-     * @return array{0: int, 1: int, 2: string}
+     * @return array{0: int, 1: int, 2: string, 3: string}
      *
      * @throws RuntimeException
      */
     private function locateRestifyAuthCall(string $contents): array
     {
-        $masked = $contents;
+        $tokens = PhpToken::tokenize($contents);
+        $count = count($tokens);
 
-        foreach (PhpToken::tokenize($contents) as $token) {
-            if ($token->is([T_COMMENT, T_DOC_COMMENT])) {
-                $masked = substr_replace(
-                    $masked,
-                    preg_replace('/[^\r\n]/', ' ', $token->text) ?? str_repeat(' ', strlen($token->text)),
-                    $token->pos,
-                    strlen($token->text)
+        $match = null;
+        $closeTagPos = null;
+
+        for ($i = 0; $i < $count; $i++) {
+            $token = $tokens[$i];
+
+            if ($token->is(T_CLOSE_TAG)) {
+                $closeTagPos = $token->pos;
+            }
+
+            $isRouteToken = ($token->is(T_STRING) && $token->text === 'Route')
+                || ($token->is(T_NAME_FULLY_QUALIFIED) && $token->text === '\Route');
+
+            if (! $isRouteToken) {
+                continue;
+            }
+
+            $call = $this->matchRestifyAuthCall($tokens, $count, $i, $contents);
+
+            if ($call === null) {
+                continue;
+            }
+
+            if ($match !== null) {
+                throw new RuntimeException(
+                    'Multiple Route::restifyAuth() calls were found in routes/api.php. This command can only merge into a single call. Combine them manually and try again.'
                 );
             }
+
+            $match = $call;
         }
 
-        if (! preg_match_all('/^[ \t]*\K\\\\?Route::restifyAuth\(\s*(.*?)\s*\);/ms', $masked, $matches, PREG_OFFSET_CAPTURE)) {
+        if ($match === null) {
             throw new RuntimeException(
                 'No Route::restifyAuth() call was found in routes/api.php. Add Route::restifyAuth(); and try again.'
             );
         }
 
-        if (count($matches[0]) > 1) {
+        if ($closeTagPos !== null && $closeTagPos >= $match['offset'] + $match['length']) {
             throw new RuntimeException(
-                'Multiple Route::restifyAuth() calls were found in routes/api.php. This command can only merge into a single call. Combine them manually and try again.'
+                'routes/api.php has a closing ?> tag after the Route::restifyAuth() call. Remove it so this command can safely append the generated routes.'
             );
         }
 
-        [$text, $offset] = $matches[0][0];
+        return [$match['offset'], $match['length'], $match['arguments'], $match['prefix']];
+    }
 
-        return [$offset, strlen($text), $matches[1][0][0]];
+    /**
+     * Attempts to match `::restifyAuth(...);` starting right after the `Route`
+     * token at index `$routeIndex`, returning null when the token sequence
+     * does not form a real call.
+     *
+     * @param  array<PhpToken>  $tokens
+     * @return array{offset: int, length: int, prefix: string, arguments: string}|null
+     */
+    private function matchRestifyAuthCall(array $tokens, int $count, int $routeIndex, string $contents): ?array
+    {
+        $routeToken = $tokens[$routeIndex];
+
+        $cursor = $this->skipInsignificantTokens($tokens, $count, $routeIndex + 1);
+
+        if ($cursor === null || ! $tokens[$cursor]->is(T_DOUBLE_COLON)) {
+            return null;
+        }
+
+        $cursor = $this->skipInsignificantTokens($tokens, $count, $cursor + 1);
+
+        if ($cursor === null || ! $tokens[$cursor]->is(T_STRING) || $tokens[$cursor]->text !== 'restifyAuth') {
+            return null;
+        }
+
+        $cursor = $this->skipInsignificantTokens($tokens, $count, $cursor + 1);
+
+        if ($cursor === null || $tokens[$cursor]->text !== '(') {
+            return null;
+        }
+
+        $argumentsStart = $tokens[$cursor]->pos + 1;
+        $depth = 1;
+        $closeParenIndex = null;
+
+        for ($j = $cursor + 1; $j < $count; $j++) {
+            $text = $tokens[$j]->text;
+
+            if ($text === '(') {
+                $depth++;
+            } elseif ($text === ')') {
+                $depth--;
+
+                if ($depth === 0) {
+                    $closeParenIndex = $j;
+
+                    break;
+                }
+            }
+        }
+
+        if ($closeParenIndex === null) {
+            return null;
+        }
+
+        $semicolonCursor = $this->skipInsignificantTokens($tokens, $count, $closeParenIndex + 1);
+
+        if ($semicolonCursor === null || $tokens[$semicolonCursor]->text !== ';') {
+            return null;
+        }
+
+        $endPos = $tokens[$semicolonCursor]->pos + 1;
+        $argumentsEnd = $tokens[$closeParenIndex]->pos;
+
+        return [
+            'offset' => $routeToken->pos,
+            'length' => $endPos - $routeToken->pos,
+            'prefix' => $routeToken->text === '\Route' ? '\\' : '',
+            'arguments' => substr($contents, $argumentsStart, $argumentsEnd - $argumentsStart),
+        ];
+    }
+
+    /**
+     * @param  array<PhpToken>  $tokens
+     */
+    private function skipInsignificantTokens(array $tokens, int $count, int $from): ?int
+    {
+        for ($i = $from; $i < $count; $i++) {
+            if (! $tokens[$i]->is([T_WHITESPACE, T_COMMENT, T_DOC_COMMENT])) {
+                return $i;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -333,11 +526,11 @@ class PublishAuthCommand extends Command
         $parseError = "routes/api.php's Route::restifyAuth(actions: ...) call could not be parsed. Update it manually, or reset it to Route::restifyAuth(); first.";
 
         $tokens = array_values(array_filter(
-            token_get_all('<?php '.trim($array).';'),
-            fn (array|string $token): bool => ! is_array($token) || ! in_array($token[0], [T_WHITESPACE, T_OPEN_TAG], true)
+            PhpToken::tokenize('<?php '.trim($array).';'),
+            fn (PhpToken $token): bool => ! $token->is([T_WHITESPACE, T_OPEN_TAG])
         ));
 
-        if (($tokens[0] ?? null) !== '[') {
+        if (($tokens[0]->text ?? null) !== '[') {
             throw new RuntimeException($parseError);
         }
 
@@ -350,7 +543,7 @@ class PublishAuthCommand extends Command
         for (; $i < $count; $i++) {
             $token = $tokens[$i];
 
-            if ($token === ']') {
+            if ($token->text === ']') {
                 $closed = true;
                 $i++;
 
@@ -358,11 +551,11 @@ class PublishAuthCommand extends Command
             }
 
             if ($expectingValue) {
-                if (! is_array($token) || $token[0] !== T_CONSTANT_ENCAPSED_STRING) {
+                if (! $token->is(T_CONSTANT_ENCAPSED_STRING)) {
                     throw new RuntimeException($parseError);
                 }
 
-                $action = substr($token[1], 1, -1);
+                $action = substr($token->text, 1, -1);
 
                 if (str_contains($action, '\\')) {
                     throw new RuntimeException($parseError);
@@ -374,7 +567,7 @@ class PublishAuthCommand extends Command
                 continue;
             }
 
-            if ($token !== ',') {
+            if ($token->text !== ',') {
                 throw new RuntimeException($parseError);
             }
 
@@ -386,7 +579,7 @@ class PublishAuthCommand extends Command
         }
 
         for (; $i < $count; $i++) {
-            if ($tokens[$i] !== ';') {
+            if ($tokens[$i]->text !== ';') {
                 throw new RuntimeException($parseError);
             }
         }
@@ -396,6 +589,8 @@ class PublishAuthCommand extends Command
 
     /**
      * @param  list<string>  $actions
+     *
+     * @phpstan-impure
      */
     private function validateActions(array $actions): ?string
     {
@@ -429,6 +624,8 @@ class PublishAuthCommand extends Command
         $this->files->copy(__DIR__.$stubDirectory.'/'.$stubFileName, $fullPath);
 
         $this->setNamespace($stubDirectory, $stubFileName, $path, $fullPath);
+
+        $this->wroteAnyFile = true;
     }
 
     protected function setNamespace(string $stubDirectory, string $fileName, string $path, string $fullPath): string
@@ -444,6 +641,8 @@ class PublishAuthCommand extends Command
 
     /**
      * @return list<string>|null
+     *
+     * @phpstan-impure
      */
     private function requestedActions(): ?array
     {
