@@ -14,3 +14,8 @@ parameters:
     reportUnmatchedIgnoredErrors: false
     ignoreErrors:
         - '#Unsafe usage of new static#'
+        -
+            # getCurrentSchemaListing() does not exist on Laravel 11's Schema\Builder; the
+            # installed (newer) version always has it, so this looks redundant here.
+            message: '#^Call to function method_exists\(\) with Illuminate\\Database\\Schema\\Builder and .*getCurrentSchemaLis.* will always evaluate to true\.$#'
+            path: src/Commands/RepositoryCommand.php

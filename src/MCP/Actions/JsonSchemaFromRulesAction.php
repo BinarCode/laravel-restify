@@ -120,6 +120,8 @@ class JsonSchemaFromRulesAction
 
             $itemType = null;
 
+            $rules = is_string($rules) ? explode('|', $rules) : (array) $rules;
+
             foreach ($rules as $rule) {
                 // Use a unique attribute name to prevent circular references
                 // when the same type (e.g., 'array') is used for both parent and items
