@@ -35,14 +35,16 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_row_with_a_null_id_is_rejected(): void
+    public function a_row_with_a_null_id_is_rejected_with_the_required_message(): void
     {
         $post = Post::factory()->create(['user_id' => 1, 'title' => 'Original']);
 
-        $this->postJson(PostRepository::route('bulk/update'), [
+        $response = $this->postJson(PostRepository::route('bulk/update'), [
             ['id' => null, 'title' => 'Updated'],
         ])->assertUnprocessable()
             ->assertJsonValidationErrors('0.id');
+
+        $this->assertSame('The 0.id field is required.', $response->json('errors')['0.id'][0]);
 
         $this->assertDatabaseHas(Post::class, ['id' => $post->id, 'title' => 'Original']);
     }

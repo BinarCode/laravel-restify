@@ -279,9 +279,10 @@ trait ValidatingTrait
         /** @var array<int, mixed> $existingIdRules */
         $existingIdRules = $rules[$idAttribute] ?? [];
 
-        // The scalar check runs first, with `bail`, so a repository's own id
-        // rules (e.g. a DB `exists` check) never run against a non-scalar id.
-        $rules[$idAttribute] = Collection::make([static::scalarIdRule(), 'bail', 'required', 'distinct'])
+        // `required` runs first so a missing/null id fails with the required
+        // message; `bail` then stops the scalar check and the repository's
+        // own id rules (e.g. a DB `exists` check) from running against it.
+        $rules[$idAttribute] = Collection::make(['bail', 'required', static::scalarIdRule(), 'distinct'])
             ->merge($existingIdRules)
             ->unique(strict: true)
             ->values()
