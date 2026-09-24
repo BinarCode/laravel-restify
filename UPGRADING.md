@@ -34,9 +34,9 @@ time it runs.
 
 ### Registration validates the password length and `RegisterController::__invoke()` is typed
 
-`POST /api/restify/auth/register` validates `password` with `required|confirmed|min:6`
-- previously only `required|confirmed`. A password under 6 characters that used to
-register now gets a `422`.
+`POST /api/register` validates `password` with `required|confirmed|min:6` - previously
+only `required|confirmed`. A password under 6 characters that used to register now gets
+a `422`.
 
 `RegisterController::__invoke()` now declares `: Serializer`. A subclass that overrides
 `__invoke()` without also declaring `: Serializer` fatals with `Declaration ... must be
