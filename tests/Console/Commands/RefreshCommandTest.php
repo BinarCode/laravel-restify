@@ -118,14 +118,17 @@ class RefreshCommandTest extends IntegrationTestCase
     #[Test]
     public function it_leaves_cache_entries_in_place_when_repository_caching_is_disabled(): void
     {
-        config(['cache.default' => 'array']);
-        $this->disableRepositoryCache();
+        config([
+            'cache.default' => 'array',
+            'restify.repositories.cache.enabled' => false,
+            'restify.repositories.cache.enable_in_tests' => true,
+        ]);
 
-        Cache::put('restify:repository:posts:index:test', 'cached-value', 60);
+        Cache::tags(['restify', 'repositories', 'posts'])->put('restify:repository:posts:index:test', 'cached-value', 60);
 
         $this->artisan('restify:refresh')->assertExitCode(Command::SUCCESS);
 
-        $this->assertTrue(Cache::has('restify:repository:posts:index:test'));
+        $this->assertTrue(Cache::tags(['restify', 'repositories', 'posts'])->has('restify:repository:posts:index:test'));
     }
 
     #[TestWith(['file'])]
