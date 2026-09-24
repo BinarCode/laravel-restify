@@ -112,6 +112,8 @@ you relied on `app.url` being allowed while also setting `FRONTEND_APP_URL` to a
 different host, add that host to `restify.auth.password_reset_url` or
 `restify.auth.frontend_app_url` instead.
 
+If your app published `config/restify.php` before it carried an `auth.frontend_app_url` key, add `'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),` to it - otherwise `frontend_app_url` resolves to `null` and every client-supplied `url` on `forgotPassword` is rejected.
+
 ### `POST /api/register` stores the email lowercased
 
 The `email` is now lowercased before the `unique` check runs and before the row is
