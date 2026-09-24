@@ -33,7 +33,6 @@ class AuthorizeSyncRemovalsLockTest extends IntegrationTestCase
         $repository = new CompanyRepository;
 
         $method = new ReflectionMethod($repository, 'authorizeSyncRemovals');
-        $method->setAccessible(true);
         $method->invoke($repository, new RestifyRequest, $eagerField, $relationship, 'user_id', [1, 2]);
 
         $this->assertTrue(true);

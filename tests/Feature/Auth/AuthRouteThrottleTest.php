@@ -120,7 +120,6 @@ class AuthRouteThrottleTest extends IntegrationTestCase
 
         $provider = new RestifyApplicationServiceProvider($this->app);
         $method = new ReflectionMethod($provider, 'authRateLimiters');
-        $method->setAccessible(true);
         $method->invoke($provider);
 
         Route::restifyAuth('auth', ['login']);

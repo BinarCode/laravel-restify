@@ -135,11 +135,14 @@ trait Attachable
 
     public function authorizedToDetach(RestifyRequest $request, Pivot $pivot): bool
     {
-        return is_callable($this->canDetachCallback)
+        return $this->hasCanDetachCallback()
             ? call_user_func($this->canDetachCallback, $request, $pivot)
             : true;
     }
 
+    /**
+     * @phpstan-assert-if-true callable $this->canDetachCallback
+     */
     public function hasCanDetachCallback(): bool
     {
         return is_callable($this->canDetachCallback);
