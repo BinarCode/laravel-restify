@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Console\Commands;
 
+use Binaryk\LaravelRestify\Tests\Concerns\FakesSanctumProcessFailures;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -11,9 +12,9 @@ use PHPUnit\Framework\Attributes\Test;
 
 class PrepareSanctumCommandTest extends IntegrationTestCase
 {
-    private string $tempBasePath;
+    use FakesSanctumProcessFailures;
 
-    private string|false $originalPath;
+    private string $tempBasePath;
 
     protected function setUp(): void
     {
@@ -22,14 +23,10 @@ class PrepareSanctumCommandTest extends IntegrationTestCase
         $this->tempBasePath = sys_get_temp_dir().'/restify-sanctum-test-'.uniqid('', true);
         File::ensureDirectoryExists($this->tempBasePath.'/config');
         $this->app->setBasePath($this->tempBasePath);
-
-        $this->originalPath = getenv('PATH');
     }
 
     protected function tearDown(): void
     {
-        putenv($this->originalPath === false ? 'PATH' : "PATH={$this->originalPath}");
-
         File::deleteDirectory($this->tempBasePath);
 
         parent::tearDown();
@@ -242,7 +239,7 @@ class PrepareSanctumCommandTest extends IntegrationTestCase
     {
         File::put(base_path('composer.lock'), '{not valid json');
 
-        $this->fakeFailingComposerBinary();
+        $this->bindFailingSanctumProcess('composer require', 'composer require failed');
 
         $this->artisan('restify:sanctum')
             ->expectsOutputToContain('composer require failed')
@@ -254,10 +251,22 @@ class PrepareSanctumCommandTest extends IntegrationTestCase
     {
         File::put(base_path('composer.lock'), json_encode(['content-hash' => 'abc']));
 
-        $this->fakeFailingComposerBinary();
+        $this->bindFailingSanctumProcess('composer require', 'composer require failed');
 
         $this->artisan('restify:sanctum')
             ->expectsOutputToContain('composer require failed')
+            ->assertExitCode(Command::FAILURE);
+    }
+
+    #[Test]
+    public function it_fails_and_reports_the_error_when_vendor_publish_fails(): void
+    {
+        File::put(base_path('composer.lock'), json_encode(['content-hash' => 'abc']));
+
+        $this->bindFailingSanctumProcess('vendor:publish', 'vendor:publish failed');
+
+        $this->artisan('restify:sanctum')
+            ->expectsOutputToContain('vendor:publish failed')
             ->assertExitCode(Command::FAILURE);
     }
 
@@ -280,17 +289,5 @@ class PrepareSanctumCommandTest extends IntegrationTestCase
             }
 
             PHP);
-    }
-
-    private function fakeFailingComposerBinary(): void
-    {
-        $binPath = $this->tempBasePath.'/bin';
-        File::ensureDirectoryExists($binPath);
-
-        $composerStub = $binPath.'/composer';
-        File::put($composerStub, "#!/bin/sh\necho 'composer require failed' >&2\nexit 1\n");
-        chmod($composerStub, 0755);
-
-        putenv("PATH={$binPath}:".getenv('PATH'));
     }
 }

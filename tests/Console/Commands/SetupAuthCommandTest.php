@@ -4,13 +4,17 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Console\Commands;
 
+use Binaryk\LaravelRestify\Tests\Concerns\FakesSanctumProcessFailures;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class SetupAuthCommandTest extends IntegrationTestCase
 {
+    use FakesSanctumProcessFailures;
+
     private string $tempBasePath;
 
     protected function setUp(): void
@@ -56,6 +60,27 @@ class SetupAuthCommandTest extends IntegrationTestCase
         File::put(base_path('routes/api.php'), "<?php\n");
 
         $this->artisan('restify:setup-auth')->assertExitCode(Command::FAILURE);
+    }
+
+    #[Test]
+    #[TestWith(['composer require', 'composer require failed'], 'composer require fails')]
+    #[TestWith(['vendor:publish', 'vendor:publish failed'], 'vendor:publish fails')]
+    public function it_still_runs_the_auth_macro_step_when_the_sanctum_process_fails(string $failingCommandNeedle, string $errorOutput): void
+    {
+        File::put(base_path('composer.lock'), json_encode(['content-hash' => 'abc']));
+
+        $this->bindFailingSanctumProcess($failingCommandNeedle, $errorOutput);
+
+        File::ensureDirectoryExists(base_path('routes'));
+        File::put(base_path('routes/api.php'), "<?php\n");
+
+        $this->seedValidUserModel();
+
+        $this->artisan('restify:setup-auth')
+            ->expectsOutputToContain($errorOutput)
+            ->assertExitCode(Command::FAILURE);
+
+        $this->assertStringContainsString('Route::restifyAuth();', File::get(base_path('routes/api.php')));
     }
 
     #[Test]
