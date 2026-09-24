@@ -173,3 +173,5 @@ route stubs (`php artisan restify:auth`), re-publish them or manually change
 `throttle:6,1` to the matching `throttle:restify.<action>` on each route - the package
 provider registers the limiters regardless of whether the published stubs use them, so
 leaving old stubs in place still throttles, just on the old shared 6,1 bucket.
+
+If your `app/Providers/RestifyServiceProvider` overrides `boot()`, call `parent::boot()` (or define the `restify.*` limiters yourself) - otherwise the `restify.*` limiters never get registered and `throttle:restify.*` throws `MissingRateLimiterException` (a `500`).
