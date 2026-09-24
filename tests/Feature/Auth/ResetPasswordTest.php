@@ -31,7 +31,10 @@ class ResetPasswordTest extends IntegrationTestCase
 
         Route::restifyAuth('auth', ['resetPassword']);
 
-        config(['restify.auth.password_reset_timebox' => 0]);
+        config([
+            'restify.auth.password_reset_timebox' => 0,
+            'app.debug' => false,
+        ]);
     }
 
     #[Test]
