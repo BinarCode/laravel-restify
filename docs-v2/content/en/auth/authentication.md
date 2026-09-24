@@ -376,6 +376,30 @@ If the password reset is successful, you should receive a response similar to th
 
 Now the user's password has been successfully reset, and they can log in with their new password.
 
+## Rate Limiting
+
+Each auth route is throttled by its own named rate limiter, registered in `RestifyApplicationServiceProvider::boot()`, instead of sharing Laravel's default `throttle` bucket:
+
+| Route            | Limiter name              | Default limit                        |
+| ----------------- | -------------------------- | ------------------------------------- |
+| `register`         | `restify.register`         | 6/minute, keyed by IP                 |
+| `login`             | `restify.login`             | 6/minute, keyed by email + IP         |
+| `verifyEmail`       | `restify.verify`            | 6/minute, keyed by IP                 |
+| `forgotPassword`    | `restify.forgotPassword`    | 6/minute, keyed by email + IP         |
+| `resetPassword`     | `restify.resetPassword`     | 6/minute, keyed by email + IP         |
+
+Because the email-keyed limiters key on the request's `email` input, a client that exhausts its limit for one email is not throttled when it retries with a different email - unlike the previous single shared `throttle:6,1` bucket, which throttled every auth route together, per IP.
+
+You can override any of these from your own service provider by calling `RateLimiter::for()` yourself - your call always wins, whether it runs before or after Restify's, since `RateLimiter::for()` simply replaces whatever is registered under that name and Restify only fills in a name that is still unset:
+
+```php
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+
+RateLimiter::for('restify.login', function ($request) {
+    return Limit::perMinute(10)->by($request->ip());
+});
+```
 
 ## Customizing Authentication Controllers
 

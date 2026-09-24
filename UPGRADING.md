@@ -144,3 +144,26 @@ only adds rows is unaffected. A field without `canDetach` behaves exactly as bef
 If you rely on `sync` being able to remove rows regardless of `canDetach`, either drop
 `canDetach` from that field or make its callback return `true` for the ids you expect
 `sync` to keep removing.
+
+### Auth routes are throttled by named, per-action rate limiters
+
+`register`, `login`, `verifyEmail`, `forgotPassword` and `resetPassword` used to all
+share Laravel's default `throttle:6,1` bucket, keyed by `domain|ip` - so hitting the
+limit on one auth route throttled every other auth route from the same IP too, and
+every email attempting `login` shared one bucket per IP.
+
+Each route now has its own named limiter, registered via `RateLimiter::for()` in
+`RestifyApplicationServiceProvider::boot()`: `restify.register`, `restify.login`,
+`restify.verify`, `restify.forgotPassword`, `restify.resetPassword`. `login`,
+`forgotPassword` and `resetPassword` key on the request's `email` input plus the IP
+(`Str::lower($email).'|'.$ip`), so a client exhausting its limit for one email is not
+throttled when it retries with a different email. `register` and `verifyEmail` still
+key on the IP alone. All five keep the same 6/minute default.
+
+Restify only registers a limiter under a name your app hasn't already defined
+(`RateLimiter::limiter($name) === null`), so an app-defined `RateLimiter::for('restify.login', ...)`
+is never overridden, regardless of which provider boots first. If you published the
+route stubs (`php artisan restify:auth`), re-publish them or manually change
+`throttle:6,1` to the matching `throttle:restify.<action>` on each route - the package
+provider registers the limiters regardless of whether the published stubs use them, so
+leaving old stubs in place still throttles, just on the old shared 6,1 bucket.

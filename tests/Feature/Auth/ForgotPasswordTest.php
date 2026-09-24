@@ -12,7 +12,6 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Routing\Middleware\ThrottleRequests;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Hash;
@@ -20,7 +19,6 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Timebox;
-use Illuminate\Testing\TestResponse;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -29,6 +27,17 @@ use RuntimeException;
 class ForgotPasswordTest extends IntegrationTestCase
 {
     use RefreshDatabase;
+
+    protected function getEnvironmentSetUp($app): void
+    {
+        parent::getEnvironmentSetUp($app);
+
+        // Set before the app boots: the named auth limiters are registered
+        // during RestifyApplicationServiceProvider::boot(), which resolves
+        // (and pins) the RateLimiter's cache store at that point - a later,
+        // runtime config() change would no longer reach it.
+        config(['cache.default' => 'array', 'app.debug' => false]);
+    }
 
     protected function setUp(): void
     {
@@ -130,24 +139,20 @@ class ForgotPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function known_and_unknown_emails_share_the_same_rate_limit_and_get_an_identical_429(): void
+    public function the_rate_limit_is_keyed_per_email_so_a_throttled_email_does_not_block_a_different_one(): void
     {
         $this->freezeTime();
-        config(['cache.default' => 'array', 'app.debug' => false]);
         $this->withMiddleware(ThrottleRequests::class);
 
         for ($i = 0; $i < 6; $i++) {
             $this->postJson('auth/forgotPassword', ['email' => 'known@example.com']);
         }
 
-        $knownThrottled = $this->postJson('auth/forgotPassword', ['email' => 'known@example.com']);
-        $unknownThrottled = $this->postJson('auth/forgotPassword', ['email' => 'unknown@example.com']);
+        $this->postJson('auth/forgotPassword', ['email' => 'known@example.com'])
+            ->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
 
-        $knownThrottled->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
-        $unknownThrottled->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
-
-        $this->assertSame($knownThrottled->getContent(), $unknownThrottled->getContent());
-        $this->assertSame($this->headersWithoutDate($knownThrottled), $this->headersWithoutDate($unknownThrottled));
+        $this->postJson('auth/forgotPassword', ['email' => 'unknown@example.com'])
+            ->assertOk();
     }
 
     #[Test]
@@ -206,13 +211,5 @@ class ForgotPasswordTest extends IntegrationTestCase
     public function invalid_input_is_rejected(array $payload): void
     {
         $this->postJson('auth/forgotPassword', $payload)->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
-    }
-
-    /**
-     * @return array<string, mixed>
-     */
-    private function headersWithoutDate(TestResponse $response): array
-    {
-        return Collection::make($response->headers->all())->except('date')->all();
     }
 }

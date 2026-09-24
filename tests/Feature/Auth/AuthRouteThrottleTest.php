@@ -4,20 +4,33 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Feature\Auth;
 
+use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
+use ReflectionMethod;
 
 class AuthRouteThrottleTest extends IntegrationTestCase
 {
+    protected function getEnvironmentSetUp($app): void
+    {
+        parent::getEnvironmentSetUp($app);
+
+        // Set before the app boots: the named auth limiters are registered
+        // during RestifyApplicationServiceProvider::boot(), which resolves
+        // (and pins) the RateLimiter's cache store at that point - a later,
+        // runtime config() change would no longer reach it.
+        config(['cache.default' => 'array']);
+    }
+
     protected function setUp(): void
     {
         parent::setUp();
-
-        config(['cache.default' => 'array']);
 
         $this->withMiddleware(ThrottleRequests::class);
 
@@ -42,16 +55,76 @@ class AuthRouteThrottleTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['registerRoute.stub'], 'register')]
-    #[TestWith(['loginRoute.stub'], 'login')]
-    #[TestWith(['verifyRoute.stub'], 'verifyEmail')]
-    #[TestWith(['forgotPasswordRoute.stub'], 'forgotPassword')]
-    #[TestWith(['resetPasswordRoute.stub'], 'resetPassword')]
-    public function the_route_published_by_restify_auth_is_throttled(string $stub): void
+    #[TestWith(['registerRoute.stub', 'restify.register'], 'register')]
+    #[TestWith(['loginRoute.stub', 'restify.login'], 'login')]
+    #[TestWith(['verifyRoute.stub', 'restify.verify'], 'verifyEmail')]
+    #[TestWith(['forgotPasswordRoute.stub', 'restify.forgotPassword'], 'forgotPassword')]
+    #[TestWith(['resetPasswordRoute.stub', 'restify.resetPassword'], 'resetPassword')]
+    public function the_route_published_by_restify_auth_is_throttled_by_its_named_limiter(string $stub, string $limiterName): void
     {
         $this->assertStringContainsString(
-            "->middleware('throttle:6,1')",
+            "->middleware('throttle:{$limiterName}')",
             file_get_contents(__DIR__.'/../../../src/Commands/stubs/Routes/'.$stub),
         );
+    }
+
+    #[Test]
+    public function six_logins_for_one_email_throttle_only_that_email_not_a_different_one_from_the_same_ip(): void
+    {
+        Route::restifyAuth('auth', ['login']);
+
+        foreach (range(1, 6) as $attempt) {
+            $this->assertNotSame(
+                JsonResponse::HTTP_TOO_MANY_REQUESTS,
+                $this->postJson('auth/login', ['email' => 'a@x.com'])->getStatusCode()
+            );
+        }
+
+        $this->postJson('auth/login', ['email' => 'a@x.com'])
+            ->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
+
+        $this->assertNotSame(
+            JsonResponse::HTTP_TOO_MANY_REQUESTS,
+            $this->postJson('auth/login', ['email' => 'b@x.com'])->getStatusCode()
+        );
+    }
+
+    #[Test]
+    public function exhausting_the_login_limiter_does_not_throttle_forgot_password(): void
+    {
+        Route::restifyAuth('auth', ['login', 'forgotPassword']);
+
+        foreach (range(1, 7) as $attempt) {
+            $this->postJson('auth/login', ['email' => 'a@x.com']);
+        }
+
+        $this->assertNotSame(
+            JsonResponse::HTTP_TOO_MANY_REQUESTS,
+            $this->postJson('auth/forgotPassword', ['email' => 'a@x.com'])->getStatusCode()
+        );
+    }
+
+    #[Test]
+    public function an_app_defined_restify_login_limiter_wins_over_the_package_default(): void
+    {
+        RateLimiter::for('restify.login', fn (): Limit => Limit::perMinute(1));
+
+        // Simulates the package's provider booting again (or after the app's own
+        // provider already defined 'restify.login'): the guard must leave the
+        // app's limiter alone instead of overwriting it with the 6/minute default.
+        $provider = new RestifyApplicationServiceProvider($this->app);
+        $method = new ReflectionMethod($provider, 'authRateLimiters');
+        $method->setAccessible(true);
+        $method->invoke($provider);
+
+        Route::restifyAuth('auth', ['login']);
+
+        $this->assertNotSame(
+            JsonResponse::HTTP_TOO_MANY_REQUESTS,
+            $this->postJson('auth/login', ['email' => 'a@x.com'])->getStatusCode()
+        );
+
+        $this->postJson('auth/login', ['email' => 'a@x.com'])
+            ->assertStatus(JsonResponse::HTTP_TOO_MANY_REQUESTS);
     }
 }

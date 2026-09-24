@@ -13,12 +13,17 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
 use Binaryk\LaravelRestify\MCP\McpToolsManager;
+use Closure;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use ReflectionException;
 
 class RestifyApplicationServiceProvider extends ServiceProvider
@@ -35,6 +40,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     {
         $this->authorization();
         $this->repositories();
+        $this->authRateLimiters();
         $this->authRoutes();
         $this->routes();
         $this->singleton();
@@ -94,13 +100,13 @@ class RestifyApplicationServiceProvider extends ServiceProvider
             ], function () use ($actions) {
                 if (in_array('register', $actions, true)) {
                     Route::post('register', RegisterController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.register')
                         ->name('restify.register');
                 }
 
                 if (in_array('login', $actions, true)) {
                     Route::post('login', LoginController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.login')
                         ->name('restify.login');
                 }
 
@@ -112,23 +118,76 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
                 if (in_array('verifyEmail', $actions, true)) {
                     Route::post('verify/{id}/{hash}', VerifyController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.verify')
                         ->name('restify.verify');
                 }
 
                 if (in_array('forgotPassword', $actions, true)) {
                     Route::post('forgotPassword', ForgotPasswordController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.forgotPassword')
                         ->name('restify.forgotPassword');
                 }
 
                 if (in_array('resetPassword', $actions, true)) {
                     Route::post('resetPassword', ResetPasswordController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.resetPassword')
                         ->name('restify.resetPassword');
                 }
             });
         });
+    }
+
+    /**
+     * Registers named rate limiters for each auth action, so every action is
+     * throttled independently instead of sharing Laravel's default `throttle`
+     * bucket - which keys solely on the authenticated user or `domain|ip`,
+     * with no route in the key. Only registers a limiter the app has not
+     * already defined, so an app can override any of these.
+     */
+    protected function authRateLimiters(): void
+    {
+        $this->registerRateLimiterUnlessDefined(
+            'restify.register',
+            fn (Request $request): Limit => Limit::perMinute(6)->by($request->ip())
+        );
+
+        $this->registerRateLimiterUnlessDefined(
+            'restify.login',
+            fn (Request $request): Limit => Limit::perMinute(6)->by(self::emailAndIpKey($request))
+        );
+
+        $this->registerRateLimiterUnlessDefined(
+            'restify.verify',
+            fn (Request $request): Limit => Limit::perMinute(6)->by($request->ip())
+        );
+
+        $this->registerRateLimiterUnlessDefined(
+            'restify.forgotPassword',
+            fn (Request $request): Limit => Limit::perMinute(6)->by(self::emailAndIpKey($request))
+        );
+
+        $this->registerRateLimiterUnlessDefined(
+            'restify.resetPassword',
+            fn (Request $request): Limit => Limit::perMinute(6)->by(self::emailAndIpKey($request))
+        );
+    }
+
+    protected function registerRateLimiterUnlessDefined(string $name, Closure $callback): void
+    {
+        if (RateLimiter::limiter($name) === null) {
+            RateLimiter::for($name, $callback);
+        }
+    }
+
+    /**
+     * A non-string `email` (missing, or an array) is treated as empty rather
+     * than crashing, so the limiter still keys on the ip alone.
+     */
+    private static function emailAndIpKey(Request $request): string
+    {
+        $email = $request->input('email');
+
+        return Str::lower(is_string($email) ? $email : '').'|'.$request->ip();
     }
 
     protected function routes(): void
