@@ -22,7 +22,7 @@ jobs:
 
         steps:
             - name: Checkout code
-              uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6.1.0
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
                   fetch-depth: 0
                   persist-credentials: false
@@ -96,12 +96,12 @@ jobs:
                   echo "EOF" >> $GITHUB_OUTPUT
 
             - name: Create Release
-              uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2.6.2
               env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-              with:
-                  tag_name: ${{ steps.get_version.outputs.tag_name }}
-                  name: Release ${{ steps.get_version.outputs.tag_name }}
-                  body: ${{ steps.changelog.outputs.changelog }}
-                  draft: false
-                  prerelease: false
+                  GH_TOKEN: ${{ github.token }}
+                  TAG_NAME: ${{ steps.get_version.outputs.tag_name }}
+                  RELEASE_NAME: Release ${{ steps.get_version.outputs.tag_name }}
+                  RELEASE_BODY: ${{ steps.changelog.outputs.changelog }}
+              run: |
+                  gh release create "$TAG_NAME" \
+                      --title "$RELEASE_NAME" \
+                      --notes "$RELEASE_BODY"
