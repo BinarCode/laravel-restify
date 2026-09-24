@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -70,6 +71,23 @@ class ForgotPasswordUrlHostTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_url_longer_than_2048_characters_is_rejected(): void
+    {
+        Notification::fake();
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        $url = 'https://app.restify.test/reset?token={token}&email={email}&pad='.str_repeat('a', 2048);
+
+        $this->postJson('auth/forgotPassword', [
+            'email' => $user->email,
+            'url' => $url,
+        ])->assertStatus(422)->assertJsonValidationErrors('url');
+
+        Notification::assertNothingSent();
+    }
+
+    #[Test]
     public function an_unknown_email_with_a_foreign_url_gets_the_same_validation_error(): void
     {
         Notification::fake();
@@ -96,7 +114,31 @@ class ForgotPasswordUrlHostTest extends IntegrationTestCase
 
         Notification::assertSentOnDemand(
             ForgotPasswordNotification::class,
-            fn (ForgotPasswordNotification $notification): bool => str_starts_with($notification->url, 'HTTPS://APP.RESTIFY.TEST/custom/reset')
+            function (ForgotPasswordNotification $notification) use ($user): bool {
+                return str_starts_with($notification->url, 'HTTPS://APP.RESTIFY.TEST/custom/reset')
+                    && ! str_contains($notification->url, '{token}')
+                    && ! str_contains($notification->url, '{email}')
+                    && str_contains($notification->url, 'email=known%40example.com')
+                    && Password::tokenExists($user, $this->tokenFromUrl($notification->url));
+            }
+        );
+    }
+
+    #[Test]
+    public function a_client_url_padded_with_whitespace_is_trimmed_before_validation_and_accepted(): void
+    {
+        Notification::fake();
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        $this->postJson('auth/forgotPassword', [
+            'email' => $user->email,
+            'url' => ' https://app.restify.test/custom/reset?token={token}&email={email} ',
+        ])->assertOk();
+
+        Notification::assertSentOnDemand(
+            ForgotPasswordNotification::class,
+            fn (ForgotPasswordNotification $notification): bool => $notification->url === 'https://app.restify.test/custom/reset?token='.$this->tokenFromUrl($notification->url).'&email=known%40example.com'
         );
     }
 
@@ -186,5 +228,14 @@ class ForgotPasswordUrlHostTest extends IntegrationTestCase
         ])->assertStatus(422)->assertJsonValidationErrors('url');
 
         Notification::assertNothingSent();
+    }
+
+    private function tokenFromUrl(string $url): string
+    {
+        /** @var array<string, string> $query */
+        $query = [];
+        parse_str((string) parse_url($url, PHP_URL_QUERY), $query);
+
+        return $query['token'];
     }
 }

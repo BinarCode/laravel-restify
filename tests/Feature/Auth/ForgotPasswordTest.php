@@ -199,6 +199,9 @@ class ForgotPasswordTest extends IntegrationTestCase
     #[TestWith([[]], 'email missing')]
     #[TestWith([['email' => 'not-an-email']], 'email malformed')]
     #[TestWith([['email' => 'known@example.com', 'url' => 12345]], 'url not a string')]
+    #[TestWith([['email' => 'known@example.com', 'url' => null]], 'url null')]
+    #[TestWith([['email' => 'known@example.com', 'url' => '']], 'url empty string')]
+    #[TestWith([['email' => 'known@example.com', 'url' => ['https://app.restify.test/reset']]], 'url an array')]
     public function invalid_input_is_rejected(array $payload): void
     {
         $this->postJson('auth/forgotPassword', $payload)->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);

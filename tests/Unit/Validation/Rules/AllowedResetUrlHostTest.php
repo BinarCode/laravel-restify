@@ -48,6 +48,14 @@ class AllowedResetUrlHostTest extends IntegrationTestCase
     #[TestWith(['https:///host', ['https://good.com'], false], 'an empty authority (triple slash) fails to parse')]
     #[TestWith(['https://[::1]/reset', ['https://good.com'], false], 'an IPv6 literal host does not match a configured hostname')]
     #[TestWith(['https://[::1]/reset', ['https://[::1]'], true], 'an IPv6 literal host matches when explicitly allowed')]
+    #[TestWith(['https://evil.com#@good.com/', ['https://good.com'], false], 'a fragment-based userinfo lookalike does not change the parsed host')]
+    #[TestWith(['https://evil.com?@good.com/', ['https://good.com'], false], 'a query-based userinfo lookalike does not change the parsed host')]
+    #[TestWith(['https://evil.com/@good.com', ['https://good.com'], false], 'a path segment that looks like a host is still just a path')]
+    #[TestWith(["https://good.com/reset\n", ['https://good.com'], false], 'a raw newline anywhere in the url is rejected')]
+    #[TestWith(['data:text/html,https://good.com', ['https://good.com'], false], 'a data scheme is rejected regardless of what follows it')]
+    #[TestWith(['https://good.com./reset', ['https://good.com'], false], 'a trailing dot on the host is not normalized away')]
+    #[TestWith(['https://93.184.216.34/reset', ['https://good.com'], false], 'an IPv4 literal host does not match a configured hostname')]
+    #[TestWith(["https://g\u{03bf}od.com/reset", ['https://good.com'], false], 'an IDN homoglyph host does not match the configured ASCII hostname')]
     public function it_validates_the_url_host(string $url, array $allowedOrigins, bool $expectedValid): void
     {
         $rule = new AllowedResetUrlHost($allowedOrigins);

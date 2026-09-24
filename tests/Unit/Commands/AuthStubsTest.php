@@ -64,7 +64,12 @@ class AuthStubsTest extends IntegrationTestCase
     {
         $contents = $this->stubContents('ForgotPasswordController.stub');
 
-        $this->assertStringContainsString('AllowedResetUrlHost', $contents);
+        $this->assertStringContainsString(
+            "'url' => ['sometimes', 'string', 'max:2048', AllowedResetUrlHost::fromConfig()],",
+            $contents
+        );
+        $this->assertStringContainsString('rawurlencode($token)', $contents);
+        $this->assertStringContainsString('rawurlencode($user->getEmailForPasswordReset())', $contents);
     }
 
     #[Test]
