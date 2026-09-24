@@ -51,5 +51,5 @@ single `repositories: 'all'`/id list) - over both REST and MCP.
 
 Standalone actions and index-route getters have no single model to check `canRun`
 against, so they now receive `null` there too. A closure typed with a non-nullable model
-- `fn (Request $request, Post $post): bool => ...` - TypeErrors when called with `null`.
+(`fn (Request $request, Post $post): bool => ...`) TypeErrors when called with `null`.
 Type the parameter nullable: `fn (Request $request, ?Post $post): bool => ...`.
