@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Http\JsonResponse;
 use PHPUnit\Framework\Attributes\Test;
 
 /**
@@ -32,7 +33,12 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
             $_SERVER['CompanyRepository.attach.repositoryId'],
             $_SERVER['CompanyRepository.detach.repositoryId'],
             $_SERVER['CompanyRepository.sync.repositoryId'],
+            $_SERVER['CompanyRepository.deniedRoles.customAttacher.calls'],
+            $_SERVER['CompanyRepository.deniedRoles.customDetacher.calls'],
         );
+
+        CompanyRepository::$attachers = [];
+        CompanyRepository::$detachers = [];
 
         parent::tearDown();
     }
@@ -393,5 +399,67 @@ class AttachRelationFromRouteTest extends IntegrationTestCase
         ]);
 
         $this->assertDatabaseCount(CompanyDeniedRolePivot::class, 0);
+    }
+
+    #[Test]
+    public function a_body_related_repository_key_cannot_select_a_different_custom_attacher(): void
+    {
+        CompanyRepository::$attachers = [
+            'deniedRoles' => function (): JsonResponse {
+                $_SERVER['CompanyRepository.deniedRoles.customAttacher.calls'] = true;
+
+                return ok();
+            },
+        ];
+
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+        $role = Role::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->id}/attach/users"), [
+            'users' => [$user->getKey()],
+            'is_admin' => true,
+            'relatedRepository' => 'deniedRoles',
+            'deniedRoles' => [$role->getKey()],
+        ])->assertCreated();
+
+        $this->assertArrayNotHasKey('CompanyRepository.deniedRoles.customAttacher.calls', $_SERVER);
+
+        $this->assertDatabaseHas(CompanyUserPivot::class, [
+            'company_id' => $company->getKey(),
+            'user_id' => $user->getKey(),
+            'is_admin' => true,
+        ]);
+    }
+
+    #[Test]
+    public function a_body_related_repository_key_cannot_select_a_different_custom_detacher(): void
+    {
+        $_SERVER['roles.canDetach.users'] = true;
+
+        CompanyRepository::$detachers = [
+            'deniedRoles' => function (): JsonResponse {
+                $_SERVER['CompanyRepository.deniedRoles.customDetacher.calls'] = true;
+
+                return ok();
+            },
+        ];
+
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $company->users()->attach($user->getKey(), ['is_admin' => true]);
+
+        $this->postJson(CompanyRepository::route("{$company->id}/detach/users"), [
+            'users' => [$user->getKey()],
+            'relatedRepository' => 'deniedRoles',
+        ])->assertNoContent();
+
+        $this->assertArrayNotHasKey('CompanyRepository.deniedRoles.customDetacher.calls', $_SERVER);
+
+        $this->assertDatabaseMissing(CompanyUserPivot::class, [
+            'company_id' => $company->getKey(),
+            'user_id' => $user->getKey(),
+        ]);
     }
 }
