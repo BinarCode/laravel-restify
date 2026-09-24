@@ -72,6 +72,17 @@ class RepositoryDestroyBulkControllerTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function an_empty_bulk_delete_returns_ok_and_deletes_nothing(): void
+    {
+        Post::factory()->create();
+
+        $this->deleteJson(PostRepository::route('bulk/delete'), [])
+            ->assertOk();
+
+        $this->assertDatabaseCount(Post::class, 1);
+    }
+
+    #[Test]
     public function after_validation_runs_on_bulk_delete(): void
     {
         $post = Post::factory()->create();

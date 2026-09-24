@@ -20,7 +20,7 @@ class RepositoryDestroyBulkController
         $validator->validate();
 
         /** @var array<int, int|string> $keys */
-        $keys = $validator->validated()['keys'];
+        $keys = $validator->validated()['keys'] ?? [];
 
         $deleted = [];
 
