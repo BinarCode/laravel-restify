@@ -4510,6 +4510,12 @@ parameters:
 			path: src/Fields/FieldCollection.php
 
 		-
+			message: '#^Method Binaryk\\LaravelRestify\\Fields\\FieldCollection\:\:assignComputedFieldLabels\(\) return type with generic class Binaryk\\LaravelRestify\\Fields\\FieldCollection does not specify its types\: TKey, TValue$#'
+			identifier: missingType.generics
+			count: 1
+			path: src/Fields/FieldCollection.php
+
+		-
 			message: '#^Method Binaryk\\LaravelRestify\\Fields\\FieldCollection\:\:authorized\(\) return type with generic class Binaryk\\LaravelRestify\\Fields\\FieldCollection does not specify its types\: TKey, TValue$#'
 			identifier: missingType.generics
 			count: 1

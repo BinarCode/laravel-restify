@@ -171,6 +171,59 @@ class FieldCollection extends Collection
         return $this->each(fn (Field $field) => $field->setRepository($repository));
     }
 
+    /**
+     * Give every unlabeled computed field a unique, positional label - `Computed`,
+     * `Computed_1`, `Computed_2`, ... - before any visibility or authorization filtering
+     * runs, so the same field resolves to the same key on every request. A field already
+     * labeled `Computed` or `Computed_N` (computed or not) reserves that key for itself.
+     */
+    public function assignComputedFieldLabels(): self
+    {
+        $taken = [];
+
+        foreach ($this->all() as $item) {
+            if (! $item instanceof Field) {
+                continue;
+            }
+
+            $this->reserveComputedKey(is_string($item->label) ? $item->label : null, $taken);
+
+            if (! $item->computed()) {
+                $this->reserveComputedKey(is_string($item->attribute) ? $item->attribute : null, $taken);
+            }
+        }
+
+        $next = 0;
+
+        foreach ($this->all() as $item) {
+            if (! $item instanceof Field || ! $item->computed() || $item->label !== null) {
+                continue;
+            }
+
+            while (isset($taken[$next])) {
+                $next++;
+            }
+
+            $item->label($next === 0 ? 'Computed' : "Computed_{$next}");
+            $taken[$next] = true;
+            $next++;
+        }
+
+        return $this;
+    }
+
+    /**
+     * @param  array<int, true>  $taken
+     */
+    private function reserveComputedKey(?string $candidate, array &$taken): void
+    {
+        if ($candidate === null || preg_match('/^Computed(?:_([1-9]\d*))?$/', $candidate, $matches) !== 1) {
+            return;
+        }
+
+        $taken[isset($matches[1]) ? (int) $matches[1] : 0] = true;
+    }
+
     public function findFieldByAttribute($attribute, $default = null)
     {
         foreach ($this->items as $field) {
