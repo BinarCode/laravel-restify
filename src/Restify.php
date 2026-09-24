@@ -25,7 +25,7 @@ class Restify
     /**
      * The registered repository names.
      *
-     * @var array
+     * @var list<class-string<Repository>>
      */
     public static $repositories = [];
 
@@ -48,9 +48,13 @@ class Restify
      */
     public static function repositoryClassForKey(string $key): ?string
     {
-        return collect(static::$repositories)->first(function ($value) use ($key) {
-            return $value::uriKey() === $key;
-        });
+        foreach (static::$repositories as $repository) {
+            if ($repository::uriKey() === $key) {
+                return $repository;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -58,13 +62,15 @@ class Restify
      */
     public static function repositoryClassForPrefix(string $prefix): ?string
     {
-        return collect(static::$repositories)->first(function ($value) use ($prefix) {
-            /** @var Repository $value */
-            return str_contains(
-                ltrim($prefix, '/'),
-                ltrim($value::route(), '/')
-            );
-        });
+        $trimmedPrefix = ltrim($prefix, '/');
+
+        foreach (static::$repositories as $repository) {
+            if (str_contains($trimmedPrefix, ltrim($repository::route(), '/'))) {
+                return $repository;
+            }
+        }
+
+        return null;
     }
 
     /**
@@ -90,47 +96,54 @@ class Restify
     /**
      * Get the repository class name for a given model.
      *
-     * @param  string  $model
-     * @return string
+     * @param  Model|string  $model
+     * @return class-string<Repository>|null
      */
     public static function repositoryForModel($model)
     {
-        return collect(static::$repositories)->first(function ($value) use ($model) {
-            if ($model instanceof Model) {
-                $model = get_class($model);
-            }
+        $modelClass = $model instanceof Model ? get_class($model) : $model;
 
-            return $value::guessModelClassName() === $model;
-        });
+        foreach (static::$repositories as $repository) {
+            if ($repository::guessModelClassName() === $modelClass) {
+                return $repository;
+            }
+        }
+
+        return null;
     }
 
     /**
      * Get the repository class name for a given table name.
      *
      * @param  string  $table
-     * @return string
+     * @return class-string<Repository>|null
      */
     public static function repositoryForTable($table)
     {
-        return collect(static::$repositories)->first(function ($value) use ($table) {
-            return app($value::guessModelClassName())->getTable() === $table;
-        });
+        foreach (static::$repositories as $repository) {
+            if (app($repository::guessModelClassName())->getTable() === $table) {
+                return $repository;
+            }
+        }
+
+        return null;
     }
 
     /**
      * Register the given repositories.
      *
+     * @param  list<class-string<Repository>>  $repositories
      * @return static
      */
     public static function repositories(array $repositories)
     {
-        static::$repositories = array_unique(
+        static::$repositories = array_values(array_unique(
             array_merge(static::$repositories, $repositories)
-        );
+        ));
 
-        collect($repositories)->each(function (string $repository) {
+        foreach ($repositories as $repository) {
             (new BootRepository($repository))->boot();
-        });
+        }
 
         return new static;
     }
@@ -164,9 +177,9 @@ class Restify
             }
         }
 
-        static::repositories(
-            collect($repositories)->sort()->all()
-        );
+        sort($repositories);
+
+        static::repositories($repositories);
     }
 
     /**
@@ -220,13 +233,34 @@ class Restify
 
     public static function globallySearchableRepositories(RestifyRequest $request): array
     {
-        return collect(static::$repositories)
-            ->filter(fn ($repository) => $repository::authorizedToUseRepository($request))
-            ->filter(fn ($repository) => $repository::$globallySearchable)
-            ->sortBy(static::sortResourcesWith())
-            ->all();
+        $searchableRepositories = array_filter(
+            static::$repositories,
+            fn (string $repository): bool => $repository::authorizedToUseRepository($request)
+                && $repository::$globallySearchable,
+        );
+
+        $sortKey = static::sortResourcesWith();
+
+        // asort() preserves keys, matching Collection::sortBy()'s ordering exactly.
+        $labels = array_map(
+            static fn (string $repository): mixed => $sortKey($repository),
+            $searchableRepositories
+        );
+
+        asort($labels);
+
+        $sortedRepositories = [];
+
+        foreach (array_keys($labels) as $key) {
+            $sortedRepositories[$key] = $searchableRepositories[$key];
+        }
+
+        return $sortedRepositories;
     }
 
+    /**
+     * @return \Closure(class-string<Repository>): mixed
+     */
     public static function sortResourcesWith()
     {
         return function ($resource) {
@@ -263,12 +297,23 @@ class Restify
     {
         $path = trim(static::path(), '/') ?: '/';
 
-        return $request->is($path) ||
-            $request->is(trim($path.'/*', '/')) ||
-            $request->is('restify-api/*') ||
-            collect(static::$repositories)
-                ->filter(fn ($repository) => $repository::prefix())
-                ->some(fn ($repository) => $request->is($repository::prefix().'/*'));
+        if ($request->is($path) || $request->is(trim($path.'/*', '/')) || $request->is('restify-api/*')) {
+            return true;
+        }
+
+        foreach (static::$repositories as $repository) {
+            $prefix = $repository::prefix();
+
+            if (in_array($prefix, [null, ''], true)) {
+                continue;
+            }
+
+            if ($request->is($prefix.'/*')) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
