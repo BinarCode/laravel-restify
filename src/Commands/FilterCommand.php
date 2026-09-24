@@ -119,9 +119,10 @@ class FilterCommand extends GeneratorCommand
         return $rootNamespace.'\\Restify\\'.$this->parent()['namespace'];
     }
 
-    protected function getOptions()
+    protected function getOptions(): array
     {
         return [
+            ['force', null, InputOption::VALUE_NONE, 'Create the class even if the filter already exists.'],
             ['match', 'match', InputOption::VALUE_NONE, 'Generates a filter for match.'],
             ['sort', 'sort', InputOption::VALUE_NONE, 'Generates a filter for sorting.'],
             ['search', 'search', InputOption::VALUE_NONE, 'Generates a filter for search.'],
