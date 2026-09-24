@@ -57,10 +57,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
          * Adding an auth callback. This callback will be verified in the AuthorizeRestify middleware,
          * which is the last middleware in the middleware list from the configuration.
          */
-        Restify::auth(function ($request) {
-            return app()->environment('local') ||
-                Gate::check('viewRestify');
-        });
+        Restify::auth(fn (): bool => app()->environment('local') || Gate::check('viewRestify'));
     }
 
     /**
@@ -73,7 +70,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     protected function gate(): void
     {
-        Gate::define('viewRestify', function (Authenticatable $user) {
+        Gate::define('viewRestify', function (Authenticatable $user): bool {
             /** @var list<string> $allowedEmails */
             $allowedEmails = [
                 //
