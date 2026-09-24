@@ -67,8 +67,34 @@ class AuthStubsTest extends IntegrationTestCase
         $this->assertStringContainsString('AllowedResetUrlHost', $contents);
     }
 
+    #[Test]
+    public function the_reset_password_stub_types_the_user_as_can_reset_password(): void
+    {
+        $contents = $this->stubContents('ResetPasswordController.stub');
+
+        $this->assertStringNotContainsString('App\\Models\\User', $contents);
+        $this->assertStringContainsString('use Illuminate\\Contracts\\Auth\\CanResetPassword;', $contents);
+        $this->assertStringContainsString('/** @var CanResetPassword|null $user */', $contents);
+    }
+
+    #[Test]
+    #[TestWith(['ForgotPasswordController.stub'])]
+    #[TestWith(['ResetPasswordController.stub'])]
+    public function the_published_auth_stub_computes_its_response_inside_a_timebox(string $stub): void
+    {
+        $contents = $this->stubContents($stub);
+
+        $this->assertStringContainsString('use Illuminate\\Support\\Timebox;', $contents);
+        $this->assertStringContainsString('app(Timebox::class)->call(', $contents);
+        $this->assertStringContainsString("config('restify.auth.password_reset_timebox')", $contents);
+    }
+
     private function stubContents(string $stub): string
     {
-        return (string) file_get_contents(dirname(__DIR__, 3).'/src/Commands/stubs/Auth/'.$stub);
+        $path = dirname(__DIR__, 3).'/src/Commands/stubs/Auth/'.$stub;
+
+        $this->assertFileExists($path);
+
+        return (string) file_get_contents($path);
     }
 }

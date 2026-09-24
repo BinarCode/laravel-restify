@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Timebox;
 
 class ResetPasswordController extends Controller
 {
@@ -23,19 +24,24 @@ class ResetPasswordController extends Controller
         $token = $request->string('token')->toString();
         $password = $request->string('password')->toString();
 
-        /** @var class-string<Model&CanResetPassword> $userModel */
-        $userModel = config('restify.auth.user_model');
+        /** @var int $timeboxDuration */
+        $timeboxDuration = config('restify.auth.password_reset_timebox');
 
-        $user = $userModel::query()->where($request->only('email'))->first();
+        return app(Timebox::class)->call(function () use ($request, $token, $password): JsonResponse {
+            /** @var class-string<Model&CanResetPassword> $userModel */
+            $userModel = config('restify.auth.user_model');
 
-        if ($user === null || ! Password::getRepository()->exists($user, $token)) {
-            abort(JsonResponse::HTTP_BAD_REQUEST, __('Provided invalid token.'));
-        }
+            $user = $userModel::query()->where($request->only('email'))->first();
 
-        $user->forceFill(['password' => Hash::make($password)])->save();
+            if ($user === null || ! Password::getRepository()->exists($user, $token)) {
+                abort(JsonResponse::HTTP_BAD_REQUEST, __('Provided invalid token.'));
+            }
 
-        Password::deleteToken($user);
+            $user->forceFill(['password' => Hash::make($password)])->save();
 
-        return ok(__('Your password has been successfully reset.'));
+            Password::deleteToken($user);
+
+            return ok(__('Your password has been successfully reset.'));
+        }, $timeboxDuration);
     }
 }

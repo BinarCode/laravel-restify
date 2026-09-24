@@ -11,6 +11,7 @@ use Illuminate\Http\Request;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Timebox;
 use Throwable;
 
 class ForgotPasswordController extends Controller
@@ -22,20 +23,25 @@ class ForgotPasswordController extends Controller
             'url' => ['sometimes', 'string', 'max:2048', AllowedResetUrlHost::fromConfig()],
         ]);
 
-        /** @var class-string<Model&CanResetPassword> $userModel */
-        $userModel = config('restify.auth.user_model');
+        /** @var int $timeboxDuration */
+        $timeboxDuration = config('restify.auth.password_reset_timebox');
 
-        $user = $userModel::query()->where($request->only('email'))->first();
+        return app(Timebox::class)->call(function () use ($request): JsonResponse {
+            /** @var class-string<Model&CanResetPassword> $userModel */
+            $userModel = config('restify.auth.user_model');
 
-        if ($user !== null) {
-            try {
-                $this->sendResetLinkTo($user, $request);
-            } catch (Throwable $e) {
-                report($e);
+            $user = $userModel::query()->where($request->only('email'))->first();
+
+            if ($user !== null) {
+                try {
+                    $this->sendResetLinkTo($user, $request);
+                } catch (Throwable $e) {
+                    report($e);
+                }
             }
-        }
 
-        return ok(__('Reset password link sent to your email.'));
+            return ok(__('Reset password link sent to your email.'));
+        }, $timeboxDuration);
     }
 
     private function sendResetLinkTo(CanResetPassword $user, Request $request): void
