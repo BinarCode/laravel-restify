@@ -18,6 +18,12 @@ class StaffRepository extends Repository
 
     public static string $uriKey = 'staff';
 
+    /**
+     * Excluded so a second repository over the same model as UserRepository
+     * does not double the matches in global-search tests.
+     */
+    public static bool $globallySearchable = false;
+
     public function fields(RestifyRequest $request): array
     {
         return [
