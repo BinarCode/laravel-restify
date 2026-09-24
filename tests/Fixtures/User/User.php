@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Comment\Comment;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
+use DateTimeInterface;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,6 +39,8 @@ class User extends Authenticatable implements MustVerifyEmail, Sanctumable
 
     public static $withs = ['posts'];
 
+    public static ?DateTimeInterface $lastCreatedTokenExpiresAt = null;
+
     protected $fillable = [
         'id',
         'name',
@@ -65,8 +68,10 @@ class User extends Authenticatable implements MustVerifyEmail, Sanctumable
         return $this->email;
     }
 
-    public function createToken($name, array $scopes = []): object
+    public function createToken(string $name, array $scopes = [], ?DateTimeInterface $expiresAt = null): object
     {
+        static::$lastCreatedTokenExpiresAt = $expiresAt;
+
         return new class
         {
             public string $plainTextToken = 'token';

@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Filters\PaginationDataObject;
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
@@ -103,6 +104,13 @@ class EagerField extends Field
         }
 
         return $this;
+    }
+
+    protected function relatablePerPage(int $default): int
+    {
+        $relatablePerPage = request('relatablePerPage');
+
+        return PaginationDataObject::fromInput($relatablePerPage, null)->resolvePerPage($default);
     }
 
     public function getRelation(
