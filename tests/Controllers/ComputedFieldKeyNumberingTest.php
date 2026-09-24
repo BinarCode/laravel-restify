@@ -67,6 +67,16 @@ class ComputedFieldKeyNumberingTest extends IntegrationTestCase
         'show',
     ], 'S4 show')]
     #[TestWith([
+        [['field-labeled', 'Computed_1', 'x'], ['computed'], ['computed']],
+        [0 => 'x', 1 => 'Computed', 2 => 'Computed_2'],
+        'index',
+    ], 'attribute reservation index')]
+    #[TestWith([
+        [['field-labeled', 'Computed_1', 'x'], ['computed'], ['computed']],
+        [0 => 'x', 1 => 'Computed', 2 => 'Computed_2'],
+        'show',
+    ], 'attribute reservation show')]
+    #[TestWith([
         [['field', 'Computed_0'], ['field', 'Computed_02'], ['field', 'computed_1'], ['computed'], ['computed']],
         [0 => 'Computed_0', 1 => 'Computed_02', 2 => 'computed_1', 3 => 'Computed', 4 => 'Computed_1'],
         'index',
@@ -276,18 +286,20 @@ class ComputedFieldKeyNumberingTest extends IntegrationTestCase
     {
         $spec = $this->randomSpecFor($seed);
 
-        $expectedAttributes = $this->referenceExpectedAttributes($spec);
-
         PostRepository::partialMock()
             ->shouldReceive('fields')
             ->andReturn($this->fieldsFromSpec($spec));
 
-        $attributes = $this->getJson(PostRepository::route($this->post))
+        $indexAttributes = $this->getJson(PostRepository::route())
+            ->assertOk()
+            ->json('data.0.attributes');
+
+        $showAttributes = $this->getJson(PostRepository::route($this->post))
             ->assertOk()
             ->json('data.attributes');
 
-        $this->assertSame($expectedAttributes, $attributes);
-        $this->assertCount(count($spec), $attributes, 'every generated key must be unique');
+        $this->assertComputedKeyProperties($spec, $indexAttributes);
+        $this->assertComputedKeyProperties($spec, $showAttributes);
     }
 
     /**
@@ -301,6 +313,7 @@ class ComputedFieldKeyNumberingTest extends IntegrationTestCase
         foreach ($spec as $index => $entry) {
             $fields[] = match ($entry[0]) {
                 'computed' => field(fn () => "computed-{$index}"),
+                'computed-hidden' => field(fn () => "computed-{$index}")->canSee(fn () => false),
                 'computed-labeled' => field(fn () => "computed-{$index}")->label($entry[1]),
                 'field' => field($entry[1], fn () => $entry[1]),
                 'field-labeled' => field($entry[1], fn () => $entry[1])->label($entry[2]),
@@ -318,86 +331,161 @@ class ComputedFieldKeyNumberingTest extends IntegrationTestCase
         $entry = $spec[$index];
 
         return match ($entry[0]) {
-            'computed', 'computed-labeled' => "computed-{$index}",
+            'computed', 'computed-hidden', 'computed-labeled' => "computed-{$index}",
             'field', 'field-labeled' => $entry[1],
         };
     }
 
     /**
-     * @return list<array{0: string, 1?: string}>
+     * Random, mixed, out-of-order scenarios: unlabeled and hidden computed fields, real
+     * attributes (some named or labeled like reserved keys, including non-reserved lookalikes),
+     * and attributes whose label differs from their attribute.
+     *
+     * @return list<array{0: string, 1?: string, 2?: string}>
      */
     private function randomSpecFor(int $seed): array
     {
         mt_srand($seed);
 
-        $count = mt_rand(3, 10);
+        $count = mt_rand(6, 14);
+
+        $lookalikes = ['Computed_0', 'Computed_02', 'computed_1'];
+        shuffle($lookalikes);
 
         $spec = [];
 
         for ($index = 0; $index < $count; $index++) {
-            $roll = mt_rand(1, 4);
+            $roll = mt_rand(1, 8);
 
-            $spec[] = match ($roll) {
-                1 => ['computed'],
-                2 => ['field', "attr_{$index}"],
-                3 => ['field', $index === 0 ? 'Computed' : "Computed_{$index}"],
-                default => ['computed-labeled', "Computed_{$index}"],
-            };
+            if ($roll === 1) {
+                $spec[] = ['computed'];
+            } elseif ($roll === 2) {
+                $spec[] = ['computed-hidden'];
+            } elseif ($roll === 3) {
+                $spec[] = ['field', "attr_{$index}"];
+            } elseif ($roll === 4) {
+                $spec[] = ['field', $index === 0 ? 'Computed' : "Computed_{$index}"];
+            } elseif ($roll === 5) {
+                $spec[] = ['computed-labeled', $index === 0 ? 'Computed' : "Computed_{$index}"];
+            } elseif ($roll === 6) {
+                $spec[] = ['field-labeled', "attr_{$index}", "label_{$index}"];
+            } elseif ($roll === 7) {
+                $spec[] = ['field-labeled', "attr_{$index}", 'Computed_'.(100 + $index)];
+            } elseif ($lookalikes !== []) {
+                $spec[] = ['field', array_pop($lookalikes)];
+            } else {
+                $spec[] = ['field', "attr_{$index}"];
+            }
         }
 
         return $spec;
     }
 
     /**
-     * Independent reference implementation of the "smallest free positional index" rule,
-     * used only to compute the expected output for the randomized S10 scenarios - it must
-     * not reuse the production algorithm being tested.
+     * Asserts the numbering properties directly, without recomputing the expected key map:
+     * (a) every visible field resolves to its own key - none collapsed onto another;
+     * (b) every explicit field (named, labeled, or a labeled computed field) keeps its own
+     *     key and value; (c) the unlabeled ("auto") computed fields' numbers rise strictly in
+     *     declaration order, none lands on a reserved number, and every number below the
+     *     highest one used is either used or reserved - accounting for hidden computed fields,
+     *     which still consume a slot but never appear in the response.
      *
-     * @param  list<array{0: string, 1?: string}>  $spec
-     * @return array<string, string>
+     * @param  list<array{0: string, 1?: string, 2?: string}>  $spec
+     * @param  array<string, mixed>  $attributes
      */
-    private function referenceExpectedAttributes(array $spec): array
+    private function assertComputedKeyProperties(array $spec, array $attributes): void
+    {
+        $expectedVisibleCount = 0;
+
+        foreach ($spec as $entry) {
+            if ($entry[0] !== 'computed-hidden') {
+                $expectedVisibleCount++;
+            }
+        }
+
+        $this->assertCount($expectedVisibleCount, $attributes, 'every visible field must resolve to its own key, with none overwritten');
+
+        $reserved = $this->reservedNumbersFor($spec);
+        $hiddenAutoCount = 0;
+        $autoNumbers = [];
+
+        foreach ($spec as $index => $entry) {
+            if ($entry[0] === 'computed-hidden') {
+                $hiddenAutoCount++;
+
+                continue;
+            }
+
+            if ($entry[0] === 'computed') {
+                $autoNumbers[] = $this->numberAssignedTo($this->expectedValueFor($spec, $index), $attributes);
+
+                continue;
+            }
+
+            $expectedKey = match ($entry[0]) {
+                'field' => $entry[1],
+                'field-labeled' => $entry[2],
+                'computed-labeled' => $entry[1],
+            };
+
+            $this->assertArrayHasKey($expectedKey, $attributes, "explicit field at index {$index} lost its key [{$expectedKey}]");
+            $this->assertSame($this->expectedValueFor($spec, $index), $attributes[$expectedKey], "explicit field at index {$index} lost its value");
+        }
+
+        sort($autoNumbers);
+
+        $previous = -1;
+
+        foreach ($autoNumbers as $number) {
+            $this->assertGreaterThan($previous, $number, 'auto-assigned numbers must strictly increase in declaration order');
+            $this->assertNotContains($number, $reserved, "auto-assigned number [{$number}] collides with a reserved key");
+            $previous = $number;
+        }
+
+        if ($autoNumbers === []) {
+            return;
+        }
+
+        $max = max($autoNumbers);
+        $usedBelowMax = count(array_unique(array_merge(
+            $autoNumbers,
+            array_filter($reserved, fn (int $number): bool => $number <= $max)
+        )));
+
+        $this->assertLessThanOrEqual($hiddenAutoCount, ($max + 1) - $usedBelowMax, 'every gap below the highest used number must be explained by a hidden field');
+    }
+
+    private function numberAssignedTo(string $value, array $attributes): int
+    {
+        $key = array_search($value, $attributes, true);
+
+        $this->assertNotFalse($key, "no attribute key resolved to marker value [{$value}]");
+        $this->assertMatchesRegularExpression('/^Computed(?:_[1-9]\d*)?$/', (string) $key, "auto-assigned key [{$key}] must follow the Computed/Computed_N pattern");
+
+        return $key === 'Computed' ? 0 : (int) substr((string) $key, strlen('Computed_'));
+    }
+
+    /**
+     * @param  list<array{0: string, 1?: string, 2?: string}>  $spec
+     * @return list<int>
+     */
+    private function reservedNumbersFor(array $spec): array
     {
         $reserved = [];
 
         foreach ($spec as $entry) {
-            $label = match ($entry[0]) {
+            $candidate = match ($entry[0]) {
                 'field' => $entry[1],
+                'field-labeled' => $entry[2],
                 'computed-labeled' => $entry[1],
                 default => null,
             };
 
-            if ($label !== null && preg_match('/^Computed(?:_([1-9]\d*))?$/', $label, $matches) === 1) {
-                $reserved[isset($matches[1]) ? (int) $matches[1] : 0] = true;
+            if ($candidate !== null && preg_match('/^Computed(?:_([1-9]\d*))?$/', $candidate, $matches) === 1) {
+                $reserved[] = isset($matches[1]) ? (int) $matches[1] : 0;
             }
         }
 
-        $next = 0;
-        $expected = [];
-
-        foreach ($spec as $index => $entry) {
-            if ($entry[0] === 'field') {
-                $expected[$entry[1]] = $entry[1];
-
-                continue;
-            }
-
-            if ($entry[0] === 'computed-labeled') {
-                $expected[$entry[1]] = "computed-{$index}";
-
-                continue;
-            }
-
-            while (isset($reserved[$next])) {
-                $next++;
-            }
-
-            $key = $next === 0 ? 'Computed' : "Computed_{$next}";
-            $expected[$key] = "computed-{$index}";
-            $reserved[$next] = true;
-            $next++;
-        }
-
-        return $expected;
+        return $reserved;
     }
 }
