@@ -49,8 +49,8 @@ resolved field's own relation, and the id always comes from the route's
 `{repositoryId}` segment.
 
 If you override `attach()`, `detach()`, `sync()`, `show()`, `update()`, `patch()` or
-`destroy()` and read one of these off the request yourself, read it from the route
-instead:
+`destroy()` and read one of these off the request yourself, use the hook's
+`$repositoryId` argument for the id, and the route for the related repository:
 
 ```php
 // before
@@ -58,13 +58,20 @@ $relatedRepository = $request->relatedRepository;
 $repositoryId = $request->repositoryId; // or request('repositoryId')
 
 // after
+public function update(RestifyRequest $request, $repositoryId)
+{
+    // use $repositoryId, which every caller passes in
+}
+
 $relatedRepository = $request->relatedRepositoryKey();
-$repositoryId = $request->repositoryIdFromRoute();
 ```
 
-`relatedRepositoryKey()` throws `InvalidArgumentException` when called outside a
-route that has a `relatedRepository` segment (attach/detach/sync); the same is true
-of `repositoryIdFromRoute()` outside a route that has a `repositoryId` segment.
+Prefer `$repositoryId` over `$request->repositoryIdFromRoute()`: the MCP update and
+delete tools call `update()` and `destroy()` without a route, so the route accessor
+has nothing to read there. `relatedRepositoryKey()` throws `InvalidArgumentException`
+when called outside a route that has a `relatedRepository` segment (attach/detach/sync);
+the same is true of `repositoryIdFromRoute()` outside a route that has a `repositoryId`
+segment.
 
 ### Registration validates the password length and `RegisterController::__invoke()` is typed
 
