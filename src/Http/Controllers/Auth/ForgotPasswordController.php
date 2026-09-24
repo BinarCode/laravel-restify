@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
 use Binaryk\LaravelRestify\Notifications\ForgotPasswordNotification;
+use Binaryk\LaravelRestify\Validation\Rules\AllowedResetUrlHost;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -19,7 +20,7 @@ class ForgotPasswordController extends Controller
     {
         $request->validate([
             'email' => ['required', 'email'],
-            'url' => ['sometimes', 'string'],
+            'url' => ['sometimes', 'string', 'max:2048', AllowedResetUrlHost::fromConfig()],
         ]);
 
         /** @var int $timeboxDuration */
@@ -52,7 +53,7 @@ class ForgotPasswordController extends Controller
 
         $url = str_replace(
             ['{token}', '{email}'],
-            [$token, $user->getEmailForPasswordReset()],
+            [rawurlencode($token), rawurlencode($user->getEmailForPasswordReset())],
             $urlTemplate
         );
 
