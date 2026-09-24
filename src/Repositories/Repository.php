@@ -400,7 +400,8 @@ class Repository implements JsonSerializable, RestifySearchable
             array_values($this->filter($this->{$method}($request)))
         )->merge(
             $this->extraFields($request)
-        )->setRepository($this);
+        )->setRepository($this)
+            ->assignComputedFieldLabels();
     }
 
     public function extraFields(RestifyRequest $request): array

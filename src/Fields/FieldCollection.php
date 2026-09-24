@@ -171,6 +171,81 @@ class FieldCollection extends Collection
         return $this->each(fn (Field $field) => $field->setRepository($repository));
     }
 
+    /**
+     * Give every unlabeled computed field a unique, positional label - `Computed`,
+     * `Computed_1`, `Computed_2`, ... - before any visibility or authorization filtering
+     * runs, so the same field resolves to the same key on every request. A field already
+     * labeled `Computed` or `Computed_N` (computed or not) reserves that key for itself.
+     *
+     * @return $this
+     */
+    public function assignComputedFieldLabels(): self
+    {
+        self::assignComputedLabels($this->all());
+
+        return $this;
+    }
+
+    /**
+     * The numbering half of {@see self::assignComputedFieldLabels()}, shared with
+     * pivot fields (`BelongsToMany::resolve()`), which bypass `Repository::collectFields()`
+     * and would otherwise let unlabeled computed pivot fields collide under the same key.
+     *
+     * @param  array<int|string, mixed>  $fields
+     */
+    public static function assignComputedLabels(array $fields): void
+    {
+        $unlabeled = [];
+
+        foreach ($fields as $item) {
+            if ($item instanceof Field && $item->computed() && $item->label === null) {
+                $unlabeled[] = $item;
+            }
+        }
+
+        if ($unlabeled === []) {
+            return;
+        }
+
+        $taken = [];
+
+        foreach ($fields as $item) {
+            if (! $item instanceof Field || ($item->computed() && $item->label === null)) {
+                continue;
+            }
+
+            self::reserveComputedKey(is_string($item->label) ? $item->label : null, $taken);
+
+            if (! $item->computed()) {
+                self::reserveComputedKey(is_string($item->attribute) ? $item->attribute : null, $taken);
+            }
+        }
+
+        $next = 0;
+
+        foreach ($unlabeled as $item) {
+            while (isset($taken[$next])) {
+                $next++;
+            }
+
+            $item->label($next === 0 ? 'Computed' : "Computed_{$next}");
+            $taken[$next] = true;
+            $next++;
+        }
+    }
+
+    /**
+     * @param  array<int, true>  $taken
+     */
+    private static function reserveComputedKey(?string $candidate, array &$taken): void
+    {
+        if ($candidate === null || ! str_starts_with($candidate, 'Computed') || preg_match('/^Computed(?:_([1-9]\d*))?$/', $candidate, $matches) !== 1) {
+            return;
+        }
+
+        $taken[isset($matches[1]) ? (int) $matches[1] : 0] = true;
+    }
+
     public function findFieldByAttribute($attribute, $default = null)
     {
         foreach ($this->items as $field) {
