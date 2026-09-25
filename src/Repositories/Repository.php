@@ -1050,7 +1050,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->map(fn ($relatedKey) => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
             ->all();
 
-        DB::transaction(function () use ($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues) {
+        $relationship->getParent()->getConnection()->transaction(function () use ($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues): void {
             $this->authorizeSyncRemovals($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues);
 
             $relationship->sync($syncValues);
