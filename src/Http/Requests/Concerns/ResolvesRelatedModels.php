@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
-use BackedEnum;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Traits\CanonicalizesRelatedKeys;
 use Binaryk\LaravelRestify\Traits\ValidatesRelatedKeyShape;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
-use InvalidArgumentException;
-use Stringable;
 
 trait ResolvesRelatedModels
 {
+    use CanonicalizesRelatedKeys;
     use ValidatesRelatedKeyShape;
 
     private const RESOLVED_RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyResolvedRelatedModels';
@@ -131,15 +130,7 @@ trait ResolvesRelatedModels
 
     private function normalizeRelatedModelKey(mixed $key, Model $model, bool $caseInsensitive): int|string
     {
-        if ($key instanceof BackedEnum) {
-            $key = $key->value;
-        } elseif ($key instanceof Stringable) {
-            $key = (string) $key;
-        }
-
-        if (! is_int($key) && ! is_string($key)) {
-            throw new InvalidArgumentException('The related model key must be an int or a string.');
-        }
+        $key = $this->canonicalRelatedKey($key);
 
         if ($this->hasIntegerKey($model)) {
             return (int) $key;

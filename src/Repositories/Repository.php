@@ -2,7 +2,6 @@
 
 namespace Binaryk\LaravelRestify\Repositories;
 
-use BackedEnum;
 use Binaryk\LaravelRestify\Actions\Action;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Eager\Related;
@@ -30,6 +29,7 @@ use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
 use Binaryk\LaravelRestify\Repositories\Concerns\Testing;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
+use Binaryk\LaravelRestify\Traits\CanonicalizesRelatedKeys;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
@@ -45,10 +45,8 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
-use InvalidArgumentException;
 use JsonSerializable;
 use ReturnTypeWillChange;
-use Stringable;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
@@ -98,6 +96,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class Repository implements JsonSerializable, RestifySearchable
 {
+    use CanonicalizesRelatedKeys;
     use ConditionallyLoadsAttributes;
     use DelegatesToResource;
     use HasColumns;
@@ -1041,7 +1040,7 @@ class Repository implements JsonSerializable, RestifySearchable
         $relatedPivotKeyName = $relationship->getRelatedPivotKeyName();
 
         $canonicalKeys = $request instanceof RepositorySyncRequest
-            ? $request->resolveSyncRelatedModels($pivots)->map(fn (Model $relatedModel): int|string => self::canonicalRelatedKey($relatedModel->getKey()))
+            ? $request->resolveSyncRelatedModels($pivots)->map(fn (Model $relatedModel): int|string => $this->canonicalRelatedKey($relatedModel->getKey()))
             : $pivots;
 
         $eagerField->authorizeToSync($request, $canonicalKeys);
@@ -1057,23 +1056,6 @@ class Repository implements JsonSerializable, RestifySearchable
         });
 
         return ok();
-    }
-
-    private static function canonicalRelatedKey(mixed $key): int|string
-    {
-        if ($key instanceof BackedEnum) {
-            return $key->value;
-        }
-
-        if ($key instanceof Stringable) {
-            return (string) $key;
-        }
-
-        if (is_int($key) || is_string($key)) {
-            return $key;
-        }
-
-        throw new InvalidArgumentException('The related model key must be an int, a string, a BackedEnum, or a Stringable.');
     }
 
     /**
