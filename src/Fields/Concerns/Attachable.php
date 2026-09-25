@@ -167,7 +167,9 @@ trait Attachable
 
     public function hasCustomDetachAuthorization(): bool
     {
-        return $this->hasCanDetachCallback() || $this->overridesAttachableMethod('authorizedToDetach');
+        return $this->hasCanDetachCallback()
+            || $this->overridesAttachableMethod('authorizedToDetach')
+            || $this->overridesAttachableMethod('authorizeToDetach');
     }
 
     private function overridesAttachableMethod(string $method): bool
