@@ -1053,7 +1053,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->map(fn (mixed $relatedKey): mixed => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
             ->all();
 
-        $relationship->getParent()->getConnection()->transaction(function () use ($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues): void {
+        $relationship->getQuery()->getConnection()->transaction(function () use ($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues): void {
             if ($eagerField->hasCanDetachCallback() || $eagerField->overridesAttachableMethod('authorizedToDetach')) {
                 $this->authorizeSyncRemovals($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues);
             }
