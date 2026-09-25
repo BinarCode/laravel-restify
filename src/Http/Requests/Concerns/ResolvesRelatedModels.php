@@ -51,12 +51,10 @@ trait ResolvesRelatedModels
     }
 
     /**
-     * The related models matching the given ids, in the order the ids were given.
-     *
      * @param  list<mixed>  $requestedIds
      * @return Collection<int, Model>
      *
-     * @throws ModelNotFoundException if any of the given ids does not exist.
+     * @throws ModelNotFoundException
      */
     protected function resolveRelatedModels(array $requestedIds): Collection
     {
