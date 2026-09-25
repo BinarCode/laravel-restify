@@ -1032,8 +1032,6 @@ class Repository implements JsonSerializable, RestifySearchable
             throw new NotFoundHttpException('Belongs to many field not found.');
         }
 
-        $eagerField->authorizeToSync($request);
-
         $relationship = $this->model()->{$eagerField->relation}();
 
         if (! $relationship instanceof EloquentBelongsToMany) {
@@ -1045,6 +1043,8 @@ class Repository implements JsonSerializable, RestifySearchable
         $canonicalKeys = $request instanceof RepositorySyncRequest
             ? $request->resolveSyncRelatedModels($pivots)->map(fn (Model $relatedModel): int|string => self::canonicalRelatedKey($relatedModel->getKey()))
             : $pivots;
+
+        $eagerField->authorizeToSync($request, $canonicalKeys);
 
         $syncValues = $canonicalKeys
             ->map(fn ($relatedKey) => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})

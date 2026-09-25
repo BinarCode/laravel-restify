@@ -114,9 +114,12 @@ trait Attachable
         return $this;
     }
 
-    public function authorizeToSync(RestifyRequest $request)
+    /**
+     * @param  Collection<int, int|string>|null  $relatedKeys
+     */
+    public function authorizeToSync(RestifyRequest $request, ?Collection $relatedKeys = null)
     {
-        $relatedRepositoryIds = Arr::wrap($request->input($request->relatedRepositoryKey()));
+        $relatedRepositoryIds = $relatedKeys?->all() ?? Arr::wrap($request->input($request->relatedRepositoryKey()));
 
         foreach ($relatedRepositoryIds as $relatedRepositoryId) {
             $pivot = $this->initializePivot(

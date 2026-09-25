@@ -107,6 +107,23 @@ class SyncAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function the_can_sync_callback_sees_the_canonical_key_of_a_zero_padded_id(): void
+    {
+        $_SERVER['allow_sync_users'] = true;
+
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $_SERVER['companies.canSync.denied_user_ids'] = [$user->getKey()];
+
+        $this->postJson(CompanyRepository::route("{$company->getKey()}/sync/users"), [
+            'users' => ["0{$user->getKey()}"],
+        ])->assertForbidden();
+
+        $this->assertDatabaseCount(CompanyUserPivot::class, 0);
+    }
+
+    #[Test]
     public function the_can_sync_callback_runs_once_per_id_with_a_repository_sync_request(): void
     {
         $_SERVER['allow_sync_users'] = true;
