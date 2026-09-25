@@ -20,7 +20,10 @@ class RestifyRegisterRequest extends FormRequest
         ];
     }
 
-    protected function prepareForValidation(): void
+    /**
+     * @return void
+     */
+    protected function prepareForValidation()
     {
         $email = $this->input('email');
 
