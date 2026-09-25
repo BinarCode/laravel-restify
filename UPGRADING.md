@@ -150,10 +150,16 @@ attaches new rows and detaches rows missing from the payload - but only the atta
 side ever ran the field's authorization; a row `sync` removed skipped `canDetach`
 entirely, unlike `detach`, which always ran it.
 
-If a `BelongsToMany` field declares `canDetach`, `sync` now calls it for every
-currently-attached row the request would remove, before making any change. A denial
-gets a `403` and the sync does not run at all, not even the additions. A `sync` that
-only adds rows is unaffected. A field without `canDetach` behaves exactly as before.
+If a `BelongsToMany` field declares `canDetach`, or is a subclass overriding
+`authorizedToDetach()`, `sync` now calls it for every currently-attached row the request
+would remove, before making any change. A denial gets a `403` and the sync does not run
+at all, not even the additions. A `sync` that only adds rows is unaffected. A field
+without either behaves exactly as before and runs no extra query.
+
+`sync` also hands `canSync` the canonical related key (`2`, not the `"02"` the client
+sent), and a repository overriding `sync()` that passes extra ids to `parent::sync()`
+has those ids authorized and written too. A field overriding `authorizeToSync()` keeps
+its one-argument signature and its override still decides.
 
 If you rely on `sync` being able to remove rows regardless of `canDetach`, either drop
 `canDetach` from that field or make its callback return `true` for the ids you expect
