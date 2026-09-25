@@ -37,7 +37,7 @@ class AuthStubsTest extends IntegrationTestCase
         $contents = $this->stubContents($stub);
 
         $this->assertStringNotContainsString('firstOrFail()', $contents);
-        $this->assertStringContainsString('->first()', $contents);
+        $this->assertStringContainsString('$this->findUserByEmail(', $contents);
     }
 
     #[Test]
@@ -97,16 +97,25 @@ class AuthStubsTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith(['LoginController.stub', "->where('email', \$request->string('email')->lower()->toString())"])]
-    #[TestWith(['ForgotPasswordController.stub', "->where('email', \$request->string('email')->lower()->toString())"])]
-    #[TestWith(['ResetPasswordController.stub', "->where('email', \$request->string('email')->lower()->toString())"])]
-    #[TestWith(['RegisterController.stub', "\$request->merge(['email' => Str::lower(\$email)]);"])]
-    public function the_published_auth_stub_lowercases_the_email(string $stub, string $expectedLine): void
+    #[TestWith(['LoginController.stub'])]
+    #[TestWith(['ForgotPasswordController.stub'])]
+    #[TestWith(['ResetPasswordController.stub'])]
+    public function the_published_auth_stub_finds_the_user_by_exact_or_lowercased_email(string $stub): void
     {
         $contents = $this->stubContents($stub);
 
-        $this->assertStringContainsString($expectedLine, $contents);
+        $this->assertStringContainsString('use Binaryk\\LaravelRestify\\Http\\Controllers\\Concerns\\FindsUserByEmail;', $contents);
+        $this->assertStringContainsString("\$this->findUserByEmail(config('restify.auth.user_model'), \$request->string('email')->toString())", $contents);
         $this->assertStringNotContainsString("\$request->only('email')", $contents);
+    }
+
+    #[Test]
+    public function the_published_register_stub_lowercases_the_email(): void
+    {
+        $this->assertStringContainsString(
+            "\$request->merge(['email' => Str::lower(\$email)]);",
+            $this->stubContents('RegisterController.stub')
+        );
     }
 
     private function stubContents(string $stub): string

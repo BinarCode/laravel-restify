@@ -114,24 +114,26 @@ different host, add that host to `restify.auth.password_reset_url` or
 
 If your app published `config/restify.php` before it carried an `auth.frontend_app_url` key, add `'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),` to it - otherwise `frontend_app_url` resolves to `null` and every client-supplied `url` on `forgotPassword` is rejected.
 
-### Register, login, forgotPassword and resetPassword lowercase the email
+### Register lowercases the email; login, forgotPassword and resetPassword also match it lowercased
 
 `register` now lowercases the `email` before the `unique` check runs and before the row
 is saved, so `John@Example.com` registers as `john@example.com` and a later registration
 with any other casing of the same address is rejected as a duplicate. `login`,
-`forgotPassword` and `resetPassword` lowercase the submitted `email` before looking the
-user up, so that user can log in and reset their password with any casing.
+`forgotPassword` and `resetPassword` look the user up by the submitted email exactly
+first, then by its lowercased form, so a user registered this way can log in and reset
+their password with any casing.
 
-Restify does not touch existing rows. On a case-sensitive database (pgsql, sqlite) a
-user stored as `John@Example.com` before this change can no longer log in or reset
-their password, because the lookup now searches for `john@example.com`. Lowercase the
-stored emails yourself before deploying, for example
-`User::query()->update(['email' => DB::raw('LOWER(email)')])` - check for rows that
-collide once lowercased first. MySQL's default case-insensitive collation is unaffected.
+No migration is required. Restify does not touch existing rows, and a row stored with a
+mixed-case email (`Old@Example.com`) still matches when the user submits that exact
+casing. Lowercasing stored emails is an optional cleanup: on a case-sensitive database
+(pgsql, sqlite) it also lets those users log in with other casings - check for rows that
+collide once lowercased first.
 
-The published controller stubs (`php artisan restify:auth`) lowercase the email the same
-way. A controller you published before this change does not - add the same lowercasing to
-it, or register and login will disagree on the casing.
+The published controller stubs (`php artisan restify:auth`) use the same
+`FindsUserByEmail` lookup and the register stub lowercases the email. A controller you
+published before this change keeps its exact-match lookup; add
+`use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;` and call
+`$this->findUserByEmail($userModel, $email)` to match.
 
 ### Policy cache's fallback ttl is 300 seconds, not 60
 

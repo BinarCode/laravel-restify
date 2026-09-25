@@ -62,18 +62,39 @@ class ForgotPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_mixed_case_email_finds_the_lowercased_user(): void
+    #[TestWith(['Old@Example.com', 'Old@Example.com'], 'a legacy mixed-case row with its exact email')]
+    #[TestWith(['new@example.com', 'New@Example.com'], 'a lowercase row with a mixed-case email')]
+    #[TestWith(['new@example.com', 'new@example.com'], 'a lowercase row with its exact email')]
+    public function the_email_matches_the_stored_row_exactly_or_lowercased(string $storedEmail, string $submittedEmail): void
     {
         Notification::fake();
 
-        $user = UserFactory::one(['email' => 'known@example.com']);
+        UserFactory::one(['email' => $storedEmail]);
 
-        $this->postJson('auth/forgotPassword', ['email' => 'Known@Example.com'])
+        $this->postJson('auth/forgotPassword', ['email' => $submittedEmail])
             ->assertOk();
 
         Notification::assertSentOnDemand(
             ForgotPasswordNotification::class,
-            fn (ForgotPasswordNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['mail'] === $user->email
+            fn (ForgotPasswordNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['mail'] === $storedEmail
+        );
+    }
+
+    #[Test]
+    public function an_exact_email_match_wins_over_the_lowercased_row(): void
+    {
+        Notification::fake();
+
+        UserFactory::one(['email' => 'old@example.com']);
+        UserFactory::one(['email' => 'Old@Example.com']);
+
+        $this->postJson('auth/forgotPassword', ['email' => 'Old@Example.com'])
+            ->assertOk();
+
+        Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 1);
+        Notification::assertSentOnDemand(
+            ForgotPasswordNotification::class,
+            fn (ForgotPasswordNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['mail'] === 'Old@Example.com'
         );
     }
 

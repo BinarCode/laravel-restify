@@ -43,6 +43,28 @@ class LoginTest extends IntegrationTestCase
     }
 
     #[Test]
+    #[TestWith(['Old@Example.com', 'Old@Example.com'], 'a legacy mixed-case row with its exact email')]
+    #[TestWith(['new@example.com', 'New@Example.com'], 'a lowercase row with a mixed-case email')]
+    #[TestWith(['new@example.com', 'new@example.com'], 'a lowercase row with its exact email')]
+    public function the_email_matches_the_stored_row_exactly_or_lowercased(string $storedEmail, string $submittedEmail): void
+    {
+        UserFactory::one(['email' => $storedEmail, 'password' => Hash::make('correct-password')]);
+
+        $this->postJson('auth/login', ['email' => $submittedEmail, 'password' => 'correct-password'])
+            ->assertOk();
+    }
+
+    #[Test]
+    public function an_exact_email_match_wins_over_the_lowercased_row(): void
+    {
+        UserFactory::one(['email' => 'old@example.com', 'password' => Hash::make('lowercase-row-password')]);
+        UserFactory::one(['email' => 'Old@Example.com', 'password' => Hash::make('mixed-case-row-password')]);
+
+        $this->postJson('auth/login', ['email' => 'Old@Example.com', 'password' => 'mixed-case-row-password'])
+            ->assertOk();
+    }
+
+    #[Test]
     #[TestWith(['0.5', 30], 'a sub-minute ttl is rounded to seconds instead of truncated to zero')]
     #[TestWith(['1.5', 90], 'a fractional ttl is rounded to seconds instead of truncated')]
     #[TestWith(['60', 3600], 'a whole-minute ttl from env converts to seconds')]
@@ -171,7 +193,7 @@ class LoginTest extends IntegrationTestCase
         $this->assertStringNotContainsString('abort(401,', $contents);
         $this->assertStringContainsString('JsonResponse::HTTP_UNAUTHORIZED', $contents);
         $this->assertStringNotContainsString('whereEmail(', $contents);
-        $this->assertStringContainsString("->where('email',", $contents);
+        $this->assertStringContainsString('$this->findUserByEmail(', $contents);
         $this->assertStringNotContainsString('$user->password)', $contents);
         $this->assertStringContainsString('getAuthPassword()', $contents);
         $this->assertStringContainsString('self::scalarPasswordRule()', $contents);

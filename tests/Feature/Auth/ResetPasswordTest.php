@@ -69,13 +69,35 @@ class ResetPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_mixed_case_email_resets_the_lowercased_users_password(): void
+    #[TestWith(['Old@Example.com', 'Old@Example.com'], 'a legacy mixed-case row with its exact email')]
+    #[TestWith(['new@example.com', 'New@Example.com'], 'a lowercase row with a mixed-case email')]
+    #[TestWith(['new@example.com', 'new@example.com'], 'a lowercase row with its exact email')]
+    public function the_email_matches_the_stored_row_exactly_or_lowercased(string $storedEmail, string $submittedEmail): void
     {
-        $user = UserFactory::one(['email' => 'known@example.com', 'password' => Hash::make('original-password')]);
+        $user = UserFactory::one(['email' => $storedEmail, 'password' => Hash::make('original-password')]);
         $token = Password::createToken($user);
 
         $this->postJson('auth/resetPassword', [
-            'email' => 'Known@Example.com',
+            'email' => $submittedEmail,
+            'token' => $token,
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])->assertOk();
+
+        $currentPassword = DB::table($this->getTable(User::class))->where('id', $user->id)->value('password');
+
+        $this->assertTrue(Hash::check('new-password', $currentPassword));
+    }
+
+    #[Test]
+    public function an_exact_email_match_wins_over_the_lowercased_row(): void
+    {
+        UserFactory::one(['email' => 'old@example.com']);
+        $user = UserFactory::one(['email' => 'Old@Example.com', 'password' => Hash::make('original-password')]);
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', [
+            'email' => 'Old@Example.com',
             'token' => $token,
             'password' => 'new-password',
             'password_confirmation' => 'new-password',

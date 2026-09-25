@@ -237,7 +237,7 @@ And send this payload:
 }
 ```
 
-Note: Email and password fields are required. The `password` must be confirmed (a matching `password_confirmation`) and at least 6 characters. The `email` uniqueness check runs against the table configured in `restify.auth.table` (`config/restify.php`), which defaults to `users`. The `email` is lowercased before the uniqueness check and before it is stored, so `John@Example.com` and `john@example.com` are treated as the same account. Login, forgot password and reset password lowercase the submitted `email` before looking the user up too. Existing rows are left unchanged: on a case-sensitive database (pgsql, sqlite) a row stored with a mixed-case email can no longer log in until your app lowercases it.
+Note: Email and password fields are required. The `password` must be confirmed (a matching `password_confirmation`) and at least 6 characters. The `email` uniqueness check runs against the table configured in `restify.auth.table` (`config/restify.php`), which defaults to `users`. The `email` is lowercased before the uniqueness check and before it is stored, so `John@Example.com` and `john@example.com` are treated as the same account. Login, forgot password and reset password look the user up by the submitted `email` exactly first, then lowercased. Existing rows are left unchanged and keep matching their exact casing, so no migration is required.
 
 Now, you can send a POST request with Curl:
 

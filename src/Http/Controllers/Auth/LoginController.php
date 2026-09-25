@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
 use Binaryk\LaravelRestify\Contracts\Sanctumable;
+use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;
 use Binaryk\LaravelRestify\Repositories\Serializer;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -12,10 +13,11 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
+    use FindsUserByEmail;
+
     public function __invoke(Request $request): Serializer
     {
         /** @var array{email: string, password: string|int|float|bool} $credentials */
@@ -27,9 +29,7 @@ class LoginController extends Controller
         /** @var class-string<Model&Authenticatable&Sanctumable> $userModel */
         $userModel = config('restify.auth.user_model');
 
-        $user = $userModel::query()
-            ->where('email', Str::lower($credentials['email']))
-            ->first();
+        $user = $this->findUserByEmail($userModel, $credentials['email']);
 
         if (! $user) {
             abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
