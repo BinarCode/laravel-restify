@@ -22,6 +22,8 @@ trait Attachable
 {
     use ValidatesRelatedKeyShape;
 
+    private const CANONICAL_SYNC_KEYS_ATTRIBUTE = '_restifyCanonicalSyncKeys';
+
     /**
      * @var callable|null
      */
@@ -117,9 +119,31 @@ trait Attachable
 
     public function authorizeToSync(RestifyRequest $request)
     {
-        $relatedRepositoryIds = Collection::make(Arr::wrap($request->input($request->relatedRepositoryKey())));
+        $canonicalKeys = $request->attributes->get(self::CANONICAL_SYNC_KEYS_ATTRIBUTE);
+
+        $relatedRepositoryIds = $canonicalKeys instanceof Collection
+            ? $canonicalKeys
+            : Collection::make(Arr::wrap($request->input($request->relatedRepositoryKey())));
 
         return $this->authorizeToSyncKeys($request, $relatedRepositoryIds);
+    }
+
+    /**
+     * @internal
+     *
+     * @param  Collection<array-key, int|string>  $canonicalKeys
+     */
+    public function authorizeToSyncCanonicalKeys(RestifyRequest $request, Collection $canonicalKeys): static
+    {
+        $request->attributes->set(self::CANONICAL_SYNC_KEYS_ATTRIBUTE, $canonicalKeys);
+
+        try {
+            $this->authorizeToSync($request);
+        } finally {
+            $request->attributes->remove(self::CANONICAL_SYNC_KEYS_ATTRIBUTE);
+        }
+
+        return $this;
     }
 
     /**

@@ -1043,11 +1043,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ? $request->resolveSyncRelatedModels($pivots)->map(fn (Model $relatedModel): int|string => $this->canonicalRelatedKey($relatedModel->getKey()))
             : $pivots;
 
-        if ($eagerField->overridesAttachableMethod('authorizeToSync')) {
-            $eagerField->authorizeToSync($request);
-        } else {
-            $eagerField->authorizeToSyncKeys($request, $canonicalKeys);
-        }
+        $eagerField->authorizeToSyncCanonicalKeys($request, $canonicalKeys);
 
         $syncValues = $canonicalKeys
             ->map(fn (mixed $relatedKey): mixed => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
