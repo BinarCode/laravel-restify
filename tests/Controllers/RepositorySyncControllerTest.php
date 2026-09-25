@@ -314,4 +314,30 @@ class RepositorySyncControllerTest extends IntegrationTestCase
             'user_id' => $removedUser->getKey(),
         ]);
     }
+
+    #[Test]
+    public function a_sync_that_adds_and_removes_writes_nothing_when_the_removal_is_denied(): void
+    {
+        $_SERVER['roles.canDetach.users'] = false;
+
+        $attachedUser = $this->mockUsers()->first();
+        $addedUser = $this->mockUsers()->first();
+
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company) use ($attachedUser): void {
+            $company->users()->attach($attachedUser->getKey(), ['is_admin' => true]);
+        });
+
+        $this->postJson(CompanyRepository::route("{$company->getKey()}/sync/users"), [
+            'users' => [$addedUser->getKey()],
+        ])->assertForbidden();
+
+        $this->assertDatabaseHas(CompanyUserPivot::class, [
+            'company_id' => $company->getKey(),
+            'user_id' => $attachedUser->getKey(),
+        ]);
+        $this->assertDatabaseMissing(CompanyUserPivot::class, [
+            'company_id' => $company->getKey(),
+            'user_id' => $addedUser->getKey(),
+        ]);
+    }
 }
