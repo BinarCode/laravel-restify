@@ -36,6 +36,31 @@ trait ResolvesRelatedModels
             return $cached;
         }
 
+        $result = $this->resolveRelatedModels($this->requestedRelatedIds());
+
+        $this->attributes->set(self::RESOLVED_RELATED_MODELS_CACHE_ATTRIBUTE, $result);
+
+        return $result;
+    }
+
+    /**
+     * @return list<mixed>
+     */
+    protected function requestedRelatedIds(): array
+    {
+        return array_values(Arr::wrap($this->input($this->relatedRepositoryKey())));
+    }
+
+    /**
+     * The related models matching the given ids, in the order the ids were given.
+     *
+     * @param  list<mixed>  $requestedIds
+     * @return Collection<int, Model>
+     *
+     * @throws ModelNotFoundException if any of the given ids does not exist.
+     */
+    protected function resolveRelatedModels(array $requestedIds): Collection
+    {
         $relatedRepositoryKey = $this->relatedRepositoryKey();
 
         $relatedRepositoryClass = Restify::repositoryClassForKey($relatedRepositoryKey);
@@ -43,8 +68,6 @@ trait ResolvesRelatedModels
         if (is_null($relatedRepositoryClass)) {
             abort(JsonResponse::HTTP_BAD_REQUEST, "Missing repository for the [{$relatedRepositoryKey}] key");
         }
-
-        $requestedIds = array_values(Arr::wrap($this->input($relatedRepositoryKey)));
 
         $ids = array_map(
             fn (mixed $id): int|string => $this->assertValidRelatedKeyShape($id, $relatedRepositoryKey),
@@ -77,11 +100,7 @@ trait ResolvesRelatedModels
 
         ksort($resolved);
 
-        $result = Collection::make(array_values($resolved));
-
-        $this->attributes->set(self::RESOLVED_RELATED_MODELS_CACHE_ATTRIBUTE, $result);
-
-        return $result;
+        return Collection::make(array_values($resolved));
     }
 
     /**

@@ -1043,7 +1043,7 @@ class Repository implements JsonSerializable, RestifySearchable
         $relatedPivotKeyName = $relationship->getRelatedPivotKeyName();
 
         $canonicalKeys = $request instanceof RepositorySyncRequest
-            ? $request->syncRelatedModels()->map(fn (Model $relatedModel) => self::canonicalRelatedKey($relatedModel->getKey()))
+            ? $request->resolveSyncRelatedModels($pivots)->map(fn (Model $relatedModel): int|string => self::canonicalRelatedKey($relatedModel->getKey()))
             : $pivots;
 
         $syncValues = $canonicalKeys

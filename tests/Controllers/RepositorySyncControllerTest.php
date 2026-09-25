@@ -5,19 +5,25 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyLabelPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyWithExtraSyncedStaffRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
 use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabelRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\Attributes\TestWith;
 
 class RepositorySyncControllerTest extends IntegrationTestCase
 {
     protected function tearDown(): void
     {
         unset($_SERVER['roles.canDetach.users']);
+
+        CompanyWithExtraSyncedStaffRepository::$extraStaffId = null;
 
         parent::tearDown();
     }
@@ -243,5 +249,34 @@ class RepositorySyncControllerTest extends IntegrationTestCase
             'gold',
             CompanyLabelPivot::query()->where('company_id', $company->getKey())->value('label_code')
         );
+    }
+
+    #[Test]
+    #[TestWith([''], 'the canonical key')]
+    #[TestWith(['0'], 'a zero-padded key')]
+    public function sync_writes_the_ids_a_repository_override_passes_to_the_parent(string $keyPrefix): void
+    {
+        Restify::repositories([CompanyWithExtraSyncedStaffRepository::class]);
+
+        $requestedUser = $this->mockUsers()->first();
+        $extraUser = $this->mockUsers()->first();
+
+        CompanyWithExtraSyncedStaffRepository::$extraStaffId = "{$keyPrefix}{$extraUser->getKey()}";
+
+        $company = Company::factory()->state(['owner_id' => null])->create();
+
+        $this->postJson(CompanyWithExtraSyncedStaffRepository::route("{$company->getKey()}/sync/staff"), [
+            'staff' => [$requestedUser->getKey()],
+        ])->assertOk();
+
+        $this->assertDatabaseHas(CompanyUserPivot::class, [
+            'company_id' => $company->getKey(),
+            'user_id' => $requestedUser->getKey(),
+        ]);
+        $this->assertDatabaseHas(CompanyUserPivot::class, [
+            'company_id' => $company->getKey(),
+            'user_id' => $extraUser->getKey(),
+        ]);
+        $this->assertDatabaseCount(CompanyUserPivot::class, 2);
     }
 }
