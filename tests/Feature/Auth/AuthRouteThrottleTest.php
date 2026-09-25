@@ -17,6 +17,8 @@ use ReflectionMethod;
 
 class AuthRouteThrottleTest extends IntegrationTestCase
 {
+    private const APP_DEFINED_LOGIN_ATTEMPTS_PER_MINUTE = 1;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -116,7 +118,7 @@ class AuthRouteThrottleTest extends IntegrationTestCase
     #[Test]
     public function an_app_defined_restify_login_limiter_wins_over_the_package_default(): void
     {
-        RateLimiter::for('restify.login', fn (): Limit => Limit::perMinute(1));
+        RateLimiter::for('restify.login', fn (): Limit => Limit::perMinute(self::APP_DEFINED_LOGIN_ATTEMPTS_PER_MINUTE));
 
         $provider = new RestifyApplicationServiceProvider($this->app);
         $method = new ReflectionMethod($provider, 'authRateLimiters');
