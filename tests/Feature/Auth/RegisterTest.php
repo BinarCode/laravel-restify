@@ -115,6 +115,43 @@ class RegisterTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function the_stored_email_is_lowercased(): void
+    {
+        $this->postJson('/auth/register', $this->validPayload(['email' => 'John@Example.com']))
+            ->assertOk();
+
+        $this->assertDatabaseHas(User::class, ['email' => 'john@example.com']);
+        $this->assertDatabaseMissing(User::class, ['email' => 'John@Example.com']);
+    }
+
+    #[Test]
+    public function a_differently_cased_duplicate_email_is_rejected(): void
+    {
+        User::factory()->create(['email' => 'john@example.com']);
+
+        $this->postJson('/auth/register', $this->validPayload(['email' => 'JOHN@example.com']))
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('email');
+
+        $this->assertDatabaseMissing(User::class, ['email' => 'JOHN@example.com']);
+        $this->assertDatabaseCount(User::class, 1);
+    }
+
+    #[Test]
+    #[TestWith(['John@Example.com'], 'the casing used at registration')]
+    #[TestWith(['john@example.com'], 'the lowercased email')]
+    public function a_user_registered_with_a_mixed_case_email_can_log_in(string $loginEmail): void
+    {
+        Route::restifyAuth('auth', ['login']);
+
+        $this->postJson('/auth/register', $this->validPayload(['email' => 'John@Example.com']))
+            ->assertOk();
+
+        $this->postJson('/auth/login', ['email' => $loginEmail, 'password' => 'secret1'])
+            ->assertOk();
+    }
+
+    #[Test]
     #[TestWith(['secret1'], 'a string password')]
     #[TestWith([123456], 'a numeric password stays scalar and keeps registering')]
     public function a_valid_registration_creates_the_user(string|int $password): void

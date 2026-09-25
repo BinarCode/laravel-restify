@@ -13,12 +13,17 @@ use Binaryk\LaravelRestify\Http\Controllers\Auth\VerifyController;
 use Binaryk\LaravelRestify\Http\Middleware\RestifyInjector;
 use Binaryk\LaravelRestify\MCP\Bootstrap\BootMcpTools;
 use Binaryk\LaravelRestify\MCP\McpToolsManager;
+use Closure;
+use Illuminate\Cache\RateLimiter;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Http\Kernel;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Str;
 use ReflectionException;
 
 class RestifyApplicationServiceProvider extends ServiceProvider
@@ -28,6 +33,10 @@ class RestifyApplicationServiceProvider extends ServiceProvider
      */
     final public const AUTH_ACTIONS = ['register', 'login', 'logout', 'verifyEmail', 'forgotPassword', 'resetPassword'];
 
+    final public const AUTH_ATTEMPTS_PER_MINUTE = 6;
+
+    final public const LOGIN_ATTEMPTS_PER_IP_PER_MINUTE = 30;
+
     /**
      * Bootstrap the application services.
      */
@@ -35,6 +44,7 @@ class RestifyApplicationServiceProvider extends ServiceProvider
     {
         $this->authorization();
         $this->repositories();
+        $this->authRateLimiters();
         $this->authRoutes();
         $this->routes();
         $this->singleton();
@@ -94,13 +104,13 @@ class RestifyApplicationServiceProvider extends ServiceProvider
             ], function () use ($actions) {
                 if (in_array('register', $actions, true)) {
                     Route::post('register', RegisterController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.register')
                         ->name('restify.register');
                 }
 
                 if (in_array('login', $actions, true)) {
                     Route::post('login', LoginController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.login')
                         ->name('restify.login');
                 }
 
@@ -112,23 +122,75 @@ class RestifyApplicationServiceProvider extends ServiceProvider
 
                 if (in_array('verifyEmail', $actions, true)) {
                     Route::post('verify/{id}/{hash}', VerifyController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.verify')
                         ->name('restify.verify');
                 }
 
                 if (in_array('forgotPassword', $actions, true)) {
                     Route::post('forgotPassword', ForgotPasswordController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.forgotPassword')
                         ->name('restify.forgotPassword');
                 }
 
                 if (in_array('resetPassword', $actions, true)) {
                     Route::post('resetPassword', ResetPasswordController::class)
-                        ->middleware('throttle:6,1')
+                        ->middleware('throttle:restify.resetPassword')
                         ->name('restify.resetPassword');
                 }
             });
         });
+    }
+
+    protected function authRateLimiters(): void
+    {
+        $this->callAfterResolving(RateLimiter::class, function (RateLimiter $limiter): void {
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.register',
+                fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
+            );
+
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.login',
+                fn (Request $request): array => [
+                    Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by('email:'.self::emailAndIpKey($request)),
+                    Limit::perMinute(self::LOGIN_ATTEMPTS_PER_IP_PER_MINUTE)->by('ip:'.$request->ip()),
+                ]
+            );
+
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.verify',
+                fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
+            );
+
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.forgotPassword',
+                fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
+            );
+
+            $this->registerRateLimiterUnlessDefined(
+                $limiter,
+                'restify.resetPassword',
+                fn (Request $request): Limit => Limit::perMinute(self::AUTH_ATTEMPTS_PER_MINUTE)->by($request->ip())
+            );
+        });
+    }
+
+    protected function registerRateLimiterUnlessDefined(RateLimiter $limiter, string $name, Closure $callback): void
+    {
+        if ($limiter->limiter($name) === null) {
+            $limiter->for($name, $callback);
+        }
+    }
+
+    private static function emailAndIpKey(Request $request): string
+    {
+        $email = $request->input('email');
+
+        return Str::lower(is_string($email) ? $email : '').'|'.$request->ip();
     }
 
     protected function routes(): void

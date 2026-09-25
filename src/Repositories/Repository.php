@@ -15,6 +15,7 @@ use Binaryk\LaravelRestify\Fields\FieldCollection;
 use Binaryk\LaravelRestify\Getters\Getter;
 use Binaryk\LaravelRestify\Http\Controllers\RestResponse;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryStoreBulkRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositorySyncRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
 use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
@@ -28,6 +29,7 @@ use Binaryk\LaravelRestify\Repositories\Concerns\Mockable;
 use Binaryk\LaravelRestify\Repositories\Concerns\Testing;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
+use Binaryk\LaravelRestify\Traits\CanonicalizesRelatedKeys;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
@@ -94,6 +96,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class Repository implements JsonSerializable, RestifySearchable
 {
+    use CanonicalizesRelatedKeys;
     use ConditionallyLoadsAttributes;
     use DelegatesToResource;
     use HasColumns;
@@ -1028,8 +1031,6 @@ class Repository implements JsonSerializable, RestifySearchable
             throw new NotFoundHttpException('Belongs to many field not found.');
         }
 
-        $eagerField->authorizeToSync($request);
-
         $relationship = $this->model()->{$eagerField->relation}();
 
         if (! $relationship instanceof EloquentBelongsToMany) {
@@ -1038,13 +1039,41 @@ class Repository implements JsonSerializable, RestifySearchable
 
         $relatedPivotKeyName = $relationship->getRelatedPivotKeyName();
 
-        $syncValues = $pivots
-            ->map(fn ($relatedKey) => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
+        $canonicalKeys = $request instanceof RepositorySyncRequest
+            ? $request->resolveSyncRelatedModels($pivots)->map(fn (Model $relatedModel): int|string => $this->canonicalRelatedKey($relatedModel->getKey()))
+            : $pivots;
+
+        $eagerField->authorizeToSyncCanonicalKeys($request, $canonicalKeys);
+
+        $syncValues = $canonicalKeys
+            ->map(fn (mixed $relatedKey): mixed => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
             ->all();
 
-        $relationship->sync($syncValues);
+        $relationship->getQuery()->getConnection()->transaction(function () use ($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues): void {
+            if ($eagerField->hasCustomDetachAuthorization()) {
+                $this->authorizeSyncRemovals($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues);
+            }
+
+            $relationship->sync($syncValues);
+        });
 
         return ok();
+    }
+
+    /**
+     * @param  EloquentBelongsToMany<Model, Model>  $relationship
+     * @param  array<array-key, mixed>  $syncValues
+     */
+    private function authorizeSyncRemovals(RestifyRequest $request, BelongsToMany $eagerField, EloquentBelongsToMany $relationship, string $relatedPivotKeyName, array $syncValues): void
+    {
+        $removedPivots = $relationship->newPivotQuery()
+            ->whereNotIn($relatedPivotKeyName, $syncValues)
+            ->lockForUpdate()
+            ->get();
+
+        foreach ($removedPivots as $attributes) {
+            $eagerField->authorizeToDetach($request, $relationship->newExistingPivot((array) $attributes));
+        }
     }
 
     public function detach(RestifyRequest $request, $repositoryId, Collection $pivots)

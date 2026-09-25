@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
+use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;
 use Binaryk\LaravelRestify\Notifications\ForgotPasswordNotification;
 use Binaryk\LaravelRestify\Validation\Rules\AllowedResetUrlHost;
 use Illuminate\Contracts\Auth\CanResetPassword;
@@ -16,6 +17,8 @@ use Throwable;
 
 class ForgotPasswordController extends Controller
 {
+    use FindsUserByEmail;
+
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
@@ -30,7 +33,7 @@ class ForgotPasswordController extends Controller
             /** @var class-string<Model&CanResetPassword> $userModel */
             $userModel = config('restify.auth.user_model');
 
-            $user = $userModel::query()->where($request->only('email'))->first();
+            $user = $this->findUserByEmail($userModel, $request->string('email')->toString());
 
             if ($user !== null) {
                 try {

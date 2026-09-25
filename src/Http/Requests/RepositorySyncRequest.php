@@ -17,4 +17,19 @@ class RepositorySyncRequest extends RestifyRequest
     {
         return $this->relatedModels();
     }
+
+    /**
+     * @param  Collection<int, mixed>  $relatedKeys
+     * @return Collection<int, Model>
+     */
+    public function resolveSyncRelatedModels(Collection $relatedKeys): Collection
+    {
+        $requestedIds = array_values($relatedKeys->all());
+
+        if ($requestedIds === $this->requestedRelatedIds()) {
+            return $this->relatedModels();
+        }
+
+        return $this->resolveRelatedModels($requestedIds);
+    }
 }

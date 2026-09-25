@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Requests;
 use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Str;
 
 class RestifyRegisterRequest extends FormRequest
 {
@@ -17,6 +18,18 @@ class RestifyRegisterRequest extends FormRequest
             'email' => ['required', 'email', 'max:255', 'unique:'.$this->authTable()],
             'password' => ['required', 'confirmed', 'min:6', self::scalarPasswordRule()],
         ];
+    }
+
+    /**
+     * @return void
+     */
+    protected function prepareForValidation()
+    {
+        $email = $this->input('email');
+
+        if (is_string($email)) {
+            $this->merge(['email' => Str::lower($email)]);
+        }
     }
 
     private function authTable(): string

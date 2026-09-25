@@ -8,11 +8,18 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class RegisterController extends Controller
 {
     public function __invoke(Request $request)
     {
+        $email = $request->input('email');
+
+        if (is_string($email)) {
+            $request->merge(['email' => Str::lower($email)]);
+        }
+
         $request->validate([
             'email' => ['required', 'email', 'max:255', 'unique:'.(Config::get('restify.auth.table') ?: 'users')],
             'password' => ['required', 'confirmed', 'min:6', self::scalarPasswordRule()],

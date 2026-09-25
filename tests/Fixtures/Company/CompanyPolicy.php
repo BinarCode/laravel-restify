@@ -151,6 +151,11 @@ class CompanyPolicy
         return true;
     }
 
+    public function syncSecondaryStaff(User $user, Company $model, Collection $keys): bool
+    {
+        return true;
+    }
+
     public function detachStaff(User $user, Company $model, User $staffToBeDetached)
     {
         return true;

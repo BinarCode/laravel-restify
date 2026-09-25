@@ -64,7 +64,7 @@ class AllowedResetUrlHostTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function from_config_allows_the_password_reset_url_app_url_and_frontend_app_url_hosts(): void
+    public function from_config_allows_the_password_reset_url_and_frontend_app_url_hosts_but_not_app_url(): void
     {
         config()->set('restify.auth.password_reset_url', 'https://reset.example.com/password/reset?token={token}&email={email}');
         config()->set('app.url', 'https://api.example.com');
@@ -73,9 +73,21 @@ class AllowedResetUrlHostTest extends IntegrationTestCase
         $rule = AllowedResetUrlHost::fromConfig();
 
         $this->assertTrue($this->passes($rule, 'https://reset.example.com/x'));
-        $this->assertTrue($this->passes($rule, 'https://api.example.com/x'));
         $this->assertTrue($this->passes($rule, 'https://frontend.example.com/x'));
+        $this->assertFalse($this->passes($rule, 'https://api.example.com/x'));
         $this->assertFalse($this->passes($rule, 'https://attacker.example.com/x'));
+    }
+
+    #[Test]
+    public function from_config_rejects_a_url_on_app_url_host_when_frontend_app_url_is_set_to_a_different_host(): void
+    {
+        config()->set('restify.auth.password_reset_url', 'https://reset.example.com/password/reset?token={token}&email={email}');
+        config()->set('app.url', 'https://api.example.com');
+        config()->set('restify.auth.frontend_app_url', 'https://frontend.example.com');
+
+        $rule = AllowedResetUrlHost::fromConfig();
+
+        $this->assertFalse($this->passes($rule, 'https://api.example.com/x'));
     }
 
     #[Test]
@@ -88,7 +100,7 @@ class AllowedResetUrlHostTest extends IntegrationTestCase
         $rule = AllowedResetUrlHost::fromConfig();
 
         $this->assertTrue($this->passes($rule, 'https://reset.example.com/x'));
-        $this->assertTrue($this->passes($rule, 'https://api.example.com/x'));
+        $this->assertFalse($this->passes($rule, 'https://api.example.com/x'));
         $this->assertFalse($this->passes($rule, 'https://frontend.example.com/x'));
     }
 

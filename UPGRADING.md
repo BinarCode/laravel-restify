@@ -100,3 +100,101 @@ Standalone actions and index-route getters have no single model to check `canRun
 against, so they now receive `null` there too. A closure typed with a non-nullable model
 (`fn (Request $request, Post $post): bool => ...`) TypeErrors when called with `null`.
 Type the parameter nullable: `fn (Request $request, ?Post $post): bool => ...`.
+
+### `forgotPassword`'s `url` no longer allows `config('app.url')`'s host
+
+`AllowedResetUrlHost::fromConfig()` used to also allow a client-supplied `url` to target
+`config('app.url')`'s host. That entry is removed: `restify.auth.frontend_app_url`
+already defaults to `env('APP_URL')`, so it still covers your app URL when
+`FRONTEND_APP_URL` is unset; once `FRONTEND_APP_URL` is set to a different host,
+`app.url` is your API host and a reset link should never be allowed to target it. If
+you relied on `app.url` being allowed while also setting `FRONTEND_APP_URL` to a
+different host, add that host to `restify.auth.password_reset_url` or
+`restify.auth.frontend_app_url` instead.
+
+If your app published `config/restify.php` before it carried an `auth.frontend_app_url` key, add `'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),` to it - otherwise `frontend_app_url` resolves to `null` and every client-supplied `url` on `forgotPassword` is rejected.
+
+### Register lowercases the email; login, forgotPassword and resetPassword also match it lowercased
+
+`register` now lowercases the `email` before the `unique` check runs and before the row
+is saved, so `John@Example.com` registers as `john@example.com` and a later registration
+with any other casing of the same address is rejected as a duplicate. `login`,
+`forgotPassword` and `resetPassword` look the user up by the submitted email exactly
+first, then by its lowercased form, so a user registered this way can log in and reset
+their password with any casing.
+
+No migration is required. Restify does not touch existing rows, and a row stored with a
+mixed-case email (`Old@Example.com`) still matches when the user submits that exact
+casing. Lowercasing stored emails is an optional cleanup: on a case-sensitive database
+(pgsql, sqlite) it also lets those users log in with other casings - check for rows that
+collide once lowercased first.
+
+The published controller stubs (`php artisan restify:auth`) use the same
+`FindsUserByEmail` lookup and the register stub lowercases the email. A controller you
+published before this change keeps its exact-match lookup; add
+`use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;` and call
+`$this->findUserByEmail($userModel, $email)` to match.
+
+### Policy cache's fallback ttl is 300 seconds, not 60
+
+`PolicyCache::resolve()` falls back to a 300 second ttl (matching `config/restify.php`'s
+own `5 * 60` default) when `restify.cache.policies.ttl` is missing from config entirely,
+instead of the previous, inconsistent 60 second fallback. This only affects an app that
+enabled `restify.cache.policies.enabled` while publishing a `config/restify.php` that
+omits the `ttl` key - a normal config, where the key keeps its default, is unaffected.
+
+### `sync` now enforces a field's `canDetach` on the rows it removes
+
+`POST .../sync/{field}` calls the underlying relationship's `sync()`, which both
+attaches new rows and detaches rows missing from the payload - but only the attached
+side ever ran the field's authorization; a row `sync` removed skipped `canDetach`
+entirely, unlike `detach`, which always ran it.
+
+If a `BelongsToMany` field declares `canDetach`, or is a subclass overriding
+`authorizedToDetach()`, `sync` now calls it for every currently-attached row the request
+would remove, before making any change. A denial gets a `403` and the sync does not run
+at all, not even the additions. A `sync` that only adds rows is unaffected. A field
+without either behaves exactly as before and runs no extra query.
+
+`sync` also hands `canSync` the canonical related key (`2`, not the `"02"` the client
+sent), and a repository overriding `sync()` that passes extra ids to `parent::sync()`
+has those ids authorized and written too. `authorizeToSync(RestifyRequest $request)` keeps
+its signature and stays the extension point: `sync` always calls it, and an override that
+calls `parent::authorizeToSync($request)` gets the same canonical keys, including any ids
+a repository `sync()` override added. `authorizeToSyncCanonicalKeys()` is `@internal`,
+called only by `Repository::sync()`; override `authorizeToSync()` instead.
+
+If you rely on `sync` being able to remove rows regardless of `canDetach`, either drop
+`canDetach` from that field or make its callback return `true` for the ids you expect
+`sync` to keep removing.
+
+### Auth routes are throttled by named, per-action rate limiters
+
+`register`, `login`, `verifyEmail`, `forgotPassword` and `resetPassword` used to all
+share Laravel's default `throttle:6,1` bucket, keyed by `domain|ip` - so hitting the
+limit on one auth route throttled every other auth route from the same IP too, and
+every email attempting `login` shared one bucket per IP.
+
+Each route now has its own named limiter, registered via `RateLimiter::for()` in
+`RestifyApplicationServiceProvider::boot()`: `restify.register`, `restify.login`,
+`restify.verify`, `restify.forgotPassword`, `restify.resetPassword`. `register`,
+`verifyEmail`, `forgotPassword` and `resetPassword` are each a 6/minute limit keyed on
+the IP alone - `forgotPassword` and `resetPassword` deliberately stay IP-only (not
+email-keyed) so a known and an unknown email still share one bucket and get an
+identical `429`, preserving the existing account-enumeration protection.
+
+`login` is keyed differently, as two limits enforced together: 6/minute per
+`Str::lower($email).'|'.$ip`, plus 30/minute per IP regardless of email. The email+ip
+limit means exhausting the limit for one email does not throttle a login attempt
+against a different email from the same IP; the IP-wide limit still caps an attacker
+spraying many different emails from one IP at 30 attempts/minute.
+
+Restify only registers a limiter under a name your app hasn't already defined
+(`RateLimiter::limiter($name) === null`), so an app-defined `RateLimiter::for('restify.login', ...)`
+is never overridden, regardless of which provider boots first. If you published the
+route stubs (`php artisan restify:auth`), re-publish them or manually change
+`throttle:6,1` to the matching `throttle:restify.<action>` on each route - the package
+provider registers the limiters regardless of whether the published stubs use them, so
+leaving old stubs in place still throttles, just on the old shared 6,1 bucket.
+
+If your `app/Providers/RestifyServiceProvider` overrides `boot()`, call `parent::boot()` (or define the `restify.*` limiters yourself) - otherwise the `restify.*` limiters never get registered and `throttle:restify.*` throws `MissingRateLimiterException` (a `500`).

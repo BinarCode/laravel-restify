@@ -5,11 +5,18 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Http\Requests\RepositorySyncRequest;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyWithExtraSyncedStaffRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\ParentCallingSyncBelongsToMany;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\SyncDenyingBelongsToMany;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\StaffRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use PHPUnit\Framework\Attributes\Test;
 
 class SyncAuthorizationTest extends IntegrationTestCase
@@ -22,6 +29,9 @@ class SyncAuthorizationTest extends IntegrationTestCase
             $_SERVER['companies.canSync.denied_user_ids'],
             $_SERVER['companies.canSync.calls'],
         );
+
+        ParentCallingSyncBelongsToMany::$authorizeToSyncCalls = 0;
+        CompanyWithExtraSyncedStaffRepository::$extraStaffId = null;
 
         parent::tearDown();
     }
@@ -104,6 +114,89 @@ class SyncAuthorizationTest extends IntegrationTestCase
             'company_id' => $company->getKey(),
             'user_id' => $userB->getKey(),
         ]);
+    }
+
+    #[Test]
+    public function a_field_overriding_authorize_to_sync_with_the_original_signature_is_honoured(): void
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'staff' => SyncDenyingBelongsToMany::make('staff', StaffRepository::class),
+            ]);
+
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->getKey()}/sync/staff"), [
+            'staff' => [$user->getKey()],
+        ])->assertForbidden();
+
+        $this->assertDatabaseCount(CompanyUserPivot::class, 0);
+    }
+
+    #[Test]
+    public function an_authorize_to_sync_override_calling_the_parent_hands_can_sync_the_canonical_key(): void
+    {
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'staff' => ParentCallingSyncBelongsToMany::make('staff', StaffRepository::class)
+                    ->canSync(fn (RestifyRequest $request, Pivot $pivot): bool => $pivot->user_id !== $user->getKey()),
+            ]);
+
+        $this->postJson(CompanyRepository::route("{$company->getKey()}/sync/staff"), [
+            'staff' => ["0{$user->getKey()}"],
+        ])->assertForbidden();
+
+        $this->assertSame(1, ParentCallingSyncBelongsToMany::$authorizeToSyncCalls);
+        $this->assertDatabaseCount(CompanyUserPivot::class, 0);
+    }
+
+    #[Test]
+    public function an_authorize_to_sync_override_calling_the_parent_authorizes_ids_a_repository_override_adds(): void
+    {
+        Restify::repositories([CompanyWithExtraSyncedStaffRepository::class]);
+
+        $company = Company::factory()->create();
+        $requestedUser = User::factory()->create();
+        $extraUser = User::factory()->create();
+
+        CompanyWithExtraSyncedStaffRepository::$extraStaffId = $extraUser->getKey();
+
+        CompanyWithExtraSyncedStaffRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'staff' => ParentCallingSyncBelongsToMany::make('staff', StaffRepository::class)
+                    ->canSync(fn (RestifyRequest $request, Pivot $pivot): bool => $pivot->user_id !== $extraUser->getKey()),
+            ]);
+
+        $this->postJson(CompanyWithExtraSyncedStaffRepository::route("{$company->getKey()}/sync/staff"), [
+            'staff' => [$requestedUser->getKey()],
+        ])->assertForbidden();
+
+        $this->assertSame(1, ParentCallingSyncBelongsToMany::$authorizeToSyncCalls);
+        $this->assertDatabaseCount(CompanyUserPivot::class, 0);
+    }
+
+    #[Test]
+    public function the_can_sync_callback_sees_the_canonical_key_of_a_zero_padded_id(): void
+    {
+        $_SERVER['allow_sync_users'] = true;
+
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $_SERVER['companies.canSync.denied_user_ids'] = [$user->getKey()];
+
+        $this->postJson(CompanyRepository::route("{$company->getKey()}/sync/users"), [
+            'users' => ["0{$user->getKey()}"],
+        ])->assertForbidden();
+
+        $this->assertDatabaseCount(CompanyUserPivot::class, 0);
     }
 
     #[Test]

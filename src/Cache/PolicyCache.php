@@ -12,6 +12,8 @@ use Stringable;
 
 class PolicyCache
 {
+    final public const DEFAULT_TTL_SECONDS = 300;
+
     public static function enabled(): bool
     {
         return (bool) config('restify.cache.policies.enabled', false);
@@ -78,11 +80,15 @@ class PolicyCache
 
         $policy = Gate::getPolicyFor($model);
 
-        $configuredTtl = config('restify.cache.policies.ttl', 60);
+        $configuredTtl = config('restify.cache.policies.ttl', self::DEFAULT_TTL_SECONDS);
 
-        $ttl = $policy instanceof Cacheable
-            ? $policy->cache()
-            : (is_numeric($configuredTtl) ? (int) $configuredTtl : null);
+        if ($policy instanceof Cacheable) {
+            $ttl = $policy->cache();
+        } elseif (is_numeric($configuredTtl)) {
+            $ttl = (int) $configuredTtl;
+        } else {
+            $ttl = null;
+        }
 
         $result = $data();
 

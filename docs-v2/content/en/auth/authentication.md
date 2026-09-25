@@ -237,7 +237,7 @@ And send this payload:
 }
 ```
 
-Note: Email and password fields are required. The `password` must be confirmed (a matching `password_confirmation`) and at least 6 characters. The `email` uniqueness check runs against the table configured in `restify.auth.table` (`config/restify.php`), which defaults to `users`.
+Note: Email and password fields are required. The `password` must be confirmed (a matching `password_confirmation`) and at least 6 characters. The `email` uniqueness check runs against the table configured in `restify.auth.table` (`config/restify.php`), which defaults to `users`. The `email` is lowercased before the uniqueness check and before it is stored, so `John@Example.com` and `john@example.com` are treated as the same account. Login, forgot password and reset password look the user up by the submitted `email` exactly first, then lowercased. Existing rows are left unchanged and keep matching their exact casing, so no migration is required.
 
 Now, you can send a POST request with Curl:
 
@@ -302,7 +302,7 @@ You can override this template per request by sending a `url` field alongside th
 }
 ```
 
-For security, `url` is only accepted when its scheme, host, and port all match one of: the configured `password_reset_url`, `config('app.url')`, or - if set - `config('restify.auth.frontend_app_url')`. A subdomain of an allowed host does not count as a match, an `http` url is rejected when the matching config entry is `https`, a different port is rejected even on an otherwise matching host, and a url carrying userinfo (`user:pass@host`) is always rejected outright. Anything that doesn't match is rejected with a `422` validation error. This stops the endpoint from being used to mail a victim a valid reset link pointing at an attacker-controlled domain.
+For security, `url` is only accepted when its scheme, host, and port all match one of: the configured `password_reset_url`, or `config('restify.auth.frontend_app_url')`. `frontend_app_url` defaults to `env('APP_URL')`, so it still covers your app URL when `FRONTEND_APP_URL` is unset; `config('app.url')` itself is never checked, since once `FRONTEND_APP_URL` is set to a different host, `app.url` is your API host and a reset link should never target it. A subdomain of an allowed host does not count as a match, an `http` url is rejected when the matching config entry is `https`, a different port is rejected even on an otherwise matching host, and a url carrying userinfo (`user:pass@host`) is always rejected outright. Anything that doesn't match is rejected with a `422` validation error. This stops the endpoint from being used to mail a victim a valid reset link pointing at an attacker-controlled domain.
 
 The path, query string, and fragment are also checked, but only for their characters, not their destination: they may only contain RFC 3986 unreserved/reserved characters, narrowed to exclude `[`, `]`, `(`, `)`, `<`, `>`, `"`, `'`, `` ` ``, and `{`/`}` (outside the literal `{token}`/`{email}` placeholders), plus whitespace and control characters. This is because the mailed reset link is rendered through a Markdown template, and those characters could otherwise be used to break out of the intended `[text](url)` link and inject a second, attacker-controlled one carrying the real token - so whatever frontend host you allow here must still not itself have an open redirect, or an attacker could send a victim through it to an arbitrary destination.
 
@@ -376,6 +376,34 @@ If the password reset is successful, you should receive a response similar to th
 
 Now the user's password has been successfully reset, and they can log in with their new password.
 
+## Rate Limiting
+
+Each auth route is throttled by its own named rate limiter, registered in `RestifyApplicationServiceProvider::boot()`, instead of sharing Laravel's default `throttle` bucket:
+
+| Route            | Limiter name              | Default limit                                          |
+| ----------------- | -------------------------- | -------------------------------------------------------- |
+| `register`         | `restify.register`         | 6/minute, keyed by IP                                   |
+| `login`             | `restify.login`             | 6/minute keyed by email + IP, **and** 30/minute keyed by IP alone |
+| `verifyEmail`       | `restify.verify`            | 6/minute, keyed by IP                                   |
+| `forgotPassword`    | `restify.forgotPassword`    | 6/minute, keyed by IP                                   |
+| `resetPassword`     | `restify.resetPassword`     | 6/minute, keyed by IP                                   |
+
+`forgotPassword` and `resetPassword` are deliberately keyed by IP alone, not by email: a known and an unknown email share the same bucket and get an identical `429`, so the rate limit itself can't be used to tell which emails have an account.
+
+`login` enforces two limits at once: 6/minute per email+IP, so a client that exhausts its limit for one email is not throttled when it retries with a different email; and 30/minute per IP regardless of email, so one IP still can't spray unlimited distinct accounts. `register` and `verifyEmail` are keyed by IP alone.
+
+This replaces the previous single shared `throttle:6,1` bucket (keyed by `domain|ip`), which throttled every auth route together, per IP.
+
+You can override any of these from your own service provider by calling `RateLimiter::for()` yourself - your call always wins, whether it runs before or after Restify's, since `RateLimiter::for()` simply replaces whatever is registered under that name and Restify only fills in a name that is still unset:
+
+```php
+use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Support\Facades\RateLimiter;
+
+RateLimiter::for('restify.login', function ($request) {
+    return Limit::perMinute(10)->by($request->ip());
+});
+```
 
 ## Customizing Authentication Controllers
 

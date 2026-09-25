@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
 use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabel;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\IntegerKeyedUser;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\SecondaryConnectionUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -72,6 +73,12 @@ class Company extends Model
     {
         return $this->belongsToMany(StringableKeyedLabel::class, 'company_label', 'company_id', 'label_code')
             ->using(CompanyLabelPivot::class)
+            ->withTimestamps();
+    }
+
+    public function secondaryStaff(): BelongsToMany
+    {
+        return $this->belongsToMany(SecondaryConnectionUser::class, 'company_user', 'company_id', 'user_id')
             ->withTimestamps();
     }
 

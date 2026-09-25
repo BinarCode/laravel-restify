@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
+use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -13,6 +14,8 @@ use Illuminate\Support\Timebox;
 
 class ResetPasswordController extends Controller
 {
+    use FindsUserByEmail;
+
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
@@ -31,7 +34,7 @@ class ResetPasswordController extends Controller
             /** @var class-string<Model&CanResetPassword> $userModel */
             $userModel = config('restify.auth.user_model');
 
-            $user = $userModel::query()->where($request->only('email'))->first();
+            $user = $this->findUserByEmail($userModel, $request->string('email')->toString());
 
             if ($user === null || ! Password::getRepository()->exists($user, $token)) {
                 abort(JsonResponse::HTTP_BAD_REQUEST, __('Provided invalid token.'));

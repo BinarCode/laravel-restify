@@ -16,10 +16,13 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
+use ReflectionMethod;
 
 trait Attachable
 {
     use ValidatesRelatedKeyShape;
+
+    private const CANONICAL_SYNC_KEYS_ATTRIBUTE = '_restifyCanonicalSyncKeys';
 
     /**
      * @var callable|null
@@ -116,7 +119,11 @@ trait Attachable
 
     public function authorizeToSync(RestifyRequest $request)
     {
-        $relatedRepositoryIds = Arr::wrap($request->input($request->relatedRepositoryKey()));
+        $canonicalKeys = $request->attributes->get(self::CANONICAL_SYNC_KEYS_ATTRIBUTE);
+
+        $relatedRepositoryIds = $canonicalKeys instanceof Collection
+            ? $canonicalKeys
+            : Arr::wrap($request->input($request->relatedRepositoryKey()));
 
         foreach ($relatedRepositoryIds as $relatedRepositoryId) {
             $pivot = $this->initializePivot(
@@ -133,11 +140,49 @@ trait Attachable
         return $this;
     }
 
+    /**
+     * @internal
+     *
+     * @param  Collection<array-key, int|string>  $canonicalKeys
+     */
+    public function authorizeToSyncCanonicalKeys(RestifyRequest $request, Collection $canonicalKeys): static
+    {
+        $request->attributes->set(self::CANONICAL_SYNC_KEYS_ATTRIBUTE, $canonicalKeys);
+
+        try {
+            $this->authorizeToSync($request);
+        } finally {
+            $request->attributes->remove(self::CANONICAL_SYNC_KEYS_ATTRIBUTE);
+        }
+
+        return $this;
+    }
+
     public function authorizedToDetach(RestifyRequest $request, Pivot $pivot): bool
     {
-        return is_callable($this->canDetachCallback)
+        return $this->hasCanDetachCallback()
             ? call_user_func($this->canDetachCallback, $request, $pivot)
             : true;
+    }
+
+    public function hasCustomDetachAuthorization(): bool
+    {
+        return $this->hasCanDetachCallback()
+            || $this->overridesAttachableMethod('authorizedToDetach')
+            || $this->overridesAttachableMethod('authorizeToDetach');
+    }
+
+    private function overridesAttachableMethod(string $method): bool
+    {
+        return (new ReflectionMethod($this, $method))->getFileName() !== __FILE__;
+    }
+
+    /**
+     * @phpstan-assert-if-true callable $this->canDetachCallback
+     */
+    public function hasCanDetachCallback(): bool
+    {
+        return is_callable($this->canDetachCallback);
     }
 
     public function authorizeToDetach(RestifyRequest $request, Pivot $pivot)

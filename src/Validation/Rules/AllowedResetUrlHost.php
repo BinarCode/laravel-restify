@@ -52,15 +52,11 @@ class AllowedResetUrlHost implements ValidationRule
         /** @var string|null $passwordResetUrl */
         $passwordResetUrl = config('restify.auth.password_reset_url');
 
-        /** @var string|null $appUrl */
-        $appUrl = config('app.url');
-
         /** @var string|null $frontendAppUrl */
         $frontendAppUrl = config('restify.auth.frontend_app_url');
 
         return new self(array_values(array_unique(array_filter([
             self::originOf($passwordResetUrl),
-            self::originOf($appUrl),
             self::originOf($frontendAppUrl),
         ]))));
     }
