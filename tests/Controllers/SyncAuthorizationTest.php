@@ -8,6 +8,8 @@ use Binaryk\LaravelRestify\Http\Requests\RepositorySyncRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\SyncDenyingBelongsToMany;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\StaffRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -104,6 +106,25 @@ class SyncAuthorizationTest extends IntegrationTestCase
             'company_id' => $company->getKey(),
             'user_id' => $userB->getKey(),
         ]);
+    }
+
+    #[Test]
+    public function a_field_overriding_authorize_to_sync_with_the_original_signature_is_honoured(): void
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'staff' => SyncDenyingBelongsToMany::make('staff', StaffRepository::class),
+            ]);
+
+        $company = Company::factory()->create();
+        $user = User::factory()->create();
+
+        $this->postJson(CompanyRepository::route("{$company->getKey()}/sync/staff"), [
+            'staff' => [$user->getKey()],
+        ])->assertForbidden();
+
+        $this->assertDatabaseCount(CompanyUserPivot::class, 0);
     }
 
     #[Test]

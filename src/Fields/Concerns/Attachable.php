@@ -16,6 +16,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
+use ReflectionMethod;
 
 trait Attachable
 {
@@ -114,14 +115,19 @@ trait Attachable
         return $this;
     }
 
-    /**
-     * @param  Collection<int, int|string>|null  $relatedKeys
-     */
-    public function authorizeToSync(RestifyRequest $request, ?Collection $relatedKeys = null)
+    public function authorizeToSync(RestifyRequest $request)
     {
-        $relatedRepositoryIds = $relatedKeys?->all() ?? Arr::wrap($request->input($request->relatedRepositoryKey()));
+        $relatedRepositoryIds = Collection::make(Arr::wrap($request->input($request->relatedRepositoryKey())));
 
-        foreach ($relatedRepositoryIds as $relatedRepositoryId) {
+        return $this->authorizeToSyncKeys($request, $relatedRepositoryIds);
+    }
+
+    /**
+     * @param  Collection<array-key, mixed>  $relatedKeys
+     */
+    public function authorizeToSyncKeys(RestifyRequest $request, Collection $relatedKeys): static
+    {
+        foreach ($relatedKeys as $relatedRepositoryId) {
             $pivot = $this->initializePivot(
                 $request,
                 $request->findModelOrFail()->{$this->relation}(),
@@ -141,6 +147,11 @@ trait Attachable
         return $this->hasCanDetachCallback()
             ? call_user_func($this->canDetachCallback, $request, $pivot)
             : true;
+    }
+
+    public function overridesAttachableMethod(string $method): bool
+    {
+        return (new ReflectionMethod($this, $method))->getFileName() !== __FILE__;
     }
 
     /**
