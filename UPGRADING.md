@@ -158,8 +158,11 @@ without either behaves exactly as before and runs no extra query.
 
 `sync` also hands `canSync` the canonical related key (`2`, not the `"02"` the client
 sent), and a repository overriding `sync()` that passes extra ids to `parent::sync()`
-has those ids authorized and written too. A field overriding `authorizeToSync()` keeps
-its one-argument signature and its override still decides.
+has those ids authorized and written too. `authorizeToSync(RestifyRequest $request)` keeps
+its signature and stays the extension point: `sync` always calls it, and an override that
+calls `parent::authorizeToSync($request)` gets the same canonical keys, including any ids
+a repository `sync()` override added. `authorizeToSyncCanonicalKeys()` is `@internal`,
+called only by `Repository::sync()`; override `authorizeToSync()` instead.
 
 If you rely on `sync` being able to remove rows regardless of `canDetach`, either drop
 `canDetach` from that field or make its callback return `true` for the ids you expect

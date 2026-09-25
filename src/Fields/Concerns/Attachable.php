@@ -123,9 +123,21 @@ trait Attachable
 
         $relatedRepositoryIds = $canonicalKeys instanceof Collection
             ? $canonicalKeys
-            : Collection::make(Arr::wrap($request->input($request->relatedRepositoryKey())));
+            : Arr::wrap($request->input($request->relatedRepositoryKey()));
 
-        return $this->authorizeToSyncKeys($request, $relatedRepositoryIds);
+        foreach ($relatedRepositoryIds as $relatedRepositoryId) {
+            $pivot = $this->initializePivot(
+                $request,
+                $request->findModelOrFail()->{$this->relation}(),
+                $relatedRepositoryId
+            );
+
+            if (! $this->authorizedToSync($request, $pivot)) {
+                throw new AuthorizationException;
+            }
+        }
+
+        return $this;
     }
 
     /**
@@ -146,26 +158,6 @@ trait Attachable
         return $this;
     }
 
-    /**
-     * @param  Collection<array-key, mixed>  $relatedKeys
-     */
-    public function authorizeToSyncKeys(RestifyRequest $request, Collection $relatedKeys): static
-    {
-        foreach ($relatedKeys as $relatedRepositoryId) {
-            $pivot = $this->initializePivot(
-                $request,
-                $request->findModelOrFail()->{$this->relation}(),
-                $relatedRepositoryId
-            );
-
-            if (! $this->authorizedToSync($request, $pivot)) {
-                throw new AuthorizationException;
-            }
-        }
-
-        return $this;
-    }
-
     public function authorizedToDetach(RestifyRequest $request, Pivot $pivot): bool
     {
         return $this->hasCanDetachCallback()
@@ -173,7 +165,12 @@ trait Attachable
             : true;
     }
 
-    public function overridesAttachableMethod(string $method): bool
+    public function hasCustomDetachAuthorization(): bool
+    {
+        return $this->hasCanDetachCallback() || $this->overridesAttachableMethod('authorizedToDetach');
+    }
+
+    private function overridesAttachableMethod(string $method): bool
     {
         return (new ReflectionMethod($this, $method))->getFileName() !== __FILE__;
     }

@@ -1050,7 +1050,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->all();
 
         $relationship->getQuery()->getConnection()->transaction(function () use ($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues): void {
-            if ($eagerField->hasCanDetachCallback() || $eagerField->overridesAttachableMethod('authorizedToDetach')) {
+            if ($eagerField->hasCustomDetachAuthorization()) {
                 $this->authorizeSyncRemovals($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues);
             }
 
