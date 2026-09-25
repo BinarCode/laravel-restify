@@ -1051,9 +1051,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->all();
 
         DB::transaction(function () use ($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues) {
-            if ($eagerField->hasCanDetachCallback()) {
-                $this->authorizeSyncRemovals($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues);
-            }
+            $this->authorizeSyncRemovals($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues);
 
             $relationship->sync($syncValues);
         });

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyLabelPivot;
@@ -13,7 +14,9 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyWithExtraSyncedStaffRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
 use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabelRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\StaffRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
@@ -278,5 +281,37 @@ class RepositorySyncControllerTest extends IntegrationTestCase
             'user_id' => $extraUser->getKey(),
         ]);
         $this->assertDatabaseCount(CompanyUserPivot::class, 2);
+    }
+
+    #[Test]
+    public function sync_is_denied_when_a_field_subclass_denies_detaching_without_a_can_detach_callback(): void
+    {
+        CompanyRepository::partialMock()
+            ->shouldReceive('include')
+            ->andReturn([
+                'staff' => new class('staff', StaffRepository::class) extends BelongsToMany
+                {
+                    public function authorizedToDetach(RestifyRequest $request, Pivot $pivot): bool
+                    {
+                        return false;
+                    }
+                },
+            ]);
+
+        $keptUser = $this->mockUsers()->first();
+        $removedUser = $this->mockUsers()->first();
+
+        $company = tap(Company::factory()->state(['owner_id' => null])->create(), function (Company $company) use ($keptUser, $removedUser): void {
+            $company->staff()->attach([$keptUser->getKey(), $removedUser->getKey()]);
+        });
+
+        $this->postJson(CompanyRepository::route("{$company->getKey()}/sync/staff"), [
+            'staff' => [$keptUser->getKey()],
+        ])->assertForbidden();
+
+        $this->assertDatabaseHas(CompanyUserPivot::class, [
+            'company_id' => $company->getKey(),
+            'user_id' => $removedUser->getKey(),
+        ]);
     }
 }
