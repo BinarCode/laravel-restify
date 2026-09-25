@@ -137,6 +137,20 @@ class RegisterTest extends IntegrationTestCase
     }
 
     #[Test]
+    #[TestWith(['John@Example.com'], 'the casing used at registration')]
+    #[TestWith(['john@example.com'], 'the lowercased email')]
+    public function a_user_registered_with_a_mixed_case_email_can_log_in(string $loginEmail): void
+    {
+        Route::restifyAuth('auth', ['login']);
+
+        $this->postJson('/auth/register', $this->validPayload(['email' => 'John@Example.com']))
+            ->assertOk();
+
+        $this->postJson('/auth/login', ['email' => $loginEmail, 'password' => 'secret1'])
+            ->assertOk();
+    }
+
+    #[Test]
     #[TestWith(['secret1'], 'a string password')]
     #[TestWith([123456], 'a numeric password stays scalar and keeps registering')]
     public function a_valid_registration_creates_the_user(string|int $password): void

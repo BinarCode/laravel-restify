@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 
 class LoginController extends Controller
 {
@@ -27,7 +28,7 @@ class LoginController extends Controller
         $userModel = config('restify.auth.user_model');
 
         $user = $userModel::query()
-            ->where('email', $credentials['email'])
+            ->where('email', Str::lower($credentials['email']))
             ->first();
 
         if (! $user) {

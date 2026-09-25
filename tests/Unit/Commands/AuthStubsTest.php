@@ -14,6 +14,8 @@ class AuthStubsTest extends IntegrationTestCase
     #[Test]
     #[TestWith(['ForgotPasswordController.stub'])]
     #[TestWith(['ResetPasswordController.stub'])]
+    #[TestWith(['LoginController.stub'])]
+    #[TestWith(['RegisterController.stub'])]
     public function the_published_auth_stub_is_syntactically_valid_php(string $stub): void
     {
         $source = str_replace('{{namespace}}', 'App\\Http\\Controllers\\Restify\\Auth', $this->stubContents($stub));
@@ -92,6 +94,19 @@ class AuthStubsTest extends IntegrationTestCase
         $this->assertStringContainsString('use Illuminate\\Support\\Timebox;', $contents);
         $this->assertStringContainsString('app(Timebox::class)->call(', $contents);
         $this->assertStringContainsString("config('restify.auth.password_reset_timebox')", $contents);
+    }
+
+    #[Test]
+    #[TestWith(['LoginController.stub', "->where('email', \$request->string('email')->lower()->toString())"])]
+    #[TestWith(['ForgotPasswordController.stub', "->where('email', \$request->string('email')->lower()->toString())"])]
+    #[TestWith(['ResetPasswordController.stub', "->where('email', \$request->string('email')->lower()->toString())"])]
+    #[TestWith(['RegisterController.stub', "\$request->merge(['email' => Str::lower(\$email)]);"])]
+    public function the_published_auth_stub_lowercases_the_email(string $stub, string $expectedLine): void
+    {
+        $contents = $this->stubContents($stub);
+
+        $this->assertStringContainsString($expectedLine, $contents);
+        $this->assertStringNotContainsString("\$request->only('email')", $contents);
     }
 
     private function stubContents(string $stub): string

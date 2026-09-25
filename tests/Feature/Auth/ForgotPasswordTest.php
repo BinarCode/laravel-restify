@@ -62,6 +62,22 @@ class ForgotPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_mixed_case_email_finds_the_lowercased_user(): void
+    {
+        Notification::fake();
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        $this->postJson('auth/forgotPassword', ['email' => 'Known@Example.com'])
+            ->assertOk();
+
+        Notification::assertSentOnDemand(
+            ForgotPasswordNotification::class,
+            fn (ForgotPasswordNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['mail'] === $user->email
+        );
+    }
+
+    #[Test]
     public function an_unknown_email_receives_the_identical_response_and_nothing_is_sent(): void
     {
         Notification::fake();

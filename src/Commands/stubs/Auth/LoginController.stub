@@ -19,7 +19,7 @@ class LoginController extends Controller
 
         /** * @var User $user */
         if (! $user = config('restify.auth.user_model')::query()
-            ->where('email', $request->input('email'))
+            ->where('email', $request->string('email')->lower()->toString())
             ->first()) {
             abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }

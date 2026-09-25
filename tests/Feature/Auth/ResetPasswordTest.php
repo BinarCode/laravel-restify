@@ -69,6 +69,24 @@ class ResetPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_mixed_case_email_resets_the_lowercased_users_password(): void
+    {
+        $user = UserFactory::one(['email' => 'known@example.com', 'password' => Hash::make('original-password')]);
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', [
+            'email' => 'Known@Example.com',
+            'token' => $token,
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])->assertOk();
+
+        $currentPassword = DB::table($this->getTable(User::class))->where('id', $user->id)->value('password');
+
+        $this->assertTrue(Hash::check('new-password', $currentPassword));
+    }
+
+    #[Test]
     public function an_unknown_email_receives_the_identical_response_as_an_invalid_token_and_nothing_changes(): void
     {
         $originalPassword = Hash::make('original-password');

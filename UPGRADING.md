@@ -114,14 +114,24 @@ different host, add that host to `restify.auth.password_reset_url` or
 
 If your app published `config/restify.php` before it carried an `auth.frontend_app_url` key, add `'frontend_app_url' => env('FRONTEND_APP_URL', env('APP_URL')),` to it - otherwise `frontend_app_url` resolves to `null` and every client-supplied `url` on `forgotPassword` is rejected.
 
-### `POST /api/register` stores the email lowercased
+### Register, login, forgotPassword and resetPassword lowercase the email
 
-The `email` is now lowercased before the `unique` check runs and before the row is
-saved, so `John@Example.com` registers as `john@example.com` and a later registration
-with any other casing of the same address is rejected as a duplicate. Existing rows
-with mixed-case emails are unchanged. Login is unaffected - it still matches the email
-exactly (case-sensitive on pgsql/sqlite), so a user who registered before this change
-must still log in with the casing their row was stored with.
+`register` now lowercases the `email` before the `unique` check runs and before the row
+is saved, so `John@Example.com` registers as `john@example.com` and a later registration
+with any other casing of the same address is rejected as a duplicate. `login`,
+`forgotPassword` and `resetPassword` lowercase the submitted `email` before looking the
+user up, so that user can log in and reset their password with any casing.
+
+Restify does not touch existing rows. On a case-sensitive database (pgsql, sqlite) a
+user stored as `John@Example.com` before this change can no longer log in or reset
+their password, because the lookup now searches for `john@example.com`. Lowercase the
+stored emails yourself before deploying, for example
+`User::query()->update(['email' => DB::raw('LOWER(email)')])` - check for rows that
+collide once lowercased first. MySQL's default case-insensitive collation is unaffected.
+
+The published controller stubs (`php artisan restify:auth`) lowercase the email the same
+way. A controller you published before this change does not - add the same lowercasing to
+it, or register and login will disagree on the casing.
 
 ### Policy cache's fallback ttl is 300 seconds, not 60
 

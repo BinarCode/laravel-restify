@@ -30,7 +30,7 @@ class ForgotPasswordController extends Controller
             /** @var class-string<Model&CanResetPassword> $userModel */
             $userModel = config('restify.auth.user_model');
 
-            $user = $userModel::query()->where($request->only('email'))->first();
+            $user = $userModel::query()->where('email', $request->string('email')->lower()->toString())->first();
 
             if ($user !== null) {
                 try {
