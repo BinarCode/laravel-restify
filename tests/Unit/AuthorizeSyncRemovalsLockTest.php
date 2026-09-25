@@ -34,7 +34,5 @@ class AuthorizeSyncRemovalsLockTest extends IntegrationTestCase
 
         $method = new ReflectionMethod($repository, 'authorizeSyncRemovals');
         $method->invoke($repository, new RestifyRequest, $eagerField, $relationship, 'user_id', [1, 2]);
-
-        $this->assertTrue(true);
     }
 }

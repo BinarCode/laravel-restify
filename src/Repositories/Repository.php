@@ -1046,7 +1046,7 @@ class Repository implements JsonSerializable, RestifySearchable
         $eagerField->authorizeToSync($request, $canonicalKeys);
 
         $syncValues = $canonicalKeys
-            ->map(fn ($relatedKey) => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
+            ->map(fn (mixed $relatedKey): mixed => $eagerField->initializePivot($request, $relationship, $relatedKey)->{$relatedPivotKeyName})
             ->all();
 
         $relationship->getParent()->getConnection()->transaction(function () use ($request, $eagerField, $relationship, $relatedPivotKeyName, $syncValues): void {

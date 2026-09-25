@@ -120,8 +120,8 @@ class RegisterTest extends IntegrationTestCase
         $this->postJson('/auth/register', $this->validPayload(['email' => 'John@Example.com']))
             ->assertOk();
 
-        $this->assertSame(1, User::query()->where('email', 'john@example.com')->count());
-        $this->assertSame(0, User::query()->where('email', 'John@Example.com')->count());
+        $this->assertDatabaseHas(User::class, ['email' => 'john@example.com']);
+        $this->assertDatabaseMissing(User::class, ['email' => 'John@Example.com']);
     }
 
     #[Test]
@@ -133,7 +133,8 @@ class RegisterTest extends IntegrationTestCase
             ->assertUnprocessable()
             ->assertJsonValidationErrors('email');
 
-        $this->assertSame(1, User::query()->where('email', 'john@example.com')->count());
+        $this->assertDatabaseMissing(User::class, ['email' => 'JOHN@example.com']);
+        $this->assertDatabaseCount(User::class, 1);
     }
 
     #[Test]
