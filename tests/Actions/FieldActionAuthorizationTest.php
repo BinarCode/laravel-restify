@@ -70,7 +70,7 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
             'id' => $postId,
             'description' => 'Actionable Description',
         ]);
-        $this->assertSame([(int) $postId], $authorizedModels);
+        $this->assertSame([(int) $postId => 'Title'], $authorizedModels);
     }
 
     #[Test]
@@ -153,7 +153,10 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
             'id' => $postIds[1],
             'description' => 'Actionable second description',
         ]);
-        $this->assertSame(array_map(intval(...), $postIds), $authorizedModels);
+        $this->assertSame(
+            [(int) $postIds[0] => 'First title', (int) $postIds[1] => 'Second title'],
+            $authorizedModels
+        );
     }
 
     #[Test]
@@ -191,7 +194,7 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     #[Test]
     public function update_runs_an_authorized_field_action_against_the_updated_model(): void
     {
-        $post = Post::factory()->create();
+        $post = Post::factory()->create(['title' => 'Original title']);
         $authorizedModels = [];
 
         PostRepository::partialMock()
@@ -213,7 +216,7 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
             'title' => 'Updated title',
             'description' => 'Actionable Updated description',
         ]);
-        $this->assertSame([$post->id], $authorizedModels);
+        $this->assertSame([$post->id => 'Original title'], $authorizedModels);
     }
 
     #[Test]
@@ -251,7 +254,7 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     #[Test]
     public function patch_runs_an_authorized_field_action_against_the_patched_model(): void
     {
-        $post = Post::factory()->create();
+        $post = Post::factory()->create(['title' => 'Original title']);
         $authorizedModels = [];
 
         PostRepository::partialMock()
@@ -263,15 +266,17 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
 
         $this
             ->patchJson(PostRepository::route($post), [
+                'title' => 'Patched title',
                 'description' => 'Patched description',
             ])
             ->assertOk();
 
         $this->assertDatabaseHas(Post::class, [
             'id' => $post->id,
+            'title' => 'Patched title',
             'description' => 'Actionable Patched description',
         ]);
-        $this->assertSame([$post->id], $authorizedModels);
+        $this->assertSame([$post->id => 'Original title'], $authorizedModels);
     }
 
     #[Test]
@@ -342,8 +347,8 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     #[Test]
     public function update_bulk_runs_an_authorized_field_action_against_each_updated_model(): void
     {
-        $firstPost = Post::factory()->create();
-        $secondPost = Post::factory()->create();
+        $firstPost = Post::factory()->create(['title' => 'Original first title']);
+        $secondPost = Post::factory()->create(['title' => 'Original second title']);
         $authorizedModels = [];
 
         PostRepository::partialMock()
@@ -368,7 +373,10 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
             'id' => $secondPost->id,
             'description' => 'Actionable second description',
         ]);
-        $this->assertSame([$firstPost->id, $secondPost->id], $authorizedModels);
+        $this->assertSame(
+            [$firstPost->id => 'Original first title', $secondPost->id => 'Original second title'],
+            $authorizedModels
+        );
     }
 
     #[Test]
@@ -418,10 +426,7 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
         $this->assertDatabaseHas(Post::class, [
             'id' => $post->id,
             'title' => 'Updated title',
-        ]);
-        $this->assertDatabaseMissing(Post::class, [
-            'id' => $post->id,
-            'description' => 'Actionable Updated description',
+            'description' => 'Original description',
         ]);
     }
 
@@ -440,7 +445,7 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     }
 
     /**
-     * @param  list<int|string>  $authorizedModels
+     * @param  array<int|string, mixed>  $authorizedModels
      */
     private function authorizedDescriptionField(array &$authorizedModels): Field
     {
@@ -450,7 +455,7 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
                 $this->descriptionAction()
                     ->canSee(fn (): bool => true)
                     ->canRun(function (Request $request, ?Model $model) use (&$authorizedModels): bool {
-                        $authorizedModels[] = $model?->getKey();
+                        $authorizedModels[$model?->getKey()] = $model?->getAttribute('title');
 
                         return true;
                     })

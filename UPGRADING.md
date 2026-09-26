@@ -109,9 +109,13 @@ action's `canSee` and the action's `canRun` to pass; a denial fails the whole re
 a `403`.
 
 - Store and bulk store check after the model is saved, so `canRun` receives the stored
-  model; the write runs in a transaction and is rolled back.
+  model; the write runs in a transaction and is rolled back. Side effects outside the
+  database that already ran (a `created` observer's mail, a job dispatched without
+  `afterCommit`) are not undone.
 - Update, patch and bulk update check before the model is filled, so `canRun` receives
-  the model as it was before the request and nothing is written.
+  the model as it was before the request and nothing is written. The fields for the
+  action pass are also resolved before the fill now, so a `fields()` that branches on the
+  resource's attributes sees the values from before the request.
 
 Field actions that set none of these callbacks are unaffected. A field action that is not
 in the request payload, or whose field is filtered out by `canStore`/`canUpdate`/
