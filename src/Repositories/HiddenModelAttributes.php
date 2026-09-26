@@ -39,7 +39,7 @@ final class HiddenModelAttributes
      */
     public static function warnAboutSerializedFields(Repository $repository, iterable $fields): void
     {
-        if (! config('app.debug')) {
+        if ($repository instanceof Mergeable || ! config('app.debug')) {
             return;
         }
 
