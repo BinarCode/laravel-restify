@@ -198,3 +198,17 @@ provider registers the limiters regardless of whether the published stubs use th
 leaving old stubs in place still throttles, just on the old shared 6,1 bucket.
 
 If your `app/Providers/RestifyServiceProvider` overrides `boot()`, call `parent::boot()` (or define the `restify.*` limiters yourself) - otherwise the `restify.*` limiters never get registered and `throttle:restify.*` throws `MissingRateLimiterException` (a `500`).
+
+### Login, register and verify responses no longer include the model's `$hidden` attributes
+
+These responses serialise the user through its registered repository, and repository
+fields do not respect the model's `$hidden`. A `UserRepository` exposing
+`field('password')` therefore returned the password hash from `login`, `register` and
+`verifyEmail`. The built-in controllers now call `rest($user)->withoutHiddenAttributes()`,
+which drops every attribute listed in `$user->getHidden()`, including one a field
+exposes under a different `label()`. Values a field derives from a hidden attribute
+through a closure or callback are not detected - keep those out of your fields.
+
+If you published the auth controllers (`php artisan restify:auth`), add
+`->withoutHiddenAttributes()` after `rest($user)` in your `LoginController`,
+`RegisterController` and `VerifyController`, or re-publish them.

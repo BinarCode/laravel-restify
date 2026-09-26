@@ -10,6 +10,8 @@ use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\HiddenAttributesUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
@@ -84,6 +86,12 @@ class AuthResponseHiddenAttributesTest extends IntegrationTestCase
             'password_confirmation' => 'secret1',
         ])
             ->assertOk()
+            ->assertExactJsonStructure([
+                'id',
+                'type',
+                'attributes' => ['name', 'email'],
+                'meta' => ['authorizedToShow', 'authorizedToStore', 'authorizedToUpdate', 'authorizedToDelete', 'token', 'expires_in', 'email_verification_sent', 'message'],
+            ])
             ->assertJsonPath('attributes.name', 'Jane Doe')
             ->assertJsonPath('meta.token', 'token')
             ->assertJsonMissingPath("attributes.{$attribute}");
@@ -105,6 +113,12 @@ class AuthResponseHiddenAttributesTest extends IntegrationTestCase
 
         $this->postJson($verifyUrl)
             ->assertOk()
+            ->assertExactJsonStructure([
+                'id',
+                'type',
+                'attributes' => ['name', 'email'],
+                'meta' => ['authorizedToShow', 'authorizedToStore', 'authorizedToUpdate', 'authorizedToDelete', 'message'],
+            ])
             ->assertJsonPath('attributes.name', 'Jane Doe')
             ->assertJsonPath('meta.message', 'Email verified successfully.')
             ->assertJsonMissingPath("attributes.{$attribute}");
@@ -122,6 +136,35 @@ class AuthResponseHiddenAttributesTest extends IntegrationTestCase
         );
     }
 
+    #[Test]
+    public function the_serializer_keeps_hidden_attributes_unless_asked_to_omit_them(): void
+    {
+        $user = $this->createUser();
+
+        $this->assertSame($user->password, rest($user)->jsonSerialize()['attributes']['password']);
+    }
+
+    #[Test]
+    public function the_serializer_omits_hidden_attributes_from_every_item_of_a_collection(): void
+    {
+        $users = [
+            $this->createUser(),
+            UserFactory::one(['name' => 'John Doe', 'email' => 'john@example.com']),
+        ];
+
+        $serialized = rest(...$users)->withoutHiddenAttributes()->jsonSerialize();
+
+        $this->assertInstanceOf(Collection::class, $serialized['data']);
+        $this->assertCount(2, $serialized['data']);
+
+        foreach ($serialized['data'] as $item) {
+            $this->assertSame(['name', 'email'], array_keys($item['attributes']));
+        }
+    }
+
+    /**
+     * @return TestResponse<JsonResponse>
+     */
     private function login(): TestResponse
     {
         $this->createUser();

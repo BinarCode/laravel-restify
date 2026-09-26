@@ -115,7 +115,7 @@ class Serializer implements JsonSerializable, Responsable
             $serialized = $this->repository->serializeForShow($request);
 
             if ($this->withoutHiddenAttributes) {
-                $serialized = $this->stripHiddenAttributes($serialized, $request);
+                $serialized = $this->stripHiddenAttributes($this->repository, $serialized, $request);
             }
 
             return tap($serialized, fn (array &$data) => $data['meta'] = array_merge($data['meta'] ?? [], $this->meta));
@@ -144,7 +144,9 @@ class Serializer implements JsonSerializable, Responsable
                     $this->sort && $this->sort->direction() === 'asc',
                     fn (Collection $items) => $items->sortBy($this->sort->column())
                 )
-                ->map(fn (Repository $repository) => $repository->serializeForIndex($request)),
+                ->map(fn (Repository $repository): array => $this->withoutHiddenAttributes
+                    ? $this->stripHiddenAttributes($repository, $repository->serializeForIndex($request), $request)
+                    : $repository->serializeForIndex($request)),
         ]);
     }
 
@@ -152,9 +154,9 @@ class Serializer implements JsonSerializable, Responsable
      * @param  array<array-key, mixed>  $serialized
      * @return array<array-key, mixed>
      */
-    private function stripHiddenAttributes(array $serialized, RestifyRequest $request): array
+    private function stripHiddenAttributes(Repository $repository, array $serialized, RestifyRequest $request): array
     {
-        $hiddenAttributes = $this->repository->resource->getHidden();
+        $hiddenAttributes = $repository->resource->getHidden();
 
         if ($hiddenAttributes === [] || ! is_array($serialized['attributes'] ?? null)) {
             return $serialized;
@@ -162,12 +164,12 @@ class Serializer implements JsonSerializable, Responsable
 
         $hiddenKeys = $hiddenAttributes;
 
-        foreach ($this->repository->collectFields($request) as $field) {
+        foreach ($repository->collectFields($request) as $field) {
             if (! $field instanceof Field || ! in_array($field->attribute, $hiddenAttributes, true)) {
                 continue;
             }
 
-            $serializedKey = $field->label ?? $field->attribute;
+            $serializedKey = $field->getAttribute();
 
             if (is_string($serializedKey)) {
                 $hiddenKeys[] = $serializedKey;
