@@ -75,7 +75,7 @@ rest(Post::all())
     ->perPage(20)
 ```
 
-Pass `withoutHiddenAttributes()` to leave out every attribute listed in the model's `$hidden`, even when a repository field exposes it. The built-in login, register and verify controllers use it so a `field('password')` never returns the hash:
+Pass `withoutHiddenAttributes()` to leave out every attribute listed in the model's `$hidden` (or missing from its `$visible`), even when a repository field exposes it. The built-in login, register and verify controllers use it so a `field('password')` never returns the hash:
 
 ```php
 return rest($user)

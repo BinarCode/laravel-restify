@@ -206,9 +206,18 @@ fields do not respect the model's `$hidden`. A `UserRepository` exposing
 `field('password')` therefore returned the password hash from `login`, `register` and
 `verifyEmail`. The built-in controllers now call `rest($user)->withoutHiddenAttributes()`,
 which drops every attribute listed in `$user->getHidden()`, including one a field
-exposes under a different `label()`. Values a field derives from a hidden attribute
-through a closure or callback are not detected - keep those out of your fields.
+exposes under a different `label()`. When the model lists `$visible` instead, every
+field whose attribute is not in it is dropped too, as Eloquent's `toArray()` does;
+computed fields (`field(fn () => ...)`) are kept. Values a field derives from a hidden
+attribute through a closure or callback are not detected - keep those out of your fields.
 
 If you published the auth controllers (`php artisan restify:auth`), add
 `->withoutHiddenAttributes()` after `rest($user)` in your `LoginController`,
 `RegisterController` and `VerifyController`, or re-publish them.
+
+With `app.debug` on, Restify also logs a warning the first time (per process) a
+repository serialises a field whose attribute its model hides - for example
+`field('password')` on a `User` that lists `password` in `$hidden`. Nothing is thrown and
+the response is unchanged; the warning points at a field that exposes the value on your
+regular show and index endpoints. Hide such a field with `hideFromShow()` and
+`hideFromIndex()` (it stays writable), or remove it.

@@ -9,6 +9,8 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\HiddenAttributesUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\VisibleAttributesUser;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\VisibleAttributesUserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
@@ -30,7 +32,7 @@ class AuthResponseHiddenAttributesTest extends IntegrationTestCase
         parent::setUp();
 
         $this->registeredRepositories = Restify::$repositories;
-        Restify::$repositories = [HiddenAttributesUserRepository::class, ...Restify::$repositories];
+        Restify::$repositories = [HiddenAttributesUserRepository::class, VisibleAttributesUserRepository::class, ...Restify::$repositories];
 
         Route::restifyAuth('auth', ['register', 'login', 'verifyEmail']);
 
@@ -72,6 +74,24 @@ class AuthResponseHiddenAttributesTest extends IntegrationTestCase
             ->assertOk()
             ->assertJsonPath('attributes.name', 'Jane Doe')
             ->assertJsonMissingPath("attributes.{$attribute}");
+    }
+
+    #[Test]
+    public function the_login_response_keeps_only_the_visible_attributes_of_a_model_that_lists_them(): void
+    {
+        config(['restify.auth.user_model' => VisibleAttributesUser::class]);
+
+        $this->assertSame([], (new VisibleAttributesUser)->getHidden());
+
+        $this->login()
+            ->assertOk()
+            ->assertExactJsonStructure([
+                'id',
+                'type',
+                'attributes' => ['name', 'email', 'greeting'],
+                'meta' => ['authorizedToShow', 'authorizedToStore', 'authorizedToUpdate', 'authorizedToDelete', 'token', 'expires_in'],
+            ])
+            ->assertJsonPath('attributes.greeting', 'Hello');
     }
 
     #[Test]

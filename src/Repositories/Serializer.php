@@ -156,16 +156,17 @@ class Serializer implements JsonSerializable, Responsable
      */
     private function stripHiddenAttributes(Repository $repository, array $serialized, RestifyRequest $request): array
     {
-        $hiddenAttributes = $repository->resource->getHidden();
+        $model = $repository->resource;
+        $hiddenAttributes = $model->getHidden();
 
-        if ($hiddenAttributes === [] || ! is_array($serialized['attributes'] ?? null)) {
+        if (($hiddenAttributes === [] && $model->getVisible() === []) || ! is_array($serialized['attributes'] ?? null)) {
             return $serialized;
         }
 
         $hiddenKeys = $hiddenAttributes;
 
         foreach ($repository->collectFields($request) as $field) {
-            if (! $field instanceof Field || ! in_array($field->attribute, $hiddenAttributes, true)) {
+            if (! $field instanceof Field || ! HiddenModelAttributes::hidesField($model, $field)) {
                 continue;
             }
 
