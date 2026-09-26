@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Carbon\Carbon;
 use Doctrine\DBAL\Schema\Column;
 use Doctrine\DBAL\Types\Type;
+use Doctrine\Deprecations\Deprecation;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
@@ -19,6 +20,34 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 class DatabaseGeneratorTest extends IntegrationTestCase
 {
+    private const COLUMN_TYPE_DEPRECATION = 'https://github.com/doctrine/dbal/pull/7490';
+
+    protected function tearDown(): void
+    {
+        Deprecation::disable();
+
+        parent::tearDown();
+    }
+
+    #[Test]
+    #[TestWith(['text'], 'a text column')]
+    #[TestWith(['string'], 'a string column')]
+    #[TestWith(['datetime'], 'a datetime column')]
+    #[TestWith(['boolean'], 'a boolean column')]
+    #[TestWith(['integer'], 'an integer column')]
+    #[TestWith(['float'], 'an unknown column type')]
+    public function it_resolves_the_column_type_without_the_deprecated_get_type(string $typeName): void
+    {
+        $column = new Column('title', Type::getType($typeName));
+
+        Deprecation::enableTrackingDeprecations();
+        $deprecationsBefore = $this->columnTypeDeprecationCount();
+
+        DatabaseGenerator::make()->fake($column);
+
+        $this->assertSame($deprecationsBefore, $this->columnTypeDeprecationCount());
+    }
+
     #[Test]
     public function it_generates_html_for_a_text_column(): void
     {
@@ -117,5 +146,10 @@ class DatabaseGeneratorTest extends IntegrationTestCase
         $value = DatabaseGenerator::make()->fake(new Column('price', Type::getType('float')));
 
         $this->assertNull($value);
+    }
+
+    private function columnTypeDeprecationCount(): int
+    {
+        return Deprecation::getTriggeredDeprecations()[self::COLUMN_TYPE_DEPRECATION] ?? 0;
     }
 }
