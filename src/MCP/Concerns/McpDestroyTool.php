@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\MCP\Requests\McpDestroyRequest;
+use Binaryk\LaravelRestify\Repositories\DeleteField;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\JsonSchema\JsonSchema;
 
@@ -17,7 +18,11 @@ trait McpDestroyTool
 
         $model = static::query($request)->findOrFail($id);
 
-        static::resolveWith($model)->destroy($request, $id);
+        $repository = static::resolveWith($model)->allowToDestroy($request);
+
+        DeleteField::pruneFields($request, $repository, $model);
+
+        $repository->destroy($request, $id);
 
         return [
             'id' => $id,
