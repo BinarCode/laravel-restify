@@ -139,11 +139,15 @@ published before this change keeps its exact-match lookup; add
 
 A successful `resetPassword` now rotates the user's `remember_token`, dispatches
 `Illuminate\Auth\Events\PasswordReset`, and - when the user model uses Sanctum's
-`HasApiTokens` - deletes every personal access token the user holds, so a stolen session
+`HasApiTokens` trait or implements its `Laravel\Sanctum\Contracts\HasApiTokens` contract -
+deletes every personal access token the user holds, so a stolen session
 or API token no longer survives a reset. Clients holding a token for that user get a
 `401` on their next request and must log in again. Set `restify.auth.revoke_tokens_on_reset`
 to `false` (or `RESTIFY_REVOKE_TOKENS_ON_RESET=false`) to keep tokens alive; a published
 `config/restify.php` without the key revokes, like the default.
+
+The new password is written to the model's `getAuthPasswordName()` column (the same
+column `login` checks) instead of a hardcoded `password`.
 
 The password, `remember_token`, reset-token deletion and token revocation run in one
 transaction; the event fires after it commits. If your `users` table has no

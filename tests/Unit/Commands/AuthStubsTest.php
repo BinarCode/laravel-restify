@@ -126,7 +126,8 @@ class AuthStubsTest extends IntegrationTestCase
         $this->assertStringContainsString('$user->getConnection()->transaction(function () use ($user, $password): void {', $contents);
         $this->assertStringContainsString('$user->setRememberToken(Str::random(60));', $contents);
         $this->assertStringContainsString("if (config('restify.auth.revoke_tokens_on_reset', true)", $contents);
-        $this->assertStringContainsString('in_array(HasApiTokens::class, class_uses_recursive($user), true)', $contents);
+        $this->assertStringContainsString('$user instanceof HasApiTokensContract || in_array(HasApiTokens::class, class_uses_recursive($user), true)', $contents);
+        $this->assertStringContainsString('$user->forceFill([$user->getAuthPasswordName() => Hash::make($password)]);', $contents);
         $this->assertStringContainsString('event(new PasswordReset($user));', $contents);
     }
 

@@ -48,7 +48,7 @@ class ResetPasswordController extends Controller
             }
 
             $user->getConnection()->transaction(function () use ($user, $password): void {
-                $user->forceFill(['password' => Hash::make($password)]);
+                $user->forceFill([$user->getAuthPasswordName() => Hash::make($password)]);
                 $user->setRememberToken(Str::random(self::REMEMBER_TOKEN_LENGTH));
                 $user->save();
 
@@ -67,7 +67,7 @@ class ResetPasswordController extends Controller
 
     private function revokeApiTokens(Model $user): void
     {
-        if (! in_array(HasApiTokens::class, class_uses_recursive($user), true)) {
+        if (! $user instanceof HasApiTokensContract && ! in_array(HasApiTokens::class, class_uses_recursive($user), true)) {
             return;
         }
 

@@ -6,8 +6,10 @@ namespace Binaryk\LaravelRestify\Tests\Feature\Auth;
 
 use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\SanctumContractUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\SanctumUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserWithCustomPasswordColumn;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
@@ -178,6 +180,44 @@ class ResetPasswordTest extends IntegrationTestCase
         ]);
         $this->assertDatabaseHas('password_reset_tokens', ['email' => $user->email]);
         Event::assertNotDispatched(PasswordReset::class);
+    }
+
+    #[Test]
+    public function a_model_implementing_the_sanctum_contract_without_the_trait_has_its_tokens_revoked(): void
+    {
+        config(['restify.auth.user_model' => SanctumContractUser::class]);
+
+        $user = SanctumContractUser::query()->create(['name' => 'Known', 'email' => 'known@example.com', 'password' => Hash::make('original-password')]);
+        $user->tokens()->create(['name' => 'laptop', 'token' => hash('sha256', 'laptop-token'), 'abilities' => ['*']]);
+
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertOk();
+
+        $this->assertDatabaseCount(PersonalAccessToken::class, 0);
+    }
+
+    #[Test]
+    public function the_new_password_is_written_to_the_models_auth_password_column(): void
+    {
+        config(['restify.auth.user_model' => UserWithCustomPasswordColumn::class]);
+
+        $untouchedPassword = Hash::make('password-column-value');
+        $user = UserWithCustomPasswordColumn::query()->create([
+            'name' => Hash::make('original-password'),
+            'email' => 'custom-column@example.com',
+            'password' => $untouchedPassword,
+        ]);
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertOk();
+
+        $this->assertDatabaseHas(UserWithCustomPasswordColumn::class, ['id' => $user->id, 'password' => $untouchedPassword]);
+
+        $authPassword = UserWithCustomPasswordColumn::query()->whereKey($user->id)->value('name');
+
+        $this->assertIsString($authPassword);
+        $this->assertTrue(Hash::check('new-password', $authPassword));
     }
 
     #[Test]
