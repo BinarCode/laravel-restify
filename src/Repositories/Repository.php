@@ -844,6 +844,7 @@ class Repository implements JsonSerializable, RestifySearchable
                 ->forStore($request, $this)
                 ->withActions($request, $this)
                 ->authorizedStore($request)
+                ->authorizeActions($request, $this->resource)
                 ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
         });
 
@@ -880,6 +881,7 @@ class Repository implements JsonSerializable, RestifySearchable
                         ->forStoreBulk($request, $this)
                         ->withActions($request, $this, $row)
                         ->authorizedUpdateBulk($request)
+                        ->authorizeActions($request, $this->resource)
                         ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
                     return $this->resource;
@@ -894,6 +896,13 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function update(RestifyRequest $request, $repositoryId)
     {
+        $actionFields = $this
+            ->collectFields($request)
+            ->forUpdate($request, $this)
+            ->withActions($request, $this)
+            ->authorizedUpdate($request)
+            ->authorizeActions($request, $this->resource);
+
         DB::transaction(function () use ($request) {
             $fields = $this->collectFields($request)
                 ->forUpdate($request, $this)
@@ -910,12 +919,7 @@ class Repository implements JsonSerializable, RestifySearchable
             fn (Field $field) => $field->invokeAfter($request, $this->resource)
         );
 
-        $this
-            ->collectFields($request)
-            ->forUpdate($request, $this)
-            ->withActions($request, $this)
-            ->authorizedUpdate($request)
-            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
+        $actionFields->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
 
         return data($this->serializeForShow($request));
     }
@@ -923,6 +927,16 @@ class Repository implements JsonSerializable, RestifySearchable
     public function patch(RestifyRequest $request, $repositoryId)
     {
         $keys = $request->json()->keys();
+
+        $actionFields = $this
+            ->collectFields($request)
+            ->filter(
+                fn (Field $field) => in_array($field->attribute, $keys),
+            )
+            ->forUpdate($request, $this)
+            ->withActions($request, $this)
+            ->authorizedPatch($request)
+            ->authorizeActions($request, $this->resource);
 
         DB::transaction(function () use ($request, $keys) {
             $fields = $this->collectFields($request)
@@ -949,21 +963,20 @@ class Repository implements JsonSerializable, RestifySearchable
             fn (Field $field) => $field->invokeAfter($request, $this->resource)
         );
 
-        $this
-            ->collectFields($request)
-            ->filter(
-                fn (Field $field) => in_array($field->attribute, $keys),
-            )
-            ->forUpdate($request, $this)
-            ->withActions($request, $this)
-            ->authorizedPatch($request)
-            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
+        $actionFields->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
 
         return data($this->serializeForShow($request));
     }
 
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
+        $actionFields = $this
+            ->collectFields($request)
+            ->forUpdateBulk($request, $this)
+            ->withActions($request, $this, $row)
+            ->authorizedUpdateBulk($request)
+            ->authorizeActions($request, $this->resource);
+
         $fields = $this->collectFields($request)
             ->forUpdateBulk($request, $this)
             ->withoutActions($request, $this)
@@ -973,12 +986,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
         $this->resource->save();
 
-        $this
-            ->collectFields($request)
-            ->forUpdateBulk($request, $this)
-            ->withActions($request, $this, $row)
-            ->authorizedUpdateBulk($request)
-            ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
+        $actionFields->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
         return response()->json();
     }
