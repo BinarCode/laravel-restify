@@ -509,7 +509,10 @@ class Repository implements JsonSerializable, RestifySearchable
         $fields = $this->collectFields($request)
             ->forShow($request, $this)
             ->filter(fn (Field $field) => $field->authorize($request))
-            ->tap(fn (FieldCollection $fields) => HiddenModelAttributes::warnAboutSerializedFields($this, $fields))
+            ->unless(
+                $this instanceof Mergeable,
+                fn (FieldCollection $fields) => $fields->tap(fn (FieldCollection $fields) => HiddenModelAttributes::warnAboutSerializedFields($this, $fields))
+            )
             ->each(fn (Field $field) => $field->resolveForShow($this))
             ->map(fn (Field $field) => $field->serializeToValue($request))
             ->mapWithKeys(fn ($value) => $value)

@@ -220,4 +220,10 @@ repository serialises a field whose attribute its model hides - for example
 `field('password')` on a `User` that lists `password` in `$hidden`. Nothing is thrown and
 the response is unchanged; the warning points at a field that exposes the value on your
 regular show and index endpoints. Hide such a field with `hideFromShow()` and
-`hideFromIndex()` (it stays writable), or remove it.
+`hideFromIndex()` (it stays writable), or remove it. A `Mergeable` repository is not
+checked, since it serialises the model's own `toArray()`.
+
+A test that mocks the `Log` facade strictly (`Log::shouldReceive('error')` without
+allowing other calls) fails with `BadMethodCallException` if it serialises such a field
+while `app.debug` is on. Fix the field, or allow the call with
+`Log::shouldReceive('warning')->zeroOrMoreTimes()`.

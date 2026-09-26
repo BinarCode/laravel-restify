@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\HiddenAttributesUserRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\MergeableHiddenAttributesUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\VisibleAttributesUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\VisibleAttributesUserRepository;
@@ -78,6 +79,21 @@ class HiddenFieldWarningTest extends IntegrationTestCase
             ->with($this->warning(VisibleAttributesUserRepository::class, 'remember_token', VisibleAttributesUser::class))
             ->once();
         Log::shouldHaveReceived('warning')->twice();
+    }
+
+    #[Test]
+    #[TestWith([1], 'a show serialisation')]
+    #[TestWith([2], 'an index serialisation')]
+    public function a_mergeable_repository_is_not_warned_about_because_it_serialises_the_models_array_form(int $userCount): void
+    {
+        Restify::$repositories = [MergeableHiddenAttributesUserRepository::class, ...Restify::$repositories];
+
+        $users = UserFactory::new()->count($userCount)->create()->all();
+
+        $serialized = rest(...$users)->jsonSerialize();
+
+        $this->assertNotContains('password', array_keys($userCount === 1 ? $serialized['attributes'] : $serialized['data']->first()['attributes']));
+        Log::shouldNotHaveReceived('warning');
     }
 
     #[Test]
