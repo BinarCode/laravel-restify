@@ -101,6 +101,26 @@ against, so they now receive `null` there too. A closure typed with a non-nullab
 (`fn (Request $request, Post $post): bool => ...`) TypeErrors when called with `null`.
 Type the parameter nullable: `fn (Request $request, ?Post $post): bool => ...`.
 
+### Field actions honour `canSee` and `canRun`
+
+A field's `->action(...)` used to run on store, bulk store, update, patch and bulk update
+without checking any authorization callback. It now requires the field's `canSee`, the
+action's `canSee` and the action's `canRun` to pass; a denial fails the whole request with
+a `403`.
+
+- Store and bulk store check after the model is saved, so `canRun` receives the stored
+  model; the write runs in a transaction and is rolled back. Side effects outside the
+  database that already ran (a `created` observer's mail, a job dispatched without
+  `afterCommit`) are not undone.
+- Update, patch and bulk update check before the model is filled, so `canRun` receives
+  the model as it was before the request and nothing is written. The fields for the
+  action pass are also resolved before the fill now, so a `fields()` that branches on the
+  resource's attributes sees the values from before the request.
+
+Field actions that set none of these callbacks are unaffected. A field action that is not
+in the request payload, or whose field is filtered out by `canStore`/`canUpdate`/
+`canPatch`/`canUpdateBulk`, is still skipped without a `403`.
+
 ### `forgotPassword`'s `url` no longer allows `config('app.url')`'s host
 
 `AllowedResetUrlHost::fromConfig()` used to also allow a client-supplied `url` to target

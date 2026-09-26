@@ -3,6 +3,9 @@
 namespace Binaryk\LaravelRestify\Fields\Concerns;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 trait HasAction
 {
@@ -24,5 +27,23 @@ trait HasAction
     public function isActionable(): bool
     {
         return $this->actionHandler instanceof Action;
+    }
+
+    /**
+     * @throws UnauthorizedException
+     */
+    public function authorizeAction(Request $request, ?Model $model): void
+    {
+        if (! $this->actionHandler instanceof Action) {
+            return;
+        }
+
+        $authorized = $this->authorizedToSee($request)
+            && $this->actionHandler->authorizedToSee($request)
+            && $this->actionHandler->authorizedToRun($request, $model);
+
+        if (! $authorized) {
+            throw UnauthorizedException::make('Not authorized to run this action.');
+        }
     }
 }
