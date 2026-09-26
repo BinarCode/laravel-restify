@@ -17,7 +17,9 @@ trait McpDestroyTool
 
         $model = static::query($request)->findOrFail($id);
 
-        static::resolveWith($model)->destroy($request, $id);
+        static::resolveWith($model)
+            ->allowToDestroy($request)
+            ->destroy($request, $id);
 
         return [
             'id' => $id,
