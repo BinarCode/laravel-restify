@@ -31,6 +31,7 @@
         "doctrine/dbal": "^3.7|^4.0",
         "larastan/larastan": "^3.12",
         "laravel/pint": "^1.25.1",
+        "laravel/sanctum": "^4.0",
         "nunomaduro/collision": "^8.1",
         "openai-php/laravel": "^0.8.1|^0.11|^0.19",
         "orchestra/testbench": "^9.0|^10.0|^11.0",

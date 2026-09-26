@@ -110,6 +110,26 @@ class AuthStubsTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function the_forgot_password_stub_honours_the_broker_throttle(): void
+    {
+        $this->assertStringContainsString(
+            'if (Password::getRepository()->recentlyCreatedToken($user)) {',
+            $this->stubContents('ForgotPasswordController.stub')
+        );
+    }
+
+    #[Test]
+    public function the_reset_password_stub_rotates_the_remember_token_revokes_tokens_and_fires_the_event(): void
+    {
+        $contents = $this->stubContents('ResetPasswordController.stub');
+
+        $this->assertStringContainsString('$user->setRememberToken(Str::random(60));', $contents);
+        $this->assertStringContainsString("if (config('restify.auth.revoke_tokens_on_reset', true)", $contents);
+        $this->assertStringContainsString('in_array(HasApiTokens::class, class_uses_recursive($user), true)', $contents);
+        $this->assertStringContainsString('event(new PasswordReset($user));', $contents);
+    }
+
+    #[Test]
     public function the_published_register_stub_lowercases_the_email(): void
     {
         $this->assertStringContainsString(

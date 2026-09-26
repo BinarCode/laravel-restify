@@ -3,6 +3,8 @@
 namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 
 use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
@@ -10,7 +12,10 @@ use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
+use Illuminate\Support\Str;
 use Illuminate\Support\Timebox;
+use Laravel\Sanctum\Contracts\HasApiTokens as HasApiTokensContract;
+use Laravel\Sanctum\HasApiTokens;
 
 class ResetPasswordController extends Controller
 {
@@ -31,7 +36,7 @@ class ResetPasswordController extends Controller
         $timeboxDuration = config('restify.auth.password_reset_timebox');
 
         return app(Timebox::class)->call(function () use ($request, $token, $password): JsonResponse {
-            /** @var class-string<Model&CanResetPassword> $userModel */
+            /** @var class-string<Model&CanResetPassword&Authenticatable> $userModel */
             $userModel = config('restify.auth.user_model');
 
             $user = $this->findUserByEmail($userModel, $request->string('email')->toString());
@@ -40,11 +45,29 @@ class ResetPasswordController extends Controller
                 abort(JsonResponse::HTTP_BAD_REQUEST, __('Provided invalid token.'));
             }
 
-            $user->forceFill(['password' => Hash::make($password)])->save();
+            $user->forceFill(['password' => Hash::make($password)]);
+            $user->setRememberToken(Str::random(60));
+            $user->save();
 
             Password::deleteToken($user);
 
+            if (config('restify.auth.revoke_tokens_on_reset', true)) {
+                $this->revokeApiTokens($user);
+            }
+
+            event(new PasswordReset($user));
+
             return ok(__('Your password has been successfully reset.'));
         }, $timeboxDuration);
+    }
+
+    private function revokeApiTokens(Model $user): void
+    {
+        if (! in_array(HasApiTokens::class, class_uses_recursive($user), true)) {
+            return;
+        }
+
+        /** @var Model&HasApiTokensContract $user */
+        $user->tokens()->delete();
     }
 }

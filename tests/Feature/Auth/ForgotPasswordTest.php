@@ -126,6 +126,45 @@ class ForgotPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_repeat_request_within_the_broker_throttle_sends_nothing_and_keeps_the_first_token(): void
+    {
+        Notification::fake();
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        $firstResponse = $this->postJson('auth/forgotPassword', ['email' => $user->email]);
+        $firstTokenHash = DB::table('password_reset_tokens')->where('email', $user->email)->value('token');
+
+        $throttledResponse = $this->postJson('auth/forgotPassword', ['email' => $user->email]);
+
+        $firstResponse->assertOk();
+        $throttledResponse->assertOk();
+        $this->assertSame($firstResponse->getContent(), $throttledResponse->getContent());
+
+        Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 1);
+        $this->assertDatabaseHas('password_reset_tokens', ['email' => $user->email, 'token' => $firstTokenHash]);
+    }
+
+    #[Test]
+    public function a_repeat_request_after_the_broker_throttle_sends_a_new_link(): void
+    {
+        Notification::fake();
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        $this->postJson('auth/forgotPassword', ['email' => $user->email])->assertOk();
+
+        /** @var int $throttleSeconds */
+        $throttleSeconds = config('auth.passwords.users.throttle');
+
+        $this->travel($throttleSeconds + 1)->seconds();
+
+        $this->postJson('auth/forgotPassword', ['email' => $user->email])->assertOk();
+
+        Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 2);
+    }
+
+    #[Test]
     public function an_unknown_email_writes_no_password_reset_token(): void
     {
         $this->postJson('auth/forgotPassword', ['email' => 'unknown@example.com'])->assertOk();
@@ -157,6 +196,7 @@ class ForgotPasswordTest extends IntegrationTestCase
 
         $user = UserFactory::one(['email' => 'known@example.com']);
 
+        Password::shouldReceive('getRepository->recentlyCreatedToken')->andReturnFalse();
         Password::shouldReceive('createToken')->once()->andThrow(new RuntimeException('reset pipeline failed'));
 
         $this->postJson('auth/forgotPassword', ['email' => $user->email])
