@@ -10,6 +10,17 @@ use Illuminate\Database\Eloquent\Model;
 
 class DeleteField
 {
+    public static function pruneFields(RestifyRequest $request, Repository $repository, Model $model): void
+    {
+        $prunableFields = $repository->collectFields($request)
+            ->filter(fn (Field $field): bool => $field instanceof Deletable && $field->isPrunable())
+            ->resolve($repository);
+
+        foreach ($prunableFields as $field) {
+            static::forRequest($request, $field, $model)->save();
+        }
+    }
+
     public static function forRequest(RestifyRequest $request, $field, $model): Model
     {
         $arguments = [
