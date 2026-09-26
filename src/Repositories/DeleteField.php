@@ -13,7 +13,7 @@ class DeleteField
     public static function pruneFields(RestifyRequest $request, Repository $repository, Model $model): void
     {
         $prunableFields = $repository->collectFields($request)
-            ->filter(fn (Field $field): bool => $field instanceof Deletable && $field->isPrunable())
+            ->filter(fn (mixed $field): bool => $field instanceof Deletable && $field->isPrunable())
             ->resolve($repository);
 
         foreach ($prunableFields as $field) {
