@@ -4,22 +4,33 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Feature\Auth;
 
+use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\SanctumContractUser;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\SanctumUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\UserWithCustomPasswordColumn;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Timebox;
 use Illuminate\Testing\TestResponse;
+use Laravel\Sanctum\PersonalAccessToken;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
+use RuntimeException;
 
 class ResetPasswordTest extends IntegrationTestCase
 {
@@ -66,6 +77,168 @@ class ResetPasswordTest extends IntegrationTestCase
             'password' => 'replayed-password',
             'password_confirmation' => 'replayed-password',
         ])->assertStatus(JsonResponse::HTTP_BAD_REQUEST);
+    }
+
+    #[Test]
+    public function a_reset_dispatches_the_password_reset_event_for_the_user(): void
+    {
+        Event::fake([PasswordReset::class]);
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertOk();
+
+        Event::assertDispatchedTimes(PasswordReset::class, 1);
+        Event::assertDispatched(PasswordReset::class, fn (PasswordReset $event): bool => $user->is($event->user));
+    }
+
+    #[Test]
+    public function a_rejected_reset_dispatches_no_password_reset_event(): void
+    {
+        Event::fake([PasswordReset::class]);
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+        Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, 'not-the-right-token'))
+            ->assertBadRequest();
+
+        Event::assertNotDispatched(PasswordReset::class);
+    }
+
+    #[Test]
+    public function a_reset_rotates_the_remember_token(): void
+    {
+        $user = UserFactory::one(['email' => 'known@example.com', 'remember_token' => 'stolen-remember-token']);
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertOk();
+
+        $this->assertDatabaseMissing(User::class, ['id' => $user->id, 'remember_token' => 'stolen-remember-token']);
+
+        $rememberToken = User::query()->whereKey($user->id)->value('remember_token');
+
+        $this->assertIsString($rememberToken);
+        $this->assertSame(ResetPasswordController::REMEMBER_TOKEN_LENGTH, strlen($rememberToken));
+    }
+
+    #[Test]
+    #[TestWith([true, 1], 'revocation on')]
+    #[TestWith([false, 3], 'revocation off')]
+    public function a_reset_revokes_the_users_sanctum_tokens_only_when_configured(bool $revokeTokens, int $remainingTokens): void
+    {
+        config([
+            'restify.auth.user_model' => SanctumUser::class,
+            'restify.auth.revoke_tokens_on_reset' => $revokeTokens,
+        ]);
+
+        $user = SanctumUser::query()->create(['name' => 'Known', 'email' => 'known@example.com', 'password' => Hash::make('original-password')]);
+        $otherUser = SanctumUser::query()->create(['name' => 'Other', 'email' => 'other@example.com', 'password' => Hash::make('original-password')]);
+
+        $user->createToken('laptop');
+        $user->createToken('phone');
+        $otherUser->createToken('laptop');
+
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertOk();
+
+        $this->assertDatabaseCount(PersonalAccessToken::class, $remainingTokens);
+        $this->assertDatabaseHas(PersonalAccessToken::class, [
+            'tokenable_type' => $otherUser->getMorphClass(),
+            'tokenable_id' => $otherUser->getKey(),
+        ]);
+    }
+
+    #[Test]
+    public function a_failed_token_revocation_rolls_back_the_password_change(): void
+    {
+        Event::fake([PasswordReset::class]);
+        Exceptions::fake();
+
+        $failingRevocationUser = new class extends SanctumUser
+        {
+            public function tokens(): MorphMany
+            {
+                throw new RuntimeException('token store unavailable');
+            }
+        };
+
+        config(['restify.auth.user_model' => $failingRevocationUser::class]);
+
+        $originalPassword = Hash::make('original-password');
+        $user = SanctumUser::query()->create(['name' => 'Known', 'email' => 'known@example.com', 'password' => $originalPassword, 'remember_token' => 'stolen-remember-token']);
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertServerError();
+
+        $this->assertDatabaseHas(SanctumUser::class, [
+            'id' => $user->id,
+            'password' => $originalPassword,
+            'remember_token' => 'stolen-remember-token',
+        ]);
+        $this->assertDatabaseHas('password_reset_tokens', ['email' => $user->email]);
+        Event::assertNotDispatched(PasswordReset::class);
+    }
+
+    #[Test]
+    public function a_model_implementing_the_sanctum_contract_without_the_trait_has_its_tokens_revoked(): void
+    {
+        config(['restify.auth.user_model' => SanctumContractUser::class]);
+
+        $user = SanctumContractUser::query()->create(['name' => 'Known', 'email' => 'known@example.com', 'password' => Hash::make('original-password')]);
+        $user->tokens()->create(['name' => 'laptop', 'token' => hash('sha256', 'laptop-token'), 'abilities' => ['*']]);
+
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertOk();
+
+        $this->assertDatabaseCount(PersonalAccessToken::class, 0);
+    }
+
+    #[Test]
+    public function the_new_password_is_written_to_the_models_auth_password_column(): void
+    {
+        config(['restify.auth.user_model' => UserWithCustomPasswordColumn::class]);
+
+        $untouchedPassword = Hash::make('password-column-value');
+        $user = UserWithCustomPasswordColumn::query()->create([
+            'name' => Hash::make('original-password'),
+            'email' => 'custom-column@example.com',
+            'password' => $untouchedPassword,
+        ]);
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertOk();
+
+        $this->assertDatabaseHas(UserWithCustomPasswordColumn::class, ['id' => $user->id, 'password' => $untouchedPassword]);
+
+        $authPassword = UserWithCustomPasswordColumn::query()->whereKey($user->id)->value('name');
+
+        $this->assertIsString($authPassword);
+        $this->assertTrue(Hash::check('new-password', $authPassword));
+    }
+
+    #[Test]
+    public function a_published_config_without_the_revoke_key_still_revokes_sanctum_tokens(): void
+    {
+        /** @var array<string, mixed> $authConfig */
+        $authConfig = config('restify.auth');
+
+        config([
+            'restify.auth' => Arr::except($authConfig, 'revoke_tokens_on_reset'),
+            'restify.auth.user_model' => SanctumUser::class,
+        ]);
+
+        $user = SanctumUser::query()->create(['name' => 'Known', 'email' => 'known@example.com', 'password' => Hash::make('original-password')]);
+        $user->createToken('laptop');
+
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertOk();
+
+        $this->assertDatabaseCount(PersonalAccessToken::class, 0);
     }
 
     #[Test]
@@ -247,6 +420,19 @@ class ResetPasswordTest extends IntegrationTestCase
     public function invalid_input_is_rejected(array $payload): void
     {
         $this->postJson('auth/resetPassword', $payload)->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function resetPayload(string $email, string $token): array
+    {
+        return [
+            'email' => $email,
+            'token' => $token,
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ];
     }
 
     /**

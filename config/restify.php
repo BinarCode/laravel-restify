@@ -64,6 +64,20 @@ return [
 
         /*
         |--------------------------------------------------------------------------
+        | Revoke API tokens on password reset
+        |--------------------------------------------------------------------------
+        |
+        | When the user model uses Sanctum's HasApiTokens, a successful
+        | resetPassword deletes every personal access token the user holds,
+        | signing them out on all devices. Set to false to keep existing
+        | tokens alive across a reset.
+        |
+        */
+
+        'revoke_tokens_on_reset' => (bool) env('RESTIFY_REVOKE_TOKENS_ON_RESET', true),
+
+        /*
+        |--------------------------------------------------------------------------
         | User Email Verification URL
         |--------------------------------------------------------------------------
         |

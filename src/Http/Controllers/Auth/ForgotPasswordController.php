@@ -49,6 +49,10 @@ class ForgotPasswordController extends Controller
 
     private function sendResetLinkTo(CanResetPassword $user, Request $request): void
     {
+        if (Password::getRepository()->recentlyCreatedToken($user)) {
+            return;
+        }
+
         $token = Password::createToken($user);
 
         /** @var string $urlTemplate */

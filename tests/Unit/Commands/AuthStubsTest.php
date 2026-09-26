@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Unit\Commands;
 
+use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use ParseError;
 use PHPUnit\Framework\Attributes\Test;
@@ -107,6 +108,28 @@ class AuthStubsTest extends IntegrationTestCase
         $this->assertStringContainsString('use Binaryk\\LaravelRestify\\Http\\Controllers\\Concerns\\FindsUserByEmail;', $contents);
         $this->assertStringContainsString("\$this->findUserByEmail(config('restify.auth.user_model'), \$request->string('email')->toString())", $contents);
         $this->assertStringNotContainsString("\$request->only('email')", $contents);
+    }
+
+    #[Test]
+    public function the_forgot_password_stub_honours_the_broker_throttle(): void
+    {
+        $this->assertStringContainsString(
+            'if (Password::getRepository()->recentlyCreatedToken($user)) {',
+            $this->stubContents('ForgotPasswordController.stub')
+        );
+    }
+
+    #[Test]
+    public function the_reset_password_stub_rotates_the_remember_token_revokes_tokens_and_fires_the_event(): void
+    {
+        $contents = $this->stubContents('ResetPasswordController.stub');
+
+        $this->assertStringContainsString('$user->getConnection()->transaction(function () use ($user, $password): void {', $contents);
+        $this->assertStringContainsString('$user->setRememberToken(Str::random('.ResetPasswordController::REMEMBER_TOKEN_LENGTH.'));', $contents);
+        $this->assertStringContainsString("if (config('restify.auth.revoke_tokens_on_reset', true)", $contents);
+        $this->assertStringContainsString('$user instanceof HasApiTokensContract || in_array(HasApiTokens::class, class_uses_recursive($user), true)', $contents);
+        $this->assertStringContainsString('$user->forceFill([$user->getAuthPasswordName() => Hash::make($password)]);', $contents);
+        $this->assertStringContainsString('event(new PasswordReset($user));', $contents);
     }
 
     #[Test]

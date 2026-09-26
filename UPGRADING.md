@@ -135,6 +135,34 @@ published before this change keeps its exact-match lookup; add
 `use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;` and call
 `$this->findUserByEmail($userModel, $email)` to match.
 
+### `resetPassword` signs the user out everywhere; `forgotPassword` honours the broker throttle
+
+A successful `resetPassword` now rotates the user's `remember_token`, dispatches
+`Illuminate\Auth\Events\PasswordReset`, and - when the user model uses Sanctum's
+`HasApiTokens` trait or implements its `Laravel\Sanctum\Contracts\HasApiTokens` contract -
+deletes every personal access token the user holds, so a stolen session
+or API token no longer survives a reset. Clients holding a token for that user get a
+`401` on their next request and must log in again. Set `restify.auth.revoke_tokens_on_reset`
+to `false` (or `RESTIFY_REVOKE_TOKENS_ON_RESET=false`) to keep tokens alive; a published
+`config/restify.php` without the key revokes, like the default.
+
+The new password is written to the model's `getAuthPasswordName()` column (the same
+column `login` checks) instead of a hardcoded `password`.
+
+The password, `remember_token`, reset-token deletion and token revocation run in one
+transaction on the user model's connection (the reset-token table and Sanctum's tokens
+are included when they share it); the event fires after it commits. If your `users` table has no
+`remember_token` column, set `protected $rememberTokenName = '';` on the user model so
+the rotation is skipped - otherwise the save fails and the reset returns a `500`.
+
+`forgotPassword` now skips issuing a new token and sending the email when the broker
+created one for that user within `auth.passwords.{broker}.throttle` seconds (60 by
+default). The response stays the same generic success, so it reveals nothing about the
+account.
+
+The published controller stubs (`php artisan restify:auth`) carry the same changes. A
+controller you published earlier keeps its old behaviour until you port them.
+
 ### Policy cache's fallback ttl is 300 seconds, not 60
 
 `PolicyCache::resolve()` falls back to a 300 second ttl (matching `config/restify.php`'s
