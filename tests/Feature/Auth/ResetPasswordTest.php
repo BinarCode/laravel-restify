@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Feature\Auth;
 
+use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\SanctumUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Routing\Middleware\ThrottleRequests;
@@ -16,6 +18,7 @@ use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Route;
@@ -25,6 +28,7 @@ use Laravel\Sanctum\PersonalAccessToken;
 use Mockery\MockInterface;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
+use RuntimeException;
 
 class ResetPasswordTest extends IntegrationTestCase
 {
@@ -111,10 +115,10 @@ class ResetPasswordTest extends IntegrationTestCase
 
         $this->assertDatabaseMissing(User::class, ['id' => $user->id, 'remember_token' => 'stolen-remember-token']);
 
-        $rememberToken = DB::table($this->getTable(User::class))->where('id', $user->id)->value('remember_token');
+        $rememberToken = User::query()->whereKey($user->id)->value('remember_token');
 
         $this->assertIsString($rememberToken);
-        $this->assertSame(60, strlen($rememberToken));
+        $this->assertSame(ResetPasswordController::REMEMBER_TOKEN_LENGTH, strlen($rememberToken));
     }
 
     #[Test]
@@ -143,6 +147,37 @@ class ResetPasswordTest extends IntegrationTestCase
             'tokenable_type' => $otherUser->getMorphClass(),
             'tokenable_id' => $otherUser->getKey(),
         ]);
+    }
+
+    #[Test]
+    public function a_failed_token_revocation_rolls_back_the_password_change(): void
+    {
+        Event::fake([PasswordReset::class]);
+        Exceptions::fake();
+
+        $failingRevocationUser = new class extends SanctumUser
+        {
+            public function tokens(): MorphMany
+            {
+                throw new RuntimeException('token store unavailable');
+            }
+        };
+
+        config(['restify.auth.user_model' => $failingRevocationUser::class]);
+
+        $originalPassword = Hash::make('original-password');
+        $user = SanctumUser::query()->create(['name' => 'Known', 'email' => 'known@example.com', 'password' => $originalPassword, 'remember_token' => 'stolen-remember-token']);
+        $token = Password::createToken($user);
+
+        $this->postJson('auth/resetPassword', $this->resetPayload($user->email, $token))->assertServerError();
+
+        $this->assertDatabaseHas(SanctumUser::class, [
+            'id' => $user->id,
+            'password' => $originalPassword,
+            'remember_token' => 'stolen-remember-token',
+        ]);
+        $this->assertDatabaseHas('password_reset_tokens', ['email' => $user->email]);
+        Event::assertNotDispatched(PasswordReset::class);
     }
 
     #[Test]

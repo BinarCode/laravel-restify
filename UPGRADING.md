@@ -145,6 +145,11 @@ or API token no longer survives a reset. Clients holding a token for that user g
 to `false` (or `RESTIFY_REVOKE_TOKENS_ON_RESET=false`) to keep tokens alive; a published
 `config/restify.php` without the key revokes, like the default.
 
+The password, `remember_token`, reset-token deletion and token revocation run in one
+transaction; the event fires after it commits. If your `users` table has no
+`remember_token` column, set `protected $rememberTokenName = '';` on the user model so
+the rotation is skipped - otherwise the save fails and the reset returns a `500`.
+
 `forgotPassword` now skips issuing a new token and sending the email when the broker
 created one for that user within `auth.passwords.{broker}.throttle` seconds (60 by
 default). The response stays the same generic success, so it reveals nothing about the

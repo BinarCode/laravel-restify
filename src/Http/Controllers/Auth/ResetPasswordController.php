@@ -21,6 +21,8 @@ class ResetPasswordController extends Controller
 {
     use FindsUserByEmail;
 
+    public const int REMEMBER_TOKEN_LENGTH = 60;
+
     public function __invoke(Request $request): JsonResponse
     {
         $request->validate([
@@ -45,15 +47,17 @@ class ResetPasswordController extends Controller
                 abort(JsonResponse::HTTP_BAD_REQUEST, __('Provided invalid token.'));
             }
 
-            $user->forceFill(['password' => Hash::make($password)]);
-            $user->setRememberToken(Str::random(60));
-            $user->save();
+            $user->getConnection()->transaction(function () use ($user, $password): void {
+                $user->forceFill(['password' => Hash::make($password)]);
+                $user->setRememberToken(Str::random(self::REMEMBER_TOKEN_LENGTH));
+                $user->save();
 
-            Password::deleteToken($user);
+                Password::deleteToken($user);
 
-            if (config('restify.auth.revoke_tokens_on_reset', true)) {
-                $this->revokeApiTokens($user);
-            }
+                if (config('restify.auth.revoke_tokens_on_reset', true)) {
+                    $this->revokeApiTokens($user);
+                }
+            });
 
             event(new PasswordReset($user));
 

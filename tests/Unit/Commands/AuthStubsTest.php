@@ -123,6 +123,7 @@ class AuthStubsTest extends IntegrationTestCase
     {
         $contents = $this->stubContents('ResetPasswordController.stub');
 
+        $this->assertStringContainsString('$user->getConnection()->transaction(function () use ($user, $password): void {', $contents);
         $this->assertStringContainsString('$user->setRememberToken(Str::random(60));', $contents);
         $this->assertStringContainsString("if (config('restify.auth.revoke_tokens_on_reset', true)", $contents);
         $this->assertStringContainsString('in_array(HasApiTokens::class, class_uses_recursive($user), true)', $contents);

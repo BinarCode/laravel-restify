@@ -30,6 +30,8 @@ class ForgotPasswordTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
+    private const int BROKER_THROTTLE_SECONDS = 60;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -129,6 +131,7 @@ class ForgotPasswordTest extends IntegrationTestCase
     public function a_repeat_request_within_the_broker_throttle_sends_nothing_and_keeps_the_first_token(): void
     {
         Notification::fake();
+        config(['auth.passwords.users.throttle' => self::BROKER_THROTTLE_SECONDS]);
 
         $user = UserFactory::one(['email' => 'known@example.com']);
 
@@ -146,18 +149,34 @@ class ForgotPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function the_broker_throttle_is_per_user(): void
+    {
+        Notification::fake();
+
+        $firstUser = UserFactory::one(['email' => 'first@example.com']);
+        $secondUser = UserFactory::one(['email' => 'second@example.com']);
+
+        $this->postJson('auth/forgotPassword', ['email' => $firstUser->email])->assertOk();
+        $this->postJson('auth/forgotPassword', ['email' => $secondUser->email])->assertOk();
+
+        Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 2);
+    }
+
+    #[Test]
     public function a_repeat_request_after_the_broker_throttle_sends_a_new_link(): void
     {
         Notification::fake();
 
         $user = UserFactory::one(['email' => 'known@example.com']);
 
+        config(['auth.passwords.users.throttle' => self::BROKER_THROTTLE_SECONDS]);
+
+        $this->postJson('auth/forgotPassword', ['email' => $user->email])->assertOk();
         $this->postJson('auth/forgotPassword', ['email' => $user->email])->assertOk();
 
-        /** @var int $throttleSeconds */
-        $throttleSeconds = config('auth.passwords.users.throttle');
+        Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 1);
 
-        $this->travel($throttleSeconds + 1)->seconds();
+        $this->travel(self::BROKER_THROTTLE_SECONDS + 1)->seconds();
 
         $this->postJson('auth/forgotPassword', ['email' => $user->email])->assertOk();
 
