@@ -63,7 +63,7 @@ class VerifyController extends Controller
             return redirect($redirectUrl . '?success=true&message=' . urlencode('Email verified successfully.'));
         }
 
-        return rest($user)->indexMeta([
+        return rest($user)->withoutHiddenAttributes()->indexMeta([
             'message' => 'Email verified successfully.',
         ]);
     }

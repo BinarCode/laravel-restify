@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Repositories;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
+use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryShowRequest;
@@ -23,6 +24,8 @@ class Serializer implements JsonSerializable, Responsable
     protected ?Collection $items = null;
 
     protected int $perPage = RestifySearchable::DEFAULT_PER_PAGE;
+
+    protected bool $withoutHiddenAttributes = false;
 
     public function __construct(
         private Repository $repository,
@@ -78,6 +81,13 @@ class Serializer implements JsonSerializable, Responsable
         return $this;
     }
 
+    public function withoutHiddenAttributes(): self
+    {
+        $this->withoutHiddenAttributes = true;
+
+        return $this;
+    }
+
     public function model(Model $model): self
     {
         $this->repository = $this->repository::resolveWith($model);
@@ -101,9 +111,14 @@ class Serializer implements JsonSerializable, Responsable
     public function jsonSerialize(): mixed
     {
         if (is_null($this->items) || $this->items->count() === 1) {
-            return tap($this->repository->serializeForShow(
-                $this->request(RepositoryShowRequest::class)
-            ), fn (array &$data) => $data['meta'] = array_merge($data['meta'] ?? [], $this->meta));
+            $request = $this->request(RepositoryShowRequest::class);
+            $serialized = $this->repository->serializeForShow($request);
+
+            if ($this->withoutHiddenAttributes) {
+                $serialized = $this->stripHiddenAttributes($this->repository, $serialized, $request);
+            }
+
+            return tap($serialized, fn (array &$data) => $data['meta'] = array_merge($data['meta'] ?? [], $this->meta));
         }
 
         $paginator = new Paginator($this->items->values(), $this->perPage);
@@ -129,8 +144,42 @@ class Serializer implements JsonSerializable, Responsable
                     $this->sort && $this->sort->direction() === 'asc',
                     fn (Collection $items) => $items->sortBy($this->sort->column())
                 )
-                ->map(fn (Repository $repository) => $repository->serializeForIndex($request)),
+                ->map(fn (Repository $repository): array => $this->withoutHiddenAttributes
+                    ? $this->stripHiddenAttributes($repository, $repository->serializeForIndex($request), $request)
+                    : $repository->serializeForIndex($request)),
         ]);
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $serialized
+     * @return array<array-key, mixed>
+     */
+    private function stripHiddenAttributes(Repository $repository, array $serialized, RestifyRequest $request): array
+    {
+        $model = $repository->resource;
+        $hiddenAttributes = $model->getHidden();
+
+        if (($hiddenAttributes === [] && $model->getVisible() === []) || ! is_array($serialized['attributes'] ?? null)) {
+            return $serialized;
+        }
+
+        $hiddenKeys = $hiddenAttributes;
+
+        foreach ($repository->collectFields($request) as $field) {
+            if (! $field instanceof Field || ! HiddenModelAttributes::hidesField($model, $field)) {
+                continue;
+            }
+
+            $serializedKey = $field->getAttribute();
+
+            if (is_string($serializedKey)) {
+                $hiddenKeys[] = $serializedKey;
+            }
+        }
+
+        $serialized['attributes'] = array_diff_key($serialized['attributes'], array_flip($hiddenKeys));
+
+        return $serialized;
     }
 
     private function request(?string $class = null): RestifyRequest
