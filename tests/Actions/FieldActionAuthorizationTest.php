@@ -405,6 +405,31 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_denied_field_action_left_out_of_a_patch_is_not_forbidden(): void
+    {
+        $post = Post::factory()->create(['description' => 'Original description']);
+
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                Field::new('title'),
+                $this->deniedDescriptionField(self::ACTION_CAN_RUN),
+            ]);
+
+        $this
+            ->patchJson(PostRepository::route($post), [
+                'title' => 'Patched title',
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas(Post::class, [
+            'id' => $post->id,
+            'title' => 'Patched title',
+            'description' => 'Original description',
+        ]);
+    }
+
+    #[Test]
     public function a_denied_field_action_on_a_field_the_user_cannot_update_is_skipped_not_forbidden(): void
     {
         $post = Post::factory()->create(['description' => 'Original description']);
