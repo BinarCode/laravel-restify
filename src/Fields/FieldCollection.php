@@ -117,6 +117,8 @@ class FieldCollection extends Collection
     }
 
     /**
+     * @return $this
+     *
      * @throws UnauthorizedException
      */
     public function authorizeActions(Request $request, ?Model $model): self
