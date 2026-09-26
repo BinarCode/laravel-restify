@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Unit\Commands;
 
+use Binaryk\LaravelRestify\Http\Controllers\Auth\ResetPasswordController;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use ParseError;
 use PHPUnit\Framework\Attributes\Test;
@@ -124,7 +125,7 @@ class AuthStubsTest extends IntegrationTestCase
         $contents = $this->stubContents('ResetPasswordController.stub');
 
         $this->assertStringContainsString('$user->getConnection()->transaction(function () use ($user, $password): void {', $contents);
-        $this->assertStringContainsString('$user->setRememberToken(Str::random(60));', $contents);
+        $this->assertStringContainsString('$user->setRememberToken(Str::random('.ResetPasswordController::REMEMBER_TOKEN_LENGTH.'));', $contents);
         $this->assertStringContainsString("if (config('restify.auth.revoke_tokens_on_reset', true)", $contents);
         $this->assertStringContainsString('$user instanceof HasApiTokensContract || in_array(HasApiTokens::class, class_uses_recursive($user), true)', $contents);
         $this->assertStringContainsString('$user->forceFill([$user->getAuthPasswordName() => Hash::make($password)]);', $contents);

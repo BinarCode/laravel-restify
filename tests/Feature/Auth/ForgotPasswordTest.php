@@ -152,14 +152,20 @@ class ForgotPasswordTest extends IntegrationTestCase
     public function the_broker_throttle_is_per_user(): void
     {
         Notification::fake();
+        config(['auth.passwords.users.throttle' => self::BROKER_THROTTLE_SECONDS]);
 
         $firstUser = UserFactory::one(['email' => 'first@example.com']);
         $secondUser = UserFactory::one(['email' => 'second@example.com']);
 
         $this->postJson('auth/forgotPassword', ['email' => $firstUser->email])->assertOk();
+        $this->postJson('auth/forgotPassword', ['email' => $firstUser->email])->assertOk();
         $this->postJson('auth/forgotPassword', ['email' => $secondUser->email])->assertOk();
 
         Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 2);
+        Notification::assertSentOnDemand(
+            ForgotPasswordNotification::class,
+            fn (ForgotPasswordNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['mail'] === $secondUser->email
+        );
     }
 
     #[Test]

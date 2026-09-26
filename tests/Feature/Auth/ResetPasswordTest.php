@@ -102,7 +102,7 @@ class ResetPasswordTest extends IntegrationTestCase
         Password::createToken($user);
 
         $this->postJson('auth/resetPassword', $this->resetPayload($user->email, 'not-the-right-token'))
-            ->assertStatus(JsonResponse::HTTP_BAD_REQUEST);
+            ->assertBadRequest();
 
         Event::assertNotDispatched(PasswordReset::class);
     }
