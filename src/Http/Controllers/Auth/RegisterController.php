@@ -45,6 +45,6 @@ class RegisterController extends Controller
             $meta['message'] = 'Registration successful. Please check your email to verify your account.';
         }
 
-        return rest($user)->indexMeta($meta);
+        return rest($user)->withoutHiddenAttributes()->indexMeta($meta);
     }
 }
