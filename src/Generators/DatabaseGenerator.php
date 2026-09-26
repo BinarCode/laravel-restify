@@ -29,7 +29,7 @@ class DatabaseGenerator
     public function fake(Column $columnDefinition)
     {
         $column = $columnDefinition->getName();
-        $type = Type::lookupName($columnDefinition->getType());
+        $type = $this->typeName($columnDefinition);
 
         switch ($type) {
             case 'text':
@@ -86,5 +86,14 @@ class DatabaseGenerator
         }
 
         return $this->faker->randomNumber(4);
+    }
+
+    private function typeName(Column $column): string
+    {
+        if (method_exists($column, 'getTypeName')) {
+            return $column->getTypeName();
+        }
+
+        return Type::lookupName($column->getType());
     }
 }
