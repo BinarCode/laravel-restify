@@ -150,7 +150,8 @@ The new password is written to the model's `getAuthPasswordName()` column (the s
 column `login` checks) instead of a hardcoded `password`.
 
 The password, `remember_token`, reset-token deletion and token revocation run in one
-transaction; the event fires after it commits. If your `users` table has no
+transaction on the user model's connection (the reset-token table and Sanctum's tokens
+are included when they share it); the event fires after it commits. If your `users` table has no
 `remember_token` column, set `protected $rememberTokenName = '';` on the user model so
 the rotation is skipped - otherwise the save fails and the reset returns a `500`.
 
