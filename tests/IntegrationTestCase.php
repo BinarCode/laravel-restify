@@ -51,7 +51,11 @@ abstract class IntegrationTestCase extends TestCase
 
     protected Mockery\MockInterface|User|null $authenticatedAs = null;
 
-    /** @var array<string, mixed>|null */
+    /**
+     * Null when a subclass skipped this setUp, e.g. RepositoriesResolvedFromNamespaceTest calls TestCase::setUp() directly.
+     *
+     * @var array<string, mixed>|null
+     */
     private ?array $serverBeforeTest = null;
 
     protected function setUp(): void
@@ -87,8 +91,7 @@ abstract class IntegrationTestCase extends TestCase
         } finally {
             Repository::clearResolvedInstances();
 
-            // Tests and fixtures use $_SERVER as switches, and it outlives the test.
-            // Null when a subclass skipped this setUp, e.g. by calling TestCase::setUp() directly.
+            // $_SERVER lives for the whole PHPUnit process, and fixtures read their policy switches from it.
             if ($this->serverBeforeTest !== null) {
                 $_SERVER = $this->serverBeforeTest;
                 $this->serverBeforeTest = null;

@@ -23,13 +23,6 @@ class SyncAuthorizationTest extends IntegrationTestCase
 {
     protected function tearDown(): void
     {
-        unset(
-            $_SERVER['allow_sync_users'],
-            $_SERVER['companies.canSync.users'],
-            $_SERVER['companies.canSync.denied_user_ids'],
-            $_SERVER['companies.canSync.calls'],
-        );
-
         ParentCallingSyncBelongsToMany::$authorizeToSyncCalls = 0;
         CompanyWithExtraSyncedStaffRepository::$extraStaffId = null;
 

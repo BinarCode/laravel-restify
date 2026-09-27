@@ -21,19 +21,6 @@ class BulkConsumerShapesTest extends IntegrationTestCase
         $this->authenticate();
     }
 
-    protected function tearDown(): void
-    {
-        unset(
-            $_SERVER['restify.post.savedBulk'],
-            $_SERVER['restify.post.updatedBulk'],
-            $_SERVER['restify.post.deletedBulk'],
-            $_SERVER['restify.post.updateBulk.spy'],
-            $_SERVER['restify.post.deleteBulk.spy'],
-        );
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function saved_bulk_can_pluck_a_column_the_update_payload_never_sent(): void
     {

@@ -22,18 +22,6 @@ use PHPUnit\Framework\Attributes\Test;
  */
 class RepositoryIdFromRouteTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        unset(
-            $_SERVER['CompanyRepository.show.repositoryId'],
-            $_SERVER['CompanyRepository.update.repositoryId'],
-            $_SERVER['CompanyRepository.patch.repositoryId'],
-            $_SERVER['CompanyRepository.destroy.repositoryId'],
-        );
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function a_query_repository_id_key_cannot_change_the_repository_id_passed_to_the_show_hook(): void
     {
