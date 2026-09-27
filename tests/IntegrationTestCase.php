@@ -73,7 +73,7 @@ abstract class IntegrationTestCase extends TestCase
     private static array $pristineServer;
 
     /**
-     * @var array<string, list<array{ReflectionProperty, mixed}>>
+     * @var array<class-string, list<array{ReflectionProperty, mixed}>>
      */
     private static array $staticDefaults = [];
 

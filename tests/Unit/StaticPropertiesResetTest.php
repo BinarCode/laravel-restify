@@ -22,7 +22,7 @@ final class StaticPropertiesResetTest extends IntegrationTestCase
     protected function leaveAStaticBehindAfterTheTest(): void
     {
         if ($this->name() === 'a_test_whose_after_hook_leaves_a_static_behind') {
-            ActivateAction::$applied = ['set after tearDown finished'];
+            ActivateAction::$applied = ['left behind by an #[After] hook'];
         }
     }
 
