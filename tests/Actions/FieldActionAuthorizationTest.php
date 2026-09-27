@@ -30,6 +30,13 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
         self::$handled = 0;
     }
 
+    protected function tearDown(): void
+    {
+        self::$handled = 0;
+
+        parent::tearDown();
+    }
+
     #[Test]
     #[TestWith([self::ACTION_CAN_SEE], 'action canSee')]
     #[TestWith([self::ACTION_CAN_RUN], 'action canRun')]
@@ -534,6 +541,37 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
             'id' => $post->id,
             'description' => 'Actionable Updated description',
         ]);
+    }
+
+    #[Test]
+    public function update_bulk_calls_can_run_once_per_row(): void
+    {
+        $firstPost = Post::factory()->create();
+        $secondPost = Post::factory()->create();
+        $canRunCalls = [];
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForUpdateBulk')
+            ->andReturn([
+                Field::new('title'),
+                Field::new('description')->action(
+                    $this->descriptionAction()->canRun(function (Request $request, ?Model $model) use (&$canRunCalls): bool {
+                        $canRunCalls[] = $model?->getKey();
+
+                        return true;
+                    })
+                ),
+            ]);
+
+        $this
+            ->postJson(PostRepository::route('bulk/update'), [
+                ['id' => $firstPost->id, 'description' => 'first description'],
+                ['id' => $secondPost->id, 'description' => 'second description'],
+            ])
+            ->assertOk();
+
+        $this->assertSame([$firstPost->id, $secondPost->id], $canRunCalls);
+        $this->assertSame(2, self::$handled);
     }
 
     private function deniedDescriptionField(string $denial): Field

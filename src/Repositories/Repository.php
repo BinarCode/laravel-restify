@@ -987,9 +987,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
-        $actionFields = $this
-            ->updateBulkActionFields($request, $row)
-            ->authorizeActions($request, $this->resource);
+        $actionFields = $this->updateBulkActionFields($request, $row);
 
         $fields = $this->collectFields($request)
             ->forUpdateBulk($request, $this)

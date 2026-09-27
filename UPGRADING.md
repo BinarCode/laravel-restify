@@ -111,11 +111,14 @@ is not part of this check: it controls visibility, and write-only fields keep wo
 - Store and bulk store check the action's `canSee` for every row before anything is saved.
   `canRun` is checked after the model is saved, so it receives the stored model; the write
   runs in a transaction and is rolled back. Side effects outside the database that already
-  ran before a `canRun` denial (a `created` observer's mail, a job dispatched without
-  `afterCommit`, or an earlier row's field action in a bulk store) are not undone.
+  ran before a `canRun` denial are not undone: uploads that `File`/`Image` fields already
+  stored on disk, fields' `afterStore` callbacks, a `created` observer's mail, a job
+  dispatched without `afterCommit`, or an earlier row's field action in a bulk store.
 - Update and patch check before the model is filled, so `canRun` receives the model as it
-  was before the request and nothing is written. Bulk update checks every row before the
-  first row is written. The fields for the action pass are also resolved before the fill
+  was before the request and nothing is written. Bulk update checks every row, once, before
+  the first row is written; `updateBulk()` itself no longer authorizes, so an override that
+  calls it outside `RepositoryUpdateBulkController` must call `authorizeUpdateBulkActions()`
+  first. The fields for the action pass are also resolved before the fill
   now, so a `fields()` that branches on the resource's attributes sees the values from
   before the request.
 

@@ -20,7 +20,7 @@ use Laravel\Mcp\Server\McpServiceProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
-class McpUpdateFieldActionAuthorizationTest extends IntegrationTestCase
+class McpFieldActionAuthorizationTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
