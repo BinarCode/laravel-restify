@@ -43,7 +43,6 @@ use Illuminate\Support\Facades\Gate;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
 use Orchestra\Testbench\TestCase;
-use PHPUnit\Framework\Attributes\After;
 use PHPUnit\Framework\Attributes\Before;
 
 abstract class IntegrationTestCase extends TestCase
@@ -55,25 +54,19 @@ abstract class IntegrationTestCase extends TestCase
 
     /**
      * The $_SERVER the first test in this process started with. Fixtures read their policy
-     * switches and spies from $_SERVER, so every test is reset to this copy before it runs
-     * and after it finishes: tests never need to unset their $_SERVER keys.
+     * switches and spies from $_SERVER, so every test is reset to this copy before it runs:
+     * tests never need to unset or reset their $_SERVER keys.
      *
-     * @var array<string, mixed>|null
+     * @var array<string, mixed>
      */
-    private static ?array $pristineServer = null;
+    private static array $pristineServer;
 
     #[Before]
-    protected function resetServerGlobalsBeforeTest(): void
+    protected function resetServerGlobals(): void
     {
         self::$pristineServer ??= $_SERVER;
 
         $_SERVER = self::$pristineServer;
-    }
-
-    #[After]
-    protected function resetServerGlobalsAfterTest(): void
-    {
-        $_SERVER = self::$pristineServer ?? $_SERVER;
     }
 
     protected function setUp(): void

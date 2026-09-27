@@ -12,7 +12,6 @@ class ListActionsControllerTest extends IntegrationTestCase
     {
         $this->mockPosts(1, 2);
 
-        $_SERVER['actions.posts.invalidate'] = true;
         $_SERVER['actions.posts.publish.onlyOnShow'] = true;
 
         $this->getJson(PostRepository::route('1/actions'))

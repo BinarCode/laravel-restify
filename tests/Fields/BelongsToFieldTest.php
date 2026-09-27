@@ -77,8 +77,6 @@ class BelongsToFieldTest extends IntegrationTestCase
 
     public function test_dont_show_key_when_nullable_related(): void
     {
-        $_SERVER['restify.users.show'] = true;
-
         Gate::policy(User::class, UserPolicy::class);
 
         tap(Post::factory()->create([

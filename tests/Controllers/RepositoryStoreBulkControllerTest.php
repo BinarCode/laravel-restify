@@ -44,8 +44,6 @@ class RepositoryStoreBulkControllerTest extends IntegrationTestCase
     {
         $user = $this->mockUsers()->first();
 
-        $_SERVER['restify.post.storeBulk'] = true;
-
         $this->postJson(PostRepository::route('bulk'), [
             [
                 'user_id' => $user->getKey(),

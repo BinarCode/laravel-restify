@@ -3,7 +3,6 @@
 namespace Binaryk\LaravelRestify\Tests\Feature;
 
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
@@ -12,13 +11,6 @@ use Illuminate\Http\Request;
 
 class TestMatch extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        Repository::clearResolvedInstances();
-    }
-
     public function test_repository_filter_works()
     {
         PostRepository::$match = [

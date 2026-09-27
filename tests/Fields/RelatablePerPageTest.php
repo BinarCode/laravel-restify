@@ -36,13 +36,6 @@ class RelatablePerPageTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        Repository::clearResolvedInstances();
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function it_clamps_relatable_per_page_on_a_has_many_field(): void
     {

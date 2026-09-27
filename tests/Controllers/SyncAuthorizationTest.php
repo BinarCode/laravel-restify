@@ -65,7 +65,6 @@ class SyncAuthorizationTest extends IntegrationTestCase
     #[Test]
     public function a_denied_can_sync_callback_writes_nothing(): void
     {
-        $_SERVER['allow_sync_users'] = true;
         $_SERVER['companies.canSync.users'] = false;
 
         $company = Company::factory()->create();
@@ -81,8 +80,6 @@ class SyncAuthorizationTest extends IntegrationTestCase
     #[Test]
     public function a_can_sync_callback_denying_one_id_leaves_the_whole_sync_unapplied(): void
     {
-        $_SERVER['allow_sync_users'] = true;
-
         $company = Company::factory()->create();
         $userA = User::factory()->create();
         $userB = User::factory()->create();
@@ -178,8 +175,6 @@ class SyncAuthorizationTest extends IntegrationTestCase
     #[Test]
     public function the_can_sync_callback_sees_the_canonical_key_of_a_zero_padded_id(): void
     {
-        $_SERVER['allow_sync_users'] = true;
-
         $company = Company::factory()->create();
         $user = User::factory()->create();
 
@@ -195,7 +190,6 @@ class SyncAuthorizationTest extends IntegrationTestCase
     #[Test]
     public function the_can_sync_callback_runs_once_per_id_with_a_repository_sync_request(): void
     {
-        $_SERVER['allow_sync_users'] = true;
         $_SERVER['companies.canSync.calls'] = [];
 
         $company = Company::factory()->create();

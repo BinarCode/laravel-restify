@@ -23,8 +23,6 @@ class RepositoryDestroyControllerTest extends IntegrationTestCase
 
         $this->assertInstanceOf(Post::class, Post::find($post->id));
 
-        $_SERVER['restify.post.delete'] = true;
-
         $this->deleteJson(PostRepository::route($post), [
             'title' => 'Updated title',
         ])
