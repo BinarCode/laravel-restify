@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Schema;
+use PHPUnit\Framework\Attributes\RunInSeparateProcess;
 use PHPUnit\Framework\Attributes\Test;
 
 class RepositoryCommandTest extends IntegrationTestCase
@@ -218,6 +219,7 @@ class RepositoryCommandTest extends IntegrationTestCase
     }
 
     #[Test]
+    #[RunInSeparateProcess]
     public function it_does_not_fatal_and_references_an_already_loaded_repository_by_its_class_basename(): void
     {
         // A "flat" App\Restify\RestifyDepartmentRepository is already loaded, exactly
