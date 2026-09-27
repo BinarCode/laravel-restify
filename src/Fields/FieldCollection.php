@@ -155,13 +155,7 @@ class FieldCollection extends Collection
      */
     public function authorizeActions(Request $request, ?Model $model): self
     {
-        foreach ($this->items as $field) {
-            if ($field instanceof Field) {
-                $field->authorizeAction($request, $model);
-            }
-        }
-
-        return $this;
+        return $this->authorizeActionsToSee($request)->authorizeActionsToRun($request, $model);
     }
 
     public function withoutActions(RestifyRequest $request, $repository): self

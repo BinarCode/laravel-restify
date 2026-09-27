@@ -121,8 +121,10 @@ is not part of this check: it controls visibility, and write-only fields keep wo
   `updateBulk()` called outside `RepositoryUpdateBulkController` authorizes the row itself.
   An up-front authorization from `authorizeUpdateBulkActions()` is used once, and only for
   the model it was made for.
-  The fields for the action pass are also resolved before the fill now, so a `fields()` that
-  branches on the resource's attributes sees the values from before the request.
+- On every path the fields for the action pass are now resolved before the fill. A
+  `fields()` that branches on the resource sees the values from before the request on
+  update, patch and bulk update, and the unsaved model on store and bulk store (bulk store
+  resolves every row against the repository's initial resource).
 
 Field actions that set none of these callbacks are unaffected. A field action that is not
 in the request payload, or whose field is filtered out by `canStore`/`canUpdate`/

@@ -521,6 +521,30 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function store_bulk_runs_only_the_field_actions_it_authorized(): void
+    {
+        $canUpdateBulkCalls = 0;
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStoreBulk')
+            ->andReturn([
+                Field::new('title'),
+                $this->deniedDescriptionField(self::ACTION_CAN_SEE)
+                    ->canUpdateBulk(function () use (&$canUpdateBulkCalls): bool {
+                        return $canUpdateBulkCalls++ > 0;
+                    }),
+            ]);
+
+        $this
+            ->postJson(PostRepository::route('bulk'), [
+                ['title' => 'Title', 'description' => 'Description'],
+            ])
+            ->assertOk();
+
+        $this->assertSame(0, self::$handled);
+    }
+
+    #[Test]
     public function update_bulk_called_directly_authorizes_the_row_itself(): void
     {
         $post = Post::factory()->create(['description' => 'Original description']);

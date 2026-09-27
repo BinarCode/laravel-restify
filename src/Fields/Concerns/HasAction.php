@@ -60,13 +60,4 @@ trait HasAction
             throw UnauthorizedException::make('Not authorized to run this action.');
         }
     }
-
-    /**
-     * @throws UnauthorizedException
-     */
-    public function authorizeAction(Request $request, ?Model $model): void
-    {
-        $this->authorizeActionToSee($request);
-        $this->authorizeActionToRun($request, $model);
-    }
 }
