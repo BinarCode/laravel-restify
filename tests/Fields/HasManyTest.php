@@ -28,12 +28,6 @@ class HasManyTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        Repository::clearResolvedInstances();
-    }
-
     public function test_has_many_present_on_relations(): void
     {
         $user = User::factory()->create();

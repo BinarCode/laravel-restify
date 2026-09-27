@@ -24,12 +24,6 @@ class MorphOneFieldTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        Repository::clearResolvedInstances();
-    }
-
     public function test_morph_one_present_on_show_when_specified_related(): void
     {
         $post = Post::factory()->create([

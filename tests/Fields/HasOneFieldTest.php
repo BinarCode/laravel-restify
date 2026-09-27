@@ -29,12 +29,6 @@ class HasOneFieldTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        Repository::clearResolvedInstances();
-    }
-
     public function test_has_one_present_on_relations(): void
     {
         $post = Post::factory()->create();

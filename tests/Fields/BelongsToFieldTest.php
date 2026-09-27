@@ -29,12 +29,6 @@ class BelongsToFieldTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        Repository::clearResolvedInstances();
-    }
-
     public function test_present_on_show_when_specified_related(): void
     {
         $post = PostFactory::one();
