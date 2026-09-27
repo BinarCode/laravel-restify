@@ -24,8 +24,6 @@ class HasOneFieldTest extends IntegrationTestCase
         parent::setUp();
         //        $this->authenticate();
 
-        unset($_SERVER['restify.post.show']);
-
         Restify::repositories([
             UserWithPostRepository::class,
         ]);

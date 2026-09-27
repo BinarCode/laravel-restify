@@ -51,9 +51,14 @@ abstract class IntegrationTestCase extends TestCase
 
     protected Mockery\MockInterface|User|null $authenticatedAs = null;
 
+    /** @var array<string, mixed>|null */
+    private ?array $serverBeforeTest = null;
+
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->serverBeforeTest = $_SERVER;
 
         $this->withoutMiddleware(ThrottleRequests::class);
 
@@ -80,6 +85,13 @@ abstract class IntegrationTestCase extends TestCase
         parent::tearDown();
 
         Repository::clearResolvedInstances();
+
+        // Fixture policies and repositories read their switches from $_SERVER, which outlives the test.
+        // Null when a subclass skipped this setUp, e.g. by calling TestCase::setUp() directly.
+        if ($this->serverBeforeTest !== null) {
+            $_SERVER = $this->serverBeforeTest;
+            $this->serverBeforeTest = null;
+        }
     }
 
     protected function getPackageProviders($app): array
