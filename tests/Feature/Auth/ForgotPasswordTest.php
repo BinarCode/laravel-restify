@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
@@ -316,5 +317,20 @@ class ForgotPasswordTest extends IntegrationTestCase
     private function headersWithoutDate(TestResponse $response): array
     {
         return Collection::make($response->headers->all())->except('date')->all();
+    }
+
+    #[Test]
+    public function a_published_config_without_the_timebox_key_falls_back_to_the_default(): void
+    {
+        config(['restify.auth' => Arr::except(config('restify.auth'), 'password_reset_timebox')]);
+
+        $this->mock(Timebox::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('call')
+                ->once()
+                ->withArgs(fn (callable $callback, int $microseconds): bool => $microseconds === 200_000)
+                ->andReturnUsing(fn (callable $callback) => $callback());
+        });
+
+        $this->postJson('auth/forgotPassword', ['email' => 'nobody@example.com'])->assertOk();
     }
 }

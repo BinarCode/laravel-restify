@@ -442,4 +442,24 @@ class ResetPasswordTest extends IntegrationTestCase
     {
         return Collection::make($response->headers->all())->except('date')->all();
     }
+
+    #[Test]
+    public function a_published_config_without_the_timebox_key_falls_back_to_the_default(): void
+    {
+        config(['restify.auth' => Arr::except(config('restify.auth'), 'password_reset_timebox')]);
+
+        $this->mock(Timebox::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('call')
+                ->once()
+                ->withArgs(fn (callable $callback, int $microseconds): bool => $microseconds === 200_000)
+                ->andReturnUsing(fn (callable $callback) => $callback());
+        });
+
+        $this->postJson('auth/resetPassword', [
+            'email' => 'nobody@example.com',
+            'token' => 'invalid-token',
+            'password' => 'new-password',
+            'password_confirmation' => 'new-password',
+        ])->assertBadRequest();
+    }
 }

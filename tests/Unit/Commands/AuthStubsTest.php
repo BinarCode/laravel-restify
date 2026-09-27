@@ -94,7 +94,7 @@ class AuthStubsTest extends IntegrationTestCase
 
         $this->assertStringContainsString('use Illuminate\\Support\\Timebox;', $contents);
         $this->assertStringContainsString('app(Timebox::class)->call(', $contents);
-        $this->assertStringContainsString("config('restify.auth.password_reset_timebox')", $contents);
+        $this->assertStringContainsString("Config::integer('restify.auth.password_reset_timebox', 200_000)", $contents);
     }
 
     #[Test]

@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
@@ -34,8 +35,7 @@ class ResetPasswordController extends Controller
         $token = $request->string('token')->toString();
         $password = $request->string('password')->toString();
 
-        /** @var int $timeboxDuration */
-        $timeboxDuration = config('restify.auth.password_reset_timebox');
+        $timeboxDuration = Config::integer('restify.auth.password_reset_timebox', 200_000);
 
         return app(Timebox::class)->call(function () use ($request, $token, $password): JsonResponse {
             /** @var class-string<Model&CanResetPassword&Authenticatable> $userModel */
