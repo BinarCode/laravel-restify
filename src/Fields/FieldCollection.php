@@ -137,6 +137,22 @@ class FieldCollection extends Collection
      *
      * @throws UnauthorizedException
      */
+    public function authorizeActionsToRun(Request $request, ?Model $model): self
+    {
+        foreach ($this->items as $field) {
+            if ($field instanceof Field) {
+                $field->authorizeActionToRun($request, $model);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     *
+     * @throws UnauthorizedException
+     */
     public function authorizeActions(Request $request, ?Model $model): self
     {
         foreach ($this->items as $field) {

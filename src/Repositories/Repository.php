@@ -229,6 +229,11 @@ class Repository implements JsonSerializable, RestifySearchable
 
     private ?Repository $parentRepository = null;
 
+    /**
+     * @var array<int, FieldCollection<int, Field>>
+     */
+    private array $authorizedUpdateBulkActionFields = [];
+
     public function __construct()
     {
         $this->bootIfNotBooted();
@@ -852,7 +857,7 @@ class Repository implements JsonSerializable, RestifySearchable
                 ->forStore($request, $this)
                 ->withActions($request, $this)
                 ->authorizedStore($request)
-                ->authorizeActions($request, $this->resource)
+                ->authorizeActionsToRun($request, $this->resource)
                 ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
         });
 
@@ -898,7 +903,7 @@ class Repository implements JsonSerializable, RestifySearchable
                         ->forStoreBulk($request, $this)
                         ->withActions($request, $this, $row)
                         ->authorizedUpdateBulk($request)
-                        ->authorizeActions($request, $this->resource)
+                        ->authorizeActionsToRun($request, $this->resource)
                         ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
                     return $this->resource;
@@ -987,7 +992,8 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
-        $actionFields = $this->updateBulkActionFields($request, $row);
+        $actionFields = $this->authorizedUpdateBulkActionFields[$row]
+            ?? $this->updateBulkActionFields($request, $row)->authorizeActions($request, $this->resource);
 
         $fields = $this->collectFields($request)
             ->forUpdateBulk($request, $this)
@@ -1008,7 +1014,9 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function authorizeUpdateBulkActions(RestifyRequest $request, int $row): void
     {
-        $this->updateBulkActionFields($request, $row)->authorizeActions($request, $this->resource);
+        $this->authorizedUpdateBulkActionFields[$row] = $this
+            ->updateBulkActionFields($request, $row)
+            ->authorizeActions($request, $this->resource);
     }
 
     /**

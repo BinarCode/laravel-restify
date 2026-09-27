@@ -116,11 +116,10 @@ is not part of this check: it controls visibility, and write-only fields keep wo
   dispatched without `afterCommit`, or an earlier row's field action in a bulk store.
 - Update and patch check before the model is filled, so `canRun` receives the model as it
   was before the request and nothing is written. Bulk update checks every row, once, before
-  the first row is written; `updateBulk()` itself no longer authorizes, so an override that
-  calls it outside `RepositoryUpdateBulkController` must call `authorizeUpdateBulkActions()`
-  first. The fields for the action pass are also resolved before the fill
-  now, so a `fields()` that branches on the resource's attributes sees the values from
-  before the request.
+  the first row is written, and then runs exactly the field actions it authorized;
+  `updateBulk()` called outside `RepositoryUpdateBulkController` authorizes the row itself.
+  The fields for the action pass are also resolved before the fill now, so a `fields()` that
+  branches on the resource's attributes sees the values from before the request.
 
 Field actions that set none of these callbacks are unaffected. A field action that is not
 in the request payload, or whose field is filtered out by `canStore`/`canUpdate`/

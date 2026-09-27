@@ -440,7 +440,9 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_denied_field_action_on_a_field_the_user_cannot_update_is_skipped_not_forbidden(): void
+    #[TestWith(['put', 'canUpdate'], 'update')]
+    #[TestWith(['patch', 'canPatch'], 'patch')]
+    public function a_denied_field_action_on_a_field_the_user_cannot_update_is_skipped_not_forbidden(string $method, string $gate): void
     {
         $post = Post::factory()->create(['description' => 'Original description']);
 
@@ -448,11 +450,11 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
             ->shouldReceive('fields')
             ->andReturn([
                 Field::new('title'),
-                $this->deniedDescriptionField(self::ACTION_CAN_RUN)->canUpdate(fn (): bool => false),
+                $this->deniedDescriptionField(self::ACTION_CAN_RUN)->{$gate}(fn (): bool => false),
             ]);
 
         $this
-            ->putJson(PostRepository::route($post), [
+            ->json($method, PostRepository::route($post), [
                 'title' => 'Updated title',
                 'description' => 'Updated description',
             ])
@@ -463,6 +465,59 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
             'title' => 'Updated title',
             'description' => 'Original description',
         ]);
+        $this->assertSame(0, self::$handled);
+    }
+
+    #[Test]
+    public function update_bulk_runs_only_the_field_actions_it_authorized(): void
+    {
+        $post = Post::factory()->create(['description' => 'Original description']);
+        $canUpdateBulkCalls = 0;
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForUpdateBulk')
+            ->andReturn([
+                Field::new('title'),
+                $this->deniedDescriptionField(self::ACTION_CAN_RUN)
+                    ->canUpdateBulk(function () use (&$canUpdateBulkCalls): bool {
+                        return $canUpdateBulkCalls++ > 0;
+                    }),
+            ]);
+
+        $this
+            ->postJson(PostRepository::route('bulk/update'), [
+                ['id' => $post->id, 'title' => 'Updated title', 'description' => 'Updated description'],
+            ])
+            ->assertOk();
+
+        $this->assertSame(0, self::$handled);
+    }
+
+    #[Test]
+    public function store_calls_the_action_can_see_once(): void
+    {
+        $canSeeCalls = 0;
+        $action = $this->descriptionAction()->canSee(function () use (&$canSeeCalls): bool {
+            $canSeeCalls++;
+
+            return true;
+        });
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStore')
+            ->andReturn([
+                Field::new('title'),
+                Field::new('description')->action($action),
+            ]);
+
+        $this
+            ->postJson(PostRepository::route(), [
+                'title' => 'Title',
+                'description' => 'Description',
+            ])
+            ->assertCreated();
+
+        $this->assertSame(1, $canSeeCalls);
     }
 
     #[Test]
