@@ -49,8 +49,6 @@ class GlobalSearchControllerTest extends IntegrationTestCase
                 ->count('data', 1)
                 ->etc()
         );
-
-        $_SERVER['restify.post.allowRestify'] = true;
     }
 
     public function test_global_search_filter_will_filter_with_index_query(): void
@@ -69,7 +67,5 @@ class GlobalSearchControllerTest extends IntegrationTestCase
                 ->count('data', 1)
                 ->etc()
         );
-
-        $_SERVER['restify.post.indexQueryCallback'] = null;
     }
 }

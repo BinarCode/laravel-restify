@@ -198,8 +198,6 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
         $this->postJson(PostRepository::route('bulk/update'), [
             ['id' => $post1->id, 'title' => 'Hacked by other'],
         ])->assertForbidden();
-
-        unset($_SERVER['restify.post.updateBulk.callback']);
     }
 
     public function test_bulk_update_policy_checks_post_owner_relation(): void
@@ -232,7 +230,5 @@ class RepositoryUpdateBulkControllerTest extends IntegrationTestCase
         $this->postJson(PostRepository::route('bulk/update'), [
             ['id' => $postByUnverified->id, 'title' => 'Updated Unverified Post'],
         ])->assertForbidden();
-
-        unset($_SERVER['restify.post.updateBulk.callback']);
     }
 }

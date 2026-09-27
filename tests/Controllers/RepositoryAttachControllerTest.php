@@ -70,8 +70,6 @@ class RepositoryAttachControllerTest extends IntegrationTestCase
             'users' => $user->getKey(),
             'is_admin' => true,
         ])->assertCreated();
-
-        unset($_SERVER['allow_attach_users']);
     }
 
     public function test_attach_pivot_field_validation(): void

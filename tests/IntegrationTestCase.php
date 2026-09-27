@@ -43,6 +43,8 @@ use Illuminate\Support\Facades\Gate;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\After;
+use PHPUnit\Framework\Attributes\Before;
 
 abstract class IntegrationTestCase extends TestCase
 {
@@ -52,16 +54,30 @@ abstract class IntegrationTestCase extends TestCase
     protected Mockery\MockInterface|User|null $authenticatedAs = null;
 
     /**
-     * Null when a subclass skipped this setUp, e.g. RepositoriesResolvedFromNamespaceTest calls TestCase::setUp() directly.
+     * The $_SERVER the first test in this process started with. Fixtures read their policy
+     * switches and spies from $_SERVER, so every test is reset to this copy before it runs
+     * and after it finishes: tests never need to unset their $_SERVER keys.
      *
      * @var array<string, mixed>|null
      */
-    private ?array $serverBeforeTest = null;
+    private static ?array $pristineServer = null;
+
+    #[Before]
+    protected function resetServerGlobalsBeforeTest(): void
+    {
+        self::$pristineServer ??= $_SERVER;
+
+        $_SERVER = self::$pristineServer;
+    }
+
+    #[After]
+    protected function resetServerGlobalsAfterTest(): void
+    {
+        $_SERVER = self::$pristineServer ?? $_SERVER;
+    }
 
     protected function setUp(): void
     {
-        $this->serverBeforeTest = $_SERVER;
-
         parent::setUp();
 
         $this->withoutMiddleware(ThrottleRequests::class);
@@ -86,17 +102,9 @@ abstract class IntegrationTestCase extends TestCase
 
     protected function tearDown(): void
     {
-        try {
-            parent::tearDown();
-        } finally {
-            Repository::clearResolvedInstances();
+        parent::tearDown();
 
-            // $_SERVER lives for the whole PHPUnit process, and fixtures read their policy switches from it.
-            if ($this->serverBeforeTest !== null) {
-                $_SERVER = $this->serverBeforeTest;
-                $this->serverBeforeTest = null;
-            }
-        }
+        Repository::clearResolvedInstances();
     }
 
     protected function getPackageProviders($app): array
