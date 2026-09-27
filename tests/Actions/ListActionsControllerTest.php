@@ -30,7 +30,6 @@ class ListActionsControllerTest extends IntegrationTestCase
         $this->mockPosts(1, 2);
 
         $_SERVER['actions.posts.onlyOnShow'] = true;
-        $_SERVER['actions.posts.publish.onlyOnShow'] = false;
 
         $this->getJson(PostRepository::route('1/actions'))
             ->assertSuccessful()
@@ -51,7 +50,6 @@ class ListActionsControllerTest extends IntegrationTestCase
             );
 
         $_SERVER['actions.posts.onlyOnShow'] = false;
-        $_SERVER['actions.posts.publish.onlyOnShow'] = false;
 
         $this->getJson(PostRepository::route('1/actions'))
             ->assertSuccessful()
