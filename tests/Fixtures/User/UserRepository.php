@@ -37,6 +37,8 @@ class UserRepository extends Repository
         'created_at' => RestifySearchable::MATCH_DATETIME,
     ];
 
+    public static array $sort = [];
+
     public function fields(RestifyRequest $request): array
     {
         return [
