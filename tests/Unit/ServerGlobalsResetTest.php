@@ -15,6 +15,14 @@ final class ServerGlobalsResetTest extends IntegrationTestCase
 
     private const string AFTER_TEAR_DOWN_KEY = 'restify.tests.server-globals-reset.after-tear-down';
 
+    #[After]
+    protected function leaveAKeyBehindAfterTearDown(): void
+    {
+        if ($this->name() === 'a_test_whose_tear_down_leaves_a_key_behind') {
+            $_SERVER[self::AFTER_TEAR_DOWN_KEY] = 'set after tearDown finished';
+        }
+    }
+
     #[Test]
     public function a_test_sets_a_server_key_without_cleaning_it_up(): void
     {
@@ -41,13 +49,5 @@ final class ServerGlobalsResetTest extends IntegrationTestCase
     public function the_next_test_still_starts_without_that_key(): void
     {
         $this->assertArrayNotHasKey(self::AFTER_TEAR_DOWN_KEY, $_SERVER);
-    }
-
-    #[After]
-    protected function leaveAKeyBehindAfterTearDown(): void
-    {
-        if ($this->name() === 'a_test_whose_tear_down_leaves_a_key_behind') {
-            $_SERVER[self::AFTER_TEAR_DOWN_KEY] = 'set after tearDown finished';
-        }
     }
 }
