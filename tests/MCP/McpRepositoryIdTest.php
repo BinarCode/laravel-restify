@@ -37,16 +37,6 @@ class McpRepositoryIdTest extends IntegrationTestCase
         Mcp::web('mcp-repository-id', RestifyServer::class);
     }
 
-    protected function tearDown(): void
-    {
-        unset(
-            $_SERVER['McpRepositoryIdPostRepository.update.repositoryId'],
-            $_SERVER['McpRepositoryIdPostRepository.destroy.repositoryId'],
-        );
-
-        parent::tearDown();
-    }
-
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [

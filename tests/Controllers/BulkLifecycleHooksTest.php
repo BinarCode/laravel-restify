@@ -19,17 +19,6 @@ class BulkLifecycleHooksTest extends IntegrationTestCase
         $this->authenticate();
     }
 
-    protected function tearDown(): void
-    {
-        unset(
-            $_SERVER['restify.post.savedBulk'],
-            $_SERVER['restify.post.updatedBulk'],
-            $_SERVER['restify.post.deletedBulk'],
-        );
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function update_bulk_hands_the_hooks_the_updated_models(): void
     {

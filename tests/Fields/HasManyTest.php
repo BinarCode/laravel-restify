@@ -26,8 +26,6 @@ class HasManyTest extends IntegrationTestCase
         Restify::repositories([
             UserWithPosts::class,
         ]);
-
-        unset($_SERVER['restify.post.show'], $_SERVER['restify.post.delete'], $_SERVER['restify.post.allowRestify']);
     }
 
     protected function tearDown(): void

@@ -23,8 +23,6 @@ class RepositorySyncControllerTest extends IntegrationTestCase
 {
     protected function tearDown(): void
     {
-        unset($_SERVER['roles.canDetach.users']);
-
         CompanyWithExtraSyncedStaffRepository::$extraStaffId = null;
 
         parent::tearDown();

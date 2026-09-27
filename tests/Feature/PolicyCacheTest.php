@@ -36,13 +36,6 @@ class PolicyCacheTest extends IntegrationTestCase
         Cache::flush();
     }
 
-    protected function tearDown(): void
-    {
-        unset($_SERVER['restify.post.allowRestify']);
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function a_cache_hit_reads_the_cache_exactly_once(): void
     {

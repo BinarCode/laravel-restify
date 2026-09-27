@@ -56,9 +56,9 @@ abstract class IntegrationTestCase extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->serverBeforeTest = $_SERVER;
+
+        parent::setUp();
 
         $this->withoutMiddleware(ThrottleRequests::class);
 
@@ -82,15 +82,17 @@ abstract class IntegrationTestCase extends TestCase
 
     protected function tearDown(): void
     {
-        parent::tearDown();
+        try {
+            parent::tearDown();
+        } finally {
+            Repository::clearResolvedInstances();
 
-        Repository::clearResolvedInstances();
-
-        // Fixture policies and repositories read their switches from $_SERVER, which outlives the test.
-        // Null when a subclass skipped this setUp, e.g. by calling TestCase::setUp() directly.
-        if ($this->serverBeforeTest !== null) {
-            $_SERVER = $this->serverBeforeTest;
-            $this->serverBeforeTest = null;
+            // Tests and fixtures use $_SERVER as switches, and it outlives the test.
+            // Null when a subclass skipped this setUp, e.g. by calling TestCase::setUp() directly.
+            if ($this->serverBeforeTest !== null) {
+                $_SERVER = $this->serverBeforeTest;
+                $this->serverBeforeTest = null;
+            }
         }
     }
 
