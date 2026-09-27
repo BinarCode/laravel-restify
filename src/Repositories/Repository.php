@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Eager\Related;
 use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Eager\ScopedRelatedItem;
 use Binaryk\LaravelRestify\Exceptions\InstanceOfException;
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Fields\Field;
@@ -814,6 +815,13 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function store(RestifyRequest $request)
     {
+        $this
+            ->collectFields($request)
+            ->forStore($request, $this)
+            ->withActions($request, $this)
+            ->authorizedStore($request)
+            ->authorizeActionsToSee($request);
+
         DB::transaction(function () use ($request) {
             static::fillFields(
                 $request,
@@ -857,6 +865,15 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function storeBulk(RepositoryStoreBulkRequest $request)
     {
+        foreach ($request->collectInput()->keys() as $row) {
+            $this
+                ->collectFields($request)
+                ->forStoreBulk($request, $this)
+                ->withActions($request, $this, $row)
+                ->authorizedUpdateBulk($request)
+                ->authorizeActionsToSee($request);
+        }
+
         $entities = DB::transaction(function () use ($request) {
             return $request->collectInput()
                 ->map(function (array $input, $row) use ($request) {
@@ -971,10 +988,7 @@ class Repository implements JsonSerializable, RestifySearchable
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
         $actionFields = $this
-            ->collectFields($request)
-            ->forUpdateBulk($request, $this)
-            ->withActions($request, $this, $row)
-            ->authorizedUpdateBulk($request)
+            ->updateBulkActionFields($request, $row)
             ->authorizeActions($request, $this->resource);
 
         $fields = $this->collectFields($request)
@@ -989,6 +1003,26 @@ class Repository implements JsonSerializable, RestifySearchable
         $actionFields->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
         return response()->json();
+    }
+
+    /**
+     * @throws UnauthorizedException
+     */
+    public function authorizeUpdateBulkActions(RestifyRequest $request, int $row): void
+    {
+        $this->updateBulkActionFields($request, $row)->authorizeActions($request, $this->resource);
+    }
+
+    /**
+     * @return FieldCollection<int, Field>
+     */
+    private function updateBulkActionFields(RestifyRequest $request, int $row): FieldCollection
+    {
+        return $this
+            ->collectFields($request)
+            ->forUpdateBulk($request, $this)
+            ->withActions($request, $this, $row)
+            ->authorizedUpdateBulk($request);
     }
 
     public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)

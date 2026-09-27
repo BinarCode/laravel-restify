@@ -104,18 +104,20 @@ Type the parameter nullable: `fn (Request $request, ?Post $post): bool => ...`.
 ### Field actions honour `canSee` and `canRun`
 
 A field's `->action(...)` used to run on store, bulk store, update, patch and bulk update
-without checking any authorization callback. It now requires the field's `canSee`, the
-action's `canSee` and the action's `canRun` to pass; a denial fails the whole request with
-a `403`.
+without checking any authorization callback. It now requires the action's `canSee` and
+`canRun` to pass; a denial fails the whole request with a `403`. The field's own `canSee`
+is not part of this check: it controls visibility, and write-only fields keep working.
 
-- Store and bulk store check after the model is saved, so `canRun` receives the stored
-  model; the write runs in a transaction and is rolled back. Side effects outside the
-  database that already ran (a `created` observer's mail, a job dispatched without
-  `afterCommit`) are not undone.
-- Update, patch and bulk update check before the model is filled, so `canRun` receives
-  the model as it was before the request and nothing is written. The fields for the
-  action pass are also resolved before the fill now, so a `fields()` that branches on the
-  resource's attributes sees the values from before the request.
+- Store and bulk store check the action's `canSee` for every row before anything is saved.
+  `canRun` is checked after the model is saved, so it receives the stored model; the write
+  runs in a transaction and is rolled back. Side effects outside the database that already
+  ran before a `canRun` denial (a `created` observer's mail, a job dispatched without
+  `afterCommit`, or an earlier row's field action in a bulk store) are not undone.
+- Update and patch check before the model is filled, so `canRun` receives the model as it
+  was before the request and nothing is written. Bulk update checks every row before the
+  first row is written. The fields for the action pass are also resolved before the fill
+  now, so a `fields()` that branches on the resource's attributes sees the values from
+  before the request.
 
 Field actions that set none of these callbacks are unaffected. A field action that is not
 in the request payload, or whose field is filtered out by `canStore`/`canUpdate`/

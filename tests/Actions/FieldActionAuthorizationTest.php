@@ -17,14 +17,20 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 class FieldActionAuthorizationTest extends IntegrationTestCase
 {
-    private const string FIELD_CAN_SEE = 'field-can-see';
-
     private const string ACTION_CAN_SEE = 'action-can-see';
 
     private const string ACTION_CAN_RUN = 'action-can-run';
 
+    public static int $handled = 0;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        self::$handled = 0;
+    }
+
     #[Test]
-    #[TestWith([self::FIELD_CAN_SEE], 'field canSee')]
     #[TestWith([self::ACTION_CAN_SEE], 'action canSee')]
     #[TestWith([self::ACTION_CAN_RUN], 'action canRun')]
     public function store_with_a_denied_field_action_is_forbidden_and_rolled_back(string $denial): void
@@ -74,7 +80,6 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith([self::FIELD_CAN_SEE], 'field canSee')]
     #[TestWith([self::ACTION_CAN_SEE], 'action canSee')]
     #[TestWith([self::ACTION_CAN_RUN], 'action canRun')]
     public function store_bulk_with_a_denied_field_action_is_forbidden_and_rolled_back(string $denial): void
@@ -160,7 +165,6 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith([self::FIELD_CAN_SEE], 'field canSee')]
     #[TestWith([self::ACTION_CAN_SEE], 'action canSee')]
     #[TestWith([self::ACTION_CAN_RUN], 'action canRun')]
     public function update_with_a_denied_field_action_is_forbidden_before_writing(string $denial): void
@@ -220,7 +224,6 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith([self::FIELD_CAN_SEE], 'field canSee')]
     #[TestWith([self::ACTION_CAN_SEE], 'action canSee')]
     #[TestWith([self::ACTION_CAN_RUN], 'action canRun')]
     public function patch_with_a_denied_field_action_is_forbidden_before_writing(string $denial): void
@@ -280,7 +283,6 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith([self::FIELD_CAN_SEE], 'field canSee')]
     #[TestWith([self::ACTION_CAN_SEE], 'action canSee')]
     #[TestWith([self::ACTION_CAN_RUN], 'action canRun')]
     public function update_bulk_with_a_denied_field_action_is_forbidden_before_writing(string $denial): void
@@ -311,7 +313,7 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function update_bulk_denied_on_a_later_row_rolls_back_the_earlier_rows(): void
+    public function update_bulk_denied_on_a_later_row_runs_no_action_and_writes_nothing(): void
     {
         $allowedPost = Post::factory()->create(['title' => 'Allowed title']);
         $deniedPost = Post::factory()->create(['title' => 'Denied title']);
@@ -342,6 +344,7 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
             'id' => $deniedPost->id,
             'title' => 'Denied title',
         ]);
+        $this->assertSame(0, self::$handled);
     }
 
     #[Test]
@@ -455,13 +458,90 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
         ]);
     }
 
+    #[Test]
+    public function store_denied_by_the_action_can_see_is_rejected_before_saving(): void
+    {
+        $created = 0;
+        Post::created(function () use (&$created): void {
+            $created++;
+        });
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStore')
+            ->andReturn([
+                Field::new('title'),
+                $this->deniedDescriptionField(self::ACTION_CAN_SEE),
+            ]);
+
+        $this
+            ->postJson(PostRepository::route(), [
+                'title' => 'Title',
+                'description' => 'Description',
+            ])
+            ->assertForbidden();
+
+        $this->assertSame(0, $created);
+    }
+
+    #[Test]
+    public function store_bulk_denied_by_the_action_can_see_on_a_later_row_is_rejected_before_saving(): void
+    {
+        $created = 0;
+        Post::created(function () use (&$created): void {
+            $created++;
+        });
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStoreBulk')
+            ->andReturn([
+                Field::new('title'),
+                $this->deniedDescriptionField(self::ACTION_CAN_SEE),
+            ]);
+
+        $this
+            ->postJson(PostRepository::route('bulk'), [
+                ['title' => 'First title'],
+                ['title' => 'Second title', 'description' => 'second description'],
+            ])
+            ->assertForbidden();
+
+        $this->assertSame(0, $created);
+        $this->assertSame(0, self::$handled);
+    }
+
+    #[Test]
+    public function a_field_hidden_by_can_see_still_runs_its_authorized_action(): void
+    {
+        $post = Post::factory()->create(['description' => 'Original description']);
+
+        PostRepository::partialMock()
+            ->shouldReceive('fields')
+            ->andReturn([
+                Field::new('title'),
+                Field::new('description')
+                    ->canSee(fn (): bool => false)
+                    ->action($this->descriptionAction()),
+            ]);
+
+        $this
+            ->putJson(PostRepository::route($post), [
+                'title' => 'Updated title',
+                'description' => 'Updated description',
+            ])
+            ->assertOk();
+
+        $this->assertDatabaseHas(Post::class, [
+            'id' => $post->id,
+            'description' => 'Actionable Updated description',
+        ]);
+    }
+
     private function deniedDescriptionField(string $denial): Field
     {
         $action = $this->descriptionAction();
         $field = Field::new('description')->action($action);
 
         match ($denial) {
-            self::FIELD_CAN_SEE => $field->canSee(fn (): bool => false),
             self::ACTION_CAN_SEE => $action->canSee(fn (): bool => false),
             self::ACTION_CAN_RUN => $action->canRun(fn (): bool => false),
         };
@@ -475,7 +555,6 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     private function authorizedDescriptionField(array &$authorizedModels): Field
     {
         return Field::new('description')
-            ->canSee(fn (): bool => true)
             ->action(
                 $this->descriptionAction()
                     ->canSee(fn (): bool => true)
@@ -491,10 +570,10 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
     {
         return new class extends Action
         {
-            public bool $showOnShow = true;
-
             public function handle(RestifyRequest $request, Post $post, ?int $row = null): void
             {
+                FieldActionAuthorizationTest::$handled++;
+
                 $description = $row === null
                     ? $request->input('description')
                     : data_get($request->input((string) $row), 'description');

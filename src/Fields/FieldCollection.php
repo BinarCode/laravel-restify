@@ -121,6 +121,22 @@ class FieldCollection extends Collection
      *
      * @throws UnauthorizedException
      */
+    public function authorizeActionsToSee(Request $request): self
+    {
+        foreach ($this->items as $field) {
+            if ($field instanceof Field) {
+                $field->authorizeActionToSee($request);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     *
+     * @throws UnauthorizedException
+     */
     public function authorizeActions(Request $request, ?Model $model): self
     {
         foreach ($this->items as $field) {

@@ -103,6 +103,43 @@ class McpUpdateFieldActionAuthorizationTest extends IntegrationTestCase
             'description' => $expectedDescription,
         ]);
     }
+
+    #[Test]
+    #[TestWith([false, true, 0], 'denied')]
+    #[TestWith([true, false, 1], 'allowed')]
+    public function mcp_store_honours_the_field_action_can_run(bool $canRun, bool $expectedError, int $expectedPosts): void
+    {
+        FieldActionPostMcpRepository::$canRunDescriptionAction = $canRun;
+
+        $result = $this
+            ->postJson('/test-field-action-update', [
+                'jsonrpc' => '2.0',
+                'id' => 1,
+                'method' => 'tools/call',
+                'params' => [
+                    'name' => 'execute-operation',
+                    'arguments' => [
+                        'repository' => FieldActionPostMcpRepository::uriKey(),
+                        'operation_type' => 'store',
+                        'parameters' => [
+                            'title' => 'Stored title',
+                            'description' => 'Stored description',
+                        ],
+                    ],
+                ],
+            ])
+            ->assertOk()
+            ->json('result');
+
+        $this->assertSame($expectedError, $result['isError'] ?? false);
+
+        if ($expectedError) {
+            $content = json_decode($result['content'][0]['text'], true);
+            $this->assertSame('AUTHORIZATION_ERROR', $content['code']);
+        }
+
+        $this->assertDatabaseCount(Post::class, $expectedPosts);
+    }
 }
 
 class FieldActionPostMcpRepository extends Repository
@@ -120,12 +157,15 @@ class FieldActionPostMcpRepository extends Repository
         return true;
     }
 
+    public function mcpAllowsStore(): bool
+    {
+        return true;
+    }
+
     public function fields(RestifyRequest $request): array
     {
         $action = new class extends Action
         {
-            public bool $showOnShow = true;
-
             public function handle(RestifyRequest $request, Post $post): void
             {
                 $post->update([
