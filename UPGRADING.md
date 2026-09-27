@@ -135,13 +135,14 @@ published before this change keeps its exact-match lookup; add
 `use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;` and call
 `$this->findUserByEmail($userModel, $email)` to match.
 
-### `resetPassword` signs the user out everywhere; `forgotPassword` honours the broker throttle
+### `resetPassword` revokes API tokens and remember-me cookies; `forgotPassword` honours the broker throttle
 
 A successful `resetPassword` now rotates the user's `remember_token`, dispatches
 `Illuminate\Auth\Events\PasswordReset`, and - when the user model uses Sanctum's
 `HasApiTokens` trait or implements its `Laravel\Sanctum\Contracts\HasApiTokens` contract -
-deletes every personal access token the user holds, so a stolen session
-or API token no longer survives a reset. Clients holding a token for that user get a
+deletes every personal access token the user holds, so a stolen remember-me cookie
+or API token no longer survives a reset. Open web sessions end only when the app uses
+Laravel's `auth.session` middleware, which logs out sessions whose password hash changed. Clients holding a token for that user get a
 `401` on their next request and must log in again. Set `restify.auth.revoke_tokens_on_reset`
 to `false` (or `RESTIFY_REVOKE_TOKENS_ON_RESET=false`) to keep tokens alive; a published
 `config/restify.php` without the key revokes, like the default.
