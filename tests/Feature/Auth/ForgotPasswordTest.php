@@ -333,5 +333,4 @@ class ForgotPasswordTest extends IntegrationTestCase
     {
         return Collection::make($response->headers->all())->except('date')->all();
     }
-
 }
