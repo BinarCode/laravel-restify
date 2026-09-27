@@ -20,13 +20,6 @@ class PublicRepositoriesTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        UserRepository::$public = false;
-    }
-
     public function test_cannot_access_public_repository(): void
     {
         $this->logout();

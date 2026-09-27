@@ -29,13 +29,6 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
         $this->recordQueries();
     }
 
-    protected function tearDown(): void
-    {
-        UserRepository::$related = ['posts'];
-
-        parent::tearDown();
-    }
-
     /**
      * @param  list<string>  $declared
      */

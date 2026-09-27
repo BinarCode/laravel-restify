@@ -15,13 +15,6 @@ class RepositoryCustomPrefixTest extends IntegrationTestCase
         parent::setUp();
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        PostRepository::setPrefix(null);
-    }
-
     public function test_repository_can_have_custom_prefix(): void
     {
         $this

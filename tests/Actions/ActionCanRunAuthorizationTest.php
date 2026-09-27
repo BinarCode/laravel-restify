@@ -21,22 +21,11 @@ class ActionCanRunAuthorizationTest extends IntegrationTestCase
 {
     use InteractsWithQueryLog;
 
-    private static int $defaultChunkCount;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->authenticate();
-
-        self::$defaultChunkCount = Action::$chunkCount;
-    }
-
-    protected function tearDown(): void
-    {
-        Action::$chunkCount = self::$defaultChunkCount;
-
-        parent::tearDown();
     }
 
     #[Test]

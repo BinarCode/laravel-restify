@@ -13,14 +13,6 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 class RepositoryRoutePrefixAuthorizationTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        PostRepository::setPrefix(null);
-        UserRepository::setPrefix(null);
-
-        parent::tearDown();
-    }
-
     #[Test]
     #[TestWith(['api/restify/posts', true], 'index')]
     #[TestWith(['api/restify/posts/1', true], 'show')]

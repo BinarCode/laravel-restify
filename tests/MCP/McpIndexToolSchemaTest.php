@@ -6,20 +6,12 @@ use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
 use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\Repositories\Repository;
-use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\JsonSchema\JsonSchemaTypeFactory;
 
 class McpIndexToolSchemaTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     protected function repositoryWith(array $search = [], array $sort = [], array $match = []): Repository
     {
         return new class($search, $sort, $match) extends Repository

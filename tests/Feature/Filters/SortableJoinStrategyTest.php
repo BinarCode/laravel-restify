@@ -20,13 +20,6 @@ class SortableJoinStrategyTest extends IntegrationTestCase
     {
         config(['restify.sort.use_joins_for_belongs_to' => false]);
 
-        PostRepository::$search = ['id', 'title'];
-        PostRepository::$sort = ['title', 'is_active'];
-        PostRepository::$related = [];
-        UserRepository::$search = ['id', 'name'];
-        UserRepository::$sort = ['id'];
-        UserRepository::$related = ['posts'];
-
         parent::tearDown();
     }
 

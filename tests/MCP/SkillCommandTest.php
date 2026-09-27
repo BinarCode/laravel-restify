@@ -38,8 +38,6 @@ class SkillCommandTest extends IntegrationTestCase
 
     protected function tearDown(): void
     {
-        Restify::$repositories = [];
-
         File::deleteDirectory($this->outputPath);
 
         parent::tearDown();

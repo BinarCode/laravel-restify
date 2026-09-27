@@ -25,13 +25,6 @@ class RepositoryExceptionTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        PostRepository::setPrefix(null);
-
-        parent::tearDown();
-    }
-
     protected function defineRoutes($router): void
     {
         $router->get(

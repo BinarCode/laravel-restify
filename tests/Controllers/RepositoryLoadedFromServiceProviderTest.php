@@ -34,8 +34,5 @@ class RepositoryLoadedFromServiceProviderTest extends IntegrationTestCase
             $route = $repository::route();
             $this->getJson($route)->assertOk();
         }
-
-        // Clears repositories so it does not affect other tests.
-        Restify::$repositories = [];
     }
 }

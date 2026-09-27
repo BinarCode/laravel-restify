@@ -10,13 +10,6 @@ use Illuminate\Auth\Middleware\Authenticate;
 
 class RepositoryMiddlewaresTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        PostRepository::$middleware = [];
-    }
-
     public function test_repository_can_have_custom_middleware(): void
     {
         PostRepository::$middleware = [
@@ -43,7 +36,5 @@ class RepositoryMiddlewaresTest extends IntegrationTestCase
         ]);
 
         $this->getJson(PostRepository::route())->assertOk();
-
-        UserRepository::$middleware = [];
     }
 }

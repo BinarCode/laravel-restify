@@ -21,14 +21,6 @@ use PHPUnit\Framework\Attributes\Test;
 
 class SyncAuthorizationTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        ParentCallingSyncBelongsToMany::$authorizeToSyncCalls = 0;
-        CompanyWithExtraSyncedStaffRepository::$extraStaffId = null;
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function a_denied_sync_policy_writes_nothing(): void
     {

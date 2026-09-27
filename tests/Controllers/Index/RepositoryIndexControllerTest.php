@@ -17,24 +17,6 @@ class RepositoryIndexControllerTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    private int $originalDefaultPerPage;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->originalDefaultPerPage = PostRepository::$defaultPerPage;
-    }
-
-    protected function tearDown(): void
-    {
-        // $defaultPerPage is inherited from Repository, so every repository
-        // that does not declare its own copy shares this static with PostRepository.
-        PostRepository::$defaultPerPage = $this->originalDefaultPerPage;
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function it_can_paginate(): void
     {

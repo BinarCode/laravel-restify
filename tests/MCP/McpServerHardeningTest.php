@@ -33,13 +33,6 @@ class McpServerHardeningTest extends IntegrationTestCase
             ->andReturn(true);
     }
 
-    protected function tearDown(): void
-    {
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [

@@ -26,14 +26,6 @@ use PHPUnit\Framework\Attributes\Test;
  */
 class AttachRelationFromRouteTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        CompanyRepository::$attachers = [];
-        CompanyRepository::$detachers = [];
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function a_body_related_repository_key_cannot_redirect_attach_to_a_different_field(): void
     {

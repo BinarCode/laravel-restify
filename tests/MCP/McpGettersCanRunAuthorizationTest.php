@@ -38,13 +38,6 @@ class McpGettersCanRunAuthorizationTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function getter_authorization_with_can_run_denies_over_mcp(): void
     {

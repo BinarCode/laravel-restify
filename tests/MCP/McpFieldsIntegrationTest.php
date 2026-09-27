@@ -40,14 +40,6 @@ class McpFieldsIntegrationTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        // Clear Restify repositories to prevent affecting subsequent tests
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     public function test_repository_uses_mcp_specific_field_methods(): void
     {
         $repository = new class extends Repository

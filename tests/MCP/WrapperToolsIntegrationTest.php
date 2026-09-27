@@ -39,14 +39,6 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
             ->andReturn(true);
     }
 
-    protected function tearDown(): void
-    {
-        // Clear Restify repositories to prevent affecting subsequent tests
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [
@@ -204,8 +196,6 @@ class WrapperToolsIntegrationTest extends IntegrationTestCase
 
     public function test_discover_repositories_tool_supports_search(): void
     {
-        Restify::$repositories = []; // Clear any previous repos
-
         $postRepo = new class extends Repository
         {
             use HasMcpTools;
