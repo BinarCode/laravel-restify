@@ -34,11 +34,13 @@ trait HasAction
      */
     public function authorizeActionToSee(Request $request): void
     {
-        if (! $this->actionHandler instanceof Action) {
+        $action = $this->actionHandler;
+
+        if (! $action instanceof Action) {
             return;
         }
 
-        if (! $this->actionHandler->authorizedToSee($request)) {
+        if (! $action->authorizedToSee($request)) {
             throw UnauthorizedException::make('Not authorized to run this action.');
         }
     }

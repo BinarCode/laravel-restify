@@ -108,7 +108,8 @@ without checking any authorization callback. It now requires the action's `canSe
 `canRun` to pass; a denial fails the whole request with a `403`. The field's own `canSee`
 is not part of this check: it controls visibility, and write-only fields keep working.
 
-- Store and bulk store check the action's `canSee` for every row before anything is saved.
+- Store and bulk store resolve the action fields and check the action's `canSee` for every
+  row before anything is saved, and after the save run exactly those fields.
   `canRun` is checked after the model is saved, so it receives the stored model; the write
   runs in a transaction and is rolled back. Side effects outside the database that already
   ran before a `canRun` denial are not undone: uploads that `File`/`Image` fields already
@@ -118,6 +119,8 @@ is not part of this check: it controls visibility, and write-only fields keep wo
   was before the request and nothing is written. Bulk update checks every row, once, before
   the first row is written, and then runs exactly the field actions it authorized;
   `updateBulk()` called outside `RepositoryUpdateBulkController` authorizes the row itself.
+  An up-front authorization from `authorizeUpdateBulkActions()` is used once, and only for
+  the model it was made for.
   The fields for the action pass are also resolved before the fill now, so a `fields()` that
   branches on the resource's attributes sees the values from before the request.
 

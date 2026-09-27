@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Actions;
 
 use Binaryk\LaravelRestify\Actions\Action;
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Fields\Field;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryUpdateBulkRequest;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -491,6 +493,96 @@ class FieldActionAuthorizationTest extends IntegrationTestCase
             ->assertOk();
 
         $this->assertSame(0, self::$handled);
+    }
+
+    #[Test]
+    public function store_runs_only_the_field_actions_it_authorized(): void
+    {
+        $canStoreCalls = 0;
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForStore')
+            ->andReturn([
+                Field::new('title'),
+                $this->deniedDescriptionField(self::ACTION_CAN_SEE)
+                    ->canStore(function () use (&$canStoreCalls): bool {
+                        return $canStoreCalls++ > 0;
+                    }),
+            ]);
+
+        $this
+            ->postJson(PostRepository::route(), [
+                'title' => 'Title',
+                'description' => 'Description',
+            ])
+            ->assertCreated();
+
+        $this->assertSame(0, self::$handled);
+    }
+
+    #[Test]
+    public function update_bulk_called_directly_authorizes_the_row_itself(): void
+    {
+        $post = Post::factory()->create(['description' => 'Original description']);
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForUpdateBulk')
+            ->andReturn([
+                Field::new('title'),
+                $this->deniedDescriptionField(self::ACTION_CAN_RUN),
+            ]);
+
+        $request = RepositoryUpdateBulkRequest::create('/', 'POST', [
+            ['id' => $post->id, 'title' => 'Updated title', 'description' => 'Updated description'],
+        ]);
+
+        try {
+            PostRepository::resolveWith($post)->updateBulk($request, $post->id, 0);
+            $this->fail('updateBulk() ran a field action whose canRun denies.');
+        } catch (UnauthorizedException) {
+        }
+
+        $this->assertDatabaseHas(Post::class, [
+            'id' => $post->id,
+            'title' => $post->title,
+            'description' => 'Original description',
+        ]);
+        $this->assertSame(0, self::$handled);
+    }
+
+    #[Test]
+    public function an_authorization_is_used_once_and_only_for_the_model_it_was_made_for(): void
+    {
+        $post = Post::factory()->create();
+        $otherPost = Post::factory()->create();
+        $canRunCalls = [];
+
+        PostRepository::partialMock()
+            ->shouldReceive('fieldsForUpdateBulk')
+            ->andReturn([
+                Field::new('description')->action(
+                    $this->descriptionAction()->canRun(function (Request $request, ?Model $model) use (&$canRunCalls): bool {
+                        $canRunCalls[] = $model?->getKey();
+
+                        return true;
+                    })
+                ),
+            ]);
+
+        $request = RepositoryUpdateBulkRequest::create('/', 'POST', [
+            ['id' => $post->id, 'description' => 'Updated description'],
+        ]);
+
+        $repository = PostRepository::resolveWith($post);
+        $repository->authorizeUpdateBulkActions($request, 0);
+        $repository->updateBulk($request, $post->id, 0);
+        $repository->updateBulk($request, $post->id, 0);
+
+        $repository->authorizeUpdateBulkActions($request, 0);
+        $repository->withResource($otherPost)->updateBulk($request, $otherPost->id, 0);
+
+        $this->assertSame([$post->id, $post->id, $post->id, $otherPost->id], $canRunCalls);
+        $this->assertSame(3, self::$handled);
     }
 
     #[Test]

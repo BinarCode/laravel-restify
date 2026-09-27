@@ -230,7 +230,7 @@ class Repository implements JsonSerializable, RestifySearchable
     private ?Repository $parentRepository = null;
 
     /**
-     * @var array<int, FieldCollection<int, Field>>
+     * @var array<int, array{model: Model, fields: FieldCollection<int, Field>}>
      */
     private array $authorizedUpdateBulkActionFields = [];
 
@@ -820,14 +820,14 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function store(RestifyRequest $request)
     {
-        $this
+        $actionFields = $this
             ->collectFields($request)
             ->forStore($request, $this)
             ->withActions($request, $this)
             ->authorizedStore($request)
             ->authorizeActionsToSee($request);
 
-        DB::transaction(function () use ($request) {
+        DB::transaction(function () use ($request, $actionFields) {
             static::fillFields(
                 $request,
                 $this->resource,
@@ -852,11 +852,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
             $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
 
-            $this
-                ->collectFields($request)
-                ->forStore($request, $this)
-                ->withActions($request, $this)
-                ->authorizedStore($request)
+            $actionFields
                 ->authorizeActionsToRun($request, $this->resource)
                 ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource));
         });
@@ -870,8 +866,10 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function storeBulk(RepositoryStoreBulkRequest $request)
     {
+        $actionFieldsByRow = [];
+
         foreach ($request->collectInput()->keys() as $row) {
-            $this
+            $actionFieldsByRow[$row] = $this
                 ->collectFields($request)
                 ->forStoreBulk($request, $this)
                 ->withActions($request, $this, $row)
@@ -879,9 +877,9 @@ class Repository implements JsonSerializable, RestifySearchable
                 ->authorizeActionsToSee($request);
         }
 
-        $entities = DB::transaction(function () use ($request) {
+        $entities = DB::transaction(function () use ($request, $actionFieldsByRow) {
             return $request->collectInput()
-                ->map(function (array $input, $row) use ($request) {
+                ->map(function (array $input, $row) use ($request, $actionFieldsByRow) {
                     $this->resource = static::newModel();
 
                     static::fillBulkFields(
@@ -898,11 +896,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
                     $fields->each(fn (Field $field) => $field->invokeAfter($request, $this->resource));
 
-                    $this
-                        ->collectFields($request)
-                        ->forStoreBulk($request, $this)
-                        ->withActions($request, $this, $row)
-                        ->authorizedUpdateBulk($request)
+                    $actionFieldsByRow[$row]
                         ->authorizeActionsToRun($request, $this->resource)
                         ->each(fn (Field $field) => $field->actionHandler->handle($request, $this->resource, $row));
 
@@ -992,8 +986,12 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function updateBulk(RestifyRequest $request, $repositoryId, int $row)
     {
-        $actionFields = $this->authorizedUpdateBulkActionFields[$row]
-            ?? $this->updateBulkActionFields($request, $row)->authorizeActions($request, $this->resource);
+        $authorized = $this->authorizedUpdateBulkActionFields[$row] ?? null;
+        unset($this->authorizedUpdateBulkActionFields[$row]);
+
+        $actionFields = $authorized !== null && $authorized['model'] === $this->resource
+            ? $authorized['fields']
+            : $this->updateBulkActionFields($request, $row)->authorizeActions($request, $this->resource);
 
         $fields = $this->collectFields($request)
             ->forUpdateBulk($request, $this)
@@ -1014,9 +1012,12 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function authorizeUpdateBulkActions(RestifyRequest $request, int $row): void
     {
-        $this->authorizedUpdateBulkActionFields[$row] = $this
-            ->updateBulkActionFields($request, $row)
-            ->authorizeActions($request, $this->resource);
+        $this->authorizedUpdateBulkActionFields[$row] = [
+            'model' => $this->resource,
+            'fields' => $this
+                ->updateBulkActionFields($request, $row)
+                ->authorizeActions($request, $this->resource),
+        ];
     }
 
     /**
