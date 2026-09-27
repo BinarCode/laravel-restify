@@ -163,6 +163,13 @@ account.
 The published controller stubs (`php artisan restify:auth`) carry the same changes. A
 controller you published earlier keeps its old behaviour until you port them.
 
+Both controllers now read `restify.auth.password_reset_timebox` with a `200000`
+microsecond default, so a published `config/restify.php` that predates the key no longer
+makes every `forgotPassword` / `resetPassword` request fail with a `500`. Auth controllers
+published from the 10.4.33-10.4.51 stubs still read the key without a default: add
+`'password_reset_timebox' => (int) env('RESTIFY_PASSWORD_RESET_TIMEBOX', 200_000),` under
+`auth` in `config/restify.php`, or re-publish the stubs.
+
 ### Policy cache's fallback ttl is 300 seconds, not 60
 
 `PolicyCache::resolve()` falls back to a 300 second ttl (matching `config/restify.php`'s

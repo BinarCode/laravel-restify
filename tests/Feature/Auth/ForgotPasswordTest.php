@@ -311,14 +311,6 @@ class ForgotPasswordTest extends IntegrationTestCase
         $this->postJson('auth/forgotPassword', $payload)->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    private function headersWithoutDate(TestResponse $response): array
-    {
-        return Collection::make($response->headers->all())->except('date')->all();
-    }
-
     #[Test]
     public function a_published_config_without_the_timebox_key_falls_back_to_the_default(): void
     {
@@ -333,4 +325,13 @@ class ForgotPasswordTest extends IntegrationTestCase
 
         $this->postJson('auth/forgotPassword', ['email' => 'nobody@example.com'])->assertOk();
     }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function headersWithoutDate(TestResponse $response): array
+    {
+        return Collection::make($response->headers->all())->except('date')->all();
+    }
+
 }
