@@ -37,7 +37,6 @@ use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Routing\Middleware\ThrottleRequests;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Gate;
 use JetBrains\PhpStorm\Pure;
@@ -52,11 +51,8 @@ use ReflectionProperty;
  * Every test starts from the same global state, whatever ran before it in this process. Two #[Before] hooks put it
  * back ahead of setUp(), so tests never reset or restore any of it in setUp() or tearDown():
  * - $_SERVER, which the fixture policies read their switches and spies from.
- * - Every static property that a Binaryk\LaravelRestify class declares with a default, back to that default. That covers
- *   package and fixture classes and the anonymous classes tests declare, but not the test classes themselves:
- *   Restify::$repositories and $authUsing, repository statics ($related, $search, $match, $sort, $middleware,
- *   $public, $attachers, $detachers, $defaultPerPage, $cacheTags, ...), route prefixes, booted flags, and fixture
- *   spies such as PublishPostAction::$applied. setUp() then registers the repositories again.
+ * - Every static property a Binaryk\LaravelRestify class declares with a default, including the anonymous classes
+ *   tests declare. Test classes are skipped. setUp() then registers the repositories again.
  *
  * A static declared without a default, such as Repository::$related, cannot be put back. A fixture whose static a test
  * assigns must declare it with a default, or the write lands on Repository and leaks into every repository.
@@ -93,7 +89,7 @@ abstract class IntegrationTestCase extends TestCase
     protected function resetStaticProperties(): void
     {
         foreach (get_declared_classes() as $class) {
-            if (! str_starts_with($class, 'Binaryk\\LaravelRestify\\') || is_subclass_of($class, PHPUnitTestCase::class)) {
+            if (! str_starts_with($class, 'Binaryk\\LaravelRestify\\')) {
                 continue;
             }
 
@@ -106,15 +102,24 @@ abstract class IntegrationTestCase extends TestCase
     }
 
     /**
+     * @param  class-string  $class
      * @return list<array{ReflectionProperty, mixed}>
      */
     private static function staticPropertiesWithDefaults(string $class): array
     {
-        return Collection::make((new ReflectionClass($class))->getProperties(ReflectionProperty::IS_STATIC))
-            ->filter(fn (ReflectionProperty $property): bool => $property->getDeclaringClass()->getName() === $class && $property->hasDefaultValue())
-            ->map(fn (ReflectionProperty $property): array => [$property, $property->getDefaultValue()])
-            ->values()
-            ->all();
+        if (is_subclass_of($class, PHPUnitTestCase::class)) {
+            return [];
+        }
+
+        $defaults = [];
+
+        foreach ((new ReflectionClass($class))->getProperties(ReflectionProperty::IS_STATIC) as $property) {
+            if ($property->getDeclaringClass()->getName() === $class && $property->hasDefaultValue()) {
+                $defaults[] = [$property, $property->getDefaultValue()];
+            }
+        }
+
+        return $defaults;
     }
 
     protected function setUp(): void

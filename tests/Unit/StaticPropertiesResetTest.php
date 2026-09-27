@@ -19,9 +19,9 @@ use PHPUnit\Framework\Attributes\Test;
 final class StaticPropertiesResetTest extends IntegrationTestCase
 {
     #[After]
-    protected function leaveAStaticBehindAfterTearDown(): void
+    protected function leaveAStaticBehindAfterTheTest(): void
     {
-        if ($this->name() === 'a_test_whose_tear_down_leaves_a_static_behind') {
+        if ($this->name() === 'a_test_whose_after_hook_leaves_a_static_behind') {
             ActivateAction::$applied = ['set after tearDown finished'];
         }
     }
@@ -54,13 +54,13 @@ final class StaticPropertiesResetTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_test_whose_tear_down_leaves_a_static_behind(): void
+    public function a_test_whose_after_hook_leaves_a_static_behind(): void
     {
         $this->assertSame([], ActivateAction::$applied);
     }
 
     #[Test]
-    #[Depends('a_test_whose_tear_down_leaves_a_static_behind')]
+    #[Depends('a_test_whose_after_hook_leaves_a_static_behind')]
     public function the_next_test_still_starts_from_the_default(): void
     {
         $this->assertSame([], ActivateAction::$applied);
