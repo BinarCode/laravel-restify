@@ -10,10 +10,8 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
-use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\Attributes\Test;
 
-#[RunTestsInSeparateProcesses]
 class RepositoryPrefixIsolationTest extends IntegrationTestCase
 {
     protected function setUp(): void

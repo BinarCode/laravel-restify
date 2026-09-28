@@ -9,11 +9,9 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefix\DeclaredPrefixPost
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefix\FirstInheritedPrefixRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefix\SecondInheritedPrefixRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
-use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
-#[RunTestsInSeparateProcesses]
 class RepositoryDeclaredPrefixTest extends IntegrationTestCase
 {
     #[Test]
