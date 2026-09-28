@@ -5,17 +5,14 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Repositories;
 
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefix\FirstInheritedPrefixRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefix\SecondInheritedPrefixRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefixPostRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
-/**
- * Each test runs in its own process because mounting writes the prefix into
- * static state that would outlive the test.
- */
 #[RunTestsInSeparateProcesses]
 class RepositoryDeclaredPrefixTest extends IntegrationTestCase
 {
@@ -40,13 +37,16 @@ class RepositoryDeclaredPrefixTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function setting_the_prefix_leaves_the_declared_one_of_another_repository_alone(): void
+    public function setting_the_prefix_leaves_a_sibling_on_the_prefix_both_inherit(): void
     {
-        UserRepository::setPrefix('api/v1');
+        FirstInheritedPrefixRepository::setPrefix('api/v3');
 
-        Restify::repositories([DeclaredPrefixPostRepository::class]);
+        Restify::repositories([
+            FirstInheritedPrefixRepository::class,
+            SecondInheritedPrefixRepository::class,
+        ]);
 
-        $this->assertSame('api/v2', DeclaredPrefixPostRepository::prefix());
-        $this->assertSame('api/v1', UserRepository::prefix());
+        $this->assertSame('api/v3', FirstInheritedPrefixRepository::prefix());
+        $this->assertSame('api/v2', SecondInheritedPrefixRepository::prefix());
     }
 }

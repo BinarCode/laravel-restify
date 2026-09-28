@@ -13,11 +13,6 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\Attributes\Test;
 
-/**
- * The prefix is set before the application boots, so every other repository is
- * mounted and has its routes registered after it. Each test runs in its own
- * process because the prefix lives in static state that would outlive the test.
- */
 #[RunTestsInSeparateProcesses]
 class RepositoryPrefixIsolationTest extends IntegrationTestCase
 {

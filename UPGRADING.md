@@ -9,8 +9,8 @@ which every repository booted afterwards then took as its own. Users, companies 
 the rest moved under `api/v1` too, and their default `api/restify/...` routes started
 answering 403 ("Unauthorized to use the route ... Check prefix").
 
-`setPrefix()` now records the prefix for its own repository only, which is what the
-documentation already described. A `public static $prefix` declared on a repository
+`setPrefix()` now records the prefix for its own repository only, which matches how a
+declared `$prefix` already behaved. A `public static $prefix` declared on a repository
 still applies to it on boot, and a `setPrefix()` call made before boot still wins over
 that declaration.
 

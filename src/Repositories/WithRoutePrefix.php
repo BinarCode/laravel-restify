@@ -74,9 +74,7 @@ trait WithRoutePrefix
         static::$prefixes[$uriKey ?? static::uriKey()] = $prefix;
     }
 
-    /**
-     * Whether setPrefix() already chose a prefix, null included, for the repository.
-     */
+    /** null counts as set. */
     protected static function prefixWasSet(): bool
     {
         return array_key_exists(static::uriKey(), self::$prefixes);
