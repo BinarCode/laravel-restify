@@ -44,6 +44,7 @@ class RepositoryUpdateBulkController extends RepositoryController
                 $repository = $request->repositoryWith($model);
 
                 $repository->authorizeToUpdateBulk($request);
+                $repository->authorizeUpdateBulkActions($request, (int) $row);
 
                 $authorized[] = [$ids[$row], (int) $row, $repository];
             }

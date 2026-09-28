@@ -108,6 +108,35 @@ against, so they now receive `null` there too. A closure typed with a non-nullab
 (`fn (Request $request, Post $post): bool => ...`) TypeErrors when called with `null`.
 Type the parameter nullable: `fn (Request $request, ?Post $post): bool => ...`.
 
+### Field actions honour `canSee` and `canRun`
+
+A field's `->action(...)` used to run on store, bulk store, update, patch and bulk update
+without checking any authorization callback. It now requires the action's `canSee` and
+`canRun` to pass; a denial fails the whole request with a `403`. The field's own `canSee`
+is not part of this check: it controls visibility, and write-only fields keep working.
+
+- Store and bulk store resolve the action fields and check the action's `canSee` for every
+  row before anything is saved, and after the save run exactly those fields.
+  `canRun` is checked after the model is saved, so it receives the stored model; the write
+  runs in a transaction and is rolled back. Side effects outside the database that already
+  ran before a `canRun` denial are not undone: uploads that `File`/`Image` fields already
+  stored on disk, fields' `afterStore` callbacks, a `created` observer's mail, a job
+  dispatched without `afterCommit`, or an earlier row's field action in a bulk store.
+- Update and patch check before the model is filled, so `canRun` receives the model as it
+  was before the request and nothing is written. Bulk update checks every row, once, before
+  the first row is written, and then runs exactly the field actions it authorized;
+  `updateBulk()` called outside `RepositoryUpdateBulkController` authorizes the row itself.
+  An up-front authorization from `authorizeUpdateBulkActions()` is used once, and only for
+  the model it was made for.
+- On every path the fields for the action pass are now resolved before the fill. A
+  `fields()` that branches on the resource sees the values from before the request on
+  update, patch and bulk update, and the unsaved model on store and bulk store (bulk store
+  resolves every row against the repository's initial resource).
+
+Field actions that set none of these callbacks are unaffected. A field action that is not
+in the request payload, or whose field is filtered out by `canStore`/`canUpdate`/
+`canPatch`/`canUpdateBulk`, is still skipped without a `403`.
+
 ### `forgotPassword`'s `url` no longer allows `config('app.url')`'s host
 
 `AllowedResetUrlHost::fromConfig()` used to also allow a client-supplied `url` to target
