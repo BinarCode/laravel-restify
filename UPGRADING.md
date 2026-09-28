@@ -12,7 +12,8 @@ answering 403 ("Unauthorized to use the route ... Check prefix").
 `setPrefix()` now records the prefix for its own repository only, which matches how a
 declared `$prefix` already behaved. A `public static $prefix` declared on a repository
 still applies to it on boot, and a `setPrefix()` call made before boot still wins over
-that declaration.
+that declaration. `$prefix` no longer reflects `setPrefix()`; read the effective prefix
+with `prefix()`.
 
 If you relied on one `setPrefix()` call moving every repository, call it on each
 repository you want prefixed, or declare `public static $prefix` on them (or on a

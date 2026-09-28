@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests\Repositories;
 
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefix\DeclaredPrefixPostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefix\FirstInheritedPrefixRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefix\SecondInheritedPrefixRepository;
-use Binaryk\LaravelRestify\Tests\Fixtures\Post\DeclaredPrefixPostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use PHPUnit\Framework\Attributes\RunTestsInSeparateProcesses;
 use PHPUnit\Framework\Attributes\Test;
