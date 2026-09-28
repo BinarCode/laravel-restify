@@ -2,6 +2,22 @@
 
 ## Unreleased
 
+### `setPrefix()` only prefixes the repository it is called on
+
+`PostRepository::setPrefix('api/v1')` also wrote the shared `Repository::$prefix`,
+which every repository booted afterwards then took as its own. Users, companies and
+the rest moved under `api/v1` too, and their default `api/restify/...` routes started
+answering 403 ("Unauthorized to use the route ... Check prefix").
+
+`setPrefix()` now records the prefix for its own repository only, which is what the
+documentation already described. A `public static $prefix` declared on a repository
+still applies to it on boot, and a `setPrefix()` call made before boot still wins over
+that declaration.
+
+If you relied on one `setPrefix()` call moving every repository, call it on each
+repository you want prefixed, or declare `public static $prefix` on them (or on a
+shared base repository they extend).
+
 ### `afterValidation()` now also fires on bulk delete
 
 `DELETE /api/restify/{repository}/bulk/delete` now runs the repository's
