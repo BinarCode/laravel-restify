@@ -17,9 +17,9 @@ trait WithRoutePrefix
     /**
      * The repository prefixes by key.
      *
-     * @var array
+     * @var array<string, string|null>
      */
-    private static $prefixes;
+    private static array $prefixes = [];
 
     public static function prefix(): ?string
     {
@@ -72,6 +72,11 @@ trait WithRoutePrefix
     public static function setPrefix(?string $prefix, ?string $uriKey = null): void
     {
         static::$prefixes[$uriKey ?? static::uriKey()] = $prefix;
-        static::$prefix = $prefix;
+    }
+
+    /** null counts as set. */
+    protected static function prefixWasSet(): bool
+    {
+        return array_key_exists(static::uriKey(), self::$prefixes);
     }
 }
