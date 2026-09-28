@@ -18,6 +18,14 @@ with `prefix()`.
 If you relied on one `setPrefix()` call moving every repository, call it on each
 repository you want prefixed, or declare `public static $prefix` on them (or on a
 shared base repository they extend).
+||||||| 57e9f145
+
+### `DeletesFields::deleteFields()` is typed
+
+`deleteFields(RestifyRequest $request, Model $model): void` now declares its parameter and
+return types. A controller that uses the `DeletesFields` trait and overrides
+`deleteFields()` without them fails with a fatal signature error; add `Model $model` and
+`: void` to the override.
 
 ### `afterValidation()` now also fires on bulk delete
 
@@ -118,6 +126,35 @@ against, so they now receive `null` there too. A closure typed with a non-nullab
 (`fn (Request $request, Post $post): bool => ...`) TypeErrors when called with `null`.
 Type the parameter nullable: `fn (Request $request, ?Post $post): bool => ...`.
 
+### Field actions honour `canSee` and `canRun`
+
+A field's `->action(...)` used to run on store, bulk store, update, patch and bulk update
+without checking any authorization callback. It now requires the action's `canSee` and
+`canRun` to pass; a denial fails the whole request with a `403`. The field's own `canSee`
+is not part of this check: it controls visibility, and write-only fields keep working.
+
+- Store and bulk store resolve the action fields and check the action's `canSee` for every
+  row before anything is saved, and after the save run exactly those fields.
+  `canRun` is checked after the model is saved, so it receives the stored model; the write
+  runs in a transaction and is rolled back. Side effects outside the database that already
+  ran before a `canRun` denial are not undone: uploads that `File`/`Image` fields already
+  stored on disk, fields' `afterStore` callbacks, a `created` observer's mail, a job
+  dispatched without `afterCommit`, or an earlier row's field action in a bulk store.
+- Update and patch check before the model is filled, so `canRun` receives the model as it
+  was before the request and nothing is written. Bulk update checks every row, once, before
+  the first row is written, and then runs exactly the field actions it authorized;
+  `updateBulk()` called outside `RepositoryUpdateBulkController` authorizes the row itself.
+  An up-front authorization from `authorizeUpdateBulkActions()` is used once, and only for
+  the model it was made for.
+- On every path the fields for the action pass are now resolved before the fill. A
+  `fields()` that branches on the resource sees the values from before the request on
+  update, patch and bulk update, and the unsaved model on store and bulk store (bulk store
+  resolves every row against the repository's initial resource).
+
+Field actions that set none of these callbacks are unaffected. A field action that is not
+in the request payload, or whose field is filtered out by `canStore`/`canUpdate`/
+`canPatch`/`canUpdateBulk`, is still skipped without a `403`.
+
 ### `forgotPassword`'s `url` no longer allows `config('app.url')`'s host
 
 `AllowedResetUrlHost::fromConfig()` used to also allow a client-supplied `url` to target
@@ -151,6 +188,42 @@ The published controller stubs (`php artisan restify:auth`) use the same
 published before this change keeps its exact-match lookup; add
 `use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;` and call
 `$this->findUserByEmail($userModel, $email)` to match.
+
+### `resetPassword` revokes API tokens and remember-me cookies; `forgotPassword` honours the broker throttle
+
+A successful `resetPassword` now rotates the user's `remember_token`, dispatches
+`Illuminate\Auth\Events\PasswordReset`, and - when the user model uses Sanctum's
+`HasApiTokens` trait or implements its `Laravel\Sanctum\Contracts\HasApiTokens` contract -
+deletes every personal access token the user holds, so a stolen remember-me cookie
+or API token no longer survives a reset. Open web sessions end only when the app uses
+Laravel's `auth.session` middleware, which logs out sessions whose password hash changed. Clients holding a token for that user get a
+`401` on their next request and must log in again. Set `restify.auth.revoke_tokens_on_reset`
+to `false` (or `RESTIFY_REVOKE_TOKENS_ON_RESET=false`) to keep tokens alive; a published
+`config/restify.php` without the key revokes, like the default.
+
+The new password is written to the model's `getAuthPasswordName()` column (the same
+column `login` checks) instead of a hardcoded `password`.
+
+The password, `remember_token`, reset-token deletion and token revocation run in one
+transaction on the user model's connection (the reset-token table and Sanctum's tokens
+are included when they share it); the event fires after it commits. If your `users` table has no
+`remember_token` column, set `protected $rememberTokenName = '';` on the user model so
+the rotation is skipped - otherwise the save fails and the reset returns a `500`.
+
+`forgotPassword` now skips issuing a new token and sending the email when the broker
+created one for that user within `auth.passwords.{broker}.throttle` seconds (60 by
+default). The response stays the same generic success, so it reveals nothing about the
+account.
+
+The published controller stubs (`php artisan restify:auth`) carry the same changes. A
+controller you published earlier keeps its old behaviour until you port them.
+
+Both controllers now read `restify.auth.password_reset_timebox` with a `200000`
+microsecond default, so a published `config/restify.php` that predates the key no longer
+makes every `forgotPassword` / `resetPassword` request fail with a `500`. Auth controllers
+published from the 10.4.33-10.4.51 stubs still read the key without a default: add
+`'password_reset_timebox' => (int) env('RESTIFY_PASSWORD_RESET_TIMEBOX', 200_000),` under
+`auth` in `config/restify.php`, or re-publish the stubs.
 
 ### Policy cache's fallback ttl is 300 seconds, not 60
 
@@ -215,3 +288,32 @@ provider registers the limiters regardless of whether the published stubs use th
 leaving old stubs in place still throttles, just on the old shared 6,1 bucket.
 
 If your `app/Providers/RestifyServiceProvider` overrides `boot()`, call `parent::boot()` (or define the `restify.*` limiters yourself) - otherwise the `restify.*` limiters never get registered and `throttle:restify.*` throws `MissingRateLimiterException` (a `500`).
+
+### Login, register and verify responses no longer include the model's `$hidden` attributes
+
+These responses serialise the user through its registered repository, and repository
+fields do not respect the model's `$hidden`. A `UserRepository` exposing
+`field('password')` therefore returned the password hash from `login`, `register` and
+`verifyEmail`. The built-in controllers now call `rest($user)->withoutHiddenAttributes()`,
+which drops every attribute listed in `$user->getHidden()`, including one a field
+exposes under a different `label()`. When the model lists `$visible` instead, every
+field whose attribute is not in it is dropped too, as Eloquent's `toArray()` does;
+computed fields (`field(fn () => ...)`) are kept. Values a field derives from a hidden
+attribute through a closure or callback are not detected - keep those out of your fields.
+
+If you published the auth controllers (`php artisan restify:auth`), add
+`->withoutHiddenAttributes()` after `rest($user)` in your `LoginController`,
+`RegisterController` and `VerifyController`, or re-publish them.
+
+With `app.debug` on, Restify also logs a warning the first time (per process) a
+repository serialises a field whose attribute its model hides - for example
+`field('password')` on a `User` that lists `password` in `$hidden`. Nothing is thrown and
+the response is unchanged; the warning points at a field that exposes the value on your
+regular show and index endpoints. Hide such a field with `hideFromShow()` and
+`hideFromIndex()` (it stays writable), or remove it. A `Mergeable` repository is not
+checked, since it serialises the model's own `toArray()`.
+
+A test that mocks the `Log` facade strictly (`Log::shouldReceive('error')` without
+allowing other calls) fails with `BadMethodCallException` if it serialises such a field
+while `app.debug` is on. Fix the field, or allow the call with
+`Log::shouldReceive('warning')->zeroOrMoreTimes()`.

@@ -16,6 +16,13 @@ use PHPUnit\Framework\Attributes\Test;
 
 class NestedRepositoryControllerTest extends IntegrationTestCase
 {
+    protected function tearDown(): void
+    {
+        unset($_SERVER['restify.post.delete']);
+
+        parent::tearDown();
+    }
+
     #[Test]
     public function it_can_list_nested(): void
     {

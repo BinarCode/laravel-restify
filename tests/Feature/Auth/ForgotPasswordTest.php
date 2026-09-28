@@ -12,6 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Notifications\AnonymousNotifiable;
 use Illuminate\Routing\Middleware\ThrottleRequests;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Exceptions;
@@ -29,6 +30,8 @@ use RuntimeException;
 class ForgotPasswordTest extends IntegrationTestCase
 {
     use RefreshDatabase;
+
+    private const int BROKER_THROTTLE_SECONDS = 60;
 
     protected function setUp(): void
     {
@@ -126,6 +129,68 @@ class ForgotPasswordTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_repeat_request_within_the_broker_throttle_sends_nothing_and_keeps_the_first_token(): void
+    {
+        Notification::fake();
+        config(['auth.passwords.users.throttle' => self::BROKER_THROTTLE_SECONDS]);
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        $firstResponse = $this->postJson('auth/forgotPassword', ['email' => $user->email]);
+        $firstTokenHash = DB::table('password_reset_tokens')->where('email', $user->email)->value('token');
+
+        $throttledResponse = $this->postJson('auth/forgotPassword', ['email' => $user->email]);
+
+        $firstResponse->assertOk();
+        $throttledResponse->assertOk();
+        $this->assertSame($firstResponse->getContent(), $throttledResponse->getContent());
+
+        Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 1);
+        $this->assertDatabaseHas('password_reset_tokens', ['email' => $user->email, 'token' => $firstTokenHash]);
+    }
+
+    #[Test]
+    public function the_broker_throttle_is_per_user(): void
+    {
+        Notification::fake();
+        config(['auth.passwords.users.throttle' => self::BROKER_THROTTLE_SECONDS]);
+
+        $firstUser = UserFactory::one(['email' => 'first@example.com']);
+        $secondUser = UserFactory::one(['email' => 'second@example.com']);
+
+        $this->postJson('auth/forgotPassword', ['email' => $firstUser->email])->assertOk();
+        $this->postJson('auth/forgotPassword', ['email' => $firstUser->email])->assertOk();
+        $this->postJson('auth/forgotPassword', ['email' => $secondUser->email])->assertOk();
+
+        Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 2);
+        Notification::assertSentOnDemand(
+            ForgotPasswordNotification::class,
+            fn (ForgotPasswordNotification $notification, array $channels, AnonymousNotifiable $notifiable): bool => $notifiable->routes['mail'] === $secondUser->email
+        );
+    }
+
+    #[Test]
+    public function a_repeat_request_after_the_broker_throttle_sends_a_new_link(): void
+    {
+        Notification::fake();
+
+        $user = UserFactory::one(['email' => 'known@example.com']);
+
+        config(['auth.passwords.users.throttle' => self::BROKER_THROTTLE_SECONDS]);
+
+        $this->postJson('auth/forgotPassword', ['email' => $user->email])->assertOk();
+        $this->postJson('auth/forgotPassword', ['email' => $user->email])->assertOk();
+
+        Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 1);
+
+        $this->travel(self::BROKER_THROTTLE_SECONDS + 1)->seconds();
+
+        $this->postJson('auth/forgotPassword', ['email' => $user->email])->assertOk();
+
+        Notification::assertSentOnDemandTimes(ForgotPasswordNotification::class, 2);
+    }
+
+    #[Test]
     public function an_unknown_email_writes_no_password_reset_token(): void
     {
         $this->postJson('auth/forgotPassword', ['email' => 'unknown@example.com'])->assertOk();
@@ -157,6 +222,7 @@ class ForgotPasswordTest extends IntegrationTestCase
 
         $user = UserFactory::one(['email' => 'known@example.com']);
 
+        Password::shouldReceive('getRepository->recentlyCreatedToken')->andReturnFalse();
         Password::shouldReceive('createToken')->once()->andThrow(new RuntimeException('reset pipeline failed'));
 
         $this->postJson('auth/forgotPassword', ['email' => $user->email])
@@ -243,6 +309,21 @@ class ForgotPasswordTest extends IntegrationTestCase
     public function invalid_input_is_rejected(array $payload): void
     {
         $this->postJson('auth/forgotPassword', $payload)->assertStatus(JsonResponse::HTTP_UNPROCESSABLE_ENTITY);
+    }
+
+    #[Test]
+    public function a_published_config_without_the_timebox_key_falls_back_to_the_default(): void
+    {
+        config(['restify.auth' => Arr::except(config('restify.auth'), 'password_reset_timebox')]);
+
+        $this->mock(Timebox::class, function (MockInterface $mock): void {
+            $mock->shouldReceive('call')
+                ->once()
+                ->withArgs(fn (callable $callback, int $microseconds): bool => $microseconds === 200_000)
+                ->andReturnUsing(fn (callable $callback) => $callback());
+        });
+
+        $this->postJson('auth/forgotPassword', ['email' => 'nobody@example.com'])->assertOk();
     }
 
     /**
