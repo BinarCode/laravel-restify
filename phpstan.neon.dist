@@ -19,3 +19,13 @@ parameters:
             # installed (newer) version always has it, so this looks redundant here.
             message: '#^Call to function method_exists\(\) with Illuminate\\Database\\Schema\\Builder and .*getCurrentSchemaLis.* will always evaluate to true\.$#'
             path: src/Commands/RepositoryCommand.php
+        -
+            # Column::getTypeName() only exists from doctrine/dbal 4.5, which deprecates getType(). The
+            # installed (newer) dbal always has it, so the 3.7-4.4 fallback looks redundant here.
+            message: '#^Call to function method_exists\(\) with Doctrine\\DBAL\\Schema\\Column and ''getTypeName'' will always evaluate to true\.$#'
+            count: 1
+            path: src/Generators/DatabaseGenerator.php
+        -
+            message: '#^Call to deprecated method getType\(\) of class Doctrine\\DBAL\\Schema\\Column\:#'
+            count: 1
+            path: src/Generators/DatabaseGenerator.php

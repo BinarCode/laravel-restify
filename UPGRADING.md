@@ -2,6 +2,13 @@
 
 ## Unreleased
 
+### `DeletesFields::deleteFields()` is typed
+
+`deleteFields(RestifyRequest $request, Model $model): void` now declares its parameter and
+return types. A controller that uses the `DeletesFields` trait and overrides
+`deleteFields()` without them fails with a fatal signature error; add `Model $model` and
+`: void` to the override.
+
 ### `afterValidation()` now also fires on bulk delete
 
 `DELETE /api/restify/{repository}/bulk/delete` now runs the repository's
