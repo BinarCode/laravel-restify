@@ -46,7 +46,7 @@ trait RepositoryEvents
 
     public static function mounting(): void
     {
-        if (static::$prefix) {
+        if (static::$prefix && ! static::prefixWasSet()) {
             static::setPrefix(static::$prefix, static::uriKey());
         }
     }
