@@ -29,7 +29,7 @@ class LoginController extends Controller
             abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }
 
-        return rest($user)->indexMeta([
+        return rest($user)->withoutHiddenAttributes()->indexMeta([
             'token' => $user->createToken('login')->plainTextToken,
         ]);
     }

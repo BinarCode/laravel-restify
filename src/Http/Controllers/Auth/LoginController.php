@@ -50,7 +50,7 @@ class LoginController extends Controller
 
         $token = $user->createToken('login', ['*'], $expiresAt);
 
-        return rest($user)->indexMeta([
+        return rest($user)->withoutHiddenAttributes()->indexMeta([
             'token' => $token->plainTextToken,
             'expires_in' => $ttlSeconds,
         ]);

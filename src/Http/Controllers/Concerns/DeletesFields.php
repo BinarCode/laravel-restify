@@ -2,23 +2,14 @@
 
 namespace Binaryk\LaravelRestify\Http\Controllers\Concerns;
 
-use Binaryk\LaravelRestify\Contracts\Deletable;
-use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\DeleteField;
+use Illuminate\Database\Eloquent\Model;
 
 trait DeletesFields
 {
-    protected function deleteFields(RestifyRequest $request, $model)
+    protected function deleteFields(RestifyRequest $request, Model $model): void
     {
-        ($repository = $request->repositoryWith($model))
-            ->collectFields($request)
-            ->whereInstanceOf(Deletable::class)
-            ->filter(fn (Field $field) => $field instanceof Deletable)
-            ->filter(fn (Deletable $field) => $field->isPrunable())
-            ->resolve($repository)
-            ->each(function ($field) use ($request, $model) {
-                DeleteField::forRequest($request, $field, $model)->save();
-            });
+        DeleteField::pruneFields($request, $request->repositoryWith($model), $model);
     }
 }

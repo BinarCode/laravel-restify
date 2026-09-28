@@ -2,9 +2,11 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
+use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequestable;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 
@@ -112,6 +114,48 @@ class FieldCollection extends Collection
             ->inRequest($request, $row)
             ->filter(fn (Field $field) => $field->isActionable())
             ->values();
+    }
+
+    /**
+     * @return $this
+     *
+     * @throws UnauthorizedException
+     */
+    public function authorizeActionsToSee(Request $request): self
+    {
+        foreach ($this->items as $field) {
+            if ($field instanceof Field) {
+                $field->authorizeActionToSee($request);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     *
+     * @throws UnauthorizedException
+     */
+    public function authorizeActionsToRun(Request $request, ?Model $model): self
+    {
+        foreach ($this->items as $field) {
+            if ($field instanceof Field) {
+                $field->authorizeActionToRun($request, $model);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return $this
+     *
+     * @throws UnauthorizedException
+     */
+    public function authorizeActions(Request $request, ?Model $model): self
+    {
+        return $this->authorizeActionsToSee($request)->authorizeActionsToRun($request, $model);
     }
 
     public function withoutActions(RestifyRequest $request, $repository): self
