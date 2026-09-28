@@ -35,8 +35,9 @@ jobs:
             - name: Skip commits that are already released
               id: released
               run: |
-                  if [ -n "$(git tag --contains HEAD)" ]; then
-                      echo "HEAD is already in $(git tag --contains HEAD | head -n1)."
+                  RELEASED_IN=$(git tag --contains HEAD --sort=v:refname | head -n1)
+                  if [ -n "$RELEASED_IN" ]; then
+                      echo "HEAD is already in $RELEASED_IN."
                       echo "skip=true" >> "$GITHUB_OUTPUT"
                   fi
 
