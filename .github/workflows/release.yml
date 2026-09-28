@@ -13,8 +13,7 @@ on:
 permissions:
     contents: read
 
-# Merges in quick succession used to start parallel runs that computed the same next tag,
-# so all but one failed and the survivor tagged commits its changelog didn't list.
+# Queue release runs so each computes the next tag after the previous one exists.
 concurrency:
     group: release
     cancel-in-progress: false
@@ -33,7 +32,16 @@ jobs:
                   fetch-depth: 0
                   persist-credentials: false
 
+            - name: Skip commits that are already released
+              id: released
+              run: |
+                  if [ -n "$(git tag --contains HEAD)" ]; then
+                      echo "HEAD is already in $(git tag --contains HEAD | head -n1)."
+                      echo "skip=true" >> "$GITHUB_OUTPUT"
+                  fi
+
             - name: Setup PHP
+              if: steps.released.outputs.skip != 'true'
               uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
               with:
                   php-version: 8.4
@@ -41,14 +49,17 @@ jobs:
                   coverage: none
 
             -   name: Install dependencies
+                if: steps.released.outputs.skip != 'true'
                 run: |
                     composer require "laravel/framework:12.*" "orchestra/testbench:10.*" --no-interaction --no-update
                     composer update --prefer-stable --prefer-dist --no-interaction
 
             - name: Execute tests
+              if: steps.released.outputs.skip != 'true'
               run: composer test
 
             - name: Get next version
+              if: steps.released.outputs.skip != 'true'
               id: get_version
               run: |
                   # Get all tags and sort by version number (descending)
@@ -80,6 +91,7 @@ jobs:
                   echo "tag_name=$NEW_VERSION" >> $GITHUB_OUTPUT
 
             - name: Generate changelog
+              if: steps.released.outputs.skip != 'true'
               id: changelog
               run: |
                   # Get the previous tag for changelog
@@ -102,6 +114,7 @@ jobs:
                   echo "EOF" >> $GITHUB_OUTPUT
 
             - name: Create Release
+              if: steps.released.outputs.skip != 'true'
               env:
                   GH_TOKEN: ${{ github.token }}
                   TAG_NAME: ${{ steps.get_version.outputs.tag_name }}
