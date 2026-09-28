@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Feature\Auth;
 
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\HiddenAttributesUserRepository;
@@ -24,26 +23,15 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 class AuthResponseHiddenAttributesTest extends IntegrationTestCase
 {
-    /** @var list<class-string<Repository>> */
-    private array $registeredRepositories = [];
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->registeredRepositories = Restify::$repositories;
         Restify::$repositories = [HiddenAttributesUserRepository::class, VisibleAttributesUserRepository::class, ...Restify::$repositories];
 
         Route::restifyAuth('auth', ['register', 'login', 'verifyEmail']);
 
         Notification::fake();
-    }
-
-    protected function tearDown(): void
-    {
-        Restify::$repositories = $this->registeredRepositories;
-
-        parent::tearDown();
     }
 
     #[Test]

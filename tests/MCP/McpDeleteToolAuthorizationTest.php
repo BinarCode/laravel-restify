@@ -29,14 +29,6 @@ class McpDeleteToolAuthorizationTest extends IntegrationTestCase
         Restify::repositories([McpDeleteAuthorizationPostRepository::class]);
     }
 
-    protected function tearDown(): void
-    {
-        unset($_SERVER['restify.post.delete']);
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [

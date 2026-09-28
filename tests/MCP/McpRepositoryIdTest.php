@@ -62,7 +62,6 @@ class McpRepositoryIdTest extends IntegrationTestCase
     public function the_mcp_delete_tool_passes_the_tool_id_to_the_destroy_hook_without_a_route(): void
     {
         $post = PostFactory::new()->create();
-        $_SERVER['restify.post.delete'] = true;
 
         $this->callTool('mcp-repository-id-posts-delete-tool', [
             'id' => (string) $post->getKey(),

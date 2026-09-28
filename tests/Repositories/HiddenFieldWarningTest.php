@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Repositories;
 
-use Binaryk\LaravelRestify\Repositories\HiddenModelAttributes;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Database\Factories\UserFactory;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\HiddenAttributesUserRepository;
@@ -20,30 +18,15 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 class HiddenFieldWarningTest extends IntegrationTestCase
 {
-    /** @var list<class-string<Repository>> */
-    private array $registeredRepositories = [];
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->registeredRepositories = Restify::$repositories;
         Restify::$repositories = [HiddenAttributesUserRepository::class, VisibleAttributesUserRepository::class, ...Restify::$repositories];
-
-        HiddenModelAttributes::flushWarnings();
 
         config(['app.debug' => true]);
 
         Log::spy();
-    }
-
-    protected function tearDown(): void
-    {
-        Restify::$repositories = $this->registeredRepositories;
-
-        HiddenModelAttributes::flushWarnings();
-
-        parent::tearDown();
     }
 
     #[Test]
