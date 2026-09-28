@@ -13,6 +13,12 @@ on:
 permissions:
     contents: read
 
+# Merges in quick succession used to start parallel runs that computed the same next tag,
+# so all but one failed and the survivor tagged commits its changelog didn't list.
+concurrency:
+    group: release
+    cancel-in-progress: false
+
 jobs:
     release:
         runs-on: ubuntu-latest
@@ -103,5 +109,6 @@ jobs:
                   RELEASE_BODY: ${{ steps.changelog.outputs.changelog }}
               run: |
                   gh release create "$TAG_NAME" \
+                      --target "$GITHUB_SHA" \
                       --title "$RELEASE_NAME" \
                       --notes "$RELEASE_BODY"
