@@ -17,20 +17,11 @@ class RepositoryDestroyControllerTest extends IntegrationTestCase
         $this->authenticate();
     }
 
-    protected function tearDown(): void
-    {
-        unset($_SERVER['restify.post.delete']);
-
-        parent::tearDown();
-    }
-
     public function test_destroy_works(): void
     {
         $post = Post::factory()->create(['user_id' => 1]);
 
         $this->assertInstanceOf(Post::class, Post::find($post->id));
-
-        $_SERVER['restify.post.delete'] = true;
 
         $this->deleteJson(PostRepository::route($post), [
             'title' => 'Updated title',

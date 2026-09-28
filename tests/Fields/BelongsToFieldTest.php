@@ -27,14 +27,6 @@ class BelongsToFieldTest extends IntegrationTestCase
         Restify::repositories([
             PostWithUserRepository::class,
         ]);
-
-        unset($_SERVER['restify.post.store'], $_SERVER['restify.post.allowRestify'], $_SERVER['restify.users.show']);
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        Repository::clearResolvedInstances();
     }
 
     public function test_present_on_show_when_specified_related(): void
@@ -85,8 +77,6 @@ class BelongsToFieldTest extends IntegrationTestCase
 
     public function test_dont_show_key_when_nullable_related(): void
     {
-        $_SERVER['restify.users.show'] = true;
-
         Gate::policy(User::class, UserPolicy::class);
 
         tap(Post::factory()->create([

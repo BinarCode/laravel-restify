@@ -40,15 +40,6 @@ class McpDeleteToolFileCleanupTest extends IntegrationTestCase
         Mcp::web(self::ENDPOINT, RestifyServer::class);
     }
 
-    protected function tearDown(): void
-    {
-        unset($_SERVER['restify.users.delete']);
-        McpDeleteFileCleanupUserRepository::$prunable = true;
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [

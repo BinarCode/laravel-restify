@@ -16,13 +16,6 @@ class SyncRemovalQueryCountTest extends IntegrationTestCase
 {
     use InteractsWithQueryLog;
 
-    protected function tearDown(): void
-    {
-        unset($_SERVER['roles.canDetach.users']);
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function a_plain_field_sync_does_not_query_the_rows_it_removes(): void
     {

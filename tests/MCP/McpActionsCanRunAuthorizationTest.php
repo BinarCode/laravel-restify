@@ -43,13 +43,6 @@ class McpActionsCanRunAuthorizationTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     #[Test]
     #[TestWith([false, 'Not authorized to run this action.'], 'denied')]
     #[TestWith([true, null], 'allowed')]

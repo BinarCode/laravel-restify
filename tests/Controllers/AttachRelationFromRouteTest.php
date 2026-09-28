@@ -26,23 +26,6 @@ use PHPUnit\Framework\Attributes\Test;
  */
 class AttachRelationFromRouteTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        unset(
-            $_SERVER['roles.canDetach.users'],
-            $_SERVER['CompanyRepository.attach.repositoryId'],
-            $_SERVER['CompanyRepository.detach.repositoryId'],
-            $_SERVER['CompanyRepository.sync.repositoryId'],
-            $_SERVER['CompanyRepository.deniedRoles.customAttacher.calls'],
-            $_SERVER['CompanyRepository.deniedRoles.customDetacher.calls'],
-        );
-
-        CompanyRepository::$attachers = [];
-        CompanyRepository::$detachers = [];
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function a_body_related_repository_key_cannot_redirect_attach_to_a_different_field(): void
     {

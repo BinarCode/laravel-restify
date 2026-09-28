@@ -26,14 +26,6 @@ class HasManyTest extends IntegrationTestCase
         Restify::repositories([
             UserWithPosts::class,
         ]);
-
-        unset($_SERVER['restify.post.show'], $_SERVER['restify.post.delete'], $_SERVER['restify.post.allowRestify']);
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        Repository::clearResolvedInstances();
     }
 
     public function test_has_many_present_on_relations(): void
@@ -203,8 +195,6 @@ class HasManyTest extends IntegrationTestCase
 
     public function test_can_store(): void
     {
-        $_SERVER['restify.post.store'] = true;
-
         Gate::policy(Post::class, PostPolicy::class);
 
         $this->assertDatabaseCount('posts', 0);
@@ -262,7 +252,6 @@ class HasManyTest extends IntegrationTestCase
 
     public function test_404_post_from_different_owner(): void
     {
-        $_SERVER['restify.post.show'] = true;
         Gate::policy(Post::class, PostPolicy::class);
 
         $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
@@ -274,7 +263,6 @@ class HasManyTest extends IntegrationTestCase
 
     public function test_change_post(): void
     {
-        $_SERVER['restify.post.update'] = true;
         Gate::policy(Post::class, PostPolicy::class);
 
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();
@@ -288,7 +276,6 @@ class HasManyTest extends IntegrationTestCase
 
     public function test_delete_post(): void
     {
-        $_SERVER['restify.post.delete'] = true;
         Gate::policy(Post::class, PostPolicy::class);
 
         $post = $this->mockPosts($userId = $this->mockUsers()->first()->id, 1)->first();

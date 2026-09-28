@@ -19,16 +19,6 @@ class MergeableFieldsCallCountTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    protected function tearDown(): void
-    {
-        MergeableFieldsCallCountRepository::$fieldsCalls = 0;
-        NonMergeableFieldsCallCountRepository::$fieldsCalls = 0;
-
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function it_calls_fields_exactly_once_per_extra_row_on_a_mergeable_index(): void
     {

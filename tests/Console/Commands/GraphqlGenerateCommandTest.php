@@ -96,8 +96,6 @@ class GraphqlGenerateCommandTest extends IntegrationTestCase
 
     public function test_fails_gracefully_when_no_repositories_found(): void
     {
-        // Temporarily modify the repositories array to simulate no repositories
-        $originalRepositories = Restify::$repositories;
         Restify::$repositories = [];
 
         $outputPath = base_path('tests/temp/GraphQL');
@@ -111,9 +109,6 @@ class GraphqlGenerateCommandTest extends IntegrationTestCase
             ->expectsOutput('✅ Authentication mocking enabled for console context')
             ->expectsOutput('No repositories found. Make sure you have repositories in your app/Restify directory.')
             ->assertExitCode(1);
-
-        // Restore original repositories
-        Restify::$repositories = $originalRepositories;
     }
 
     public function test_can_use_custom_schema_file_name(): void

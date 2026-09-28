@@ -30,7 +30,6 @@ class RegisterTest extends IntegrationTestCase
 
     protected function tearDown(): void
     {
-        User::$lastCreatedTokenExpiresAt = null;
         Carbon::setTestNow();
 
         parent::tearDown();

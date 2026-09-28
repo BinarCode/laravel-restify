@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Unit;
 
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
@@ -13,23 +12,6 @@ use PHPUnit\Framework\Attributes\Test;
 
 class RestifyIsRestifyPrefixTest extends IntegrationTestCase
 {
-    /** @var list<class-string<Repository>> */
-    private array $originalRepositories;
-
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $this->originalRepositories = Restify::$repositories;
-    }
-
-    protected function tearDown(): void
-    {
-        Restify::$repositories = $this->originalRepositories;
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function an_empty_string_prefix_is_excluded_and_does_not_falsely_match_the_root_path(): void
     {

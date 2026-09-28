@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests\Unit;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Cache\ArrayStore;
-use Illuminate\Support\Facades\Cache;
 use Mockery;
 
 class CacheTaggingSupportTest extends IntegrationTestCase
@@ -47,13 +46,5 @@ class CacheTaggingSupportTest extends IntegrationTestCase
         $supportsTagging = PostRepository::cacheStoreSupportsTagging($mockStore);
 
         $this->assertFalse($supportsTagging);
-    }
-
-    protected function tearDown(): void
-    {
-        // Reset repository cache tags
-        PostRepository::$cacheTags = [];
-
-        parent::tearDown();
     }
 }

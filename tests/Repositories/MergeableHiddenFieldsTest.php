@@ -20,15 +20,6 @@ class MergeableHiddenFieldsTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    protected function tearDown(): void
-    {
-        Restify::$repositories = [];
-        MergeableDuplicateFieldRepository::$order = 'visible_first';
-        MergeableRowVisibilityRepository::$visibleForId = 0;
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function it_excludes_hidden_and_unauthorized_fields_on_index_for_a_mergeable_repository(): void
     {

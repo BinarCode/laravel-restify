@@ -24,17 +24,9 @@ class HasOneFieldTest extends IntegrationTestCase
         parent::setUp();
         //        $this->authenticate();
 
-        unset($_SERVER['restify.post.show']);
-
         Restify::repositories([
             UserWithPostRepository::class,
         ]);
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-        Repository::clearResolvedInstances();
     }
 
     public function test_has_one_present_on_relations(): void

@@ -21,13 +21,6 @@ class BulkQueryCountTest extends IntegrationTestCase
         $this->authenticate();
     }
 
-    protected function tearDown(): void
-    {
-        unset($_SERVER['restify.post.deleteBulk.callback']);
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function bulk_delete_loads_every_model_in_one_query(): void
     {

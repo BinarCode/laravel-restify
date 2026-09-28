@@ -181,8 +181,6 @@ class ActionLogTest extends IntegrationTestCase
 
     public function test_store_log_on_destroy_request(): void
     {
-        $_SERVER['restify.post.delete'] = true;
-
         $post = PostFactory::one(['title' => 'Title']);
 
         $this->assertEmpty($post->actionLogs()->get());
@@ -237,8 +235,6 @@ class ActionLogTest extends IntegrationTestCase
 
     public function test_store_log_on_action_request(): void
     {
-        $_SERVER['actions.posts.publish.onlyOnShow'] = false;
-
         Post::observe(ActionLogObserver::class);
 
         $post = $this

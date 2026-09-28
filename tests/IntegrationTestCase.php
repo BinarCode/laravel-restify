@@ -5,7 +5,6 @@ namespace Binaryk\LaravelRestify\Tests;
 use Binaryk\LaravelRestify\LaravelRestifyServiceProvider;
 use Binaryk\LaravelRestify\Models\ActionLog;
 use Binaryk\LaravelRestify\Models\ActionLogPolicy;
-use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\Concerns\Mockers;
@@ -43,13 +42,85 @@ use Illuminate\Support\Facades\Gate;
 use JetBrains\PhpStorm\Pure;
 use Mockery;
 use Orchestra\Testbench\TestCase;
+use PHPUnit\Framework\Attributes\Before;
+use PHPUnit\Framework\TestCase as PHPUnitTestCase;
+use ReflectionClass;
+use ReflectionProperty;
 
+/**
+ * Every test starts from the same global state, whatever ran before it in this process. Two #[Before] hooks put it
+ * back ahead of setUp(), so tests never reset or restore any of it in setUp() or tearDown():
+ * - $_SERVER, which the fixture policies read their switches and spies from.
+ * - Every static property a Binaryk\LaravelRestify class declares with a default, including the anonymous classes
+ *   tests declare. Test classes are skipped. setUp() then registers the repositories again.
+ *
+ * A static declared without a default, such as Repository::$related, cannot be put back. A fixture whose static a test
+ * assigns must declare it with a default, or the write lands on Repository and leaks into every repository.
+ * A class a test declares cannot be undeclared either: such a test runs in a separate process.
+ */
 abstract class IntegrationTestCase extends TestCase
 {
     use Mockers;
     use Prototypes;
 
     protected Mockery\MockInterface|User|null $authenticatedAs = null;
+
+    /**
+     * The $_SERVER the first test in this process started with.
+     *
+     * @var array<string, mixed>
+     */
+    private static array $pristineServer;
+
+    /**
+     * @var array<class-string, list<array{ReflectionProperty, mixed}>>
+     */
+    private static array $staticDefaults = [];
+
+    #[Before]
+    protected function resetServerGlobals(): void
+    {
+        self::$pristineServer ??= $_SERVER;
+
+        $_SERVER = self::$pristineServer;
+    }
+
+    #[Before]
+    protected function resetStaticProperties(): void
+    {
+        foreach (get_declared_classes() as $class) {
+            if (! str_starts_with($class, 'Binaryk\\LaravelRestify\\')) {
+                continue;
+            }
+
+            self::$staticDefaults[$class] ??= self::staticPropertiesWithDefaults($class);
+
+            foreach (self::$staticDefaults[$class] as [$property, $default]) {
+                $property->setValue(null, $default);
+            }
+        }
+    }
+
+    /**
+     * @param  class-string  $class
+     * @return list<array{ReflectionProperty, mixed}>
+     */
+    private static function staticPropertiesWithDefaults(string $class): array
+    {
+        if (is_subclass_of($class, PHPUnitTestCase::class)) {
+            return [];
+        }
+
+        $defaults = [];
+
+        foreach ((new ReflectionClass($class))->getProperties(ReflectionProperty::IS_STATIC) as $property) {
+            if ($property->getDeclaringClass()->getName() === $class && $property->hasDefaultValue()) {
+                $defaults[] = [$property, $property->getDefaultValue()];
+            }
+        }
+
+        return $defaults;
+    }
 
     protected function setUp(): void
     {
@@ -73,13 +144,6 @@ abstract class IntegrationTestCase extends TestCase
         };
 
         $this->ensureLoggedIn();
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-
-        Repository::clearResolvedInstances();
     }
 
     protected function getPackageProviders($app): array

@@ -23,39 +23,13 @@ class RefreshCommandTest extends IntegrationTestCase
 {
     use InteractsWithQueryLog;
 
-    private ?string $originalPostRepositoryCacheStore;
-
-    /** @var array<int, string> */
-    private array $originalPostRepositoryCacheTags;
-
-    /** @var array<class-string<Repository>, true> */
-    private array $originalBootedRepositories;
-
     protected function setUp(): void
     {
         parent::setUp();
 
-        RecordingCommand::$calls = [];
-        RecordingCommand::$exitCodes = [];
-
         foreach (['route:cache', 'route:clear', 'cache:clear', 'config:cache', 'config:clear', 'view:clear'] as $name) {
             Artisan::registerCommand(new RecordingCommand($name));
         }
-
-        $this->originalPostRepositoryCacheStore = PostRepository::$cacheStore;
-        $this->originalPostRepositoryCacheTags = PostRepository::$cacheTags;
-        $this->originalBootedRepositories = $this->bootedRepositoriesProperty()->getValue();
-    }
-
-    protected function tearDown(): void
-    {
-        RecordingCommand::$calls = [];
-        RecordingCommand::$exitCodes = [];
-        PostRepository::$cacheStore = $this->originalPostRepositoryCacheStore;
-        PostRepository::$cacheTags = $this->originalPostRepositoryCacheTags;
-        $this->bootedRepositoriesProperty()->setValue(null, $this->originalBootedRepositories);
-
-        parent::tearDown();
     }
 
     #[Test]

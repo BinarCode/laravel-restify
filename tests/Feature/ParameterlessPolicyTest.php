@@ -12,13 +12,6 @@ class ParameterlessPolicyTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    protected function setUp(): void
-    {
-        parent::setUp();
-
-        $_SERVER['restify.parameterless.allowRestify'] = true;
-    }
-
     public function test_unauthenticated_request_is_allowed_when_parameterless_allow_restify_returns_true(): void
     {
         Gate::policy(Post::class, ParameterlessAllowPolicy::class);

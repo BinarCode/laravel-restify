@@ -14,13 +14,6 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 class AttachAuthorizationTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        unset($_SERVER['allow_attach_users'], $_SERVER['allow_detach_users']);
-
-        parent::tearDown();
-    }
-
     #[Test]
     #[TestWith([0], 'the first related model is denied')]
     #[TestWith([1], 'the second related model is denied')]

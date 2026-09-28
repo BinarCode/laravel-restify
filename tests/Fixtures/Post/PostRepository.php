@@ -75,6 +75,8 @@ class PostRepository extends Repository
 
     public static array $middleware = [];
 
+    public static array $related = [];
+
     public static array $sort = [
         'title',
         'is_active',

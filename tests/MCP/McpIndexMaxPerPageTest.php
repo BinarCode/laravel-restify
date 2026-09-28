@@ -20,13 +20,6 @@ class McpIndexMaxPerPageTest extends IntegrationTestCase
 {
     use RefreshDatabase;
 
-    protected function tearDown(): void
-    {
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     #[Test]
     #[TestWith([50, 100, 55, 50], 'cap 50: an int perPage above the cap is clamped')]
     #[TestWith([null, 100.0, 3, 100], 'no cap: a float perPage is honoured, not defaulted')]

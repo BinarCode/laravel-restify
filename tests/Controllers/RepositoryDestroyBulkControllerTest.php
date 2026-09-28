@@ -91,14 +91,10 @@ class RepositoryDestroyBulkControllerTest extends IntegrationTestCase
             $_SERVER['restify.post.afterValidation.keys'] = $validator->validated()['keys'];
         };
 
-        try {
-            $this->deleteJson(PostRepository::route('bulk/delete'), [
-                $post->getKey(),
-            ])->assertOk();
+        $this->deleteJson(PostRepository::route('bulk/delete'), [
+            $post->getKey(),
+        ])->assertOk();
 
-            $this->assertSame([$post->getKey()], $_SERVER['restify.post.afterValidation.keys']);
-        } finally {
-            unset($_SERVER['restify.post.afterValidation.spy'], $_SERVER['restify.post.afterValidation.keys']);
-        }
+        $this->assertSame([$post->getKey()], $_SERVER['restify.post.afterValidation.keys']);
     }
 }

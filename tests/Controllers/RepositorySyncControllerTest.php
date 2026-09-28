@@ -21,15 +21,6 @@ use PHPUnit\Framework\Attributes\TestWith;
 
 class RepositorySyncControllerTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        unset($_SERVER['roles.canDetach.users']);
-
-        CompanyWithExtraSyncedStaffRepository::$extraStaffId = null;
-
-        parent::tearDown();
-    }
-
     public function test_can_sync_repositories(): void
     {
         $this->markTestSkipped('Doesnt run on ubuntu lowest');

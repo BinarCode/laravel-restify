@@ -12,25 +12,12 @@ use PHPUnit\Framework\Attributes\Test;
 
 class CacheKeyPerPageTest extends IntegrationTestCase
 {
-    private int $originalDefaultPerPage;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         // Array cache avoids the database cache table CI does not migrate.
         config(['cache.default' => 'array']);
-
-        $this->originalDefaultPerPage = PostRepository::$defaultPerPage;
-    }
-
-    protected function tearDown(): void
-    {
-        // $defaultPerPage is inherited from Repository, so every repository
-        // that does not declare its own copy shares this static with PostRepository.
-        PostRepository::$defaultPerPage = $this->originalDefaultPerPage;
-
-        parent::tearDown();
     }
 
     #[Test]

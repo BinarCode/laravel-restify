@@ -38,8 +38,6 @@ class RepositoryCacheStoreConfigTest extends IntegrationTestCase
     {
         Carbon::setTestNow();
 
-        PostRepository::$cacheStore = null;
-
         parent::tearDown();
     }
 

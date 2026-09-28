@@ -39,18 +39,8 @@ class McpActionsIntegrationTest extends IntegrationTestCase
         ]);
     }
 
-    protected function tearDown(): void
-    {
-        // Clear Restify repositories to prevent affecting subsequent tests
-        Restify::$repositories = [];
-
-        parent::tearDown();
-    }
-
     public function test_could_perform_action_for_multiple_repositories(): void
     {
-        PublishPostAction::$applied = [];
-
         $mcpPostRepository = new class extends Repository
         {
             use HasMcpTools;
@@ -130,8 +120,6 @@ class McpActionsIntegrationTest extends IntegrationTestCase
 
     public function test_action_with_custom_uri_key(): void
     {
-        PublishPostAction::$applied = [];
-
         $mcpPostRepository = new class extends Repository
         {
             use HasMcpTools;
@@ -204,8 +192,6 @@ class McpActionsIntegrationTest extends IntegrationTestCase
 
     public function test_show_action_not_need_repositories(): void
     {
-        ActivateAction::$applied = [];
-
         $mcpUserRepository = new class extends Repository
         {
             use HasMcpTools;
@@ -279,8 +265,6 @@ class McpActionsIntegrationTest extends IntegrationTestCase
 
     public function test_could_perform_standalone_action(): void
     {
-        DisableProfileAction::$applied = [];
-
         $mcpUserRepository = new class extends Repository
         {
             use HasMcpTools;

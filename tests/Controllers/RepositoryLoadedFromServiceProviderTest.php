@@ -18,11 +18,6 @@ class RepositoryLoadedFromServiceProviderTest extends IntegrationTestCase
         Restify::$repositories = [];
     }
 
-    protected function tearDown(): void
-    {
-        parent::tearDown();
-    }
-
     #[DataProvider('repositoryPathsFromFixtures')]
     public function test_repositories_can_be_loaded_with_service_provider_register_method(
         string $directory,
@@ -39,8 +34,5 @@ class RepositoryLoadedFromServiceProviderTest extends IntegrationTestCase
             $route = $repository::route();
             $this->getJson($route)->assertOk();
         }
-
-        // Clears repositories so it does not affect other tests.
-        Restify::$repositories = [];
     }
 }

@@ -5,12 +5,10 @@ declare(strict_types=1);
 namespace Binaryk\LaravelRestify\Tests;
 
 use App\Providers\RestifyServiceProvider;
-use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserPolicy;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
-use Closure;
 use Illuminate\Support\Facades\Gate;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -19,15 +17,12 @@ use ReflectionMethod;
 
 class RestifyApplicationServiceProviderTest extends IntegrationTestCase
 {
-    private ?Closure $originalAuthUsing;
-
     private string $originalEnvironment;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->originalAuthUsing = Restify::$authUsing;
         $this->originalEnvironment = $this->app['env'];
 
         $this->app['env'] = 'production';
@@ -38,7 +33,6 @@ class RestifyApplicationServiceProviderTest extends IntegrationTestCase
 
     protected function tearDown(): void
     {
-        Restify::$authUsing = $this->originalAuthUsing;
         $this->app['env'] = $this->originalEnvironment;
 
         parent::tearDown();

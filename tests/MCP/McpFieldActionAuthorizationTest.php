@@ -38,14 +38,6 @@ class McpFieldActionAuthorizationTest extends IntegrationTestCase
         Mcp::web('test-field-action-update', RestifyServer::class);
     }
 
-    protected function tearDown(): void
-    {
-        Restify::$repositories = [];
-        FieldActionPostMcpRepository::$canRunDescriptionAction = true;
-
-        parent::tearDown();
-    }
-
     protected function getPackageProviders($app): array
     {
         return array_merge(parent::getPackageProviders($app), [

@@ -15,13 +15,6 @@ use Illuminate\Support\Facades\Gate;
 
 class RepositoryDetachControllerTest extends IntegrationTestCase
 {
-    protected function tearDown(): void
-    {
-        CompanyRepository::$detachers = [];
-
-        parent::tearDown();
-    }
-
     public function test_can_detach_repositories(): void
     {
         $_SERVER['roles.canDetach.users'] = true;

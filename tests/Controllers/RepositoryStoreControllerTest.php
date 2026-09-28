@@ -41,8 +41,6 @@ class RepositoryStoreControllerTest extends IntegrationTestCase
 
     public function test_success_storing(): void
     {
-        $_SERVER['restify.post.store'] = true;
-
         $post = $this
             ->posts()
             ->fake()

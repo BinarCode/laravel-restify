@@ -15,13 +15,6 @@ class RepositoriesResolvedFromNamespaceTest extends IntegrationTestCase
     protected function setUp(): void
     {
         TestCase::setUp();
-
-        Restify::$repositories = [];
-    }
-
-    protected function tearDown(): void
-    {
-        parent::tearDown();
     }
 
     public function test_repository_can_be_resolved_from_app_namespace(): void

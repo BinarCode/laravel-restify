@@ -22,16 +22,6 @@ class BulkFrontendShapesTest extends IntegrationTestCase
         $this->authenticate();
     }
 
-    protected function tearDown(): void
-    {
-        unset(
-            $_SERVER['restify.post.updateBulk.callback'],
-            $_SERVER['restify.post.deleteBulk.callback'],
-        );
-
-        parent::tearDown();
-    }
-
     #[Test]
     public function delete_bulk_accepts_the_string_ids_the_repository_serialized(): void
     {
