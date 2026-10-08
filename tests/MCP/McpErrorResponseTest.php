@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\MCP\Concerns\HasMcpTools;
 use Binaryk\LaravelRestify\MCP\RestifyServer;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Getters\PostsIndexGetter;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -48,12 +49,17 @@ class McpErrorResponseTest extends IntegrationTestCase
 
     private function callExecuteOperation(string $route, array $arguments): array
     {
+        return $this->callTool($route, 'execute-operation', $arguments);
+    }
+
+    private function callTool(string $route, string $tool, array $arguments): array
+    {
         $response = $this->postJson($route, [
             'jsonrpc' => '2.0',
             'id' => 1,
             'method' => 'tools/call',
             'params' => [
-                'name' => 'execute-operation',
+                'name' => $tool,
                 'arguments' => $arguments,
             ],
         ]);
@@ -61,6 +67,19 @@ class McpErrorResponseTest extends IntegrationTestCase
         $response->assertOk();
 
         return $response->json();
+    }
+
+    private function assertInvalidOperation(array $result): string
+    {
+        $this->assertArrayNotHasKey('error', $result, 'Expected a tool error result, got a JSON-RPC error.');
+        $this->assertTrue($result['result']['isError']);
+
+        $text = $result['result']['content'][0]['text'];
+        $content = json_decode($text, true);
+        $this->assertIsArray($content, "Tool error is not a structured error payload: {$text}");
+        $this->assertEquals('INVALID_OPERATION', $content['code']);
+
+        return $content['error'];
     }
 
     public function test_missing_repository_returns_real_mcp_error(): void
@@ -116,6 +135,86 @@ class McpErrorResponseTest extends IntegrationTestCase
         $content = json_decode($result['result']['content'][0]['text'], true);
         $this->assertEquals('AUTHORIZATION_ERROR', $content['code']);
     }
+
+    public function test_unknown_operation_type_returns_invalid_operation_with_valid_types(): void
+    {
+        Restify::repositories([UserErrorRepository::class]);
+        Mcp::web('test-unknown-operation-type', RestifyServer::class);
+
+        $message = $this->assertInvalidOperation($this->callExecuteOperation('/test-unknown-operation-type', [
+            'repository' => 'mcp-error-users',
+            'operation_type' => 'nope',
+            'parameters' => [],
+        ]));
+
+        $this->assertStringContainsString('"nope"', $message);
+        $this->assertStringContainsString('index, show, store, update, delete, profile, action, getter', $message);
+        $this->assertStringContainsString('operation_type "action" or "getter" with operation_name', $message);
+    }
+
+    public function test_action_uri_key_as_operation_type_hints_the_action_call(): void
+    {
+        Restify::repositories([UserErrorRepository::class]);
+        Mcp::web('test-action-uri-key-hint', RestifyServer::class);
+
+        $message = $this->assertInvalidOperation($this->callExecuteOperation('/test-action-uri-key-hint', [
+            'repository' => 'mcp-error-users',
+            'operation_type' => 'validated-action',
+            'parameters' => [],
+        ]));
+
+        $this->assertSame(
+            '"validated-action" is an action on "mcp-error-users": call operation_type="action", operation_name="validated-action".',
+            $message
+        );
+    }
+
+    public function test_getter_uri_key_as_operation_type_hints_the_getter_call(): void
+    {
+        Restify::repositories([UserErrorRepository::class]);
+        Mcp::web('test-getter-uri-key-hint', RestifyServer::class);
+
+        $message = $this->assertInvalidOperation($this->callExecuteOperation('/test-getter-uri-key-hint', [
+            'repository' => 'mcp-error-users',
+            'operation_type' => 'posts-index-getter',
+            'parameters' => [],
+        ]));
+
+        $this->assertSame(
+            '"posts-index-getter" is a getter on "mcp-error-users": call operation_type="getter", operation_name="posts-index-getter".',
+            $message
+        );
+    }
+
+    public function test_get_operation_details_with_unknown_operation_type_returns_invalid_operation(): void
+    {
+        Restify::repositories([UserErrorRepository::class]);
+        Mcp::web('test-details-unknown-operation-type', RestifyServer::class);
+
+        $message = $this->assertInvalidOperation($this->callTool('/test-details-unknown-operation-type', 'get-operation-details', [
+            'repository' => 'mcp-error-users',
+            'operation_type' => 'validated-action',
+        ]));
+
+        $this->assertStringContainsString('operation_type="action", operation_name="validated-action"', $message);
+    }
+
+    public function test_action_operation_type_still_executes_the_action(): void
+    {
+        Restify::repositories([UserErrorRepository::class]);
+        Mcp::web('test-action-happy-path', RestifyServer::class);
+
+        $result = $this->callExecuteOperation('/test-action-happy-path', [
+            'repository' => 'mcp-error-users',
+            'operation_type' => 'action',
+            'operation_name' => 'ok-action',
+            'parameters' => [],
+        ]);
+
+        $this->assertArrayNotHasKey('error', $result);
+        $this->assertFalse($result['result']['isError'] ?? false);
+        $this->assertStringContainsString('"ok":true', str_replace(' ', '', $result['result']['content'][0]['text']));
+    }
 }
 
 class UserErrorRepository extends Repository
@@ -136,9 +235,31 @@ class UserErrorRepository extends Repository
         return true;
     }
 
+    public function mcpAllowsGetters(): bool
+    {
+        return true;
+    }
+
+    public function getters(RestifyRequest $request): array
+    {
+        return [
+            PostsIndexGetter::new(),
+        ];
+    }
+
     public function actions(RestifyRequest $request): array
     {
         return [
+            (new class extends Action
+            {
+                public static $uriKey = 'ok-action';
+
+                public function handle(ActionRequest $request): JsonResponse
+                {
+                    return response()->json(['ok' => true]);
+                }
+            })->standalone(),
+
             (new class extends Action
             {
                 public static $uriKey = 'validated-action';
