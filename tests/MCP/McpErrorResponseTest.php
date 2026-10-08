@@ -16,6 +16,7 @@ use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Validator;
 use Laravel\Mcp\Facades\Mcp;
 use Laravel\Mcp\Server\McpServiceProvider;
@@ -152,6 +153,27 @@ class McpErrorResponseTest extends IntegrationTestCase
         $this->assertStringContainsString('operation_type "action" or "getter" with operation_name', $message);
     }
 
+    public function test_php_error_in_operation_returns_execution_error_and_is_reported(): void
+    {
+        Exceptions::fake();
+        Restify::repositories([UserErrorRepository::class]);
+        Mcp::web('test-php-error', RestifyServer::class);
+
+        $result = $this->callExecuteOperation('/test-php-error', [
+            'repository' => 'mcp-error-users',
+            'operation_type' => 'action',
+            'operation_name' => 'error-action',
+            'parameters' => [],
+        ]);
+
+        $this->assertArrayNotHasKey('error', $result, 'Expected a tool error result, got a JSON-RPC error.');
+        $this->assertTrue($result['result']['isError']);
+        $content = json_decode($result['result']['content'][0]['text'], true);
+        $this->assertIsArray($content);
+        $this->assertEquals('EXECUTION_ERROR', $content['code']);
+        Exceptions::assertReported(\TypeError::class);
+    }
+
     public function test_action_uri_key_as_operation_type_hints_the_action_call(): void
     {
         Restify::repositories([UserErrorRepository::class]);
@@ -271,6 +293,16 @@ class UserErrorRepository extends Repository
                     ])->validate();
 
                     return response()->json(['ok' => true]);
+                }
+            })->standalone(),
+
+            (new class extends Action
+            {
+                public static $uriKey = 'error-action';
+
+                public function handle(ActionRequest $request): JsonResponse
+                {
+                    throw new \TypeError('Broken action.');
                 }
             })->standalone(),
 

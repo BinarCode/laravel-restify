@@ -97,6 +97,10 @@ class ExecuteOperationTool extends Tool
         } catch (ModelNotFoundException $e) {
             return $this->errorResponse('Record not found', 'NOT_FOUND');
         } catch (\Throwable $e) {
+            if (! $e instanceof \Exception) {
+                report($e);
+            }
+
             return $this->errorResponse(
                 'An error occurred while executing the operation',
                 'EXECUTION_ERROR',
