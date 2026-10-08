@@ -119,7 +119,7 @@ class GetOperationDetailsTool extends Tool
             ]);
         } catch (\InvalidArgumentException $e) {
             return $this->errorResponse($e->getMessage(), 'INVALID_OPERATION');
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return $this->errorResponse(
                 'An error occurred while retrieving operation details',
                 'OPERATION_DETAILS_ERROR',
