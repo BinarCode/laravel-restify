@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
 class GetterRequest extends RestifyRequest
@@ -20,23 +21,31 @@ class GetterRequest extends RestifyRequest
     {
         return once(function () {
             return $this->availableGetters()->first(function ($getter) {
-                $uriKey = Getter::guessUriKey($getter);
-
-                return $this->route('getter')
-                    ? $this->route('getter') === $uriKey
-                    : $this->query('getter') === $uriKey;
-            }) ?: abort(
-                $this->getterExists() ? 403 : 404,
-                'Getter does not exists or you don\'t have enough permissions to perform it.'
-            );
+                return $this->getterKey() === Getter::guessUriKey($getter);
+            }) ?: ($this->getterExists()
+                ? abort(JsonResponse::HTTP_FORBIDDEN, 'You don\'t have permission to run this getter.')
+                : abort(JsonResponse::HTTP_NOT_FOUND, 'Getter not found.'));
         });
     }
 
     protected function getterExists(): bool
     {
-        return $this->availableGetters()->contains(function (mixed $getter) {
-            return Getter::guessUriKey($getter) === $this->route('getter') ?? $this->query('getter');
-        });
+        $repository = $this->repository();
+
+        $getters = $this->isForRepositoryRequest()
+            ? $repository->resolveShowGetters($this)
+            : $repository->resolveIndexGetters($this);
+
+        return $getters
+            ->merge($repository->resolveInvokableGetters($this))
+            ->contains(function (mixed $getter) {
+                return Getter::guessUriKey($getter) === $this->getterKey();
+            });
+    }
+
+    protected function getterKey(): ?string
+    {
+        return $this->route('getter') ?? $this->query('getter');
     }
 
     public function builder(Getter $getter, int $size): Builder

@@ -2,16 +2,20 @@
 
 ## Unreleased
 
-### Unauthorized actions answer 403
+### Unauthorized actions and getters answer 403
 
-Calling an action that exists but whose `canSee` denies the user was meant to answer
-403, but always answered 404: the existence check only searched the actions the user
-could already see. It now answers 403. Unknown actions, and show actions called on
+Calling an action or getter that exists but whose `canSee` denies the user was meant to
+answer 403, but always answered 404: the existence check only searched the ones the user
+could already see. It now answers 403. Unknown keys, and show actions or getters called on
 index (and vice versa), still answer 404.
 
-The two cases now carry their own message: `You don't have permission to run this action.` (403)
-and `Action not found.` (404), instead of the shared `Action does not exists or you don't have
-enough permissions to perform it.`
+Each case now carries its own message:
+
+- 403: `You don't have permission to run this action.` / `You don't have permission to run this getter.`
+- 404: `Action not found.` / `Getter not found.`
+
+These replace the shared `Action does not exists or you don't have enough permissions to perform it.`
+and its getter twin.
 
 ### `setPrefix()` only prefixes the repository it is called on
 

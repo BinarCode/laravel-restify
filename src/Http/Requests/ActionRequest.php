@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
 class ActionRequest extends RestifyRequest
@@ -22,8 +23,8 @@ class ActionRequest extends RestifyRequest
             return $this->availableActions()->first(function ($action) {
                 return $this->query('action') === Action::guessUriKey($action);
             }) ?: ($this->actionExists()
-                ? abort(403, 'You don\'t have permission to run this action.')
-                : abort(404, 'Action not found.'));
+                ? abort(JsonResponse::HTTP_FORBIDDEN, 'You don\'t have permission to run this action.')
+                : abort(JsonResponse::HTTP_NOT_FOUND, 'Action not found.'));
         });
     }
 
