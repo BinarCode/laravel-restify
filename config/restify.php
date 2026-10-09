@@ -185,6 +185,22 @@ return [
         'all' => env('RESTIFY_WRITE_ALL_LOGS', false),
     ],
 
+    'actions' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Unauthorized action status
+        |--------------------------------------------------------------------------
+        |
+        | HTTP status returned when an action exists on the endpoint but the
+        | user is not authorized to see it (canSee / authorizedToSee). Use 403
+        | to tell the client it lacks permission, or 404 to hide that the
+        | action exists. Unknown actions always answer 404.
+        |
+        */
+
+        'unauthorized_status' => (int) env('RESTIFY_ACTIONS_UNAUTHORIZED_STATUS', 403),
+    ],
+
     /*
     |--------------------------------------------------------------------------
     | Restify Search

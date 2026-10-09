@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### Unauthorized actions answer 403
+
+Calling an action that exists but whose `canSee` denies the user was meant to answer
+403, but always answered 404: the existence check only searched the actions the user
+could already see. It now answers 403. Set `restify.actions.unauthorized_status`
+(`RESTIFY_ACTIONS_UNAUTHORIZED_STATUS`) to `404` to keep hiding that such actions exist.
+Unknown actions, and show actions called on index (and vice versa), still answer 404.
+
 ### `setPrefix()` only prefixes the repository it is called on
 
 `PostRepository::setPrefix('api/v1')` also wrote the shared `Repository::$prefix`,
