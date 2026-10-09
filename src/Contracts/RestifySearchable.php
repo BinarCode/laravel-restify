@@ -30,6 +30,8 @@ interface RestifySearchable
 
     /**
      * Get relations available for query params.
+     *
+     * @return array<array-key, string>
      */
     public static function withs(): array;
 
