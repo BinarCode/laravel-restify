@@ -628,7 +628,7 @@ class RepositoryCommand extends GeneratorCommand
     {
         $modelClass = $this->guessQualifiedModelName();
 
-        if (! $modelClass || ! class_exists($modelClass)) {
+        if (! is_string($modelClass) || ! is_subclass_of($modelClass, Model::class)) {
             return ['relations' => [], 'imports' => []];
         }
 

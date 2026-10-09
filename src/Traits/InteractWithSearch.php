@@ -33,11 +33,17 @@ trait InteractWithSearch
         return static::$search;
     }
 
+    /**
+     * @return array<array-key, string>
+     */
     public static function withs(): array
     {
         return static::$with ?? [];
     }
 
+    /**
+     * @return Collection<array-key, string>
+     */
     public static function collectWiths(RestifyRequest $request, Repository $repository): Collection
     {
         return collect(array_unique(array_merge(
@@ -46,11 +52,15 @@ trait InteractWithSearch
         )));
     }
 
+    /**
+     * @return array<array-key, string>
+     */
     public static function lazyLoadedFieldsRelationship(RestifyRequest $request, Repository $repository): array
     {
         return $repository->collectFields($request)
             ->filter(fn (Field $field) => $field->isLazy($request))
             ->map(fn (Field $field) => $field->getLazyRelationshipName())
+            ->filter(fn (?string $relationship): bool => $relationship !== null)
             ->all();
     }
 

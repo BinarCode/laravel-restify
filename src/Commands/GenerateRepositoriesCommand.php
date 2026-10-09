@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Console\ConfirmableTrait;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Schema;
@@ -224,7 +225,7 @@ class GenerateRepositoriesCommand extends Command
         $fields = [];
 
         try {
-            if (! class_exists($className)) {
+            if (! is_subclass_of($className, Model::class)) {
                 return $fields;
             }
 
