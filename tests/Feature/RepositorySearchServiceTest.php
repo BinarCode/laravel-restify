@@ -50,6 +50,23 @@ class RepositorySearchServiceTest extends IntegrationTestCase
         $this->getJson(UserRepository::route(query: ['search' => 'John']))->assertJsonCount(4, 'data');
     }
 
+    public function test_non_scalar_search_is_ignored(): void
+    {
+        User::factory(2)->create([
+            'name' => 'John Doe',
+        ]);
+
+        User::factory(3)->create([
+            'name' => 'wew',
+        ]);
+
+        UserRepository::$search = [
+            'name',
+        ];
+
+        $this->getJson(UserRepository::route(query: ['search' => ['John']]))->assertOk()->assertJsonCount(5, 'data');
+    }
+
     public function test_search_correctly_using_quotes(): void
     {
         config()->set('restify.search.case_sensitive', false);
