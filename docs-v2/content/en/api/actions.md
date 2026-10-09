@@ -126,16 +126,7 @@ public function actions(RestifyRequest $request): array
 }
 ```
 
-Calling an action the user is not authorized to see answers `403`. To hide that the action exists, answer `404` instead:
-
-```php
-// config/restify.php
-'actions' => [
-    'unauthorized_status' => env('RESTIFY_ACTIONS_UNAUTHORIZED_STATUS', 403),
-],
-```
-
-An action the endpoint does not offer (unknown key, or a show action called on index) always answers `404`.
+Calling an action the user is not authorized to see answers `403`. An action the endpoint does not offer (unknown key, or a show action called on index) answers `404`.
 
 ### Call actions
 

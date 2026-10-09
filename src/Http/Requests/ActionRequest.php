@@ -8,7 +8,6 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Config;
 
 class ActionRequest extends RestifyRequest
 {
@@ -23,7 +22,7 @@ class ActionRequest extends RestifyRequest
             return $this->availableActions()->first(function ($action) {
                 return $this->query('action') === Action::guessUriKey($action);
             }) ?: abort(
-                $this->actionExists() ? Config::integer('restify.actions.unauthorized_status', 403) : 404,
+                $this->actionExists() ? 403 : 404,
                 'Action does not exists or you don\'t have enough permissions to perform it.'
             );
         });

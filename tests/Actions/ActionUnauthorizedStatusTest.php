@@ -42,30 +42,6 @@ class ActionUnauthorizedStatusTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function hidden_index_action_is_not_found_when_configured(): void
-    {
-        config(['restify.actions.unauthorized_status' => 404]);
-
-        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$this->indexAction()->canSee(fn (): bool => false)]);
-
-        $this->postJson($this->indexRoute('unauthorized-status-index-action'), ['repositories' => 'all'])
-            ->assertNotFound();
-    }
-
-    #[Test]
-    public function hidden_show_action_is_not_found_when_configured(): void
-    {
-        config(['restify.actions.unauthorized_status' => 404]);
-
-        $post = $this->mockPost();
-
-        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$this->showAction()->canSee(fn (): bool => false)]);
-
-        $this->postJson($this->showRoute($post, 'unauthorized-status-show-action'))
-            ->assertNotFound();
-    }
-
-    #[Test]
     public function unknown_action_is_not_found(): void
     {
         $post = $this->mockPost();
