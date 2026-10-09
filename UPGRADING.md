@@ -2,6 +2,21 @@
 
 ## Unreleased
 
+### Unauthorized actions and getters answer 403
+
+Calling an action or getter that exists but whose `canSee` denies the user was meant to
+answer 403, but always answered 404: the existence check only searched the ones the user
+could already see. It now answers 403. Unknown keys, and show actions or getters called on
+index (and vice versa), still answer 404.
+
+Each case now carries its own message:
+
+- 403: `You don't have permission to run this action.` / `You don't have permission to run this getter.`
+- 404: `Action not found.` / `Getter not found.`
+
+These replace the shared `Action does not exists or you don't have enough permissions to perform it.`
+and its getter twin.
+
 ### `setPrefix()` only prefixes the repository it is called on
 
 `PostRepository::setPrefix('api/v1')` also wrote the shared `Repository::$prefix`,
@@ -18,7 +33,6 @@ with `prefix()`.
 If you relied on one `setPrefix()` call moving every repository, call it on each
 repository you want prefixed, or declare `public static $prefix` on them (or on a
 shared base repository they extend).
-||||||| 57e9f145
 
 ### `DeletesFields::deleteFields()` is typed
 

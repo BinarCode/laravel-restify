@@ -119,6 +119,8 @@ public function getters(RestifyRequest $request): array
 }
 ```
 
+Calling a getter the user is not authorized to see answers `403`. A getter the endpoint does not offer (unknown key, or a show getter called on index) answers `404`.
+
 ### Call getters
 
 To call a getter, you simply access:

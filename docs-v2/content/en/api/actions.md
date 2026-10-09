@@ -126,6 +126,8 @@ public function actions(RestifyRequest $request): array
 }
 ```
 
+Calling an action the user is not authorized to see answers `403`. An action the endpoint does not offer (unknown key, or a show action called on index) answers `404`.
+
 ### Call actions
 
 To call an action, you simply access:
