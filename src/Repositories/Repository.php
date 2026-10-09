@@ -137,6 +137,8 @@ class Repository implements JsonSerializable, RestifySearchable
 
     /**
      * The relationships that should be eager loaded when performing an index query.
+     *
+     * @var array<array-key, string>
      */
     public static array $with = [];
 

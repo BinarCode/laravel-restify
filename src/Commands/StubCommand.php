@@ -50,7 +50,7 @@ class StubCommand extends Command
         });
     }
 
-    protected function make($table)
+    protected function make(string $table)
     {
         $data = [];
 

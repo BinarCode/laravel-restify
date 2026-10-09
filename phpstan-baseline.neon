@@ -15351,7 +15351,7 @@ parameters:
 			path: src/Traits/InteractWithSQLight.php
 
 		-
-			message: '#^Static property Binaryk\\LaravelRestify\\Repositories\\Repository\:\:\$with \(array\) on left side of \?\? is not nullable\.$#'
+			message: '#^Static property Binaryk\\LaravelRestify\\Repositories\\Repository\:\:\$with \(array\<string\>\) on left side of \?\? is not nullable\.$#'
 			identifier: nullCoalesce.property
 			count: 1
 			path: src/Traits/InteractWithSearch.php

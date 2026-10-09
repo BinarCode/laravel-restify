@@ -112,6 +112,9 @@ class RelatedDto
         return $base;
     }
 
+    /**
+     * @return array<int, string>
+     */
     public function makeTree(): array
     {
         return collect(array_keys($this->relatedArray))
@@ -181,12 +184,12 @@ class RelatedDto
                 $this->related->push($parent);
             }
 
-            collect(str($related)->after('.')->explode('.'))->map(function (string $nested) use (&$parent) {
+            collect(str($related)->after('.')->explode('.'))->each(function (string $nested) use (&$parent): void {
                 $newParent = RelatedQuery::fromToken($nested)->parent($parent->tree);
 
                 $this->relatedArray[$newParent->tree] = $newParent;
 
-                return $parent->nested->push(
+                $parent->nested->push(
                     $parent = $newParent
                 );
             });

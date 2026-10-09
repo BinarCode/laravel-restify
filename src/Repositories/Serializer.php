@@ -21,6 +21,9 @@ class Serializer implements JsonSerializable, Responsable
 {
     use ConditionallyLoadsAttributes;
 
+    /**
+     * @var Collection<array-key, Repository>|null
+     */
     protected ?Collection $items = null;
 
     protected int $perPage = RestifySearchable::DEFAULT_PER_PAGE;
@@ -137,12 +140,12 @@ class Serializer implements JsonSerializable, Responsable
             ]),
             'data' => $items
                 ->when(
-                    $this->sort && $this->sort->direction() === 'desc',
-                    fn (Collection $items) => $items->sortByDesc($this->sort->column())
+                    $this->sort?->direction() === 'desc' ? $this->sort->column() : null,
+                    fn (Collection $items, string $column) => $items->sortByDesc($column)
                 )
                 ->when(
-                    $this->sort && $this->sort->direction() === 'asc',
-                    fn (Collection $items) => $items->sortBy($this->sort->column())
+                    $this->sort?->direction() === 'asc' ? $this->sort->column() : null,
+                    fn (Collection $items, string $column) => $items->sortBy($column)
                 )
                 ->map(fn (Repository $repository): array => $this->withoutHiddenAttributes
                     ? $this->stripHiddenAttributes($repository, $repository->serializeForIndex($request), $request)
