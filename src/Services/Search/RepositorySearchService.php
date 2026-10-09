@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
@@ -20,7 +21,7 @@ class RepositorySearchService
 {
     use AppliesRelationJoin;
 
-    /** * @var Repository */
+    /** @var Repository */
     protected $repository;
 
     public function search(RestifyRequest $request, Repository $repository): Builder|Relation
@@ -56,6 +57,9 @@ class RepositorySearchService
         );
     }
 
+    /**
+     * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
+     */
     public function prepareMatchFields(RestifyRequest $request, $query)
     {
         $this->repository::collectMatches($request, $this->repository)->apply($request, $query);
@@ -71,7 +75,7 @@ class RepositorySearchService
      */
     public function prepareOrders(RestifyRequest $request, $query)
     {
-        $collection = $this->repository::collectSorts($request, $this->repository);
+        $collection = $this->repository::collectSortables($request, $this->repository);
 
         if ($collection->isEmpty()) {
             return empty($query->getQuery()->orders)
@@ -148,11 +152,15 @@ class RepositorySearchService
         }
     }
 
+    /**
+     * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
     public function prepareSearchFields(RestifyRequest $request, $query)
     {
         $search = $request->input('search');
 
-        if (empty($search)) {
+        if (empty($search) || ! is_scalar($search)) {
             return $query;
         }
 
@@ -165,7 +173,7 @@ class RepositorySearchService
             $this->applyBelongsToJoins($query, $searchablesCollection, $request);
         }
 
-        $query->where(function ($query) use ($search, $model, $request, $searchablesCollection) {
+        $query->where(function (Builder $query) use ($search, $model, $request, $searchablesCollection) {
             $connectionType = $model->getConnection()->getDriverName();
 
             $hasSearchableFields = $searchablesCollection->isNotEmpty();
@@ -182,7 +190,7 @@ class RepositorySearchService
             }
 
             // Apply all searchables using the unified collection
-            $searchablesCollection->apply($request, $query, $search);
+            $searchablesCollection->apply($request, $query, (string) $search);
         });
 
         return $query;

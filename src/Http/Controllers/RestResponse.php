@@ -137,6 +137,8 @@ class RestResponse extends JsonResponse implements Responsable
 
     /**
      * Model related entities.
+     *
+     * @var array<string, mixed>|null
      */
     protected $relationships;
 
