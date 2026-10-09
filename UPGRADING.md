@@ -26,7 +26,6 @@ with `prefix()`.
 If you relied on one `setPrefix()` call moving every repository, call it on each
 repository you want prefixed, or declare `public static $prefix` on them (or on a
 shared base repository they extend).
-||||||| 57e9f145
 
 ### `DeletesFields::deleteFields()` is typed
 
