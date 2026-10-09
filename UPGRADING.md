@@ -9,6 +9,10 @@ Calling an action that exists but whose `canSee` denies the user was meant to an
 could already see. It now answers 403. Unknown actions, and show actions called on
 index (and vice versa), still answer 404.
 
+The two cases now carry their own message: `You don't have permission to run this action.` (403)
+and `Action not found.` (404), instead of the shared `Action does not exists or you don't have
+enough permissions to perform it.`
+
 ### `setPrefix()` only prefixes the repository it is called on
 
 `PostRepository::setPrefix('api/v1')` also wrote the shared `Repository::$prefix`,

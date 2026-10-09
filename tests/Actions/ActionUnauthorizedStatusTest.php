@@ -27,7 +27,8 @@ class ActionUnauthorizedStatusTest extends IntegrationTestCase
         PostRepository::partialMock()->shouldReceive('actions')->andReturn([$this->indexAction()->canSee(fn (): bool => false)]);
 
         $this->postJson($this->indexRoute('unauthorized-status-index-action'), ['repositories' => 'all'])
-            ->assertForbidden();
+            ->assertForbidden()
+            ->assertJsonPath('message', 'You don\'t have permission to run this action.');
     }
 
     #[Test]
@@ -38,7 +39,8 @@ class ActionUnauthorizedStatusTest extends IntegrationTestCase
         PostRepository::partialMock()->shouldReceive('actions')->andReturn([$this->showAction()->canSee(fn (): bool => false)]);
 
         $this->postJson($this->showRoute($post, 'unauthorized-status-show-action'))
-            ->assertForbidden();
+            ->assertForbidden()
+            ->assertJsonPath('message', 'You don\'t have permission to run this action.');
     }
 
     #[Test]
@@ -49,7 +51,8 @@ class ActionUnauthorizedStatusTest extends IntegrationTestCase
         PostRepository::partialMock()->shouldReceive('actions')->andReturn([$this->indexAction(), $this->showAction()]);
 
         $this->postJson($this->indexRoute('missing-action'), ['repositories' => 'all'])
-            ->assertNotFound();
+            ->assertNotFound()
+            ->assertJsonPath('message', 'Action not found.');
 
         $this->postJson($this->showRoute($post, 'missing-action'))
             ->assertNotFound();
