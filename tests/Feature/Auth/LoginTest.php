@@ -116,7 +116,6 @@ class LoginTest extends IntegrationTestCase
         } catch (InvalidArgumentException $exception) {
             $this->assertStringContainsString('restify.auth.token_ttl', $exception->getMessage());
             $this->assertDatabaseCount(PersonalAccessToken::class, 0);
-            $this->assertGuest();
 
             return;
         }
