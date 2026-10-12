@@ -264,6 +264,26 @@ class RepositoryCacheIsolationTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function requests_differing_only_in_relatable_per_page_get_different_cache_keys(): void
+    {
+        $base = $this->indexCacheKey();
+        $scalar = $this->indexCacheKey(['relatablePerPage' => 5]);
+        $perRelation = $this->indexCacheKey(['relatablePerPage' => ['posts' => 5]]);
+        $otherRelation = $this->indexCacheKey(['relatablePerPage' => ['posts' => 10]]);
+
+        $this->assertCount(4, array_unique([$base, $scalar, $perRelation, $otherRelation]));
+    }
+
+    #[Test]
+    public function the_order_of_the_relatable_per_page_entries_does_not_change_the_cache_key(): void
+    {
+        $this->assertSame(
+            $this->indexCacheKey(['relatablePerPage' => ['posts' => 5, 'users' => 3]]),
+            $this->indexCacheKey(['relatablePerPage' => ['users' => 3, 'posts' => 5]]),
+        );
+    }
+
+    #[Test]
     public function the_same_guard_and_id_on_different_user_models_get_different_cache_keys(): void
     {
         $user = User::factory()->create(['id' => 5]);
@@ -369,9 +389,12 @@ class RepositoryCacheIsolationTest extends IntegrationTestCase
         return (new ReflectionMethod($repository, 'cacheVersion'))->invoke(null);
     }
 
-    private function indexCacheKey(): string
+    /**
+     * @param  array<string, mixed>  $query
+     */
+    private function indexCacheKey(array $query = []): string
     {
-        $request = app(RestifyRequest::class);
+        $request = RestifyRequest::create('/api/restify/posts', 'GET', $query);
         $request->setUserResolver(fn (?string $guard = null) => Auth::guard($guard)->user());
 
         return PostRepository::resolveWith(new Post)->generateIndexCacheKey($request);

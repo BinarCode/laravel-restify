@@ -72,6 +72,12 @@ trait InteractsWithCache
 
         $pagination = $request->pagination();
 
+        $relatablePerPage = $request->input('relatablePerPage');
+
+        if (is_array($relatablePerPage)) {
+            ksort($relatablePerPage);
+        }
+
         // Add request parameters that affect the query
         $queryParams = [
             'search' => $request->input('search'),
@@ -80,6 +86,7 @@ trait InteractsWithCache
             'perPage' => $pagination->resolvePerPage(static::$defaultPerPage),
             'related' => $request->input('related'),
             'group_by' => $request->input('group_by'),
+            'relatablePerPage' => $relatablePerPage,
         ];
 
         // Add filters
