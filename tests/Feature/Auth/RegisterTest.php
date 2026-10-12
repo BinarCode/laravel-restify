@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Schema;
 use InvalidArgumentException;
+use Laravel\Sanctum\PersonalAccessToken;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
@@ -234,6 +235,7 @@ class RegisterTest extends IntegrationTestCase
         } catch (InvalidArgumentException $exception) {
             $this->assertStringContainsString('restify.auth.token_ttl', $exception->getMessage());
             $this->assertDatabaseCount(User::class, 0);
+            $this->assertDatabaseCount(PersonalAccessToken::class, 0);
 
             return;
         }

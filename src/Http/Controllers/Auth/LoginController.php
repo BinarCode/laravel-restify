@@ -40,9 +40,10 @@ class LoginController extends Controller
             abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }
 
+        $ttlSeconds = TokenTtlResolver::seconds(config('restify.auth.token_ttl'));
+
         Auth::login($user);
 
-        $ttlSeconds = TokenTtlResolver::seconds(config('restify.auth.token_ttl'));
         $expiresAt = $ttlSeconds !== null ? now()->addSeconds($ttlSeconds) : null;
 
         $token = $user->createToken('login', ['*'], $expiresAt);

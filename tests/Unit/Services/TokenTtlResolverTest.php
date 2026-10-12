@@ -36,7 +36,10 @@ final class TokenTtlResolverTest extends TestCase
     #[TestWith([[60]], 'array')]
     #[TestWith(['0.001'], 'rounds to zero seconds')]
     #[TestWith([0.001], 'float rounds to zero seconds')]
-    #[TestWith(['1e999'], 'infinite')]
+    #[TestWith(['1e999'], 'infinite string')]
+    #[TestWith(['1e18'], 'overflows an int of seconds')]
+    #[TestWith([NAN], 'NAN')]
+    #[TestWith([INF], 'INF')]
     public function it_rejects_anything_that_is_not_a_positive_number_of_minutes(mixed $configured): void
     {
         $this->expectException(InvalidArgumentException::class);
@@ -48,6 +51,7 @@ final class TokenTtlResolverTest extends TestCase
     #[Test]
     public function the_message_names_the_offending_value(): void
     {
+        $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('"60m"');
 
         TokenTtlResolver::seconds('60m');

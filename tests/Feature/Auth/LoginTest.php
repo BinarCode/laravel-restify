@@ -11,6 +11,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
 use InvalidArgumentException;
+use Laravel\Sanctum\PersonalAccessToken;
 use ParseError;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -107,13 +108,20 @@ class LoginTest extends IntegrationTestCase
 
         $this->withoutExceptionHandling();
 
-        $this->expectException(InvalidArgumentException::class);
-        $this->expectExceptionMessage('restify.auth.token_ttl');
+        try {
+            $this->postJson('auth/login', [
+                'email' => 'user@restify.test',
+                'password' => 'correct-password',
+            ]);
+        } catch (InvalidArgumentException $exception) {
+            $this->assertStringContainsString('restify.auth.token_ttl', $exception->getMessage());
+            $this->assertDatabaseCount(PersonalAccessToken::class, 0);
+            $this->assertGuest();
 
-        $this->postJson('auth/login', [
-            'email' => 'user@restify.test',
-            'password' => 'correct-password',
-        ]);
+            return;
+        }
+
+        $this->fail('An invalid token_ttl must be rejected.');
     }
 
     #[Test]
