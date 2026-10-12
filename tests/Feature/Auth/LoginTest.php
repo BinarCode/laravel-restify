@@ -71,9 +71,12 @@ class LoginTest extends IntegrationTestCase
     #[TestWith(['1.5', 90], 'a fractional ttl is rounded to seconds instead of truncated')]
     #[TestWith(['60', 3600], 'a whole-minute ttl from env converts to seconds')]
     #[TestWith([null, null], 'no ttl means no expiry')]
+    #[TestWith([0, null], 'a zero int ttl means no expiry')]
+    #[TestWith(['0', null], 'a zero string ttl from env means no expiry')]
+    #[TestWith([false, null], 'false means no expiry')]
     #[TestWith(['', null], 'an empty ttl means no expiry')]
     #[TestWith([60, 3600], 'a whole-minute int ttl converts to seconds')]
-    public function the_login_token_ttl_is_computed_in_seconds(int|string|null $tokenTtl, ?int $expectedExpiresIn): void
+    public function the_login_token_ttl_is_computed_in_seconds(int|string|bool|null $tokenTtl, ?int $expectedExpiresIn): void
     {
         config(['restify.auth.token_ttl' => $tokenTtl]);
 
@@ -91,8 +94,6 @@ class LoginTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith([0], 'a zero int ttl')]
-    #[TestWith(['0'], 'a zero string ttl')]
     #[TestWith([-5], 'a negative ttl')]
     #[TestWith(['abc'], 'a non-numeric ttl')]
     #[TestWith(['60m'], 'a ttl with a unit suffix')]

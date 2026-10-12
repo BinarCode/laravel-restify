@@ -196,8 +196,11 @@ class RegisterTest extends IntegrationTestCase
     #[TestWith(['60', 3600], 'a whole-minute string ttl converts to seconds')]
     #[TestWith([60, 3600], 'a whole-minute int ttl converts to seconds')]
     #[TestWith([null, null], 'no ttl means no expiry')]
+    #[TestWith([0, null], 'a zero int ttl means no expiry')]
+    #[TestWith(['0', null], 'a zero string ttl from env means no expiry')]
+    #[TestWith([false, null], 'false means no expiry')]
     #[TestWith(['', null], 'an empty ttl never expires')]
-    public function the_registration_token_ttl_is_computed_in_seconds(int|string|null $tokenTtl, ?int $expectedExpiresIn): void
+    public function the_registration_token_ttl_is_computed_in_seconds(int|string|bool|null $tokenTtl, ?int $expectedExpiresIn): void
     {
         config(['restify.auth.token_ttl' => $tokenTtl]);
 
@@ -218,8 +221,6 @@ class RegisterTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith([0], 'a zero int ttl')]
-    #[TestWith(['0'], 'a zero string ttl')]
     #[TestWith([-1], 'a negative ttl')]
     #[TestWith(['abc'], 'a non-numeric ttl')]
     #[TestWith(['60m'], 'a ttl with a unit suffix')]
