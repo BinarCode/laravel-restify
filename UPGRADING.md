@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### `restify:stub`, `DatabaseGenerator` and the `doctrine/dbal` requirement are removed
+
+`php artisan restify:stub` and `Binaryk\LaravelRestify\Generators\DatabaseGenerator` are gone. They
+relied on `getDoctrineSchemaManager()` and `getDoctrineColumn()`, which Laravel 11 removed, so the command
+could not run on any supported Laravel version.
+
+`doctrine/dbal` is no longer required by Restify. If your application relied on Restify pulling it in,
+require it yourself: `composer require doctrine/dbal`.
+
 ### Unauthorized actions and getters answer 403
 
 Calling an action or getter that exists but whose `canSee` denies the user was meant to
