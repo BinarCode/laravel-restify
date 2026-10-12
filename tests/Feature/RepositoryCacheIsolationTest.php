@@ -6,6 +6,7 @@ namespace Binaryk\LaravelRestify\Tests\Feature;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Tests\Concerns\InteractsWithQueryLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\CacheSettings\DeclaredCacheSettingsRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\CacheSettings\InheritedCacheSettingsRepository;
@@ -28,6 +29,8 @@ use ReflectionMethod;
 
 class RepositoryCacheIsolationTest extends IntegrationTestCase
 {
+    use InteractsWithQueryLog;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -52,8 +55,9 @@ class RepositoryCacheIsolationTest extends IntegrationTestCase
         $adminKey = $this->indexCacheKey();
 
         $this->assertNotSame($webKey, $adminKey);
-        $this->assertStringContainsString('guard_web:model_', $webKey);
-        $this->assertStringContainsString('guard_admin:model_', $adminKey);
+        $morphClass = $user->getMorphClass();
+        $this->assertStringContainsString("guard_web:model_{$morphClass}:user_{$user->getKey()}", $webKey);
+        $this->assertStringContainsString("guard_admin:model_{$morphClass}:user_{$user->getKey()}", $adminKey);
     }
 
     #[Test]
@@ -241,6 +245,22 @@ class RepositoryCacheIsolationTest extends IntegrationTestCase
 
         $this->travel(2)->seconds();
         $this->assertFalse($this->entryExists($key, 'array'));
+    }
+
+    #[Test]
+    public function the_index_still_works_on_a_store_that_keeps_nothing(): void
+    {
+        config(['cache.default' => 'null']);
+
+        Post::factory()->create(['title' => 'on-null-store']);
+
+        $this->recordQueries();
+
+        $this->getJson(PostRepository::route())
+            ->assertOk()
+            ->assertJsonFragment(['title' => 'on-null-store']);
+
+        $this->assertNotEmpty($this->selectsAgainst(Post::class));
     }
 
     #[Test]

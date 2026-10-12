@@ -237,12 +237,12 @@ trait InteractsWithCache
             return $version;
         }
 
-        $store->add($key, Str::random(), now()->addDays(self::CACHE_VERSION_TTL_DAYS));
+        $candidate = Str::random();
+        $store->add($key, $candidate, now()->addDays(self::CACHE_VERSION_TTL_DAYS));
 
-        /** @var string $version */
-        $version = $store->get($key);
+        $stored = $store->get($key);
 
-        return $version;
+        return is_string($stored) ? $stored : $candidate;
     }
 
     protected static function cacheIsEnabled(): bool
