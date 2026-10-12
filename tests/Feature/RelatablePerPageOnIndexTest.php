@@ -17,7 +17,9 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Testing\TestResponse;
+use Laravel\Sanctum\PersonalAccessToken;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
 
@@ -217,6 +219,7 @@ class RelatablePerPageOnIndexTest extends IntegrationTestCase
         ]))->assertOk();
 
         $this->assertRelatedCounts($response, 'users', [2, 2, 2]);
+        $this->assertStringContainsString('row_number', implode(' ', $this->selectsAgainst(User::class)));
     }
 
     #[Test]
@@ -262,6 +265,59 @@ class RelatablePerPageOnIndexTest extends IntegrationTestCase
             'related' => 'posts',
             'relatablePerPage' => ['posts' => 2],
         ]))->assertOk()->assertJsonCount(2, 'data.relationships.posts');
+    }
+
+    #[Test]
+    public function a_relation_also_named_in_the_repository_with_is_still_limited_in_the_query(): void
+    {
+        UserRepository::$with = ['posts'];
+
+        $response = $this->getJson(UserRepository::route(query: [
+            'related' => 'posts',
+            'relatablePerPage' => 2,
+        ]))->assertOk();
+
+        $this->assertRelatedCounts($response, 'posts', [2, 2, 2]);
+        $this->assertStringContainsString('row_number', implode(' ', $this->selectsAgainst(Post::class)));
+    }
+
+    #[Test]
+    public function a_morph_many_relation_is_limited_per_parent_on_index(): void
+    {
+        Restify::repositories([UserWithMorphTokensRepository::class]);
+
+        foreach (UserWithMorphTokens::query()->get() as $user) {
+            foreach (range(1, 5) as $index) {
+                $user->tokens()->forceCreate([
+                    'tokenable_type' => $user->getMorphClass(),
+                    'tokenable_id' => $user->getKey(),
+                    'name' => 'token',
+                    'token' => hash('sha256', $user->getKey().'-'.$index),
+                ]);
+            }
+        }
+
+        $response = $this->getJson(UserWithMorphTokensRepository::route(query: [
+            'related' => 'tokens',
+            'relatablePerPage' => 2,
+        ]))->assertOk();
+
+        $this->assertRelatedCounts($response, 'tokens', [2, 2, 2]);
+        $this->assertStringContainsString('row_number', implode(' ', $this->selectsAgainst(PersonalAccessToken::class)));
+    }
+
+    #[Test]
+    public function a_relation_declared_with_an_eager_field_uses_the_related_repository_default(): void
+    {
+        Restify::repositories([UserWithPostsFieldRepository::class]);
+
+        PostRepository::$defaultRelatablePerPage = 3;
+
+        config(['restify.pagination.max_per_page' => 100]);
+
+        $response = $this->getJson(UserWithPostsFieldRepository::route(query: ['related' => 'posts']))->assertOk();
+
+        $this->assertRelatedCounts($response, 'posts', [3, 3, 3]);
     }
 
     /**
@@ -311,6 +367,33 @@ class UserWithPostsFieldRepository extends Repository
             HasMany::make('posts', PostRepository::class),
         ];
     }
+
+    public function fields(RestifyRequest $request): array
+    {
+        return [field('name')];
+    }
+}
+
+class UserWithMorphTokens extends User
+{
+    protected $table = 'users';
+
+    /**
+     * @return MorphMany<PersonalAccessToken, $this>
+     */
+    public function tokens(): MorphMany
+    {
+        return $this->morphMany(PersonalAccessToken::class, 'tokenable');
+    }
+}
+
+class UserWithMorphTokensRepository extends Repository
+{
+    public static string $model = UserWithMorphTokens::class;
+
+    public static string $uriKey = 'users-with-morph-tokens';
+
+    public static array $related = ['tokens'];
 
     public function fields(RestifyRequest $request): array
     {

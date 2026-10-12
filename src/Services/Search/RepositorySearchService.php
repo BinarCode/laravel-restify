@@ -16,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
@@ -120,8 +121,8 @@ class RepositorySearchService
 
         return $query->with(
             array_merge(
-                $this->limitedEagerLoads($filtered),
                 ($this->repository)::collectWiths($request, $this->repository)->all(),
+                $this->limitedEagerLoads($filtered),
             ),
         );
     }
@@ -142,7 +143,7 @@ class RepositorySearchService
             $default = $this->defaultRelatablePerPage($relationPath);
 
             $eagerLoads[$relationPath] = function (Relation $relation) use ($relationPath, $default): void {
-                if ($relation instanceof HasMany || $relation instanceof BelongsToMany) {
+                if ($relation instanceof HasMany || $relation instanceof MorphMany || $relation instanceof BelongsToMany) {
                     $relation->limit(RelatablePerPage::forPath($relationPath, $default));
                 }
             };
@@ -300,9 +301,15 @@ class RepositorySearchService
 
     protected function applyMainQuery(RestifyRequest $request, Repository $repository): callable
     {
-        return fn ($query) => $repository::mainQuery($request, $query->with($repository::collectWiths(
-            $request, $repository
-        )->all()));
+        return function (Builder|Relation $query) use ($request, $repository) {
+            $eagerLoads = $query->getEagerLoads();
+
+            $withs = $repository::collectWiths($request, $repository)
+                ->reject(fn (string $relation): bool => array_key_exists($relation, $eagerLoads))
+                ->all();
+
+            return $repository::mainQuery($request, $query->with($withs));
+        };
     }
 
     protected function applyFilters(RestifyRequest $request, Repository $repository, $query)

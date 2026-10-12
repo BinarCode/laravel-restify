@@ -51,12 +51,12 @@ class BelongsToMany extends EagerField
 
             $paginator = $this->limitLoaded(
                 $loaded,
-                $repositoryClass::$defaultRelatablePerPage,
+                $repository::$defaultRelatablePerPage,
             );
         } else {
             $paginator = $repository->{$this->relation}();
 
-            $paginator = $paginator->take($this->relatablePerPage($repositoryClass::$defaultRelatablePerPage))->get();
+            $paginator = $paginator->take($this->relatablePerPage($repository::$defaultRelatablePerPage))->get();
         }
 
         $this->value = $paginator->map(function (Model $item) use ($repositoryClass) {
