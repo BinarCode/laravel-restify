@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use InvalidArgumentException;
 use ParseError;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -69,10 +70,7 @@ class LoginTest extends IntegrationTestCase
     #[TestWith(['1.5', 90], 'a fractional ttl is rounded to seconds instead of truncated')]
     #[TestWith(['60', 3600], 'a whole-minute ttl from env converts to seconds')]
     #[TestWith([null, null], 'no ttl means no expiry')]
-    #[TestWith([0, null], 'a zero int ttl means no expiry')]
-    #[TestWith(['0', null], 'a zero string ttl means no expiry')]
-    #[TestWith([-5, null], 'a negative ttl means no expiry')]
-    #[TestWith(['abc', null], 'a non-numeric ttl means no expiry')]
+    #[TestWith(['', null], 'an empty ttl means no expiry')]
     #[TestWith([60, 3600], 'a whole-minute int ttl converts to seconds')]
     public function the_login_token_ttl_is_computed_in_seconds(int|string|null $tokenTtl, ?int $expectedExpiresIn): void
     {
@@ -89,6 +87,33 @@ class LoginTest extends IntegrationTestCase
         ])
             ->assertOk()
             ->assertJsonPath('meta.expires_in', $expectedExpiresIn);
+    }
+
+    #[Test]
+    #[TestWith([0], 'a zero int ttl')]
+    #[TestWith(['0'], 'a zero string ttl')]
+    #[TestWith([-5], 'a negative ttl')]
+    #[TestWith(['abc'], 'a non-numeric ttl')]
+    #[TestWith(['60m'], 'a ttl with a unit suffix')]
+    #[TestWith(['0.001'], 'a ttl that rounds to zero seconds')]
+    public function an_invalid_token_ttl_is_rejected_instead_of_issuing_a_token_that_never_expires(int|string $tokenTtl): void
+    {
+        config(['restify.auth.token_ttl' => $tokenTtl]);
+
+        UserFactory::one([
+            'email' => 'user@restify.test',
+            'password' => Hash::make('correct-password'),
+        ]);
+
+        $this->withoutExceptionHandling();
+
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('restify.auth.token_ttl');
+
+        $this->postJson('auth/login', [
+            'email' => 'user@restify.test',
+            'password' => 'correct-password',
+        ]);
     }
 
     #[Test]
