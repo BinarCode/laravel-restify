@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Cache\PolicyCache;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -112,7 +113,7 @@ trait AuthorizableModels
     public function authorizeToAttach(Request $request, $method, $model): bool
     {
         if (! static::authorizable()) {
-            return false;
+            abort(JsonResponse::HTTP_FORBIDDEN, 'Missing policy for the model:'.get_class($this->model()).'.');
         }
 
         $policyClass = get_class(Gate::getPolicyFor($this->model()));
@@ -134,7 +135,7 @@ trait AuthorizableModels
     public function authorizeToSync(Request $request, $method, Collection $keys): bool
     {
         if (! static::authorizable()) {
-            return false;
+            abort(JsonResponse::HTTP_FORBIDDEN, 'Missing policy for the model:'.get_class($this->model()).'.');
         }
 
         $policyClass = get_class(Gate::getPolicyFor($this->model()));
