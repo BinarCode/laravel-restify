@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### Index cache: per-repository setters, per-guard keys, `clearCache()` no longer flushes
+
+- `PostRepository::cacheTtl()`, `cacheTags()`, `disableCache()` and `enableCache()` wrote
+  statics shared with every repository, so calling one on a repository changed all of them.
+  They now only affect the repository they are called on, as the docs always described. A
+  property a repository redeclares (`public static int $cacheTtl = 600;`) keeps working.
+  Writing a property directly (`PostRepository::$cacheTtl = 60`) still hits the shared base
+  property; use the setters. A `cacheStore()` setter was added too.
+- `clearCache()` no longer tag-flushes, scans keys or flushes the whole store. It replaces a
+  per-repository version that is part of the index cache key, so only that repository's
+  entries stop being served, on every store. Old entries expire with their TTL. If you read
+  Restify's cache keys directly, they now end with `:ver_<version>`, and entries written by
+  the previous release are not served after upgrading.
+- The index cache key now contains the authenticating guard (`guard_web:user_1`), so users
+  of different guards or tables with the same id no longer share an entry.
+- `restify.repositories.cache.ttl` is now honored. It applies to every repository that has
+  neither called `cacheTtl()` nor redeclared `$cacheTtl`; before, the hardcoded 300 seconds
+  always won, so a configured value other than 300 now takes effect.
+
 ### Unauthorized actions and getters answer 403
 
 Calling an action or getter that exists but whose `canSee` denies the user was meant to

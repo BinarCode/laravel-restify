@@ -54,7 +54,7 @@ class RepositoryCacheStoreConfigTest extends IntegrationTestCase
         $key = $this->indexCacheKey();
 
         $this->assertTrue(
-            Cache::store('secondary')->tags(PostRepository::$cacheTags)->has($key),
+            Cache::store('secondary')->tags(['restify', 'repositories', 'posts'])->has($key),
             'the index response should have been cached under the configured store',
         );
 
@@ -62,8 +62,9 @@ class RepositoryCacheStoreConfigTest extends IntegrationTestCase
 
         PostRepository::clearCache();
 
-        $this->assertFalse(
-            Cache::store('secondary')->tags(PostRepository::$cacheTags)->has($key),
+        $this->assertNotSame(
+            $key,
+            $this->indexCacheKey(),
             'clearCache() should invalidate the entry it wrote to the configured store',
         );
 
@@ -76,7 +77,7 @@ class RepositoryCacheStoreConfigTest extends IntegrationTestCase
     public function an_explicit_repository_store_overrides_the_configured_store(): void
     {
         config(['restify.repositories.cache.store' => 'secondary']);
-        PostRepository::$cacheStore = 'array';
+        PostRepository::cacheStore('array');
 
         $this->getJson('/api/restify/posts')->assertOk();
 
@@ -86,7 +87,7 @@ class RepositoryCacheStoreConfigTest extends IntegrationTestCase
         $key = $this->indexCacheKey();
 
         $this->assertTrue(
-            Cache::store('array')->tags(PostRepository::$cacheTags)->has($key),
+            Cache::store('array')->tags(['restify', 'repositories', 'posts'])->has($key),
             'the index response should have been cached under the repository\'s own store',
         );
 
@@ -94,8 +95,9 @@ class RepositoryCacheStoreConfigTest extends IntegrationTestCase
 
         PostRepository::clearCache();
 
-        $this->assertFalse(
-            Cache::store('array')->tags(PostRepository::$cacheTags)->has($key),
+        $this->assertNotSame(
+            $key,
+            $this->indexCacheKey(),
             'clearCache() should invalidate the entry it wrote to the repository\'s own store',
         );
 
