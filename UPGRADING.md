@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Index related lists are limited when `max_per_page` is set
+
+`?related=...` on index now limits has-many-like relations (`HasMany`, `MorphMany`,
+`BelongsToMany`) per parent when the request sends `relatablePerPage` or when
+`restify.pagination.max_per_page` is set. Apps that already set `max_per_page` get index
+related lists capped at each related repository's `$defaultRelatablePerPage` (15 unless
+redeclared), clamped by `max_per_page`; they used to be unlimited.
+
+To keep unlimited related lists, unset `max_per_page` or raise `$defaultRelatablePerPage`
+on the related repository.
+
 ### Unauthorized actions and getters answer 403
 
 Calling an action or getter that exists but whose `canSee` denies the user was meant to

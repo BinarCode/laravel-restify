@@ -11,6 +11,7 @@ use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Restify;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -183,7 +184,14 @@ class RepositorySearchService
             }
         }
 
-        return null;
+        $relationInstance = $repositoryClass::newModel()->{$relation}();
+
+        if (! $relationInstance instanceof Relation) {
+            return null;
+        }
+
+        /** @var class-string<Repository>|null */
+        return Restify::repositoryForModel($relationInstance->getRelated());
     }
 
     /**

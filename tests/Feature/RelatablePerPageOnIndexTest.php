@@ -311,13 +311,50 @@ class RelatablePerPageOnIndexTest extends IntegrationTestCase
     {
         Restify::repositories([UserWithPostsFieldRepository::class]);
 
-        PostRepository::$defaultRelatablePerPage = 3;
-
         config(['restify.pagination.max_per_page' => 100]);
 
         $response = $this->getJson(UserWithPostsFieldRepository::route(query: ['related' => 'posts']))->assertOk();
 
         $this->assertRelatedCounts($response, 'posts', [3, 3, 3]);
+    }
+
+    #[Test]
+    public function a_string_related_entry_uses_the_default_of_the_repository_registered_for_the_related_model(): void
+    {
+        $this->onlyRegister([UserRepository::class, PostWithRelatablePerPageRepository::class]);
+
+        config(['restify.pagination.max_per_page' => 100]);
+
+        $response = $this->getJson(UserRepository::route(query: ['related' => 'posts']))->assertOk();
+
+        $this->assertRelatedCounts($response, 'posts', [3, 3, 3]);
+    }
+
+    #[Test]
+    public function a_string_related_entry_falls_back_to_the_base_default_without_a_registered_repository(): void
+    {
+        $this->onlyRegister([UserRepository::class]);
+
+        config(['restify.pagination.max_per_page' => 100]);
+
+        $response = $this->getJson(UserRepository::route(query: ['related' => 'posts']))->assertOk();
+
+        $this->assertRelatedCounts($response, 'posts', [6, 6, 6]);
+    }
+
+    /**
+     * @param  list<class-string<Repository>>  $repositories
+     */
+    private function onlyRegister(array $repositories): void
+    {
+        $registered = Restify::$repositories;
+
+        Restify::$repositories = [];
+        Restify::repositories($repositories);
+
+        $this->beforeApplicationDestroyed(function () use ($registered): void {
+            Restify::$repositories = $registered;
+        });
     }
 
     /**
@@ -364,7 +401,7 @@ class UserWithPostsFieldRepository extends Repository
     public static function include(): array
     {
         return [
-            HasMany::make('posts', PostRepository::class),
+            HasMany::make('posts', PostWithRelatablePerPageRepository::class),
         ];
     }
 
@@ -372,6 +409,13 @@ class UserWithPostsFieldRepository extends Repository
     {
         return [field('name')];
     }
+}
+
+class PostWithRelatablePerPageRepository extends PostRepository
+{
+    public static string $uriKey = 'posts-with-relatable-per-page';
+
+    public static int $defaultRelatablePerPage = 3;
 }
 
 class UserWithMorphTokens extends User
