@@ -202,6 +202,7 @@ abstract class IntegrationTestCase extends TestCase
         if (is_null($user)) {
             $this->authenticatedAs->shouldReceive('getAuthIdentifier')->andReturn(1);
             $this->authenticatedAs->shouldReceive('getKey')->andReturn(1);
+            $this->authenticatedAs->shouldReceive('getMorphClass')->andReturn(MockUser::class);
         }
 
         return $this;

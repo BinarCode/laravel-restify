@@ -8,14 +8,19 @@ use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\CacheSettings\DeclaredCacheSettingsRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\CacheSettings\InheritedCacheSettingsRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\CacheSettings\InheritingCacheSettingsRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\CacheSettings\RedeclaringChildCacheSettingsRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\CacheSettings\UndeclaredCacheSettingsRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\SanctumUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -47,8 +52,8 @@ class RepositoryCacheIsolationTest extends IntegrationTestCase
         $adminKey = $this->indexCacheKey();
 
         $this->assertNotSame($webKey, $adminKey);
-        $this->assertStringContainsString("guard_web:user_{$user->getKey()}", $webKey);
-        $this->assertStringContainsString("guard_admin:user_{$user->getKey()}", $adminKey);
+        $this->assertStringContainsString('guard_web:model_', $webKey);
+        $this->assertStringContainsString('guard_admin:model_', $adminKey);
     }
 
     #[Test]
@@ -64,7 +69,7 @@ class RepositoryCacheIsolationTest extends IntegrationTestCase
         config(['cache.default' => $store]);
         Cache::store($store)->flush();
 
-        Post::factory()->create();
+        $post = Post::factory()->create();
 
         $this->getJson(PostRepository::route())->assertOk();
         $keyBefore = $this->indexCacheKey();
@@ -72,17 +77,20 @@ class RepositoryCacheIsolationTest extends IntegrationTestCase
 
         Cache::put('unrelated-key', 'unrelated-value', 60);
 
+        DB::table($post->getTable())->update(['title' => 'changed-without-events']);
+
+        $this->getJson(PostRepository::route())
+            ->assertOk()
+            ->assertJsonMissing(['title' => 'changed-without-events']);
+
         PostRepository::clearCache();
 
         $this->assertSame('unrelated-value', Cache::get('unrelated-key'));
         $this->assertNotSame($keyBefore, $this->indexCacheKey());
 
-        $fresh = Post::factory()->create(['title' => 'fresh-after-clear']);
-        PostRepository::clearCache();
-
         $this->getJson(PostRepository::route())
             ->assertOk()
-            ->assertJsonFragment(['title' => $fresh->title]);
+            ->assertJsonFragment(['title' => 'changed-without-events']);
     }
 
     #[Test]
@@ -233,6 +241,71 @@ class RepositoryCacheIsolationTest extends IntegrationTestCase
 
         $this->travel(2)->seconds();
         $this->assertFalse($this->entryExists($key, 'array'));
+    }
+
+    #[Test]
+    public function the_same_guard_and_id_on_different_user_models_get_different_cache_keys(): void
+    {
+        $user = User::factory()->create(['id' => 5]);
+        $sanctumUser = new SanctumUser;
+        $sanctumUser->id = 5;
+
+        $this->actingAs($user);
+        $userKey = $this->indexCacheKey();
+
+        $this->actingAs($sanctumUser);
+        $sanctumKey = $this->indexCacheKey();
+
+        $this->assertNotSame($userKey, $sanctumKey);
+    }
+
+    #[Test]
+    public function clear_cache_invalidates_a_repository_whose_cache_is_disabled_so_re_enabling_serves_fresh_data(): void
+    {
+        $this->getJson(PostRepository::route())->assertOk();
+        $keyBefore = $this->indexCacheKey();
+
+        PostRepository::disableCache();
+        PostRepository::clearCache();
+        PostRepository::enableCache();
+
+        $this->assertNotSame($keyBefore, $this->indexCacheKey());
+    }
+
+    #[Test]
+    public function a_direct_write_to_the_shared_ttl_property_is_still_honored(): void
+    {
+        PostRepository::$cacheTtl = 60;
+
+        $this->assertSame(60, $this->ttlOf(PostRepository::class));
+        $this->assertSame(60, $this->ttlOf(CompanyRepository::class));
+
+        $this->setRepositoryCacheTtl(42);
+        $this->assertSame(60, $this->ttlOf(PostRepository::class));
+
+        PostRepository::cacheTtl(7);
+        $this->assertSame(7, $this->ttlOf(PostRepository::class));
+    }
+
+    #[Test]
+    public function a_setter_on_a_base_repository_applies_to_its_children_and_a_child_wins(): void
+    {
+        InheritingCacheSettingsRepository::cacheTtl(90);
+        InheritingCacheSettingsRepository::disableCache();
+        InheritingCacheSettingsRepository::cacheStore('secondary');
+        InheritingCacheSettingsRepository::cacheTags(['shared']);
+
+        $this->assertSame(90, $this->ttlOf(InheritedCacheSettingsRepository::class));
+        $this->assertFalse($this->isEnabled(InheritedCacheSettingsRepository::class));
+        $this->assertSame('secondary', $this->storeNameOf(InheritedCacheSettingsRepository::class));
+        $this->assertContains('shared', $this->tagsOf(InheritedCacheSettingsRepository::class));
+        $this->assertSame(300, $this->ttlOf(PostRepository::class));
+
+        InheritedCacheSettingsRepository::cacheTtl(15);
+        $this->assertSame(15, $this->ttlOf(InheritedCacheSettingsRepository::class));
+        $this->assertSame(90, $this->ttlOf(InheritingCacheSettingsRepository::class));
+
+        $this->assertSame(600, $this->ttlOf(RedeclaringChildCacheSettingsRepository::class));
     }
 
     /**

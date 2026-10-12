@@ -5,6 +5,8 @@ namespace Binaryk\LaravelRestify\Repositories\Concerns;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
@@ -12,6 +14,8 @@ use ReflectionProperty;
 
 trait InteractsWithCache
 {
+    private const CACHE_VERSION_TTL_DAYS = 30;
+
     /**
      * Whether caching is enabled for this repository.
      */
@@ -101,8 +105,12 @@ trait InteractsWithCache
         $keyParts[] = $serializedParams;
 
         // Add user context for authorization-sensitive data
-        if ($user = $request->user()) {
+        /** @var Authenticatable|null $user */
+        $user = $request->user();
+
+        if ($user !== null) {
             $keyParts[] = 'guard_'.Auth::getDefaultDriver();
+            $keyParts[] = 'model_'.($user instanceof Model ? $user->getMorphClass() : $user::class);
             $keyParts[] = 'user_'.$user->getAuthIdentifier();
         } else {
             $keyParts[] = 'guest';
@@ -202,12 +210,12 @@ trait InteractsWithCache
             return;
         }
 
-        if (! static::cacheIsEnabled()) {
-            return;
-        }
-
         try {
-            Cache::store(static::resolveCacheStoreName())->forever(static::cacheVersionKey(), Str::random());
+            Cache::store(static::resolveCacheStoreName())->put(
+                static::cacheVersionKey(),
+                Str::random(),
+                now()->addDays(self::CACHE_VERSION_TTL_DAYS),
+            );
         } catch (\Exception $e) {
             report($e);
         }
@@ -225,34 +233,71 @@ trait InteractsWithCache
 
         $version = $store->get($key);
 
-        if (! is_string($version)) {
-            $store->forever($key, Str::random());
-            $version = $store->get($key);
+        if (is_string($version)) {
+            return $version;
         }
 
-        return is_string($version) ? $version : '0';
+        $store->add($key, Str::random(), now()->addDays(self::CACHE_VERSION_TTL_DAYS));
+
+        /** @var string $version */
+        $version = $store->get($key);
+
+        return $version;
     }
 
     protected static function cacheIsEnabled(): bool
     {
-        return self::$cacheEnabledStates[static::class] ?? static::$cacheEnabled;
+        $configured = self::configuredCacheValue(self::$cacheEnabledStates, 'cacheEnabled');
+
+        return $configured === null ? static::$cacheEnabled : (bool) $configured['value'];
     }
 
     protected static function resolveCacheTtl(): int
     {
-        if (isset(self::$cacheTtls[static::class])) {
-            return self::$cacheTtls[static::class];
+        $configured = self::configuredCacheValue(self::$cacheTtls, 'cacheTtl');
+
+        if ($configured !== null && is_int($configured['value'])) {
+            return $configured['value'];
         }
 
-        $property = new ReflectionProperty(static::class, 'cacheTtl');
+        $declaredDefault = (new ReflectionProperty(self::class, 'cacheTtl'))->getDefaultValue();
 
-        if ($property->getDeclaringClass()->getName() !== self::class) {
+        if (static::$cacheTtl !== $declaredDefault) {
             return static::$cacheTtl;
         }
 
         $configuredTtl = config('restify.repositories.cache.ttl');
 
         return is_numeric($configuredTtl) ? (int) $configuredTtl : static::$cacheTtl;
+    }
+
+    /**
+     * The nearest value a setter or a redeclared property provides, walking from
+     * this repository up to the class using the trait. A setter beats a redeclared
+     * property on the same class, and a child beats its parents.
+     *
+     * @param  array<class-string, mixed>  $setterValues
+     * @return array{value: mixed}|null
+     */
+    private static function configuredCacheValue(array $setterValues, string $property): ?array
+    {
+        $class = static::class;
+
+        while ($class !== false) {
+            if (array_key_exists($class, $setterValues)) {
+                return ['value' => $setterValues[$class]];
+            }
+
+            $reflection = new ReflectionProperty($class, $property);
+
+            if ($class !== self::class && $reflection->getDeclaringClass()->getName() === $class) {
+                return ['value' => $reflection->getValue()];
+            }
+
+            $class = $class === self::class ? false : get_parent_class($class);
+        }
+
+        return null;
     }
 
     /**
@@ -265,8 +310,25 @@ trait InteractsWithCache
         return array_values(array_unique(array_merge(
             ['restify', 'repositories', static::uriKey()],
             static::$cacheTags,
-            self::$cacheTagsByRepository[static::class] ?? [],
+            ...self::cacheTagsFromSetters(),
         )));
+    }
+
+    /**
+     * @return list<array<int, string>>
+     */
+    private static function cacheTagsFromSetters(): array
+    {
+        $tags = [];
+        $class = static::class;
+
+        while ($class !== false) {
+            array_unshift($tags, self::$cacheTagsByRepository[$class] ?? []);
+
+            $class = $class === self::class ? false : get_parent_class($class);
+        }
+
+        return $tags;
     }
 
     /**
@@ -279,11 +341,10 @@ trait InteractsWithCache
 
     protected static function resolveCacheStoreName(): ?string
     {
-        $explicitStore = array_key_exists(static::class, self::$cacheStoreNames)
-            ? self::$cacheStoreNames[static::class]
-            : static::$cacheStore;
+        $configured = self::configuredCacheValue(self::$cacheStoreNames, 'cacheStore');
+        $explicitStore = $configured === null ? static::$cacheStore : $configured['value'];
 
-        if ($explicitStore !== null) {
+        if (is_string($explicitStore)) {
             return $explicitStore;
         }
 

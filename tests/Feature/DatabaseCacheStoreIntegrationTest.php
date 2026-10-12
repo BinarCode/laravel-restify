@@ -90,12 +90,9 @@ class DatabaseCacheStoreIntegrationTest extends IntegrationTestCase
         $keyBefore = $this->indexCacheKey();
         Cache::put('unrelated-key', 'unrelated-value', 60);
 
-        // Verify cache exists
         $cacheCount = DB::table('cache')->count();
         $this->assertGreaterThan(0, $cacheCount);
 
-        // Clear cache - should not throw errors even with tags
-        PostRepository::cacheTags(['posts', 'test']);
         PostRepository::clearCache();
 
         $this->assertTrue(Cache::has('unrelated-key'));
