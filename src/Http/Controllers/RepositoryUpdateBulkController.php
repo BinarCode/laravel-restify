@@ -20,7 +20,7 @@ class RepositoryUpdateBulkController extends RepositoryController
         $validator = $request->repository()::validatorForUpdateBulk($request);
         $validator->validate();
 
-        $updated = $request->repository()::newModel()->getConnection()->transaction(function () use ($request): array {
+        $updated = Repository::transactionFor($request->model(), function () use ($request): array {
             /** @var array<int, array<string, mixed>> $input */
             $input = $request->collectInput()->all();
 

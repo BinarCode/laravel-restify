@@ -21,8 +21,6 @@ trait InteractsWithLedgerConnection
         config(['database.connections.'.LedgerEntry::CONNECTION => [
             'driver' => 'sqlite',
             'database' => ':memory:',
-            'prefix' => '',
-            'foreign_key_constraints' => false,
         ]]);
 
         $schema = Schema::connection(LedgerEntry::CONNECTION);

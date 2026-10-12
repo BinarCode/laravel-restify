@@ -34,6 +34,7 @@ use Binaryk\LaravelRestify\Traits\CanonicalizesRelatedKeys;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
+use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -822,6 +823,29 @@ class Repository implements JsonSerializable, RestifySearchable
         );
     }
 
+    /**
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    public static function transactionFor(Model $model, Closure $callback): mixed
+    {
+        $modelConnection = $model->getConnection();
+
+        if (! in_array(HasActionLogs::class, class_uses_recursive($model))) {
+            return $modelConnection->transaction($callback);
+        }
+
+        $logConnection = Restify::actionLog()->getConnection();
+
+        if ($logConnection->getName() === $modelConnection->getName()) {
+            return $modelConnection->transaction($callback);
+        }
+
+        return $logConnection->transaction(fn (): mixed => $modelConnection->transaction($callback));
+    }
+
     public function store(RestifyRequest $request)
     {
         $actionFields = $this
@@ -831,7 +855,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->authorizedStore($request)
             ->authorizeActionsToSee($request);
 
-        $this->resource->getConnection()->transaction(function () use ($request, $actionFields) {
+        static::transactionFor($this->resource, function () use ($request, $actionFields) {
             static::fillFields(
                 $request,
                 $this->resource,
@@ -881,7 +905,7 @@ class Repository implements JsonSerializable, RestifySearchable
                 ->authorizeActionsToSee($request);
         }
 
-        $entities = static::newModel()->getConnection()->transaction(function () use ($request, $actionFieldsByRow) {
+        $entities = static::transactionFor(static::newModel(), function () use ($request, $actionFieldsByRow) {
             return $request->collectInput()
                 ->map(function (array $input, $row) use ($request, $actionFieldsByRow) {
                     $this->resource = static::newModel();
@@ -923,7 +947,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->authorizedUpdate($request)
             ->authorizeActions($request, $this->resource);
 
-        $this->resource->getConnection()->transaction(function () use ($request) {
+        static::transactionFor($this->resource, function () use ($request) {
             $fields = $this->collectFields($request)
                 ->forUpdate($request, $this)
                 ->withoutActions($request, $this)
@@ -958,7 +982,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->authorizedPatch($request)
             ->authorizeActions($request, $this->resource);
 
-        $this->resource->getConnection()->transaction(function () use ($request, $keys) {
+        static::transactionFor($this->resource, function () use ($request, $keys) {
             $fields = $this->collectFields($request)
                 ->filter(
                     fn (Field $field) => in_array($field->attribute, $keys),
@@ -1038,7 +1062,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)
     {
-        $this->resource->getConnection()->transaction(function () use ($request) {
+        static::transactionFor($this->resource, function () use ($request) {
             if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
                 Restify::actionLog()
                     ->forRepositoryDestroy($this->resource, $request->user())
@@ -1160,7 +1184,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function destroy(RestifyRequest $request, $repositoryId)
     {
-        $status = $this->resource->getConnection()->transaction(function () {
+        $status = static::transactionFor($this->resource, function () {
             return $this->resource->delete();
         });
 

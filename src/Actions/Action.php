@@ -143,7 +143,7 @@ abstract class Action implements JsonSerializable
         if ($this->isStandalone()) {
             $this->authorizeRun($request, null);
 
-            return Transaction::run(fn () => $this->handle($request));
+            return Transaction::run(fn () => $this->handle($request), connection: $request->model()->getConnection());
         }
 
         $response = null;
@@ -172,7 +172,7 @@ abstract class Action implements JsonSerializable
 
             Transaction::run(function () use ($model, $request, &$response) {
                 $response = $this->handle($request, $model);
-            });
+            }, connection: $request->model()->getConnection());
         }
 
         return $response;
@@ -189,13 +189,13 @@ abstract class Action implements JsonSerializable
     private function runIndexAction(ActionRequest $request, Closure $callback): void
     {
         if ($this->hasRunAuthorization()) {
-            Transaction::run(fn () => $request->collectRepositories($this, static::$chunkCount, $callback));
+            Transaction::run(fn () => $request->collectRepositories($this, static::$chunkCount, $callback), connection: $request->model()->getConnection());
 
             return;
         }
 
-        $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($callback) {
-            Transaction::run(fn () => $callback($models));
+        $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($callback, $request) {
+            Transaction::run(fn () => $callback($models), connection: $request->model()->getConnection());
         });
     }
 

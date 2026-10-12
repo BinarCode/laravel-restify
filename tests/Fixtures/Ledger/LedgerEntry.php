@@ -4,12 +4,15 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Fixtures\Ledger;
 
+use Binaryk\LaravelRestify\Models\Concerns\HasActionLogs;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use RuntimeException;
 
 class LedgerEntry extends Model
 {
+    use HasActionLogs;
+
     public const CONNECTION = 'restify_ledger';
 
     public const POISONED_TITLE = 'poisoned';
@@ -19,7 +22,6 @@ class LedgerEntry extends Model
     protected $table = 'ledger_entries';
 
     protected $fillable = [
-        'id',
         'title',
     ];
 
