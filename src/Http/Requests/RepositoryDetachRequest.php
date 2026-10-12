@@ -22,6 +22,6 @@ class RepositoryDetachRequest extends RestifyRequest
      */
     protected function relatedModelQuery(Model $model): Builder
     {
-        return $model->newQuery()->withoutGlobalScope(SoftDeletingScope::class);
+        return $model->newQueryWithoutRelationships()->withoutGlobalScope(SoftDeletingScope::class);
     }
 }

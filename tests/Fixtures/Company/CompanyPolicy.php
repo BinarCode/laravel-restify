@@ -176,6 +176,21 @@ class CompanyPolicy
         return true;
     }
 
+    public function attachEagerStaff(User $user, Company $model, User $staffToBeAttached): bool
+    {
+        return true;
+    }
+
+    public function syncEagerStaff(User $user, Company $model, Collection $keys): bool
+    {
+        return true;
+    }
+
+    public function detachEagerStaff(User $user, Company $model, User $staffToBeDetached): bool
+    {
+        return true;
+    }
+
     public function attachLabels(User $user, Company $model, Label $labelToBeAttached)
     {
         return true;

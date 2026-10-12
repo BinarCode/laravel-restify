@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyWithExtraSyncedStaffRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\TrashableUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\TrashableUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -57,6 +58,29 @@ class AttachRespectsRelatedScopesTest extends IntegrationTestCase
                 'company_id' => $this->company->getKey(),
                 'user_id' => $visible->getKey(),
             ]);
+        } finally {
+            User::clearBootedModels();
+        }
+    }
+
+    #[Test]
+    public function it_does_not_sync_a_related_record_a_global_scope_hides_when_a_repository_override_adds_it(): void
+    {
+        Restify::repositories([CompanyWithExtraSyncedStaffRepository::class]);
+
+        $visible = User::factory()->create(['name' => 'visible']);
+        $hidden = User::factory()->create(['name' => 'hidden']);
+
+        CompanyWithExtraSyncedStaffRepository::$extraStaffId = $hidden->getKey();
+
+        User::addGlobalScope('hidden', fn (Builder $query) => $query->where('name', '!=', 'hidden'));
+
+        try {
+            $this->postJson(CompanyWithExtraSyncedStaffRepository::route("{$this->company->id}/sync/staff"), [
+                'staff' => [$visible->getKey()],
+            ])->assertNotFound();
+
+            $this->assertDatabaseCount(CompanyUserPivot::class, 0);
         } finally {
             User::clearBootedModels();
         }

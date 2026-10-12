@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Label\EnumKeyedLabel;
 use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
 use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabel;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\EagerPostsUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\IntegerKeyedUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\SecondaryConnectionUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\TrashableUser;
@@ -52,6 +53,13 @@ class Company extends Model
     public function trashableStaff(): BelongsToMany
     {
         return $this->belongsToMany(TrashableUser::class, 'company_user', 'company_id', 'user_id')
+            ->using(CompanyUserPivot::class)
+            ->withTimestamps();
+    }
+
+    public function eagerStaff(): BelongsToMany
+    {
+        return $this->belongsToMany(EagerPostsUser::class, 'company_user', 'company_id', 'user_id')
             ->using(CompanyUserPivot::class)
             ->withTimestamps();
     }

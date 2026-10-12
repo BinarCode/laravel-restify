@@ -69,7 +69,7 @@ trait ResolvesRelatedModels
      */
     protected function relatedModelQuery(Model $model): Builder
     {
-        return $model->newQuery();
+        return $model->newQueryWithoutRelationships();
     }
 
     private function relatedModelPrototype(): Model

@@ -10,6 +10,8 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
+use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\EagerPostsUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\TrashableUser;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\TrashableUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
@@ -88,5 +90,30 @@ class ResolvesRelatedModelsQueryCountTest extends IntegrationTestCase
         $this->assertSelectCount(1, User::class);
 
         $this->assertDatabaseCount(CompanyUserPivot::class, 0);
+    }
+
+    #[Test]
+    #[TestWith(['attach'], 'attach')]
+    #[TestWith(['sync'], 'sync')]
+    #[TestWith(['detach'], 'detach')]
+    public function resolving_related_users_skips_the_eager_loads_their_model_declares(string $action): void
+    {
+        Restify::repositories([EagerPostsUserRepository::class]);
+
+        $company = Company::factory()->create();
+        $userKeys = User::factory()->count(3)->create()->modelKeys();
+
+        if ($action === 'detach') {
+            $company->eagerStaff()->attach($userKeys);
+        }
+
+        $this->recordQueries();
+
+        $this->postJson(CompanyRepository::route("{$company->id}/{$action}/eagerStaff"), [
+            'eagerStaff' => $userKeys,
+        ])->assertSuccessful();
+
+        $this->assertSelectCount(1, User::class);
+        $this->assertSelectCount(0, Post::class);
     }
 }
