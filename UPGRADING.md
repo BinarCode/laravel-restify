@@ -2,6 +2,18 @@
 
 ## Unreleased
 
+### Relations a field lazy-loads no longer appear in a `Mergeable` show
+
+A `Mergeable` repository's show endpoint used to run every field's `resolveForShow()`
+and then discard the result, but a field that touched a relation as a side effect
+(`field('owner', fn () => $this->resource->user->name)`) left that relation loaded on the
+model, so it was serialised into `attributes` (as `user`). Show no longer runs the field
+pipeline, so such a relation is absent from the response. This now matches the index
+endpoint, which never ran it.
+
+If a client reads such a relation from a `Mergeable` show response, request it
+explicitly (`?related=user`) or eager load it on the model.
+
 ### Unauthorized actions and getters answer 403
 
 Calling an action or getter that exists but whose `canSee` denies the user was meant to

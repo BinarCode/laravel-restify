@@ -56,6 +56,18 @@ class MergeableShowPipelineTest extends IntegrationTestCase
         $this->assertSame(1, NonMergeableShowPipelineRepository::$resolved);
     }
 
+    #[Test]
+    public function it_does_not_expose_a_relation_a_field_lazy_loads_on_a_mergeable_show(): void
+    {
+        Restify::repositories([MergeableLazyRelationRepository::class]);
+
+        $post = $this->createPost();
+
+        $this->getJson(MergeableLazyRelationRepository::route($post))
+            ->assertOk()
+            ->assertJsonMissingPath('data.attributes.user');
+    }
+
     private function createPost(): Post
     {
         return Post::query()->create([
@@ -106,6 +118,19 @@ class NonMergeableShowPipelineRepository extends Repository
 
                 return 'resolved';
             }),
+        ];
+    }
+}
+
+class MergeableLazyRelationRepository extends Repository implements Mergeable
+{
+    public static $model = Post::class;
+
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+            field('owner', fn () => $this->resource->user?->name),
         ];
     }
 }
