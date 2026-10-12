@@ -51,7 +51,7 @@ class PivotNonPrimaryRelatedKeyQueryCountTest extends IntegrationTestCase
             'roles' => $this->roles->modelKeys(),
         ])->assertCreated();
 
-        $this->assertSelectCount(2, Role::class);
+        $this->assertSelectCount(1, Role::class);
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 3);
     }
@@ -63,7 +63,7 @@ class PivotNonPrimaryRelatedKeyQueryCountTest extends IntegrationTestCase
             'roles' => $this->roles->map(fn (Role $role): string => '0'.$role->getKey())->all(),
         ])->assertCreated();
 
-        $this->assertSelectCount(2, Role::class);
+        $this->assertSelectCount(1, Role::class);
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 3);
     }
@@ -137,7 +137,7 @@ class PivotNonPrimaryRelatedKeyQueryCountTest extends IntegrationTestCase
             'roles' => $this->roles->modelKeys(),
         ])->assertOk();
 
-        $this->assertSelectCount(2, Role::class);
+        $this->assertSelectCount(1, Role::class);
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 3);
     }
@@ -155,7 +155,7 @@ class PivotNonPrimaryRelatedKeyQueryCountTest extends IntegrationTestCase
             'roles' => $this->roles->modelKeys(),
         ])->assertNoContent();
 
-        $this->assertSelectCount(2, Role::class);
+        $this->assertSelectCount(1, Role::class);
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 0);
     }

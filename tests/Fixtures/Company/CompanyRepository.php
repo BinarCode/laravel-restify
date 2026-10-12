@@ -12,6 +12,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabelRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\IntegerKeyedUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\StaffRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\User\TrashableUserRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Collection;
@@ -39,6 +40,8 @@ class CompanyRepository extends Repository
             'roles' => BelongsToMany::make('roles', RoleRepository::class),
 
             'staff' => BelongsToMany::make('staff', StaffRepository::class),
+
+            'trashableStaff' => BelongsToMany::make('trashableStaff', TrashableUserRepository::class),
 
             'labels' => BelongsToMany::make('labels', LabelRepository::class),
 

@@ -63,7 +63,7 @@ class MatchesRelatedModelsTest extends IntegrationTestCase
              */
             public function match(Model $model, array $ids): array
             {
-                return $this->matchModelsToIds($model, $ids);
+                return $this->matchModelsToIds($model->newQuery(), $ids);
             }
         };
 

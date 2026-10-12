@@ -161,6 +161,21 @@ class CompanyPolicy
         return true;
     }
 
+    public function attachTrashableStaff(User $user, Company $model, User $staffToBeAttached): bool
+    {
+        return true;
+    }
+
+    public function syncTrashableStaff(User $user, Company $model, Collection $keys): bool
+    {
+        return true;
+    }
+
+    public function detachTrashableStaff(User $user, Company $model, User $staffToBeDetached): bool
+    {
+        return true;
+    }
+
     public function attachLabels(User $user, Company $model, Label $labelToBeAttached)
     {
         return true;
