@@ -143,7 +143,7 @@ abstract class Action implements JsonSerializable
         if ($this->isStandalone()) {
             $this->authorizeRun($request, null);
 
-            return Transaction::run(fn () => $this->handle($request), connection: $request->model()->getConnection());
+            return $this->runInTransaction($request, fn () => $this->handle($request));
         }
 
         $response = null;
@@ -170,12 +170,31 @@ abstract class Action implements JsonSerializable
 
             $this->authorizeRun($request, $model);
 
-            Transaction::run(function () use ($model, $request, &$response) {
+            $this->runInTransaction($request, function () use ($model, $request, &$response) {
                 $response = $this->handle($request, $model);
-            }, connection: $request->model()->getConnection());
+            });
         }
 
         return $response;
+    }
+
+    /**
+     * Run the callback in a transaction on the model's connection, nested inside one on the
+     * action-log connection when they differ, so a failure rolls back both.
+     */
+    private function runInTransaction(ActionRequest $request, Closure $callback): mixed
+    {
+        $modelConnection = $request->model()->getConnection();
+        $logConnection = Restify::actionLog()->getConnection();
+
+        if ($logConnection->getName() === $modelConnection->getName()) {
+            return Transaction::run($callback, connection: $modelConnection);
+        }
+
+        return Transaction::run(
+            fn (): mixed => Transaction::run($callback, connection: $modelConnection),
+            connection: $logConnection,
+        );
     }
 
     /**
@@ -189,13 +208,13 @@ abstract class Action implements JsonSerializable
     private function runIndexAction(ActionRequest $request, Closure $callback): void
     {
         if ($this->hasRunAuthorization()) {
-            Transaction::run(fn () => $request->collectRepositories($this, static::$chunkCount, $callback), connection: $request->model()->getConnection());
+            $this->runInTransaction($request, fn () => $request->collectRepositories($this, static::$chunkCount, $callback));
 
             return;
         }
 
         $request->collectRepositories($this, static::$chunkCount, function (Collection $models) use ($callback, $request) {
-            Transaction::run(fn () => $callback($models), connection: $request->model()->getConnection());
+            $this->runInTransaction($request, fn () => $callback($models));
         });
     }
 

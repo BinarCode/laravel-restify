@@ -189,9 +189,10 @@ class WriteTransactionConnectionTest extends IntegrationTestCase
     #[Test]
     #[TestWith(['show'])]
     #[TestWith(['index'])]
-    public function an_action_that_fails_rolls_back_its_writes_on_the_model_connection(string $scope): void
+    public function an_action_that_fails_rolls_back_its_writes_on_both_connections(string $scope): void
     {
         $entry = $this->insertEntry('original');
+        $users = User::query()->count();
 
         $action = new class extends Action
         {
@@ -202,6 +203,8 @@ class WriteTransactionConnectionTest extends IntegrationTestCase
                 foreach (Collection::wrap($models) as $entry) {
                     $entry->update(['title' => 'changed']);
                 }
+
+                User::factory()->create();
 
                 throw new RuntimeException('Action failed after writing.');
             }
@@ -217,6 +220,9 @@ class WriteTransactionConnectionTest extends IntegrationTestCase
         };
 
         $this->assertDatabaseHas(LedgerEntry::class, ['id' => $entry->getKey(), 'title' => 'original']);
+
+        $this->assertDatabaseCount(ActionLog::class, 0);
+        $this->assertDatabaseCount(User::class, $users);
     }
 
     #[Test]
