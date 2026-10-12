@@ -514,7 +514,11 @@ class Repository implements JsonSerializable, RestifySearchable
      */
     public function resolveShowAttributes(RestifyRequest $request)
     {
-        $fields = $this->collectFields($request)
+        if ($this instanceof Mergeable) {
+            return $this->resolveMergeableAttributes($request, hiddenOnShow: true);
+        }
+
+        return $this->collectFields($request)
             ->forShow($request, $this)
             ->filter(fn (Field $field) => $field->authorize($request))
             ->tap(fn (FieldCollection $fields) => HiddenModelAttributes::warnAboutSerializedFields($this, $fields))
@@ -522,34 +526,6 @@ class Repository implements JsonSerializable, RestifySearchable
             ->map(fn (Field $field) => $field->serializeToValue($request))
             ->mapWithKeys(fn ($value) => $value)
             ->all();
-
-        if ($this instanceof Mergeable) {
-            /** @var Collection<string, Field> $fieldsByAttribute */
-            $fieldsByAttribute = $this->collectFields($request)->unique('attribute')->keyBy('attribute');
-
-            // Hidden and authorized show fields
-            $fields = $this->modelAttributes($request)
-                ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute) {
-                    /** @var Field|null $field */
-                    $field = $fieldsByAttribute->get($attribute);
-
-                    if (is_null($field)) {
-                        return true;
-                    }
-
-                    if ($field->isHiddenOnShow($request, $this)) {
-                        return false;
-                    }
-
-                    if (! $field->authorize($request)) {
-                        return false;
-                    }
-
-                    return true;
-                })->all();
-        }
-
-        return $fields;
     }
 
     /**
@@ -561,29 +537,7 @@ class Repository implements JsonSerializable, RestifySearchable
     public function resolveIndexAttributes($request)
     {
         if ($this instanceof Mergeable) {
-            /** @var Collection<string, Field> $fieldsByAttribute */
-            $fieldsByAttribute = $this->collectFields($request)->unique('attribute')->keyBy('attribute');
-
-            // Hidden and authorized index fields
-            return $this->modelAttributes($request)
-                ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute) {
-                    /** @var Field|null $field */
-                    $field = $fieldsByAttribute->get($attribute);
-
-                    if (is_null($field)) {
-                        return true;
-                    }
-
-                    if ($field->isHiddenOnIndex($request, $this)) {
-                        return false;
-                    }
-
-                    if (! $field->authorize($request)) {
-                        return false;
-                    }
-
-                    return true;
-                })->all();
+            return $this->resolveMergeableAttributes($request, hiddenOnShow: false);
         }
 
         // Resolve the show method, and attach the value to the array
@@ -604,6 +558,31 @@ class Repository implements JsonSerializable, RestifySearchable
             ->map(fn (Field $field) => $field->serializeToValue($request))
             ->mapWithKeys(fn ($value) => $value)
             ->all();
+    }
+
+    /**
+     * @return array<array-key, mixed>
+     */
+    private function resolveMergeableAttributes(RestifyRequest $request, bool $hiddenOnShow): array
+    {
+        /** @var Collection<string, Field> $fieldsByAttribute */
+        $fieldsByAttribute = $this->collectFields($request)->unique('attribute')->keyBy('attribute');
+
+        return $this->modelAttributes($request)
+            ->filter(function ($value, $attribute) use ($request, $fieldsByAttribute, $hiddenOnShow) {
+                /** @var Field|null $field */
+                $field = $fieldsByAttribute->get($attribute);
+
+                if (is_null($field)) {
+                    return true;
+                }
+
+                $isHidden = $hiddenOnShow
+                    ? $field->isHiddenOnShow($request, $this)
+                    : $field->isHiddenOnIndex($request, $this);
+
+                return ! $isHidden && $field->authorize($request);
+            })->all();
     }
 
     public function resolveShowMeta($request)
