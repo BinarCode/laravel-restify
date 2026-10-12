@@ -12,7 +12,7 @@ pipeline, so such a relation is absent from the response. This now matches the i
 endpoint, which never ran it.
 
 If a client reads such a relation from a `Mergeable` show response, request it
-explicitly (`?related=user`) or eager load it on the model.
+explicitly (declare it in `related()` and send `?related=user`).
 
 ### Unauthorized actions and getters answer 403
 
