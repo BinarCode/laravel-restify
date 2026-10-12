@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### Attach and sync resolve related ids strictly and store the database key
+
+Attaching or syncing a related model by a key that is not the related model's primary key
+(a `getRelatedKeyName()` such as `uuid` or `slug`) now looks the model up with the global
+scopes of the related model applied, and an id for an integer key must be an integer.
+`"5.0"` and `"5abc"` used to be cast to `5` and attached to that row; they now answer 404,
+like any other id that matches no row. Whole numbers sent as strings (`"5"`, `5`) still work.
+
+The pivot row now stores the key as the database holds it, not the client's spelling of it:
+a case-insensitive match such as `ABC-1` for a stored `abc-1` writes `abc-1`, and `"05"` for
+integer key `5` writes `5`. Check any client that sends decorated ids, and any code that read
+the pivot back expecting the exact string it posted.
+
 ### Unauthorized actions and getters answer 403
 
 Calling an action or getter that exists but whose `canSee` denies the user was meant to
