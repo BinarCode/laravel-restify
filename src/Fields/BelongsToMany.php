@@ -9,6 +9,7 @@ use Binaryk\LaravelRestify\Repositories\PivotsCollection;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 
 class BelongsToMany extends EagerField
@@ -45,11 +46,17 @@ class BelongsToMany extends EagerField
         $repositoryClass = $this->repositoryClass;
 
         if ($repository->model()->relationLoaded($this->relation)) {
-            $paginator = $repository->model()->getRelation($this->relation);
+            /** @var EloquentCollection<int, Model> $loaded */
+            $loaded = $repository->model()->getRelation($this->relation);
+
+            $paginator = $this->limitLoaded(
+                $loaded,
+                $repositoryClass::$defaultRelatablePerPage,
+            );
         } else {
             $paginator = $repository->{$this->relation}();
 
-            $paginator = $paginator->take($this->relatablePerPage($repository::$defaultRelatablePerPage))->get();
+            $paginator = $paginator->take($this->relatablePerPage($repositoryClass::$defaultRelatablePerPage))->get();
         }
 
         $this->value = $paginator->map(function (Model $item) use ($repositoryClass) {

@@ -6,12 +6,16 @@ use Binaryk\LaravelRestify\Events\AdvancedFiltersApplied;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
 use Binaryk\LaravelRestify\Filters\Concerns\AppliesRelationJoin;
+use Binaryk\LaravelRestify\Filters\RelatablePerPage;
 use Binaryk\LaravelRestify\Filters\SearchableFilter;
 use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
@@ -115,8 +119,70 @@ class RepositorySearchService
         );
 
         return $query->with(
-            array_merge($filtered, ($this->repository)::collectWiths($request, $this->repository)->all()),
+            array_merge(
+                $this->limitedEagerLoads($filtered),
+                ($this->repository)::collectWiths($request, $this->repository)->all(),
+            ),
         );
+    }
+
+    /**
+     * @param  array<array-key, string>  $relationPaths
+     * @return array<array-key, string|Closure>
+     */
+    private function limitedEagerLoads(array $relationPaths): array
+    {
+        if (! RelatablePerPage::isRequested()) {
+            return $relationPaths;
+        }
+
+        $eagerLoads = [];
+
+        foreach ($relationPaths as $relationPath) {
+            $default = $this->defaultRelatablePerPage($relationPath);
+
+            $eagerLoads[$relationPath] = function (Relation $relation) use ($relationPath, $default): void {
+                if ($relation instanceof HasMany || $relation instanceof BelongsToMany) {
+                    $relation->limit(RelatablePerPage::forPath($relationPath, $default));
+                }
+            };
+        }
+
+        return $eagerLoads;
+    }
+
+    private function defaultRelatablePerPage(string $relationPath): int
+    {
+        /** @var class-string<Repository> $repositoryClass */
+        $repositoryClass = $this->repository::class;
+
+        foreach (explode('.', $relationPath) as $segment) {
+            $repositoryClass = $this->relatedRepositoryClass($repositoryClass, $segment);
+
+            if ($repositoryClass === null) {
+                return Repository::$defaultRelatablePerPage;
+            }
+        }
+
+        return $repositoryClass::$defaultRelatablePerPage;
+    }
+
+    /**
+     * @param  class-string<Repository>  $repositoryClass
+     * @return class-string<Repository>|null
+     */
+    private function relatedRepositoryClass(string $repositoryClass, string $relation): ?string
+    {
+        foreach ($repositoryClass::include() as $field) {
+            if ($field instanceof EagerField && $field->relation === $relation) {
+                /** @var class-string<Repository> $relatedRepositoryClass */
+                $relatedRepositoryClass = $field->repositoryClass;
+
+                return $relatedRepositoryClass;
+            }
+        }
+
+        return null;
     }
 
     /**
