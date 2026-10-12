@@ -20,7 +20,7 @@ final class TokenTtlResolver
             if (is_finite($minutes) && $minutes > 0) {
                 $seconds = round($minutes * 60);
 
-                if ($seconds >= 1 && $seconds <= PHP_INT_MAX) {
+                if ($seconds >= 1 && $seconds < PHP_INT_MAX) {
                     return (int) $seconds;
                 }
             }
