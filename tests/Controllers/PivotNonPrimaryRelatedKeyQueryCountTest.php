@@ -7,8 +7,10 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Tests\Concerns\InteractsWithQueryLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyLabelPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRolePivot;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
@@ -45,9 +47,39 @@ class PivotNonPrimaryRelatedKeyQueryCountTest extends IntegrationTestCase
             'roles' => $this->roles->modelKeys(),
         ])->assertCreated();
 
-        $this->assertSelectCount(2, Role::class);
+        $this->assertSelectCount(1, Role::class);
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 3);
+    }
+
+    #[Test]
+    public function attaching_several_roles_by_zero_padded_ids_resolves_them_in_one_lookup(): void
+    {
+        $this->postJson(CompanyRepository::route("{$this->company->id}/attach/roles"), [
+            'roles' => $this->roles->map(fn (Role $role): string => '0'.$role->getKey())->all(),
+        ])->assertCreated();
+
+        $this->assertSelectCount(1, Role::class);
+
+        $this->assertDatabaseCount(CompanyRolePivot::class, 3);
+    }
+
+    #[Test]
+    public function attaching_several_labels_by_differently_cased_ids_retries_them_in_one_batch(): void
+    {
+        foreach (['aaa', 'bbb', 'ccc'] as $code) {
+            Label::query()->create(['code' => $code]);
+        }
+
+        $this->recordQueries();
+
+        $this->postJson(CompanyRepository::route("{$this->company->id}/attach/labels"), [
+            'labels' => ['AAA', 'BBB', 'CCC'],
+        ])->assertCreated();
+
+        $this->assertSelectCount(2, Label::class);
+
+        $this->assertDatabaseCount(CompanyLabelPivot::class, 3);
     }
 
     #[Test]
@@ -80,7 +112,7 @@ class PivotNonPrimaryRelatedKeyQueryCountTest extends IntegrationTestCase
             'roles' => $this->roles->modelKeys(),
         ])->assertOk();
 
-        $this->assertSelectCount(2, Role::class);
+        $this->assertSelectCount(1, Role::class);
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 3);
     }
@@ -98,7 +130,7 @@ class PivotNonPrimaryRelatedKeyQueryCountTest extends IntegrationTestCase
             'roles' => $this->roles->modelKeys(),
         ])->assertNoContent();
 
-        $this->assertSelectCount(2, Role::class);
+        $this->assertSelectCount(1, Role::class);
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 0);
     }

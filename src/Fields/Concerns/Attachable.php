@@ -8,8 +8,6 @@ use Binaryk\LaravelRestify\Traits\ValidatesRelatedKeyShape;
 use Closure;
 use DateTime;
 use Illuminate\Auth\Access\AuthorizationException;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Support\Arr;
@@ -50,12 +48,6 @@ trait Attachable
      * @var array
      */
     public $pivotFields = [];
-
-    /**
-     * Request attribute key under which {@see self::relatedModelsByPrimaryKey()}
-     * memoizes its lookup.
-     */
-    private const RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyAttachableRelatedModels';
 
     public function canAttach(callable|Closure $callback)
     {
@@ -211,9 +203,9 @@ trait Attachable
 
         $relatedRepositoryModel = $request->repository($relatedRepository)::newModel();
 
-        if ($relatedKeyName !== $relatedRepositoryModel->getKeyName()) {
-            $relatedKey = $this->resolveNonPrimaryRelatedKey($request, $relatedRepositoryModel, $relatedKeyName, $relatedKey);
-        }
+        $relatedModel = $request->relatedModelFor($relatedKey);
+
+        $relatedKey = $relatedModel->getRawOriginal($relatedKeyName);
 
         ($pivot = $relationship->newPivot())->forceFill([
             $relationship->getForeignPivotKeyName() => $parentKey,
@@ -234,46 +226,6 @@ trait Attachable
         $repository::fillFields($request, $pivot, $fields);
 
         return $pivot;
-    }
-
-    private function resolveNonPrimaryRelatedKey(RestifyRequest $request, Model $relatedRepositoryModel, string $relatedKeyName, int|string $primaryKey): mixed
-    {
-        $relatedModel = $this->relatedModelsByPrimaryKey($request, $relatedRepositoryModel)->get($primaryKey);
-
-        if (is_null($relatedModel)) {
-            throw (new ModelNotFoundException)->setModel($relatedRepositoryModel::class, [$primaryKey]);
-        }
-
-        return $relatedModel->{$relatedKeyName};
-    }
-
-    /**
-     * `initializePivot()` is called once per id from several places (controllers,
-     * authorizeToAttach/Sync), so this memoizes the lookup per request instead of
-     * re-querying for each one.
-     *
-     * @return Collection<int|string, Model>
-     */
-    private function relatedModelsByPrimaryKey(RestifyRequest $request, Model $relatedRepositoryModel): Collection
-    {
-        $cached = $request->attributes->get(self::RELATED_MODELS_CACHE_ATTRIBUTE);
-
-        if ($cached instanceof Collection) {
-            return $cached;
-        }
-
-        $relatedRepository = $request->relatedRepositoryKey();
-
-        $primaryKeyName = $relatedRepositoryModel->getKeyName();
-
-        $relatedModels = $relatedRepositoryModel->newQuery()
-            ->whereIn($primaryKeyName, Arr::wrap($request->input($relatedRepository)))
-            ->get()
-            ->keyBy($primaryKeyName);
-
-        $request->attributes->set(self::RELATED_MODELS_CACHE_ATTRIBUTE, $relatedModels);
-
-        return $relatedModels;
     }
 
     /**
