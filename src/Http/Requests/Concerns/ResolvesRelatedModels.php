@@ -20,8 +20,6 @@ trait ResolvesRelatedModels
 
     private const RESOLVED_RELATED_MODELS_CACHE_ATTRIBUTE = '_restifyResolvedRelatedModels';
 
-    private const RELATED_MODELS_BY_KEY_CACHE_ATTRIBUTE = '_restifyRelatedModelsByKey';
-
     /**
      * The related models named in the request, in the order they were sent.
      *
@@ -48,54 +46,95 @@ trait ResolvesRelatedModels
      * The related model a requested id resolves to, however the id is spelled
      * ("05" for 5, "ABC" for a stored "abc" when the database collation matches).
      *
+     * @internal
+     *
      * @throws ModelNotFoundException if the database does not return the id.
      */
-    public function relatedModelFor(int|string $id): Model
+    public function relatedModelFor(int|string $id, bool $applyGlobalScopes = false): Model
     {
-        $relatedModels = $this->relatedModelsByKey();
-
-        $model = $this->repository($this->relatedRepositoryKey())->model();
-
-        $key = $this->normalizeRelatedModelKey($id, $model, caseInsensitive: false);
-
-        if (! isset($relatedModels[$key])) {
-            $relatedModels[$key] = $this->resolveRelatedModels([$id])->sole();
-
-            $this->attributes->set(self::RELATED_MODELS_BY_KEY_CACHE_ATTRIBUTE, $relatedModels);
+        if ($applyGlobalScopes) {
+            $this->loadScopedRelatedModels();
+        } else {
+            $this->relatedModels();
         }
 
-        return $relatedModels[$key];
+        $key = $this->normalizeRelatedModelKey($id, $this->relatedModelPrototype(), caseInsensitive: false);
+
+        if (! isset($this->relatedModelsByKey($applyGlobalScopes)[$key])) {
+            $this->resolveRelatedModels([$id], $applyGlobalScopes);
+        }
+
+        return $this->relatedModelsByKey($applyGlobalScopes)[$key];
     }
 
-    /**
-     * @return array<int|string, Model> keyed by each requested id and by the real key of the model it resolved to.
-     */
-    private function relatedModelsByKey(): array
+    private function loadScopedRelatedModels(): void
     {
-        $cached = $this->attributes->get(self::RELATED_MODELS_BY_KEY_CACHE_ATTRIBUTE);
+        $attribute = $this->relatedCacheAttribute('scopedLoaded');
 
-        if (is_array($cached)) {
-            /** @var array<int|string, Model> $cached */
+        if ($this->attributes->get($attribute) === true) {
+            return;
+        }
+
+        $this->resolveRelatedModels($this->requestedRelatedIds(), applyGlobalScopes: true);
+
+        $this->attributes->set($attribute, true);
+    }
+
+    private function relatedModelPrototype(): Model
+    {
+        $attribute = $this->relatedCacheAttribute('model');
+
+        $cached = $this->attributes->get($attribute);
+
+        if ($cached instanceof Model) {
             return $cached;
         }
 
         $model = $this->repository($this->relatedRepositoryKey())->model();
 
-        $requestedIds = $this->requestedRelatedIds();
+        $this->attributes->set($attribute, $model);
 
-        $relatedModelsByKey = [];
+        return $model;
+    }
 
-        foreach ($this->relatedModels() as $position => $relatedModel) {
-            $requestedKey = $this->normalizeRelatedModelKey($requestedIds[$position], $model, caseInsensitive: false);
+    /**
+     * @return array<int|string, Model> keyed by each resolved requested id and by the real key of the model it resolved to.
+     */
+    private function relatedModelsByKey(bool $applyGlobalScopes): array
+    {
+        /** @var array<int|string, Model> $relatedModelsByKey */
+        $relatedModelsByKey = $this->attributes->get($this->relatedModelsByKeyAttribute($applyGlobalScopes), []);
+
+        return $relatedModelsByKey;
+    }
+
+    /**
+     * @param  array<int, int|string>  $ids
+     * @param  array<int, Model>  $resolved
+     */
+    private function rememberRelatedModels(array $ids, array $resolved, Model $model, bool $applyGlobalScopes): void
+    {
+        $relatedModelsByKey = $this->relatedModelsByKey($applyGlobalScopes);
+
+        foreach ($resolved as $position => $relatedModel) {
+            $requestedKey = $this->normalizeRelatedModelKey($ids[$position], $model, caseInsensitive: false);
             $realKey = $this->normalizeRelatedModelKey($relatedModel->getKey(), $model, caseInsensitive: false);
 
             $relatedModelsByKey[$requestedKey] = $relatedModel;
             $relatedModelsByKey[$realKey] ??= $relatedModel;
         }
 
-        $this->attributes->set(self::RELATED_MODELS_BY_KEY_CACHE_ATTRIBUTE, $relatedModelsByKey);
+        $this->attributes->set($this->relatedModelsByKeyAttribute($applyGlobalScopes), $relatedModelsByKey);
+    }
 
-        return $relatedModelsByKey;
+    private function relatedModelsByKeyAttribute(bool $applyGlobalScopes): string
+    {
+        return $this->relatedCacheAttribute($applyGlobalScopes ? 'scopedByKey' : 'byKey');
+    }
+
+    private function relatedCacheAttribute(string $name): string
+    {
+        return "_restifyRelated:{$this->relatedRepositoryKey()}:{$name}";
     }
 
     /**
@@ -112,7 +151,7 @@ trait ResolvesRelatedModels
      *
      * @throws ModelNotFoundException
      */
-    protected function resolveRelatedModels(array $requestedIds): Collection
+    protected function resolveRelatedModels(array $requestedIds, bool $applyGlobalScopes = false): Collection
     {
         $relatedRepositoryKey = $this->relatedRepositoryKey();
 
@@ -127,15 +166,17 @@ trait ResolvesRelatedModels
             $requestedIds,
         );
 
-        $model = $this->repository($relatedRepositoryKey)->model();
+        $model = $this->relatedModelPrototype();
 
-        $resolved = $this->matchModelsToIds($model, $ids);
+        $resolved = $this->matchModelsToIds($model, $ids, $applyGlobalScopes);
 
         $unmatched = array_diff_key($ids, $resolved);
 
         if ($unmatched !== []) {
             throw (new ModelNotFoundException)->setModel($model::class, array_values($unmatched));
         }
+
+        $this->rememberRelatedModels($ids, $resolved, $model, $applyGlobalScopes);
 
         ksort($resolved);
 

@@ -13,6 +13,7 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Label\Label;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use PHPUnit\Framework\Attributes\Test;
@@ -108,6 +109,48 @@ class AttachStoresRealRelatedKeyTest extends IntegrationTestCase
         ])->assertNotFound();
 
         $this->assertDatabaseCount(CompanyRolePivot::class, 0);
+    }
+
+    #[Test]
+    #[TestWith(['5abc'], 'trailing letters')]
+    #[TestWith(['5.9'], 'a fraction')]
+    #[TestWith(['5.0'], 'a zero fraction')]
+    public function it_rejects_an_integer_id_that_is_not_a_plain_integer(string $requestedId): void
+    {
+        $company = Company::factory()->create();
+        User::factory()->create(['id' => 5]);
+
+        $this->postJson(CompanyRepository::route("{$company->id}/attach/members"), [
+            'members' => [$requestedId],
+        ])->assertNotFound();
+
+        $this->assertDatabaseCount(CompanyUserPivot::class, 0);
+    }
+
+    #[Test]
+    public function it_does_not_attach_a_related_record_a_global_scope_hides_on_a_non_primary_key(): void
+    {
+        $company = Company::factory()->create();
+        Role::factory()->create(['id' => 5, 'name' => 'editor']);
+        Role::factory()->create(['id' => 6, 'name' => 'hidden']);
+
+        Role::addGlobalScope('hidden', fn (Builder $query) => $query->where('name', '!=', 'hidden'));
+
+        try {
+            $this->postJson(CompanyRepository::route("{$company->id}/attach/roles"), [
+                'roles' => [5, 6],
+            ])->assertNotFound();
+
+            $this->assertDatabaseCount(CompanyRolePivot::class, 0);
+
+            $this->postJson(CompanyRepository::route("{$company->id}/attach/roles"), [
+                'roles' => [5],
+            ])->assertCreated();
+
+            $this->assertDatabaseCount(CompanyRolePivot::class, 1);
+        } finally {
+            Role::clearBootedModels();
+        }
     }
 
     /**
