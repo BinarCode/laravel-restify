@@ -13,12 +13,15 @@ trait MatchesRelatedModels
     use CanonicalizesRelatedKeys;
 
     /**
+     * @param  Builder<Model>  $query
      * @param  array<int, int|string>  $ids
      * @return array<int, Model> the models the database matched, keyed by the position of the id they match. An id the database did not return is absent.
      */
-    private function matchModelsToIds(Model $model, array $ids, bool $applyGlobalScopes = false): array
+    private function matchModelsToIds(Builder $query, array $ids): array
     {
-        $models = $this->relatedQuery($model, $applyGlobalScopes)->whereKey($ids)->get();
+        $model = $query->getModel();
+
+        $models = (clone $query)->whereKey($ids)->get();
 
         $resolved = $this->matchRelatedModels($ids, $models, $model, caseInsensitive: false);
 
@@ -29,7 +32,7 @@ trait MatchesRelatedModels
         // the database decide. An int key needs none: normalizeRelatedModelKey()
         // already mirrors how the database coerces it.
         if ($unmatched !== [] && ! $this->hasIntegerKey($model)) {
-            $retried = $this->relatedQuery($model, $applyGlobalScopes)->whereKey(array_values($unmatched))->get();
+            $retried = (clone $query)->whereKey(array_values($unmatched))->get();
 
             $resolved += $this->matchRelatedModels($unmatched, $retried, $model, caseInsensitive: true);
         }
@@ -83,14 +86,6 @@ trait MatchesRelatedModels
         $trimmed = trim($key);
 
         return preg_match('/^[+-]?\\d+$/', $trimmed) === 1 ? (int) $trimmed : $key;
-    }
-
-    /**
-     * @return Builder<Model>
-     */
-    private function relatedQuery(Model $model, bool $applyGlobalScopes): Builder
-    {
-        return $applyGlobalScopes ? $model->newQuery() : $model->newModelQuery();
     }
 
     private function hasIntegerKey(Model $model): bool
