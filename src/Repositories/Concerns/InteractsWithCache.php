@@ -5,10 +5,17 @@ namespace Binaryk\LaravelRestify\Repositories\Concerns;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Carbon\CarbonImmutable;
 use DateTimeInterface;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Str;
+use ReflectionProperty;
 
 trait InteractsWithCache
 {
+    private const CACHE_VERSION_TTL_DAYS = 30;
+
     /**
      * Whether caching is enabled for this repository.
      */
@@ -32,6 +39,26 @@ trait InteractsWithCache
     public static array $cacheTags = [];
 
     /**
+     * @var array<class-string, int>
+     */
+    private static array $cacheTtls = [];
+
+    /**
+     * @var array<class-string, bool>
+     */
+    private static array $cacheEnabledStates = [];
+
+    /**
+     * @var array<class-string, string|null>
+     */
+    private static array $cacheStoreNames = [];
+
+    /**
+     * @var array<class-string, array<int, string>>
+     */
+    private static array $cacheTagsByRepository = [];
+
+    /**
      * Generate a unique cache key for the index request.
      */
     public function generateIndexCacheKey(RestifyRequest $request): string
@@ -45,6 +72,12 @@ trait InteractsWithCache
 
         $pagination = $request->pagination();
 
+        $relatablePerPage = $request->input('relatablePerPage');
+
+        if (is_array($relatablePerPage)) {
+            ksort($relatablePerPage);
+        }
+
         // Add request parameters that affect the query
         $queryParams = [
             'search' => $request->input('search'),
@@ -53,6 +86,7 @@ trait InteractsWithCache
             'perPage' => $pagination->resolvePerPage(static::$defaultPerPage),
             'related' => $request->input('related'),
             'group_by' => $request->input('group_by'),
+            'relatablePerPage' => $relatablePerPage,
         ];
 
         // Add filters
@@ -78,7 +112,12 @@ trait InteractsWithCache
         $keyParts[] = $serializedParams;
 
         // Add user context for authorization-sensitive data
-        if ($user = $request->user()) {
+        /** @var Authenticatable|null $user */
+        $user = $request->user();
+
+        if ($user !== null) {
+            $keyParts[] = 'guard_'.Auth::getDefaultDriver();
+            $keyParts[] = 'model_'.($user instanceof Model ? $user->getMorphClass() : $user::class);
             $keyParts[] = 'user_'.$user->getAuthIdentifier();
         } else {
             $keyParts[] = 'guest';
@@ -99,6 +138,8 @@ trait InteractsWithCache
                 $keyParts[] = 'v_'.now()->timestamp;
             }
         }
+
+        $keyParts[] = 'ver_'.static::cacheVersion();
 
         return implode(':', $keyParts);
     }
@@ -128,7 +169,7 @@ trait InteractsWithCache
         }
 
         // Check if caching is disabled for this specific repository
-        if (! static::$cacheEnabled) {
+        if (! static::cacheIsEnabled()) {
             return false;
         }
 
@@ -151,11 +192,11 @@ trait InteractsWithCache
 
         $cacheKey = $this->generateIndexCacheKey($request);
         $store = $this->getCacheStore();
-        $ttl = static::$cacheTtl;
+        $ttl = static::resolveCacheTtl();
+        $cacheTags = static::resolveCacheTags();
 
-        // Use cache tags if available and supported
-        if (! empty(static::$cacheTags) && static::cacheStoreSupportsTagging($store)) {
-            return $store->tags(static::$cacheTags)->remember($cacheKey, $ttl, $callback);
+        if (static::cacheStoreSupportsTagging($store)) {
+            return $store->tags($cacheTags)->remember($cacheKey, $ttl, $callback);
         }
 
         return $store->remember($cacheKey, $ttl, $callback);
@@ -176,86 +217,125 @@ trait InteractsWithCache
             return;
         }
 
-        // Skip cache clearing if disabled for this repository
-        if (! static::$cacheEnabled) {
-            return;
-        }
-
-        $store = Cache::store(static::resolveCacheStoreName());
-        $cacheTags = self::resolveCacheTags();
-
-        // If cache tags are used and supported, flush by tags
-        if (! empty($cacheTags) && static::cacheStoreSupportsTagging($store)) {
-            $store->tags($cacheTags)->flush();
-
-            return;
-        }
-
-        // For ArrayStore (used in tests), manually clear matching keys
-        if (get_class($store) === 'Illuminate\Cache\ArrayStore') {
-            $reflection = new \ReflectionClass($store);
-            $storage = $reflection->getProperty('storage');
-            $storage->setAccessible(true);
-            $storageArray = $storage->getValue($store);
-
-            // Find and remove keys that contain 'restify' and our repository
-            $keysToRemove = array_filter(array_keys($storageArray), function ($key) {
-                return str_contains($key, 'restify') && (
-                    str_contains($key, static::uriKey()) ||
-                    str_contains($key, 'tag:restify')
-                );
-            });
-
-            foreach ($keysToRemove as $key) {
-                unset($storageArray[$key]);
-            }
-
-            $storage->setValue($store, $storageArray);
-
-            return;
-        }
-
-        // For Redis and other drivers that support pattern deletion
-        if (method_exists($store->getStore(), 'getRedis')) {
-            try {
-                $pattern = 'restify:repository:'.static::uriKey().':*';
-                $store->getStore()->getRedis()->eval(
-                    "return redis.call('del', unpack(redis.call('keys', ARGV[1])))",
-                    0,
-                    $pattern
-                );
-
-                return;
-            } catch (\Exception $e) {
-                // Continue to fallback
-            }
-        }
-
-        // Fallback: flush entire cache (not ideal but better than stale data)
         try {
-            $store->flush();
+            Cache::store(static::resolveCacheStoreName())->put(
+                static::cacheVersionKey(),
+                Str::random(),
+                now()->addDays(self::CACHE_VERSION_TTL_DAYS),
+            );
         } catch (\Exception $e) {
-            // Silently fail if cache flushing fails (e.g., cache table doesn't exist)
-            // This prevents cache operations from breaking the application
+            report($e);
         }
+    }
+
+    protected static function cacheVersionKey(): string
+    {
+        return 'restify:repository:'.static::uriKey().':version';
+    }
+
+    protected static function cacheVersion(): string
+    {
+        $store = Cache::store(static::resolveCacheStoreName());
+        $key = static::cacheVersionKey();
+
+        $version = $store->get($key);
+
+        if (is_string($version)) {
+            return $version;
+        }
+
+        $candidate = Str::random();
+        $store->add($key, $candidate, now()->addDays(self::CACHE_VERSION_TTL_DAYS));
+
+        $stored = $store->get($key);
+
+        return is_string($stored) ? $stored : $candidate;
+    }
+
+    protected static function cacheIsEnabled(): bool
+    {
+        $configured = self::configuredCacheValue(self::$cacheEnabledStates, 'cacheEnabled');
+
+        return $configured === null ? static::$cacheEnabled : (bool) $configured['value'];
+    }
+
+    protected static function resolveCacheTtl(): int
+    {
+        $configured = self::configuredCacheValue(self::$cacheTtls, 'cacheTtl');
+
+        if ($configured !== null && is_int($configured['value'])) {
+            return $configured['value'];
+        }
+
+        $declaredDefault = (new ReflectionProperty(self::class, 'cacheTtl'))->getDefaultValue();
+
+        if (static::$cacheTtl !== $declaredDefault) {
+            return static::$cacheTtl;
+        }
+
+        $configuredTtl = config('restify.repositories.cache.ttl');
+
+        return is_numeric($configuredTtl) ? (int) $configuredTtl : static::$cacheTtl;
+    }
+
+    /**
+     * The nearest value a setter or a redeclared property provides, walking from
+     * this repository up to the class using the trait. A setter beats a redeclared
+     * property on the same class, and a child beats its parents.
+     *
+     * @param  array<class-string, mixed>  $setterValues
+     * @return array{value: mixed}|null
+     */
+    private static function configuredCacheValue(array $setterValues, string $property): ?array
+    {
+        $class = static::class;
+
+        while ($class !== false) {
+            if (array_key_exists($class, $setterValues)) {
+                return ['value' => $setterValues[$class]];
+            }
+
+            $reflection = new ReflectionProperty($class, $property);
+
+            if ($class !== self::class && $reflection->getDeclaringClass()->getName() === $class) {
+                return ['value' => $reflection->getValue()];
+            }
+
+            $class = $class === self::class ? false : get_parent_class($class);
+        }
+
+        return null;
     }
 
     /**
      * The cache tags for this repository, including its default tags.
      *
-     * `bootInteractsWithCache()` only merges the default tags in on first
-     * construction, so a repository that was never instantiated (e.g. from
-     * an artisan command that only calls `clearCache()`) would otherwise
-     * see an empty `$cacheTags` here.
-     *
      * @return array<int, string>
      */
-    private static function resolveCacheTags(): array
+    protected static function resolveCacheTags(): array
     {
         return array_values(array_unique(array_merge(
             ['restify', 'repositories', static::uriKey()],
             static::$cacheTags,
+            ...self::cacheTagsFromSetters(),
         )));
+    }
+
+    /**
+     * @return list<array<int, string>>
+     */
+    private static function cacheTagsFromSetters(): array
+    {
+        $tags = [];
+        $class = static::class;
+
+        while ($class !== false) {
+            array_unshift($tags, self::$cacheTagsByRepository[$class] ?? []);
+
+            $class = $class === self::class ? false : get_parent_class($class);
+        }
+
+        return $tags;
     }
 
     /**
@@ -268,8 +348,11 @@ trait InteractsWithCache
 
     protected static function resolveCacheStoreName(): ?string
     {
-        if (static::$cacheStore !== null) {
-            return static::$cacheStore;
+        $configured = self::configuredCacheValue(self::$cacheStoreNames, 'cacheStore');
+        $explicitStore = $configured === null ? static::$cacheStore : $configured['value'];
+
+        if (is_string($explicitStore)) {
+            return $explicitStore;
         }
 
         $configuredStore = config('restify.repositories.cache.store');
@@ -342,7 +425,10 @@ trait InteractsWithCache
      */
     public static function cacheTags(array $tags): void
     {
-        static::$cacheTags = array_merge(static::$cacheTags, $tags);
+        self::$cacheTagsByRepository[static::class] = array_values(array_unique(array_merge(
+            self::$cacheTagsByRepository[static::class] ?? [],
+            $tags,
+        )));
     }
 
     /**
@@ -350,7 +436,15 @@ trait InteractsWithCache
      */
     public static function cacheTtl(int $seconds): void
     {
-        static::$cacheTtl = $seconds;
+        self::$cacheTtls[static::class] = $seconds;
+    }
+
+    /**
+     * Set the cache store for this repository.
+     */
+    public static function cacheStore(?string $store): void
+    {
+        self::$cacheStoreNames[static::class] = $store;
     }
 
     /**
@@ -358,7 +452,7 @@ trait InteractsWithCache
      */
     public static function disableCache(): void
     {
-        static::$cacheEnabled = false;
+        self::$cacheEnabledStates[static::class] = false;
     }
 
     /**
@@ -366,7 +460,7 @@ trait InteractsWithCache
      */
     public static function enableCache(): void
     {
-        static::$cacheEnabled = true;
+        self::$cacheEnabledStates[static::class] = true;
     }
 
     /**
@@ -374,9 +468,6 @@ trait InteractsWithCache
      */
     protected static function bootInteractsWithCache(): void
     {
-        // Set default cache tags
-        static::$cacheTags = array_merge(['restify', 'repositories', static::uriKey()], static::$cacheTags);
-
         // Listen to model events to clear cache automatically
         static::bindModelEvents();
     }

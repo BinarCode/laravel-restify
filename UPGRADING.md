@@ -2,6 +2,30 @@
 
 ## Unreleased
 
+### Index cache: per-repository setters, per-guard keys, `clearCache()` no longer flushes
+
+- `PostRepository::cacheTtl()`, `cacheTags()`, `disableCache()` and `enableCache()` wrote
+  statics shared with every repository, so calling one on a repository changed all of them.
+  They now only affect the repository they are called on and its children (a setter on a
+  base repository applies to every repository extending it; a child's setter or redeclared
+  property wins). A property a repository redeclares (`public static int $cacheTtl = 600;`)
+  keeps working. Writing a property directly (`PostRepository::$cacheTtl = 60`) still hits
+  the shared base property and is still honored for the TTL; use the setters instead. A
+  `cacheStore()` setter was added too.
+- `clearCache()` no longer tag-flushes, scans keys or flushes the whole store. It replaces a
+  per-repository version that is part of the index cache key, so only that repository's
+  entries stop being served, on every store, and also while that repository's cache is
+  disabled. Old entries expire with their TTL. Entries are still written under the cache tags
+  where the store supports them, so `Cache::tags([...])->flush()` keeps working, but
+  `clearCache()` no longer uses tags. Keys now end with `:ver_<version>`, and entries written
+  by the previous release are not served after upgrading.
+- The index cache key now contains the authenticating guard and the user model
+  (`guard_web:model_App\Models\User:user_1`), so users of different guards or tables with the
+  same id no longer share an entry.
+- `restify.repositories.cache.ttl` is now honored. The TTL precedence is: setter, redeclared
+  `$cacheTtl`, `$cacheTtl` changed at runtime on the base class, then the config value. A
+  configured value other than 300 now takes effect where the hardcoded 300 used to win.
+
 ### An invalid `restify.auth.token_ttl` throws instead of never expiring
 
 Login and register treated any `token_ttl` that was not a positive number (`-5`,
