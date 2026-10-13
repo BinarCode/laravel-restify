@@ -2,6 +2,19 @@
 
 ## Unreleased
 
+### An invalid `restify.auth.token_ttl` throws instead of never expiring
+
+Login and register treated any `token_ttl` that was not a positive number (`-5`,
+`"60m"`, `"abc"`) as "never expires", and so did a tiny value that rounds to 0 seconds
+(`0.001`). A typo in `RESTIFY_TOKEN_TTL` silently issued tokens that never expire.
+
+`null`, `false`, `0`, `"0"` and an empty string still mean never expires, as they have
+since 10.1.10. Any other value must be a positive
+number of minutes that rounds to at least one second, otherwise login and register throw
+an `InvalidArgumentException` naming `restify.auth.token_ttl` and the value. Check that
+your `RESTIFY_TOKEN_TTL` is unset or a positive number before upgrading. Register now
+validates it before creating the user, so a bad value no longer leaves an account behind.
+
 ### Unauthorized actions and getters answer 403
 
 Calling an action or getter that exists but whose `canSee` denies the user was meant to
