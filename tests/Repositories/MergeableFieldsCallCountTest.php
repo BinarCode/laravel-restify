@@ -49,7 +49,7 @@ class MergeableFieldsCallCountTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function it_adds_a_single_constant_call_for_the_mergeable_branch_on_show(): void
+    public function it_calls_fields_no_more_often_on_a_mergeable_show_than_on_a_non_mergeable_one(): void
     {
         Restify::repositories([
             MergeableFieldsCallCountRepository::class,
@@ -64,12 +64,7 @@ class MergeableFieldsCallCountTest extends IntegrationTestCase
         $this->getJson(MergeableFieldsCallCountRepository::route($post))->assertOk();
         $mergeableCalls = MergeableFieldsCallCountRepository::$fieldsCalls;
 
-        // The Mergeable branch of resolveShowAttributes() must add exactly one extra
-        // collectFields() call (to build the attribute => field map) on top of the
-        // baseline a plain, non-Mergeable repository already makes - not one call per
-        // model attribute (Post has ~10 columns), which would add roughly 10 extra calls
-        // on unfixed 10.x code.
-        $this->assertSame(1, $mergeableCalls - $baselineCalls);
+        $this->assertSame(0, $mergeableCalls - $baselineCalls);
     }
 }
 
