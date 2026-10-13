@@ -10,6 +10,8 @@ use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
+use InvalidArgumentException;
+use Laravel\Sanctum\PersonalAccessToken;
 use ParseError;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -70,11 +72,11 @@ class LoginTest extends IntegrationTestCase
     #[TestWith(['60', 3600], 'a whole-minute ttl from env converts to seconds')]
     #[TestWith([null, null], 'no ttl means no expiry')]
     #[TestWith([0, null], 'a zero int ttl means no expiry')]
-    #[TestWith(['0', null], 'a zero string ttl means no expiry')]
-    #[TestWith([-5, null], 'a negative ttl means no expiry')]
-    #[TestWith(['abc', null], 'a non-numeric ttl means no expiry')]
+    #[TestWith(['0', null], 'a zero string ttl from env means no expiry')]
+    #[TestWith([false, null], 'false means no expiry')]
+    #[TestWith(['', null], 'an empty ttl means no expiry')]
     #[TestWith([60, 3600], 'a whole-minute int ttl converts to seconds')]
-    public function the_login_token_ttl_is_computed_in_seconds(int|string|null $tokenTtl, ?int $expectedExpiresIn): void
+    public function the_login_token_ttl_is_computed_in_seconds(int|string|bool|null $tokenTtl, ?int $expectedExpiresIn): void
     {
         config(['restify.auth.token_ttl' => $tokenTtl]);
 
@@ -89,6 +91,37 @@ class LoginTest extends IntegrationTestCase
         ])
             ->assertOk()
             ->assertJsonPath('meta.expires_in', $expectedExpiresIn);
+    }
+
+    #[Test]
+    #[TestWith([-5], 'a negative ttl')]
+    #[TestWith(['abc'], 'a non-numeric ttl')]
+    #[TestWith(['60m'], 'a ttl with a unit suffix')]
+    #[TestWith(['0.001'], 'a ttl that rounds to zero seconds')]
+    public function an_invalid_token_ttl_is_rejected_instead_of_issuing_a_token_that_never_expires(int|string $tokenTtl): void
+    {
+        config(['restify.auth.token_ttl' => $tokenTtl]);
+
+        UserFactory::one([
+            'email' => 'user@restify.test',
+            'password' => Hash::make('correct-password'),
+        ]);
+
+        $this->withoutExceptionHandling();
+
+        try {
+            $this->postJson('auth/login', [
+                'email' => 'user@restify.test',
+                'password' => 'correct-password',
+            ]);
+        } catch (InvalidArgumentException $exception) {
+            $this->assertStringContainsString('restify.auth.token_ttl', $exception->getMessage());
+            $this->assertDatabaseCount(PersonalAccessToken::class, 0);
+
+            return;
+        }
+
+        $this->fail('An invalid token_ttl must be rejected.');
     }
 
     #[Test]

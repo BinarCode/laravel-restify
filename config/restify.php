@@ -105,7 +105,9 @@ return [
         |
         | This value determines the number of minutes that authentication tokens
         | will be considered valid. After this time expires, users will need to
-        | re-authenticate. Set to null for tokens that never expire.
+        | re-authenticate. Set to null, false, 0 or an empty string for tokens
+        | that never expire. Any other value must be a positive number of minutes
+        | that is at least one second; an invalid value throws instead of never expiring.
         |
         | Default: null (never expires)
         |
