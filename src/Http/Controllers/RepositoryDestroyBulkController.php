@@ -4,10 +4,10 @@ namespace Binaryk\LaravelRestify\Http\Controllers;
 
 use Binaryk\LaravelRestify\Http\Controllers\Concerns\ResolvesBulkModels;
 use Binaryk\LaravelRestify\Http\Requests\RepositoryDestroyBulkRequest;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class RepositoryDestroyBulkController
 {
@@ -24,7 +24,7 @@ class RepositoryDestroyBulkController
 
         $deleted = [];
 
-        DB::transaction(function () use ($request, $keys, &$deleted): void {
+        Repository::transactionFor($request->model(), function () use ($request, $keys, &$deleted): void {
             $models = $this->resolveBulkModels($request, $keys);
 
             $authorized = [];

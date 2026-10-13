@@ -8,7 +8,6 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\Validation\Validator as ValidatorContract;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class RepositoryUpdateBulkController extends RepositoryController
 {
@@ -21,7 +20,7 @@ class RepositoryUpdateBulkController extends RepositoryController
         $validator = $request->repository()::validatorForUpdateBulk($request);
         $validator->validate();
 
-        $updated = DB::transaction(function () use ($request): array {
+        $updated = Repository::transactionFor($request->model(), function () use ($request): array {
             /** @var array<int, array<string, mixed>> $input */
             $input = $request->collectInput()->all();
 
