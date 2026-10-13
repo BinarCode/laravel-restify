@@ -6,6 +6,7 @@ use Binaryk\LaravelRestify\Cache\PolicyCache;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Gate;
@@ -109,63 +110,70 @@ trait AuthorizableModels
         $this->authorizeTo($request, 'update');
     }
 
+    /**
+     * @param  string  $method
+     */
     public function authorizeToAttach(Request $request, $method, $model): bool
     {
         if (! static::authorizable()) {
-            return false;
+            abort(JsonResponse::HTTP_FORBIDDEN, 'Missing policy for the model:'.get_class($this->model()).'.');
         }
 
         $policyClass = get_class(Gate::getPolicyFor($this->model()));
 
         $authorized = method_exists($policy = Gate::getPolicyFor($this->model()), $method)
-            ? Gate::check($method, [$this->model(), $model])
+            ? Gate::inspect($method, [$this->model(), $model])
             : abort(403, "Missing method [$method] in your [$policyClass] policy.");
 
-        if ($authorized === false) {
+        if ($authorized->denied()) {
             abort(
-                403,
-                'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.'
+                $authorized->status() ?? JsonResponse::HTTP_FORBIDDEN,
+                $authorized->message() ?? 'You cannot attach model:'.get_class($model).', to the model:'.get_class($this->model()).', check your permissions.'
             );
         }
 
         return false;
     }
 
+    /**
+     * @param  string  $method
+     */
     public function authorizeToSync(Request $request, $method, Collection $keys): bool
     {
         if (! static::authorizable()) {
-            return false;
+            abort(JsonResponse::HTTP_FORBIDDEN, 'Missing policy for the model:'.get_class($this->model()).'.');
         }
 
         $policyClass = get_class(Gate::getPolicyFor($this->model()));
 
         $authorized = method_exists($policy = Gate::getPolicyFor($this->model()), $method)
-            ? Gate::check($method, [$this->model(), $keys])
+            ? Gate::inspect($method, [$this->model(), $keys])
             : abort(403, "Missing method [$method] in your [$policyClass] policy.");
 
-        if ($authorized === false) {
+        if ($authorized->denied()) {
             abort(
-                403,
-                'You cannot sync key to the model:'.get_class($this->model()).', check your permissions.'
+                $authorized->status() ?? JsonResponse::HTTP_FORBIDDEN,
+                $authorized->message() ?? 'You cannot sync key to the model:'.get_class($this->model()).', check your permissions.'
             );
         }
 
         return false;
     }
 
+    /**
+     * @param  string  $method
+     */
     public function authorizeToDetach(Request $request, $method, $model)
     {
         if (! static::authorizable()) {
             throw new AuthorizationException;
         }
 
-        $authorized = method_exists(Gate::getPolicyFor($this->model()), $method)
-            ? Gate::check($method, [$this->model(), $model])
-            : false;
-
-        if ($authorized === false) {
+        if (! method_exists(Gate::getPolicyFor($this->model()), $method)) {
             throw new AuthorizationException;
         }
+
+        Gate::authorize($method, [$this->model(), $model]);
     }
 
     /**

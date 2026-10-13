@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Policy deny messages on attach, sync and detach reach the client
+
+`attach*`, `sync*` and `detach*` policy methods that return `Response::deny('message')` (or `denyWithStatus()` / `denyAsNotFound()`) now answer with that message and status instead of the generic "You cannot attach model..." text. A policy returning plain `false` still answers the generic 403.
+
 ### Relations a field lazy-loads no longer appear in a `Mergeable` show
 
 A `Mergeable` repository's show endpoint used to run every field's `resolveForShow()`
