@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Filters\PaginationDataObject;
 use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
+use Binaryk\LaravelRestify\Http\Requests\Concerns\ResolvesRelatedModels;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
@@ -17,6 +18,7 @@ class RestifyRequest extends FormRequest
 {
     use DetermineRequestType;
     use InteractWithRepositories;
+    use ResolvesRelatedModels;
 
     public function rules(): array
     {

@@ -6,6 +6,87 @@
 
 `attach*`, `sync*` and `detach*` policy methods that return `Response::deny('message')` (or `denyWithStatus()` / `denyAsNotFound()`) now answer with that message and status instead of the generic "You cannot attach model..." text. A policy returning plain `false` still answers the generic 403.
 
+### Relations a field lazy-loads no longer appear in a `Mergeable` show
+
+A `Mergeable` repository's show endpoint used to run every field's `resolveForShow()`
+and then discard the result, but a field that touched a relation as a side effect
+(`field('owner', fn () => $this->resource->user->name)`) left that relation loaded on the
+model, so it was serialised into `attributes` (as `user`). Show no longer runs the field
+pipeline, so such a relation is absent from the response. This now matches the index
+endpoint, which never ran it.
+
+If a client reads such a relation from a `Mergeable` show response, request it
+explicitly (declare it in `related()` and send `?related=user`).
+
+### `restify:stub` and `DatabaseGenerator` are removed
+
+`php artisan restify:stub` and `Binaryk\LaravelRestify\Generators\DatabaseGenerator` are gone. They
+relied on `getDoctrineSchemaManager()` and `getDoctrineColumn()`, which Laravel 11 removed, so the command
+could not run on any supported Laravel version.
+
+`doctrine/dbal` was only a dev dependency of Restify, so applications are not affected.
+
+### Attach and sync resolve related ids strictly and store the database key
+
+Attaching or syncing a related model by a key that is not the related model's primary key
+(a `getRelatedKeyName()` such as `uuid` or `slug`) now looks the model up with the global
+scopes of the related model applied, and an id for an integer key must be an integer.
+`"5.0"` and `"5abc"` used to be cast to `5` and attached to that row; they now answer 404,
+like any other id that matches no row. Whole numbers sent as strings (`"5"`, `5`) still work.
+
+The pivot row now stores the key as the database holds it, not the client's spelling of it:
+a case-insensitive match such as `ABC-1` for a stored `abc-1` writes `abc-1`, and `"05"` for
+integer key `5` writes `5`. Check any client that sends decorated ids, and any code that read
+the pivot back expecting the exact string it posted.
+
+### Index related lists are limited when `max_per_page` is set
+
+`?related=...` on index now limits has-many-like relations (`HasMany`, `MorphMany`,
+`BelongsToMany`) per parent when the request sends `relatablePerPage` or when
+`restify.pagination.max_per_page` is set. Apps that already set `max_per_page` get index
+related lists capped at each related repository's `$defaultRelatablePerPage` (15 unless
+redeclared), clamped by `max_per_page`; they used to be unlimited.
+
+To keep unlimited related lists, unset `max_per_page` or raise `$defaultRelatablePerPage`
+on the related repository.
+
+### Index cache: per-repository setters, per-guard keys, `clearCache()` no longer flushes
+
+- `PostRepository::cacheTtl()`, `cacheTags()`, `disableCache()` and `enableCache()` wrote
+  statics shared with every repository, so calling one on a repository changed all of them.
+  They now only affect the repository they are called on and its children (a setter on a
+  base repository applies to every repository extending it; a child's setter or redeclared
+  property wins). A property a repository redeclares (`public static int $cacheTtl = 600;`)
+  keeps working. Writing a property directly (`PostRepository::$cacheTtl = 60`) still hits
+  the shared base property and is still honored for the TTL; use the setters instead. A
+  `cacheStore()` setter was added too.
+- `clearCache()` no longer tag-flushes, scans keys or flushes the whole store. It replaces a
+  per-repository version that is part of the index cache key, so only that repository's
+  entries stop being served, on every store, and also while that repository's cache is
+  disabled. Old entries expire with their TTL. Entries are still written under the cache tags
+  where the store supports them, so `Cache::tags([...])->flush()` keeps working, but
+  `clearCache()` no longer uses tags. Keys now end with `:ver_<version>`, and entries written
+  by the previous release are not served after upgrading.
+- The index cache key now contains the authenticating guard and the user model
+  (`guard_web:model_App\Models\User:user_1`), so users of different guards or tables with the
+  same id no longer share an entry.
+- `restify.repositories.cache.ttl` is now honored. The TTL precedence is: setter, redeclared
+  `$cacheTtl`, `$cacheTtl` changed at runtime on the base class, then the config value. A
+  configured value other than 300 now takes effect where the hardcoded 300 used to win.
+
+### An invalid `restify.auth.token_ttl` throws instead of never expiring
+
+Login and register treated any `token_ttl` that was not a positive number (`-5`,
+`"60m"`, `"abc"`) as "never expires", and so did a tiny value that rounds to 0 seconds
+(`0.001`). A typo in `RESTIFY_TOKEN_TTL` silently issued tokens that never expire.
+
+`null`, `false`, `0`, `"0"` and an empty string still mean never expires, as they have
+since 10.1.10. Any other value must be a positive
+number of minutes that rounds to at least one second, otherwise login and register throw
+an `InvalidArgumentException` naming `restify.auth.token_ttl` and the value. Check that
+your `RESTIFY_TOKEN_TTL` is unset or a positive number before upgrading. Register now
+validates it before creating the user, so a bad value no longer leaves an account behind.
+
 ### Unauthorized actions and getters answer 403
 
 Calling an action or getter that exists but whose `canSee` denies the user was meant to

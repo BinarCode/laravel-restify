@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRegisterRequest;
 use Binaryk\LaravelRestify\Notifications\VerifyEmail;
 use Binaryk\LaravelRestify\Repositories\Serializer;
+use Binaryk\LaravelRestify\Services\Auth\TokenTtlResolver;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Routing\Controller;
@@ -16,6 +17,8 @@ class RegisterController extends Controller
 {
     public function __invoke(RestifyRegisterRequest $request): Serializer
     {
+        $ttlSeconds = TokenTtlResolver::seconds(config('restify.auth.token_ttl'));
+
         /** @var class-string<Model> $modelClass */
         $modelClass = Config::string('restify.auth.user_model');
 
@@ -25,12 +28,7 @@ class RegisterController extends Controller
             'password' => Hash::make($request->string('password')->toString()),
         ]);
 
-        /** @var int|numeric-string|null $tokenTtl */
-        $tokenTtl = config('restify.auth.token_ttl');
-        $ttlSeconds = is_numeric($tokenTtl) && (float) $tokenTtl > 0
-            ? (int) round((float) $tokenTtl * 60)
-            : null;
-        $expiresAt = $ttlSeconds ? now()->addSeconds($ttlSeconds) : null;
+        $expiresAt = $ttlSeconds !== null ? now()->addSeconds($ttlSeconds) : null;
 
         $token = $user->createToken('login', ['*'], $expiresAt);
 
