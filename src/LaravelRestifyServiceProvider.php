@@ -21,7 +21,6 @@ use Binaryk\LaravelRestify\Commands\SetupAuthCommand;
 use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\SkillCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
-use Binaryk\LaravelRestify\Commands\StubCommand;
 use Binaryk\LaravelRestify\Commands\ToolCommand;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Spatie\LaravelPackageTools\Package;
@@ -49,7 +48,6 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
                 PolicyCommand::class,
                 BaseRepositoryCommand::class,
                 Refresh::class,
-                StubCommand::class,
                 PublishAuthCommand::class,
                 RestifyAuthMacroCommand::class,
                 RestifyRouteListCommand::class,

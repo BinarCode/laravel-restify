@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Fields;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -30,7 +31,13 @@ class HasMany extends EagerField
         $repositoryClass = $this->repositoryClass;
 
         if ($repository->model()->relationLoaded($this->relation)) {
-            $paginator = $repository->model()->getRelation($this->relation);
+            /** @var EloquentCollection<int, Model> $loaded */
+            $loaded = $repository->model()->getRelation($this->relation);
+
+            $paginator = $this->limitLoaded(
+                $loaded,
+                $repositoryClass::$defaultRelatablePerPage,
+            );
         } else {
             /**
              * @var Relation $paginator

@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Commands;
 
+use Binaryk\LaravelRestify\Commands\Support\RestifyAuthCallLocator;
 use Binaryk\LaravelRestify\RestifyApplicationServiceProvider;
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
@@ -310,15 +311,10 @@ class PublishAuthCommand extends Command
     }
 
     /**
-     * Finds the real `Route::restifyAuth(...)` call by walking the file's tokens
-     * looking for `Route` (or the fully-qualified `\Route`), `::`, `restifyAuth`,
-     * a balanced pair of parentheses, and a trailing `;`. A call is only ever
-     * built from that exact token sequence, so text sitting inside a comment, a
-     * heredoc/nowdoc, a multi-line string, or inline HTML after a `?>` is never
-     * mistaken for it, and a call next to other code on the same line is still
-     * found. A fully-qualified `\Route::restifyAuth()` is rewritten to the bare
-     * `Route::` facade call; `ensureRouteFacadeImported()` makes sure the facade
-     * is actually imported when that happens.
+     * Finds the real `Route::restifyAuth(...)` call. A fully-qualified
+     * `\Route::restifyAuth()` is rewritten to the bare `Route::` facade call;
+     * `ensureRouteFacadeImported()` makes sure the facade is actually imported
+     * when that happens.
      *
      * @return array{0: int, 1: int, 2: string}
      *
@@ -326,138 +322,31 @@ class PublishAuthCommand extends Command
      */
     private function locateRestifyAuthCall(string $contents): array
     {
-        $tokens = PhpToken::tokenize($contents);
-        $count = count($tokens);
+        $locator = new RestifyAuthCallLocator;
+        $calls = $locator->locate($contents);
 
-        $match = null;
-        $closeTagPos = null;
-
-        for ($i = 0; $i < $count; $i++) {
-            $token = $tokens[$i];
-
-            if ($token->is(T_CLOSE_TAG)) {
-                $closeTagPos = $token->pos;
-            }
-
-            $isRouteToken = ($token->is(T_STRING) && $token->text === 'Route')
-                || ($token->is(T_NAME_FULLY_QUALIFIED) && $token->text === '\Route');
-
-            if (! $isRouteToken) {
-                continue;
-            }
-
-            $call = $this->matchRestifyAuthCall($tokens, $count, $i, $contents);
-
-            if ($call === null) {
-                continue;
-            }
-
-            if ($match !== null) {
-                throw new RuntimeException(
-                    'Multiple Route::restifyAuth() calls were found in routes/api.php. This command can only merge into a single call. Combine them manually and try again.'
-                );
-            }
-
-            $match = $call;
+        if (count($calls) > 1) {
+            throw new RuntimeException(
+                'Multiple Route::restifyAuth() calls were found in routes/api.php. This command can only merge into a single call. Combine them manually and try again.'
+            );
         }
 
-        if ($match === null) {
+        if ($calls === []) {
             throw new RuntimeException(
                 'No Route::restifyAuth() call was found in routes/api.php. Add Route::restifyAuth(); and try again.'
             );
         }
 
-        if ($closeTagPos !== null && $closeTagPos >= $match['offset'] + $match['length']) {
+        $match = $calls[0];
+        $closeTagOffset = $locator->lastCloseTagOffset($contents);
+
+        if ($closeTagOffset !== null && $closeTagOffset >= $match['offset'] + $match['length']) {
             throw new RuntimeException(
                 'routes/api.php has a closing ?> tag after the Route::restifyAuth() call. Remove it so this command can safely append the generated routes.'
             );
         }
 
         return [$match['offset'], $match['length'], $match['arguments']];
-    }
-
-    /**
-     * Attempts to match `::restifyAuth(...);` starting right after the `Route`
-     * token at index `$routeIndex`, returning null when the token sequence
-     * does not form a real call.
-     *
-     * @param  array<PhpToken>  $tokens
-     * @return array{offset: int, length: int, arguments: string}|null
-     */
-    private function matchRestifyAuthCall(array $tokens, int $count, int $routeIndex, string $contents): ?array
-    {
-        $routeToken = $tokens[$routeIndex];
-
-        $cursor = $this->skipInsignificantTokens($tokens, $count, $routeIndex + 1);
-
-        if ($cursor === null || ! $tokens[$cursor]->is(T_DOUBLE_COLON)) {
-            return null;
-        }
-
-        $cursor = $this->skipInsignificantTokens($tokens, $count, $cursor + 1);
-
-        if ($cursor === null || ! $tokens[$cursor]->is(T_STRING) || $tokens[$cursor]->text !== 'restifyAuth') {
-            return null;
-        }
-
-        $cursor = $this->skipInsignificantTokens($tokens, $count, $cursor + 1);
-
-        if ($cursor === null || $tokens[$cursor]->text !== '(') {
-            return null;
-        }
-
-        $argumentsStart = $tokens[$cursor]->pos + 1;
-        $depth = 1;
-        $closeParenIndex = null;
-
-        for ($j = $cursor + 1; $j < $count; $j++) {
-            $text = $tokens[$j]->text;
-
-            if ($text === '(') {
-                $depth++;
-            } elseif ($text === ')') {
-                $depth--;
-
-                if ($depth === 0) {
-                    $closeParenIndex = $j;
-
-                    break;
-                }
-            }
-        }
-
-        if ($closeParenIndex === null) {
-            return null;
-        }
-
-        $semicolonCursor = $this->skipInsignificantTokens($tokens, $count, $closeParenIndex + 1);
-
-        if ($semicolonCursor === null || $tokens[$semicolonCursor]->text !== ';') {
-            return null;
-        }
-
-        $endPos = $tokens[$semicolonCursor]->pos + 1;
-        $argumentsEnd = $tokens[$closeParenIndex]->pos;
-
-        return [
-            'offset' => $routeToken->pos,
-            'length' => $endPos - $routeToken->pos,
-            'arguments' => substr($contents, $argumentsStart, $argumentsEnd - $argumentsStart),
-        ];
-    }
-
-    /**
-     * @param  array<PhpToken>  $tokens
-     */
-    private function skipInsignificantTokens(array $tokens, int $count, int $from): ?int
-    {
-        for ($i = $from; $i < $count; $i++) {
-            if (! $tokens[$i]->is([T_WHITESPACE, T_COMMENT, T_DOC_COMMENT])) {
-                return $i;
-            }
-        }
-
-        return null;
     }
 
     /**

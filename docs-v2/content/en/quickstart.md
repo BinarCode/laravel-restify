@@ -61,27 +61,6 @@ After the setup, you should run the migrations:
 php artisan migrate
 ```
 
-## Generating Mock Data
-
-To generate mock data for your database, you need to install the `doctrine/dbal` package as a development dependency:
-
-```bash
-composer require doctrine/dbal --dev
-```
-After installing the package, you can use the restify:stub command to generate mock data for a specific table:
-
-```bash
-php artisan restify:stub table_name --count=10
-```
-
-Replace table_name with the name of the table you want to generate mock data for and use the --count option to specify the number of records you want to create.
-
-For example, to generate 10 users:
-
-```shell
-php artisan restify:stub users --count=10
-```
-
 ## Quick start
 
 Having the package setup and users table migrated and seeded, you should be good to perform the first API request:

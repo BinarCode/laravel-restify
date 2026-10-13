@@ -108,7 +108,7 @@ class RefreshCommandTest extends IntegrationTestCase
     #[TestWith(['file'])]
     #[TestWith(['database'])]
     #[Test]
-    public function it_flushes_the_whole_store_when_it_does_not_support_tagging(string $store): void
+    public function it_busts_the_index_cache_without_flushing_a_store_that_does_not_support_tagging(string $store): void
     {
         if ($store === 'database') {
             $this->createCacheTable();
@@ -121,14 +121,19 @@ class RefreshCommandTest extends IntegrationTestCase
 
         $this->getJson(PostRepository::route())->assertOk();
         Cache::put('unrelated-key', 'unrelated-value', 60);
-        $this->assertTrue(Cache::has('unrelated-key'));
+
+        $this->recordQueries();
+        $this->getJson(PostRepository::route())->assertOk();
+        $onHit = count($this->selectsAgainst(Post::class));
 
         $this->artisan('restify:refresh')->assertExitCode(Command::SUCCESS);
 
-        $this->assertFalse(
-            Cache::has('unrelated-key'),
-            "a non-taggable [{$store}] store should be flushed entirely, as documented",
-        );
+        $this->recordQueries();
+        $this->getJson(PostRepository::route())->assertOk();
+        $onMiss = count($this->selectsAgainst(Post::class));
+
+        $this->assertGreaterThan($onHit, $onMiss);
+        $this->assertSame('unrelated-value', Cache::get('unrelated-key'));
     }
 
     private function bootedRepositoriesProperty(): ReflectionProperty
@@ -148,8 +153,6 @@ class RefreshCommandTest extends IntegrationTestCase
         $booted = $this->bootedRepositoriesProperty()->getValue();
         unset($booted[PostRepository::class]);
         $this->bootedRepositoriesProperty()->setValue(null, $booted);
-
-        PostRepository::$cacheTags = [];
     }
 
     private function createCacheTable(): void
