@@ -2,7 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Fields;
 
-use Binaryk\LaravelRestify\Filters\PaginationDataObject;
+use Binaryk\LaravelRestify\Filters\RelatablePerPage;
 use Binaryk\LaravelRestify\Filters\RelatedQuery;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
@@ -10,6 +10,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\Request;
@@ -108,9 +109,27 @@ class EagerField extends Field
 
     protected function relatablePerPage(int $default): int
     {
-        $relatablePerPage = request('relatablePerPage');
+        return RelatablePerPage::forPath($this->relatablePerPagePath(), $default);
+    }
 
-        return PaginationDataObject::fromInput($relatablePerPage, null)->resolvePerPage($default);
+    /**
+     * @param  EloquentCollection<int, Model>  $loaded
+     * @return EloquentCollection<int, Model>
+     */
+    protected function limitLoaded(EloquentCollection $loaded, int $default): EloquentCollection
+    {
+        if (! RelatablePerPage::isRequested()) {
+            return $loaded;
+        }
+
+        return $loaded->take($this->relatablePerPage($default));
+    }
+
+    private function relatablePerPagePath(): string
+    {
+        return isset($this->relatedQuery)
+            ? Str::after($this->relatedQuery->tree, '.')
+            : $this->relation;
     }
 
     public function getRelation(
