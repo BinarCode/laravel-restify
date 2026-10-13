@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Http\Controllers\Auth;
 use Binaryk\LaravelRestify\Contracts\Sanctumable;
 use Binaryk\LaravelRestify\Http\Controllers\Concerns\FindsUserByEmail;
 use Binaryk\LaravelRestify\Repositories\Serializer;
+use Binaryk\LaravelRestify\Services\Auth\TokenTtlResolver;
 use Closure;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
@@ -39,14 +40,11 @@ class LoginController extends Controller
             abort(JsonResponse::HTTP_UNAUTHORIZED, 'Invalid credentials.');
         }
 
+        $ttlSeconds = TokenTtlResolver::seconds(config('restify.auth.token_ttl'));
+
         Auth::login($user);
 
-        /** @var int|float|numeric-string|null $tokenTtl */
-        $tokenTtl = config('restify.auth.token_ttl');
-        $ttlSeconds = is_numeric($tokenTtl) && (float) $tokenTtl > 0
-            ? (int) round((float) $tokenTtl * 60)
-            : null;
-        $expiresAt = $ttlSeconds ? now()->addSeconds($ttlSeconds) : null;
+        $expiresAt = $ttlSeconds !== null ? now()->addSeconds($ttlSeconds) : null;
 
         $token = $user->createToken('login', ['*'], $expiresAt);
 
