@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+### `restify:stub` and `DatabaseGenerator` are removed
+
+`php artisan restify:stub` and `Binaryk\LaravelRestify\Generators\DatabaseGenerator` are gone. They
+relied on `getDoctrineSchemaManager()` and `getDoctrineColumn()`, which Laravel 11 removed, so the command
+could not run on any supported Laravel version.
+
+`doctrine/dbal` was only a dev dependency of Restify, so applications are not affected.
+
 ### Attach and sync resolve related ids strictly and store the database key
 
 Attaching or syncing a related model by a key that is not the related model's primary key
