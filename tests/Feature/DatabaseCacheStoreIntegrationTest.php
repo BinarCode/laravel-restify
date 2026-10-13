@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Feature;
 
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
@@ -46,7 +47,7 @@ class DatabaseCacheStoreIntegrationTest extends IntegrationTestCase
         config(['restify.repositories.cache.enable_in_tests' => true]);
 
         // Set cache tags to test that they don't cause errors
-        PostRepository::$cacheTags = ['posts', 'test'];
+        PostRepository::cacheTags(['posts', 'test']);
 
         // Make request - should work without tagging errors
         $response = $this->getJson('/api/restify/posts');
@@ -85,19 +86,22 @@ class DatabaseCacheStoreIntegrationTest extends IntegrationTestCase
         config(['restify.repositories.cache.enabled' => true]);
         config(['restify.repositories.cache.enable_in_tests' => true]);
 
-        // Make request to populate cache
         $this->getJson('/api/restify/posts');
+        $keyBefore = $this->indexCacheKey();
+        Cache::put('unrelated-key', 'unrelated-value', 60);
 
-        // Verify cache exists
         $cacheCount = DB::table('cache')->count();
         $this->assertGreaterThan(0, $cacheCount);
 
-        // Clear cache - should not throw errors even with tags
-        PostRepository::$cacheTags = ['posts', 'test'];
         PostRepository::clearCache();
 
-        // Cache should be cleared
-        $cacheCountAfter = DB::table('cache')->count();
-        $this->assertEquals(0, $cacheCountAfter, 'Cache should be cleared after clearCache()');
+        $this->assertTrue(Cache::has('unrelated-key'));
+        $this->assertNotSame($keyBefore, $this->indexCacheKey());
+    }
+
+    private function indexCacheKey(): string
+    {
+        return PostRepository::resolveWith(new Post)
+            ->generateIndexCacheKey(app(RestifyRequest::class));
     }
 }
