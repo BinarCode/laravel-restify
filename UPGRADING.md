@@ -39,6 +39,26 @@ a case-insensitive match such as `ABC-1` for a stored `abc-1` writes `abc-1`, an
 integer key `5` writes `5`. Check any client that sends decorated ids, and any code that read
 the pivot back expecting the exact string it posted.
 
+### Attach and sync answer 404 for related records hidden by a global scope or soft-deleted
+
+Attach and sync looked related ids up by primary key without the related model's global
+scopes, so a record hidden by a scope (a tenant or company scope, for example) or
+soft-deleted could still be attached or synced. Both now look ids up through the related
+model's global scopes, soft deletes included, and answer 404 without writing anything when
+any id is not found that way. The `attach{Related}` policy method receives the scoped model.
+
+Detach applies the related model's global scopes too, so it answers 404 for a record a
+scope hides. It still finds soft-deleted records, so a pivot row pointing at one can be
+removed. A sync that leaves a scoped-out id out of its list still removes that pivot row.
+On a relation whose pivot stores a non-primary related key, detach used to answer 404 for a
+soft-deleted record; it now finds it and removes the pivot row.
+
+Custom attach and detach handlers are not covered. A field's `attachCallback()` or
+`detachCallback()`, an entry in the repository's `$attachers` or `$detachers` map, and an
+`attach{Related}()` or `detach{Related}()` method on the repository take over the request
+before any related id is looked up. Attach and sync both route through the attach handlers.
+They still receive the raw request ids, so scope and authorize those ids yourself.
+
 ### Index related lists are limited when `max_per_page` is set
 
 `?related=...` on index now limits has-many-like relations (`HasMany`, `MorphMany`,

@@ -201,10 +201,7 @@ trait Attachable
 
         $parentKey = $request->findModelOrFail()->{$parentKeyName};
 
-        $relatedModel = $request->relatedModelFor(
-            $relatedKey,
-            applyGlobalScopes: $relatedKeyName !== $relationship->getRelated()->getKeyName(),
-        );
+        $relatedModel = $request->relatedModelFor($relatedKey);
 
         $relatedKey = $relatedModel->getRawOriginal($relatedKeyName);
 

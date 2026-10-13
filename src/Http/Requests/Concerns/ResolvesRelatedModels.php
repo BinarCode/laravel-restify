@@ -7,6 +7,7 @@ namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Traits\MatchesRelatedModels;
 use Binaryk\LaravelRestify\Traits\ValidatesRelatedKeyShape;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\JsonResponse;
@@ -50,34 +51,25 @@ trait ResolvesRelatedModels
      *
      * @throws ModelNotFoundException if the database does not return the id.
      */
-    public function relatedModelFor(int|string $id, bool $applyGlobalScopes = false): Model
+    public function relatedModelFor(int|string $id): Model
     {
-        if ($applyGlobalScopes) {
-            $this->loadScopedRelatedModels();
-        } else {
-            $this->relatedModels();
-        }
+        $this->relatedModels();
 
         $key = $this->normalizeRelatedModelKey($id, $this->relatedModelPrototype(), caseInsensitive: false);
 
-        if (! isset($this->relatedModelsByKey($applyGlobalScopes)[$key])) {
-            $this->resolveRelatedModels([$id], $applyGlobalScopes);
+        if (! isset($this->relatedModelsByKey()[$key])) {
+            $this->resolveRelatedModels([$id]);
         }
 
-        return $this->relatedModelsByKey($applyGlobalScopes)[$key];
+        return $this->relatedModelsByKey()[$key];
     }
 
-    private function loadScopedRelatedModels(): void
+    /**
+     * @return Builder<Model>
+     */
+    protected function relatedModelQuery(Model $model): Builder
     {
-        $attribute = $this->relatedCacheAttribute('scopedLoaded');
-
-        if ($this->attributes->get($attribute) === true) {
-            return;
-        }
-
-        $this->resolveRelatedModels($this->requestedRelatedIds(), applyGlobalScopes: true);
-
-        $this->attributes->set($attribute, true);
+        return $model->newQueryWithoutRelationships();
     }
 
     private function relatedModelPrototype(): Model
@@ -100,10 +92,10 @@ trait ResolvesRelatedModels
     /**
      * @return array<int|string, Model> keyed by each resolved requested id and by the real key of the model it resolved to.
      */
-    private function relatedModelsByKey(bool $applyGlobalScopes): array
+    private function relatedModelsByKey(): array
     {
         /** @var array<int|string, Model> $relatedModelsByKey */
-        $relatedModelsByKey = $this->attributes->get($this->relatedModelsByKeyAttribute($applyGlobalScopes), []);
+        $relatedModelsByKey = $this->attributes->get($this->relatedCacheAttribute('byKey'), []);
 
         return $relatedModelsByKey;
     }
@@ -112,9 +104,9 @@ trait ResolvesRelatedModels
      * @param  array<int, int|string>  $ids
      * @param  array<int, Model>  $resolved
      */
-    private function rememberRelatedModels(array $ids, array $resolved, Model $model, bool $applyGlobalScopes): void
+    private function rememberRelatedModels(array $ids, array $resolved, Model $model): void
     {
-        $relatedModelsByKey = $this->relatedModelsByKey($applyGlobalScopes);
+        $relatedModelsByKey = $this->relatedModelsByKey();
 
         foreach ($resolved as $position => $relatedModel) {
             $requestedKey = $this->normalizeRelatedModelKey($ids[$position], $model, caseInsensitive: false);
@@ -124,12 +116,7 @@ trait ResolvesRelatedModels
             $relatedModelsByKey[$realKey] ??= $relatedModel;
         }
 
-        $this->attributes->set($this->relatedModelsByKeyAttribute($applyGlobalScopes), $relatedModelsByKey);
-    }
-
-    private function relatedModelsByKeyAttribute(bool $applyGlobalScopes): string
-    {
-        return $this->relatedCacheAttribute($applyGlobalScopes ? 'scopedByKey' : 'byKey');
+        $this->attributes->set($this->relatedCacheAttribute('byKey'), $relatedModelsByKey);
     }
 
     private function relatedCacheAttribute(string $name): string
@@ -151,7 +138,7 @@ trait ResolvesRelatedModels
      *
      * @throws ModelNotFoundException
      */
-    protected function resolveRelatedModels(array $requestedIds, bool $applyGlobalScopes = false): Collection
+    protected function resolveRelatedModels(array $requestedIds): Collection
     {
         $relatedRepositoryKey = $this->relatedRepositoryKey();
 
@@ -168,7 +155,7 @@ trait ResolvesRelatedModels
 
         $model = $this->relatedModelPrototype();
 
-        $resolved = $this->matchModelsToIds($model, $ids, $applyGlobalScopes);
+        $resolved = $this->matchModelsToIds($this->relatedModelQuery($model), $ids);
 
         $unmatched = array_diff_key($ids, $resolved);
 
@@ -176,7 +163,7 @@ trait ResolvesRelatedModels
             throw (new ModelNotFoundException)->setModel($model::class, array_values($unmatched));
         }
 
-        $this->rememberRelatedModels($ids, $resolved, $model, $applyGlobalScopes);
+        $this->rememberRelatedModels($ids, $resolved, $model);
 
         ksort($resolved);
 

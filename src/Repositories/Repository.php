@@ -34,7 +34,9 @@ use Binaryk\LaravelRestify\Traits\CanonicalizesRelatedKeys;
 use Binaryk\LaravelRestify\Traits\HasColumns;
 use Binaryk\LaravelRestify\Traits\InteractWithSearch;
 use Binaryk\LaravelRestify\Traits\PerformsQueries;
+use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\ConnectionInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany as EloquentBelongsToMany;
 use Illuminate\Http\JsonResponse;
@@ -44,7 +46,6 @@ use Illuminate\Http\Resources\DelegatesToResource;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Router;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use JsonSerializable;
 use ReturnTypeWillChange;
@@ -801,6 +802,29 @@ class Repository implements JsonSerializable, RestifySearchable
         );
     }
 
+    /**
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    public static function transactionFor(Model $model, Closure $callback): mixed
+    {
+        $modelConnection = $model->getConnection();
+
+        if (! in_array(HasActionLogs::class, class_uses_recursive($model))) {
+            return $modelConnection->transaction($callback);
+        }
+
+        $logConnection = Restify::actionLog()->getConnection();
+
+        if ($logConnection->getName() === $modelConnection->getName()) {
+            return $modelConnection->transaction($callback);
+        }
+
+        return $logConnection->transaction(fn (): mixed => $modelConnection->transaction($callback));
+    }
+
     public function store(RestifyRequest $request)
     {
         $actionFields = $this
@@ -810,7 +834,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->authorizedStore($request)
             ->authorizeActionsToSee($request);
 
-        DB::transaction(function () use ($request, $actionFields) {
+        static::transactionFor($this->resource, function () use ($request, $actionFields) {
             static::fillFields(
                 $request,
                 $this->resource,
@@ -860,7 +884,7 @@ class Repository implements JsonSerializable, RestifySearchable
                 ->authorizeActionsToSee($request);
         }
 
-        $entities = DB::transaction(function () use ($request, $actionFieldsByRow) {
+        $entities = static::transactionFor(static::newModel(), function () use ($request, $actionFieldsByRow) {
             return $request->collectInput()
                 ->map(function (array $input, $row) use ($request, $actionFieldsByRow) {
                     $this->resource = static::newModel();
@@ -902,7 +926,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->authorizedUpdate($request)
             ->authorizeActions($request, $this->resource);
 
-        DB::transaction(function () use ($request) {
+        static::transactionFor($this->resource, function () use ($request) {
             $fields = $this->collectFields($request)
                 ->forUpdate($request, $this)
                 ->withoutActions($request, $this)
@@ -937,7 +961,7 @@ class Repository implements JsonSerializable, RestifySearchable
             ->authorizedPatch($request)
             ->authorizeActions($request, $this->resource);
 
-        DB::transaction(function () use ($request, $keys) {
+        static::transactionFor($this->resource, function () use ($request, $keys) {
             $fields = $this->collectFields($request)
                 ->filter(
                     fn (Field $field) => in_array($field->attribute, $keys),
@@ -1017,7 +1041,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function deleteBulk(RestifyRequest $request, $repositoryId, int $row)
     {
-        DB::transaction(function () use ($request) {
+        static::transactionFor($this->resource, function () use ($request) {
             if (in_array(HasActionLogs::class, class_uses_recursive($this->resource))) {
                 Restify::actionLog()
                     ->forRepositoryDestroy($this->resource, $request->user())
@@ -1036,7 +1060,9 @@ class Repository implements JsonSerializable, RestifySearchable
 
         $eagerField->authorizeToAttach($request);
 
-        DB::transaction(function () use ($request, $pivots, $eagerField) {
+        $pivotConnection = $this->pivotConnection($pivots);
+
+        $pivotConnection->transaction(function () use ($request, $pivots, $eagerField) {
             $fields = $eagerField->collectPivotFields()->filter(fn (
                 $pivotField
             ) => $request->has($pivotField->attribute))->values();
@@ -1053,6 +1079,16 @@ class Repository implements JsonSerializable, RestifySearchable
         });
 
         return data($pivots, 201);
+    }
+
+    /**
+     * @param  Collection<int, Model>  $pivots
+     */
+    private function pivotConnection(Collection $pivots): ConnectionInterface
+    {
+        $writer = $pivots->first() ?? $this->model();
+
+        return $writer->getConnection();
     }
 
     public function sync(RestifyRequest $request, $repositoryId, Collection $pivots)
@@ -1115,7 +1151,9 @@ class Repository implements JsonSerializable, RestifySearchable
             ->forManyToManyRelations($request)
             ->firstWhere('attribute', $request->relatedRepositoryKey());
 
-        $deleted = DB::transaction(function () use ($pivots, $eagerField, $request) {
+        $pivotConnection = $this->pivotConnection($pivots);
+
+        $deleted = $pivotConnection->transaction(function () use ($pivots, $eagerField, $request) {
             return $pivots
                 ->map(fn ($pivot) => $eagerField->authorizeToDetach($request, $pivot) && $pivot->delete());
         });
@@ -1125,7 +1163,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
     public function destroy(RestifyRequest $request, $repositoryId)
     {
-        $status = DB::transaction(function () {
+        $status = static::transactionFor($this->resource, function () {
             return $this->resource->delete();
         });
 
