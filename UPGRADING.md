@@ -17,6 +17,10 @@ quadratic in its size. If one of yours needs the other rows, read them before th
 `allowToBulkStore()` or a validator) or in `savedBulk()`. The narrowing is available as
 `$request->forBulkRow($row, $callback)`.
 
+Only the Restify request handed to fields, actions and repository methods is narrowed. The
+application request is a separate instance, so a model event or listener that reads `request()`
+still sees every row; pass the Restify request along, or read the row from the model, to stay linear.
+
 ### Policy deny messages on attach, sync and detach reach the client
 
 `attach*`, `sync*` and `detach*` policy methods that return `Response::deny('message')` (or `denyWithStatus()` / `denyAsNotFound()`) now answer with that message and status instead of the generic "You cannot attach model..." text. A policy returning plain `false` still answers the generic 403.
