@@ -57,10 +57,38 @@ class RepositorySearchService
 
         $ordersBuilder = $this->prepareOrders($request, $query);
 
-        return tap(
+        return $this->applyKeyTiebreaker(tap(
             tap($ordersBuilder, $this->applyMainQuery($request, $repository)),
             $this->applyIndexQuery($request, $repository)
-        );
+        ));
+    }
+
+    /**
+     * Order rows that tie on every other order by the primary key, newest first, so
+     * pagination never repeats or skips a row. Grouped, distinct and union queries
+     * are left alone, as are queries already ordered by the key.
+     *
+     * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
+    protected function applyKeyTiebreaker(Builder|Relation $query): Builder|Relation
+    {
+        $base = $query instanceof Relation ? $query->getBaseQuery() : $query->getQuery();
+
+        if (empty($base->orders) || ! empty($base->groups) || $base->distinct !== false || ! empty($base->unions)) {
+            return $query;
+        }
+
+        $model = $query->getModel();
+        $keys = [$model->getKeyName(), $model->getQualifiedKeyName()];
+
+        foreach ($base->orders as $order) {
+            if (is_array($order) && in_array($order['column'] ?? null, $keys, true)) {
+                return $query;
+            }
+        }
+
+        return $query->orderByDesc($model->getQualifiedKeyName());
     }
 
     /**
