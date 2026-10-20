@@ -64,9 +64,10 @@ class RepositorySearchService
     }
 
     /**
-     * Order rows that tie on every other order by the primary key, newest first, so
-     * pagination never repeats or skips a row. Grouped, distinct and union queries
-     * are left alone, as are queries already ordered by the key.
+     * Order rows that tie on every other order by the primary key, so pagination never
+     * repeats or skips a row. The key follows the last order's direction, which keeps a
+     * (column, key) index usable; it is descending after a raw order. Grouped, distinct
+     * and union queries are left alone, as are queries already ordered by the key.
      *
      * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
      * @return Builder<Model>|Relation<Model, Model, mixed>
@@ -88,7 +89,12 @@ class RepositorySearchService
             }
         }
 
-        return $query->orderByDesc($model->getQualifiedKeyName());
+        $last = end($base->orders);
+
+        return $query->orderBy(
+            $model->getQualifiedKeyName(),
+            is_array($last) && ($last['direction'] ?? null) === 'asc' ? 'asc' : 'desc',
+        );
     }
 
     /**

@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\DB;
 
 class SortTiebreakerTest extends IntegrationTestCase
 {
-    public function test_rows_tied_on_an_ascending_sort_are_ordered_by_newest_primary_key(): void
+    public function test_rows_tied_on_an_ascending_sort_are_ordered_by_ascending_primary_key(): void
     {
         UserRepository::$sort = ['name'];
 
@@ -29,12 +29,12 @@ class SortTiebreakerTest extends IntegrationTestCase
             ->json('data.*.id');
 
         $this->assertSame(
-            [(string) $alpha->id, (string) $third->id, (string) $second->id, (string) $first->id],
+            [(string) $alpha->id, (string) $first->id, (string) $second->id, (string) $third->id],
             array_map('strval', $ids),
         );
     }
 
-    public function test_rows_tied_on_a_descending_sort_are_ordered_by_newest_primary_key(): void
+    public function test_rows_tied_on_a_descending_sort_are_ordered_by_descending_primary_key(): void
     {
         UserRepository::$sort = ['name'];
 
@@ -65,20 +65,25 @@ class SortTiebreakerTest extends IntegrationTestCase
         ]))->assertOk()->json('data.*.id'))->map(static fn (mixed $id): string => (string) $id);
 
         $this->assertSame(
-            $users->sortByDesc('id')->pluck('id')->map(static fn (mixed $id): string => (string) $id)->values()->all(),
+            $users->sortBy('id')->pluck('id')->map(static fn (mixed $id): string => (string) $id)->values()->all(),
             $ids->all(),
         );
     }
 
-    public function test_tiebreaker_is_added_after_every_requested_sort(): void
+    public function test_tiebreaker_follows_the_direction_of_the_last_requested_sort(): void
     {
         Post::factory()->create();
 
         PostRepository::$sort = ['title', 'is_active'];
 
         $this->assertStringEndsWith(
-            'order by "posts"."is_active" desc, "posts"."title" asc, "posts"."id" desc limit 15 offset 0',
+            'order by "posts"."is_active" desc, "posts"."title" asc, "posts"."id" asc limit 15 offset 0',
             $this->indexSql(PostRepository::route(query: ['sort' => '-is_active,title'])),
+        );
+
+        $this->assertStringEndsWith(
+            'order by "posts"."title" asc, "posts"."is_active" desc, "posts"."id" desc limit 15 offset 0',
+            $this->indexSql(PostRepository::route(query: ['sort' => 'title,-is_active'])),
         );
     }
 
@@ -138,7 +143,7 @@ class SortTiebreakerTest extends IntegrationTestCase
         $second = Post::factory()->create(['user_id' => $user->id]);
 
         $this->assertSame(
-            [(string) $second->id, (string) $first->id],
+            [(string) $first->id, (string) $second->id],
             array_map('strval', $this->getJson(PostRepository::route(query: ['related' => 'user', 'sort' => 'user']))
                 ->assertOk()
                 ->json('data.*.id')),
@@ -158,8 +163,18 @@ class SortTiebreakerTest extends IntegrationTestCase
         $user = User::factory()->create();
 
         $this->assertStringEndsWith(
-            'order by "posts"."title" asc, "posts"."id" desc',
+            'order by "posts"."title" asc, "posts"."id" asc',
             $service->tiebreak($user->posts()->orderBy('posts.title'))->toSql(),
+        );
+
+        $this->assertStringEndsWith(
+            'order by "posts"."title" desc, "posts"."id" desc',
+            $service->tiebreak($user->posts()->orderByDesc('posts.title'))->toSql(),
+        );
+
+        $this->assertStringEndsWith(
+            'order by length(title), "posts"."id" desc',
+            $service->tiebreak($user->posts()->orderByRaw('length(title)'))->toSql(),
         );
     }
 
