@@ -35,6 +35,35 @@ class NestedRepositoryControllerTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function it_can_sort_nested(): void
+    {
+        UserRepository::$related = [
+            'posts' => HasMany::make('posts', PostRepository::class),
+        ];
+
+        $user = UserFactory::one();
+
+        PostFactory::one(['title' => 'Beta', 'user_id' => $user->id]);
+        PostFactory::one(['title' => 'Alpha', 'user_id' => $user->id]);
+        PostFactory::one(['title' => 'Gamma', 'user_id' => $user->id]);
+        PostFactory::one(['title' => 'Other']);
+
+        $this->assertSame(
+            ['Alpha', 'Beta', 'Gamma'],
+            $this->getJson(UserRepository::route("$user->id/posts", query: ['sort' => 'title']))
+                ->assertOk()
+                ->json('data.*.attributes.title'),
+        );
+
+        $this->assertSame(
+            ['Gamma', 'Beta', 'Alpha'],
+            $this->getJson(UserRepository::route("$user->id/posts", query: ['sort' => '-title']))
+                ->assertOk()
+                ->json('data.*.attributes.title'),
+        );
+    }
+
+    #[Test]
     public function it_can_show_nested_using_identifier(): void
     {
         $post = PostFactory::one([
