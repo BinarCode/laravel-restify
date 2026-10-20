@@ -8,10 +8,13 @@ use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\ResolvesRelatedModels;
+use Closure;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
 use JsonException;
+use Symfony\Component\HttpFoundation\FileBag;
+use Symfony\Component\HttpFoundation\InputBag;
 use Throwable;
 
 class RestifyRequest extends FormRequest
@@ -23,6 +26,52 @@ class RestifyRequest extends FormRequest
     public function rules(): array
     {
         return [];
+    }
+
+    /**
+     * Run the callback with the body narrowed to one bulk row, still keyed by its index, so the
+     * row's fields, model events and actions read that row's input only. The query string is kept
+     * and the whole body is restored afterwards, even when the callback throws.
+     *
+     * @template TReturn
+     *
+     * @param  Closure(): TReturn  $callback
+     * @return TReturn
+     */
+    public function forBulkRow(int $row, Closure $callback): mixed
+    {
+        $json = $this->json;
+        $body = $this->request;
+        $files = $this->files;
+        $convertedFiles = $this->convertedFiles;
+
+        $key = (string) $row;
+        $input = $this->isJson() ? $this->json() : $body;
+
+        $this->convertedFiles = array_key_exists($row, $all = $this->allFiles()) ? [$row => $all[$row]] : [];
+        $this->files = new FileBag;
+        $this->request = new InputBag;
+
+        if ($files->has($key)) {
+            $this->files->set($key, $files->all($key));
+        }
+
+        if ($input->has($key)) {
+            $this->request->set($key, $input->all($key));
+        }
+
+        if ($this->isJson()) {
+            $this->json = $this->request;
+        }
+
+        try {
+            return $callback();
+        } finally {
+            $this->json = $json;
+            $this->request = $body;
+            $this->files = $files;
+            $this->convertedFiles = $convertedFiles;
+        }
     }
 
     /**

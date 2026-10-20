@@ -2,6 +2,25 @@
 
 ## Unreleased
 
+### Each bulk store and bulk update row reads only its own input
+
+While a bulk row is filled, saved and has its field actions run, the request body holds that
+row alone, still keyed by its index: `$request->input("{$row}.title")` and `$request[$row]` work
+as before, but `$request->input('0.title')` from row `1`, `$request->all()` and `$request->payload()`
+no longer see the other rows. Uploaded files are narrowed the same way. Validation still runs on
+the whole payload first, the query string stays readable, and `savedBulk()`, `storedBulk()` and
+`updatedBulk()` receive the whole body again. A `$request->merge()` made inside a row is discarded
+after that row.
+
+A model event or field callback that read every row's input on each row made a bulk request
+quadratic in its size. If one of yours needs the other rows, read them before the bulk loop (in
+`allowToBulkStore()` or a validator) or in `savedBulk()`. The narrowing is available as
+`$request->forBulkRow($row, $callback)`.
+
+Only the Restify request handed to fields, actions and repository methods is narrowed. The
+application request is a separate instance, so a model event or listener that reads `request()`
+still sees every row; pass the Restify request along, or read the row from the model, to stay linear.
+
 ### Policy deny messages on attach, sync and detach reach the client
 
 `attach*`, `sync*` and `detach*` policy methods that return `Response::deny('message')` (or `denyWithStatus()` / `denyAsNotFound()`) now answer with that message and status instead of the generic "You cannot attach model..." text. A policy returning plain `false` still answers the generic 403.
