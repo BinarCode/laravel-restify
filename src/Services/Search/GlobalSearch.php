@@ -67,6 +67,9 @@ class GlobalSearch
     {
         $results = [];
 
+        /**
+         * @var class-string<Repository> $repository
+         */
         foreach ($this->repositories as $repository) {
             $query = RepositorySearchService::make()->search($this->request, $repository::resolveWith($repository::newModel()));
 

@@ -886,7 +886,7 @@ class Repository implements JsonSerializable, RestifySearchable
 
         $entities = static::transactionFor(static::newModel(), function () use ($request, $actionFieldsByRow) {
             return $request->collectInput()
-                ->map(fn (array $input, $row) => $request->forBulkRow($row, function () use ($request, $actionFieldsByRow, $row) {
+                ->map(fn (array $input, $row): Model => $request->forBulkRow($row, function () use ($request, $actionFieldsByRow, $row): Model {
                     $this->resource = static::newModel();
 
                     static::fillBulkFields(
