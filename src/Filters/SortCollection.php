@@ -7,6 +7,7 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Collection;
 
@@ -126,7 +127,10 @@ class SortCollection extends Collection
         });
     }
 
-    public function apply(RestifyRequest $request, Builder $builder): self
+    /**
+     * @param  Builder<Model>|Relation<Model, Model, mixed>  $builder
+     */
+    public function apply(RestifyRequest $request, Builder|Relation $builder): self
     {
         return $this->each(function (SortableFilter $filter) use ($request, $builder) {
             $filter->filter($request, $builder, $filter->direction());
