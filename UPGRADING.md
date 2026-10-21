@@ -2,6 +2,15 @@
 
 ## Unreleased
 
+### Sorted index queries end with the primary key
+
+Rows that tie on every order of an index, global search or action query are now ordered by the
+primary key, so pagination no longer repeats or skips a row. The key follows the direction of the
+last order: `?sort=name` runs `order by name asc, id asc` and `?sort=-name` runs
+`order by name desc, id desc`, which keeps a `(name, id)` index usable. Orders added in `mainQuery()` or `indexQuery()` still rank before
+the key. Queries already ordered by the key, and grouped, distinct or union queries, are left
+unchanged. Only the order of tied rows changes; a test that pinned it may need updating.
+
 ### Each bulk store and bulk update row reads only its own input
 
 While a bulk row is filled, saved and has its field actions run, the request body holds that
