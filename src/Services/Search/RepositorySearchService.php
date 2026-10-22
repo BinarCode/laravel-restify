@@ -86,7 +86,7 @@ class RepositorySearchService
 
         $model = $query->getModel();
 
-        if ($model instanceof Pivot && ! $model instanceof KeyedPivot && ! $model->getIncrementing() && ! $model->usesUniqueIds()) {
+        if (! $this->hasKeyColumn($model)) {
             return $query;
         }
 
@@ -175,6 +175,23 @@ class RepositorySearchService
      * @param  array<array-key, string>  $relationPaths
      * @return array<array-key, string|Closure>
      */
+    private function hasKeyColumn(Model $model): bool
+    {
+        if (! $model instanceof Pivot) {
+            return true;
+        }
+
+        if ($model instanceof KeyedPivot) {
+            return true;
+        }
+
+        if ($model->getIncrementing()) {
+            return true;
+        }
+
+        return $model->usesUniqueIds();
+    }
+
     private function limitedEagerLoads(array $relationPaths): array
     {
         if (! RelatablePerPage::isRequested()) {
