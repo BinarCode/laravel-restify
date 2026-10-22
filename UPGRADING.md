@@ -11,6 +11,11 @@ last order: `?sort=name` runs `order by name asc, id asc` and `?sort=-name` runs
 the key. Queries already ordered by the key, and grouped, distinct or union queries, are left
 unchanged. Only the order of tied rows changes; a test that pinned it may need updating.
 
+A pivot model gets the key only when it declares one the way Laravel expects: `$incrementing = true`
+or `HasUlids`/`HasUuids`. Other pivot tables usually have no `id` column, so they keep their own
+orders. A pivot whose key comes from elsewhere (a custom trait, a plain `id` column) implements
+`Binaryk\LaravelRestify\Contracts\KeyedPivot` to keep the tiebreaker.
+
 ### Each bulk store and bulk update row reads only its own input
 
 While a bulk row is filled, saved and has its field actions run, the request body holds that

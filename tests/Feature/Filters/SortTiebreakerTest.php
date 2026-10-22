@@ -2,14 +2,17 @@
 
 namespace Binaryk\LaravelRestify\Tests\Feature\Filters;
 
+use Binaryk\LaravelRestify\Contracts\KeyedPivot;
 use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
+use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyUserPivot;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Facades\DB;
 
@@ -175,6 +178,39 @@ class SortTiebreakerTest extends IntegrationTestCase
         $this->assertStringEndsWith(
             'order by length(title), "posts"."id" desc',
             $service->tiebreak($user->posts()->orderByRaw('length(title)'))->toSql(),
+        );
+    }
+
+    public function test_only_pivots_with_a_declared_key_get_a_tiebreaker(): void
+    {
+        $service = new class extends RepositorySearchService
+        {
+            public function tiebreak(Builder $query): Builder
+            {
+                return $this->applyKeyTiebreaker($query);
+            }
+        };
+
+        $this->assertStringEndsWith(
+            'order by "created_at" asc',
+            $service->tiebreak(CompanyUserPivot::query()->orderBy('created_at'))->toSql(),
+        );
+
+        $keyed = new class extends CompanyUserPivot
+        {
+            public $incrementing = true;
+        };
+
+        $this->assertStringEndsWith(
+            'order by "created_at" asc, "company_user"."id" asc',
+            $service->tiebreak($keyed->newQuery()->orderBy('created_at'))->toSql(),
+        );
+
+        $marked = new class extends CompanyUserPivot implements KeyedPivot {};
+
+        $this->assertStringEndsWith(
+            'order by "created_at" asc, "company_user"."id" asc',
+            $service->tiebreak($marked->newQuery()->orderBy('created_at'))->toSql(),
         );
     }
 
