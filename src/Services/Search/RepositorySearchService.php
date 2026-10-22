@@ -18,6 +18,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
@@ -67,7 +68,8 @@ class RepositorySearchService
      * Order rows that tie on every other order by the primary key, so pagination never
      * repeats or skips a row. The key follows the last order's direction, which keeps a
      * (column, key) index usable; it is descending after a raw order. Grouped, distinct
-     * and union queries are left alone, as are queries already ordered by the key.
+     * and union queries are left alone, as are queries already ordered by the key and
+     * pivot models, whose tables usually have no primary key column.
      *
      * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
      * @return Builder<Model>|Relation<Model, Model, mixed>
@@ -81,6 +83,11 @@ class RepositorySearchService
         }
 
         $model = $query->getModel();
+
+        if ($model instanceof Pivot) {
+            return $query;
+        }
+
         $keys = [$model->getKeyName(), $model->getQualifiedKeyName()];
 
         foreach ($base->orders as $order) {
