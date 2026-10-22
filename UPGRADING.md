@@ -13,8 +13,8 @@ unchanged. Only the order of tied rows changes; a test that pinned it may need u
 
 A pivot model gets the key only when it declares one the way Laravel expects: `$incrementing = true`
 or `HasUlids`/`HasUuids`. Other pivot tables usually have no `id` column, so they keep their own
-orders. When the model can't tell, set it on the repository: `public static ?bool $keyTiebreaker = true;`
-for a pivot whose key comes from a custom trait, `false` for any model whose table has no key column.
+orders. A pivot whose key comes from elsewhere (a custom trait, a plain `id` column) implements
+`Binaryk\LaravelRestify\Contracts\KeyedPivot` to keep the tiebreaker.
 
 ### Each bulk store and bulk update row reads only its own input
 

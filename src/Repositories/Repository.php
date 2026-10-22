@@ -164,12 +164,6 @@ class Repository implements JsonSerializable, RestifySearchable
     public static array $groupBy = [];
 
     /**
-     * Whether sorted index queries end with the model's primary key. Null decides from the model:
-     * a pivot gets the key only when it declares an incrementing or unique one.
-     */
-    public static ?bool $keyTiebreaker = null;
-
-    /**
      * Attribute that should be used for displaying a single model.
      */
     public static string $title = 'id';

@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Tests\Feature\Filters;
 
+use Binaryk\LaravelRestify\Contracts\KeyedPivot;
 use Binaryk\LaravelRestify\Fields\BelongsTo;
 use Binaryk\LaravelRestify\Filters\SortableFilter;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
@@ -204,23 +205,15 @@ class SortTiebreakerTest extends IntegrationTestCase
             'order by "created_at" asc, "company_user"."id" asc',
             $service->tiebreak($keyed->newQuery()->orderBy('created_at'))->toSql(),
         );
-    }
 
-    public function test_a_repository_can_turn_the_tiebreaker_off(): void
-    {
-        UserRepository::$sort = ['name'];
-        UserRepository::$keyTiebreaker = false;
+        $marked = new class extends CompanyUserPivot implements KeyedPivot
+        {
+        };
 
-        try {
-            User::factory()->create();
-
-            $this->assertStringEndsWith(
-                'order by "users"."name" asc limit 15 offset 0',
-                $this->indexSql(UserRepository::route(query: ['sort' => 'name'])),
-            );
-        } finally {
-            UserRepository::$keyTiebreaker = null;
-        }
+        $this->assertStringEndsWith(
+            'order by "created_at" asc, "company_user"."id" asc',
+            $service->tiebreak($marked->newQuery()->orderBy('created_at'))->toSql(),
+        );
     }
 
     public function test_grouped_queries_get_no_tiebreaker(): void

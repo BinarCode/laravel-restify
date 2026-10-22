@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Services\Search;
 
+use Binaryk\LaravelRestify\Contracts\KeyedPivot;
 use Binaryk\LaravelRestify\Events\AdvancedFiltersApplied;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
@@ -69,8 +70,8 @@ class RepositorySearchService
      * repeats or skips a row. The key follows the last order's direction, which keeps a
      * (column, key) index usable; it is descending after a raw order. Grouped, distinct
      * and union queries are left alone, as are queries already ordered by the key and
-     * pivot models that declare no incrementing or unique key, whose tables usually have
-     * no primary key column. A repository's $keyTiebreaker overrides that choice.
+     * pivot models that declare no key (incrementing, unique ids or KeyedPivot), whose
+     * tables usually have no primary key column.
      *
      * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
      * @return Builder<Model>|Relation<Model, Model, mixed>
@@ -85,9 +86,7 @@ class RepositorySearchService
 
         $model = $query->getModel();
 
-        $declared = $this->repository ? $this->repository::$keyTiebreaker : null;
-
-        if ($declared === false || ($declared === null && $model instanceof Pivot && ! $model->getIncrementing() && ! $model->usesUniqueIds())) {
+        if ($model instanceof Pivot && ! $model instanceof KeyedPivot && ! $model->getIncrementing() && ! $model->usesUniqueIds()) {
             return $query;
         }
 
