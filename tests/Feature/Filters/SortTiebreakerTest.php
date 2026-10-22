@@ -206,6 +206,23 @@ class SortTiebreakerTest extends IntegrationTestCase
         );
     }
 
+    public function test_a_repository_can_turn_the_tiebreaker_off(): void
+    {
+        UserRepository::$sort = ['name'];
+        UserRepository::$keyTiebreaker = false;
+
+        try {
+            User::factory()->create();
+
+            $this->assertStringEndsWith(
+                'order by "users"."name" asc limit 15 offset 0',
+                $this->indexSql(UserRepository::route(query: ['sort' => 'name'])),
+            );
+        } finally {
+            UserRepository::$keyTiebreaker = null;
+        }
+    }
+
     public function test_grouped_queries_get_no_tiebreaker(): void
     {
         UserRepository::$sort = ['name'];

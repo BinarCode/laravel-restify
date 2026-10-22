@@ -70,7 +70,7 @@ class RepositorySearchService
      * (column, key) index usable; it is descending after a raw order. Grouped, distinct
      * and union queries are left alone, as are queries already ordered by the key and
      * pivot models that declare no incrementing or unique key, whose tables usually have
-     * no primary key column.
+     * no primary key column. A repository's $keyTiebreaker overrides that choice.
      *
      * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
      * @return Builder<Model>|Relation<Model, Model, mixed>
@@ -85,7 +85,9 @@ class RepositorySearchService
 
         $model = $query->getModel();
 
-        if ($model instanceof Pivot && ! $model->getIncrementing() && ! $model->usesUniqueIds()) {
+        $declared = $this->repository ? $this->repository::$keyTiebreaker : null;
+
+        if ($declared === false || ($declared === null && $model instanceof Pivot && ! $model->getIncrementing() && ! $model->usesUniqueIds())) {
             return $query;
         }
 
