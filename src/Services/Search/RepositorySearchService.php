@@ -69,7 +69,8 @@ class RepositorySearchService
      * repeats or skips a row. The key follows the last order's direction, which keeps a
      * (column, key) index usable; it is descending after a raw order. Grouped, distinct
      * and union queries are left alone, as are queries already ordered by the key and
-     * pivot models, whose tables usually have no primary key column.
+     * pivot models that declare no incrementing or unique key, whose tables usually have
+     * no primary key column.
      *
      * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
      * @return Builder<Model>|Relation<Model, Model, mixed>
@@ -84,7 +85,7 @@ class RepositorySearchService
 
         $model = $query->getModel();
 
-        if ($model instanceof Pivot) {
+        if ($model instanceof Pivot && ! $model->getIncrementing() && ! $model->usesUniqueIds()) {
             return $query;
         }
 

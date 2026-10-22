@@ -180,7 +180,7 @@ class SortTiebreakerTest extends IntegrationTestCase
         );
     }
 
-    public function test_pivot_queries_get_no_tiebreaker(): void
+    public function test_only_pivots_with_a_declared_key_get_a_tiebreaker(): void
     {
         $service = new class extends RepositorySearchService
         {
@@ -193,6 +193,16 @@ class SortTiebreakerTest extends IntegrationTestCase
         $this->assertStringEndsWith(
             'order by "created_at" asc',
             $service->tiebreak(CompanyUserPivot::query()->orderBy('created_at'))->toSql(),
+        );
+
+        $keyed = new class extends CompanyUserPivot
+        {
+            public $incrementing = true;
+        };
+
+        $this->assertStringEndsWith(
+            'order by "created_at" asc, "company_user"."id" asc',
+            $service->tiebreak($keyed->newQuery()->orderBy('created_at'))->toSql(),
         );
     }
 
