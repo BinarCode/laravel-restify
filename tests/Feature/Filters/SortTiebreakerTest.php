@@ -206,9 +206,7 @@ class SortTiebreakerTest extends IntegrationTestCase
             $service->tiebreak($keyed->newQuery()->orderBy('created_at'))->toSql(),
         );
 
-        $marked = new class extends CompanyUserPivot implements KeyedPivot
-        {
-        };
+        $marked = new class extends CompanyUserPivot implements KeyedPivot {};
 
         $this->assertStringEndsWith(
             'order by "created_at" asc, "company_user"."id" asc',
