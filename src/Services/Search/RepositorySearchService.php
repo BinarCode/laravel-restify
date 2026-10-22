@@ -171,10 +171,6 @@ class RepositorySearchService
         );
     }
 
-    /**
-     * @param  array<array-key, string>  $relationPaths
-     * @return array<array-key, string|Closure>
-     */
     private function hasKeyColumn(Model $model): bool
     {
         if (! $model instanceof Pivot) {
@@ -192,6 +188,10 @@ class RepositorySearchService
         return $model->usesUniqueIds();
     }
 
+    /**
+     * @param  array<array-key, string>  $relationPaths
+     * @return array<array-key, string|Closure>
+     */
     private function limitedEagerLoads(array $relationPaths): array
     {
         if (! RelatablePerPage::isRequested()) {
