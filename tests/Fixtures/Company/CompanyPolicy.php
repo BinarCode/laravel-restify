@@ -117,6 +117,8 @@ class CompanyPolicy
 
     public function detachUsers(User $user, Company $model, User $userToBeDetached)
     {
+        $_SERVER['companies.detachUsers.model'] = $model;
+
         $allowed = $_SERVER['allow_detach_users'] ?? true;
 
         return is_callable($allowed) ? $allowed($userToBeDetached) : $allowed;

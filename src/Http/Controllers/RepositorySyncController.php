@@ -13,7 +13,7 @@ class RepositorySyncController extends RepositoryController
 
     public function __invoke(RepositorySyncRequest $request)
     {
-        $model = $request->findModelOrFail();
+        $model = $request->findWritableModelOrFail();
         $repository = $request->repository()->withResource($model);
 
         if (is_callable(
