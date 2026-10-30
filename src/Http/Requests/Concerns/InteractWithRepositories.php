@@ -157,6 +157,14 @@ trait InteractWithRepositories
         return $this->repository($uriKey)::mainQuery($this, $query);
     }
 
+    /**
+     * The parent model of an attach, detach or sync, scoped by the repository mainQuery like other writes.
+     */
+    public function findWritableModelOrFail(?string $uriKey = null): Model
+    {
+        return once(fn () => $this->writableModelQuery(uriKey: $uriKey)->firstOrFail());
+    }
+
     public function findModelOrFail($id = null, ?string $uriKey = null): Model
     {
         return $id
