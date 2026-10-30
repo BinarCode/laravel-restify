@@ -85,7 +85,7 @@ class PostRepository extends Repository
     public static function mainQuery(RestifyRequest $request, $query)
     {
         if (isset($_SERVER['restify.post.mainQueryCallback']) && is_callable($_SERVER['restify.post.mainQueryCallback'])) {
-            call_user_func($_SERVER['restify.post.mainQueryCallback'], $query);
+            return call_user_func($_SERVER['restify.post.mainQueryCallback'], $query);
         }
 
         return $query;

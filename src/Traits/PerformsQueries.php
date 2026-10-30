@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\Traits;
 
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
 trait PerformsQueries
@@ -23,6 +24,9 @@ trait PerformsQueries
         return $query;
     }
 
+    /**
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
     public static function mainQuery(RestifyRequest $request, Builder|Relation $query)
     {
         return $query;

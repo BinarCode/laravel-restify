@@ -113,7 +113,8 @@ class PerformActionControllerTest extends IntegrationTestCase
         $visible = $users->last();
 
         ActivateAction::$applied = [];
-        $_SERVER['restify.user.mainQueryCallback'] = fn ($query) => $query->whereKeyNot($hidden->getKey());
+        // A clone, so the test fails unless the builder mainQuery returns is the one used.
+        $_SERVER['restify.user.mainQueryCallback'] = fn ($query) => $query->clone()->whereKeyNot($hidden->getKey());
 
         $this->postJson(UserRepository::action(ActivateAction::class, $hidden->getKey()))
             ->assertNotFound();
@@ -121,12 +122,17 @@ class PerformActionControllerTest extends IntegrationTestCase
         $this->postJson(UserRepository::action(ActivateAction::class, $visible->getKey()))
             ->assertSuccessful();
 
-        $this->assertEquals([$visible->getKey()], collect(ActivateAction::$applied)->map->getKey()->all());
+        $this->assertEquals([$visible->getKey()], Collection::make(ActivateAction::$applied)->map->getKey()->all());
 
-        config()->set('restify.repositories.apply_main_query_to_actions', false);
+        config()->set('restify.repositories.apply_main_query_to_actions_and_getters', false);
 
         $this->postJson(UserRepository::action(ActivateAction::class, $hidden->getKey()))
             ->assertSuccessful();
+
+        $this->assertEquals(
+            [$visible->getKey(), $hidden->getKey()],
+            Collection::make(ActivateAction::$applied)->map->getKey()->all()
+        );
     }
 
     public function test_could_perform_standalone_action(): void

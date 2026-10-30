@@ -277,7 +277,7 @@ return [
         | Scope the model of a show action or show getter by the repository mainQuery, as show and index requests are.
         | Set to `false` to only apply the action or getter indexQuery, as before.
         */
-        'apply_main_query_to_actions' => true,
+        'apply_main_query_to_actions_and_getters' => true,
 
         /*
         |--------------------------------------------------------------------------

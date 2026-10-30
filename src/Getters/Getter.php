@@ -105,11 +105,7 @@ abstract class Getter implements JsonSerializable
         throw_unless(method_exists($this, 'handle'), new Exception('Missing handle method from the getter.'));
 
         if ($request->isForRepositoryRequest()) {
-            $query = $request->modelQuery();
-
-            if (config('restify.repositories.apply_main_query_to_actions', true)) {
-                $request->repository()::mainQuery($request, $query);
-            }
+            $query = $request->scopedModelQuery();
 
             static::indexQuery($request, $query);
 
