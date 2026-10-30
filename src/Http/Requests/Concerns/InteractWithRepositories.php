@@ -125,6 +125,38 @@ trait InteractWithRepositories
         );
     }
 
+    /**
+     * The model query for an update, patch or delete, scoped by the repository mainQuery.
+     *
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
+    public function writableModelQuery(?string $repositoryId = null, ?string $uriKey = null): Builder|Relation
+    {
+        return $this->scopeForWrite($this->modelQuery($repositoryId, $uriKey), $uriKey);
+    }
+
+    /**
+     * @param  list<int|string>  $repositoryIds
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
+    public function writableModelsQuery(array $repositoryIds, ?string $uriKey = null): Builder|Relation
+    {
+        return $this->scopeForWrite($this->modelsQuery($repositoryIds, $uriKey), $uriKey);
+    }
+
+    /**
+     * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
+    private function scopeForWrite(Builder|Relation $query, ?string $uriKey): Builder|Relation
+    {
+        if (! config('restify.repositories.apply_main_query_to_writes', true)) {
+            return $query;
+        }
+
+        return $this->repository($uriKey)::mainQuery($this, $query);
+    }
+
     public function findModelOrFail($id = null, ?string $uriKey = null): Model
     {
         return $id

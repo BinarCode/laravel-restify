@@ -9,7 +9,7 @@ class RepositoryPatchController extends RepositoryController
 {
     public function __invoke(RepositoryPatchRequest $request)
     {
-        $model = $request->modelQuery()->lockForUpdate()->firstOrFail();
+        $model = $request->writableModelQuery()->lockForUpdate()->firstOrFail();
 
         /** * @var Repository $repository */
         $repository = $request->repositoryWith($model);

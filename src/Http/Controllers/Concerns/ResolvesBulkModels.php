@@ -30,7 +30,7 @@ trait ResolvesBulkModels
         $loaded = Collection::make($lookup)
             ->chunk(self::LOOKUP_CHUNK)
             ->flatMap(static fn (Collection $chunk): Collection => $request
-                ->modelsQuery($chunk->values()->all())
+                ->writableModelsQuery(array_values($chunk->all()))
                 ->lockForUpdate()
                 ->get());
 
