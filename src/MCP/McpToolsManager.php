@@ -345,13 +345,12 @@ class McpToolsManager
      */
     public function getOperationDetails(string $repositoryKey, string $operationType, ?string $operationName = null): array
     {
-        // Convert string operation type to enum
-        $operationTypeEnum = OperationTypeEnum::{$operationType};
-
         // Check if repository has MCP tools
         if ($this->repository($repositoryKey)->isEmpty()) {
             throw new \InvalidArgumentException("Repository '{$repositoryKey}' does not have MCP tools enabled. Add the HasMcpTools trait to enable MCP support.");
         }
+
+        $operationTypeEnum = $this->resolveOperationType($repositoryKey, $operationType);
 
         // Find the tool
         $tool = $this->repository($repositoryKey)
@@ -402,13 +401,12 @@ class McpToolsManager
      */
     public function executeOperation(string $repositoryKey, string $operationType, ?string $operationName, array $parameters): Response|ResponseFactory
     {
-        // Convert string operation type to enum
-        $operationTypeEnum = OperationTypeEnum::{$operationType};
-
         // Check if repository has MCP tools
         if ($this->repository($repositoryKey)->isEmpty()) {
             throw new \InvalidArgumentException("Repository '{$repositoryKey}' does not have MCP tools enabled. Add the HasMcpTools trait to enable MCP support.");
         }
+
+        $operationTypeEnum = $this->resolveOperationType($repositoryKey, $operationType);
 
         // Find the tool
         $tool = $this->repository($repositoryKey)
@@ -454,5 +452,41 @@ class McpToolsManager
         }
 
         return $tool['instance']->handle(new Request($parameters));
+    }
+
+    /**
+     * Resolve an operation type name to its enum case, or throw an error that tells
+     * the caller the valid names and how to call repository actions and getters.
+     *
+     * @throws \InvalidArgumentException
+     */
+    private function resolveOperationType(string $repositoryKey, string $operationType): OperationTypeEnum
+    {
+        $operationTypeEnum = OperationTypeEnum::tryFromName($operationType);
+
+        if ($operationTypeEnum !== null) {
+            return $operationTypeEnum;
+        }
+
+        foreach ($this->repository($repositoryKey) as $tool) {
+            $action = is_array($tool) ? ($tool['action'] ?? null) : null;
+            $getter = is_array($tool) ? ($tool['getter'] ?? null) : null;
+
+            $kind = match (true) {
+                $action instanceof Action && $action->uriKey() === $operationType => 'action',
+                $getter instanceof Getter && $getter->uriKey() === $operationType => 'getter',
+                default => null,
+            };
+
+            if ($kind !== null) {
+                $article = $kind === 'action' ? 'an' : 'a';
+
+                throw new \InvalidArgumentException("\"{$operationType}\" is {$article} {$kind} on \"{$repositoryKey}\": call operation_type=\"{$kind}\", operation_name=\"{$operationType}\".");
+            }
+        }
+
+        $validTypes = implode(', ', array_map(fn (OperationTypeEnum $case): string => $case->name, OperationTypeEnum::cases()));
+
+        throw new \InvalidArgumentException("Unknown operation_type \"{$operationType}\". Valid operation types: {$validTypes}. Use operation_type \"action\" or \"getter\" with operation_name \"<uriKey>\" for repository actions and getters.");
     }
 }
