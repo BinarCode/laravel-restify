@@ -16,7 +16,13 @@ trait McpDestroyTool
     {
         $id = $request->input('id');
 
-        $model = static::query($request)->findOrFail($id);
+        $query = static::query($request);
+
+        if (config('restify.repositories.apply_main_query_to_writes', true)) {
+            $query = static::mainQuery($request, $query);
+        }
+
+        $model = $query->findOrFail($id);
 
         $repository = static::resolveWith($model)->allowToDestroy($request);
 

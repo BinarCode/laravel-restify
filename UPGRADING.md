@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+### Updates and deletes are scoped by `mainQuery()`
+
+Update (`PUT`), patch (`PATCH`), delete, bulk update, bulk delete, field delete
+(`DELETE /{repository}/{id}/field/{field}`) and the MCP update and delete tools now load their models
+through the repository `mainQuery()`, the same way show and index do. A record your `mainQuery()` hides
+now answers 404 (422 in a bulk request) instead of being changed whenever the policy allowed it.
+
+If your `mainQuery()` hides records that users still edit, such as archived ones they restore through a
+`PATCH`, either move that filter to `indexQuery()` or set `restify.repositories.apply_main_query_to_writes`
+to `false`.
+
 ### Show actions and show getters are scoped by `mainQuery()`
 
 A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters`) now loads its model through the repository `mainQuery()` before the action or getter `indexQuery()`, the same way show, index and bulk actions already did. This also covers the MCP action and getter tools. A record your `mainQuery()` hides now answers 404 instead of running the action or getter on it.

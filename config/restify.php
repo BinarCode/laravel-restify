@@ -280,6 +280,12 @@ return [
         'apply_main_query_to_actions_and_getters' => true,
 
         /*
+        | Scope the model of an update, patch or delete (single, bulk, field delete and the MCP update and delete tools)
+        | by the repository mainQuery, as show and index requests are. Set to `false` to rely on the policy alone, as before.
+        */
+        'apply_main_query_to_writes' => true,
+
+        /*
         |--------------------------------------------------------------------------
         | Repository Index Caching
         |--------------------------------------------------------------------------

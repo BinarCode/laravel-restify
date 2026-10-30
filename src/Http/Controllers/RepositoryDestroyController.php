@@ -13,7 +13,7 @@ class RepositoryDestroyController extends RepositoryController
     public function __invoke(RepositoryDestroyRequest $request): Response
     {
         $repository = $request->repositoryWith(
-            $model = $request->modelQuery()->firstOrFail()
+            $model = $request->writableModelQuery()->firstOrFail()
         )->allowToDestroy($request);
 
         $this->deleteFields($request, $model);

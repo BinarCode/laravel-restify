@@ -60,7 +60,7 @@ class ResolvesBulkModelsTest extends IntegrationTestCase
 
         $request = Mockery::mock(RestifyRequest::class);
         $request->shouldReceive('model')->andReturn($model);
-        $request->shouldReceive('modelsQuery')->andReturn($query);
+        $request->shouldReceive('writableModelsQuery')->andReturn($query);
 
         $controller = new class
         {

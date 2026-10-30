@@ -24,7 +24,7 @@ trait McpUpdateTool
             'mcp_repository_key' => static::uriKey(),
         ]);
 
-        $model = $request->modelQuery(
+        $model = $request->writableModelQuery(
             $id = $request->input('id'),
         )->lockForUpdate()->firstOrFail();
 
