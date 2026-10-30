@@ -7,6 +7,8 @@ use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
@@ -48,7 +50,10 @@ class GetterRequest extends RestifyRequest
         return $this->route('getter') ?? $this->query('getter');
     }
 
-    public function builder(Getter $getter, int $size): Builder
+    /**
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
+    public function builder(Getter $getter, int $size): Builder|Relation
     {
         return tap(
             RepositorySearchService::make()->search($this, $this->repository()),

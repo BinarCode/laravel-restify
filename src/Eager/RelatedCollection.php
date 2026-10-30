@@ -144,19 +144,15 @@ class RelatedCollection extends Collection
 
     public function mapIntoRelated(RestifyRequest $request, Repository $repository): self
     {
-        return $this->map(function ($value, $key) {
-            return tap(
-                Related::make($key, $value instanceof EagerField ? $value : null),
-                function (Related $related) use ($value) {
-                    if (is_callable($value)) {
-                        $related->resolveUsing($value);
-                    }
-                }
-            );
-        })->map(
-            fn (Related $related) => $related
-                ->columns($request->related()->getColumnsFor($repository::uriKey().'.'.$related->getRelation()))
-        );
+        return $this->map(function ($value, $key) use ($request, $repository) {
+            $related = new Related($key, $value instanceof EagerField ? $value : null);
+
+            if (is_callable($value)) {
+                $related->resolveUsing($value);
+            }
+
+            return $related->columns($request->related()->getColumnsFor($repository::uriKey().'.'.$related->getRelation()));
+        });
     }
 
     public function authorized(RestifyRequest $request)
