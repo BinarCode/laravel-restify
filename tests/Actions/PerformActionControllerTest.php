@@ -106,6 +106,29 @@ class PerformActionControllerTest extends IntegrationTestCase
         $this->assertEquals(1, ActivateAction::$applied[0]->id);
     }
 
+    public function test_show_action_is_scoped_by_repository_main_query(): void
+    {
+        $users = $this->mockUsers(2);
+        $hidden = $users->first();
+        $visible = $users->last();
+
+        ActivateAction::$applied = [];
+        $_SERVER['restify.user.mainQueryCallback'] = fn ($query) => $query->whereKeyNot($hidden->getKey());
+
+        $this->postJson(UserRepository::action(ActivateAction::class, $hidden->getKey()))
+            ->assertNotFound();
+
+        $this->postJson(UserRepository::action(ActivateAction::class, $visible->getKey()))
+            ->assertSuccessful();
+
+        $this->assertEquals([$visible->getKey()], collect(ActivateAction::$applied)->map->getKey()->all());
+
+        config()->set('restify.repositories.apply_main_query_to_actions', false);
+
+        $this->postJson(UserRepository::action(ActivateAction::class, $hidden->getKey()))
+            ->assertSuccessful();
+    }
+
     public function test_could_perform_standalone_action(): void
     {
         $this->postJson(UserRepository::action(DisableProfileAction::class))

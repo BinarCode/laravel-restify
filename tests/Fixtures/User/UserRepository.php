@@ -50,6 +50,15 @@ class UserRepository extends Repository
         ];
     }
 
+    public static function mainQuery(RestifyRequest $request, $query)
+    {
+        if (isset($_SERVER['restify.user.mainQueryCallback']) && is_callable($_SERVER['restify.user.mainQueryCallback'])) {
+            call_user_func($_SERVER['restify.user.mainQueryCallback'], $query);
+        }
+
+        return $query;
+    }
+
     public function actions(RestifyRequest $request): array
     {
         return [

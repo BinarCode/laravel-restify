@@ -164,9 +164,15 @@ abstract class Action implements JsonSerializable
                 });
             });
         } else {
-            $model = tap($request->modelQuery(), function ($query) use ($request) {
-                static::indexQuery($request, $query);
-            })->firstOrFail();
+            $query = $request->modelQuery();
+
+            if (config('restify.repositories.apply_main_query_to_actions', true)) {
+                $request->repository()::mainQuery($request, $query);
+            }
+
+            static::indexQuery($request, $query);
+
+            $model = $query->firstOrFail();
 
             $this->authorizeRun($request, $model);
 

@@ -12,7 +12,6 @@ use Binaryk\LaravelRestify\Traits\Make;
 use Binaryk\LaravelRestify\Traits\ProxiesCanSeeToGate;
 use Binaryk\LaravelRestify\Traits\Visibility;
 use Exception;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\JsonSchema\JsonSchema;
@@ -23,7 +22,6 @@ use ReturnTypeWillChange;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
-use function tap;
 use function throw_unless;
 
 /**
@@ -107,10 +105,15 @@ abstract class Getter implements JsonSerializable
         throw_unless(method_exists($this, 'handle'), new Exception('Missing handle method from the getter.'));
 
         if ($request->isForRepositoryRequest()) {
-            $model = tap(
-                $request->modelQuery(),
-                fn (Builder $query) => static::indexQuery($request, $query)
-            )->firstOrFail();
+            $query = $request->modelQuery();
+
+            if (config('restify.repositories.apply_main_query_to_actions', true)) {
+                $request->repository()::mainQuery($request, $query);
+            }
+
+            static::indexQuery($request, $query);
+
+            $model = $query->firstOrFail();
 
             $this->authorizeRun($request, $model);
 
