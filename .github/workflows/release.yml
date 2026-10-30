@@ -81,8 +81,15 @@ jobs:
                   MINOR=${MINOR:-0}
                   PATCH=${PATCH:-0}
 
-                  # Increment patch version for every merge
-                  PATCH=$((PATCH + 1))
+                  # Increment patch version for every merge, or the minor one when the commit
+                  # subject carries [release:minor]. A revert of such a commit stays a patch.
+                  SUBJECT=$(git log -1 --format=%s "$GITHUB_SHA")
+                  if [[ "$SUBJECT" == *'[release:minor]'* && "$SUBJECT" != Revert* ]]; then
+                      MINOR=$((MINOR + 1))
+                      PATCH=0
+                  else
+                      PATCH=$((PATCH + 1))
+                  fi
 
                   # Create new version
                   NEW_VERSION="$MAJOR.$MINOR.$PATCH"

@@ -2,12 +2,18 @@
 
 ## Unreleased
 
+### Laravel 11 is no longer supported
+
+Restify now requires Laravel 12 or 13. Laravel 11 is past its security support, and Composer 2.11
+refuses to install it by default. An app still on Laravel 11 keeps resolving the last 10.4.x
+release; upgrade Laravel to get later fixes.
+
 ### Updates and deletes are scoped by `mainQuery()`
 
 Update (`PUT`), patch (`PATCH`), delete, bulk update, bulk delete, field delete
 (`DELETE /{repository}/{id}/field/{field}`) and the MCP update and delete tools now load their models
 through the repository `mainQuery()`, the same way show and index do. A record your `mainQuery()` hides
-now answers 404 (422 in a bulk request) instead of being changed whenever the policy allowed it.
+now answers 404, and a bulk request that includes one changes nothing, instead of the record being changed whenever the policy allowed it.
 
 If your `mainQuery()` hides records that users still edit, such as archived ones they restore through a
 `PATCH`, either move that filter to `indexQuery()` or set `restify.repositories.apply_main_query_to_writes`
