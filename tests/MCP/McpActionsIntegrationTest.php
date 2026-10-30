@@ -263,6 +263,75 @@ class McpActionsIntegrationTest extends IntegrationTestCase
         $this->assertEquals(1, ActivateAction::$applied[0]->id);
     }
 
+    public function test_show_action_is_scoped_by_repository_main_query(): void
+    {
+        $users = $this->mockUsers(2);
+        $hidden = $users->first();
+
+        $mcpUserRepository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = User::class;
+
+            public static string $uriKey = 'mcp-scoped-users';
+
+            public static ?int $hiddenId = null;
+
+            public static function mainQuery(RestifyRequest $request, $query)
+            {
+                return $query->whereKeyNot(self::$hiddenId);
+            }
+
+            public function actions(RestifyRequest $request): array
+            {
+                return [
+                    ActivateAction::new()->onlyOnShow(),
+                ];
+            }
+
+            public function mcpAllowsActions(): bool
+            {
+                return true;
+            }
+        };
+
+        $mcpUserRepository::$hiddenId = $hidden->getKey();
+
+        Restify::repositories([
+            $mcpUserRepository::class,
+        ]);
+
+        Mcp::web('test-scoped-show-actions', RestifyServer::class);
+
+        ActivateAction::$applied = [];
+
+        $actionToolName = Collection::make($this->postJson('/test-scoped-show-actions', [
+            'jsonrpc' => '2.0',
+            'id' => 1,
+            'method' => 'tools/list',
+            'params' => [],
+        ])->json('result.tools'))->pluck('name')->first(
+            fn ($name) => str_contains($name, 'mcp-scoped-users') && str_contains($name, 'activate-action')
+        );
+
+        $this->assertNotNull($actionToolName);
+
+        $this->postJson('/test-scoped-show-actions', [
+            'jsonrpc' => '2.0',
+            'id' => 2,
+            'method' => 'tools/call',
+            'params' => [
+                'name' => $actionToolName,
+                'arguments' => [
+                    'id' => (string) $hidden->getKey(),
+                ],
+            ],
+        ]);
+
+        $this->assertEmpty(ActivateAction::$applied);
+    }
+
     public function test_could_perform_standalone_action(): void
     {
         $mcpUserRepository = new class extends Repository

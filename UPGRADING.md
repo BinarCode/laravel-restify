@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Show actions and show getters are scoped by `mainQuery()`
+
+A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters`) now loads its model through the repository `mainQuery()` before the action or getter `indexQuery()`, the same way show, index and bulk actions already did. This also covers the MCP action and getter tools. A record your `mainQuery()` hides now answers 404 instead of running the action or getter on it.
+
+To keep the previous behaviour, set `restify.repositories.apply_main_query_to_actions_and_getters` to `false`.
+
 ### Sorted index queries end with the primary key
 
 Rows that tie on every order of an index, global search or action query are now ordered by the

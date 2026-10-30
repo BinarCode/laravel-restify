@@ -99,6 +99,22 @@ trait InteractWithRepositories
     }
 
     /**
+     * The model query scoped by the repository mainQuery, as show and index requests are.
+     *
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
+    public function scopedModelQuery(?string $repositoryId = null, ?string $uriKey = null): Builder|Relation
+    {
+        $query = $this->modelQuery($repositoryId, $uriKey);
+
+        if (! config('restify.repositories.apply_main_query_to_actions_and_getters', true)) {
+            return $query;
+        }
+
+        return $this->repository($uriKey)::mainQuery($this, $query);
+    }
+
+    /**
      * @param  list<int|string>  $repositoryIds
      */
     public function modelsQuery(array $repositoryIds, ?string $uriKey = null): Builder|Relation

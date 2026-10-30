@@ -51,6 +51,26 @@ class PerformGetterControllerTest extends IntegrationTestCase
             );
     }
 
+    public function test_repository_getter_is_scoped_by_repository_main_query(): void
+    {
+        $posts = $this->mockPosts(1, 2);
+        $hidden = $posts->first();
+        $visible = $posts->last();
+
+        $_SERVER['restify.post.mainQueryCallback'] = fn ($query) => $query->clone()->whereKeyNot($hidden->getKey());
+
+        $this->getJson(PostRepository::getter(PostsShowGetter::class, $hidden->getKey()))
+            ->assertNotFound();
+
+        $this->getJson(PostRepository::getter(PostsShowGetter::class, $visible->getKey()))
+            ->assertOk();
+
+        config()->set('restify.repositories.apply_main_query_to_actions_and_getters', false);
+
+        $this->getJson(PostRepository::getter(PostsShowGetter::class, $hidden->getKey()))
+            ->assertOk();
+    }
+
     public function test_could_perform_repository_invokable_getter(): void
     {
         $this->mockPosts(1, 2);

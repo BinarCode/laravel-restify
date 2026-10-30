@@ -82,6 +82,15 @@ class PostRepository extends Repository
         'is_active',
     ];
 
+    public static function mainQuery(RestifyRequest $request, $query)
+    {
+        if (isset($_SERVER['restify.post.mainQueryCallback']) && is_callable($_SERVER['restify.post.mainQueryCallback'])) {
+            return call_user_func($_SERVER['restify.post.mainQueryCallback'], $query);
+        }
+
+        return $query;
+    }
+
     public static function indexQuery(RestifyRequest $request, $query)
     {
         if (isset($_SERVER['restify.post.indexQueryCallback']) && is_callable($_SERVER['restify.post.indexQueryCallback'])) {
