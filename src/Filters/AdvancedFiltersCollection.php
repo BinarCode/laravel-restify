@@ -33,7 +33,11 @@ class AdvancedFiltersCollection extends Collection
         $allowedFilters = $repository->collectAdvancedFilters($request);
 
         return static::make($filters)
-            ->map(function (array $queryFilter) use ($allowedFilters, $request) {
+            ->map(function (mixed $queryFilter) use ($allowedFilters, $request) {
+                if (! is_array($queryFilter)) {
+                    return null;
+                }
+
                 /** * @var AdvancedFilter $advancedFilter */
                 $advancedFilter = $allowedFilters->first(fn (
                     AdvancedFilter $filter

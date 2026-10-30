@@ -102,10 +102,16 @@ class BelongsTo extends EagerField implements Sortable
         return $this;
     }
 
-    private function extractColumn(string|SearchableFilter $entry): string
+    private function extractColumn(mixed $entry): string
     {
         if (is_string($entry)) {
             return $entry;
+        }
+
+        if (! $entry instanceof SearchableFilter) {
+            throw new InvalidArgumentException(
+                'BelongsTo::searchable() accepts column names or SearchableFilter instances, '.get_debug_type($entry).' given.'
+            );
         }
 
         $column = $entry->column();

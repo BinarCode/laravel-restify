@@ -7,6 +7,8 @@ use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
 
@@ -43,7 +45,10 @@ class ActionRequest extends RestifyRequest
             });
     }
 
-    public function builder(Action $action, int $size): Builder
+    /**
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
+    public function builder(Action $action, int $size): Builder|Relation
     {
         return tap(RepositorySearchService::make()->search($this, $this->repository()),
             function ($query) use ($action) {
