@@ -1024,9 +1024,8 @@ class RepositoryCommand extends GeneratorCommand
     }
 
     /**
-     * `Schema::getTableListing(schemaQualified: false)` does not exist on Laravel 11.
-     * On Laravel 12+, a null schema lists tables from every database or schema for
-     * mysql and pgsql, so the current schema is passed explicitly where supported.
+     * A null schema lists tables from every database or schema for mysql and pgsql,
+     * so the current schema is passed explicitly.
      *
      * @return list<string>
      */
@@ -1035,11 +1034,7 @@ class RepositoryCommand extends GeneratorCommand
         /** @var Builder $schemaBuilder */
         $schemaBuilder = Schema::getFacadeRoot();
 
-        $currentSchema = method_exists($schemaBuilder, 'getCurrentSchemaListing')
-            ? $schemaBuilder->getCurrentSchemaListing()
-            : null;
-
-        $tableNames = array_column($schemaBuilder->getTables($currentSchema), 'name');
+        $tableNames = array_column($schemaBuilder->getTables($schemaBuilder->getCurrentSchemaListing()), 'name');
 
         return array_values(array_unique($tableNames));
     }

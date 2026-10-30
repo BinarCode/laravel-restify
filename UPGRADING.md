@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Laravel 11 is no longer supported
+
+Restify now requires Laravel 12 or 13. Laravel 11 is past its security support, and Composer 2.11
+refuses to install it by default. An app still on Laravel 11 keeps resolving the last 10.4.x
+release; upgrade Laravel to get later fixes.
+
 ### Updates and deletes are scoped by `mainQuery()`
 
 Update (`PUT`), patch (`PATCH`), delete, bulk update, bulk delete, field delete
