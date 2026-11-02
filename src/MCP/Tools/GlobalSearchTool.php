@@ -3,7 +3,7 @@
 namespace Binaryk\LaravelRestify\MCP\Tools;
 
 use Binaryk\LaravelRestify\Filters\SearchablesCollection;
-use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpGlobalSearchRequest;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Services\Search\GlobalSearch;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
@@ -27,7 +27,7 @@ class GlobalSearchTool extends Tool
 
     public function schema(JsonSchema $schema): array
     {
-        $searchableRepositories = collect(Restify::globallySearchableRepositories(app(McpRequest::class)));
+        $searchableRepositories = collect(Restify::globallySearchableRepositories(app(McpGlobalSearchRequest::class)));
 
         // Build searchable fields documentation across all repositories
         $searchableInfo = $searchableRepositories->map(function ($repo) {
@@ -44,7 +44,7 @@ class GlobalSearchTool extends Tool
 
     public function handle(Request $request): Response
     {
-        $mcpRequest = app(McpRequest::class);
+        $mcpRequest = app(McpGlobalSearchRequest::class);
         $mcpRequest->replace([
             'search' => $request->get('search', ''),
         ]);

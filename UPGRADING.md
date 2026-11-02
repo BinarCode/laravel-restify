@@ -8,6 +8,15 @@ Restify now requires Laravel 12 or 13. Laravel 11 is past its security support, 
 refuses to install it by default. An app still on Laravel 11 keeps resolving the last 10.4.x
 release; upgrade Laravel to get later fixes.
 
+### Global search applies the `show` policy and `indexQuery()`
+
+`GET /search` and the MCP `global-search` tool now leave out every matched model the user is not
+allowed to `show`, the same way the index does. A policy without a `show` method therefore drops all
+of that repository's search results; add `show` or set `$globallySearchable = false`.
+
+The MCP `global-search` tool now also runs the repository `indexQuery()`, as `GET /search` already
+did, so rows your `indexQuery()` hides no longer appear in MCP search results.
+
 ### Updates and deletes are scoped by `mainQuery()`
 
 Update (`PUT`), patch (`PATCH`), delete, bulk update, bulk delete, field delete

@@ -9,8 +9,12 @@ class PostPolicy
         return $_SERVER['restify.post.allowRestify'] ?? true;
     }
 
-    public function show(): bool
+    public function show($user = null, $post = null): bool
     {
+        if (isset($_SERVER['restify.post.show.callback']) && $post) {
+            return call_user_func($_SERVER['restify.post.show.callback'], $user, $post);
+        }
+
         return $_SERVER['restify.post.show'] ?? true;
     }
 
