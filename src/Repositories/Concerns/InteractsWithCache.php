@@ -70,6 +70,10 @@ trait InteractsWithCache
             'index',
         ];
 
+        if ($request->isViaRepository()) {
+            $keyParts[] = 'parent_'.$request->route('parentRepository').'_'.$request->route('parentRepositoryId');
+        }
+
         $pagination = $request->pagination();
 
         $relatablePerPage = $request->input('relatablePerPage');

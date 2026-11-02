@@ -39,6 +39,36 @@ The `detach{Relation}` policy method now receives the parent model. It used to r
 instance of the model, so a check on the parent's attributes there denied every detach. If your policy
 worked around that, the workaround can go.
 
+### Nested routes authorize the parent
+
+The nested routes (`GET`, `POST`, `PUT` and `DELETE` on `/{parent}/{parentId}/{relation}[/{id}]`) now load the
+parent by its route key (`getRouteKeyName()`, as every other lookup does) through its repository `mainQuery()`, and
+authorize it before the child is touched:
+
+- A parent your `mainQuery()` hides, or one that does not exist, answers 404. A missing parent used to fail
+  with a server error, and a hidden one listed, showed and accepted children.
+- Every nested route needs the parent policy `show` (403 otherwise).
+- Creating, updating or deleting a child through the parent also needs the parent policy `update`, since it
+  changes what the parent holds. Reading children needs `show` only.
+
+These checks run before the child is validated or authorized, so its own policy and rules are unchanged. They also
+run on a cached index, and the index cache key now includes the parent, so `/users/1/posts` and `/users/2/posts` no
+longer share a cached list. The `restify.repositories.apply_main_query_to_writes` key turns off the `mainQuery()` part
+for nested writes only; nested reads always apply it, as show does, and the policy checks always run.
+
+Creating a child through its parent (`POST /{parent}/{parentId}/{relation}`) also changed:
+
+- For a `HasMany`, `HasOne`, `MorphMany` or `MorphOne` relation, the parent key (and the morph type) is put into the
+  request before the child is validated, so the child's rules and policy see it. It used to be set only when the
+  child was saved, after validation. A payload that names a different parent for that key now answers 422 instead
+  of being overwritten silently. A null value counts as not sent, an integer key matches however it is spelled
+  (`"05"` for `5`), and the morph type may be sent as the morph alias or as the class it maps to; the alias is stored.
+- For a `HasOne` or `MorphOne` relation, a parent that already has that child answers 409 instead of getting a
+  second row.
+- A `BelongsToMany` or `MorphToMany` child can no longer be created this way (400). It used to create the related
+  model and attach it to the parent with no attach policy or pivot fields; use the attach endpoint instead. Any other
+  relation type failed with a server error and now answers 400 too.
+
 ### Show actions and show getters are scoped by `mainQuery()`
 
 A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters`) now loads its model through the repository `mainQuery()` before the action or getter `indexQuery()`, the same way show, index and bulk actions already did. This also covers the MCP action and getter tools. A record your `mainQuery()` hides now answers 404 instead of running the action or getter on it.
