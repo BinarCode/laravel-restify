@@ -9,6 +9,8 @@ use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\ResolvesRelatedModels;
 use Closure;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use InvalidArgumentException;
@@ -128,15 +130,13 @@ class RestifyRequest extends FormRequest
 
     public function relatedEagerField(): EagerField
     {
+        $parentModel = $this->relatedParentModel();
+
         $parentRepository = $this->repository(
             $this->route('parentRepository')
         );
 
-        $parentRepository->withResource(
-            $parentRepository::newModel()->newQuery()->whereKey(
-                $this->route('parentRepositoryId')
-            )->first()
-        );
+        $parentRepository->withResource($parentModel);
 
         /** * @var EagerField $eagerField */
         $eagerField = $parentRepository::collectRelated()
@@ -150,6 +150,35 @@ class RestifyRequest extends FormRequest
         $eagerField->setParentRepository($parentRepository);
 
         return $eagerField;
+    }
+
+    /**
+     * The parent of a nested route, scoped by its repository mainQuery like other writes, shown only when its
+     * policy allows `show`, and changed through a child only when it also allows `update`.
+     *
+     * @throws AuthorizationException
+     */
+    public function relatedParentModel(): Model
+    {
+        return once(function (): Model {
+            $parentRepository = $this->repository($this->route('parentRepository'));
+
+            $query = $parentRepository::newModel()->newQuery()->whereKey($this->route('parentRepositoryId'));
+
+            if (config('restify.repositories.apply_main_query_to_writes', true)) {
+                $query = $parentRepository::mainQuery($this, $query);
+            }
+
+            $parentRepository->withResource($model = $query->firstOrFail());
+
+            $parentRepository->authorizeToShow($this);
+
+            if (! $this->isMethodSafe()) {
+                $parentRepository->authorizeToUpdate($this);
+            }
+
+            return $model;
+        });
     }
 
     public function pagination(): PaginationDataObject

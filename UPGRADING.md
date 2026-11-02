@@ -30,6 +30,20 @@ The `detach{Relation}` policy method now receives the parent model. It used to r
 instance of the model, so a check on the parent's attributes there denied every detach. If your policy
 worked around that, the workaround can go.
 
+### Nested routes authorize the parent
+
+The nested routes (`GET`, `POST`, `PUT` and `DELETE` on `/{parent}/{parentId}/{relation}[/{id}]`) now load the
+parent through its repository `mainQuery()` and authorize it before the child is touched:
+
+- A parent your `mainQuery()` hides, or one that does not exist, answers 404. A missing parent used to fail
+  with a server error, and a hidden one listed, showed and accepted children.
+- Every nested route needs the parent policy `show` (403 otherwise).
+- Creating, updating or deleting a child through the parent also needs the parent policy `update`, since it
+  changes what the parent holds. Reading children needs `show` only.
+
+These checks run before the child is validated or authorized, so its own policy and rules are unchanged. The
+`restify.repositories.apply_main_query_to_writes` key turns off the `mainQuery()` part; the policy checks stay.
+
 ### Show actions and show getters are scoped by `mainQuery()`
 
 A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters`) now loads its model through the repository `mainQuery()` before the action or getter `indexQuery()`, the same way show, index and bulk actions already did. This also covers the MCP action and getter tools. A record your `mainQuery()` hides now answers 404 instead of running the action or getter on it.
