@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\Tests\MCP;
 use Binaryk\LaravelRestify\MCP\Requests\McpActionRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpDestroyRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpGetterRequest;
+use Binaryk\LaravelRestify\MCP\Requests\McpGlobalSearchRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpShowRequest;
@@ -132,15 +133,23 @@ class McpRequestTest extends IntegrationTestCase
         $this->assertFalse($request->isIndexRequest());
     }
 
-    public function test_mcp_request_global_request_always_false(): void
+    public function test_mcp_request_detects_global_search_tool(): void
     {
-        $request = new McpRequest([
+        $request = new McpGlobalSearchRequest([
             'params' => [
-                'name' => 'global-search-tool',
+                'name' => 'global-search',
             ],
         ]);
 
-        $this->assertFalse($request->isGlobalRequest());
+        $this->assertTrue($request->isGlobalRequest());
+        $this->assertFalse($request->isIndexRequest());
+        $this->assertFalse($request->isShowRequest());
+    }
+
+    public function test_other_mcp_requests_are_not_global(): void
+    {
+        $this->assertFalse((new McpRequest([]))->isGlobalRequest());
+        $this->assertFalse((new McpIndexRequest([]))->isGlobalRequest());
     }
 
     public function test_mcp_request_with_no_tool_name(): void

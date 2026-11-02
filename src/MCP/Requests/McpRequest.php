@@ -61,7 +61,6 @@ class McpRequest extends RestifyRequest implements McpRequestable
 
     public function isGlobalRequest(): bool
     {
-        // MCP doesn't handle global search requests
-        return false;
+        return $this instanceof McpGlobalSearchRequest;
     }
 }
