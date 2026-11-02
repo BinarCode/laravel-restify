@@ -15,6 +15,10 @@ use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\Company;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\EnumKeyedLabel;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\EnumKeyedLabelRepository;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabel;
+use Binaryk\LaravelRestify\Tests\Fixtures\Label\StringableKeyedLabelRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\Role\Role;
@@ -22,9 +26,12 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany as HasManyRelation;
 use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Validator;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 
 class RelatableRoutesAuthorizationTest extends IntegrationTestCase
@@ -33,7 +40,18 @@ class RelatableRoutesAuthorizationTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        Restify::repositories([PostActionLogRepository::class, SinglePostRepository::class, UserByEmailRepository::class]);
+        Restify::repositories([
+            PostActionLogRepository::class,
+            SinglePostRepository::class,
+            UserByEmailRepository::class,
+            LabelNoteRepository::class,
+            EnumKeyedNotedLabelRepository::class,
+            StringableKeyedNotedLabelRepository::class,
+        ]);
+
+        Gate::policy(EnumKeyedNotedLabel::class, NotedLabelPolicy::class);
+        Gate::policy(StringableKeyedNotedLabel::class, NotedLabelPolicy::class);
+        Gate::policy(LabelNote::class, NotedLabelPolicy::class);
 
         UserRepository::$related = [
             'posts' => HasMany::make('posts', PostRepository::class),
@@ -319,6 +337,61 @@ class RelatableRoutesAuthorizationTest extends IntegrationTestCase
     }
 
     /**
+     * @return array<string, array{class-string<Repository>}>
+     */
+    public static function objectKeyedParents(): array
+    {
+        return [
+            'enum cast key' => [EnumKeyedNotedLabelRepository::class],
+            'stringable cast key' => [StringableKeyedNotedLabelRepository::class],
+        ];
+    }
+
+    /**
+     * @param  class-string<Repository>  $parentRepository
+     */
+    #[Test]
+    #[DataProvider('objectKeyedParents')]
+    public function an_object_cast_parent_key_accepts_its_scalar_in_the_payload(string $parentRepository): void
+    {
+        $parentRepository::newModel()->newQuery()->create(['code' => 'gold']);
+
+        $this->postJson($parentRepository::route('gold/notes'), ['body' => 'Sent', 'label_code' => 'gold'])->assertCreated();
+
+        $this->assertSame(['gold'], LabelNote::query()->pluck('label_code')->all());
+    }
+
+    /**
+     * @param  class-string<Repository>  $parentRepository
+     */
+    #[Test]
+    #[DataProvider('objectKeyedParents')]
+    public function an_object_cast_parent_key_is_merged_as_its_scalar(string $parentRepository): void
+    {
+        $parentRepository::newModel()->newQuery()->create(['code' => 'gold']);
+
+        $this->postJson($parentRepository::route('gold/notes'), ['body' => 'Merged'])->assertCreated();
+
+        $this->assertSame(['gold'], LabelNote::query()->pluck('label_code')->all());
+    }
+
+    /**
+     * @param  class-string<Repository>  $parentRepository
+     */
+    #[Test]
+    #[DataProvider('objectKeyedParents')]
+    public function an_object_cast_parent_key_rejects_another_value(string $parentRepository): void
+    {
+        $parentRepository::newModel()->newQuery()->create(['code' => 'gold']);
+
+        $this->postJson($parentRepository::route('gold/notes'), ['body' => 'Other', 'label_code' => 'silver'])
+            ->assertUnprocessable()
+            ->assertJsonValidationErrors('label_code');
+
+        $this->assertSame(0, LabelNote::query()->count());
+    }
+
+    /**
      * The callback returns a clone, so a caller that ignores the builder mainQuery returns still sees both.
      *
      * @return array{User, User}
@@ -398,5 +471,94 @@ class UserByEmailRepository extends Repository
         return [
             field('name'),
         ];
+    }
+}
+
+class LabelNote extends Model
+{
+    protected $table = 'label_notes';
+
+    protected $guarded = [];
+}
+
+class LabelNoteRepository extends Repository
+{
+    public static $model = LabelNote::class;
+
+    public static string $uriKey = 'notes';
+
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('body')->storingRules('required'),
+            field('label_code')->storingRules('required', 'string'),
+        ];
+    }
+}
+
+class EnumKeyedNotedLabel extends EnumKeyedLabel
+{
+    public function notes(): HasManyRelation
+    {
+        return $this->hasMany(LabelNote::class, 'label_code', 'code');
+    }
+}
+
+class EnumKeyedNotedLabelRepository extends EnumKeyedLabelRepository
+{
+    public static string $model = EnumKeyedNotedLabel::class;
+
+    public static string $uriKey = 'noted-tiers';
+
+    public static function include(): array
+    {
+        return [
+            HasMany::make('notes', LabelNoteRepository::class),
+        ];
+    }
+}
+
+class StringableKeyedNotedLabel extends StringableKeyedLabel
+{
+    public function notes(): HasManyRelation
+    {
+        return $this->hasMany(LabelNote::class, 'label_code', 'code');
+    }
+}
+
+class StringableKeyedNotedLabelRepository extends StringableKeyedLabelRepository
+{
+    public static string $model = StringableKeyedNotedLabel::class;
+
+    public static string $uriKey = 'noted-badges';
+
+    public static function include(): array
+    {
+        return [
+            HasMany::make('notes', LabelNoteRepository::class),
+        ];
+    }
+}
+
+class NotedLabelPolicy
+{
+    public function allowRestify(): bool
+    {
+        return true;
+    }
+
+    public function show(): bool
+    {
+        return true;
+    }
+
+    public function store(): bool
+    {
+        return true;
+    }
+
+    public function update(): bool
+    {
+        return true;
     }
 }

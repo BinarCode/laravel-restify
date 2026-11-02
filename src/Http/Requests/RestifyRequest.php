@@ -226,7 +226,7 @@ class RestifyRequest extends FormRequest
             throw ValidationException::withMessages($conflicts);
         }
 
-        $this->merge([$foreignKey => $relation->getParentKey()]);
+        $this->merge([$foreignKey => $this->relatedParentKey($relation)]);
 
         if ($relation instanceof MorphOneOrMany) {
             $this->merge([$relation->getMorphType() => $relation->getMorphClass()]);
@@ -240,9 +240,9 @@ class RestifyRequest extends FormRequest
      */
     private function matchesParentKey(HasOneOrMany $relation, mixed $input): bool
     {
-        $parentKey = $relation->getParentKey();
+        $parentKey = $this->relatedParentKey($relation);
 
-        if (! is_int($input) && ! is_string($input) || ! is_int($parentKey) && ! is_string($parentKey)) {
+        if (! is_int($input) && ! is_string($input) || $parentKey === null) {
             return false;
         }
 
@@ -251,6 +251,18 @@ class RestifyRequest extends FormRequest
         }
 
         return (string) $input === (string) $parentKey;
+    }
+
+    /**
+     * The parent key as a scalar, so an enum or Stringable cast key compares and merges as its value.
+     *
+     * @param  HasOneOrMany<Model, Model, mixed>  $relation
+     */
+    private function relatedParentKey(HasOneOrMany $relation): int|string|null
+    {
+        $parentKey = $relation->getParentKey();
+
+        return $parentKey === null ? null : $this->canonicalRelatedKey($parentKey);
     }
 
     /**
