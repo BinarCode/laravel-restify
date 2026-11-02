@@ -189,8 +189,12 @@ From here, each policy corresponds to an exposed Restify route.
 In addition, the `show` method, corresponds to the following routes:
 
 ```http request
-POST: /api/restify/posts // it will filter out the entities you don't have access to from the pagination
+GET: /api/restify/posts // drops the entities you don't have access to from the current page
 ```
+
+<alert type="warning">
+On index requests the `show` policy runs on each row of the current page, after the query is paginated. Search, match filters and the pagination meta and links (`total`, `last_page`, `from`, `to`, `next`) are computed over every row the query returns, including rows the `show` policy hides. Restrict which rows a user may list in `indexQuery`, and keep the `show` policy as the per record check.
+</alert>
 
 and:
 

@@ -17,7 +17,7 @@ trait PerformsQueries
     /**
      * Customize the query for index and global search requests.
      *
-     * Restrict here (or in mainQuery) the rows a user may not list. The show policy is only checked on the
+     * Restrict here the rows a user may not list (mainQuery also works, but scopes show, update and delete too). The show policy is only checked on the
      * paginated rows, so the pagination meta, links and filter results still account for rows it hides.
      */
     public static function indexQuery(RestifyRequest $request, Builder|Relation $query)

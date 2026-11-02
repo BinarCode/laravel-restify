@@ -56,7 +56,7 @@ trait AuthorizableModels
      *
      * On index requests this runs on the paginated rows only, after search, match filters and the pagination
      * meta and links were computed in the database. It is not a confidentiality boundary for the index: restrict
-     * rows a user may not list in indexQuery or mainQuery.
+     * rows a user may not list in indexQuery.
      */
     public function authorizedToShow(Request $request): bool
     {
