@@ -44,6 +44,16 @@ parent through its repository `mainQuery()` and authorize it before the child is
 These checks run before the child is validated or authorized, so its own policy and rules are unchanged. The
 `restify.repositories.apply_main_query_to_writes` key turns off the `mainQuery()` part; the policy checks stay.
 
+Creating a child through its parent (`POST /{parent}/{parentId}/{relation}`) also changed:
+
+- For a `HasMany`, `HasOne`, `MorphMany` or `MorphOne` relation, the parent key (and the morph type) is put into the
+  request before the child is validated, so the child's rules and policy see it. It used to be set only when the
+  child was saved, after validation. A payload that names a different parent for that key now answers 422 instead
+  of being overwritten silently.
+- A `BelongsToMany` or `MorphToMany` child can no longer be created this way (400). It used to create the related
+  model and attach it to the parent with no attach policy or pivot fields; use the attach endpoint instead. Any other
+  relation type failed with a server error and now answers 400 too.
+
 ### Show actions and show getters are scoped by `mainQuery()`
 
 A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters`) now loads its model through the repository `mainQuery()` before the action or getter `indexQuery()`, the same way show, index and bulk actions already did. This also covers the MCP action and getter tools. A record your `mainQuery()` hides now answers 404 instead of running the action or getter on it.

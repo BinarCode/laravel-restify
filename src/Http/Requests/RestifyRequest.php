@@ -11,8 +11,11 @@ use Binaryk\LaravelRestify\Http\Requests\Concerns\ResolvesRelatedModels;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\Relations\MorphOneOrMany;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Validation\ValidationException;
 use InvalidArgumentException;
 use JsonException;
 use Symfony\Component\HttpFoundation\FileBag;
@@ -179,6 +182,43 @@ class RestifyRequest extends FormRequest
 
             return $model;
         });
+    }
+
+    /**
+     * Put the parent key (and morph type) of a nested store into the input, so the child's rules and policy see the
+     * parent it is created on. Only has-one and has-many relations create through the parent; a many-to-many child
+     * goes through attach.
+     *
+     * @throws ValidationException when the payload names another parent.
+     */
+    public function mergeRelatedParentKeys(): void
+    {
+        $relation = $this->viaQuery();
+
+        if (! $relation instanceof HasOneOrMany) {
+            abort(JsonResponse::HTTP_BAD_REQUEST, 'Creating ['.$this->route('repository').'] through ['.$this->route('parentRepository').'] is only supported for has-one and has-many relations. Use the attach endpoint for many-to-many relations.');
+        }
+
+        $keys = [$relation->getForeignKeyName() => $relation->getParentKey()];
+
+        if ($relation instanceof MorphOneOrMany) {
+            $keys[$relation->getMorphType()] = $relation->getMorphClass();
+        }
+
+        $conflicts = collect($keys)
+            ->filter(fn (mixed $value, string $key): bool => $this->has($key) && ! $this->matchesParentKey($this->input($key), $value))
+            ->map(fn (mixed $value, string $key): string => "The {$key} must match the parent in the URL.");
+
+        if ($conflicts->isNotEmpty()) {
+            throw ValidationException::withMessages($conflicts->all());
+        }
+
+        $this->merge($keys);
+    }
+
+    private function matchesParentKey(mixed $input, mixed $parentKey): bool
+    {
+        return is_scalar($input) && is_scalar($parentKey) && (string) $input === (string) $parentKey;
     }
 
     public function pagination(): PaginationDataObject

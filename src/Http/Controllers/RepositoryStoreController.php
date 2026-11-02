@@ -10,7 +10,7 @@ class RepositoryStoreController extends RepositoryController
     public function __invoke(RepositoryStoreRequest $request): Response
     {
         if ($request->isViaRepository()) {
-            $request->relatedParentModel();
+            $request->mergeRelatedParentKeys();
         }
 
         return $request->repository()
