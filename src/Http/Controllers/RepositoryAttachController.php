@@ -15,8 +15,8 @@ class RepositoryAttachController extends RepositoryController
 
     public function __invoke(RepositoryAttachRequest $request)
     {
-        $model = $request->findModelOrFail();
-        $repository = $request->repository();
+        $model = $request->findWritableModelOrFail();
+        $repository = $request->repositoryWith($model);
 
         $this->authorizeBelongsToMany($request);
 
@@ -27,7 +27,7 @@ class RepositoryAttachController extends RepositoryController
             return call_user_func($method, $request, $repository, $model);
         }
 
-        $request->repositoryWith($model)->allowToAttach($request, $request->attachRelatedModels());
+        $repository->allowToAttach($request, $request->attachRelatedModels());
 
         /** @var list<int|string> $relatedRepositoryIds */
         $relatedRepositoryIds = Arr::wrap($request->input($request->relatedRepositoryKey()));

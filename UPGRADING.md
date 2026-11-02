@@ -19,6 +19,17 @@ If your `mainQuery()` hides records that users still edit, such as archived ones
 `PATCH`, either move that filter to `indexQuery()` or set `restify.repositories.apply_main_query_to_writes`
 to `false`.
 
+### Attach, detach and sync are scoped by `mainQuery()`
+
+Attach (`POST /{repository}/{id}/attach/{relation}`), detach and sync now load the parent model through
+the repository `mainQuery()`, like updates and deletes. A parent your `mainQuery()` hides now answers 404
+instead of having its pivot rows changed whenever the policy allowed it. The same
+`restify.repositories.apply_main_query_to_writes` key turns this off.
+
+The `detach{Relation}` policy method now receives the parent model. It used to receive an empty
+instance of the model, so a check on the parent's attributes there denied every detach. If your policy
+worked around that, the workaround can go.
+
 ### Show actions and show getters are scoped by `mainQuery()`
 
 A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters`) now loads its model through the repository `mainQuery()` before the action or getter `indexQuery()`, the same way show, index and bulk actions already did. This also covers the MCP action and getter tools. A record your `mainQuery()` hides now answers 404 instead of running the action or getter on it.

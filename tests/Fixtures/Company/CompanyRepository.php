@@ -22,6 +22,15 @@ class CompanyRepository extends Repository
 {
     public static $model = Company::class;
 
+    public static function mainQuery(RestifyRequest $request, $query)
+    {
+        if (isset($_SERVER['restify.company.mainQueryCallback']) && is_callable($_SERVER['restify.company.mainQueryCallback'])) {
+            return call_user_func($_SERVER['restify.company.mainQueryCallback'], $query);
+        }
+
+        return $query;
+    }
+
     public static function include(): array
     {
         return [

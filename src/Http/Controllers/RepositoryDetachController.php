@@ -15,8 +15,8 @@ class RepositoryDetachController extends RepositoryController
 
     public function __invoke(RepositoryDetachRequest $request)
     {
-        $model = $request->findModelOrFail();
-        $repository = $request->repository();
+        $model = $request->findWritableModelOrFail();
+        $repository = $request->repositoryWith($model);
 
         $this->authorizeBelongsToMany($request);
 

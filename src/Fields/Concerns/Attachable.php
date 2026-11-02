@@ -97,7 +97,7 @@ trait Attachable
         foreach ($relatedRepositoryIds as $relatedRepositoryId) {
             $pivot = $this->initializePivot(
                 $request,
-                $request->findModelOrFail()->{$this->relation}(),
+                $request->findWritableModelOrFail()->{$this->relation}(),
                 $relatedRepositoryId
             );
 
@@ -120,7 +120,7 @@ trait Attachable
         foreach ($relatedRepositoryIds as $relatedRepositoryId) {
             $pivot = $this->initializePivot(
                 $request,
-                $request->findModelOrFail()->{$this->relation}(),
+                $request->findWritableModelOrFail()->{$this->relation}(),
                 $relatedRepositoryId
             );
 
@@ -199,7 +199,7 @@ trait Attachable
         $parentKeyName = $relationship->getParentKeyName();
         $relatedKeyName = $relationship->getRelatedKeyName();
 
-        $parentKey = $request->findModelOrFail()->{$parentKeyName};
+        $parentKey = $request->findWritableModelOrFail()->{$parentKeyName};
 
         $relatedModel = $request->relatedModelFor($relatedKey);
 
