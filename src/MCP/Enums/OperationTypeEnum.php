@@ -54,6 +54,20 @@ enum OperationTypeEnum
         };
     }
 
+    /**
+     * Resolve a case by its exact name, or null when no case matches.
+     */
+    public static function tryFromName(string $name): ?self
+    {
+        foreach (self::cases() as $case) {
+            if ($case->name === $name) {
+                return $case;
+            }
+        }
+
+        return null;
+    }
+
     public static function fromTool(Tool $tool): self
     {
         return match (true) {
