@@ -8,11 +8,15 @@ use Binaryk\LaravelRestify\Filters\RelatedDto;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\DetermineRequestType;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\InteractWithRepositories;
 use Binaryk\LaravelRestify\Http\Requests\Concerns\ResolvesRelatedModels;
+use Binaryk\LaravelRestify\Repositories\Repository;
 use Closure;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneOrMany;
+use Illuminate\Database\Eloquent\Relations\MorphOne;
 use Illuminate\Database\Eloquent\Relations\MorphOneOrMany;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Validation\ValidationException;
@@ -133,13 +137,7 @@ class RestifyRequest extends FormRequest
 
     public function relatedEagerField(): EagerField
     {
-        $parentModel = $this->relatedParentModel();
-
-        $parentRepository = $this->repository(
-            $this->route('parentRepository')
-        );
-
-        $parentRepository->withResource($parentModel);
+        $parentRepository = $this->relatedParentRepository();
 
         /** * @var EagerField $eagerField */
         $eagerField = $parentRepository::collectRelated()
@@ -156,23 +154,34 @@ class RestifyRequest extends FormRequest
     }
 
     /**
-     * The parent of a nested route, scoped by its repository mainQuery like other writes, shown only when its
-     * policy allows `show`, and changed through a child only when it also allows `update`.
+     * The parent of a nested route, found by its route key and scoped by its repository mainQuery (writes honour
+     * `apply_main_query_to_writes`), shown only when its policy allows `show`, and changed through a child only when
+     * it also allows `update`.
      *
      * @throws AuthorizationException
      */
     public function relatedParentModel(): Model
     {
-        return once(function (): Model {
-            $parentRepository = $this->repository($this->route('parentRepository'));
+        return $this->relatedParentRepository()->resource;
+    }
 
-            $query = $parentRepository::newModel()->newQuery()->whereKey($this->route('parentRepositoryId'));
+    /**
+     * @throws AuthorizationException
+     */
+    private function relatedParentRepository(): Repository
+    {
+        return once(function (): Repository {
+            $uriKey = $this->route('parentRepository');
+            $parentRepository = $this->repository($uriKey);
+            $model = $parentRepository::newModel();
 
-            if (config('restify.repositories.apply_main_query_to_writes', true)) {
-                $query = $parentRepository::mainQuery($this, $query);
-            }
+            $query = $model->newQuery()->where($model->getRouteKeyName(), $this->route('parentRepositoryId'));
 
-            $parentRepository->withResource($model = $query->firstOrFail());
+            $query = $this->isMethodSafe()
+                ? $parentRepository::mainQuery($this, $query)
+                : $this->scopeForWrite($query, $uriKey);
+
+            $parentRepository->withResource($query->firstOrFail());
 
             $parentRepository->authorizeToShow($this);
 
@@ -180,7 +189,7 @@ class RestifyRequest extends FormRequest
                 $parentRepository->authorizeToUpdate($this);
             }
 
-            return $model;
+            return $parentRepository;
         });
     }
 
@@ -199,26 +208,65 @@ class RestifyRequest extends FormRequest
             abort(JsonResponse::HTTP_BAD_REQUEST, 'Creating ['.$this->route('repository').'] through ['.$this->route('parentRepository').'] is only supported for has-one and has-many relations. Use the attach endpoint for many-to-many relations.');
         }
 
-        $keys = [$relation->getForeignKeyName() => $relation->getParentKey()];
+        if (($relation instanceof HasOne || $relation instanceof MorphOne) && $relation->exists()) {
+            abort(JsonResponse::HTTP_CONFLICT, 'The ['.$this->route('parentRepository').'] already has a ['.$this->route('repository').']. Update it instead.');
+        }
+
+        $conflicts = [];
+
+        if ($this->filled($foreignKey = $relation->getForeignKeyName()) && ! $this->matchesParentKey($relation, $this->input($foreignKey))) {
+            $conflicts[$foreignKey] = "The {$foreignKey} must match the parent in the URL.";
+        }
+
+        if ($relation instanceof MorphOneOrMany && $this->filled($morphType = $relation->getMorphType()) && ! $this->matchesMorphClass($relation, $this->input($morphType))) {
+            $conflicts[$morphType] = "The {$morphType} must match the parent in the URL.";
+        }
+
+        if ($conflicts !== []) {
+            throw ValidationException::withMessages($conflicts);
+        }
+
+        $this->merge([$foreignKey => $relation->getParentKey()]);
 
         if ($relation instanceof MorphOneOrMany) {
-            $keys[$relation->getMorphType()] = $relation->getMorphClass();
+            $this->merge([$relation->getMorphType() => $relation->getMorphClass()]);
         }
-
-        $conflicts = collect($keys)
-            ->filter(fn (mixed $value, string $key): bool => $this->has($key) && ! $this->matchesParentKey($this->input($key), $value))
-            ->map(fn (mixed $value, string $key): string => "The {$key} must match the parent in the URL.");
-
-        if ($conflicts->isNotEmpty()) {
-            throw ValidationException::withMessages($conflicts->all());
-        }
-
-        $this->merge($keys);
     }
 
-    private function matchesParentKey(mixed $input, mixed $parentKey): bool
+    /**
+     * An integer parent key matches however the payload spells it ("05" for 5), as related ids do.
+     *
+     * @param  HasOneOrMany<Model, Model, mixed>  $relation
+     */
+    private function matchesParentKey(HasOneOrMany $relation, mixed $input): bool
     {
-        return is_scalar($input) && is_scalar($parentKey) && (string) $input === (string) $parentKey;
+        $parentKey = $relation->getParentKey();
+
+        if (! is_int($input) && ! is_string($input) || ! is_int($parentKey) && ! is_string($parentKey)) {
+            return false;
+        }
+
+        if ($this->hasIntegerKey($relation->getParent()) && $relation->getLocalKeyName() === $relation->getParent()->getKeyName()) {
+            return $this->canonicalIntegerKey($input) === $this->canonicalIntegerKey($parentKey);
+        }
+
+        return (string) $input === (string) $parentKey;
+    }
+
+    /**
+     * The morph type matches as the morph alias or as the class the alias maps to.
+     *
+     * @param  MorphOneOrMany<Model, Model, mixed>  $relation
+     */
+    private function matchesMorphClass(MorphOneOrMany $relation, mixed $input): bool
+    {
+        if (! is_string($input)) {
+            return false;
+        }
+
+        $morphClass = $relation->getMorphClass();
+
+        return (Relation::getMorphedModel($input) ?? $input) === (Relation::getMorphedModel($morphClass) ?? $morphClass);
     }
 
     public function pagination(): PaginationDataObject

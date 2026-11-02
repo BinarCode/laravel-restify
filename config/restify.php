@@ -281,7 +281,7 @@ return [
 
         /*
         | Scope the model of an update, patch or delete (single, bulk, field delete and the MCP update and delete tools),
-        | and the parent of an attach, detach, sync or nested route (`/{parent}/{parentId}/{relation}`), by the repository mainQuery,
+        | and the parent of an attach, detach, sync or nested write (`/{parent}/{parentId}/{relation}`), by the repository mainQuery,
         | as show and index requests are. Set to `false` to rely on the policy alone, as before.
         */
         'apply_main_query_to_writes' => true,

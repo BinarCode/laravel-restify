@@ -6,6 +6,7 @@ namespace Binaryk\LaravelRestify\Tests\Controllers;
 
 use Binaryk\LaravelRestify\Fields\BelongsToMany;
 use Binaryk\LaravelRestify\Fields\HasMany;
+use Binaryk\LaravelRestify\Fields\HasOne;
 use Binaryk\LaravelRestify\Fields\MorphMany;
 use Binaryk\LaravelRestify\Fields\MorphToMany;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
@@ -21,6 +22,8 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Role\RoleRepository;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\User;
 use Binaryk\LaravelRestify\Tests\Fixtures\User\UserRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Eloquent\Relations\HasMany as HasManyRelation;
+use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Validation\Validator;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -30,10 +33,11 @@ class RelatableRoutesAuthorizationTest extends IntegrationTestCase
     {
         parent::setUp();
 
-        Restify::repositories([PostActionLogRepository::class]);
+        Restify::repositories([PostActionLogRepository::class, SinglePostRepository::class, UserByEmailRepository::class]);
 
         UserRepository::$related = [
             'posts' => HasMany::make('posts', PostRepository::class),
+            'post' => HasOne::make('post', SinglePostRepository::class),
             'companies' => BelongsToMany::make('companies', CompanyRepository::class),
             'roles' => MorphToMany::make('roles', RoleRepository::class),
         ];
@@ -41,6 +45,13 @@ class RelatableRoutesAuthorizationTest extends IntegrationTestCase
         PostRepository::$related = [
             'actionLogs' => MorphMany::make('actionLogs', PostActionLogRepository::class),
         ];
+    }
+
+    protected function tearDown(): void
+    {
+        Relation::morphMap([], false);
+
+        parent::tearDown();
     }
 
     #[Test]
@@ -132,11 +143,118 @@ class RelatableRoutesAuthorizationTest extends IntegrationTestCase
         [$hidden] = $this->hideUser();
 
         $this->postJson(UserRepository::route("{$hidden->id}/posts"), ['title' => 'Created'])->assertCreated();
-        $this->getJson(UserRepository::route("{$hidden->id}/posts"))->assertOk()->assertJsonCount(1, 'data');
+        $this->assertSame(['Created'], $hidden->posts()->pluck('title')->all());
+
+        $this->getJson(UserRepository::route("{$hidden->id}/posts"))->assertNotFound();
 
         $_SERVER['restify.users.show'] = false;
 
-        $this->getJson(UserRepository::route("{$hidden->id}/posts"))->assertForbidden();
+        $this->postJson(UserRepository::route("{$hidden->id}/posts"), ['title' => 'Denied'])->assertForbidden();
+    }
+
+    #[Test]
+    public function the_parent_is_found_by_its_route_key(): void
+    {
+        $user = User::factory()->create(['email' => 'owner@example.com']);
+        Post::factory()->create(['user_id' => $user->id, 'title' => 'Owned']);
+
+        $this->getJson(UserByEmailRepository::route('owner@example.com/posts'))
+            ->assertOk()
+            ->assertJsonPath('data.0.attributes.title', 'Owned');
+
+        $this->getJson(UserByEmailRepository::route("{$user->id}/posts"))->assertNotFound();
+    }
+
+    #[Test]
+    public function a_cached_index_still_checks_the_parent(): void
+    {
+        $this->enableRepositoryCache();
+        config(['cache.default' => 'array']);
+
+        $user = User::factory()->create();
+        Post::factory()->create(['user_id' => $user->id]);
+
+        $this->getJson(UserRepository::route("{$user->id}/posts"))->assertOk()->assertJsonCount(1, 'data');
+
+        $_SERVER['restify.user.mainQueryCallback'] = fn ($query) => $query->clone()->whereKeyNot($user->getKey());
+        $this->getJson(UserRepository::route("{$user->id}/posts"))->assertNotFound();
+
+        $_SERVER['restify.user.mainQueryCallback'] = null;
+        $_SERVER['restify.users.show'] = false;
+        $this->getJson(UserRepository::route("{$user->id}/posts"))->assertForbidden();
+    }
+
+    #[Test]
+    public function each_parent_gets_its_own_cached_index(): void
+    {
+        $this->enableRepositoryCache();
+        config(['cache.default' => 'array']);
+
+        $first = User::factory()->create();
+        $second = User::factory()->create();
+        Post::factory()->create(['user_id' => $first->id, 'title' => 'First']);
+        Post::factory()->create(['user_id' => $second->id, 'title' => 'Second']);
+
+        $this->getJson(UserRepository::route("{$first->id}/posts"))->assertOk()->assertJsonPath('data.0.attributes.title', 'First');
+        $this->getJson(UserRepository::route("{$second->id}/posts"))->assertOk()->assertJsonPath('data.0.attributes.title', 'Second');
+    }
+
+    #[Test]
+    public function a_child_through_the_wrong_parent_is_not_found(): void
+    {
+        $owner = User::factory()->create();
+        $other = User::factory()->create();
+        $post = Post::factory()->create(['user_id' => $owner->id, 'title' => 'Kept']);
+
+        $this->putJson(UserRepository::route("{$other->id}/posts/{$post->id}"), ['title' => 'Changed'])->assertNotFound();
+        $this->deleteJson(UserRepository::route("{$other->id}/posts/{$post->id}"))->assertNotFound();
+
+        $this->assertSame('Kept', $post->fresh()->title);
+    }
+
+    #[Test]
+    public function a_second_has_one_child_answers_409(): void
+    {
+        $user = User::factory()->create();
+
+        $this->postJson(UserRepository::route("{$user->id}/post"), ['title' => 'First'])->assertCreated();
+        $this->postJson(UserRepository::route("{$user->id}/post"), ['title' => 'Second'])->assertConflict();
+
+        $this->assertSame(['First'], $user->posts()->pluck('title')->all());
+    }
+
+    #[Test]
+    public function a_null_parent_key_counts_as_not_sent(): void
+    {
+        $user = User::factory()->create();
+
+        $this->postJson(UserRepository::route("{$user->id}/posts"), ['title' => 'Created', 'user_id' => null])->assertCreated();
+
+        $this->assertSame(['Created'], $user->posts()->pluck('title')->all());
+    }
+
+    #[Test]
+    public function a_numeric_parent_key_matches_however_it_is_spelled(): void
+    {
+        $user = User::factory()->create();
+
+        $this->postJson(UserRepository::route("{$user->id}/posts"), ['title' => 'Created', 'user_id' => "0{$user->id}"])->assertCreated();
+
+        $this->assertSame(['Created'], $user->posts()->pluck('title')->all());
+    }
+
+    #[Test]
+    public function the_morph_type_is_accepted_as_alias_or_class_and_stored_as_the_alias(): void
+    {
+        Relation::morphMap(['post' => Post::class]);
+        $post = Post::factory()->create();
+
+        $this->postJson(PostRepository::route("{$post->id}/actionLogs"), ['name' => 'ByClass', 'batch_id' => 'batch', 'actionable_type' => Post::class])->assertCreated();
+        $this->postJson(PostRepository::route("{$post->id}/actionLogs"), ['name' => 'ByAlias', 'batch_id' => 'batch', 'actionable_type' => 'post'])->assertCreated();
+        $this->postJson(PostRepository::route("{$post->id}/actionLogs"), ['name' => 'Other', 'batch_id' => 'batch', 'actionable_type' => User::class])->assertUnprocessable();
+
+        $this->assertSame(['post', 'post'], ActionLog::query()->whereIn('name', ['ByClass', 'ByAlias'])->pluck('actionable_type')->all());
+        $this->assertSame(0, ActionLog::query()->where('name', 'Other')->count());
     }
 
     #[Test]
@@ -229,6 +347,56 @@ class PostActionLogRepository extends Repository
             field('batch_id')->storingRules('required'),
             field('actionable_type')->storingRules('required'),
             field('actionable_id')->storingRules('required'),
+        ];
+    }
+}
+
+class SinglePostRepository extends Repository
+{
+    public static $model = Post::class;
+
+    public static string $uriKey = 'post';
+
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('title'),
+        ];
+    }
+}
+
+class UserByEmail extends User
+{
+    protected $table = 'users';
+
+    public function getRouteKeyName(): string
+    {
+        return 'email';
+    }
+
+    public function posts(): HasManyRelation
+    {
+        return $this->hasMany(Post::class, 'user_id');
+    }
+}
+
+class UserByEmailRepository extends Repository
+{
+    public static $model = UserByEmail::class;
+
+    public static string $uriKey = 'users-by-email';
+
+    public static function include(): array
+    {
+        return [
+            HasMany::make('posts', PostRepository::class),
+        ];
+    }
+
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            field('name'),
         ];
     }
 }

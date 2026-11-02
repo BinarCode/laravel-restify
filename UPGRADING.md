@@ -33,7 +33,8 @@ worked around that, the workaround can go.
 ### Nested routes authorize the parent
 
 The nested routes (`GET`, `POST`, `PUT` and `DELETE` on `/{parent}/{parentId}/{relation}[/{id}]`) now load the
-parent through its repository `mainQuery()` and authorize it before the child is touched:
+parent by its route key (`getRouteKeyName()`, as every other lookup does) through its repository `mainQuery()`, and
+authorize it before the child is touched:
 
 - A parent your `mainQuery()` hides, or one that does not exist, answers 404. A missing parent used to fail
   with a server error, and a hidden one listed, showed and accepted children.
@@ -41,15 +42,20 @@ parent through its repository `mainQuery()` and authorize it before the child is
 - Creating, updating or deleting a child through the parent also needs the parent policy `update`, since it
   changes what the parent holds. Reading children needs `show` only.
 
-These checks run before the child is validated or authorized, so its own policy and rules are unchanged. The
-`restify.repositories.apply_main_query_to_writes` key turns off the `mainQuery()` part; the policy checks stay.
+These checks run before the child is validated or authorized, so its own policy and rules are unchanged. They also
+run on a cached index, and the index cache key now includes the parent, so `/users/1/posts` and `/users/2/posts` no
+longer share a cached list. The `restify.repositories.apply_main_query_to_writes` key turns off the `mainQuery()` part
+for nested writes only; nested reads always apply it, as show does, and the policy checks always run.
 
 Creating a child through its parent (`POST /{parent}/{parentId}/{relation}`) also changed:
 
 - For a `HasMany`, `HasOne`, `MorphMany` or `MorphOne` relation, the parent key (and the morph type) is put into the
   request before the child is validated, so the child's rules and policy see it. It used to be set only when the
   child was saved, after validation. A payload that names a different parent for that key now answers 422 instead
-  of being overwritten silently.
+  of being overwritten silently. A null value counts as not sent, an integer key matches however it is spelled
+  (`"05"` for `5`), and the morph type may be sent as the morph alias or as the class it maps to; the alias is stored.
+- For a `HasOne` or `MorphOne` relation, a parent that already has that child answers 409 instead of getting a
+  second row.
 - A `BelongsToMany` or `MorphToMany` child can no longer be created this way (400). It used to create the related
   model and attach it to the parent with no attach policy or pivot fields; use the attach endpoint instead. Any other
   relation type failed with a server error and now answers 400 too.
