@@ -68,4 +68,20 @@ class GlobalSearchControllerTest extends IntegrationTestCase
                 ->etc()
         );
     }
+
+    public function test_global_search_skips_models_the_user_cannot_show(): void
+    {
+        Gate::policy(Post::class, PostPolicy::class);
+
+        $hidden = Post::factory()->create(['title' => 'Hidden post']);
+        $visible = Post::factory()->create(['title' => 'Visible post']);
+
+        $_SERVER['restify.post.show.callback'] = fn ($user, Post $post) => $post->isNot($hidden);
+
+        $response = $this->getJson(Restify::path('search', [
+            'search' => 'post',
+        ]))->assertOk();
+
+        $this->assertSame([$visible->getKey()], array_column($response->json('data'), 'repositoryId'));
+    }
 }

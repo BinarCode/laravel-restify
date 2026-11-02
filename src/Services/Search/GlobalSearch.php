@@ -44,6 +44,10 @@ class GlobalSearch
             foreach ($models as $model) {
                 $instance = $repository::resolveWith($model);
 
+                if (! $instance->authorizedToShow($this->request)) {
+                    continue;
+                }
+
                 $formatted[] = [
                     'repositoryName' => $repository::uriKey(),
                     'repositoryTitle' => $repository::label(),
