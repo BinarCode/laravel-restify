@@ -69,6 +69,27 @@ Creating a child through its parent (`POST /{parent}/{parentId}/{relation}`) als
   model and attach it to the parent with no attach policy or pivot fields; use the attach endpoint instead. Any other
   relation type failed with a server error and now answers 400 too.
 
+### Nested `related` paths have to be declared
+
+`?related=` and `?include=` used to load any nested path below a declared relation, as long as the models had those
+relations. On index, nested index and global search requests, in the queries of index actions and getters, and in the
+MCP index tool, every segment now has to be declared:
+
+- Below an eager field (`HasMany::make('posts', PostRepository::class)`) the next segment has to be in the `related()`
+  of that field's repository, as the relations docs describe. Such paths load as before.
+- Below a relation declared by its name (`'posts'`), or an eager field declared under a dotted key
+  (`'posts.comments' => HasMany::make('posts')`), nothing more is loaded. These are serialized by the model, not by a
+  repository, so a request could read any relation of the related models, to any depth, without their repositories'
+  fields and policies. With `$related = ['posts']`, `?related=posts.comments` now returns the posts without comments.
+
+A path that is not declared is skipped, the same way an unknown relation always was: the response is a 200 without it.
+If a client relies on such a path, declare it. Either add the dotted path itself (`'posts.comments'`) to `related()`,
+or use an eager field and declare the next relation in its repository.
+
+Restify also no longer calls a requested segment on the model to find out whether it is a relation. A declared
+relation is eager loaded only when the model defines it as a method or registers it with `resolveRelationUsing()`.
+One that exists only through a model's own `__call` is still returned, loaded for each row instead.
+
 ### Show actions and show getters are scoped by `mainQuery()`
 
 A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters`) now loads its model through the repository `mainQuery()` before the action or getter `indexQuery()`, the same way show, index and bulk actions already did. This also covers the MCP action and getter tools. A record your `mainQuery()` hides now answers 404 instead of running the action or getter on it.
