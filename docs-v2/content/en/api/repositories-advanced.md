@@ -57,6 +57,8 @@ This method is perfect for:
 - **Performance optimizations** for list views
 - **Lightweight eager loading** for index displays
 
+[Index actions](/api/actions#rows-an-action-can-run-on), and the query a getter or action reads through `$request->filteredQuery()`, are limited by `indexQuery` too, so they never reach a row the index does not list.
+
 ### Show query
 
 The `showQuery` method is applied specifically for individual resource requests (`GET /api/restify/posts/1`). It allows you to customize queries when fetching a single resource:
@@ -78,6 +80,8 @@ This method is useful for:
 - **Detailed eager loading** for full resource display
 - **Show-specific constraints** or permissions
 - **Performance optimizations** for single resource fetching
+
+[Show actions](/api/actions#rows-an-action-can-run-on) and [show getters](/api/getters#rows-a-getter-can-read) load their model through `showQuery` as well, so a record it excludes answers `404` there as it does on the show route.
 
 ### Scout query
 

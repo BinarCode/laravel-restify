@@ -75,6 +75,31 @@ A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{reposit
 
 To keep the previous behaviour, set `restify.repositories.apply_main_query_to_actions_and_getters` to `false`.
 
+### Actions and getters are scoped by `indexQuery()` and `showQuery()`
+
+Actions and getters reached their rows through the repository `mainQuery()` only, so they could run on, or
+read, rows the index does not list and records the show route does not find. They now use the same scopes:
+
+- An index action (`POST /{repository}/actions`) receives only rows the repository `indexQuery()` lists, for
+  `repositories: "all"` and for a list of keys alike, before the action's own `indexQuery()` is applied. A key
+  outside that set is skipped, as a key hidden by `mainQuery()` already was, so the action can receive fewer
+  models than the keys sent.
+- `$request->filteredQuery()`, which index getters read their rows from, and
+  `GetterRequest::collectRepositories()` are limited by the repository `indexQuery()` in the same way.
+- A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters/{getter}`)
+  loads its model through the repository `showQuery()` after `mainQuery()`. A record your `showQuery()` excludes
+  answers 404 instead of running the action or getter on it.
+
+This also covers the MCP action and getter tools. Standalone actions load no models and are unchanged. The
+ordering and eager loads your `indexQuery()` or `showQuery()` adds now apply to these queries too.
+
+If your `indexQuery()` hides rows for presentation only (say it lists published posts) and an index action or
+getter must still reach the hidden ones, set `restify.repositories.apply_index_query_to_actions_and_getters` to
+`false`. `restify.repositories.apply_show_query_to_actions_and_getters` does the same for `showQuery()`.
+
+The model policy is still not checked when an action or getter runs. Restrict rows in the repository queries,
+and use `canRun()` for a check on each model.
+
 ### Sorted index queries end with the primary key
 
 Rows that tie on every order of an index, global search or action query are now ordered by the

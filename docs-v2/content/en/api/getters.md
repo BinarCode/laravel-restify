@@ -121,6 +121,30 @@ public function getters(RestifyRequest $request): array
 
 Calling a getter the user is not authorized to see answers `403`. A getter the endpoint does not offer (unknown key, or a show getter called on index) answers `404`.
 
+### Rows a getter can read
+
+`canSee` decides who may call a getter. What it can then read is decided by the repository queries, not by the model policy:
+
+- An [index getter](#index-getters) receives no models. The query it gets from `$request->filteredQuery()` returns only rows the repository index lists: the repository [`mainQuery`](/api/repositories-advanced#main-query) and [`indexQuery`](/api/repositories-advanced#index-query) apply, together with the search, match and filter parameters of the request. A query the getter builds on its own, such as `Post::query()`, is not scoped.
+- A [show getter](#show-getters) loads its model through the repository `mainQuery` and [`showQuery`](/api/repositories-advanced#show-query), then the getter's own `indexQuery`. A model outside that set answers `404`, as the show route does.
+
+The model policy (`show` and so on) is not checked when a getter runs. Restrict the rows in the repository queries, and add a `canRun` callback when running the getter needs its own check on the model:
+
+```php
+public function getters(RestifyRequest $request): array
+{
+    return [
+        StripeInformationGetter::new()->canRun(
+            fn (Request $request, ?User $user): bool => $user === null || $request->user()->can('viewBilling', $user)
+        ),
+    ];
+}
+```
+
+`canRun` receives the model of a show getter, and `null` for an index getter. A denial answers `403`.
+
+The `restify.repositories.apply_index_query_to_actions_and_getters` and `restify.repositories.apply_show_query_to_actions_and_getters` config keys turn off the repository `indexQuery` and `showQuery` scopes described above. Both default to `true`.
+
 ### Call getters
 
 To call a getter, you simply access:

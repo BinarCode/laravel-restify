@@ -105,7 +105,7 @@ abstract class Getter implements JsonSerializable
         throw_unless(method_exists($this, 'handle'), new Exception('Missing handle method from the getter.'));
 
         if ($request->isForRepositoryRequest()) {
-            $query = $request->scopedModelQuery();
+            $query = $request->showScopedModelQuery();
 
             static::indexQuery($request, $query);
 
