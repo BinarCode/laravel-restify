@@ -14,6 +14,11 @@ use Illuminate\Testing\Fluent\AssertableJson;
 
 class ProfileControllerTest extends IntegrationTestCase
 {
+    /**
+     * The password the user factory hashes.
+     */
+    private const FACTORY_PASSWORD = 'secret';
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -60,6 +65,7 @@ class ProfileControllerTest extends IntegrationTestCase
         $response = $this->putJson(Restify::path('profile'), [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
+            'current_password' => self::FACTORY_PASSWORD,
         ])->assertOk();
 
         $response->assertJsonFragment([
@@ -73,11 +79,12 @@ class ProfileControllerTest extends IntegrationTestCase
         $this->putJson(Restify::path('profile'), [
             'email' => 'contact@binarschool.com',
             'name' => 'Eduard',
-            'password' => 'secret',
-            'password_confirmation' => 'secret',
+            'password' => 'new-secret',
+            'password_confirmation' => 'new-secret',
+            'current_password' => self::FACTORY_PASSWORD,
         ])->assertOk();
 
-        $this->assertTrue(Hash::check('secret', $this->authenticatedAs->password));
+        $this->assertTrue(Hash::check('new-secret', $this->authenticatedAs->password));
     }
 
     public function test_profile_update_unique_email(): void
@@ -89,7 +96,8 @@ class ProfileControllerTest extends IntegrationTestCase
         $this->putJson(Restify::path('profile'), [
             'email' => 'existing@gmail.com',
             'name' => 'Eduard',
-        ])->assertStatus(422);
+            'current_password' => self::FACTORY_PASSWORD,
+        ])->assertStatus(422)->assertJsonValidationErrors('email');
     }
 
     public function test_profile_validation_from_repository(): void
