@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
+use Binaryk\LaravelRestify\Http\Requests\RequestLimits;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\Request;
 use Illuminate\Support\Stringable;
@@ -141,7 +142,12 @@ class RelatedDto
 
         $roots = str($query)->replace(' ', '')->explode(',');
 
-        collect($roots)->each(function (string $related) use ($repository) {
+        $maxDepth = RequestLimits::maxRelatedDepth();
+        $declared = $maxDepth === null ? [] : $this->declaredPathsDeeperThan($repository, $maxDepth);
+
+        collect($roots)->each(function (string $related) use ($repository, $maxDepth, $declared) {
+            $related = $this->limitDepth($related, $maxDepth, $declared);
+
             if (str_contains($related, '.')) {
                 // users[id].comments[id] => users
                 $relation = str(collect(str($related)->explode('.'))->first())->before('[');
@@ -202,6 +208,53 @@ class RelatedDto
         $this->loaded();
 
         return $this;
+    }
+
+    /**
+     * Cut a requested path to `restify.related.max_depth` segments, so with a limit of 2
+     * `posts.comments.user` loads `posts.comments`. A path the repository declares itself is
+     * kept in full, since only its full form is declared.
+     *
+     * @param  list<string>  $declared
+     */
+    private function limitDepth(string $related, ?int $maxDepth, array $declared): string
+    {
+        if ($maxDepth === null || substr_count($related, '.') < $maxDepth) {
+            return $related;
+        }
+
+        if ($declared !== []) {
+            // posts[id|title].comments[comment] => posts.comments
+            $path = preg_replace('/\[[^\]]*\]/', '', $related) ?? $related;
+
+            foreach ($declared as $declaredPath) {
+                if ($path === $declaredPath || str_starts_with($path, $declaredPath.'.')) {
+                    $maxDepth = max($maxDepth, substr_count($declaredPath, '.') + 1);
+                }
+            }
+        }
+
+        return implode('.', array_slice(explode('.', $related), 0, $maxDepth));
+    }
+
+    /**
+     * The dotted paths the repository declares in its related list that are longer than the limit.
+     *
+     * @return list<string>
+     */
+    private function declaredPathsDeeperThan(Repository $repository, int $maxDepth): array
+    {
+        $paths = [];
+
+        foreach ($repository::collectRelated()->all() as $key => $value) {
+            $path = is_string($key) ? $key : $value;
+
+            if (is_string($path) && substr_count($path, '.') >= $maxDepth) {
+                $paths[] = $path;
+            }
+        }
+
+        return $paths;
     }
 
     private function loaded(): void

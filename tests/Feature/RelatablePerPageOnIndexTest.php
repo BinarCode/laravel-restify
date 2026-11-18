@@ -72,6 +72,42 @@ class RelatablePerPageOnIndexTest extends IntegrationTestCase
     }
 
     #[Test]
+    #[TestWith([null, 100], 'default cap: clamped down to it')]
+    #[TestWith([200, 105], 'cap raised in config: every row is returned')]
+    #[TestWith([0, 105], 'cap turned off: every row is returned')]
+    public function a_large_relatable_per_page_is_resolved_against_the_cap(?int $maxPerPage, int $expected): void
+    {
+        config(['restify.pagination.max_per_page' => $maxPerPage]);
+
+        $user = User::query()->oldest('id')->firstOrFail();
+
+        Post::factory(105 - self::POSTS_PER_USER)->create(['user_id' => $user->id]);
+
+        $response = $this->getJson(UserRepository::route(query: [
+            'related' => 'posts',
+            'relatablePerPage' => 9999,
+            'id' => $user->id,
+        ]))->assertOk();
+
+        $this->assertRelatedCounts($response, 'posts', [$expected]);
+    }
+
+    #[Test]
+    public function the_default_cap_alone_does_not_limit_index_related_lists(): void
+    {
+        $user = User::query()->oldest('id')->firstOrFail();
+
+        Post::factory(20 - self::POSTS_PER_USER)->create(['user_id' => $user->id]);
+
+        $response = $this->getJson(UserRepository::route(query: [
+            'related' => 'posts',
+            'id' => $user->id,
+        ]))->assertOk();
+
+        $this->assertRelatedCounts($response, 'posts', [20]);
+    }
+
+    #[Test]
     public function the_max_per_page_config_opts_in_and_limits_to_the_default_clamped(): void
     {
         config(['restify.pagination.max_per_page' => 3]);

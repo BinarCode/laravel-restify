@@ -84,6 +84,34 @@ class RestifyRequest extends FormRequest
     }
 
     /**
+     * Reject a bulk request that carries more rows than `restify.bulk.max_rows`, before any row
+     * is authorized, validated or written.
+     *
+     * @throws ValidationException
+     */
+    public function ensureBulkRowsWithinLimit(): void
+    {
+        $max = RequestLimits::maxBulkRows();
+
+        if ($max === null) {
+            return;
+        }
+
+        $rows = count($this->payload());
+
+        if ($rows <= $max) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'bulk' => [__('A bulk request may contain at most :max rows, :rows were sent.', [
+                'max' => $max,
+                'rows' => $rows,
+            ])],
+        ]);
+    }
+
+    /**
      * The request body, without the query string or uploaded files merged in.
      *
      * @return array<array-key, mixed>

@@ -250,15 +250,66 @@ return [
         | The largest `perPage` (or `page[size]`, or `relatablePerPage` on a
         | related field) a client may request on an index endpoint. A
         | requested value above this is clamped down to it - never rejected -
-        | so existing clients are never broken by lowering it. This also
-        | clamps a repository's own default per-page when it is set above
-        | the cap and no perPage is requested at all.
+        | so existing clients are never broken by lowering it.
         |
-        | Default: null (no cap, the requested perPage is always honoured).
-        | null, 0, an empty string, or any non-numeric value all mean "no cap".
+        | Default: null, which applies the package default of 100 to what a
+        | client requests. A repository that declares a larger default page
+        | size keeps it, and clients may request up to that size there.
+        |
+        | A number you set here is applied as is: it also clamps a repository's
+        | own default per-page when that is above the cap, and it limits
+        | has-many related lists on index (see the relations documentation).
+        |
+        | 0, a negative number or false mean "no cap". An empty string or any
+        | other non-numeric value falls back to the package default.
         |
         */
         'max_per_page' => env('RESTIFY_MAX_PER_PAGE'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restify Bulk Requests
+    |--------------------------------------------------------------------------
+    */
+    'bulk' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Maximum Rows
+        |--------------------------------------------------------------------------
+        |
+        | The most rows one bulk store, bulk update or bulk delete request may
+        | carry. A larger request is rejected with a 422 before any row is
+        | authorized, validated or written - it is never cut down to the limit.
+        |
+        | Default: 1000. null also means the default; 0, a negative number or
+        | false mean "no limit".
+        |
+        */
+        'max_rows' => env('RESTIFY_MAX_BULK_ROWS', 1000),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Restify Related
+    |--------------------------------------------------------------------------
+    */
+    'related' => [
+        /*
+        |--------------------------------------------------------------------------
+        | Maximum Depth
+        |--------------------------------------------------------------------------
+        |
+        | The most levels one `related` (or `include`) path may nest:
+        | `posts.comments.user` has three. Levels past the limit are ignored,
+        | the path is loaded up to the limit and the request is not rejected.
+        | This also applies to `include` on the MCP tools.
+        |
+        | Default: 5. null also means the default; 0, a negative number or
+        | false mean "no limit".
+        |
+        */
+        'max_depth' => env('RESTIFY_MAX_RELATED_DEPTH', 5),
     ],
 
     'repositories' => [

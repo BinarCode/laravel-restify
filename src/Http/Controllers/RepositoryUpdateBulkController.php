@@ -15,6 +15,8 @@ class RepositoryUpdateBulkController extends RepositoryController
 
     public function __invoke(RepositoryUpdateBulkRequest $request): JsonResponse
     {
+        $request->ensureBulkRowsWithinLimit();
+
         // Validate ALL items upfront with correct indices
         /** @var ValidatorContract $validator */
         $validator = $request->repository()::validatorForUpdateBulk($request);
