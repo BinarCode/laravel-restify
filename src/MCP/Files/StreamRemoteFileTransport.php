@@ -13,10 +13,10 @@ final class StreamRemoteFileTransport implements RemoteFileTransport
         $context = stream_context_create($this->contextOptions($file, $timeout));
 
         foreach ($file->addresses as $address) {
-            $stream = @fopen($file->urlFor($address), 'rb', false, $context);
+            $stream = $this->open($file->urlFor($address), $context);
 
             // No HTTP response from this address. The next one was validated too, so try it.
-            if ($stream === false) {
+            if ($stream === null) {
                 continue;
             }
 
@@ -28,6 +28,24 @@ final class StreamRemoteFileTransport implements RemoteFileTransport
         }
 
         return null;
+    }
+
+    /**
+     * @param  resource  $context
+     * @return resource|null
+     */
+    private function open(string $url, $context)
+    {
+        // fopen() reports an address that does not answer as a warning. Here that is an expected outcome.
+        set_error_handler(static fn (): bool => true);
+
+        try {
+            $stream = fopen($url, 'rb', false, $context);
+        } finally {
+            restore_error_handler();
+        }
+
+        return $stream === false ? null : $stream;
     }
 
     /**
