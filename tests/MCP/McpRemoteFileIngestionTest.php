@@ -40,6 +40,11 @@ class McpRemoteFileIngestionTest extends IntegrationTestCase
 
     private const PUBLIC_ADDRESS = '93.184.216.34';
 
+    /**
+     * @var list<string>
+     */
+    private array $temporaryUploadsBefore = [];
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -51,6 +56,18 @@ class McpRemoteFileIngestionTest extends IntegrationTestCase
         Restify::repositories([McpRemoteFileIngestionUserRepository::class]);
 
         Mcp::web(self::ENDPOINT, RestifyServer::class);
+
+        $this->temporaryUploadsBefore = $this->temporaryUploads();
+    }
+
+    protected function tearDown(): void
+    {
+        // The store tool leaves the file it downloaded in the temporary directory.
+        foreach (array_diff($this->temporaryUploads(), $this->temporaryUploadsBefore) as $upload) {
+            @unlink($upload);
+        }
+
+        parent::tearDown();
     }
 
     protected function getPackageProviders($app): array
@@ -200,6 +217,14 @@ class McpRemoteFileIngestionTest extends IntegrationTestCase
 
         $this->assertSame([], $transport->downloads);
         $this->assertSame([], Storage::disk(McpRemoteFileIngestionUserRepository::DISK)->allFiles());
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function temporaryUploads(): array
+    {
+        return glob(sys_get_temp_dir().DIRECTORY_SEPARATOR.'restify_mcp_upload_*') ?: [];
     }
 
     private function fake(FakeHostResolver $resolver, FakeRemoteFileTransport $transport): void
