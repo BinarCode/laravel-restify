@@ -135,6 +135,23 @@ class McpToolRepositoryBindingTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function the_profile_tool_resolves_its_own_repository(): void
+    {
+        // The profile tool belongs to the repository keyed `users`, so an MCP-enabled one takes that key here.
+        Restify::$repositories = [];
+        Restify::repositories([McpBoundUserRepository::class, McpBoundPostRepository::class]);
+
+        Post::factory()->create(['user_id' => null]);
+        User::factory()->create(['id' => $this->authenticatedAs->getKey(), 'email' => 'member@example.com']);
+        User::factory()->create(['email' => 'other@example.com']);
+
+        $response = $this->callTool('users-profile-tool', ['mcp_repository_key' => 'mcp-bound-posts']);
+
+        $this->assertSame(['member@example.com'], array_column(array_column($this->toolResult($response)['data'], 'attributes'), 'email'));
+        $this->assertResolvedOnlyTheBoundRepository('users');
+    }
+
+    #[Test]
     public function the_wrapper_execute_operation_tool_resolves_the_repository_it_was_asked_for(): void
     {
         config(['restify.mcp.mode' => 'wrapper']);
@@ -186,10 +203,10 @@ class McpToolRepositoryBindingTest extends IntegrationTestCase
         return $post;
     }
 
-    private function assertResolvedOnlyTheBoundRepository(): void
+    private function assertResolvedOnlyTheBoundRepository(string $uriKey = 'mcp-bound-posts'): void
     {
         $this->assertNotEmpty($_SERVER['McpBoundPostRepository.resolved'] ?? []);
-        $this->assertSame(['mcp-bound-posts'], array_values(array_unique($_SERVER['McpBoundPostRepository.resolved'])));
+        $this->assertSame([$uriKey], array_values(array_unique($_SERVER['McpBoundPostRepository.resolved'])));
     }
 
     /**
@@ -293,6 +310,33 @@ class McpBoundPostRepository extends Repository
     public function mcpAllowsGetters(): bool
     {
         return true;
+    }
+}
+
+class McpBoundUserRepository extends Repository
+{
+    use HasMcpTools;
+
+    public static $model = User::class;
+
+    public static string $uriKey = 'users';
+
+    public static array $match = [
+        'id' => 'int',
+    ];
+
+    public function fields(RestifyRequest $request): array
+    {
+        return [
+            Field::make('email'),
+        ];
+    }
+
+    public static function mainQuery(RestifyRequest $request, $query)
+    {
+        McpBoundPostRepository::recordRepositoryOf($request);
+
+        return $query;
     }
 }
 
