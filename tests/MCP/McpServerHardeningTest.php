@@ -246,5 +246,39 @@ class McpServerHardeningTest extends IntegrationTestCase
 
         $this->assertTrue($repository::isSafePublicUrl('http://93.184.216.34/index.html'));
         $this->assertTrue($repository::isSafePublicUrl('https://93.184.216.34/index.html'));
+        $this->assertTrue($repository::isSafePublicUrl('https://[2606:4700:4700::1111]/index.html'));
+    }
+
+    public function test_addresses_outside_public_unicast_space_are_rejected(): void
+    {
+        $repository = new class extends Repository
+        {
+            use HasMcpTools;
+
+            public static $model = Post::class;
+
+            public static string $uriKey = 'ssrf-range-guard-posts';
+
+            public function fields(RestifyRequest $request): array
+            {
+                return [Field::make('title')];
+            }
+        };
+
+        // Carrier-grade NAT, IETF protocol assignments, documentation, benchmarking, multicast.
+        $this->assertFalse($repository::isSafePublicUrl('http://100.64.0.1/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://192.0.0.8/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://192.0.2.1/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://198.18.0.1/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://224.0.0.1/'));
+
+        // IPv6 addresses that carry an IPv4 address, and IPv6 space that is not global unicast.
+        $this->assertFalse($repository::isSafePublicUrl('http://[::ffff:127.0.0.1]/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://[64:ff9b::7f00:1]/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://[2002:7f00:1::1]/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://[2001:0:7f00:1::1]/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://[2001:db8::1]/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://[fec0::1]/'));
+        $this->assertFalse($repository::isSafePublicUrl('http://[ff02::1]/'));
     }
 }

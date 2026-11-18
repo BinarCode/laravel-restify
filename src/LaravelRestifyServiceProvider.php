@@ -22,6 +22,10 @@ use Binaryk\LaravelRestify\Commands\SetupCommand;
 use Binaryk\LaravelRestify\Commands\SkillCommand;
 use Binaryk\LaravelRestify\Commands\StoreCommand;
 use Binaryk\LaravelRestify\Commands\ToolCommand;
+use Binaryk\LaravelRestify\MCP\Files\DnsHostResolver;
+use Binaryk\LaravelRestify\MCP\Files\HostResolver;
+use Binaryk\LaravelRestify\MCP\Files\RemoteFileTransport;
+use Binaryk\LaravelRestify\MCP\Files\StreamRemoteFileTransport;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Spatie\LaravelPackageTools\Package;
 use Spatie\LaravelPackageTools\PackageServiceProvider;
@@ -75,6 +79,10 @@ class LaravelRestifyServiceProvider extends PackageServiceProvider
         $this->app->singleton('laravel-restify', function () {
             return new Restify;
         });
+
+        // How the MCP store tool resolves and downloads a remote file. Bind your own to replace either.
+        $this->app->bindIf(HostResolver::class, DnsHostResolver::class);
+        $this->app->bindIf(RemoteFileTransport::class, StreamRemoteFileTransport::class);
     }
 
     protected function registerPublishing(): void
