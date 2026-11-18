@@ -104,6 +104,8 @@ const filters = [
 const  response = await axios.post(`api/restify/posts/apply-restify-advanced-filters`, { filters });
 ```
 
+This endpoint is the repository index with the filters read from the request body, so everything that applies to `GET api/restify/posts` applies to it as well: the repository [`indexQuery`](/repositories-advanced#index-query), the `fieldsForIndex` field set, relationships hidden from the index, pagination, sorting, search and matches. Sending no filters returns the same list as the index.
+
 
 ### Custom uri key
 

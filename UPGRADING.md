@@ -17,6 +17,23 @@ of that repository's search results; add `show` or set `$globallySearchable = fa
 The MCP `global-search` tool now also runs the repository `indexQuery()`, as `GET /search` already
 did, so rows your `indexQuery()` hides no longer appear in MCP search results.
 
+### The POST advanced filters endpoint is an index request
+
+`POST /{repository}/apply-restify-advanced-filters` lists the repository like `GET /{repository}`, but it
+was not treated as an index request: the repository `indexQuery()` was skipped, `fields()` was used even
+when the repository defines `fieldsForIndex()`, and relationships hidden from the index were still
+returned. It now behaves as the index does, with the filters read from the body:
+
+- Rows your `indexQuery()` excludes are no longer returned or counted in `meta`, and the ordering and
+  eager loads your `indexQuery()` adds apply here too.
+- A repository that defines `fieldsForIndex()` serializes those fields on this endpoint.
+- A relationship declared with `hideFromIndex()` is left out.
+- `$request->isIndexRequest()` is true and the request is a `RepositoryIndexRequest`, so code of yours
+  that branches on either (a `collectMiddlewares()` override, a field callback) takes the index branch.
+
+If a client relied on this endpoint to read rows or fields the index does not return, expose them on
+purpose instead, for example through a getter or a dedicated repository.
+
 ### Updates and deletes are scoped by `mainQuery()`
 
 Update (`PUT`), patch (`PATCH`), delete, bulk update, bulk delete, field delete
