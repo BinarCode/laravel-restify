@@ -124,6 +124,26 @@ endpoint, which never ran it.
 If a client reads such a relation from a `Mergeable` show response, request it
 explicitly (declare it in `related()` and send `?related=user`).
 
+### Loaded relations are no longer merged into `Mergeable` attributes
+
+A `Mergeable` repository merges the model's `toArray()` into `attributes`, and `toArray()` also
+serialises every relation loaded on the model. A related model therefore appeared a second time,
+as a raw array under `attributes`, next to its entry under `relationships`, and that copy skipped
+the related repository: its fields, their `canSee` and its `show` policy. `attributes` now leave
+out every loaded relation, however it was loaded: `?related=` / `?include=` on the index, the
+repository `$with`, a `lazy()` field, the model `$with`, an accessor that reads the relation, a
+`BelongsTo` field that associates it on store or update, or the `pivot` of a many-to-many related
+model. Show, index, store, update and the MCP tools behave the same.
+
+Columns, casts, `$hidden` / `$visible`, `$appends` and a model's own `toArray()` are merged as
+before. If a model attribute and a loaded relation share a name, the attribute is returned.
+
+If a client reads `attributes.user` (or `attributes.comments`, `attributes.pivot`, ...) from a
+`Mergeable` repository, read `relationships.user` instead: declare the relation in `related()`
+with its repository and request it with `?related=user`. Pivot columns belong in `withPivot()`
+fields, which are returned under `pivots`. To keep a value from a related model inside
+`attributes`, expose that value through an appended accessor on the model.
+
 ### `restify:stub` and `DatabaseGenerator` are removed
 
 `php artisan restify:stub` and `Binaryk\LaravelRestify\Generators\DatabaseGenerator` are gone. They
