@@ -61,10 +61,12 @@ class IndexTool extends Tool
 
     public function handle(Request $request): Response|ResponseFactory
     {
-        $mcpRequest = app(McpIndexRequest::class);
+        $repository = $this->repository();
+
+        $mcpRequest = app(McpIndexRequest::class)->forRepository($repository::uriKey());
         $mcpRequest->replace($request->all());
 
-        $result = $this->repository()->indexTool($mcpRequest);
+        $result = $repository->indexTool($mcpRequest);
 
         return Response::structured($result);
     }

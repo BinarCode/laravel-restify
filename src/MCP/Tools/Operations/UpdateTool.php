@@ -64,10 +64,12 @@ class UpdateTool extends Tool
 
     public function handle(Request $request): Response|ResponseFactory
     {
-        $mcpRequest = app(McpUpdateRequest::class);
+        $repository = $this->repository();
+
+        $mcpRequest = app(McpUpdateRequest::class)->forRepository($repository::uriKey());
         $mcpRequest->replace($request->all());
 
-        $result = $this->repository()->updateTool($mcpRequest);
+        $result = $repository->updateTool($mcpRequest);
 
         return Response::structured($result);
     }

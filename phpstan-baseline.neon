@@ -10615,25 +10615,25 @@ parameters:
 			path: src/MCP/Tools/Operations/ActionTool.php
 
 		-
-			message: '#^Method class@anonymous/src/MCP/Tools/Operations/ActionTool\.php\:119\:\:__construct\(\) has parameter \$id with no type specified\.$#'
+			message: '#^Method class@anonymous/src/MCP/Tools/Operations/ActionTool\.php\:118\:\:__construct\(\) has parameter \$id with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: src/MCP/Tools/Operations/ActionTool.php
 
 		-
-			message: '#^Method class@anonymous/src/MCP/Tools/Operations/ActionTool\.php\:119\:\:parameter\(\) has no return type specified\.$#'
+			message: '#^Method class@anonymous/src/MCP/Tools/Operations/ActionTool\.php\:118\:\:parameter\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: src/MCP/Tools/Operations/ActionTool.php
 
 		-
-			message: '#^Method class@anonymous/src/MCP/Tools/Operations/ActionTool\.php\:119\:\:parameter\(\) has parameter \$default with no type specified\.$#'
+			message: '#^Method class@anonymous/src/MCP/Tools/Operations/ActionTool\.php\:118\:\:parameter\(\) has parameter \$default with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: src/MCP/Tools/Operations/ActionTool.php
 
 		-
-			message: '#^Method class@anonymous/src/MCP/Tools/Operations/ActionTool\.php\:119\:\:parameter\(\) has parameter \$key with no type specified\.$#'
+			message: '#^Method class@anonymous/src/MCP/Tools/Operations/ActionTool\.php\:118\:\:parameter\(\) has parameter \$key with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: src/MCP/Tools/Operations/ActionTool.php
@@ -10741,25 +10741,25 @@ parameters:
 			path: src/MCP/Tools/Operations/GetterTool.php
 
 		-
-			message: '#^Method class@anonymous/src/MCP/Tools/Operations/GetterTool\.php\:101\:\:__construct\(\) has parameter \$id with no type specified\.$#'
+			message: '#^Method class@anonymous/src/MCP/Tools/Operations/GetterTool\.php\:100\:\:__construct\(\) has parameter \$id with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: src/MCP/Tools/Operations/GetterTool.php
 
 		-
-			message: '#^Method class@anonymous/src/MCP/Tools/Operations/GetterTool\.php\:101\:\:parameter\(\) has no return type specified\.$#'
+			message: '#^Method class@anonymous/src/MCP/Tools/Operations/GetterTool\.php\:100\:\:parameter\(\) has no return type specified\.$#'
 			identifier: missingType.return
 			count: 1
 			path: src/MCP/Tools/Operations/GetterTool.php
 
 		-
-			message: '#^Method class@anonymous/src/MCP/Tools/Operations/GetterTool\.php\:101\:\:parameter\(\) has parameter \$default with no type specified\.$#'
+			message: '#^Method class@anonymous/src/MCP/Tools/Operations/GetterTool\.php\:100\:\:parameter\(\) has parameter \$default with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: src/MCP/Tools/Operations/GetterTool.php
 
 		-
-			message: '#^Method class@anonymous/src/MCP/Tools/Operations/GetterTool\.php\:101\:\:parameter\(\) has parameter \$key with no type specified\.$#'
+			message: '#^Method class@anonymous/src/MCP/Tools/Operations/GetterTool\.php\:100\:\:parameter\(\) has parameter \$key with no type specified\.$#'
 			identifier: missingType.parameter
 			count: 1
 			path: src/MCP/Tools/Operations/GetterTool.php

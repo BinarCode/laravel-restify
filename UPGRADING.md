@@ -69,6 +69,34 @@ Creating a child through its parent (`POST /{parent}/{parentId}/{relation}`) als
   model and attach it to the parent with no attach policy or pivot fields; use the attach endpoint instead. Any other
   relation type failed with a server error and now answers 400 too.
 
+### The repository of a request comes from its route, never from its input
+
+A prefixed repository (`$prefix`) and a public one (`$public`) get routes of their own, which spell the repository
+out in the URI instead of matching a `{repository}` segment. On those routes, and on the custom routes a repository
+registers through `routes()`, the repository used to be read from the request: from an `mcp_repository_key` input,
+and otherwise by searching the whole request URI, query string included, for a repository path. Request input could
+therefore make such a route answer with another repository.
+
+A prefixed or public route now always runs against the repository it was registered for, and a custom repository
+route is matched on its path alone. An `mcp_repository_key` input is ignored everywhere. Routes with a `{repository}`
+segment always read that segment and are unchanged.
+
+The MCP getter, action and update tools sent that input to say which repository a call targets. Every MCP operation
+tool (index, show, store, update, delete, profile, actions and getters) now binds its repository on the request it
+builds, so `$request->repository()` answers the tool's own repository in all of them. Inside the index, show, store,
+delete and profile tools it used to fail, as those tools passed no repository at all.
+
+If you build a Restify request yourself outside a repository route (a custom MCP tool, a command, a job) and merged
+`mcp_repository_key` into it, bind the repository instead:
+
+```php
+// before
+$request->merge(['mcp_repository_key' => PostRepository::uriKey()]);
+
+// after
+$request->forRepository(PostRepository::uriKey());
+```
+
 ### Show actions and show getters are scoped by `mainQuery()`
 
 A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters`) now loads its model through the repository `mainQuery()` before the action or getter `indexQuery()`, the same way show, index and bulk actions already did. This also covers the MCP action and getter tools. A record your `mainQuery()` hides now answers 404 instead of running the action or getter on it.

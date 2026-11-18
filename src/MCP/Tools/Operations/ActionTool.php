@@ -101,11 +101,10 @@ class ActionTool extends Tool
 
     public function handle(Request $request): Response|ResponseFactory
     {
-        $mcpRequest = app(McpActionRequest::class);
+        $repository = $this->repository();
+
+        $mcpRequest = app(McpActionRequest::class)->forRepository($repository::uriKey());
         $mcpRequest->replace($request->all());
-        $mcpRequest->merge([
-            'mcp_repository_key' => $this->repositoryClass::uriKey(),
-        ]);
 
         // Parse repositories string to array if provided
         if ($mcpRequest->has('repositories') && is_string($mcpRequest->input('repositories'))) {
@@ -128,7 +127,7 @@ class ActionTool extends Tool
             });
         }
 
-        $result = $this->repository()->actionTool($this->action, $mcpRequest);
+        $result = $repository->actionTool($this->action, $mcpRequest);
 
         return Response::structured($result);
     }
