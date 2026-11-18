@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Traits;
 
 use Binaryk\LaravelRestify\Exceptions\UnauthorizedException;
+use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Closure;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
@@ -45,6 +46,19 @@ trait AuthorizedToRun
     protected function authorizeRun(Request $request, ?Model $model): void
     {
         if (! $this->authorizedToRun($request, $model)) {
+            throw UnauthorizedException::make($this->authorizeRunMessage());
+        }
+    }
+
+    /**
+     * Authorize running on the single model of a show action or show getter: the user must be allowed to
+     * show that model, as the show route requires.
+     *
+     * @throws UnauthorizedException
+     */
+    protected function authorizeShownModel(RestifyRequest $request, Model $model): void
+    {
+        if (! $request->repositoryWith($model)->authorizedToShow($request)) {
             throw UnauthorizedException::make($this->authorizeRunMessage());
         }
     }

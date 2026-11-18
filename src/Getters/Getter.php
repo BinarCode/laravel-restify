@@ -111,6 +111,8 @@ abstract class Getter implements JsonSerializable
 
             $model = $query->firstOrFail();
 
+            $this->authorizeShownModel($request, $model);
+
             $this->authorizeRun($request, $model);
 
             return $this->handle($request, $model);

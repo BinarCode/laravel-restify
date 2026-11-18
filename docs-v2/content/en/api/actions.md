@@ -133,10 +133,10 @@ Calling an action the user is not authorized to see answers `403`. An action the
 `canSee` decides who may call an action. The models it then receives are decided by the repository queries, not by the model policy:
 
 - An [index action](#index-actions) receives only rows the repository index lists. The repository [`mainQuery`](/api/repositories-advanced#main-query) and [`indexQuery`](/api/repositories-advanced#index-query) apply first, then the action's own [`indexQuery`](#action-index-query), for `"repositories": "all"` and for a list of keys alike. A key outside that set is skipped, so the action can receive fewer models than the keys you sent, or none.
-- A [show action](#show-actions) loads its model through the repository `mainQuery` and [`showQuery`](/api/repositories-advanced#show-query), then the action's own `indexQuery`. A model outside that set answers `404`, as the show route does.
+- A [show action](#show-actions) loads its model through the repository `mainQuery` and [`showQuery`](/api/repositories-advanced#show-query), then the action's own `indexQuery`. A model outside that set answers `404`, as the show route does. The user must also be allowed to `show` that model by its policy, or the action answers `403`.
 - A [standalone action](#standalone-actions) loads no models.
 
-The model policy (`show`, `update`, `delete` and so on) is not checked when an action runs. Restrict the rows in the repository queries, and add a `canRun` callback when running the action needs its own check on each model:
+Apart from that `show` check on a show action, the model policy is not consulted when an action runs: `update`, `delete` and the other methods are never checked, and an index action does not check `show` on each row it receives. Restrict the rows in the repository queries, and add a `canRun` callback when running the action needs its own check on each model:
 
 ```php
 public function actions(RestifyRequest $request): array

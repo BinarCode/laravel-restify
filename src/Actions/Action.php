@@ -170,6 +170,8 @@ abstract class Action implements JsonSerializable
 
             $model = $query->firstOrFail();
 
+            $this->authorizeShownModel($request, $model);
+
             $this->authorizeRun($request, $model);
 
             $this->runInTransaction($request, function () use ($model, $request, &$response) {

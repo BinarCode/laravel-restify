@@ -97,8 +97,19 @@ If your `indexQuery()` hides rows for presentation only (say it lists published 
 getter must still reach the hidden ones, set `restify.repositories.apply_index_query_to_actions_and_getters` to
 `false`. `restify.repositories.apply_show_query_to_actions_and_getters` does the same for `showQuery()`.
 
-The model policy is still not checked when an action or getter runs. Restrict rows in the repository queries,
-and use `canRun()` for a check on each model.
+Index actions and index getters still do not check the model policy on the rows they reach. Restrict rows in
+the repository queries, and use `canRun()` for a check on each model.
+
+### Show actions and show getters need the `show` policy
+
+A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters/{getter}`)
+now answers 403 unless the user is allowed to `show` the model it runs on, the check the show route makes. It
+runs after the model is found, so a record outside `mainQuery()` or `showQuery()` still answers 404, and before
+`canRun()`. The MCP action and getter tools apply it too and report the denial as an error.
+
+A policy without a `show` method denies, as it does on the show route. If a show action or show getter must
+stay available to users who may not show the record, allow `show` for them, or make it a standalone action
+that authorizes itself. No other policy method is checked, and there is no config key for this check.
 
 ### Sorted index queries end with the primary key
 
