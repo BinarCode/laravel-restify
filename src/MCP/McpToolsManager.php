@@ -211,7 +211,11 @@ class McpToolsManager
 
         $repositories = $tools
             ->groupBy('repository')
-            ->map(function (Collection $tools, string $repositoryKey): array {
+            ->map(function (mixed $group, int|string $repositoryKey): array {
+                // groupBy() yields one collection of tools per repository, under a key PHP turns into an
+                // int when the uri key is numeric.
+                $tools = ToolsCollection::wrap($group);
+                $repositoryKey = (string) $repositoryKey;
                 $firstTool = $tools->first();
 
                 // Count operations by type

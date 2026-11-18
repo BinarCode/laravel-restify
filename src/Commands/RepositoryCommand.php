@@ -897,6 +897,9 @@ class RepositoryCommand extends GeneratorCommand
         return null;
     }
 
+    /**
+     * @return list<array{path: string, namespace: string, pattern: mixed, depth: int, isInRestify: bool}>
+     */
     protected function findRepositoriesInPath($searchPath, $baseFolder = '')
     {
         $repositoryPaths = [];
