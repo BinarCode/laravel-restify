@@ -4336,18 +4336,6 @@ parameters:
 			path: src/Fields/File.php
 
 		-
-			message: '#^Parameter \#1 \$path of method Illuminate\\Filesystem\\FilesystemAdapter\:\:temporaryUrl\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Fields/File.php
-
-		-
-			message: '#^Parameter \#1 \$path of method Illuminate\\Filesystem\\FilesystemAdapter\:\:url\(\) expects string, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Fields/File.php
-
-		-
 			message: '#^Parameter \#1 \$path of method Illuminate\\Http\\UploadedFile\:\:store\(\) expects string, string\|null given\.$#'
 			identifier: argument.type
 			count: 2
@@ -4355,12 +4343,6 @@ parameters:
 
 		-
 			message: '#^Parameter \#1 \$path of method Illuminate\\Http\\UploadedFile\:\:storeAs\(\) expects string, string\|null given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Fields/File.php
-
-		-
-			message: '#^Parameter \#1 \$paths of method Illuminate\\Filesystem\\FilesystemAdapter\:\:delete\(\) expects array\|string, mixed given\.$#'
 			identifier: argument.type
 			count: 1
 			path: src/Fields/File.php
@@ -4508,18 +4490,6 @@ parameters:
 			identifier: missingType.parameter
 			count: 1
 			path: src/Fields/HasOne.php
-
-		-
-			message: '#^Parameter \#1 \$path of method Illuminate\\Filesystem\\FilesystemAdapter\:\:exists\(\) expects string, \(callable\)\|string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Fields/Image.php
-
-		-
-			message: '#^Parameter \#1 \$path of method Illuminate\\Filesystem\\FilesystemAdapter\:\:url\(\) expects string, \(callable\)\|string given\.$#'
-			identifier: argument.type
-			count: 2
-			path: src/Fields/Image.php
 
 		-
 			message: '#^Property Binaryk\\LaravelRestify\\Fields\\Field\:\:\$value \(\(callable\(\)\: mixed\)\|string\|null\) does not accept mixed\.$#'
