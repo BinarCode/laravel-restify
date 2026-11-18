@@ -880,6 +880,7 @@ class Repository implements JsonSerializable, RestifySearchable
                 ->collectFields($request)
                 ->forStoreBulk($request, $this)
                 ->withActions($request, $this, $row)
+                ->authorizedStore($request)
                 ->authorizedUpdateBulk($request)
                 ->authorizeActionsToSee($request));
         }
@@ -895,6 +896,7 @@ class Repository implements JsonSerializable, RestifySearchable
                         $fields = $this->collectFields($request)
                             ->forStoreBulk($request, $this)
                             ->withoutActions($request, $this)
+                            ->authorizedStore($request)
                             ->authorizedUpdateBulk($request),
                         $row
                     );
