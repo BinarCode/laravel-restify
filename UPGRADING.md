@@ -2,6 +2,28 @@
 
 ## Unreleased
 
+### File fields store only `http` and `https` URLs, and never pass a URL to the disk
+
+URL input on a `File`, `Image` or `Base64File` field used to store any string PHP accepts as a URL. It now
+stores only an absolute `http` or `https` URL with a host and without a `..` segment. Any other string is
+ignored, as a string that is not a URL always was: the request succeeds and the column keeps its value. A
+client that sent another scheme (`ftp://`, `s3://`, ...) has to send an `http` or `https` URL, or upload the
+file.
+
+The field also no longer hands a stored value to its disk unless that value is a path on the disk, meaning it
+is not a URL and has no `..` segment. For any other value:
+
+- Field delete (`DELETE /{repository}/{id}/field/{field}`), a prunable replacement and pruning on record
+  delete clear the column and delete no file. They used to ask the disk to delete the value, which could
+  resolve to another file on that disk.
+- `Image` resolves to its default value without asking the disk whether the value exists.
+- `resolveUsingFullUrl()` and `resolveUsingTemporaryUrl()` return an `http` or `https` URL as stored, and
+  `null` for anything else, instead of a disk URL built from the value.
+
+This also covers rows written before the upgrade, so no data migration is needed. A callback you passed to
+`delete()` still receives the stored value unchanged; if it passes that value to a disk, guard it with
+`File::isStoragePath($path)`.
+
 ### Laravel 11 is no longer supported
 
 Restify now requires Laravel 12 or 13. Laravel 11 is past its security support, and Composer 2.11

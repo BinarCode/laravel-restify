@@ -27,7 +27,7 @@ class Base64File extends File
         }
 
         // Delegate to parent for URL inputs
-        if (filter_var($input, FILTER_VALIDATE_URL)) {
+        if (static::isRemoteUrl($input)) {
             return parent::fillAttribute($request, $model, $bulkRow);
         }
 

@@ -13,6 +13,7 @@ use Carbon\CarbonInterface;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -72,11 +73,75 @@ class File extends Field implements DeletableContract, StorableContract
 
         $this->delete(function ($request, $model, $disk, $path) {
             if ($file = $this->value ?? $model->{$this->attribute}) {
-                Storage::disk($this->getStorageDisk())->delete($file);
+                $this->deleteFromStorage($file);
 
                 return $this->columnsThatShouldBeDeleted();
             }
         });
+    }
+
+    /**
+     * Determine if a request value is a remote URL the field stores as it is, instead of an upload.
+     *
+     * Only an absolute http or https URL with a host and without a ".." segment qualifies.
+     *
+     * @phpstan-assert-if-true =non-empty-string $value
+     */
+    public static function isRemoteUrl(mixed $value): bool
+    {
+        if (! is_string($value) || filter_var($value, FILTER_VALIDATE_URL) === false) {
+            return false;
+        }
+
+        return in_array(strtolower((string) parse_url($value, PHP_URL_SCHEME)), ['http', 'https'], true)
+            && ! empty(parse_url($value, PHP_URL_HOST))
+            && ! static::hasParentSegment($value);
+    }
+
+    /**
+     * Determine if a stored value is a path on the field's disk.
+     *
+     * The column can also hold a remote URL, or a value that got there some other way. The field stored
+     * no file for those, and a filesystem resolves their ".." segments to the path of another file, so
+     * a URL or a value with a ".." segment is never handed to the disk.
+     *
+     * @phpstan-assert-if-true =non-empty-string $value
+     */
+    public static function isStoragePath(mixed $value): bool
+    {
+        return is_string($value)
+            && $value !== ''
+            && ! static::isUrl($value)
+            && ! static::hasParentSegment($value);
+    }
+
+    /**
+     * Determine if the value is a URL of any scheme: "scheme://...", or whatever URL input has ever stored.
+     */
+    protected static function isUrl(string $value): bool
+    {
+        return preg_match('~^[a-z][a-z0-9+.\-]*://~i', $value) === 1
+            || filter_var($value, FILTER_VALIDATE_URL) !== false;
+    }
+
+    /**
+     * Determine if the value has a ".." segment, with either directory separator.
+     */
+    protected static function hasParentSegment(string $value): bool
+    {
+        return in_array('..', explode('/', str_replace('\\', '/', $value)), true);
+    }
+
+    /**
+     * Delete the stored value from the field's disk, leaving out whatever is not a path on it.
+     */
+    protected function deleteFromStorage(mixed $stored): void
+    {
+        $paths = array_values(array_filter(Arr::wrap($stored), fn (mixed $path): bool => static::isStoragePath($path)));
+
+        if ($paths !== []) {
+            Storage::disk($this->getStorageDisk())->delete($paths);
+        }
     }
 
     /**
@@ -111,6 +176,10 @@ class File extends Field implements DeletableContract, StorableContract
                 return;
             }
 
+            if (! static::isStoragePath($value)) {
+                return static::isRemoteUrl($value) ? $value : null;
+            }
+
             return Storage::disk($this->getStorageDisk())->temporaryUrl(
                 $value,
                 $expiration ?? now()->addMinutes(5)
@@ -132,6 +201,10 @@ class File extends Field implements DeletableContract, StorableContract
         $callback = function ($value) {
             if (! $value) {
                 return;
+            }
+
+            if (! static::isStoragePath($value)) {
+                return static::isRemoteUrl($value) ? $value : null;
             }
 
             return Storage::disk($this->getStorageDisk())->url($value);
@@ -299,11 +372,11 @@ class File extends Field implements DeletableContract, StorableContract
             return call_user_func($this->storeCallback, $request, $model, $this->attribute);
         }
 
-        // Handle URL input first
+        // Handle URL input first. Any other string is not stored: it falls through to the upload handling.
         if ($request->has($this->attribute) && is_string($request->input($this->attribute))) {
             $url = $request->input($this->attribute);
 
-            if (filter_var($url, FILTER_VALIDATE_URL)) {
+            if (static::isRemoteUrl($url)) {
                 if ($this->isPrunable()) {
                     call_user_func(
                         $this->deleteCallback,
