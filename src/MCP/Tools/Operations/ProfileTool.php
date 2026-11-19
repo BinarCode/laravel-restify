@@ -64,12 +64,13 @@ class ProfileTool extends Tool
             ], JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT));
         }
 
-        $mcpRequest = app(McpIndexRequest::class);
+        $repository = $this->repository();
+
+        $mcpRequest = app(McpIndexRequest::class)->forRepository($repository::uriKey());
         $requestData = $request->all();
         $requestData['id'] = $user->getKey();
         $mcpRequest->replace($requestData);
 
-        $repository = $this->repository();
         $repository->request = $mcpRequest;
 
         $result = $repository->indexTool($mcpRequest);

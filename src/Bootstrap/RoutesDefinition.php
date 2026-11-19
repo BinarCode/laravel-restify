@@ -34,9 +34,26 @@ use Illuminate\Support\Facades\Route;
 
 class RoutesDefinition
 {
+    /**
+     * The route action key holding the repository a prefixed or public route was registered for. Those routes
+     * spell the repository out in the URI instead of matching a `{repository}` segment.
+     */
+    final public const REPOSITORY = 'restifyRepository';
+
     private array $excludedMiddleware = [];
 
     public function __invoke(?string $uriKey = null)
+    {
+        if ($uriKey) {
+            Route::group([self::REPOSITORY => $uriKey], fn () => $this->define($uriKey));
+
+            return;
+        }
+
+        $this->define();
+    }
+
+    private function define(?string $uriKey = null): void
     {
         $prefix = $uriKey ?: '{repository}';
 

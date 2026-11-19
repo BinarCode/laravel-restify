@@ -20,9 +20,7 @@ trait McpUpdateTool
             'id' => ['The id field is required.'],
         ]));
 
-        $request->merge([
-            'mcp_repository_key' => static::uriKey(),
-        ]);
+        $request->forRepository(static::uriKey());
 
         $model = $request->writableModelQuery(
             $id = $request->input('id'),
