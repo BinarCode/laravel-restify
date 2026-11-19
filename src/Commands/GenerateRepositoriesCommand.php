@@ -349,15 +349,17 @@ class GenerateRepositoriesCommand extends Command
 
     protected function chooseRepositoryStructure(): void
     {
-        if ($structure = $this->option('structure')) {
-            if (in_array($structure, ['flat', 'domains'])) {
+        $structure = $this->option('structure');
+
+        if (is_string($structure) && $structure !== '') {
+            if (in_array($structure, ['flat', 'domains'], true)) {
                 $this->chosenStructure = $structure;
                 $this->info("Using {$structure} repository structure");
 
                 return;
-            } else {
-                $this->warn("Invalid structure option: {$structure}. Valid options are: flat, domains");
             }
+
+            $this->warn("Invalid structure option: {$structure}. Valid options are: flat, domains");
         }
 
         $this->info('Choose your repository structure:');
