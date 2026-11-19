@@ -13,7 +13,7 @@ jobs:
             fail-fast: false
             matrix:
                 os: [ubuntu-latest, windows-latest]
-                php: [8.5, 8.4, 8.3]
+                php: [8.6, 8.5, 8.4, 8.3]
                 laravel: [13.*, 12.*]
                 stability: [prefer-stable]
                 include:
@@ -21,6 +21,11 @@ jobs:
                       testbench: 11.*
                     - laravel: 12.*
                       testbench: 10.*
+                exclude:
+                    # Laravel 12 supports PHP 8.2 - 8.5 and is past its bug-fix window,
+                    # so it will not be patched for PHP 8.6.
+                    - php: 8.6
+                      laravel: 12.*
 
         name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.stability }} - ${{ matrix.os }}
 
