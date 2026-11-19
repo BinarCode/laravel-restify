@@ -231,6 +231,22 @@ Only the Restify request handed to fields, actions and repository methods is nar
 application request is a separate instance, so a model event or listener that reads `request()`
 still sees every row; pass the Restify request along, or read the row from the model, to stay linear.
 
+### Bulk store honours a field's `canStore`
+
+Bulk store (`POST /{repository}/bulk`) filtered its fields with `canUpdateBulk` instead of `canStore`.
+A field guarded with `canStore()` was therefore skipped by a single store but written by a bulk
+store. Bulk store now checks `canStore` as well: a field it denies is skipped for that row, exactly
+as on a single store. The value sent for it is ignored, its default value and its field action are
+not applied, and the request still succeeds.
+
+The closure runs for each row and receives the bulk request (`RepositoryStoreBulkRequest`) narrowed
+to that row, so `$request->payload()` holds that row alone, keyed by its index, and
+`$request->input('title')` is empty. A `canStore` closure that type-hints `RepositoryStoreRequest`
+fails with a `TypeError` on a bulk store; type-hint `RestifyRequest` or `Illuminate\Http\Request`.
+
+Bulk store still skips a field whose `canUpdateBulk` returns `false`, as it did before. Bulk update
+is unchanged: it checks `canUpdateBulk` and not `canUpdate`.
+
 ### Policy deny messages on attach, sync and detach reach the client
 
 `attach*`, `sync*` and `detach*` policy methods that return `Response::deny('message')` (or `denyWithStatus()` / `denyAsNotFound()`) now answer with that message and status instead of the generic "You cannot attach model..." text. A policy returning plain `false` still answers the generic 403.
