@@ -34,7 +34,7 @@ This method is ideal for:
 
 ### Index query
 
-The `indexQuery` method is specifically called for listing operations (`GET /api/restify/posts`) and global search requests. It builds on top of the `mainQuery`:
+The `indexQuery` method is specifically called for listing operations (`GET /api/restify/posts`, and `POST /api/restify/posts/apply-restify-advanced-filters`, which lists the same rows with the advanced filters sent in the body) and global search requests. It builds on top of the `mainQuery`:
 
 ```php
 // PostRepository
