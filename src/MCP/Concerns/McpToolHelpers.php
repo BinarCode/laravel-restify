@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
+use Binaryk\LaravelRestify\Http\Requests\RequestLimits;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 
@@ -72,7 +73,12 @@ trait McpToolHelpers
 
         $documentation .= "Nested Relationships:\n";
         $documentation .= "You can include deeply nested relationships using dot notation with field selection at each level.\n";
-        $documentation .= "Syntax: relationship[fields].nested[fields].deeper[fields] - supports unlimited nesting depth\n";
+        $maxDepth = RequestLimits::maxRelatedDepth();
+        $depthNote = $maxDepth === null
+            ? 'supports unlimited nesting depth'
+            : "at most {$maxDepth} levels deep, deeper levels are ignored";
+
+        $documentation .= "Syntax: relationship[fields].nested[fields].deeper[fields] - {$depthNote}\n";
         $documentation .= "Note: Field selection works at every nesting level independently.\n\n";
 
         $documentation .= "Examples:\n";

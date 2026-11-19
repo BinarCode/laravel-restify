@@ -15,6 +15,8 @@ class RepositoryDestroyBulkController
 
     public function __invoke(RepositoryDestroyBulkRequest $request): JsonResponse
     {
+        $request->ensureBulkRowsWithinLimit();
+
         /** @var ValidatorContract $validator */
         $validator = $request->repository()::validatorForDestroyBulk($request);
         $validator->validate();

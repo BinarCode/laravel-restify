@@ -22,11 +22,15 @@ class McpIndexMaxPerPageTest extends IntegrationTestCase
 
     #[Test]
     #[TestWith([50, 100, 55, 50], 'cap 50: an int perPage above the cap is clamped')]
-    #[TestWith([null, 100.0, 3, 100], 'no cap: a float perPage is honoured, not defaulted')]
+    #[TestWith([null, 100.0, 3, 100], 'default cap: a float perPage equal to it is honoured, not defaulted')]
+    #[TestWith([null, 500, 3, 100], 'default cap: an int perPage above it is clamped')]
+    #[TestWith([null, 1e20, 3, 100], 'default cap: an unrepresentable-as-int float perPage is clamped, not a crash')]
+    #[TestWith([500, 400.0, 3, 400], 'cap raised above the default: a float perPage under it is untouched')]
+    #[TestWith([0, 500.0, 3, 500], 'cap turned off: a float perPage is honoured, not defaulted')]
     #[TestWith([50, 100.0, 55, 50], 'cap 50: a float perPage above the cap is clamped')]
     #[TestWith([50, 20.0, 3, 20], 'cap 50: a float perPage under the cap is untouched')]
     #[TestWith([50, 1e20, 3, 50], 'cap 50: an unrepresentable-as-int float perPage is clamped, not a crash')]
-    #[TestWith([null, 1e20, 3, PHP_INT_MAX], 'no cap: an unrepresentable-as-int float perPage saturates, not a crash')]
+    #[TestWith([0, 1e20, 3, PHP_INT_MAX], 'cap turned off: an unrepresentable-as-int float perPage saturates, not a crash')]
     public function it_normalizes_a_float_per_page_on_the_mcp_index_path(
         ?int $maxPerPage,
         int|float $requestedPerPage,

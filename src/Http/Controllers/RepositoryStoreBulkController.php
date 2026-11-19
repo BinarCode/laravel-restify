@@ -8,6 +8,8 @@ class RepositoryStoreBulkController extends RepositoryController
 {
     public function __invoke(RepositoryStoreBulkRequest $request)
     {
+        $request->ensureBulkRowsWithinLimit();
+
         return $request->repository()
             ->allowToBulkStore($request)
             ->storeBulk($request);
