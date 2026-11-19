@@ -30,6 +30,31 @@ Restify now requires Laravel 12 or 13. Laravel 11 is past its security support, 
 refuses to install it by default. An app still on Laravel 11 keeps resolving the last 10.4.x
 release; upgrade Laravel to get later fixes.
 
+### The MCP store tool downloads a remote file only from the addresses it validated
+
+When the MCP store tool is given a URL for a file field, it used to check the addresses of the host and
+then let the download resolve the host a second time. The download now connects only to an address that
+passed the check. The host of the URL is still sent in the `Host` header, and the TLS certificate is still
+verified against it. Some URLs that were fetched before are now refused:
+
+- A host is refused when any of its `A` or `AAAA` addresses is not a public unicast address. Next to
+  private, loopback and link-local addresses, this now covers carrier-grade NAT (`100.64.0.0/10`),
+  `192.0.0.0/24`, the documentation and benchmarking blocks, multicast, and IPv6 addresses that carry an
+  IPv4 address: IPv4-mapped, 6to4, Teredo, and NAT64 of an address that is not public. `AAAA` records
+  were not checked before.
+- The host has to be a fully qualified ASCII host name or an IP address in its standard notation. Decimal,
+  hexadecimal, octal and shortened spellings of an IPv4 address, a single-label name, and a name with a
+  trailing dot or an underscore are refused. So is a URL with whitespace or a control character in it.
+  Send an internationalized name in its `xn--` form and encode spaces as `%20`.
+- Host names are resolved with DNS `A` and `AAAA` queries. A name that exists only in the server's hosts
+  file no longer resolves, and a lookup that fails for either record type refuses the URL.
+- Only a `2xx` response becomes the file. A redirect was never followed, but its body used to be stored;
+  it no longer is. A response cut short by the timeout is discarded too.
+
+`isSafePublicUrl()` and `fetchRemoteFile()` keep their signatures, and the store tool still calls both. To
+resolve hosts or download files your own way, bind `Binaryk\LaravelRestify\MCP\Files\HostResolver` or
+`Binaryk\LaravelRestify\MCP\Files\RemoteFileTransport` in a service provider.
+
 ### Global search applies the `show` policy and `indexQuery()`
 
 `GET /search` and the MCP `global-search` tool now leave out every matched model the user is not

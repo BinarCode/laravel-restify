@@ -4,6 +4,7 @@ namespace Binaryk\LaravelRestify\MCP\Concerns;
 
 use Binaryk\LaravelRestify\Fields\Field;
 use Binaryk\LaravelRestify\Fields\File;
+use Binaryk\LaravelRestify\MCP\Files\RemoteFileFetcher;
 use Binaryk\LaravelRestify\MCP\Requests\McpStoreRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Http\UploadedFile;
@@ -49,6 +50,8 @@ trait McpStoreTool
             return new UploadedFile($value, basename($value), mime_content_type($value) ?: null, null, true);
         }
 
+        // A first gate, kept so that an override of it still applies. The download does not rely on it:
+        // fetchRemoteFile() resolves the host itself, validates those addresses and connects to them.
         if (! static::isSafePublicUrl($value)) {
             return null;
         }
@@ -67,60 +70,27 @@ trait McpStoreTool
         return new UploadedFile($tempPath, $fileName, mime_content_type($tempPath) ?: null, null, true);
     }
 
+    /**
+     * Determine if the URL is an http or https URL whose host resolves to public addresses only.
+     *
+     * This is a first gate. What keeps the download safe is fetchRemoteFile(), which validates the
+     * addresses it resolves itself and connects to those.
+     */
     public static function isSafePublicUrl(string $url): bool
     {
-        $parts = parse_url($url);
-
-        if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
-            return false;
-        }
-
-        if (! in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
-            return false;
-        }
-
-        $host = trim($parts['host'], '[]');
-
-        $ips = filter_var($host, FILTER_VALIDATE_IP)
-            ? [$host]
-            : (gethostbynamel($host) ?: []);
-
-        if ($ips === []) {
-            return false;
-        }
-
-        foreach ($ips as $ip) {
-            if (! filter_var($ip, FILTER_VALIDATE_IP, FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE)) {
-                return false;
-            }
-        }
-
-        return true;
+        return app(RemoteFileFetcher::class)->pin($url) !== null;
     }
 
+    /**
+     * Download the file, or return null when the URL is refused or the download fails.
+     */
     protected static function fetchRemoteFile(string $url): ?string
     {
-        $maxBytes = (int) config('restify.mcp.files.max_bytes', 10 * 1024 * 1024);
-        $timeout = (int) config('restify.mcp.files.timeout', 10);
-
-        $context = stream_context_create([
-            'http' => [
-                'timeout' => $timeout,
-                'follow_location' => 0,
-            ],
-        ]);
-
-        $contents = @file_get_contents($url, false, $context, 0, $maxBytes + 1);
-
-        if ($contents === false) {
-            return null;
-        }
-
-        if (strlen($contents) > $maxBytes) {
-            return null;
-        }
-
-        return $contents;
+        return app(RemoteFileFetcher::class)->fetch(
+            $url,
+            (int) config('restify.mcp.files.max_bytes', 10 * 1024 * 1024),
+            (int) config('restify.mcp.files.timeout', 10),
+        );
     }
 
     public static function storeToolSchema(JsonSchema $schema): array
