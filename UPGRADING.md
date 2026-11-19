@@ -39,6 +39,23 @@ The `detach{Relation}` policy method now receives the parent model. It used to r
 instance of the model, so a check on the parent's attributes there denied every detach. If your policy
 worked around that, the workaround can go.
 
+### The POST advanced filters endpoint is an index request
+
+`POST /{repository}/apply-restify-advanced-filters` lists the repository like `GET /{repository}`, but it
+was not treated as an index request: the repository `indexQuery()` was skipped, `fields()` was used even
+when the repository defines `fieldsForIndex()`, and relationships hidden from the index were still
+returned. It now behaves as the index does, with the filters read from the body:
+
+- Rows your `indexQuery()` excludes are no longer returned or counted in `meta`, and the ordering and
+  eager loads your `indexQuery()` adds apply here too.
+- A repository that defines `fieldsForIndex()` serializes those fields on this endpoint.
+- A relationship declared with `hideFromIndex()` is left out.
+- `$request->isIndexRequest()` is true and the request is a `RepositoryIndexRequest`, so code of yours
+  that branches on either (a `collectMiddlewares()` override, a field callback) takes the index branch.
+
+If a client relied on this endpoint to read rows or fields the index does not return, expose them on
+purpose instead, for example through a getter or a dedicated repository.
+
 ### Nested routes authorize the parent
 
 The nested routes (`GET`, `POST`, `PUT` and `DELETE` on `/{parent}/{parentId}/{relation}[/{id}]`) now load the
