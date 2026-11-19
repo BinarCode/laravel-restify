@@ -2,14 +2,22 @@
 
 namespace Binaryk\LaravelRestify\MCP\Concerns;
 
+use BackedEnum;
 use Binaryk\LaravelRestify\Contracts\RestifySearchable;
 use Binaryk\LaravelRestify\Filters\MatchesCollection;
 use Binaryk\LaravelRestify\Filters\MatchFilter;
+use Binaryk\LaravelRestify\Filters\PaginationDataObject;
 use Binaryk\LaravelRestify\Filters\SearchablesCollection;
 use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\MCP\Requests\McpRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
+use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\JsonSchema\JsonSchema;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Stringable;
 
 /**
  * @mixin Repository
@@ -19,6 +27,43 @@ trait McpIndexTool
     public function indexTool(McpIndexRequest $request): array
     {
         return $this->index($request)->getData(true);
+    }
+
+    /**
+     * The index response narrowed to the given user: the fields, scopes and show policy of the index tool, holding
+     * that one row or none.
+     *
+     * The key is never read from the request. It is a scope of the query, so it is ANDed with the rest of it as a
+     * whole even when a repository scope ends in an OR, and it is checked again on the rows read. The page and the
+     * page size are fixed, and the response skips the index cache.
+     */
+    public function profileTool(McpIndexRequest $request, Authenticatable $user): array
+    {
+        $key = $user->getAuthIdentifier();
+
+        $canonical = static fn (mixed $value): ?string => match (true) {
+            $value instanceof BackedEnum => (string) $value->value,
+            is_int($value), is_string($value), $value instanceof Stringable => (string) $value,
+            default => null,
+        };
+
+        $ownKey = $canonical($key);
+
+        /** @var LengthAwarePaginator<int, Model> $paginator */
+        $paginator = RepositorySearchService::make()->search($request, $this)
+            ->withGlobalScope('restify-profile', fn (Builder $query) => $query->whereKey($key))
+            ->paginate(
+                PaginationDataObject::fromInput(null, null)->resolvePerPage(static::$defaultPerPage),
+                page: 1,
+            );
+
+        $paginator->setCollection(
+            $paginator->getCollection()
+                ->filter(fn (Model $model): bool => $ownKey !== null && $canonical($model->getKey()) === $ownKey)
+                ->values()
+        );
+
+        return response()->json($this->serializeIndexPage($request, $paginator))->getData(true);
     }
 
     public static function indexToolSchema(JsonSchema $schema): array

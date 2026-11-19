@@ -10843,7 +10843,7 @@ parameters:
 			path: src/MCP/Tools/Operations/IndexTool.php
 
 		-
-			message: '#^Call to an undefined method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:indexTool\(\)\.$#'
+			message: '#^Call to an undefined method Binaryk\\LaravelRestify\\Repositories\\Repository\:\:profileTool\(\)\.$#'
 			identifier: method.notFound
 			count: 1
 			path: src/MCP/Tools/Operations/ProfileTool.php

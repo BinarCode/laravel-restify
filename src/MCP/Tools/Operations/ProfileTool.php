@@ -5,6 +5,7 @@ namespace Binaryk\LaravelRestify\MCP\Tools\Operations;
 use Binaryk\LaravelRestify\MCP\Requests\McpIndexRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Illuminate\Contracts\JsonSchema\JsonSchema;
+use Illuminate\Support\Arr;
 use Laravel\Mcp\Request;
 use Laravel\Mcp\Response;
 use Laravel\Mcp\ResponseFactory;
@@ -14,6 +15,13 @@ use Laravel\Mcp\Server\Tools\Annotations\IsReadOnly;
 #[IsReadOnly]
 class ProfileTool extends Tool
 {
+    /**
+     * The arguments forwarded to the repository: the relationships to load, under either name.
+     *
+     * @var list<string>
+     */
+    private const ARGUMENTS = ['include', 'related'];
+
     public function __construct(protected string $repositoryClass) {}
 
     public function repository(): Repository
@@ -65,15 +73,18 @@ class ProfileTool extends Tool
         }
 
         $mcpRequest = app(McpIndexRequest::class);
-        $requestData = $request->all();
-        $requestData['id'] = $user->getKey();
-        $mcpRequest->replace($requestData);
+
+        // Only the arguments of this tool reach the repository. Whatever else a caller sends, as an argument or on
+        // the URL of the MCP endpoint, is dropped: a filter, search, sort or page must not decide whose row is read.
+        foreach (array_diff($mcpRequest->query->keys(), self::ARGUMENTS) as $key) {
+            $mcpRequest->query->remove($key);
+        }
+
+        $mcpRequest->replace(Arr::only($request->all(), self::ARGUMENTS));
 
         $repository = $this->repository();
         $repository->request = $mcpRequest;
 
-        $result = $repository->indexTool($mcpRequest);
-
-        return Response::structured($result);
+        return Response::structured($repository->profileTool($mcpRequest, $user));
     }
 }
