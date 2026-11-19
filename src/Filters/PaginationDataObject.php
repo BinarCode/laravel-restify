@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Filters;
 
+use Binaryk\LaravelRestify\Http\Requests\RequestLimits;
 use Spatie\LaravelData\Data;
 
 class PaginationDataObject extends Data
@@ -24,11 +25,15 @@ class PaginationDataObject extends Data
         );
     }
 
+    /**
+     * The requested page size, or the default when none is sent, clamped to
+     * `restify.pagination.max_per_page` (see RequestLimits::maxPerPage()).
+     */
     public function resolvePerPage(int $default): int
     {
         $perPage = $this->positiveInt($this->perPage) ?? $default;
 
-        $maxPerPage = $this->positiveInt(config('restify.pagination.max_per_page'));
+        $maxPerPage = RequestLimits::maxPerPage($default);
 
         return $maxPerPage !== null ? min($perPage, $maxPerPage) : $perPage;
     }

@@ -109,6 +109,49 @@ class RelatablePerPageTest extends IntegrationTestCase
     }
 
     #[Test]
+    #[TestWith([null, 100], 'default cap: clamped down to it')]
+    #[TestWith([200, 105], 'cap raised in config: every row is returned')]
+    #[TestWith([0, 105], 'cap turned off: every row is returned')]
+    public function it_resolves_a_large_relatable_per_page_on_a_has_many_field_against_the_cap(
+        ?int $maxPerPage,
+        int $expected,
+    ): void {
+        config(['restify.pagination.max_per_page' => $maxPerPage]);
+
+        $user = tap($this->mockUsers()->first(), function ($user) {
+            $this->mockPosts($user->getKey(), 105);
+        });
+
+        $this->getJson(UserWithPostsForRelatablePerPage::route($user, query: [
+            'related' => 'posts',
+            'relatablePerPage' => 9999,
+        ]))->assertJsonCount($expected, 'data.relationships.posts');
+    }
+
+    #[Test]
+    public function the_default_cap_leaves_the_default_relatable_per_page_alone(): void
+    {
+        $user = tap($this->mockUsers()->first(), function ($user) {
+            $this->mockPosts($user->getKey(), 20);
+        });
+
+        $this->getJson(UserWithPostsForRelatablePerPage::route($user, query: [
+            'related' => 'posts',
+        ]))->assertJsonCount(15, 'data.relationships.posts');
+    }
+
+    #[Test]
+    public function it_clamps_relatable_per_page_to_the_default_cap_on_a_belongs_to_many_field(): void
+    {
+        $company = $this->companyWithAttachedUsers(105);
+
+        $this->getJson(CompanyRepository::route($company, query: [
+            'related' => 'users',
+            'relatablePerPage' => 9999,
+        ]))->assertJsonCount(100, 'data.relationships.users');
+    }
+
+    #[Test]
     public function it_clamps_relatable_per_page_on_a_belongs_to_many_field(): void
     {
         config(['restify.pagination.max_per_page' => 50]);

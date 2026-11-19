@@ -336,6 +336,62 @@ Custom attach and detach handlers are not covered. A field's `attachCallback()` 
 before any related id is looked up. Attach and sync both route through the attach handlers.
 They still receive the raw request ids, so scope and authorize those ids yourself.
 
+### Page size, bulk rows and `related` depth are capped by default
+
+One request could ask for any page size, any number of bulk rows and any `related` nesting depth. Each
+of these now has a limit that applies without any configuration. The defaults are applied in code, so an
+application whose published `config/restify.php` predates the new keys is capped as well.
+
+| What | Config key (environment variable) | Default | A request above the limit |
+| --- | --- | --- | --- |
+| `perPage`, `page[size]`, `relatablePerPage` | `restify.pagination.max_per_page` (`RESTIFY_MAX_PER_PAGE`) | 100 | is clamped down to the limit |
+| Rows in a bulk store, bulk update or bulk delete | `restify.bulk.max_rows` (`RESTIFY_MAX_BULK_ROWS`) | 1000 | answers `422`, nothing is written |
+| Levels in a `related` / `include` path | `restify.related.max_depth` (`RESTIFY_MAX_RELATED_DEPTH`) | 5 | has its deeper levels ignored |
+
+The same limits apply to the MCP tools, which read `perPage` and `include` the way the REST endpoints do.
+
+What changes if you never set `max_per_page`:
+
+- `?perPage=500` now returns 100 rows per page, and `meta.per_page` and `meta.last_page` say so. A client
+  that fetched everything with one large `perPage` has to follow the pages, or you raise the cap.
+- `?relatablePerPage=500` now returns at most 100 related rows per parent.
+- A repository whose `$defaultPerPage` or `$defaultRelatablePerPage` is above 100 keeps that default, and
+  clients may request up to it on that repository. Responses to requests that send no page size are unchanged.
+- Index related lists are still not limited unless the request sends `relatablePerPage`: the default cap
+  alone does not opt in to the behaviour described in the next section.
+
+`null` no longer means "no cap" for `max_per_page`: `null`, an empty string and any other non-numeric value now
+mean the default of 100. Use `0`, a negative number or `false` to remove a limit; this works for all three keys. A
+`max_per_page` you already set to a number behaves exactly as before.
+
+A bulk request with more than 1000 rows answers `422` with a `bulk` validation error before any row is
+authorized, validated or written. Split the rows over several requests or raise `restify.bulk.max_rows`.
+
+A `related` path longer than five levels is loaded up to the fifth, so `a.b.c.d.e.f` returns `a.b.c.d.e`. A
+dotted path the repository declares itself in `$related` is still loaded in full when requested on that
+repository. Raise `restify.related.max_depth` if your clients nest deeper.
+
+To get the previous, unlimited behaviour back:
+
+```dotenv
+RESTIFY_MAX_PER_PAGE=0
+RESTIFY_MAX_BULK_ROWS=0
+RESTIFY_MAX_RELATED_DEPTH=0
+```
+
+If your published config has no `bulk` and `related` sections the environment variables still work. To set the
+values in the file instead, add:
+
+```php
+'bulk' => [
+    'max_rows' => env('RESTIFY_MAX_BULK_ROWS', 1000),
+],
+
+'related' => [
+    'max_depth' => env('RESTIFY_MAX_RELATED_DEPTH', 5),
+],
+```
+
 ### Index related lists are limited when `max_per_page` is set
 
 `?related=...` on index now limits has-many-like relations (`HasMany`, `MorphMany`,
