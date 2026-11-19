@@ -3,6 +3,7 @@
 namespace Binaryk\LaravelRestify\Services\Search;
 
 use Binaryk\LaravelRestify\Contracts\KeyedPivot;
+use Binaryk\LaravelRestify\Eager\RelatedCollection;
 use Binaryk\LaravelRestify\Events\AdvancedFiltersApplied;
 use Binaryk\LaravelRestify\Fields\EagerField;
 use Binaryk\LaravelRestify\Filters\AdvancedFiltersCollection;
@@ -31,6 +32,11 @@ class RepositorySearchService
 
     /** @var Repository */
     protected $repository;
+
+    /**
+     * @var array<class-string<Repository>, RelatedCollection<array-key, mixed>>
+     */
+    private array $declaredByRepository = [];
 
     public function search(RestifyRequest $request, Repository $repository): Builder|Relation
     {
@@ -140,27 +146,20 @@ class RepositorySearchService
 
     public function prepareRelations(RestifyRequest $request, Builder|Relation $query): Builder|Relation
     {
-        $eager = ($this->repository)::collectRelated()
-            ->forRequest($request, $this->repository)
-            ->map(
-                fn ($relation) => $relation instanceof EagerField
-                    ? $relation->relation
-                    : $relation
-            )
-            ->values()
-            ->unique()
-            ->all();
+        $declared = ($this->repository)::collectRelated()->forRequest($request, $this->repository);
 
-        if (empty($eager)) {
+        if ($declared->isEmpty()) {
             return $query;
         }
 
-        $declared = array_values(array_filter($eager, 'is_string'));
+        $this->declaredByRepository = [];
+
+        $model = $query->getModel();
 
         $filtered = array_filter(
             $request->related()->makeTree(),
-            fn (string $relationPath): bool => $this->isDeclared($relationPath, $declared)
-                && $this->relationExists($query, $relationPath),
+            fn (string $relationPath): bool => $this->isDeclared($request, $declared, explode('.', $relationPath))
+                && $this->relationExists($model, $relationPath),
         );
 
         return $query->with(
@@ -244,9 +243,9 @@ class RepositorySearchService
             }
         }
 
-        $relationInstance = $repositoryClass::newModel()->{$relation}();
+        $relationInstance = $this->relationOf($repositoryClass::newModel(), $relation);
 
-        if (! $relationInstance instanceof Relation) {
+        if ($relationInstance === null) {
             return null;
         }
 
@@ -255,12 +254,46 @@ class RepositorySearchService
     }
 
     /**
-     * @param  list<string>  $declared
+     * Whether the repository that owns these entries declares the requested path. The request only ever
+     * gets compared with declared names here; nothing is called on a model.
+     *
+     * - A string entry, or an eager field under a dotted key, is one explicit path and has to match exactly:
+     *   it is serialized straight from the model, with whatever is loaded on it.
+     * - An eager field under a plain key is serialized by its repository, so the path may go on with what
+     *   that repository declares in turn.
+     *
+     * @param  RelatedCollection<array-key, mixed>  $declared
+     * @param  list<string>  $segments
      */
-    private function isDeclared(string $relationPath, array $declared): bool
+    private function isDeclared(RestifyRequest $request, RelatedCollection $declared, array $segments): bool
     {
-        foreach ($declared as $declaredPath) {
-            if ($relationPath === $declaredPath || str_starts_with($relationPath, $declaredPath.'.')) {
+        $relationPath = implode('.', $segments);
+
+        foreach ($declared as $key => $entry) {
+            if (! $entry instanceof EagerField) {
+                if ($entry === $relationPath) {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if ($entry->relation === $relationPath) {
+                return true;
+            }
+
+            if (str_contains((string) $key, '.')) {
+                if ($key === $relationPath) {
+                    return true;
+                }
+
+                continue;
+            }
+
+            if (count($segments) > 1
+                && $entry->relation === $segments[0]
+                && $this->isDeclared($request, $this->declaredBy($request, $entry->repositoryClass), array_slice($segments, 1))
+            ) {
                 return true;
             }
         }
@@ -268,23 +301,67 @@ class RepositorySearchService
         return false;
     }
 
-    private function relationExists(Builder|Relation $query, string $relationPath): bool
+    /**
+     * The related entries a nested repository declares and the user may see. The repository is resolved the
+     * way the serializer resolves it, so both read the same declarations.
+     *
+     * @return RelatedCollection<array-key, mixed>
+     */
+    private function declaredBy(RestifyRequest $request, string $repositoryClass): RelatedCollection
     {
-        try {
-            foreach (explode('.', $relationPath) as $segment) {
-                $relation = $query->getRelation($segment);
+        if (! is_subclass_of($repositoryClass, Repository::class)) {
+            return RelatedCollection::make([]);
+        }
 
-                if (! $relation instanceof Relation) {
-                    return false;
-                }
+        if (! isset($this->declaredByRepository[$repositoryClass])) {
+            $repository = $repositoryClass::resolveWith($repositoryClass::newModel());
 
-                $query = $relation->getRelated()->newModelQuery();
+            $this->declaredByRepository[$repositoryClass] = $repository::collectRelated()
+                ->intoAssoc()
+                ->filter(fn (mixed $entry): bool => ! $entry instanceof EagerField || $entry->authorize($request));
+        }
+
+        return $this->declaredByRepository[$repositoryClass];
+    }
+
+    /**
+     * Whether every segment of a declared path is an Eloquent relation.
+     */
+    private function relationExists(Model $model, string $relationPath): bool
+    {
+        foreach (explode('.', $relationPath) as $segment) {
+            $relation = $this->relationOf($model, $segment);
+
+            if ($relation === null) {
+                return false;
             }
 
-            return true;
-        } catch (Throwable) {
-            return false;
+            $model = $relation->getRelated();
         }
+
+        return true;
+    }
+
+    /**
+     * The relation a declared name stands for on the model, or null when it is not one. The name has to be
+     * a method of the model or a relation registered with resolveRelationUsing(), so the call can never be
+     * forwarded to the query builder.
+     *
+     * @return Relation<Model, Model, mixed>|null
+     */
+    private function relationOf(Model $model, string $name): ?Relation
+    {
+        if (! $model->isRelation($name)) {
+            return null;
+        }
+
+        try {
+            $relation = Relation::noConstraints(fn () => $model->newInstance()->{$name}());
+        } catch (Throwable) {
+            return null;
+        }
+
+        return $relation instanceof Relation ? $relation : null;
     }
 
     /**
