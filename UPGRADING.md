@@ -165,6 +165,7 @@ or use an eager field and declare the next relation in its repository.
 Restify also no longer calls a requested segment on the model to find out whether it is a relation. A declared
 relation is eager loaded only when the model defines it as a method or registers it with `resolveRelationUsing()`.
 One that exists only through a model's own `__call` is still returned, loaded for each row instead.
+
 ### The repository of a request comes from its route, never from its input
 
 A prefixed repository (`$prefix`) and a public one (`$public`) get routes of their own, which spell the repository
