@@ -65,10 +65,12 @@ class ShowTool extends Tool
 
     public function handle(Request $request): Response|ResponseFactory
     {
-        $mcpRequest = app(McpShowRequest::class);
+        $repository = $this->repository();
+
+        $mcpRequest = app(McpShowRequest::class)->forRepository($repository::uriKey());
         $mcpRequest->replace($request->all());
 
-        $result = $this->repository()->showTool($mcpRequest);
+        $result = $repository->showTool($mcpRequest);
 
         return Response::structured($result);
     }

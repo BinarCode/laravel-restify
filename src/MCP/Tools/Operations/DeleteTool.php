@@ -59,10 +59,12 @@ class DeleteTool extends Tool
 
     public function handle(Request $request): Response|ResponseFactory
     {
-        $mcpRequest = app(McpDestroyRequest::class);
+        $repository = $this->repository();
+
+        $mcpRequest = app(McpDestroyRequest::class)->forRepository($repository::uriKey());
         $mcpRequest->merge($request->all());
 
-        $result = $this->repository()->deleteTool($mcpRequest);
+        $result = $repository->deleteTool($mcpRequest);
 
         return Response::structured($result);
     }

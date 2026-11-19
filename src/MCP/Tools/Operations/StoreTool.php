@@ -59,10 +59,12 @@ class StoreTool extends Tool
 
     public function handle(Request $request): Response|ResponseFactory
     {
-        $mcpRequest = app(McpStoreRequest::class);
+        $repository = $this->repository();
+
+        $mcpRequest = app(McpStoreRequest::class)->forRepository($repository::uriKey());
         $mcpRequest->replace($request->all());
 
-        $result = $this->repository()->storeTool($mcpRequest);
+        $result = $repository->storeTool($mcpRequest);
 
         return Response::structured($result);
     }

@@ -2,6 +2,7 @@
 
 namespace Binaryk\LaravelRestify\Http\Requests\Concerns;
 
+use Binaryk\LaravelRestify\Bootstrap\RoutesDefinition;
 use Binaryk\LaravelRestify\Exceptions\RepositoryException;
 use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
@@ -13,6 +14,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Pipeline\Pipeline;
+use Illuminate\Routing\Route;
 use Throwable;
 
 /**
@@ -21,17 +23,38 @@ use Throwable;
 trait InteractWithRepositories
 {
     /**
+     * The repository bound by forRepository().
+     */
+    private ?string $boundRepositoryKey = null;
+
+    /**
+     * Bind the repository this request runs against. For a request the server builds itself, such as an MCP tool
+     * call, where no route names the repository.
+     */
+    public function forRepository(string $uriKey): static
+    {
+        $this->boundRepositoryKey = $uriKey;
+
+        return $this;
+    }
+
+    /**
+     * The repository comes from what the server knows, never from the request input: the given key, the repository
+     * bound with forRepository(), the `{repository}` URL segment, or the repository a prefixed or public route was
+     * registered for. Only a route with none of these, such as a custom repository route, is looked up by its path,
+     * without the query string.
+     *
      * @throws Throwable
      */
     public function repository($key = null): Repository
     {
         try {
-            $key = $key ?? $this->route('repository') ?? $this->input('mcp_repository_key');
+            $key = $key ?? $this->boundRepositoryKey ?? $this->route('repository') ?? $this->routeRepositoryKey();
 
             /**
              * @var Repository|null $class
              */
-            if (is_null($key) && $class = Restify::repositoryClassForPrefix($this->getRequestUri())) {
+            if (is_null($key) && $class = Restify::repositoryClassForPrefix($this->getPathInfo())) {
                 $key = $class::uriKey();
             }
 
@@ -60,6 +83,22 @@ trait InteractWithRepositories
         } catch (RepositoryException $e) {
             abort($e->getCode() ?: JsonResponse::HTTP_BAD_REQUEST, $e->getMessage());
         }
+    }
+
+    /**
+     * The repository a prefixed or public route was registered for.
+     */
+    private function routeRepositoryKey(): ?string
+    {
+        $route = $this->route();
+
+        if (! $route instanceof Route) {
+            return null;
+        }
+
+        $key = $route->getAction(RoutesDefinition::REPOSITORY);
+
+        return is_string($key) ? $key : null;
     }
 
     public function repositoryWith(Model $model, ?string $uriKey = null): Repository

@@ -83,11 +83,10 @@ class GetterTool extends Tool
 
     public function handle(Request $request): Response|ResponseFactory
     {
-        $mcpRequest = app(McpGetterRequest::class);
+        $repository = $this->repository();
+
+        $mcpRequest = app(McpGetterRequest::class)->forRepository($repository::uriKey());
         $mcpRequest->replace($request->all());
-        $mcpRequest->merge([
-            'mcp_repository_key' => $this->repositoryClass::uriKey(),
-        ]);
 
         // Parse repositories string to array if provided
         if ($mcpRequest->has('repositories') && is_string($mcpRequest->input('repositories'))) {
@@ -110,7 +109,7 @@ class GetterTool extends Tool
             });
         }
 
-        $result = $this->repository()->getterTool($this->getter, $mcpRequest);
+        $result = $repository->getterTool($this->getter, $mcpRequest);
 
         return Response::structured($result);
     }
