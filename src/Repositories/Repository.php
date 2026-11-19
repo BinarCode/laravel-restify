@@ -720,6 +720,17 @@ class Repository implements JsonSerializable, RestifySearchable
                 page: $pagination->resolvePage(),
             );
 
+        return $this->serializeIndexPage($request, $paginator);
+    }
+
+    /**
+     * Serialize a page of models as the index response: the rows the user may show, the pagination meta and the links.
+     *
+     * @param  LengthAwarePaginator<int, Model>  $paginator
+     * @return array<array-key, mixed>
+     */
+    protected function serializeIndexPage(RestifyRequest $request, LengthAwarePaginator $paginator): array
+    {
         $items = $this->indexCollection($request, $paginator->getCollection())->map(function (Model $value) {
             $repository = static::resolveWith($value);
             // Ensure each resolved repository maintains the original request

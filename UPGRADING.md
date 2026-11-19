@@ -39,6 +39,18 @@ of that repository's search results; add `show` or set `$globallySearchable = fa
 The MCP `global-search` tool now also runs the repository `indexQuery()`, as `GET /search` already
 did, so rows your `indexQuery()` hides no longer appear in MCP search results.
 
+### The MCP profile tool reads only `include`
+
+The `users-profile-tool` (and `execute-operation` with `operation_type: "profile"`) now constrains the
+authenticated user's key on the query itself and forwards only `include` / `related` to the repository.
+Every other argument, such as a match filter, `search`, `sort`, `page` or `perPage`, used to reach the
+underlying index query and is now ignored, whether it is sent as a tool argument or on the URL of the MCP
+endpoint. The tool no longer needs `id` in the repository's `$match`.
+
+A call that sends only `include` gets the same response as before: the index envelope with the
+authenticated user as its only row, or an empty `data` when `mainQuery()`, `indexQuery()` or the `show`
+policy hide that user. The response is no longer read from or written to the index cache.
+
 ### Updates and deletes are scoped by `mainQuery()`
 
 Update (`PUT`), patch (`PATCH`), delete, bulk update, bulk delete, field delete
