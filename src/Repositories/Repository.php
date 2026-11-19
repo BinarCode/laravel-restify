@@ -1382,11 +1382,41 @@ class Repository implements JsonSerializable, RestifySearchable
     }
 
     /**
+     * The model's array form without its loaded relations. A related model is only serialized
+     * through the related pipeline, which applies its own repository fields and policy.
+     *
      * @return Collection<string, mixed>
      */
     private function modelAttributes(?Request $request = null): Collection
     {
-        return collect(method_exists($this->resource, 'toArray') ? $this->resource->toArray() : []);
+        if (! method_exists($this->resource, 'toArray')) {
+            return collect();
+        }
+
+        $attributes = $this->resource->toArray();
+        $ownAttributes = null;
+
+        // Read the relations after toArray(), since an accessor may load one while serializing.
+        foreach (array_keys($this->resource->getRelations()) as $relation) {
+            foreach (array_unique([(string) $relation, Str::snake((string) $relation)]) as $key) {
+                if (! array_key_exists($key, $attributes)) {
+                    continue;
+                }
+
+                // The relation replaced a model attribute of the same name: put the attribute back.
+                if ($this->resource->hasAttribute($key)) {
+                    $ownAttributes ??= $this->resource->attributesToArray();
+                }
+
+                if (is_array($ownAttributes) && array_key_exists($key, $ownAttributes)) {
+                    $attributes[$key] = $ownAttributes[$key];
+                } else {
+                    unset($attributes[$key]);
+                }
+            }
+        }
+
+        return collect($attributes);
     }
 
     /**
