@@ -291,8 +291,26 @@ Since the payload is valid now, Restify will update the user's profile (a name, 
 
 ### Update without repository
 
-If you [don't use the repository](./#get-profile-using-repository) for the user's profile, Restify will only
-update the `fillable` user attributes that are present in the request payload: `$request->only($user->getFillable())`.
+If you [don't use the repository](./#get-profile-using-repository) for the user's profile, Restify updates the
+user model directly and writes validated input only:
+
+- The attributes your repository lists in `profileUpdateRules()`, each validated by its rules. The default is
+  `name`; override the static method next to `use UserProfile;` to list more. A listed attribute must also be
+  `fillable`. Any other attribute in the payload is ignored.
+- `email`, when the payload also carries the user's `current_password`. It must be a valid, unique email, is
+  stored lowercased, and resets `email_verified_at` for a `MustVerifyEmail` model.
+- `password`, when the payload also carries `password_confirmation` and the user's `current_password`. It is
+  validated with `Password::defaults()` and stored hashed.
+
+```php
+public static function profileUpdateRules(Request $request): array
+{
+    return [
+        'name' => ['sometimes', 'required', 'string', 'max:255'],
+        'phone' => ['sometimes', 'nullable', 'string', 'max:32'],
+    ];
+}
+```
 
 ```http request
 PUT: /api/restify/profile
