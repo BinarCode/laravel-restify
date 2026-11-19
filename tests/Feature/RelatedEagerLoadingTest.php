@@ -34,7 +34,7 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
      */
     #[Test]
     #[TestWith([['posts'], 'posts', 1, 0], 'one level')]
-    #[TestWith([['posts'], 'posts.comments', 1, 1], 'requested deeper than declared')]
+    #[TestWith([['posts'], 'posts.comments', 1, 0], 'requested deeper than declared is not loaded')]
     #[TestWith([['posts.comments'], 'posts.comments', 1, 1], 'declared with dot notation')]
     #[TestWith([['posts', 'posts.comments'], 'posts.comments', 1, 1], 'root declared beside the dotted path')]
     #[TestWith([['posts.comments.children'], 'posts.comments.children', 1, 2], 'three levels')]
@@ -103,14 +103,17 @@ class RelatedEagerLoadingTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function a_dotted_key_on_an_eager_field_does_not_constrain_its_siblings(): void
+    public function a_dotted_key_on_an_eager_field_exposes_only_its_own_path(): void
     {
         UserRepository::$related = ['posts.comments' => HasMany::make('posts', PostRepository::class)];
 
         $response = $this->getJson(UserRepository::route(query: ['related' => 'posts.comments,posts.user']))
             ->assertOk();
 
-        $this->assertArrayHasKey('user', $this->firstDeclaredPost($response));
+        $this->assertSelectCount(1, Post::class);
+        $this->assertSelectCount(1, Comment::class);
+        $this->assertArrayHasKey('comments', $this->firstDeclaredPost($response));
+        $this->assertArrayNotHasKey('user', $this->firstDeclaredPost($response));
     }
 
     #[Test]
