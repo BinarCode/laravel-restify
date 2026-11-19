@@ -500,6 +500,66 @@ when called outside a route that has a `relatedRepository` segment (attach/detac
 the same is true of `repositoryIdFromRoute()` outside a route that has a `repositoryId`
 segment.
 
+### The profile update without the repository writes listed attributes only, and credentials need the current password
+
+`PUT` and `POST /profile` update the user model directly when the users repository uses the
+`UserProfile` trait and `canUseForProfileUpdate()` is `false`, which is the trait's default. That
+direct update used to write every `$fillable` attribute found in the payload, and changed the
+password with only `password` and `password_confirmation`. It now writes validated input only. The
+repository-driven update (`canUseForProfileUpdate()` returning `true`, or a repository that does not
+define that method) is unchanged.
+
+**Attributes.** Only the attributes the repository lists in `profileUpdateRules()` are written, each
+validated by its rules. The default is `name` (`sometimes|required|string|max:255`). Every other
+column in the payload is now ignored, as a non-fillable one already was: flags and role or tenant
+columns, `email_verified_at`, `avatar`, the primary key, and any other profile column your
+`$fillable` lists. To keep editing a column through the profile, list it:
+
+```php
+use Binaryk\LaravelRestify\Repositories\UserProfile;
+use Illuminate\Http\Request;
+
+class UserRepository extends Repository
+{
+    use UserProfile;
+
+    public static function profileUpdateRules(Request $request): array
+    {
+        return [
+            'name' => ['sometimes', 'required', 'string', 'max:255'],
+            'phone' => ['sometimes', 'nullable', 'string', 'max:32'],
+        ];
+    }
+}
+```
+
+A listed attribute must still be fillable on the model. The primary key, the password column, the
+remember token and `email` are ignored in that list. A repository that defines
+`canUseForProfileUpdate()` without the trait gets the `name` default unless it also defines
+`profileUpdateRules()`.
+
+**Password.** A password change now needs `current_password` next to `password` and
+`password_confirmation`, and answers `422` without it. The new password must be a string and is
+validated with `Password::defaults()`: 8 characters unless your application defines its own
+defaults, where it used to be `min:5`. It is hashed and written to the model's
+`getAuthPasswordName()` column, whether or not that column is fillable.
+
+**Email.** An email change now needs `current_password` too, because whoever controls the address
+can reset the password. The address must be a valid email, at most 255 characters, unique in the
+user model's own table (the check used to be hard-coded to `users`), and it is stored lowercased, as
+`register` stores it. Sending the current address back, in any casing, is not a change: it needs no
+password and is not rewritten. When the model implements `MustVerifyEmail`, a change sets
+`email_verified_at` to `null` and sends the `VerifyEmail` notification `register` sends; the
+notification is only sent when the `restify.verify` route is registered or
+`VerifyEmail::createUrlUsing()` is set.
+
+Clients that change the email or the password through this endpoint have to send
+`current_password`. A user without a password, such as one created through a social login, cannot
+pass that check. If these rules do not fit, switch to the repository-driven update, where your own
+fields, rules and `update` policy decide.
+
+A request whose authenticated user is not an Eloquent model now answers `401` here instead of failing.
+
 ### Registration validates the password length and `RegisterController::__invoke()` is typed
 
 `POST /api/register` validates `password` with `required|confirmed|min:6` - previously

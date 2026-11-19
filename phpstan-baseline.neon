@@ -6571,53 +6571,8 @@ parameters:
 			path: src/Http/Controllers/ProfileController.php
 
 		-
-			message: '#^Binary operation "\." between ''sometimes\|required…'' and mixed results in an error\.$#'
-			identifier: binaryOp.invalid
-			count: 1
-			path: src/Http/Controllers/ProfileUpdateController.php
-
-		-
-			message: '''
-				#^Call to deprecated method get\(\) of class Illuminate\\Http\\Request\:
-				use \-\>input\(\) instead$#
-			'''
-			identifier: method.deprecated
-			count: 1
-			path: src/Http/Controllers/ProfileUpdateController.php
-
-		-
-			message: '#^Cannot call method fresh\(\) on Illuminate\\Foundation\\Auth\\User\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/ProfileUpdateController.php
-
-		-
-			message: '#^Cannot call method getFillable\(\) on Illuminate\\Foundation\\Auth\\User\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/ProfileUpdateController.php
-
-		-
-			message: '#^Cannot call method getKey\(\) on Illuminate\\Foundation\\Auth\\User\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/ProfileUpdateController.php
-
-		-
-			message: '#^Cannot call method update\(\) on Illuminate\\Foundation\\Auth\\User\|null\.$#'
-			identifier: method.nonObject
-			count: 1
-			path: src/Http/Controllers/ProfileUpdateController.php
-
-		-
 			message: '#^Negated boolean expression is always false\.$#'
 			identifier: booleanNot.alwaysFalse
-			count: 1
-			path: src/Http/Controllers/ProfileUpdateController.php
-
-		-
-			message: '#^Parameter \#1 \$value of static method Illuminate\\Support\\Facades\\Hash\:\:make\(\) expects string, mixed given\.$#'
-			identifier: argument.type
 			count: 1
 			path: src/Http/Controllers/ProfileUpdateController.php
 
