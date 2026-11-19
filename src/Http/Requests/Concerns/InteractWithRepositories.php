@@ -154,6 +154,25 @@ trait InteractWithRepositories
     }
 
     /**
+     * The model query of a show action or show getter: scoped by the repository mainQuery and showQuery, as a
+     * show request is. A showQuery that constrains the builder without returning it is honoured, as on show.
+     *
+     * @return Builder<Model>|Relation<Model, Model, mixed>
+     */
+    public function showScopedModelQuery(?string $repositoryId = null, ?string $uriKey = null): Builder|Relation
+    {
+        $query = $this->scopedModelQuery($repositoryId, $uriKey);
+
+        if (! config('restify.repositories.apply_show_query_to_actions_and_getters', true)) {
+            return $query;
+        }
+
+        $shown = $this->repository($uriKey)::showQuery($this, $query);
+
+        return $shown instanceof Builder || $shown instanceof Relation ? $shown : $query;
+    }
+
+    /**
      * @param  list<int|string>  $repositoryIds
      */
     public function modelsQuery(array $repositoryIds, ?string $uriKey = null): Builder|Relation

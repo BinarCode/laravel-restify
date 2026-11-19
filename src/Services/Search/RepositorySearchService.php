@@ -410,7 +410,7 @@ class RepositorySearchService
 
     protected function applyIndexQuery(RestifyRequest $request, Repository $repository)
     {
-        if ($request->isIndexRequest() || $request->isGlobalRequest()) {
+        if ($request->isIndexRequest() || $request->isGlobalRequest() || $this->listsForActionOrGetter($request)) {
             return fn ($query) => $repository::indexQuery($request, $query);
         }
 
@@ -419,6 +419,19 @@ class RepositorySearchService
         }
 
         return fn ($query) => $query;
+    }
+
+    /**
+     * An action or getter that searches the repository lists its rows: the models of an index action, or
+     * what a getter reads through filteredQuery(). It is limited to the rows the index lists.
+     */
+    private function listsForActionOrGetter(RestifyRequest $request): bool
+    {
+        if (! $request->isActionRequest() && ! $request->isGetterRequest()) {
+            return false;
+        }
+
+        return (bool) config('restify.repositories.apply_index_query_to_actions_and_getters', true);
     }
 
     public function initializeQueryUsingScout(RestifyRequest $request, Repository $repository): Builder
