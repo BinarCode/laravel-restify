@@ -10,8 +10,8 @@ on:
             - '*.md'
             - '.gitignore'
 
-permissions:
-    contents: read
+# No default permissions: each job below declares exactly what it needs.
+permissions: {}
 
 # Queue release runs so each computes the next tag after the previous one exists.
 concurrency:
@@ -19,18 +19,25 @@ concurrency:
     cancel-in-progress: false
 
 jobs:
-    release:
+    # Everything that executes third-party code (Composer plugins and scripts, the test
+    # suite and its dependencies) runs here, with a token that can only read. Nothing from
+    # this job is handed to the release job: no outputs, no artifacts, no caches.
+    test:
         runs-on: ubuntu-latest
         if: github.event_name == 'push' && github.ref == 'refs/heads/10.x'
         permissions:
-            contents: write # needed to create the GitHub release and tag
+            contents: read
 
         steps:
             - name: Checkout code
               uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
               with:
+                  ref: ${{ github.sha }} # the pushed commit, never the moving branch head
                   fetch-depth: 0
                   persist-credentials: false
+
+            - name: Verify the checked out commit is the pushed commit
+              run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
 
             - name: Skip commits that are already released
               id: released
@@ -58,6 +65,37 @@ jobs:
             - name: Execute tests
               if: steps.released.outputs.skip != 'true'
               run: composer test
+
+    # The only job with a write token. It starts on a fresh runner from a fresh checkout of
+    # the commit the test job tested (github.sha comes from the push event, not from the
+    # test job) and runs nothing but git and gh: no Composer or npm install, no PHP, no
+    # scripts from the repository or its dependencies. Keep it that way.
+    release:
+        needs: test
+        runs-on: ubuntu-latest
+        if: github.event_name == 'push' && github.ref == 'refs/heads/10.x'
+        permissions:
+            contents: write # needed to create the GitHub release and tag
+
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+              with:
+                  ref: ${{ github.sha }} # the commit the test job tested
+                  fetch-depth: 0
+                  persist-credentials: false
+
+            - name: Verify the checked out commit is the tested commit
+              run: test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+
+            - name: Skip commits that are already released
+              id: released
+              run: |
+                  RELEASED_IN=$(git tag --contains HEAD --sort=v:refname | head -n1)
+                  if [ -n "$RELEASED_IN" ]; then
+                      echo "HEAD is already in $RELEASED_IN."
+                      echo "skip=true" >> "$GITHUB_OUTPUT"
+                  fi
 
             - name: Get next version
               if: steps.released.outputs.skip != 'true'
