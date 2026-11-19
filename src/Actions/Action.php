@@ -164,11 +164,13 @@ abstract class Action implements JsonSerializable
                 });
             });
         } else {
-            $query = $request->scopedModelQuery();
+            $query = $request->showScopedModelQuery();
 
             static::indexQuery($request, $query);
 
             $model = $query->firstOrFail();
+
+            $this->authorizeShownModel($request, $model);
 
             $this->authorizeRun($request, $model);
 

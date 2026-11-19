@@ -280,6 +280,19 @@ return [
         'apply_main_query_to_actions_and_getters' => true,
 
         /*
+        | Limit the rows an action or getter lists (the models an index action receives, and what `$request->filteredQuery()`
+        | returns) to the rows the repository indexQuery lists, as index requests are. Set to `false` to only apply the
+        | mainQuery and the action or getter indexQuery, as before.
+        */
+        'apply_index_query_to_actions_and_getters' => true,
+
+        /*
+        | Scope the model of a show action or show getter by the repository showQuery, as show requests are.
+        | Set to `false` to only apply the mainQuery and the action or getter indexQuery, as before.
+        */
+        'apply_show_query_to_actions_and_getters' => true,
+
+        /*
         | Scope the model of an update, patch or delete (single, bulk, field delete and the MCP update and delete tools),
         | and the parent of an attach, detach, sync or nested write (`/{parent}/{parentId}/{relation}`), by the repository mainQuery,
         | as show and index requests are. Set to `false` to rely on the policy alone, as before.
