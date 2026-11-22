@@ -503,21 +503,25 @@ When using `relatablePerPage` query param, it will paginate all the relatable en
 
 `relatablePerPage` is capped by the same `restify.pagination.max_per_page` config used for the
 main index pagination (see [Pagination](/api/repositories#pagination)) - a value above the cap
-is clamped down to it, never rejected. Leave the config `null`, or set it to `0`, an empty
-string, a negative number, or any other non-numeric value, to mean "no cap".
+is clamped down to it, never rejected. Leave the config `null`, or set it to `0`, a negative
+number, `false`, an empty string, or any other non-numeric value, to mean "no cap". A
+non-numeric or non-positive `relatablePerPage` falls back to `$defaultRelatablePerPage`.
 
 <alert type="warning">
 
-This cap (and `relatablePerPage` itself) only takes effect on `show`, and only when the field's
-relation isn't already loaded on the model - a relation declared in `$with`, or otherwise
-already loaded before the field resolves, is returned as-is with no cap. When it does apply,
-each `HasMany` / `BelongsToMany` / `MorphToMany` field resolves its own limited query there.
-
-On `index`, `?related=posts` - including dotted paths such as `?related=posts.comments` - is
-eager-loaded once for every row on the page via a plain Eloquent `with()`, which has no
-per-relation limit, so `relatablePerPage` and `max_per_page` are never applied there.
+The limit is **opt-in** on `index` and for relations that are already loaded on `show`. It applies when the request
+sends `relatablePerPage`, or when `restify.pagination.max_per_page` is set. In the second case the limit is the related
+repository's `$defaultRelatablePerPage`, clamped by `max_per_page`. With neither, an `index` returns every related row.
 
 </alert>
+
+When it applies:
+
+- On `index`, `?related=posts` (including dotted paths such as `?related=posts.comments`) is eager-loaded once for all
+  rows on the page, and the limit is applied **per parent** inside that single query. Each user gets at most N posts.
+- On `show`, a relation that is already loaded (declared in `$with`, or loaded by the model) is cut to the limit after
+  it loads. A relation that is not loaded is queried with the limit.
+- `BelongsTo`, `HasOne`, `MorphOne` and `HasManyThrough` relations are never limited.
 
 ## BelongsToMany & MorphToMany
 
@@ -959,6 +963,31 @@ public function syncPermissions(User $user, Role $role, Collection $permissionId
 ### Eager Loading Prevention
 
 Relations automatically prevent circular references and deep nesting to avoid performance issues.
+
+### Nesting depth
+
+A `related` (or `include`) path may nest at most 5 levels: `users.posts.comments` has three. Levels past the
+limit are ignored, so `a.b.c.d.e.f` is loaded as `a.b.c.d.e`; the request is not rejected. The same limit
+applies to `include` on the MCP tools.
+
+Change the limit with `restify.related.max_depth` (or the `RESTIFY_MAX_RELATED_DEPTH` environment variable):
+
+```php
+// config/restify.php
+
+'related' => [
+    'max_depth' => 8,
+],
+```
+
+<alert type="info">
+
+`null` means the default of 5. `0`, a negative number or `false` remove the limit.
+
+A dotted path your repository declares itself (`public static array $related = ['a.b.c.d.e.f']`) is always
+loaded in full when it is requested on that repository, whatever the limit.
+
+</alert>
 
 ### Pagination Control
 

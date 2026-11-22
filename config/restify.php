@@ -250,18 +250,17 @@ return [
         | The largest `perPage` (or `page[size]`, or `relatablePerPage` on a
         | related field) a client may request on an index endpoint. A
         | requested value above this is clamped down to it - never rejected -
-        | so existing clients are never broken by lowering it.
+        | so existing clients are never broken by lowering it. This also
+        | clamps a repository's own default per-page when it is set above
+        | the cap and no perPage is requested at all.
         |
-        | Default: null, which applies the package default of 100 to what a
-        | client requests. A repository that declares a larger default page
-        | size keeps it, and clients may request up to that size there.
+        | Setting a cap also limits has-many-like related lists on index
+        | (`?related=`) per parent, to each related repository's
+        | `$defaultRelatablePerPage` (see the relations documentation).
         |
-        | A number you set here is applied as is: it also clamps a repository's
-        | own default per-page when that is above the cap, and it limits
-        | has-many related lists on index (see the relations documentation).
-        |
-        | 0, a negative number or false mean "no cap". An empty string or any
-        | other non-numeric value falls back to the package default.
+        | Default: null (no cap, the requested perPage is always honoured).
+        | null, 0, a negative number, false, an empty string, or any other
+        | non-numeric value all mean "no cap".
         |
         */
         'max_per_page' => env('RESTIFY_MAX_PER_PAGE'),

@@ -483,11 +483,12 @@ GET /api/restify/posts?page=2&perPage=10
 ```
 
 By default a client can request any `perPage` it wants. Set `restify.pagination.max_per_page`
-in your published config to cap it - a larger requested value is clamped down to the cap
-instead of being rejected, so existing clients keep working. The same cap also applies to
-`relatablePerPage` on related fields (`?related=posts&relatablePerPage=...`), and to a
-repository's own default per-page if that default is set above the cap and no perPage is
-requested at all:
+(or the `RESTIFY_MAX_PER_PAGE` environment variable) in your published config to cap it - a
+larger requested value is clamped down to the cap instead of being rejected, so existing clients
+keep working, and `meta.per_page` reports the size that was used. The same cap also applies to
+`page[size]`, to `relatablePerPage` on related fields (`?related=posts&relatablePerPage=...`),
+and to a repository's own default per-page if that default is set above the cap and no perPage
+is requested at all:
 
 ```php
 // config/restify.php
@@ -497,21 +498,15 @@ requested at all:
 ],
 ```
 
-Leave it `null` (the default), or set it to `0`, an empty string, a negative number, or any
-other non-numeric value, to mean "no cap" - the requested `perPage` is always honoured.
+Leave it `null` (the default), or set it to `0`, a negative number, `false`, an empty string, or
+any other non-numeric value, to mean "no cap" - the requested `perPage` is always honoured.
 
 <alert type="warning">
 
-`relatablePerPage` and the `max_per_page` cap only apply on `show`, and only to a `HasMany` /
-`BelongsToMany` field whose relation isn't already loaded on the model - each such field then
-resolves its own limited query. A relation declared in `$with`, or otherwise already loaded
-before the field resolves, is returned as-is with no cap applied.
-
-On `index`, `?related=posts` - including dotted paths such as `?related=posts.comments` - is
-instead resolved with a single batched Eloquent `with()` covering every row on the page, with
-no per-relation limit: `relatablePerPage` and `max_per_page` never apply there, and a parent
-row can come back with all of its related rows. Capping that batched eager load would need
-window functions and is not implemented yet.
+Setting a cap also limits has-many-like related lists on `index` (`?related=posts`) per parent,
+to the related repository's `$defaultRelatablePerPage` clamped by the cap. See
+[relatable per page](/api/relations#relatable-per-page) for when `relatablePerPage` and the cap
+apply to related lists.
 
 </alert>
 
@@ -840,6 +835,37 @@ With the payload:
   }
 ]
 ```
+
+### Bulk row limit
+
+A bulk store, bulk update or bulk delete request may carry at most 1000 rows. A larger request answers `422`
+with a `bulk` validation error before any row is authorized, validated or written:
+
+```json
+{
+  "message": "A bulk request may contain at most 1000 rows, 1001 were sent.",
+  "errors": {
+    "bulk": ["A bulk request may contain at most 1000 rows, 1001 were sent."]
+  }
+}
+```
+
+Change the limit with `restify.bulk.max_rows` (or the `RESTIFY_MAX_BULK_ROWS` environment variable):
+
+```php
+// config/restify.php
+
+'bulk' => [
+    'max_rows' => 5000,
+],
+```
+
+<alert type="info">
+
+The request is rejected, never cut down to the limit, so split larger payloads over several requests.
+`null` means the default of 1000. `0`, a negative number or `false` remove the limit.
+
+</alert>
 
 ### Bulk store field validations
 

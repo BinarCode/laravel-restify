@@ -27,13 +27,13 @@ class PaginationDataObject extends Data
 
     /**
      * The requested page size, or the default when none is sent, clamped to
-     * `restify.pagination.max_per_page` (see RequestLimits::maxPerPage()).
+     * `restify.pagination.max_per_page` when that is set (see RequestLimits::maxPerPage()).
      */
     public function resolvePerPage(int $default): int
     {
         $perPage = $this->positiveInt($this->perPage) ?? $default;
 
-        $maxPerPage = RequestLimits::maxPerPage($default);
+        $maxPerPage = RequestLimits::maxPerPage();
 
         return $maxPerPage !== null ? min($perPage, $maxPerPage) : $perPage;
     }

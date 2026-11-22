@@ -18,15 +18,13 @@ class RepositoryIndexMaxPerPageTest extends IntegrationTestCase
     use RefreshDatabase;
 
     #[Test]
+    #[TestWith([null, 9999, 3, 9999], 'no cap: requested value is honoured')]
     #[TestWith([0, 9999, 3, 9999], 'cap turned off with 0: requested value is honoured')]
     #[TestWith([false, 9999, 3, 9999], 'cap turned off with false: requested value is honoured')]
-    #[TestWith([null, 9999, 3, 100], 'default cap: requested value above it is clamped')]
-    #[TestWith([null, 100, 3, 100], 'default cap: requested value equal to it is untouched')]
-    #[TestWith([null, 60, 65, 60], 'default cap: requested value under it is untouched')]
-    #[TestWith([500, 400, 3, 400], 'cap raised above the default: requested value under it is untouched')]
+    #[TestWith([500, 400, 3, 400], 'requested value under a large cap is untouched')]
     #[TestWith([50, 100, 55, 50], 'requested value above the cap is clamped')]
     #[TestWith([50, 20, 3, 20], 'requested value under the cap is untouched')]
-    #[TestWith([null, null, 3, 15], 'default cap, no request: default is untouched')]
+    #[TestWith([null, null, 3, 15], 'no cap, no request: default is untouched')]
     #[TestWith([10, null, 20, 10], 'cap below the default clamps the default')]
     #[TestWith([null, 'not-a-number', 3, 15], 'non-numeric request falls back to the default')]
     #[TestWith([null, -1, 20, 15], 'negative request falls back to the default')]
@@ -69,8 +67,25 @@ class RepositoryIndexMaxPerPageTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith([null, 100], 'default cap')]
-    #[TestWith([500, 500], 'cap raised in config')]
+    public function an_unset_cap_serves_a_large_per_page_in_full(): void
+    {
+        // A published config holds `env('RESTIFY_MAX_PER_PAGE')`, which is null when the variable is unset.
+        $this->assertNull(config('restify.pagination.max_per_page'));
+
+        CommentFactory::many(120);
+
+        $this->getJson(CommentRepository::route(query: ['perPage' => 500]))->assertJson(
+            fn (AssertableJson $json) => $json
+                ->count('data', 120)
+                ->where('meta.per_page', 500)
+                ->where('meta.last_page', 1)
+                ->etc()
+        );
+    }
+
+    #[Test]
+    #[TestWith([null, 5000], 'no cap')]
+    #[TestWith([500, 500], 'cap set in config')]
     #[TestWith([0, 5000], 'cap turned off')]
     public function it_resolves_page_size_against_the_cap(?int $maxPerPage, int $expectedPerPage): void
     {
@@ -89,30 +104,14 @@ class RepositoryIndexMaxPerPageTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function the_default_cap_applies_when_the_published_config_predates_the_pagination_key(): void
+    public function there_is_no_cap_when_the_published_config_predates_the_pagination_key(): void
     {
         config(['restify.pagination' => null]);
 
         CommentFactory::many(3);
 
         $this->getJson(CommentRepository::route(query: ['perPage' => 9999]))->assertJson(
-            fn (AssertableJson $json) => $json->where('meta.per_page', 100)->etc()
-        );
-    }
-
-    #[Test]
-    public function the_default_cap_never_lowers_a_larger_repository_default(): void
-    {
-        Restify::repositories([CommentWithLargePageRepository::class]);
-
-        CommentFactory::many(3);
-
-        $this->getJson(CommentWithLargePageRepository::route())->assertJson(
-            fn (AssertableJson $json) => $json->where('meta.per_page', 250)->etc()
-        );
-
-        $this->getJson(CommentWithLargePageRepository::route(query: ['perPage' => 9999]))->assertJson(
-            fn (AssertableJson $json) => $json->where('meta.per_page', 250)->etc()
+            fn (AssertableJson $json) => $json->where('meta.per_page', 9999)->etc()
         );
     }
 

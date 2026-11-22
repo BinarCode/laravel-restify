@@ -72,9 +72,10 @@ class RelatablePerPageOnIndexTest extends IntegrationTestCase
     }
 
     #[Test]
-    #[TestWith([null, 100], 'default cap: clamped down to it')]
-    #[TestWith([200, 105], 'cap raised in config: every row is returned')]
+    #[TestWith([null, 105], 'no cap: every row is returned')]
     #[TestWith([0, 105], 'cap turned off: every row is returned')]
+    #[TestWith([200, 105], 'cap above the rows available: every row is returned')]
+    #[TestWith([50, 50], 'cap set in config: clamped down to it')]
     public function a_large_relatable_per_page_is_resolved_against_the_cap(?int $maxPerPage, int $expected): void
     {
         config(['restify.pagination.max_per_page' => $maxPerPage]);
@@ -93,18 +94,24 @@ class RelatablePerPageOnIndexTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function the_default_cap_alone_does_not_limit_index_related_lists(): void
+    #[TestWith([null], 'null, as an unset RESTIFY_MAX_PER_PAGE resolves')]
+    #[TestWith([0], '0')]
+    #[TestWith([false], 'false')]
+    #[TestWith([''], 'empty string')]
+    public function index_related_lists_are_not_limited_per_parent_without_a_cap(mixed $maxPerPage): void
     {
-        $user = User::query()->oldest('id')->firstOrFail();
+        config(['restify.pagination.max_per_page' => $maxPerPage]);
 
-        Post::factory(20 - self::POSTS_PER_USER)->create(['user_id' => $user->id]);
+        // More posts per user than the related repository's $defaultRelatablePerPage (15).
+        foreach (User::all() as $user) {
+            Post::factory(20 - self::POSTS_PER_USER)->create(['user_id' => $user->id]);
+        }
 
-        $response = $this->getJson(UserRepository::route(query: [
-            'related' => 'posts',
-            'id' => $user->id,
-        ]))->assertOk();
+        $response = $this->getJson(UserRepository::route(query: ['related' => 'posts']))->assertOk();
 
-        $this->assertRelatedCounts($response, 'posts', [20]);
+        $this->assertRelatedCounts($response, 'posts', [20, 20, 20]);
+        $this->assertSelectCount(1, Post::class);
+        $this->assertStringNotContainsString('row_number', implode(' ', $this->selectsAgainst(Post::class)));
     }
 
     #[Test]

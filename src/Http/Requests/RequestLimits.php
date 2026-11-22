@@ -7,8 +7,10 @@ namespace Binaryk\LaravelRestify\Http\Requests;
 /**
  * The ceilings on how much work one request may ask for.
  *
- * Each limit is read from config and its default is applied here, so an application whose
- * published `config/restify.php` predates a key is still capped. For every key:
+ * The page size cap is opt-in: only a positive `restify.pagination.max_per_page` caps it.
+ *
+ * The bulk row and related depth limits have package defaults, applied here so an application whose
+ * published `config/restify.php` predates their keys is still limited. For each of those keys:
  *
  * - `null`, a missing key, an empty string or any other non-numeric value: the package default;
  * - a positive number: that limit;
@@ -16,28 +18,22 @@ namespace Binaryk\LaravelRestify\Http\Requests;
  */
 final class RequestLimits
 {
-    public const DEFAULT_MAX_PER_PAGE = 100;
-
     public const DEFAULT_MAX_BULK_ROWS = 1000;
 
     public const DEFAULT_MAX_RELATED_DEPTH = 5;
 
     /**
-     * The largest page size `perPage`, `page[size]` or `relatablePerPage` may resolve to.
+     * The largest page size `perPage`, `page[size]` or `relatablePerPage` may resolve to, or `null`
+     * for no cap.
      *
-     * A limit set in config applies as is, and also clamps a repository default above it. The
-     * package default only bounds what a client asks for, so it never goes below the page size
-     * the repository itself declares.
+     * Only a positive number sets a cap. `null`, a missing key, an empty string, any other
+     * non-numeric value, `0`, a negative number and `false` all mean no cap.
      */
-    public static function maxPerPage(int $repositoryDefault): ?int
+    public static function maxPerPage(): ?int
     {
         $configured = self::configured('restify.pagination.max_per_page');
 
-        if ($configured === false) {
-            return null;
-        }
-
-        return $configured ?? max(self::DEFAULT_MAX_PER_PAGE, $repositoryDefault);
+        return is_int($configured) ? $configured : null;
     }
 
     /**

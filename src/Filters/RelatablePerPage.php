@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Filters;
 
+use Binaryk\LaravelRestify\Http\Requests\RequestLimits;
+
 final class RelatablePerPage
 {
     public static function isRequested(): bool
@@ -24,8 +26,6 @@ final class RelatablePerPage
 
     private static function maxPerPageIsSet(): bool
     {
-        $maxPerPage = config('restify.pagination.max_per_page');
-
-        return is_numeric($maxPerPage) && (int) $maxPerPage > 0;
+        return RequestLimits::maxPerPage() !== null;
     }
 }
