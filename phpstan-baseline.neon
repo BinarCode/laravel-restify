@@ -7498,26 +7498,8 @@ parameters:
 			path: src/Http/Requests/ActionRequest.php
 
 		-
-			message: '#^Method Binaryk\\LaravelRestify\\Http\\Requests\\ActionRequest\:\:collectRepositories\(\) has parameter \$count with no type specified\.$#'
-			identifier: missingType.parameter
-			count: 1
-			path: src/Http/Requests/ActionRequest.php
-
-		-
 			message: '#^Method Binaryk\\LaravelRestify\\Http\\Requests\\ActionRequest\:\:collectRepositories\(\) return type has no value type specified in iterable type array\.$#'
 			identifier: missingType.iterableValue
-			count: 1
-			path: src/Http/Requests/ActionRequest.php
-
-		-
-			message: '#^Parameter \#1 \$count of method Illuminate\\Database\\Eloquent\\Builder\<Illuminate\\Database\\Eloquent\\Model\>\:\:chunk\(\) expects int, mixed given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Requests/ActionRequest.php
-
-		-
-			message: '#^Parameter \#2 \$size of method Binaryk\\LaravelRestify\\Http\\Requests\\ActionRequest\:\:builder\(\) expects int, mixed given\.$#'
-			identifier: argument.type
 			count: 1
 			path: src/Http/Requests/ActionRequest.php
 

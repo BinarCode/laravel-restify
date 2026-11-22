@@ -66,6 +66,22 @@ class McpActionsGettersQueryScopeTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function an_index_action_tool_for_only_excluded_ids_reports_an_error(): void
+    {
+        $unlisted = Post::factory()->create(['is_active' => false]);
+
+        McpScopedPostRepository::$unlisted = [$unlisted->getKey()];
+
+        $result = $this->callTool('mcp-scoped-posts-activate-posts-action-tool', [
+            'repositories' => '['.$unlisted->getKey().']',
+        ]);
+
+        $this->assertArrayNotHasKey('success', $result);
+        $this->assertTrue($result['result']['isError'] ?? false);
+        $this->assertDatabaseHas(Post::class, ['id' => $unlisted->getKey(), 'is_active' => false]);
+    }
+
+    #[Test]
     public function a_show_action_tool_does_not_run_on_a_model_the_show_query_excludes(): void
     {
         $shown = Post::factory()->create(['is_active' => false]);

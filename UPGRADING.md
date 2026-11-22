@@ -83,7 +83,8 @@ read, rows the index does not list and records the show route does not find. The
 - An index action (`POST /{repository}/actions`) receives only rows the repository `indexQuery()` lists, for
   `repositories: "all"` and for a list of keys alike, before the action's own `indexQuery()` is applied. A key
   outside that set is skipped, as a key hidden by `mainQuery()` already was, so the action can receive fewer
-  models than the keys sent.
+  models than the keys sent. When none of the keys sent is in that set, or none of them exists, the request
+  answers 404 instead of running the action on no models.
 - `$request->filteredQuery()`, which index getters read their rows from, and
   `GetterRequest::collectRepositories()` are limited by the repository `indexQuery()` in the same way.
 - A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters/{getter}`)
@@ -91,7 +92,16 @@ read, rows the index does not list and records the show route does not find. The
   answers 404 instead of running the action or getter on it.
 
 This also covers the MCP action and getter tools. Standalone actions load no models and are unchanged. The
-ordering and eager loads your `indexQuery()` or `showQuery()` adds now apply to these queries too.
+eager loads your `indexQuery()` or `showQuery()` adds now apply to these queries too, and so does the ordering
+of `indexQuery()` on `filteredQuery()`.
+
+Index actions now read their rows in chunks by primary key, newest first, instead of by offset, so an action
+that changes a column the queries filter on (a status your `indexQuery()` lists by, for example) no longer
+skips rows after the first chunk. The chunks are no longer ordered by a `sort` parameter, or by an order your
+`mainQuery()` or the action's own `indexQuery()` adds.
+
+If the `indexQuery()` of an action or getter calls the repository `indexQuery()` to get this scoping, remove
+that call: the repository scope now applies before it, and applying it twice fails when it joins a table.
 
 If your `indexQuery()` hides rows for presentation only (say it lists published posts) and an index action or
 getter must still reach the hidden ones, set `restify.repositories.apply_index_query_to_actions_and_getters` to
@@ -108,8 +118,9 @@ runs after the model is found, so a record outside `mainQuery()` or `showQuery()
 `canRun()`. The MCP action and getter tools apply it too and report the denial as an error.
 
 A policy without a `show` method denies, as it does on the show route. If a show action or show getter must
-stay available to users who may not show the record, allow `show` for them, or make it a standalone action
-that authorizes itself. No other policy method is checked, and there is no config key for this check.
+stay available to users who may not show the record, allow `show` for them, or set
+`restify.repositories.authorize_show_for_actions_and_getters` to `false` to turn the check off and leave the
+decision to `canRun()` as before. No other policy method is checked.
 
 ### Sorted index queries end with the primary key
 

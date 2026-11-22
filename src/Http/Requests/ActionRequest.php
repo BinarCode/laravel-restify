@@ -8,6 +8,7 @@ use Binaryk\LaravelRestify\Services\Search\RepositorySearchService;
 use Closure;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Collection;
@@ -60,19 +61,49 @@ class ActionRequest extends RestifyRequest
             ->latest($this->model()->getKeyName());
     }
 
+    /**
+     * @param  int  $count
+     */
     public function collectRepositories(Action $action, $count, Closure $callback): array
     {
         $output = [];
 
-        if (($query = $this->builder($action, $count))->count() === 0) {
+        $query = $this->builder($action, $count);
+        $model = $query->getModel();
+
+        // Walk the rows by key, not by offset: an action that changes a column the query filters on moves
+        // the rows it handled out of the query, and the next offset would skip as many rows that still match.
+        $query->reorder()->chunkByIdDesc($count, function ($chunk) use ($callback, &$output) {
+            $output[] = $callback(Collection::make($chunk));
+        }, $model->getQualifiedKeyName(), $model->getKeyName());
+
+        if ($output === []) {
+            $this->ensureSelectedKeysWereFound($query);
+
             $output[] = $callback(Collection::make([]));
         }
 
-        $query->chunk($count, function ($chunk) use ($callback, &$output) {
-            $output[] = $callback(Collection::make($chunk));
-        });
-
         return $output;
+    }
+
+    /**
+     * Keys were sent and the query matches none of them: they do not exist, or the repository mainQuery or
+     * indexQuery, or the action indexQuery, leaves them out. Answer 404, as a show action does for such a
+     * model, instead of running the action on nothing and reporting success.
+     *
+     * @param  Builder<Model>|Relation<Model, Model, mixed>  $query
+     *
+     * @throws ModelNotFoundException<Model>
+     */
+    private function ensureSelectedKeysWereFound(Builder|Relation $query): void
+    {
+        $keys = $this->input('repositories');
+
+        if ($keys === 'all' || blank($keys)) {
+            return;
+        }
+
+        throw (new ModelNotFoundException)->setModel($query->getModel()::class);
     }
 
     public function isForRepositoryRequest(): bool

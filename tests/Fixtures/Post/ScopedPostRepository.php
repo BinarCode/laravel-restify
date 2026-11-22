@@ -48,11 +48,30 @@ class ScopedPostRepository extends Repository
     public static bool $joinsUsers = false;
 
     /**
+     * List only inactive posts: the column the activate actions change.
+     */
+    public static bool $listsInactiveOnly = false;
+
+    /**
+     * What the canRun callback of `activate-posts-with-can-run` answers.
+     */
+    public static bool $canRun = true;
+
+    /**
+     * Make showQuery return a new, unscoped builder, which the show route ignores.
+     */
+    public static bool $showQueryReturnsNewBuilder = false;
+
+    /**
      * @param  Builder<Post>|Relation<Post, Post, mixed>  $query
      */
     public static function indexQuery(RestifyRequest $request, Builder|Relation $query): void
     {
         $query->whereKeyNot(static::$unlisted);
+
+        if (static::$listsInactiveOnly) {
+            $query->where('posts.is_active', false);
+        }
 
         if (static::$joinsUsers) {
             $query->join('users', 'users.id', '=', 'posts.user_id')->select('posts.*');
@@ -61,10 +80,13 @@ class ScopedPostRepository extends Repository
 
     /**
      * @param  Builder<Post>|Relation<Post, Post, mixed>  $query
+     * @return Builder<Post>|null
      */
-    public static function showQuery(RestifyRequest $request, Builder|Relation $query): void
+    public static function showQuery(RestifyRequest $request, Builder|Relation $query): ?Builder
     {
         $query->whereKeyNot(static::$unshowable);
+
+        return static::$showQueryReturnsNewBuilder ? Post::query() : null;
     }
 
     public function fields(RestifyRequest $request): array
@@ -92,6 +114,21 @@ class ScopedPostRepository extends Repository
                     return response()->json(['activated' => $posts->map->getKey()->all()]);
                 }
             })->onlyOnIndex(),
+
+            (new class extends Action
+            {
+                public static $uriKey = 'activate-posts-with-can-run';
+
+                /**
+                 * @param  Collection<int, Post>  $posts
+                 */
+                public function handle(ActionRequest $request, Collection $posts): JsonResponse
+                {
+                    $posts->each(fn (Post $post) => $post->update(['is_active' => true]));
+
+                    return response()->json(['activated' => $posts->map->getKey()->all()]);
+                }
+            })->onlyOnIndex()->canRun(fn (): bool => static::$canRun),
 
             (new class extends Action
             {

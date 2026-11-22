@@ -116,7 +116,8 @@ trait InteractWithRepositories
 
     /**
      * The model query of a show action or show getter: scoped by the repository mainQuery and showQuery, as a
-     * show request is. A showQuery that constrains the builder without returning it is honoured, as on show.
+     * show request is. Like the show route, it keeps the builder showQuery constrains and ignores any builder
+     * showQuery returns, which would lack the key and mainQuery constraints.
      *
      * @return Builder<Model>|Relation<Model, Model, mixed>
      */
@@ -128,9 +129,7 @@ trait InteractWithRepositories
             return $query;
         }
 
-        $shown = $this->repository($uriKey)::showQuery($this, $query);
-
-        return $shown instanceof Builder || $shown instanceof Relation ? $shown : $query;
+        return tap($query, fn (Builder|Relation $query) => $this->repository($uriKey)::showQuery($this, $query));
     }
 
     /**

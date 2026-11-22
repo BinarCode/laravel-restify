@@ -115,6 +115,19 @@ class GetterQueryScopeTest extends IntegrationTestCase
     }
 
     #[Test]
+    public function a_show_getter_ignores_a_builder_the_show_query_returns_as_the_show_route_does(): void
+    {
+        Post::factory()->create(['title' => 'Other']);
+        $requested = Post::factory()->create(['title' => 'Requested']);
+
+        ScopedPostRepository::$showQueryReturnsNewBuilder = true;
+
+        $this->showGetter($requested)
+            ->assertOk()
+            ->assertExactJson(['title' => 'Requested']);
+    }
+
+    #[Test]
     public function a_show_getter_is_not_limited_by_the_index_query(): void
     {
         $unlisted = Post::factory()->create(['title' => 'Unlisted']);

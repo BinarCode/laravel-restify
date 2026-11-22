@@ -58,11 +58,46 @@ class ActionQueryScopeTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function an_index_action_for_only_excluded_ids_receives_no_models(): void
+    public function an_index_action_for_only_excluded_ids_is_not_found(): void
     {
         [$listed, $unlisted] = $this->listedAndUnlistedPosts();
 
-        $this->indexAction('activate-posts', $unlisted)
+        $this->indexAction('activate-posts', $unlisted)->assertNotFound();
+
+        $this->assertInactive([...$listed, ...$unlisted]);
+    }
+
+    #[Test]
+    public function an_index_action_the_user_may_not_run_does_not_succeed_when_every_id_is_excluded(): void
+    {
+        [$listed, $unlisted] = $this->listedAndUnlistedPosts();
+
+        ScopedPostRepository::$canRun = false;
+
+        $this->indexAction('activate-posts-with-can-run', $unlisted)->assertNotFound();
+        $this->indexAction('activate-posts-with-can-run', $listed)->assertForbidden();
+
+        $this->assertInactive([...$listed, ...$unlisted]);
+    }
+
+    #[Test]
+    public function an_index_action_for_ids_that_do_not_exist_is_not_found(): void
+    {
+        [$listed] = $this->listedAndUnlistedPosts();
+
+        $this->indexAction('activate-posts', [max($listed) + 100])->assertNotFound();
+
+        $this->assertInactive($listed);
+    }
+
+    #[Test]
+    public function an_index_action_for_all_runs_on_no_models_when_the_index_query_lists_none(): void
+    {
+        [$listed, $unlisted] = $this->listedAndUnlistedPosts();
+
+        ScopedPostRepository::$unlisted = [...$listed, ...$unlisted];
+
+        $this->indexAction('activate-posts', 'all')
             ->assertOk()
             ->assertExactJson(['activated' => []]);
 
@@ -80,6 +115,28 @@ class ActionQueryScopeTest extends IntegrationTestCase
 
         $this->assertActive($listed);
         $this->assertInactive($unlisted);
+    }
+
+    /**
+     * Offset chunks skip rows here: once the first chunk is activated it leaves the scope, so the second
+     * chunk's offset jumps over a row that still matches.
+     */
+    #[Test]
+    #[TestWith(['activate-posts', 'all'], 'all, each chunk committed on its own')]
+    #[TestWith(['activate-posts', 'ids'], 'ids, each chunk committed on its own')]
+    #[TestWith(['activate-posts-with-can-run', 'all'], 'all, every chunk in one transaction')]
+    #[TestWith(['activate-posts-with-can-run', 'ids'], 'ids, every chunk in one transaction')]
+    public function an_index_action_in_chunks_reaches_every_row_when_it_changes_the_column_the_index_query_filters_on(string $action, string $repositoriesMode): void
+    {
+        Action::$chunkCount = 1;
+
+        ScopedPostRepository::$listsInactiveOnly = true;
+
+        $keys = Post::factory()->count(4)->create(['is_active' => false])->modelKeys();
+
+        $this->indexAction($action, $repositoriesMode === 'all' ? 'all' : $keys)->assertOk();
+
+        $this->assertActive($keys);
     }
 
     #[Test]
@@ -174,6 +231,26 @@ class ActionQueryScopeTest extends IntegrationTestCase
             ->assertOk()
             ->assertExactJson(['activated' => [$shown->getKey()]]);
         $this->assertActive([$shown->getKey()]);
+    }
+
+    #[Test]
+    public function a_show_action_ignores_a_builder_the_show_query_returns_as_the_show_route_does(): void
+    {
+        $other = Post::factory()->create(['is_active' => false]);
+        $requested = Post::factory()->create(['is_active' => false]);
+
+        ScopedPostRepository::$showQueryReturnsNewBuilder = true;
+
+        $this->getJson(ScopedPostRepository::route($requested))
+            ->assertOk()
+            ->assertJsonPath('data.id', (string) $requested->getKey());
+
+        $this->showAction($requested)
+            ->assertOk()
+            ->assertExactJson(['activated' => [$requested->getKey()]]);
+
+        $this->assertActive([$requested->getKey()]);
+        $this->assertInactive([$other->getKey()]);
     }
 
     #[Test]

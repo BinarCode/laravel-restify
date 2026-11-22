@@ -52,12 +52,17 @@ trait AuthorizedToRun
 
     /**
      * Authorize running on the single model of a show action or show getter: the user must be allowed to
-     * show that model, as the show route requires.
+     * show that model, as the show route requires. Turned off by
+     * `restify.repositories.authorize_show_for_actions_and_getters`.
      *
      * @throws UnauthorizedException
      */
     protected function authorizeShownModel(RestifyRequest $request, Model $model): void
     {
+        if (! config('restify.repositories.authorize_show_for_actions_and_getters', true)) {
+            return;
+        }
+
         if (! $request->repositoryWith($model)->authorizedToShow($request)) {
             throw UnauthorizedException::make($this->authorizeRunMessage());
         }

@@ -77,6 +77,22 @@ class ShowGetterShowPolicyTest extends IntegrationTestCase
             ->assertJsonPath('filtered', [$post->getKey()]);
     }
 
+    #[Test]
+    public function the_show_policy_check_of_show_getters_can_be_turned_off(): void
+    {
+        config()->set('restify.repositories.authorize_show_for_actions_and_getters', false);
+
+        $denied = Post::factory()->create(['title' => 'Readable title']);
+
+        $_SERVER['restify.post.show.callback'] = fn ($user, Post $post): bool => $post->isNot($denied);
+
+        $this->getJson(ScopedPostRepository::route($denied))->assertForbidden();
+
+        $this->showGetter($denied)
+            ->assertOk()
+            ->assertExactJson(['title' => 'Readable title']);
+    }
+
     private function showGetter(Post $post): TestResponse
     {
         return $this->getJson(ScopedPostRepository::route("{$post->getKey()}/getters/post-title"));

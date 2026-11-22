@@ -293,6 +293,12 @@ return [
         'apply_show_query_to_actions_and_getters' => true,
 
         /*
+        | Require the `show` policy for the model of a show action or show getter, as show requests do: a user who
+        | may not show the model gets a 403 before `canRun` is asked. Set to `false` to only ask `canRun`, as before.
+        */
+        'authorize_show_for_actions_and_getters' => true,
+
+        /*
         | Scope the model of an update, patch or delete (single, bulk, field delete and the MCP update and delete tools),
         | and the parent of an attach, detach, sync or nested write (`/{parent}/{parentId}/{relation}`), by the repository mainQuery,
         | as show and index requests are. Set to `false` to rely on the policy alone, as before.

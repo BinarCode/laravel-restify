@@ -143,7 +143,7 @@ public function getters(RestifyRequest $request): array
 
 `canRun` receives the model of a show getter, and `null` for an index getter. A denial answers `403`.
 
-The `restify.repositories.apply_index_query_to_actions_and_getters` and `restify.repositories.apply_show_query_to_actions_and_getters` config keys turn off the repository `indexQuery` and `showQuery` scopes described above. Both default to `true`.
+The `restify.repositories.apply_index_query_to_actions_and_getters` and `restify.repositories.apply_show_query_to_actions_and_getters` config keys turn off the repository `indexQuery` and `showQuery` scopes described above, and `restify.repositories.authorize_show_for_actions_and_getters` turns off the `show` check. All three default to `true`.
 
 ### Call getters
 

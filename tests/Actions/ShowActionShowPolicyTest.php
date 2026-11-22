@@ -113,6 +113,36 @@ class ShowActionShowPolicyTest extends IntegrationTestCase
         $this->assertDatabaseHas(Post::class, ['id' => $post->getKey(), 'is_active' => true]);
     }
 
+    #[Test]
+    public function the_show_policy_check_of_show_actions_can_be_turned_off(): void
+    {
+        config()->set('restify.repositories.authorize_show_for_actions_and_getters', false);
+
+        $post = $this->mockPost(['is_active' => false]);
+
+        $action = (new class extends Action
+        {
+            public static $uriKey = 'activate-post-with-own-denial';
+
+            public function handle(ActionRequest $request, Post $post): JsonResponse
+            {
+                $post->update(['is_active' => true]);
+
+                return response()->json(['ok' => true]);
+            }
+        })->onlyOnShow()->canRun(fn (Request $request, ?Post $model): bool => abort(422, 'Publish the post first.'));
+
+        PostRepository::partialMock()->shouldReceive('actions')->andReturn([$action]);
+
+        $_SERVER['restify.post.show'] = false;
+
+        $this->postJson(PostRepository::route((string) $post->getKey(), action: $action))
+            ->assertUnprocessable()
+            ->assertJsonPath('message', 'Publish the post first.');
+
+        $this->assertDatabaseHas(Post::class, ['id' => $post->getKey(), 'is_active' => false]);
+    }
+
     private function showAction(Post $post): TestResponse
     {
         return $this->postJson(ScopedPostRepository::route("{$post->getKey()}/actions", query: ['action' => 'activate-post']));
