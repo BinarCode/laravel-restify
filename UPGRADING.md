@@ -453,6 +453,40 @@ on the related repository.
   `$cacheTtl`, `$cacheTtl` changed at runtime on the base class, then the config value. A
   configured value other than 300 now takes effect where the hardcoded 300 used to win.
 
+### The index cache key covers the whole request
+
+This only concerns applications that enabled the repository index cache
+(`restify.repositories.cache.enabled`). The key used to describe the request with a fixed list of
+parameters, and the list was incomplete: match filters (`?title=...`, `?-title=...`,
+`filter[title]=...`), `include`, `withMeta` and any parameter a repository reads in `indexQuery()`
+were not in it, so two requests of the same user that differed only in those got the same cached
+page. On the MCP index tool the match filter arguments were missed the same way, and a call could be
+answered with the page of the HTTP index.
+
+The key now covers everything the request sends, the query string and the body, without picking
+parameters by name, plus the URL of the request and the kind of request (the index, the POST advanced
+filters endpoint, the MCP index tool). The page and the page size are still keyed by the values the
+paginator resolves, so a missing page size, the default and a size clamped by
+`restify.pagination.max_per_page` keep sharing an entry. The order of the parameters does not matter.
+The format of the key, its guard, user, parent and version segments, the TTL, the cache tags and
+`clearCache()` are unchanged.
+
+What changes for you:
+
+- Requests that used to be answered from each other's cached page now get their own. No change is
+  needed in your code.
+- Every distinct query string or body gets its own entry, including parameters nothing reads (a
+  cache-busting `?_=1700000000`, tracking parameters). Each entry still expires with the TTL and
+  belongs to one user and one repository, but more of them are written, and a client that sends a
+  unique parameter on every request no longer hits the cache. Remove such parameters in a
+  middleware if your clients send them.
+- `related=posts` and `include=posts` are cached separately, as are a parameter sent in the query
+  string and the same parameter sent in the body.
+- If you call `generateIndexCacheKey()` yourself, pass it the request the index receives
+  (`RepositoryIndexRequest`, with its URL): a plain `RestifyRequest` now gets another key.
+- Entries written by the previous release are not served after upgrading; they expire with their
+  TTL.
+
 ### An invalid `restify.auth.token_ttl` throws instead of never expiring
 
 Login and register treated any `token_ttl` that was not a positive number (`-5`,

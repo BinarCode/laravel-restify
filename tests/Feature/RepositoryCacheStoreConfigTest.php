@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Feature;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
 use Binaryk\LaravelRestify\Tests\Concerns\InteractsWithQueryLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
@@ -138,7 +138,7 @@ class RepositoryCacheStoreConfigTest extends IntegrationTestCase
     private function indexCacheKey(): string
     {
         return PostRepository::resolveWith(new Post)
-            ->generateIndexCacheKey(app(RestifyRequest::class));
+            ->generateIndexCacheKey(app(RepositoryIndexRequest::class));
     }
 
     /**

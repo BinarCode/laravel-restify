@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Binaryk\LaravelRestify\Tests\Feature;
 
-use Binaryk\LaravelRestify\Http\Requests\RestifyRequest;
+use Binaryk\LaravelRestify\Http\Requests\RepositoryIndexRequest;
 use Binaryk\LaravelRestify\Repositories\Repository;
 use Binaryk\LaravelRestify\Tests\Concerns\InteractsWithQueryLog;
 use Binaryk\LaravelRestify\Tests\Fixtures\Company\CompanyRepository;
@@ -394,7 +394,7 @@ class RepositoryCacheIsolationTest extends IntegrationTestCase
      */
     private function indexCacheKey(array $query = []): string
     {
-        $request = RestifyRequest::create('/api/restify/posts', 'GET', $query);
+        $request = RepositoryIndexRequest::create(url(PostRepository::route()), 'GET', $query);
         $request->setUserResolver(fn (?string $guard = null) => Auth::guard($guard)->user());
 
         return PostRepository::resolveWith(new Post)->generateIndexCacheKey($request);

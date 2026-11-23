@@ -7,10 +7,12 @@ use Carbon\CarbonImmutable;
 use DateTimeInterface;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use ReflectionProperty;
+use Throwable;
 
 trait InteractsWithCache
 {
@@ -74,46 +76,7 @@ trait InteractsWithCache
             $keyParts[] = 'parent_'.$request->route('parentRepository').'_'.$request->route('parentRepositoryId');
         }
 
-        $pagination = $request->pagination();
-
-        $relatablePerPage = $request->input('relatablePerPage');
-
-        if (is_array($relatablePerPage)) {
-            ksort($relatablePerPage);
-        }
-
-        // Add request parameters that affect the query
-        $queryParams = [
-            'search' => $request->input('search'),
-            'sort' => $request->input('sort'),
-            'page' => $pagination->resolvePage() ?? 1,
-            'perPage' => $pagination->resolvePerPage(static::$defaultPerPage),
-            'related' => $request->input('related'),
-            'group_by' => $request->input('group_by'),
-            'relatablePerPage' => $relatablePerPage,
-        ];
-
-        // Add filters
-        foreach ($request->filters() as $key => $value) {
-            if ($value !== null && $value !== '') {
-                $queryParams["filter_{$key}"] = $value;
-            }
-        }
-
-        // Add matches - get from request input since matches() is a static repository method
-        $matches = $request->input('match', []);
-        if (is_array($matches)) {
-            foreach ($matches as $key => $value) {
-                if ($value !== null && $value !== '') {
-                    $queryParams["match_{$key}"] = $value;
-                }
-            }
-        }
-
-        // Sort and serialize parameters for consistent keys
-        ksort($queryParams);
-        $serializedParams = md5(serialize(array_filter($queryParams)));
-        $keyParts[] = $serializedParams;
+        $keyParts[] = $this->hashIndexCacheInput($request);
 
         // Add user context for authorization-sensitive data
         /** @var Authenticatable|null $user */
@@ -146,6 +109,94 @@ trait InteractsWithCache
         $keyParts[] = 'ver_'.static::cacheVersion();
 
         return implode(':', $keyParts);
+    }
+
+    /**
+     * The part of the key that tells two index requests apart.
+     */
+    private function hashIndexCacheInput(RestifyRequest $request): string
+    {
+        $input = $this->indexCacheInput($request);
+
+        try {
+            return md5(serialize($input));
+        } catch (Throwable) {
+            // Input that cannot be serialized, such as a closure the application merged into the request, gets a
+            // key of its own, so its page is never served to another request.
+            return bin2hex(random_bytes(16));
+        }
+    }
+
+    /**
+     * Everything of the request the index response is built from. No parameter is picked by name, so one that an
+     * application reads in indexQuery() counts like the ones Restify reads itself.
+     *
+     * - The request class tells the entry points apart: the posted advanced filters read `filters` from the body,
+     *   the MCP index tool serializes its own fields, and only an index request is scoped by indexQuery().
+     * - The URL, without its query string, is where the pagination links of the response point.
+     * - The query string and the body stay apart, because a match filter applies only when the query string names
+     *   it, while its value is read from the body first.
+     * - The page and the page size are the ones the paginator ends up with, so no page size, the default page size
+     *   and a page size clamped down to it share an entry.
+     *
+     * @return array<string, mixed>
+     */
+    private function indexCacheInput(RestifyRequest $request): array
+    {
+        $pagination = $request->pagination();
+
+        return [
+            'request' => $request::class,
+            'url' => $request->url(),
+            'query' => self::normalizeIndexCacheInput($request->query->all()),
+            'body' => self::normalizeIndexCacheInput(
+                $request->isJson() ? $request->json()->all() : $request->request->all()
+            ),
+            'page' => $pagination->resolvePage() ?? Paginator::resolveCurrentPage(),
+            'perPage' => $pagination->resolvePerPage(static::$defaultPerPage),
+        ];
+    }
+
+    /**
+     * The input without the parameters the pagination reads, which are keyed by what they resolve to, and with the
+     * keys of every level sorted, so the order parameters are written in does not matter. A list is keyed by
+     * position, so its items still compare in order.
+     *
+     * @param  array<array-key, mixed>  $input
+     * @return array<array-key, mixed>
+     */
+    private static function normalizeIndexCacheInput(array $input): array
+    {
+        $page = $input['page'] ?? null;
+
+        unset($input['perPage'], $input['page']);
+
+        if (is_array($page)) {
+            unset($page['size'], $page['number']);
+
+            if ($page !== []) {
+                $input['page'] = $page;
+            }
+        }
+
+        return self::sortIndexCacheInput($input);
+    }
+
+    /**
+     * @param  array<array-key, mixed>  $input
+     * @return array<array-key, mixed>
+     */
+    private static function sortIndexCacheInput(array $input): array
+    {
+        ksort($input, SORT_STRING);
+
+        foreach ($input as $key => $value) {
+            if (is_array($value)) {
+                $input[$key] = self::sortIndexCacheInput($value);
+            }
+        }
+
+        return $input;
     }
 
     private function castToTimestamp(mixed $value, string $column): int
