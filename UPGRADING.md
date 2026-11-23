@@ -76,6 +76,54 @@ A call that sends only `include` gets the same response as before: the index env
 authenticated user as its only row, or an empty `data` when `mainQuery()`, `indexQuery()` or the `show`
 policy hide that user. The response is no longer read from or written to the index cache.
 
+### The profile is the record of the authenticated model, not of its id
+
+`GET`, `PUT` and `POST /profile` and the MCP `users-profile-tool` used to load the row of the users
+repository whose key equals the id of the authenticated user, whatever kind of user that was. They now use
+the repository only when the authenticated user is a row of the repository's model: an Eloquent model on
+the same connection, in the same table and with the same primary key column. That row is matched on the
+model's primary key.
+
+Nothing changes when the only model your application signs in is the model of its `UserRepository`. What
+changes:
+
+- **Another authenticatable model**, such as an `Admin` with its own table and guard, a Sanctum token
+  issued to another model, or a model on another connection. It was served, and with the
+  repository-driven update it wrote, the users row that shares its id. It is now handled as when
+  `canUseForProfile()` and `canUseForProfileUpdate()` return `false`: `GET /profile` returns the
+  authenticated model itself without its `$hidden` attributes, `PUT` and `POST /profile` update that
+  model directly (the attributes `profileUpdateRules()` lists, and the email and the password together
+  with `current_password`), and the MCP profile tool returns an empty `data`.
+- **A user that is not an Eloquent model** is handled the same way on `GET /profile` and in the MCP tool.
+  `PUT` and `POST /profile` answer `401` for it, where the repository-driven update used to write the
+  users row with its id.
+- **A model whose route key is not its primary key** (`getRouteKeyName()` returning `slug`, `uuid`, ...).
+  `GET /profile` compared the user's id with the route key column, so it answered `404`, or returned the
+  row of whoever had that value as a route key. It now returns the user's own profile.
+- **A model whose `getAuthIdentifierName()` is not its primary key** gets its own profile from all three,
+  where it used to get a `404`, a server error or an empty `data`.
+- `PUT` and `POST /profile` without an authenticated user answer `401` when the repository drives the
+  update, where they used to fail with a server error. `GET /profile` still answers `404` there.
+
+The `$repositoryId` passed to the repository's `show()` and `update()` on these endpoints is the model's
+primary key. It used to be the auth identifier, which is the same value unless the model overrides
+`getAuthIdentifierName()`.
+
+If users of another kind really are rows of your `UserRepository` under the same key, for example a user
+object built from a token, or an `Admin` model whose table shares its primary key with `users`, say so by
+overriding `profileKey()` on the repository. It returns the key of the row a user stands for, or `null`:
+
+```php
+use Illuminate\Contracts\Auth\Authenticatable;
+
+public static function profileKey(?Authenticatable $user): mixed
+{
+    return $user instanceof TokenUser
+        ? $user->getAuthIdentifier()
+        : parent::profileKey($user);
+}
+```
+
 ### Updates and deletes are scoped by `mainQuery()`
 
 Update (`PUT`), patch (`PATCH`), delete, bulk update, bulk delete, field delete

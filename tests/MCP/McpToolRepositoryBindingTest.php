@@ -142,7 +142,8 @@ class McpToolRepositoryBindingTest extends IntegrationTestCase
         Restify::repositories([McpBoundUserRepository::class, McpBoundPostRepository::class]);
 
         Post::factory()->create(['user_id' => null]);
-        User::factory()->create(['id' => $this->authenticatedAs->getKey(), 'email' => 'member@example.com']);
+        // A stored user: the profile is the row of the authenticated model, and the default mocked user has none.
+        $this->authenticate(User::factory()->create(['email' => 'member@example.com']));
         User::factory()->create(['email' => 'other@example.com']);
 
         $response = $this->callTool('users-profile-tool', ['mcp_repository_key' => 'mcp-bound-posts']);

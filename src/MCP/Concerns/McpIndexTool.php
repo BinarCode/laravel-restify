@@ -17,6 +17,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\JsonSchema\JsonSchema;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
 use Stringable;
 
 /**
@@ -33,13 +34,15 @@ trait McpIndexTool
      * The index response narrowed to the given user: the fields, scopes and show policy of the index tool, holding
      * that one row or none.
      *
-     * The key is never read from the request. It is a scope of the query, so it is ANDed with the rest of it as a
+     * The key is never read from the request. It is the primary key of the user as a row of this repository, see
+     * profileKey(): a user that is not one, such as an admin of another guard, gets the response without a row,
+     * and the repository is not queried. The key is a scope of the query, so it is ANDed with the rest of it as a
      * whole even when a repository scope ends in an OR, and it is checked again on the rows read. The page and the
      * page size are fixed, and the response skips the index cache.
      */
     public function profileTool(McpIndexRequest $request, Authenticatable $user): array
     {
-        $key = $user->getAuthIdentifier();
+        $key = static::profileKey($user);
 
         $canonical = static fn (mixed $value): ?string => match (true) {
             $value instanceof BackedEnum => (string) $value->value,
@@ -49,13 +52,14 @@ trait McpIndexTool
 
         $ownKey = $canonical($key);
 
+        $perPage = PaginationDataObject::fromInput(null, null)->resolvePerPage(static::$defaultPerPage);
+
         /** @var LengthAwarePaginator<int, Model> $paginator */
-        $paginator = RepositorySearchService::make()->search($request, $this)
-            ->withGlobalScope('restify-profile', fn (Builder $query) => $query->whereKey($key))
-            ->paginate(
-                PaginationDataObject::fromInput(null, null)->resolvePerPage(static::$defaultPerPage),
-                page: 1,
-            );
+        $paginator = $key === null
+            ? new LengthAwarePaginator([], 0, $perPage, 1, ['path' => Paginator::resolveCurrentPath(), 'pageName' => 'page'])
+            : RepositorySearchService::make()->search($request, $this)
+                ->withGlobalScope('restify-profile', fn (Builder $query) => $query->whereKey($key))
+                ->paginate($perPage, page: 1);
 
         $paginator->setCollection(
             $paginator->getCollection()

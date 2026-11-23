@@ -12,7 +12,6 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Arr;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Route;
@@ -36,7 +35,7 @@ class ProfileUpdateController extends RepositoryController
         $user = $request->user();
 
         if ($repository = $this->guessRepository($request)) {
-            $repository->allowToUpdate($request)->update($request, Auth::id());
+            $repository->allowToUpdate($request)->update($request, $repository::profileKey($user));
 
             return data($repository->serializeForShow($request));
         }
@@ -64,8 +63,16 @@ class ProfileUpdateController extends RepositoryController
             }
         }
 
+        // The row is the authenticated user itself, matched on its primary key. A user that is not a row of the
+        // repository, such as an admin of another guard, is updated as a model instead: its id names no row here.
+        $key = $repository::profileKey($request->user());
+
+        if ($key === null) {
+            return null;
+        }
+
         $repository->withResource(
-            $repository::query($request)->whereKey(Auth::id())->first()
+            $repository::query($request)->whereKey($key)->first()
         );
 
         return $repository;
