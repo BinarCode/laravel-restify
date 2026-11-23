@@ -194,6 +194,41 @@ $request->merge(['mcp_repository_key' => PostRepository::uriKey()]);
 $request->forRepository(PostRepository::uriKey());
 ```
 
+### Prefixed and public repository routes have route names of their own
+
+The routes a prefixed repository (`$prefix`) or a public one (`$public`) gets for itself used to share the names of
+the default `{repository}` routes: `GET /api/v1/posts` was named `restify.api.index`, like
+`GET /api/restify/{repository}`. Laravel cannot cache routes that share a name, so `php artisan route:cache` and
+`php artisan optimize` failed in an application with such a repository:
+
+```
+Unable to prepare route [api/v1/posts/filters] for serialization. Another route has already been assigned name [restify.api.filters.index].
+```
+
+Those routes are now named after their repository, and the routes can be cached:
+
+| Route                                           | Before              | Now                                |
+|:------------------------------------------------|:--------------------|:-----------------------------------|
+| `GET /api/v1/posts`, from `$prefix = 'api/v1'`  | `restify.api.index` | `restify.api.prefixed.posts.index` |
+| `GET /api/restify/posts`, from `$public = true` | `restify.api.index` | `restify.api.public.posts.index`   |
+
+The pattern is `restify.api.prefixed.{uriKey}.{name}` and `restify.api.public.{uriKey}.{name}`, where `{name}` is
+what follows `restify.api.` in the name of the default route (`index`, `show`, `store`, `actions.index`, ...). A
+repository that is both prefixed and public gets both sets. The default `{repository}` routes keep their names, and
+no URI or middleware changes. The advanced repositories docs list every name under "Route names".
+
+What to check in your application:
+
+- A request to a prefixed or public repository now reports the new name. Code that compares
+  `$request->routeIs(...)`, `Route::currentRouteName()` or `$request->route()->getName()` with an exact name such as
+  `restify.api.index`, for example in a middleware, a rate limiter or a log, no longer matches those requests. Add
+  the new name, or match by pattern: `restify.api.*` still covers every Restify route, `restify.api.public.*` every
+  route of a public repository.
+- Where `route()` resolves a Restify route name, such as in a console command or a queued job,
+  `route('restify.api.index', ['repository' => 'users'])` and the other default names now always build the default
+  URL. While a prefixed or public repository shared the name, the framework resolved it to one of the routes, which
+  could be the prefixed or public one, and built `/api/v1/posts?repository=users`.
+
 ### Show actions and show getters are scoped by `mainQuery()`
 
 A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters`) now loads its model through the repository `mainQuery()` before the action or getter `indexQuery()`, the same way show, index and bulk actions already did. This also covers the MCP action and getter tools. A record your `mainQuery()` hides now answers 404 instead of running the action or getter on it.
