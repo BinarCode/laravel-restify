@@ -132,7 +132,7 @@ Calling an action the user is not authorized to see answers `403`. An action the
 
 `canSee` decides who may call an action. The models it then receives are decided by the repository queries, not by the model policy:
 
-- An [index action](#index-actions) receives only rows the repository index lists. The repository [`mainQuery`](/api/repositories-advanced#main-query) and [`indexQuery`](/api/repositories-advanced#index-query) apply first, then the action's own [`indexQuery`](#action-index-query), for `"repositories": "all"` and for a list of keys alike. A key outside that set is skipped, so the action can receive fewer models than the keys you sent. When none of the keys you sent is in that set, the request answers `404` and the action does not run.
+- An [index action](#index-actions) receives only rows the repository index lists. The repository [`mainQuery`](/api/repositories-advanced#main-query) and [`indexQuery`](/api/repositories-advanced#index-query) apply first, then the action's own [`indexQuery`](#action-index-query), for `"repositories": "all"` and for a list of keys alike. A key outside that set is skipped, so the action can receive fewer models than the keys you sent. When none of the keys you sent passes the repository `mainQuery` and `indexQuery`, the request answers `404` and the action does not run. Keys that only the action's own `indexQuery` or the request filters leave out still reach `handle` as an empty collection.
 - A [show action](#show-actions) loads its model through the repository `mainQuery` and [`showQuery`](/api/repositories-advanced#show-query), then the action's own `indexQuery`. A model outside that set answers `404`, as the show route does. The user must also be allowed to `show` that model by its policy, or the action answers `403`.
 - A [standalone action](#standalone-actions) loads no models.
 
@@ -377,7 +377,7 @@ You can apply the index action for all the models from the database if you send 
 }
 ```
 
-Restify will get chunks of 200 and send them into the `Collection` argument for the `handle` method. The chunks are read by primary key, newest first, so an action that changes a column the queries filter on does not make Restify skip rows.
+Restify will get chunks of 200 and send them into the `Collection` argument for the `handle` method. Restify reads the keys of the selection first, in the requested order, and loads each chunk from them, so the models keep that order and an action that changes a column the queries filter on does not make Restify skip rows.
 
 You can customize the chunk number by customizing the `chunkCount` action property:
 

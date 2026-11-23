@@ -32,6 +32,10 @@ class ScopedPostRepository extends Repository
         'title' => 'string',
     ];
 
+    public static array $sort = [
+        'title',
+    ];
+
     /**
      * @var list<int>
      */
@@ -63,6 +67,18 @@ class ScopedPostRepository extends Repository
     public static bool $showQueryReturnsNewBuilder = false;
 
     /**
+     * Select a computed column and order by its alias, as a withCount or a selectRaw score would.
+     */
+    public static bool $ordersBySelectedAlias = false;
+
+    /**
+     * The keys `activate-posts` received, across chunks, in the order it received them.
+     *
+     * @var list<int>
+     */
+    public static array $received = [];
+
+    /**
      * @param  Builder<Post>|Relation<Post, Post, mixed>  $query
      */
     public static function indexQuery(RestifyRequest $request, Builder|Relation $query): void
@@ -71,6 +87,10 @@ class ScopedPostRepository extends Repository
 
         if (static::$listsInactiveOnly) {
             $query->where('posts.is_active', false);
+        }
+
+        if (static::$ordersBySelectedAlias) {
+            $query->select('posts.*')->selectRaw('length(posts.title) as title_length')->orderByRaw('title_length desc');
         }
 
         if (static::$joinsUsers) {
@@ -109,6 +129,8 @@ class ScopedPostRepository extends Repository
                  */
                 public function handle(ActionRequest $request, Collection $posts): JsonResponse
                 {
+                    ScopedPostRepository::$received = [...ScopedPostRepository::$received, ...$posts->map->getKey()->all()];
+
                     $posts->each(fn (Post $post) => $post->update(['is_active' => true]));
 
                     return response()->json(['activated' => $posts->map->getKey()->all()]);

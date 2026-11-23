@@ -83,8 +83,10 @@ read, rows the index does not list and records the show route does not find. The
 - An index action (`POST /{repository}/actions`) receives only rows the repository `indexQuery()` lists, for
   `repositories: "all"` and for a list of keys alike, before the action's own `indexQuery()` is applied. A key
   outside that set is skipped, as a key hidden by `mainQuery()` already was, so the action can receive fewer
-  models than the keys sent. When none of the keys sent is in that set, or none of them exists, the request
-  answers 404 instead of running the action on no models.
+  models than the keys sent. When none of the keys sent passes the repository scope (they do not exist, or
+  `mainQuery()` or the repository `indexQuery()` leaves them all out), the request answers 404 instead of running
+  the action on no models. Keys that only the action's own `indexQuery()` or the request filters leave out still
+  reach `handle()` as an empty collection, as before.
 - `$request->filteredQuery()`, which index getters read their rows from, and
   `GetterRequest::collectRepositories()` are limited by the repository `indexQuery()` in the same way.
 - A show action (`POST /{repository}/{id}/actions`) or show getter (`GET /{repository}/{id}/getters/{getter}`)
@@ -95,10 +97,10 @@ This also covers the MCP action and getter tools. Standalone actions load no mod
 eager loads your `indexQuery()` or `showQuery()` adds now apply to these queries too, and so does the ordering
 of `indexQuery()` on `filteredQuery()`.
 
-Index actions now read their rows in chunks by primary key, newest first, instead of by offset, so an action
-that changes a column the queries filter on (a status your `indexQuery()` lists by, for example) no longer
-skips rows after the first chunk. The chunks are no longer ordered by a `sort` parameter, or by an order your
-`mainQuery()` or the action's own `indexQuery()` adds.
+Index actions now read the keys of their selection first, in the same order as before (the `sort` parameter and
+the orders of the queries, then the key), and load the models chunk by chunk from those keys instead of paging
+the query by offset. An action that changes a column the queries filter on (a status your `indexQuery()` lists
+by, for example) no longer skips rows after the first chunk.
 
 If the `indexQuery()` of an action or getter calls the repository `indexQuery()` to get this scoping, remove
 that call: the repository scope now applies before it, and applying it twice fails when it joins a table.

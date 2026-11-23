@@ -9,6 +9,8 @@ use Binaryk\LaravelRestify\Restify;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\Post;
 use Binaryk\LaravelRestify\Tests\Fixtures\Post\ScopedPostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
+use Illuminate\Database\Events\QueryExecuted;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Testing\TestResponse;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\Attributes\TestWith;
@@ -88,6 +90,109 @@ class ActionQueryScopeTest extends IntegrationTestCase
         $this->indexAction('activate-posts', [max($listed) + 100])->assertNotFound();
 
         $this->assertInactive($listed);
+    }
+
+    #[Test]
+    #[TestWith([true], 'repository index query applied')]
+    #[TestWith([false], 'repository index query turned off')]
+    public function an_index_action_whose_own_index_query_excludes_every_id_still_runs_on_no_models(bool $applyIndexQuery): void
+    {
+        config()->set('restify.repositories.apply_index_query_to_actions_and_getters', $applyIndexQuery);
+
+        $ineligible = Post::factory()->count(2)->create(['is_active' => false, 'category' => 'other'])->modelKeys();
+
+        $this->indexAction('activate-active-posts', $ineligible)
+            ->assertOk()
+            ->assertExactJson(['activated' => []]);
+
+        $this->assertInactive($ineligible);
+    }
+
+    #[Test]
+    public function an_index_action_whose_request_filters_exclude_every_id_still_runs_on_no_models(): void
+    {
+        [$listed] = $this->listedAndUnlistedPosts();
+
+        $this->postJson(ScopedPostRepository::route('actions', query: ['action' => 'activate-posts', 'title' => 'No such title']), [
+            'repositories' => $listed,
+        ])
+            ->assertOk()
+            ->assertExactJson(['activated' => []]);
+
+        $this->assertInactive($listed);
+    }
+
+    #[Test]
+    #[TestWith([1, 'title'], 'one per chunk, ascending')]
+    #[TestWith([200, 'title'], 'one chunk, ascending')]
+    #[TestWith([1, '-title'], 'one per chunk, descending')]
+    public function an_index_action_receives_its_models_in_the_requested_order(int $chunkCount, string $sort): void
+    {
+        Action::$chunkCount = $chunkCount;
+
+        $b = Post::factory()->create(['title' => 'b', 'is_active' => false]);
+        $c = Post::factory()->create(['title' => 'c', 'is_active' => false]);
+        $a = Post::factory()->create(['title' => 'a', 'is_active' => false]);
+
+        $this->postJson(ScopedPostRepository::route('actions', query: ['action' => 'activate-posts', 'sort' => $sort]), [
+            'repositories' => 'all',
+        ])->assertOk();
+
+        $ascending = [$a->getKey(), $b->getKey(), $c->getKey()];
+
+        $this->assertSame($sort === 'title' ? $ascending : array_reverse($ascending), ScopedPostRepository::$received);
+    }
+
+    #[Test]
+    #[TestWith(['all'], 'all keyword')]
+    #[TestWith(['ids'], 'explicit id list')]
+    public function an_index_action_runs_when_the_queries_order_by_a_selected_alias(string $repositoriesMode): void
+    {
+        Action::$chunkCount = 1;
+
+        ScopedPostRepository::$ordersBySelectedAlias = true;
+
+        $keys = Post::factory()->count(3)->create(['is_active' => false])->modelKeys();
+
+        $this->indexAction('activate-posts', $repositoriesMode === 'all' ? 'all' : $keys)->assertOk();
+
+        $this->assertActive($keys);
+    }
+
+    #[Test]
+    #[TestWith([true], 'an explicit select list, as a join or a withCount has')]
+    #[TestWith([false], 'no select list')]
+    public function an_index_action_reads_its_rows_one_chunk_at_a_time(bool $explicitSelect): void
+    {
+        Action::$chunkCount = 2;
+
+        ScopedPostRepository::$ordersBySelectedAlias = $explicitSelect;
+
+        $keys = Post::factory()->count(5)->create(['is_active' => false])->modelKeys();
+
+        $reads = [];
+        $listening = true;
+
+        DB::listen(function (QueryExecuted $query) use (&$reads, &$listening): void {
+            if ($listening && str_starts_with($query->sql, 'select') && str_contains($query->sql, 'from "posts"')) {
+                $reads[] = $query->sql;
+            }
+        });
+
+        $this->indexAction('activate-posts', 'all')->assertOk();
+
+        $listening = false;
+
+        $this->assertActive($keys);
+        $this->assertNotEmpty($reads);
+
+        foreach ($reads as $sql) {
+            $this->assertMatchesRegularExpression('/ limit 2 | limit 2$|"posts"\."id" in \(\d+(, \d+)?\)/', $sql);
+        }
+
+        if (! $explicitSelect) {
+            $this->assertContains(true, array_map(fn (string $sql): bool => str_starts_with($sql, 'select "posts"."id" as "restify_action_key" from'), $reads));
+        }
     }
 
     #[Test]
