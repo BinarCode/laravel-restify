@@ -65,6 +65,11 @@ class File extends Field implements DeletableContract, StorableContract
      */
     public $storageCallback;
 
+    /**
+     * The bulk row being filled. It is null on a single store or update, and outside of a fill.
+     */
+    protected ?int $bulkRow = null;
+
     public function __construct($attribute, ?callable $resolveCallback = null)
     {
         parent::__construct($attribute, $resolveCallback);
@@ -222,9 +227,31 @@ class File extends Field implements DeletableContract, StorableContract
     {
         $this->storageCallback = $storageCallback ?? function ($request, $model) {
             return $this->mergeExtraStorageColumns($request, [
-                $this->attribute => $this->storeFile($request, $this->attribute),
+                $this->attribute => $this->storeFile($request, $this->requestAttribute()),
             ]);
         };
+    }
+
+    /**
+     * The key the field's input has in the request: the attribute, or "{row}.{attribute}" while a bulk row
+     * is filled, when the request holds that row alone, keyed by its index.
+     */
+    protected function requestAttribute(): string
+    {
+        $attribute = is_string($this->attribute) ? $this->attribute : '';
+
+        return $this->bulkRow === null ? $attribute : "{$this->bulkRow}.{$attribute}";
+    }
+
+    /**
+     * The bulk row as the last argument of a callback. A single store or update passes nothing more than
+     * it always did.
+     *
+     * @return list<int>
+     */
+    protected function bulkRowArgument(): array
+    {
+        return $this->bulkRow === null ? [] : [$this->bulkRow];
     }
 
     /**
@@ -255,11 +282,13 @@ class File extends Field implements DeletableContract, StorableContract
 
     protected function resolveFileFromRequest(Request $request): ?UploadedFile
     {
-        if (($file = $request->input($this->attribute)) instanceof UploadedFile && $file->isValid()) {
+        $attribute = $this->requestAttribute();
+
+        if (($file = $request->input($attribute)) instanceof UploadedFile && $file->isValid()) {
             return $file;
         }
 
-        if (($file = $request->file($this->attribute)) && $file->isValid()) {
+        if (($file = $request->file($attribute)) && $file->isValid()) {
             return $file;
         }
 
@@ -283,7 +312,7 @@ class File extends Field implements DeletableContract, StorableContract
 
         $isCallable = is_callable($this->storeAs);
         $filename = $isCallable
-            ? call_user_func($this->storeAs, $request)
+            ? call_user_func($this->storeAs, $request, ...$this->bulkRowArgument())
             : $this->storeAs;
 
         // If storeAs returns empty/null, fallback to auto-generated name
@@ -366,15 +395,38 @@ class File extends Field implements DeletableContract, StorableContract
         return $attributes;
     }
 
+    /**
+     * Fill the model from the request. On a bulk store or bulk update the request holds one row, and the
+     * field reads that row's input.
+     */
     public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
     {
+        $this->bulkRow = $bulkRow;
+
+        try {
+            return $this->fillFileAttribute($request, $model);
+        } finally {
+            $this->bulkRow = null;
+        }
+    }
+
+    /**
+     * Store the upload or the URL the request holds under {@see self::requestAttribute()}.
+     *
+     * @param  mixed  $model
+     * @return mixed
+     */
+    protected function fillFileAttribute(RestifyRequest $request, $model)
+    {
         if ($this->storeCallback instanceof Closure) {
-            return call_user_func($this->storeCallback, $request, $model, $this->attribute);
+            return call_user_func($this->storeCallback, $request, $model, $this->attribute, ...$this->bulkRowArgument());
         }
 
+        $requestAttribute = $this->requestAttribute();
+
         // Handle URL input first. Any other string is not stored: it falls through to the upload handling.
-        if ($request->has($this->attribute) && is_string($request->input($this->attribute))) {
-            $url = $request->input($this->attribute);
+        if ($request->has($requestAttribute) && is_string($request->input($requestAttribute))) {
+            $url = $request->input($requestAttribute);
 
             if (static::isRemoteUrl($url)) {
                 if ($this->isPrunable()) {
@@ -417,7 +469,8 @@ class File extends Field implements DeletableContract, StorableContract
             $model,
             $this->attribute,
             $this->disk,
-            $this->storagePath
+            $this->storagePath,
+            ...$this->bulkRowArgument()
         );
 
         if ($result === true) {
@@ -429,7 +482,7 @@ class File extends Field implements DeletableContract, StorableContract
         }
 
         if (! is_array($result)) {
-            return $model->{$attribute} = $result;
+            return $model->{$this->attribute} = $result;
         }
 
         foreach ($result as $key => $value) {

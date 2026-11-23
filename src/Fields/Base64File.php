@@ -9,18 +9,24 @@ use Illuminate\Support\Str;
 
 class Base64File extends File
 {
-    public function fillAttribute(RestifyRequest $request, $model, ?int $bulkRow = null)
+    /**
+     * Store the upload, the URL or the base64 content the request holds under {@see self::requestAttribute()}.
+     *
+     * @param  mixed  $model
+     * @return mixed
+     */
+    protected function fillFileAttribute(RestifyRequest $request, $model)
     {
         if ($this->storeCallback instanceof Closure) {
-            return call_user_func($this->storeCallback, $request, $model, $this->attribute);
+            return call_user_func($this->storeCallback, $request, $model, $this->attribute, ...$this->bulkRowArgument());
         }
 
         // Delegate to parent for regular file uploads first
         if ($this->resolveFileFromRequest($request)) {
-            return parent::fillAttribute($request, $model, $bulkRow);
+            return parent::fillFileAttribute($request, $model);
         }
 
-        $input = $request->input($this->attribute);
+        $input = $request->input($this->requestAttribute());
 
         if (! $input || ! is_string($input)) {
             return $this;
@@ -28,7 +34,7 @@ class Base64File extends File
 
         // Delegate to parent for URL inputs
         if (static::isRemoteUrl($input)) {
-            return parent::fillAttribute($request, $model, $bulkRow);
+            return parent::fillFileAttribute($request, $model);
         }
 
         // Handle base64 data
@@ -65,7 +71,7 @@ class Base64File extends File
 
     protected function storeBase64File(RestifyRequest $request): string
     {
-        $base64Data = $request->input($this->attribute);
+        $base64Data = $request->input($this->requestAttribute());
         $imageData = $this->decodeBase64($base64Data);
         $extension = $this->detectExtension($base64Data);
 
@@ -89,7 +95,7 @@ class Base64File extends File
 
         $isCallable = is_callable($this->storeAs);
         $filename = $isCallable
-            ? call_user_func($this->storeAs, $request)
+            ? call_user_func($this->storeAs, $request, ...$this->bulkRowArgument())
             : $this->storeAs;
 
         if (empty($filename)) {
@@ -112,7 +118,7 @@ class Base64File extends File
 
     protected function mergeExtraStorageColumnsForBase64(RestifyRequest $request, array $attributes): array
     {
-        $base64Data = $request->input($this->attribute);
+        $base64Data = $request->input($this->requestAttribute());
 
         if ($this->originalNameColumn) {
             $attributes[$this->originalNameColumn] = ($this->useCustomFilenameForOriginal && $this->customFilename)

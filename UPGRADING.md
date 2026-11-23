@@ -24,6 +24,32 @@ This also covers rows written before the upgrade, so no data migration is needed
 `delete()` still receives the stored value unchanged; if it passes that value to a disk, guard it with
 `File::isStoragePath($path)`.
 
+### File fields are written by bulk store and bulk update
+
+A `File`, `Image` or `Base64File` field did nothing on a bulk store (`POST /{repository}/bulk`) or a bulk
+update (`POST /{repository}/bulk/update`): the upload, URL or base64 content a row sent for it was ignored
+and the request still succeeded. The field now handles each row the way it handles a single store or update.
+It stores that row's file and writes it to that row's model, with the URL rule above, `prunable()`,
+`storeAs()`, `storeOriginalName()` and `storeSize()` applied per row. A row that sends no file is left as it
+is. Uploads go in a `multipart/form-data` body as `0[avatar]`, `1[avatar]`, and so on.
+
+A bulk request that already sent file input for such a field now stores it. If yours do, check three things:
+
+- While a row is written the request holds that row alone, keyed by its index, so its file is at
+  `$request->file("{$row}.avatar")` and `$request->file('avatar')` is empty. A `storeAs` callback, a `store`
+  callback or a `Storable` that reads the top level now runs for a bulk row that carries a file, and fails
+  when it calls a method on the missing file. On a bulk request these callbacks receive the row index as
+  their last argument; read the row with it. On a single store or update they are called as before.
+- A fixed `storeAs('avatar.jpg')` name gives every row the same path, so each row overwrites the file of the
+  row before it. Name the file per row with a callback.
+- The disk is not part of the bulk transaction. Files are stored, and the files a `prunable()` field replaces
+  are deleted, while each row is written. When a later row fails, the rows are rolled back, but the files
+  stored for the earlier rows stay on the disk and the replaced files stay deleted. A single store or update
+  whose save fails leaves the disk the same way.
+
+A `store` callback that returns the path alone, instead of an array of columns, used to fail on every
+request with an undefined variable. The path is now written to the field's column.
+
 ### Laravel 11 is no longer supported
 
 Restify now requires Laravel 12 or 13. Laravel 11 is past its security support, and Composer 2.11
