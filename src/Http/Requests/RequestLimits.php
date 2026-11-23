@@ -7,10 +7,12 @@ namespace Binaryk\LaravelRestify\Http\Requests;
 /**
  * The ceilings on how much work one request may ask for.
  *
- * The page size cap is opt-in: only a positive `restify.pagination.max_per_page` caps it.
+ * The page size cap and the bulk row limit are opt-in: only a positive number in
+ * `restify.pagination.max_per_page` or `restify.bulk.max_rows` sets them. `null`, a missing key, an
+ * empty string, any other non-numeric value, `0`, a negative number and `false` all mean no limit.
  *
- * The bulk row and related depth limits have package defaults, applied here so an application whose
- * published `config/restify.php` predates their keys is still limited. For each of those keys:
+ * The related depth limit has a package default, applied here so an application whose published
+ * `config/restify.php` predates `restify.related.max_depth` is still limited:
  *
  * - `null`, a missing key, an empty string or any other non-numeric value: the package default;
  * - a positive number: that limit;
@@ -18,30 +20,23 @@ namespace Binaryk\LaravelRestify\Http\Requests;
  */
 final class RequestLimits
 {
-    public const DEFAULT_MAX_BULK_ROWS = 1000;
-
     public const DEFAULT_MAX_RELATED_DEPTH = 5;
 
     /**
      * The largest page size `perPage`, `page[size]` or `relatablePerPage` may resolve to, or `null`
      * for no cap.
-     *
-     * Only a positive number sets a cap. `null`, a missing key, an empty string, any other
-     * non-numeric value, `0`, a negative number and `false` all mean no cap.
      */
     public static function maxPerPage(): ?int
     {
-        $configured = self::configured('restify.pagination.max_per_page');
-
-        return is_int($configured) ? $configured : null;
+        return self::optIn('restify.pagination.max_per_page');
     }
 
     /**
-     * The most rows a bulk store, bulk update or bulk delete request may carry.
+     * The most rows a bulk store, bulk update or bulk delete request may carry, or `null` for no limit.
      */
     public static function maxBulkRows(): ?int
     {
-        return self::limit('restify.bulk.max_rows', self::DEFAULT_MAX_BULK_ROWS);
+        return self::optIn('restify.bulk.max_rows');
     }
 
     /**
@@ -49,14 +44,19 @@ final class RequestLimits
      */
     public static function maxRelatedDepth(): ?int
     {
-        return self::limit('restify.related.max_depth', self::DEFAULT_MAX_RELATED_DEPTH);
+        $configured = self::configured('restify.related.max_depth');
+
+        return $configured === false ? null : ($configured ?? self::DEFAULT_MAX_RELATED_DEPTH);
     }
 
-    private static function limit(string $key, int $default): ?int
+    /**
+     * A limit that only applies when config sets it to a positive number.
+     */
+    private static function optIn(string $key): ?int
     {
         $configured = self::configured($key);
 
-        return $configured === false ? null : ($configured ?? $default);
+        return is_int($configured) ? $configured : null;
     }
 
     /**

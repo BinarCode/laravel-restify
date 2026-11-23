@@ -84,8 +84,8 @@ class RestifyRequest extends FormRequest
     }
 
     /**
-     * Reject a bulk request that carries more rows than `restify.bulk.max_rows`, before any row
-     * is authorized, validated or written.
+     * Reject a bulk request that carries more rows than `restify.bulk.max_rows`, when that is set,
+     * before any row is authorized, validated or written.
      *
      * @throws ValidationException
      */

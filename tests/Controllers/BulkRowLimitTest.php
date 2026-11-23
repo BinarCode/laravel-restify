@@ -10,13 +10,15 @@ use Binaryk\LaravelRestify\Tests\Fixtures\Post\PostRepository;
 use Binaryk\LaravelRestify\Tests\IntegrationTestCase;
 use Illuminate\Support\Arr;
 use PHPUnit\Framework\Attributes\Test;
-use PHPUnit\Framework\Attributes\TestWith;
 
 class BulkRowLimitTest extends IntegrationTestCase
 {
     use InteractsWithQueryLog;
 
-    private const DEFAULT_LIMIT = 1000;
+    /**
+     * More than a thousand rows, so a request this size is only rejected when a limit is configured.
+     */
+    private const MANY_ROWS = 1001;
 
     protected function setUp(): void
     {
@@ -26,83 +28,42 @@ class BulkRowLimitTest extends IntegrationTestCase
     }
 
     #[Test]
-    public function bulk_store_rejects_more_rows_than_the_default_limit_and_stores_nothing(): void
+    public function a_bulk_store_of_a_large_document_succeeds_without_a_limit(): void
     {
-        $this->postJson(PostRepository::route('bulk'), $this->storeRows(self::DEFAULT_LIMIT + 1))
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors([
-                'bulk' => 'A bulk request may contain at most 1000 rows, 1001 were sent.',
-            ]);
+        // A published config holds `env('RESTIFY_MAX_BULK_ROWS')`, which is null when the variable is unset.
+        $this->assertNull(config('restify.bulk.max_rows'));
 
-        $this->assertDatabaseCount(Post::class, 0);
+        $this->postJson(PostRepository::route('bulk'), $this->storeRows(self::MANY_ROWS))->assertOk();
+
+        $this->assertDatabaseCount(Post::class, self::MANY_ROWS);
     }
 
     #[Test]
-    public function bulk_update_rejects_more_rows_than_the_default_limit_and_updates_nothing(): void
-    {
-        $posts = $this->seedPosts(self::DEFAULT_LIMIT + 1);
-
-        $this->recordQueries();
-
-        $this->postJson(PostRepository::route('bulk/update'), $this->updateRows($posts))
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors('bulk');
-
-        $this->assertSelectCount(0, Post::class);
-        $this->assertDatabaseMissing(Post::class, ['title' => 'Updated']);
-    }
-
-    #[Test]
-    public function bulk_delete_rejects_more_keys_than_the_default_limit_and_deletes_nothing(): void
-    {
-        $posts = $this->seedPosts(self::DEFAULT_LIMIT + 1);
-
-        $this->recordQueries();
-
-        $this->deleteJson(PostRepository::route('bulk/delete'), $posts)
-            ->assertUnprocessable()
-            ->assertJsonValidationErrors('bulk');
-
-        $this->assertSelectCount(0, Post::class);
-        $this->assertDatabaseCount(Post::class, self::DEFAULT_LIMIT + 1);
-    }
-
-    #[Test]
-    public function a_bulk_request_with_exactly_the_default_limit_is_accepted(): void
-    {
-        $posts = $this->seedPosts(self::DEFAULT_LIMIT);
-
-        $this->deleteJson(PostRepository::route('bulk/delete'), $posts)->assertOk();
-
-        $this->assertDatabaseCount(Post::class, 0);
-    }
-
-    #[Test]
-    #[TestWith(['2000'], 'limit raised, as env() provides it')]
-    #[TestWith([0], 'limit turned off')]
-    public function a_raised_or_disabled_limit_accepts_more_rows_than_the_default(int|string $maxRows): void
-    {
-        config(['restify.bulk.max_rows' => $maxRows]);
-
-        $posts = $this->seedPosts(self::DEFAULT_LIMIT + 1);
-
-        $this->deleteJson(PostRepository::route('bulk/delete'), $posts)->assertOk();
-
-        $this->assertDatabaseCount(Post::class, 0);
-    }
-
-    #[Test]
-    public function the_default_limit_applies_when_the_published_config_predates_the_bulk_key(): void
+    public function there_is_no_limit_when_the_published_config_predates_the_bulk_key(): void
     {
         config(['restify' => Arr::except(config('restify'), ['bulk'])]);
 
-        $posts = $this->seedPosts(self::DEFAULT_LIMIT + 1);
+        $posts = $this->seedPosts(self::MANY_ROWS);
 
-        $this->deleteJson(PostRepository::route('bulk/delete'), $posts)
+        $this->deleteJson(PostRepository::route('bulk/delete'), $posts)->assertOk();
+
+        $this->assertDatabaseCount(Post::class, 0);
+    }
+
+    #[Test]
+    public function a_limit_set_as_a_string_is_enforced_as_env_provides_it(): void
+    {
+        config(['restify.bulk.max_rows' => '3']);
+
+        $this->postJson(PostRepository::route('bulk'), $this->storeRows(4))
             ->assertUnprocessable()
             ->assertJsonValidationErrors('bulk');
 
-        $this->assertDatabaseCount(Post::class, self::DEFAULT_LIMIT + 1);
+        $this->assertDatabaseCount(Post::class, 0);
+
+        $this->postJson(PostRepository::route('bulk'), $this->storeRows(3))->assertOk();
+
+        $this->assertDatabaseCount(Post::class, 3);
     }
 
     #[Test]
@@ -133,10 +94,13 @@ class BulkRowLimitTest extends IntegrationTestCase
 
         $posts = $this->seedPosts(4);
 
+        $this->recordQueries();
+
         $this->postJson(PostRepository::route('bulk/update'), $this->updateRows($posts))
             ->assertUnprocessable()
             ->assertJsonValidationErrors('bulk');
 
+        $this->assertSelectCount(0, Post::class);
         $this->assertDatabaseMissing(Post::class, ['title' => 'Updated']);
 
         $this->postJson(PostRepository::route('bulk/update'), $this->updateRows(array_slice($posts, 0, 3)))
@@ -152,10 +116,13 @@ class BulkRowLimitTest extends IntegrationTestCase
 
         $posts = $this->seedPosts(4);
 
+        $this->recordQueries();
+
         $this->deleteJson(PostRepository::route('bulk/delete'), $posts)
             ->assertUnprocessable()
             ->assertJsonValidationErrors('bulk');
 
+        $this->assertSelectCount(0, Post::class);
         $this->assertDatabaseCount(Post::class, 4);
 
         $this->deleteJson(PostRepository::route('bulk/delete'), array_slice($posts, 0, 3))->assertOk();

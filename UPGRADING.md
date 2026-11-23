@@ -165,41 +165,35 @@ Custom attach and detach handlers are not covered. A field's `attachCallback()` 
 before any related id is looked up. Attach and sync both route through the attach handlers.
 They still receive the raw request ids, so scope and authorize those ids yourself.
 
-### Bulk rows and `related` depth are limited by default
+### `related` paths are limited to five levels by default
 
-One request could carry any number of bulk rows and ask for any `related` nesting depth. Both now have a
-limit that applies without any configuration. The defaults are applied in code, so an application whose
-published `config/restify.php` predates the new keys is limited as well.
+A `related` (or `include`) path could nest to any depth. It is now cut at five levels without any
+configuration: `a.b.c.d.e.f` is loaded as `a.b.c.d.e`, and the request is not rejected. The default is applied
+in code, so an application whose published `config/restify.php` predates the new `restify.related.max_depth` key
+is limited as well.
 
-| What | Config key (environment variable) | Default | A request above the limit |
-| --- | --- | --- | --- |
-| Rows in a bulk store, bulk update or bulk delete | `restify.bulk.max_rows` (`RESTIFY_MAX_BULK_ROWS`) | 1000 | answers `422`, nothing is written |
-| Levels in a `related` / `include` path | `restify.related.max_depth` (`RESTIFY_MAX_RELATED_DEPTH`) | 5 | has its deeper levels ignored |
+A dotted path the repository declares itself in `$related` is still loaded in full when requested on that
+repository. The MCP tools parse `include` the same way, so the limit applies there too.
 
-For both keys, `null`, an empty string and any other non-numeric value mean the default, and `0`, a negative
-number or `false` remove the limit.
-
-A bulk request with more than 1000 rows answers `422` with a `bulk` validation error before any row is
-authorized, validated or written. Split the rows over several requests or raise `restify.bulk.max_rows`.
-
-A `related` path longer than five levels is loaded up to the fifth, so `a.b.c.d.e.f` returns `a.b.c.d.e`. A
-dotted path the repository declares itself in `$related` is still loaded in full when requested on that
-repository. The MCP tools parse `include` the same way, so the limit applies there too. Raise
-`restify.related.max_depth` if your clients nest deeper.
-
-To get the previous, unlimited behaviour back:
+Raise the limit with `restify.related.max_depth` (`RESTIFY_MAX_RELATED_DEPTH`) if your clients nest deeper.
+`0`, a negative number or `false` remove it; `null`, an empty string and any other non-numeric value mean the
+default of 5. To get the previous, unlimited behaviour back:
 
 ```dotenv
-RESTIFY_MAX_BULK_ROWS=0
 RESTIFY_MAX_RELATED_DEPTH=0
 ```
 
-If your published config has no `bulk` and `related` sections the environment variables still work. To set the
+The bulk store, bulk update and bulk delete endpoints can now be limited too, with the new
+`restify.bulk.max_rows` (`RESTIFY_MAX_BULK_ROWS`) setting. It is off unless you set it, so upgrading changes
+nothing. Set it to a positive number and a bulk request with more rows answers `422` with a `bulk` validation
+error, before any row is authorized, validated or written.
+
+If your published config has no `related` or `bulk` section the environment variables still work. To set the
 values in the file instead, add:
 
 ```php
 'bulk' => [
-    'max_rows' => env('RESTIFY_MAX_BULK_ROWS', 1000),
+    'max_rows' => env('RESTIFY_MAX_BULK_ROWS'),
 ],
 
 'related' => [

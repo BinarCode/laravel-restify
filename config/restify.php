@@ -281,11 +281,12 @@ return [
         | carry. A larger request is rejected with a 422 before any row is
         | authorized, validated or written - it is never cut down to the limit.
         |
-        | Default: 1000. null also means the default; 0, a negative number or
-        | false mean "no limit".
+        | Default: null (no limit, every row is accepted).
+        | null, 0, a negative number, false, an empty string, or any other
+        | non-numeric value all mean "no limit".
         |
         */
-        'max_rows' => env('RESTIFY_MAX_BULK_ROWS', 1000),
+        'max_rows' => env('RESTIFY_MAX_BULK_ROWS'),
     ],
 
     /*

@@ -838,8 +838,19 @@ With the payload:
 
 ### Bulk row limit
 
-A bulk store, bulk update or bulk delete request may carry at most 1000 rows. A larger request answers `422`
-with a `bulk` validation error before any row is authorized, validated or written:
+By default a bulk store, bulk update or bulk delete request may carry any number of rows. Set
+`restify.bulk.max_rows` (or the `RESTIFY_MAX_BULK_ROWS` environment variable) to limit it:
+
+```php
+// config/restify.php
+
+'bulk' => [
+    'max_rows' => 1000,
+],
+```
+
+A larger request answers `422` with a `bulk` validation error before any row is authorized, validated or
+written:
 
 ```json
 {
@@ -850,20 +861,11 @@ with a `bulk` validation error before any row is authorized, validated or writte
 }
 ```
 
-Change the limit with `restify.bulk.max_rows` (or the `RESTIFY_MAX_BULK_ROWS` environment variable):
-
-```php
-// config/restify.php
-
-'bulk' => [
-    'max_rows' => 5000,
-],
-```
-
 <alert type="info">
 
-The request is rejected, never cut down to the limit, so split larger payloads over several requests.
-`null` means the default of 1000. `0`, a negative number or `false` remove the limit.
+The request is rejected, never cut down to the limit, so split larger payloads over several requests. Leave the
+config `null` (the default), or set it to `0`, a negative number, `false`, an empty string, or any other
+non-numeric value, to mean "no limit".
 
 </alert>
 
